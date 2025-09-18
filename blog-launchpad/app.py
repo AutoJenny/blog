@@ -181,6 +181,65 @@ def social_media_command_center():
     """Main Social Media Command Center dashboard."""
     return render_template('social_media_command_center.html')
 
+@app.route('/api/social-media/timeline')
+def get_unified_timeline():
+    """Get unified timeline data from all posting queues."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            # Get all posts from posting_queue with platform/channel info
+            cur.execute("""
+                SELECT pq.id, pq.platform, pq.channel_type, pq.content_type,
+                       pq.scheduled_timestamp, pq.generated_content, pq.status,
+                       pq.platform_post_id, pq.error_message,
+                       cp.name as product_name, cp.sku, cp.image_url as product_image,
+                       cp.price, pq.created_at, pq.updated_at
+                FROM posting_queue pq
+                LEFT JOIN clan_products cp ON pq.product_id = cp.id
+                WHERE pq.status IN ('pending', 'ready', 'published', 'failed')
+                ORDER BY pq.scheduled_timestamp ASC, pq.created_at ASC
+                LIMIT 50
+            """)
+            
+            items = cur.fetchall()
+            
+            timeline_items = []
+            for item in items:
+                # Use scheduled_timestamp if available, otherwise fall back to created_at
+                scheduled_time = item[4] if item[4] else item[13]  # scheduled_timestamp or created_at
+                
+                timeline_items.append({
+                    'id': item[0],
+                    'platform': item[1] or 'facebook',
+                    'channel_type': item[2] or 'feed_post',
+                    'content_type': item[3] or 'product',
+                    'scheduled_timestamp': scheduled_time.isoformat() if scheduled_time else None,
+                    'content': item[5] or 'No content',
+                    'status': item[6] or 'pending',
+                    'platform_post_id': item[7],
+                    'error_message': item[8],
+                    'product_name': item[9] or 'Unknown Product',
+                    'sku': item[10] or 'N/A',
+                    'product_image': item[11],
+                    'price': str(item[12]) if item[12] else None,
+                    'created_at': item[13].isoformat() if item[13] else None,
+                    'updated_at': item[14].isoformat() if item[14] else None
+                })
+            
+            return jsonify({
+                'success': True,
+                'timeline': timeline_items,
+                'count': len(timeline_items)
+            })
+        
+    except Exception as e:
+        logger.error(f"Error getting unified timeline: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to get timeline: {str(e)}'
+        }), 500
+
 @app.route('/daily-product-posts')
 def daily_product_posts():
     """Daily Product Posts management page."""
@@ -3843,11 +3902,17 @@ def get_queue():
                     'status': item[8],
                     'created_at': item[9].isoformat() if item[9] else None,
                     'updated_at': item[10].isoformat() if item[10] else None,
-                    'product_name': item[11],
-                    'product_image': item[12],
-                    'sku': item[13],
-                    'price': str(item[14]) if item[14] else None,
-                    'categories': item[15] if item[15] else []
+                    'platform': item[11] or 'facebook',
+                    'channel_type': item[12] or 'feed_post',
+                    'content_type': item[13] or 'product',
+                    'scheduled_timestamp': item[14].isoformat() if item[14] else None,
+                    'platform_post_id': item[15],
+                    'error_message': item[16],
+                    'product_name': item[17],
+                    'product_image': item[18],
+                    'sku': item[19],
+                    'price': str(item[20]) if item[20] else None,
+                    'categories': item[21] if item[21] else []
                 })
             
             return jsonify({
@@ -3887,15 +3952,24 @@ def add_to_queue():
             cur.execute("SELECT COALESCE(MAX(queue_order), 0) + 1 FROM posting_queue")
             next_order = cur.fetchone()[0]
             
+            # Calculate scheduled_timestamp if both date and time are provided
+            scheduled_timestamp = None
+            if scheduled_date and scheduled_time:
+                from datetime import datetime
+                try:
+                    scheduled_timestamp = datetime.combine(scheduled_date, scheduled_time)
+                except:
+                    scheduled_timestamp = None
+            
             # Insert new queue item
             cur.execute("""
                 INSERT INTO posting_queue 
                 (product_id, scheduled_date, scheduled_time, schedule_name, timezone, 
-                 generated_content, queue_order, status)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, 'ready')
+                 generated_content, queue_order, status, platform, channel_type, content_type, scheduled_timestamp)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, 'ready', 'facebook', 'feed_post', 'product', %s)
                 RETURNING id, created_at
             """, (product_id, scheduled_date, scheduled_time, schedule_name, timezone, 
-                  generated_content, next_order))
+                  generated_content, next_order, scheduled_timestamp))
             
             result = cur.fetchone()
             queue_id = result[0]

@@ -555,15 +555,136 @@
         // Filter timeline based on selected platform
         function filterTimeline() {
             console.log('Filtering timeline for platform:', currentPlatform);
-            // TODO: Implement timeline filtering
+            renderTimeline(); // Re-render with current filter
         }
         
         // Load timeline data
-        function loadTimelineData() {
+        async function loadTimelineData() {
             console.log('Loading timeline data...');
-            // TODO: Implement timeline data loading
-            // For now, show empty state
+            try {
+                const response = await fetch('/api/social-media/timeline');
+                const data = await response.json();
+                
+                if (data.success) {
+                    timelineData = data.timeline;
+                    renderTimeline();
+                    updateKPIs(data.timeline);
+                } else {
+                    console.error('Error loading timeline:', data.error);
+                    showEmptyState();
+                }
+            } catch (error) {
+                console.error('Error loading timeline:', error);
+                showEmptyState();
+            }
+        }
+        
+        // Render timeline table
+        function renderTimeline() {
+            const tbody = document.getElementById('timeline-body');
+            const emptyState = document.getElementById('empty-timeline');
+            
+            if (timelineData.length === 0) {
+                showEmptyState();
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            let html = '';
+            timelineData.forEach(item => {
+                // Skip if platform filter is active and doesn't match
+                if (currentPlatform !== 'all' && item.platform !== currentPlatform) {
+                    return;
+                }
+                
+                const date = new Date(item.scheduled_timestamp || item.created_at);
+                const dateStr = date.toLocaleDateString();
+                const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
+                html += `
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600;">${dateStr}</div>
+                            <div style="color: #94a3b8; font-size: 0.8rem;">${timeStr}</div>
+                        </td>
+                        <td>
+                            <span class="platform-badge platform-${item.platform}">
+                                <i class="fab fa-${item.platform}"></i>
+                                ${item.platform.charAt(0).toUpperCase() + item.platform.slice(1)}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="content-type-badge content-${item.content_type}">
+                                ${item.content_type.charAt(0).toUpperCase() + item.content_type.slice(1)}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;">
+                                <div style="font-weight: 600; margin-bottom: 5px;">${item.product_name}</div>
+                                <div style="color: #94a3b8; font-size: 0.9rem;">${item.content.substring(0, 100)}${item.content.length > 100 ? '...' : ''}</div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-${item.status}">
+                                ${item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="action-btn" onclick="editPost(${item.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-btn" onclick="reschedulePost(${item.id})">
+                                <i class="fas fa-clock"></i>
+                            </button>
+                            <button class="action-btn danger" onclick="cancelPost(${item.id})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+        
+        // Show empty state
+        function showEmptyState() {
             document.getElementById('empty-timeline').style.display = 'block';
+            document.getElementById('timeline-body').innerHTML = '';
+        }
+        
+        // Update KPIs
+        function updateKPIs(timeline) {
+            const scheduled = timeline.filter(item => item.status === 'pending' || item.status === 'ready').length;
+            const published = timeline.filter(item => item.status === 'published').length;
+            const platforms = [...new Set(timeline.map(item => item.platform))].length;
+            const queueHealth = timeline.length > 0 ? Math.min(100, (timeline.length / 50) * 100) : 0;
+            
+            // Update KPI cards
+            const kpiValues = document.querySelectorAll('.kpi-value');
+            if (kpiValues.length >= 4) {
+                kpiValues[0].textContent = scheduled;
+                kpiValues[1].textContent = published;
+                kpiValues[2].textContent = platforms;
+                kpiValues[3].textContent = Math.round(queueHealth) + '%';
+            }
+        }
+        
+        // Action functions
+        function editPost(id) {
+            console.log('Edit post:', id);
+            // TODO: Implement edit functionality
+        }
+        
+        function reschedulePost(id) {
+            console.log('Reschedule post:', id);
+            // TODO: Implement reschedule functionality
+        }
+        
+        function cancelPost(id) {
+            console.log('Cancel post:', id);
+            // TODO: Implement cancel functionality
         }
         
         // Load queue status
