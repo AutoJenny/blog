@@ -749,7 +749,7 @@
         }
 
         // Save credentials form
-        document.getElementById('credentials-form').addEventListener('submit', function(e) {
+        document.getElementById('credentials-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const formData = {
@@ -759,32 +759,110 @@
                 page_id: document.getElementById('page-id').value
             };
             
-            // Simulate saving credentials
             const submitBtn = this.querySelector('button[type="submit"]');
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
             submitBtn.disabled = true;
             
-            setTimeout(() => {
+            try {
+                const response = await fetch('/api/syndication/facebook/credentials', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update connection status with new credentials
+                    updateConnectionStatus(formData);
+                    
+                    // Show success message
+                    const statusDiv = document.getElementById('connection-status');
+                    statusDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Credentials saved successfully!</strong> Your Facebook API credentials have been updated.
+                        </div>
+                    `;
+                } else {
+                    alert('Error saving credentials: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error saving credentials:', error);
+                alert('Error saving credentials: ' + error.message);
+            } finally {
                 submitBtn.innerHTML = '<i class="fas fa-save me-2"></i>Save Credentials';
                 submitBtn.disabled = false;
-                
-                alert('Credentials saved successfully!');
-                
-                // Update connection status
-                document.getElementById('connection-status').innerHTML = `
-                    <div class="alert alert-success">
-                        <i class="fas fa-check-circle me-2"></i>
-                        <strong>Credentials saved.</strong> You can now test your connections or start creating posts.
-                    </div>
-                `;
-            }, 2000);
+            }
         });
 
         // Load existing credentials on page load
         document.addEventListener('DOMContentLoaded', function() {
-            // This would normally load from the API
-            console.log('Facebook Posting Hub loaded');
+            loadExistingCredentials();
         });
+
+        // Load existing credentials from the API
+        async function loadExistingCredentials() {
+            try {
+                const response = await fetch('/api/syndication/facebook/credentials');
+                const data = await response.json();
+                
+                if (data.success && data.credentials) {
+                    // Populate form fields with existing credentials
+                    if (data.credentials.app_id) {
+                        document.getElementById('app-id').value = data.credentials.app_id;
+                    }
+                    if (data.credentials.app_secret) {
+                        document.getElementById('app-secret').value = data.credentials.app_secret;
+                    }
+                    if (data.credentials.page_access_token) {
+                        document.getElementById('page-access-token').value = data.credentials.page_access_token;
+                    }
+                    if (data.credentials.page_id) {
+                        document.getElementById('page-id').value = data.credentials.page_id;
+                    }
+                    
+                    // Update connection status
+                    updateConnectionStatus(data.credentials);
+                }
+            } catch (error) {
+                console.error('Error loading existing credentials:', error);
+            }
+        }
+
+        // Update connection status based on available credentials
+        function updateConnectionStatus(credentials) {
+            const statusDiv = document.getElementById('connection-status');
+            const hasAppId = credentials.app_id && credentials.app_id.trim() !== '';
+            const hasAppSecret = credentials.app_secret && credentials.app_secret.trim() !== '';
+            const hasPageToken = credentials.page_access_token && credentials.page_access_token.trim() !== '';
+            const hasPageId = credentials.page_id && credentials.page_id.trim() !== '';
+            
+            if (hasAppId && hasAppSecret && hasPageToken && hasPageId) {
+                statusDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>All credentials configured!</strong> Your Facebook API credentials are ready for posting.
+                    </div>
+                `;
+            } else if (hasAppId && hasAppSecret) {
+                statusDiv.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Partial configuration.</strong> App credentials are set, but Page Access Token and Page ID are missing.
+                    </div>
+                `;
+            } else {
+                statusDiv.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Credentials loaded.</strong> You can edit the values below and test your connections.
+                    </div>
+                `;
+            }
+        }
     </script>
 </body>
 </html>
