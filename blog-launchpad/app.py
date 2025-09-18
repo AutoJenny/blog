@@ -3983,12 +3983,12 @@ def add_to_queue():
                 except:
                     scheduled_timestamp = None
             
-            # Insert new queue item - use database defaults for platform/channel/type
+            # Insert new queue item - platform/channel/type come from daily-product-posts module context
             cur.execute("""
                 INSERT INTO posting_queue 
                 (product_id, scheduled_date, scheduled_time, schedule_name, timezone, 
-                 generated_content, queue_order, scheduled_timestamp)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                 generated_content, queue_order, status, platform, channel_type, content_type, scheduled_timestamp)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, 'ready', 'facebook', 'feed_post', 'product', %s)
                 RETURNING id, created_at
             """, (product_id, scheduled_date, scheduled_time, schedule_name, timezone, 
                   generated_content, next_order, scheduled_timestamp))
@@ -4318,12 +4318,13 @@ def generate_batch_items():
                         except:
                             scheduled_timestamp = None
                     
-                    # Add to queue - use database defaults for status and platform/channel/type
+                    # Add to queue - all items in queue are ready by definition
+                    # Platform/channel/type come from daily-product-posts module context
                     cur.execute("""
                         INSERT INTO posting_queue 
                         (product_id, scheduled_date, scheduled_time, schedule_name, timezone, 
-                         generated_content, queue_order, scheduled_timestamp)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                         generated_content, queue_order, status, platform, channel_type, content_type, scheduled_timestamp)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, 'ready', 'facebook', 'feed_post', %s, %s)
                         RETURNING id, created_at
                     """, (
                         selected_product['id'],
@@ -4333,6 +4334,7 @@ def generate_batch_items():
                         'GMT',  # Default timezone
                         generated_content,
                         current_count + i + 1,
+                        content_type['name'],  # Use actual content type from template
                         scheduled_timestamp
                     ))
                     
