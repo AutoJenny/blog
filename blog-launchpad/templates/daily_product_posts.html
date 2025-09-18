@@ -924,6 +924,11 @@
         postNowBtn.addEventListener('click', async () => {
             if (!selectedProduct || !generatedContent) return;
             
+            // Show warning before posting live
+            if (!confirm('⚠️ WARNING: This will post LIVE to your Facebook page!\n\nAre you sure you want to publish this post now?')) {
+                return;
+            }
+            
             postNowBtn.classList.add('loading');
             postNowBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Posting...';
             
