@@ -477,14 +477,29 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="form-label">Page Access Token</label>
-                                    <input type="password" class="form-control" id="page-access-token" placeholder="Enter your Page Access Token">
-                                    <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="testConnection('page-access-token')">
+                                    <label class="form-label">User Access Token</label>
+                                    <input type="password" class="form-control" id="user-access-token" placeholder="Enter your User Access Token">
+                                    <small class="form-text text-muted">For testing and debugging purposes</small>
+                                    <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="testConnection('user-access-token')">
                                         <i class="fas fa-check me-1"></i>
-                                        Test Connection
+                                        Test User Token
                                     </button>
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Page Access Token</label>
+                                    <input type="password" class="form-control" id="page-access-token" placeholder="Enter your Page Access Token">
+                                    <small class="form-text text-muted">Required for posting to Facebook page</small>
+                                    <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="testConnection('page-access-token')">
+                                        <i class="fas fa-check me-1"></i>
+                                        Test Page Token
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="form-label">Page ID</label>
@@ -779,6 +794,7 @@
             const formData = {
                 app_id: document.getElementById('app-id').value,
                 app_secret: document.getElementById('app-secret').value,
+                user_access_token: document.getElementById('user-access-token').value,
                 page_access_token: document.getElementById('page-access-token').value,
                 page_id: document.getElementById('page-id').value
             };
@@ -873,6 +889,74 @@
                 btn.disabled = false;
             }
         }
+        
+        // Test individual credential fields
+        async function testConnection(fieldId) {
+            const field = document.getElementById(fieldId);
+            const value = field.value.trim();
+            
+            if (!value) {
+                alert('Please enter a value to test');
+                return;
+            }
+            
+            try {
+                if (fieldId === 'user-access-token') {
+                    // Test user token
+                    const testResponse = await fetch(`https://graph.facebook.com/v18.0/me?access_token=${value}`);
+                    const testData = await testResponse.json();
+                    
+                    if (testData.name) {
+                        showConnectionResults({
+                            success: true,
+                            message: `User token valid for: ${testData.name} (${testData.id})`
+                        });
+                    } else {
+                        showConnectionResults({
+                            success: false,
+                            message: 'User token invalid or expired'
+                        });
+                    }
+                } else if (fieldId === 'page-access-token') {
+                    // Test page token
+                    const response = await fetch('/api/syndication/facebook/credentials');
+                    const data = await response.json();
+                    
+                    if (data.success && data.credentials.page_id) {
+                        const testResponse = await fetch(`https://graph.facebook.com/v18.0/${data.credentials.page_id}?fields=name,id&access_token=${value}`);
+                        const testData = await testResponse.json();
+                        
+                        if (testData.name) {
+                            showConnectionResults({
+                                success: true,
+                                message: `Page token valid for: ${testData.name} (${testData.id})`
+                            });
+                        } else {
+                            showConnectionResults({
+                                success: false,
+                                message: 'Page token invalid or expired'
+                            });
+                        }
+                    } else {
+                        showConnectionResults({
+                            success: false,
+                            message: 'Please save Page ID first'
+                        });
+                    }
+                } else {
+                    // Test other fields
+                    showConnectionResults({
+                        success: true,
+                        message: `${fieldId} field validated`
+                    });
+                }
+            } catch (error) {
+                showConnectionResults({
+                    success: false,
+                    message: `Connection test failed: ${error.message}`
+                });
+            }
+        }
 
         // Show connection test results
         function showConnectionResults(data) {
@@ -911,6 +995,9 @@
                     }
                     if (data.credentials.app_secret) {
                         document.getElementById('app-secret').value = data.credentials.app_secret;
+                    }
+                    if (data.credentials.user_access_token) {
+                        document.getElementById('user-access-token').value = data.credentials.user_access_token;
                     }
                     if (data.credentials.page_access_token) {
                         document.getElementById('page-access-token').value = data.credentials.page_access_token;
