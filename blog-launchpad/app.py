@@ -486,7 +486,7 @@ def generate_product_content():
 
 @app.route('/api/daily-product-posts/post-now', methods=['POST'])
 def post_to_facebook():
-    """Post content to Facebook."""
+    """Post content to Facebook with product image."""
     try:
         data = request.get_json()
         
@@ -514,44 +514,171 @@ def post_to_facebook():
                 if not queue_item:
                     return jsonify({'success': False, 'error': 'Queue item not found'})
                 
-                # Update the queue item status
+                # Get Facebook credentials
                 cur.execute("""
-                    UPDATE posting_queue 
-                    SET status = 'published', platform_post_id = %s, updated_at = NOW()
-                    WHERE id = %s
-                """, (f"fb_post_{item_id}_{int(datetime.now().timestamp())}", item_id))
+                    SELECT credential_key, credential_value
+                    FROM platform_credentials 
+                    WHERE platform_id = (SELECT id FROM platforms WHERE name = 'facebook')
+                    AND is_active = true
+                """)
+                credentials = cur.fetchall()
                 
-                # Also update daily_posts if it exists
-                cur.execute("""
-                    UPDATE daily_posts 
-                    SET status = 'posted', posted_at = NOW()
-                    WHERE product_id = %s AND post_date = %s
-                """, (queue_item['product_id'], datetime.now().date()))
+                # Convert to dictionary
+                creds = {}
+                for cred in credentials:
+                    creds[cred['credential_key']] = cred['credential_value']
                 
-                conn.commit()
+                if not creds.get('page_access_token'):
+                    return jsonify({'success': False, 'error': 'Facebook Page Access Token not configured'})
                 
-                return jsonify({
-                    'success': True, 
-                    'message': 'Post published successfully',
-                    'platform_post_id': f"fb_post_{item_id}_{int(datetime.now().timestamp())}"
-                })
+                if not creds.get('page_id'):
+                    return jsonify({'success': False, 'error': 'Facebook Page ID not configured'})
+                
+                # Prepare Facebook API call with image
+                page_id = creds['page_id']
+                access_token = creds['page_access_token']
+                post_content = queue_item['generated_content']
+                product_image = queue_item['product_image']
+                
+                # Use Facebook Photos API to post with image
+                url = f"https://graph.facebook.com/v18.0/{page_id}/photos"
+                
+                payload = {
+                    'message': post_content,
+                    'url': product_image,  # Use the product image URL
+                    'access_token': access_token
+                }
+                
+                # Make the API call
+                import requests
+                response = requests.post(url, data=payload, timeout=30)
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    facebook_post_id = result.get('id')
+                    
+                    # Update the queue item status with real Facebook post ID
+                    cur.execute("""
+                        UPDATE posting_queue 
+                        SET status = 'published', platform_post_id = %s, updated_at = NOW()
+                        WHERE id = %s
+                    """, (facebook_post_id, item_id))
+                    
+                    # Also update daily_posts if it exists
+                    cur.execute("""
+                        UPDATE daily_posts 
+                        SET status = 'posted', posted_at = NOW()
+                        WHERE product_id = %s AND post_date = %s
+                    """, (queue_item['product_id'], datetime.now().date()))
+                    
+                    conn.commit()
+                    
+                    return jsonify({
+                        'success': True, 
+                        'message': 'Post published successfully to Facebook',
+                        'platform_post_id': facebook_post_id,
+                        'facebook_response': result
+                    })
+                else:
+                    error_data = response.json() if response.content else {}
+                    error_msg = error_data.get('error', {}).get('message', 'Unknown Facebook API error')
+                    
+                    # Update queue item with error
+                    cur.execute("""
+                        UPDATE posting_queue 
+                        SET status = 'error', error_message = %s, updated_at = NOW()
+                        WHERE id = %s
+                    """, (f"Facebook API error: {error_msg}", item_id))
+                    
+                    conn.commit()
+                    
+                    return jsonify({
+                        'success': False, 
+                        'error': f'Facebook API error: {response.status_code}',
+                        'details': error_msg
+                    })
             else:
                 # Old format: posting from daily-product-posts page
                 if not product_id:
                     return jsonify({'success': False, 'error': 'Product ID is required'})
                 
-                today = datetime.now().date()
+                # Get product details including image
                 cur.execute("""
-                    UPDATE daily_posts 
-                    SET status = 'posted', posted_at = NOW()
-                    WHERE product_id = %s AND post_date = %s
-                """, (product_id, today))
-                conn.commit()
+                    SELECT name, image_url, sku, price, description
+                    FROM clan_products WHERE id = %s
+                """, (product_id,))
+                product = cur.fetchone()
                 
-                return jsonify({
-                    'success': True, 
-                    'message': 'Post marked as posted (Facebook API not implemented yet)'
-                })
+                if not product:
+                    return jsonify({'success': False, 'error': 'Product not found'})
+                
+                # Get Facebook credentials
+                cur.execute("""
+                    SELECT credential_key, credential_value
+                    FROM platform_credentials 
+                    WHERE platform_id = (SELECT id FROM platforms WHERE name = 'facebook')
+                    AND is_active = true
+                """)
+                credentials = cur.fetchall()
+                
+                # Convert to dictionary
+                creds = {}
+                for cred in credentials:
+                    creds[cred['credential_key']] = cred['credential_value']
+                
+                if not creds.get('page_access_token'):
+                    return jsonify({'success': False, 'error': 'Facebook Page Access Token not configured'})
+                
+                if not creds.get('page_id'):
+                    return jsonify({'success': False, 'error': 'Facebook Page ID not configured'})
+                
+                # Prepare Facebook API call with image
+                page_id = creds['page_id']
+                access_token = creds['page_access_token']
+                post_content = content or f"Check out {product['name']} - £{product['price']}"
+                product_image = product['image_url']
+                
+                # Use Facebook Photos API to post with image
+                url = f"https://graph.facebook.com/v18.0/{page_id}/photos"
+                
+                payload = {
+                    'message': post_content,
+                    'url': product_image,  # Use the product image URL
+                    'access_token': access_token
+                }
+                
+                # Make the API call
+                import requests
+                response = requests.post(url, data=payload, timeout=30)
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    facebook_post_id = result.get('id')
+                    
+                    # Update daily_posts with real Facebook post ID
+                    today = datetime.now().date()
+                    cur.execute("""
+                        UPDATE daily_posts 
+                        SET status = 'posted', posted_at = NOW(), facebook_post_id = %s
+                        WHERE product_id = %s AND post_date = %s
+                    """, (facebook_post_id, product_id, today))
+                    conn.commit()
+                    
+                    return jsonify({
+                        'success': True, 
+                        'message': 'Post published successfully to Facebook',
+                        'platform_post_id': facebook_post_id,
+                        'facebook_response': result
+                    })
+                else:
+                    error_data = response.json() if response.content else {}
+                    error_msg = error_data.get('error', {}).get('message', 'Unknown Facebook API error')
+                    
+                    return jsonify({
+                        'success': False, 
+                        'error': f'Facebook API error: {response.status_code}',
+                        'details': error_msg
+                    })
             
     except Exception as e:
         logger.error(f"Error posting to Facebook: {e}")
