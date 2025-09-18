@@ -513,6 +513,18 @@
             display: block;
         }
         
+        .highlighted-item {
+            background: linear-gradient(90deg, #3b82f6 0%, #1e40af 100%) !important;
+            border: 2px solid #60a5fa !important;
+            animation: highlightPulse 2s ease-in-out;
+        }
+        
+        @keyframes highlightPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        
         .queue-item-table-content-text {
             color: #e2e8f0;
             font-size: 0.85rem;
@@ -1200,7 +1212,94 @@
             } catch (error) {
                 console.error('Error loading today\'s status:', error);
             }
+            
+            // Handle URL parameters for queue expansion and highlighting
+            handleUrlParams();
         });
+        
+        // Handle URL parameters for queue expansion and item highlighting
+        function handleUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const expand = urlParams.get('expand');
+            const highlight = urlParams.get('highlight');
+            const action = urlParams.get('action');
+            
+            if (expand === 'posting-queue') {
+                // Expand the posting queue accordion
+                setTimeout(() => {
+                    const content = document.getElementById('posting-queue-content');
+                    const chevron = document.getElementById('posting-queue-chevron');
+                    
+                    if (content && chevron) {
+                        content.classList.add('expanded');
+                        chevron.classList.add('expanded');
+                        
+                        // Scroll to the queue section
+                        content.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        
+                        // Highlight specific item if provided
+                        if (highlight) {
+                            setTimeout(() => {
+                                highlightQueueItem(highlight, action);
+                            }, 1000); // Wait for queue to load
+                        }
+                    }
+                }, 100);
+            }
+        }
+        
+        // Highlight a specific queue item
+        function highlightQueueItem(itemId, action) {
+            const itemElement = document.querySelector(`.queue-item-table[data-item-id="${itemId}"]`);
+            if (itemElement) {
+                // Add highlight class
+                itemElement.classList.add('highlighted-item');
+                
+                // Scroll to the item
+                itemElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Show action-specific message
+                if (action === 'edit') {
+                    showNotification('Item highlighted for editing. Click the edit button to modify this post.', 'info');
+                } else if (action === 'reschedule') {
+                    showNotification('Item highlighted for rescheduling. Drag to reorder or click to edit schedule.', 'info');
+                }
+                
+                // Remove highlight after 5 seconds
+                setTimeout(() => {
+                    itemElement.classList.remove('highlighted-item');
+                }, 5000);
+            } else {
+                console.log('Item not found in queue, it may not be loaded yet');
+            }
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'info' ? '#3b82f6' : '#10b981'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 1000;
+                max-width: 400px;
+                font-size: 0.9rem;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 4 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 4000);
+        }
         
         // Schedule Management Functions
         function initializeScheduleControls() {

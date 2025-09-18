@@ -690,7 +690,7 @@
             }
         }
         
-        // Action functions - database-driven routing based on platform and content type
+        // Action functions - database-driven routing with accordion expansion and highlighting
         function editPost(id) {
             const item = timelineData.find(item => item.id === id);
             if (!item) {
@@ -700,7 +700,9 @@
             
             const moduleUrl = getModuleUrl(item.platform, item.content_type, 'edit');
             if (moduleUrl) {
-                window.open(moduleUrl, '_blank');
+                // Add URL parameters to expand queue and highlight item
+                const urlWithParams = addQueueParams(moduleUrl, id, 'edit');
+                window.open(urlWithParams, '_blank');
             } else {
                 alert(`Edit functionality not available for ${item.platform} ${item.content_type} posts`);
             }
@@ -715,7 +717,9 @@
             
             const moduleUrl = getModuleUrl(item.platform, item.content_type, 'reschedule');
             if (moduleUrl) {
-                window.open(moduleUrl, '_blank');
+                // Add URL parameters to expand queue and highlight item
+                const urlWithParams = addQueueParams(moduleUrl, id, 'reschedule');
+                window.open(urlWithParams, '_blank');
             } else {
                 alert(`Reschedule functionality not available for ${item.platform} ${item.content_type} posts`);
             }
@@ -790,6 +794,15 @@
                     btn.innerHTML = btn.innerHTML.replace('fa-spinner fa-spin', 'fa-times');
                 });
             }
+        }
+        
+        // Add URL parameters for queue expansion and item highlighting
+        function addQueueParams(baseUrl, itemId, action) {
+            const url = new URL(baseUrl, window.location.origin);
+            url.searchParams.set('expand', 'posting-queue');
+            url.searchParams.set('highlight', itemId);
+            url.searchParams.set('action', action);
+            return url.toString();
         }
         
         // Database-driven module URL mapping
