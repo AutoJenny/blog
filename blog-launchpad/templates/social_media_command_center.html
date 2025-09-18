@@ -671,20 +671,196 @@
             }
         }
         
-        // Action functions
+        // Action functions - database-driven routing based on platform and content type
         function editPost(id) {
-            console.log('Edit post:', id);
-            // TODO: Implement edit functionality
+            const item = timelineData.find(item => item.id === id);
+            if (!item) {
+                console.error('Post not found:', id);
+                return;
+            }
+            
+            const moduleUrl = getModuleUrl(item.platform, item.content_type, 'edit');
+            if (moduleUrl) {
+                window.open(moduleUrl, '_blank');
+            } else {
+                alert(`Edit functionality not available for ${item.platform} ${item.content_type} posts`);
+            }
         }
         
         function reschedulePost(id) {
-            console.log('Reschedule post:', id);
-            // TODO: Implement reschedule functionality
+            const item = timelineData.find(item => item.id === id);
+            if (!item) {
+                console.error('Post not found:', id);
+                return;
+            }
+            
+            const moduleUrl = getModuleUrl(item.platform, item.content_type, 'reschedule');
+            if (moduleUrl) {
+                window.open(moduleUrl, '_blank');
+            } else {
+                alert(`Reschedule functionality not available for ${item.platform} ${item.content_type} posts`);
+            }
         }
         
         function cancelPost(id) {
-            console.log('Cancel post:', id);
-            // TODO: Implement cancel functionality
+            const item = timelineData.find(item => item.id === id);
+            if (!item) {
+                console.error('Post not found:', id);
+                return;
+            }
+            
+            if (confirm(`Are you sure you want to cancel this ${item.platform} ${item.content_type} post?\n\n"${item.content.substring(0, 100)}..."`)) {
+                cancelPostConfirmed(id);
+            }
+        }
+        
+        function cancelPostConfirmed(id) {
+            const item = timelineData.find(item => item.id === id);
+            if (!item) {
+                console.error('Post not found:', id);
+                return;
+            }
+            
+            // Route to appropriate module's delete API
+            const deleteUrl = getDeleteUrl(item.platform, item.content_type);
+            if (deleteUrl) {
+                fetch(deleteUrl + id, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Remove from timeline and reload
+                        timelineData = timelineData.filter(item => item.id !== id);
+                        renderTimeline();
+                        updateKPIs(timelineData);
+                        console.log('Post cancelled successfully');
+                    } else {
+                        alert('Failed to cancel post: ' + (data.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error cancelling post:', error);
+                    alert('Error cancelling post: ' + error.message);
+                });
+            } else {
+                alert(`Cancel functionality not available for ${item.platform} ${item.content_type} posts`);
+            }
+        }
+        
+        // Database-driven module URL mapping
+        function getModuleUrl(platform, contentType, action) {
+            const moduleMap = {
+                'facebook': {
+                    'product': {
+                        'edit': '/daily-product-posts',
+                        'reschedule': '/daily-product-posts'
+                    },
+                    'blog': {
+                        'edit': '/syndication/facebook/feed-post',
+                        'reschedule': '/syndication/facebook/feed-post'
+                    },
+                    'tartan': {
+                        'edit': '/syndication/facebook/feed-post',
+                        'reschedule': '/syndication/facebook/feed-post'
+                    },
+                    'event': {
+                        'edit': '/syndication/facebook/feed-post',
+                        'reschedule': '/syndication/facebook/feed-post'
+                    }
+                },
+                'instagram': {
+                    'product': {
+                        'edit': '/syndication/instagram/feed-post',
+                        'reschedule': '/syndication/instagram/feed-post'
+                    },
+                    'blog': {
+                        'edit': '/syndication/instagram/feed-post',
+                        'reschedule': '/syndication/instagram/feed-post'
+                    },
+                    'tartan': {
+                        'edit': '/syndication/instagram/feed-post',
+                        'reschedule': '/syndication/instagram/feed-post'
+                    },
+                    'event': {
+                        'edit': '/syndication/instagram/feed-post',
+                        'reschedule': '/syndication/instagram/feed-post'
+                    }
+                },
+                'twitter': {
+                    'product': {
+                        'edit': '/syndication/twitter/feed-post',
+                        'reschedule': '/syndication/twitter/feed-post'
+                    },
+                    'blog': {
+                        'edit': '/syndication/twitter/feed-post',
+                        'reschedule': '/syndication/twitter/feed-post'
+                    },
+                    'tartan': {
+                        'edit': '/syndication/twitter/feed-post',
+                        'reschedule': '/syndication/twitter/feed-post'
+                    },
+                    'event': {
+                        'edit': '/syndication/twitter/feed-post',
+                        'reschedule': '/syndication/twitter/feed-post'
+                    }
+                },
+                'linkedin': {
+                    'product': {
+                        'edit': '/syndication/linkedin/feed-post',
+                        'reschedule': '/syndication/linkedin/feed-post'
+                    },
+                    'blog': {
+                        'edit': '/syndication/linkedin/feed-post',
+                        'reschedule': '/syndication/linkedin/feed-post'
+                    },
+                    'tartan': {
+                        'edit': '/syndication/linkedin/feed-post',
+                        'reschedule': '/syndication/linkedin/feed-post'
+                    },
+                    'event': {
+                        'edit': '/syndication/linkedin/feed-post',
+                        'reschedule': '/syndication/linkedin/feed-post'
+                    }
+                }
+            };
+            
+            return moduleMap[platform]?.[contentType]?.[action] || null;
+        }
+        
+        // Database-driven delete URL mapping
+        function getDeleteUrl(platform, contentType) {
+            const deleteMap = {
+                'facebook': {
+                    'product': '/api/daily-product-posts/queue/',
+                    'blog': '/api/syndication/pieces/',
+                    'tartan': '/api/syndication/pieces/',
+                    'event': '/api/syndication/pieces/'
+                },
+                'instagram': {
+                    'product': '/api/syndication/pieces/',
+                    'blog': '/api/syndication/pieces/',
+                    'tartan': '/api/syndication/pieces/',
+                    'event': '/api/syndication/pieces/'
+                },
+                'twitter': {
+                    'product': '/api/syndication/pieces/',
+                    'blog': '/api/syndication/pieces/',
+                    'tartan': '/api/syndication/pieces/',
+                    'event': '/api/syndication/pieces/'
+                },
+                'linkedin': {
+                    'product': '/api/syndication/pieces/',
+                    'blog': '/api/syndication/pieces/',
+                    'tartan': '/api/syndication/pieces/',
+                    'event': '/api/syndication/pieces/'
+                }
+            };
+            
+            return deleteMap[platform]?.[contentType] || null;
         }
         
         // Load queue status

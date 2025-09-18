@@ -32,3 +32,4 @@ CREATE INDEX IF NOT EXISTS idx_posting_queue_content_type ON posting_queue(conte
 CREATE INDEX IF NOT EXISTS idx_posting_queue_scheduled_timestamp ON posting_queue(scheduled_timestamp);
 CREATE INDEX IF NOT EXISTS idx_posting_queue_status ON posting_queue(status);
 CREATE INDEX IF NOT EXISTS idx_posting_queue_order ON posting_queue(queue_order);
+
