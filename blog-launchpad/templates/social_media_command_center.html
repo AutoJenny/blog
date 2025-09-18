@@ -299,6 +299,15 @@
             transform: translateY(0);
         }
         
+        .action-btn.success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .action-btn.success:hover {
+            background: #059669;
+        }
+        
         .action-btn.danger {
             background: #ef4444;
             color: white;
@@ -656,6 +665,9 @@
                             <button class="action-btn" onclick="reschedulePost(${item.id})">
                                 <i class="fas fa-clock"></i>
                             </button>
+                            <button class="action-btn success" onclick="postNow(${item.id})">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
                             <button class="action-btn danger" onclick="cancelPost(${item.id})">
                                 <i class="fas fa-times"></i>
                             </button>
@@ -722,6 +734,129 @@
                 window.open(urlWithParams, '_blank');
             } else {
                 alert(`Reschedule functionality not available for ${item.platform} ${item.content_type} posts`);
+            }
+        }
+        
+        function postNow(id) {
+            const item = timelineData.find(item => item.id === id);
+            if (!item) {
+                console.error('Post not found:', id);
+                return;
+            }
+            
+            // Check if item is ready to post
+            if (item.status !== 'ready') {
+                alert(`This post is not ready to publish. Current status: ${item.status}`);
+                return;
+            }
+            
+            if (confirm(`Are you sure you want to post this ${item.platform} ${item.content_type} post now?\n\n"${item.content.substring(0, 100)}..."`)) {
+                postNowConfirmed(id);
+            }
+        }
+        
+        function postNowConfirmed(id) {
+            const item = timelineData.find(item => item.id === id);
+            if (!item) {
+                console.error('Post not found:', id);
+                return;
+            }
+            
+            // Disable all action buttons for this row
+            const buttons = document.querySelectorAll(`button[onclick*="${id}"]`);
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            });
+            
+            // Route to appropriate module's post API
+            const postUrl = getPostUrl(item.platform, item.content_type);
+            if (postUrl) {
+                fetch(postUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        item_id: id,
+                        platform: item.platform,
+                        content_type: item.content_type
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update item status to published
+                        const timelineItem = timelineData.find(item => item.id === id);
+                        if (timelineItem) {
+                            timelineItem.status = 'published';
+                            timelineItem.platform_post_id = data.platform_post_id || null;
+                            timelineItem.updated_at = new Date().toISOString();
+                        }
+                        
+                        // Refresh timeline display
+                        renderTimeline();
+                        updateKPIs(timelineData);
+                        
+                        // Show success notification
+                        showPostNotification('Post published successfully!', 'success');
+                        console.log('Post published successfully');
+                    } else {
+                        // Update item status to failed
+                        const timelineItem = timelineData.find(item => item.id === id);
+                        if (timelineItem) {
+                            timelineItem.status = 'failed';
+                            timelineItem.error_message = data.error || 'Unknown error';
+                            timelineItem.updated_at = new Date().toISOString();
+                        }
+                        
+                        // Refresh timeline display
+                        renderTimeline();
+                        updateKPIs(timelineData);
+                        
+                        alert('Failed to publish post: ' + (data.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error publishing post:', error);
+                    
+                    // Update item status to failed
+                    const timelineItem = timelineData.find(item => item.id === id);
+                    if (timelineItem) {
+                        timelineItem.status = 'failed';
+                        timelineItem.error_message = error.message;
+                        timelineItem.updated_at = new Date().toISOString();
+                    }
+                    
+                    // Refresh timeline display
+                    renderTimeline();
+                    updateKPIs(timelineData);
+                    
+                    alert('Error publishing post: ' + error.message);
+                })
+                .finally(() => {
+                    // Re-enable buttons
+                    buttons.forEach(btn => {
+                        btn.disabled = false;
+                        // Restore original icons
+                        if (btn.onclick.toString().includes('editPost')) {
+                            btn.innerHTML = '<i class="fas fa-edit"></i>';
+                        } else if (btn.onclick.toString().includes('reschedulePost')) {
+                            btn.innerHTML = '<i class="fas fa-clock"></i>';
+                        } else if (btn.onclick.toString().includes('postNow')) {
+                            btn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                        } else if (btn.onclick.toString().includes('cancelPost')) {
+                            btn.innerHTML = '<i class="fas fa-times"></i>';
+                        }
+                    });
+                });
+            } else {
+                alert(`Post functionality not available for ${item.platform} ${item.content_type} posts`);
+                // Re-enable buttons
+                buttons.forEach(btn => {
+                    btn.disabled = false;
+                    btn.innerHTML = btn.innerHTML.replace('fa-spinner fa-spin', 'fa-paper-plane');
+                });
             }
         }
         
@@ -915,6 +1050,73 @@
             };
             
             return deleteMap[platform]?.[contentType] || null;
+        }
+        
+        // Database-driven post URL mapping
+        function getPostUrl(platform, contentType) {
+            const postMap = {
+                'facebook': {
+                    'product': '/api/daily-product-posts/post-now',
+                    'blog': '/api/syndication/pieces/',
+                    'tartan': '/api/syndication/pieces/',
+                    'event': '/api/syndication/pieces/'
+                },
+                'instagram': {
+                    'product': '/api/syndication/pieces/',
+                    'blog': '/api/syndication/pieces/',
+                    'tartan': '/api/syndication/pieces/',
+                    'event': '/api/syndication/pieces/'
+                },
+                'twitter': {
+                    'product': '/api/syndication/pieces/',
+                    'blog': '/api/syndication/pieces/',
+                    'tartan': '/api/syndication/pieces/',
+                    'event': '/api/syndication/pieces/'
+                },
+                'linkedin': {
+                    'product': '/api/syndication/pieces/',
+                    'blog': '/api/syndication/pieces/',
+                    'tartan': '/api/syndication/pieces/',
+                    'event': '/api/syndication/pieces/'
+                }
+            };
+            
+            return postMap[platform]?.[contentType] || null;
+        }
+        
+        // Show post notification
+        function showPostNotification(message, type = 'success') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#10b981' : '#ef4444'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 1000;
+                max-width: 400px;
+                font-size: 0.9rem;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            `;
+            
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            notification.innerHTML = `
+                <i class="fas ${icon}"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 4 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 4000);
         }
         
         // Load queue status

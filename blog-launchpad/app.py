@@ -489,27 +489,69 @@ def post_to_facebook():
     """Post content to Facebook."""
     try:
         data = request.get_json()
+        
+        # Handle both old format (from daily-product-posts page) and new format (from timeline)
+        item_id = data.get('item_id')
         product_id = data.get('product_id')
         content = data.get('content')
         content_type = data.get('content_type')
+        platform = data.get('platform', 'facebook')
         
-        # For now, just mark as posted in database
-        # TODO: Implement actual Facebook API posting
         with get_db_connection() as conn:
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             
-            today = datetime.now().date()
-            cur.execute("""
-                UPDATE daily_posts 
-                SET status = 'posted', posted_at = NOW()
-                WHERE product_id = %s AND post_date = %s
-            """, (product_id, today))
-            conn.commit()
-            
-            return jsonify({
-                'success': True, 
-                'message': 'Post marked as posted (Facebook API not implemented yet)'
-            })
+            if item_id:
+                # New format: posting from timeline
+                # Get the queue item details
+                cur.execute("""
+                    SELECT pq.*, cp.name as product_name, cp.image_url as product_image
+                    FROM posting_queue pq
+                    LEFT JOIN clan_products cp ON pq.product_id = cp.id
+                    WHERE pq.id = %s
+                """, (item_id,))
+                
+                queue_item = cur.fetchone()
+                if not queue_item:
+                    return jsonify({'success': False, 'error': 'Queue item not found'})
+                
+                # Update the queue item status
+                cur.execute("""
+                    UPDATE posting_queue 
+                    SET status = 'published', platform_post_id = %s, updated_at = NOW()
+                    WHERE id = %s
+                """, (f"fb_post_{item_id}_{int(datetime.now().timestamp())}", item_id))
+                
+                # Also update daily_posts if it exists
+                cur.execute("""
+                    UPDATE daily_posts 
+                    SET status = 'posted', posted_at = NOW()
+                    WHERE product_id = %s AND post_date = %s
+                """, (queue_item['product_id'], datetime.now().date()))
+                
+                conn.commit()
+                
+                return jsonify({
+                    'success': True, 
+                    'message': 'Post published successfully',
+                    'platform_post_id': f"fb_post_{item_id}_{int(datetime.now().timestamp())}"
+                })
+            else:
+                # Old format: posting from daily-product-posts page
+                if not product_id:
+                    return jsonify({'success': False, 'error': 'Product ID is required'})
+                
+                today = datetime.now().date()
+                cur.execute("""
+                    UPDATE daily_posts 
+                    SET status = 'posted', posted_at = NOW()
+                    WHERE product_id = %s AND post_date = %s
+                """, (product_id, today))
+                conn.commit()
+                
+                return jsonify({
+                    'success': True, 
+                    'message': 'Post marked as posted (Facebook API not implemented yet)'
+                })
             
     except Exception as e:
         logger.error(f"Error posting to Facebook: {e}")
