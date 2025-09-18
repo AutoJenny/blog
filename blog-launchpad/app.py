@@ -545,13 +545,27 @@ def post_to_facebook():
                 
                 payload = {
                     'message': post_content,
-                    'url': product_image,  # Use the product image URL
+                    'url': product_image,  # Use 'url' for photos endpoint
+                    'published': True,  # Force immediate publishing
                     'access_token': access_token
                 }
                 
                 # Make the API call
                 import requests
+                print(f"DEBUG: Facebook API call - URL: {url}")
+                print(f"DEBUG: Facebook API call - Payload: {payload}")
+                print(f"DEBUG: Product image URL: {product_image}")
+                print(f"DEBUG: Access token being used: {access_token[:20]}...")
                 response = requests.post(url, data=payload, timeout=30)
+                print(f"DEBUG: Facebook API response - Status: {response.status_code}")
+                print(f"DEBUG: Facebook API response - Content: {response.text}")
+                
+                # Also try the exact same curl command that worked
+                import subprocess
+                curl_cmd = f'curl -s -X POST "{url}" -d "message={post_content}&access_token={access_token}"'
+                print(f"DEBUG: Equivalent curl command: {curl_cmd}")
+                curl_result = subprocess.run(curl_cmd, shell=True, capture_output=True, text=True)
+                print(f"DEBUG: Curl result: {curl_result.stdout}")
                 
                 if response.status_code == 200:
                     result = response.json()
@@ -565,16 +579,16 @@ def post_to_facebook():
                     """, (facebook_post_id, item_id))
                     
                     # Also update daily_posts if it exists
-                    cur.execute("""
-                        UPDATE daily_posts 
-                        SET status = 'posted', posted_at = NOW()
-                        WHERE product_id = %s AND post_date = %s
+            cur.execute("""
+                UPDATE daily_posts 
+                SET status = 'posted', posted_at = NOW()
+                WHERE product_id = %s AND post_date = %s
                     """, (queue_item['product_id'], datetime.now().date()))
                     
-                    conn.commit()
-                    
-                    return jsonify({
-                        'success': True, 
+            conn.commit()
+            
+            return jsonify({
+                'success': True, 
                         'message': 'Post published successfully to Facebook',
                         'platform_post_id': facebook_post_id,
                         'facebook_response': result
@@ -643,13 +657,27 @@ def post_to_facebook():
                 
                 payload = {
                     'message': post_content,
-                    'url': product_image,  # Use the product image URL
+                    'url': product_image,  # Use 'url' for photos endpoint
+                    'published': True,  # Force immediate publishing
                     'access_token': access_token
                 }
                 
                 # Make the API call
                 import requests
+                print(f"DEBUG: Facebook API call - URL: {url}")
+                print(f"DEBUG: Facebook API call - Payload: {payload}")
+                print(f"DEBUG: Product image URL: {product_image}")
+                print(f"DEBUG: Access token being used: {access_token[:20]}...")
                 response = requests.post(url, data=payload, timeout=30)
+                print(f"DEBUG: Facebook API response - Status: {response.status_code}")
+                print(f"DEBUG: Facebook API response - Content: {response.text}")
+                
+                # Also try the exact same curl command that worked
+                import subprocess
+                curl_cmd = f'curl -s -X POST "{url}" -d "message={post_content}&access_token={access_token}"'
+                print(f"DEBUG: Equivalent curl command: {curl_cmd}")
+                curl_result = subprocess.run(curl_cmd, shell=True, capture_output=True, text=True)
+                print(f"DEBUG: Curl result: {curl_result.stdout}")
                 
                 if response.status_code == 200:
                     result = response.json()
@@ -678,7 +706,7 @@ def post_to_facebook():
                         'success': False, 
                         'error': f'Facebook API error: {response.status_code}',
                         'details': error_msg
-                    })
+            })
             
     except Exception as e:
         logger.error(f"Error posting to Facebook: {e}")
@@ -1073,6 +1101,45 @@ def facebook_credentials():
         logger.error(f"Error in facebook_credentials: {e}")
         return jsonify({'success': False, 'error': str(e)})
 
+
+@app.route('/api/test-facebook-post', methods=['POST'])
+def test_facebook_post():
+    """Test endpoint to replicate the exact curl command that worked."""
+    try:
+        # Get Facebook credentials
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur.execute("""
+                SELECT credential_key, credential_value
+                FROM platform_credentials 
+                WHERE platform_id = (SELECT id FROM platforms WHERE name = 'facebook')
+                AND is_active = true
+            """)
+            credentials = cur.fetchall()
+            
+            # Convert to dictionary
+            creds = {}
+            for cred in credentials:
+                creds[cred['credential_key']] = cred['credential_value']
+            
+            page_id = creds['page_id']
+            access_token = creds['page_access_token']
+            
+            # Use the exact same curl command that worked
+            import subprocess
+            curl_cmd = f'curl -s -X POST "https://graph.facebook.com/v18.0/{page_id}/feed" -d "message=Test post from Flask app&access_token={access_token}"'
+            print(f"DEBUG: Running curl command: {curl_cmd}")
+            result = subprocess.run(curl_cmd, shell=True, capture_output=True, text=True)
+            print(f"DEBUG: Curl result: {result.stdout}")
+            
+            return jsonify({
+                'success': True,
+                'curl_command': curl_cmd,
+                'result': result.stdout
+            })
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/syndication/facebook/feed-post')
 def facebook_feed_post_redirect():
