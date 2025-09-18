@@ -209,18 +209,30 @@ def get_unified_timeline():
                 # Use scheduled_timestamp if available, otherwise fall back to created_at
                 scheduled_time = item[4] if item[4] else item[13]  # scheduled_timestamp or created_at
                 
+                # Validate required fields - no fallbacks allowed
+                if not item[1]:  # platform
+                    raise ValueError(f"Post {item[0]} is missing platform information")
+                if not item[2]:  # channel_type
+                    raise ValueError(f"Post {item[0]} is missing channel_type information")
+                if not item[3]:  # content_type
+                    raise ValueError(f"Post {item[0]} is missing content_type information")
+                if not item[5]:  # content
+                    raise ValueError(f"Post {item[0]} is missing generated content")
+                if not item[6]:  # status
+                    raise ValueError(f"Post {item[0]} is missing status information")
+                
                 timeline_items.append({
                     'id': item[0],
-                    'platform': item[1] or 'facebook',
-                    'channel_type': item[2] or 'feed_post',
-                    'content_type': item[3] or 'product',
+                    'platform': item[1],
+                    'channel_type': item[2],
+                    'content_type': item[3],
                     'scheduled_timestamp': scheduled_time.isoformat() if scheduled_time else None,
-                    'content': item[5] or 'No content',
-                    'status': item[6] or 'pending',
+                    'content': item[5],
+                    'status': item[6],
                     'platform_post_id': item[7],
                     'error_message': item[8],
-                    'product_name': item[9] or 'Unknown Product',
-                    'sku': item[10] or 'N/A',
+                    'product_name': item[9],
+                    'sku': item[10],
                     'product_image': item[11],
                     'price': str(item[12]) if item[12] else None,
                     'created_at': item[13].isoformat() if item[13] else None,
@@ -424,7 +436,7 @@ def generate_product_content():
                 product_name=product['name'],
                 product_description=product['description'],
                 product_price=formatted_price,
-                product_url=product['url'] or 'https://clan.com'
+                product_url=product['url']
             )
             
             # Call LLM
@@ -3890,6 +3902,16 @@ def get_queue():
             
             queue_items = []
             for item in items:
+                # Validate required fields - no fallbacks allowed
+                if not item[8]:  # status
+                    raise ValueError(f"Queue item {item[0]} is missing status information")
+                if not item[11]:  # platform
+                    raise ValueError(f"Queue item {item[0]} is missing platform information")
+                if not item[12]:  # channel_type
+                    raise ValueError(f"Queue item {item[0]} is missing channel_type information")
+                if not item[13]:  # content_type
+                    raise ValueError(f"Queue item {item[0]} is missing content_type information")
+                
                 queue_items.append({
                     'id': item[0],
                     'product_id': item[1],
@@ -3902,9 +3924,9 @@ def get_queue():
                     'status': item[8],
                     'created_at': item[9].isoformat() if item[9] else None,
                     'updated_at': item[10].isoformat() if item[10] else None,
-                    'platform': item[11] or 'facebook',
-                    'channel_type': item[12] or 'feed_post',
-                    'content_type': item[13] or 'product',
+                    'platform': item[11],
+                    'channel_type': item[12],
+                    'content_type': item[13],
                     'scheduled_timestamp': item[14].isoformat() if item[14] else None,
                     'platform_post_id': item[15],
                     'error_message': item[16],
@@ -3961,12 +3983,12 @@ def add_to_queue():
                 except:
                     scheduled_timestamp = None
             
-            # Insert new queue item
+            # Insert new queue item - use database defaults for platform/channel/type
             cur.execute("""
                 INSERT INTO posting_queue 
                 (product_id, scheduled_date, scheduled_time, schedule_name, timezone, 
-                 generated_content, queue_order, status, platform, channel_type, content_type, scheduled_timestamp)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, 'ready', 'facebook', 'feed_post', 'product', %s)
+                 generated_content, queue_order, scheduled_timestamp)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id, created_at
             """, (product_id, scheduled_date, scheduled_time, schedule_name, timezone, 
                   generated_content, next_order, scheduled_timestamp))
@@ -3997,7 +4019,7 @@ def add_to_queue():
                     'timezone': timezone,
                     'generated_content': generated_content,
                     'queue_order': next_order,
-                    'status': 'ready',
+                    'status': 'ready',  # This will be the database default
                     'created_at': created_at.isoformat(),
                     'updated_at': created_at.isoformat(),
                     'product_name': product[0] if product else None,
@@ -4233,7 +4255,7 @@ def generate_batch_items():
                             product_name=selected_product['name'],
                             product_description=selected_product['description'],
                             product_price=formatted_price,
-                            product_url=selected_product['url'] or 'https://clan.com'
+                            product_url=selected_product['url']
                         )
                     except KeyError as e:
                         logger.error(f"Missing field in content_type for item {i+1}: {e}")
@@ -4287,12 +4309,21 @@ def generate_batch_items():
                     time_slots = ['09:00:00', '13:00:00', '17:00:00']
                     scheduled_time = time_slots[i % 3]
                     
-                    # Add to queue (using same structure as existing add_to_queue function)
+                    # Calculate scheduled_timestamp
+                    from datetime import datetime
+                    scheduled_timestamp = None
+                    if scheduled_date and scheduled_time:
+                        try:
+                            scheduled_timestamp = datetime.combine(scheduled_date, datetime.strptime(scheduled_time, '%H:%M:%S').time())
+                        except:
+                            scheduled_timestamp = None
+                    
+                    # Add to queue - use database defaults for status and platform/channel/type
                     cur.execute("""
                         INSERT INTO posting_queue 
                         (product_id, scheduled_date, scheduled_time, schedule_name, timezone, 
-                         generated_content, queue_order, status)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, 'pending')
+                         generated_content, queue_order, scheduled_timestamp)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                         RETURNING id, created_at
                     """, (
                         selected_product['id'],
@@ -4301,7 +4332,8 @@ def generate_batch_items():
                         f"Auto-generated {content_type['template_name']}",
                         'GMT',  # Default timezone
                         generated_content,
-                        current_count + i + 1
+                        current_count + i + 1,
+                        scheduled_timestamp
                     ))
                     
                     result = cur.fetchone()
