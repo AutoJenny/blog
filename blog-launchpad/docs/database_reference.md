@@ -582,3 +582,4 @@ ORDER BY post_date DESC;
 **Last Updated**: 2025-01-27  
 **Status**: **ACTIVE REFERENCE**  
 **Next Review**: After posting_queue table extensions are implemented
+
