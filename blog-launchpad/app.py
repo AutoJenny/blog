@@ -540,32 +540,58 @@ def post_to_facebook():
                 post_content = queue_item['generated_content']
                 product_image = queue_item['product_image']
                 
-                # Use Facebook Photos API to post with image
-                url = f"https://graph.facebook.com/v18.0/{page_id}/photos"
+                # Two-step approach: Upload photo first, then create feed post
+                import requests
                 
-                payload = {
-                    'message': post_content,
-                    'url': product_image,  # Use 'url' for photos endpoint
-                    'published': True,  # Force immediate publishing
+                # Step 1: Upload photo as unpublished to get media_fbid
+                upload_url = f"https://graph.facebook.com/v18.0/{page_id}/photos"
+                upload_payload = {
+                    'url': product_image,
+                    'published': 'false',  # Important: just stage it
+                    'temporary': 'false',
                     'access_token': access_token
                 }
                 
-                # Make the API call
-                import requests
-                print(f"DEBUG: Facebook API call - URL: {url}")
-                print(f"DEBUG: Facebook API call - Payload: {payload}")
-                print(f"DEBUG: Product image URL: {product_image}")
-                print(f"DEBUG: Access token being used: {access_token[:20]}...")
-                response = requests.post(url, data=payload, timeout=30)
-                print(f"DEBUG: Facebook API response - Status: {response.status_code}")
-                print(f"DEBUG: Facebook API response - Content: {response.text}")
+                print(f"DEBUG: Step 1 - Upload photo - URL: {upload_url}")
+                print(f"DEBUG: Step 1 - Upload payload: {upload_payload}")
+                upload_response = requests.post(upload_url, data=upload_payload, timeout=30)
+                print(f"DEBUG: Step 1 - Upload response - Status: {upload_response.status_code}")
+                print(f"DEBUG: Step 1 - Upload response - Content: {upload_response.text}")
                 
-                # Also try the exact same curl command that worked
-                import subprocess
-                curl_cmd = f'curl -s -X POST "{url}" -d "message={post_content}&access_token={access_token}"'
-                print(f"DEBUG: Equivalent curl command: {curl_cmd}")
-                curl_result = subprocess.run(curl_cmd, shell=True, capture_output=True, text=True)
-                print(f"DEBUG: Curl result: {curl_result.stdout}")
+                if upload_response.status_code != 200:
+                    error_data = upload_response.json() if upload_response.content else {}
+                    error_msg = error_data.get('error', {}).get('message', 'Upload failed')
+                    return jsonify({
+                        'success': False, 
+                        'error': f'Photo upload failed: {upload_response.status_code}',
+                        'details': error_msg
+                    })
+                
+                upload_result = upload_response.json()
+                media_fbid = upload_result.get('id')
+                
+                if not media_fbid:
+                    return jsonify({
+                        'success': False, 
+                        'error': 'Photo upload failed - no media_fbid returned',
+                        'details': upload_result
+                    })
+                
+                print(f"DEBUG: Step 1 - Got media_fbid: {media_fbid}")
+                
+                # Step 2: Create feed post with attached media
+                feed_url = f"https://graph.facebook.com/v18.0/{page_id}/feed"
+                feed_payload = {
+                    'message': post_content,
+                    'attached_media[0]': f'{{"media_fbid": "{media_fbid}"}}',
+                    'access_token': access_token
+                }
+                
+                print(f"DEBUG: Step 2 - Create feed post - URL: {feed_url}")
+                print(f"DEBUG: Step 2 - Feed payload: {feed_payload}")
+                response = requests.post(feed_url, data=feed_payload, timeout=30)
+                print(f"DEBUG: Step 2 - Feed response - Status: {response.status_code}")
+                print(f"DEBUG: Step 2 - Feed response - Content: {response.text}")
                 
                 if response.status_code == 200:
                     result = response.json()
@@ -579,16 +605,16 @@ def post_to_facebook():
                     """, (facebook_post_id, item_id))
                     
                     # Also update daily_posts if it exists
-            cur.execute("""
-                UPDATE daily_posts 
-                SET status = 'posted', posted_at = NOW()
-                WHERE product_id = %s AND post_date = %s
+                    cur.execute("""
+                        UPDATE daily_posts 
+                        SET status = 'posted', posted_at = NOW()
+                        WHERE product_id = %s AND post_date = %s
                     """, (queue_item['product_id'], datetime.now().date()))
                     
-            conn.commit()
-            
-            return jsonify({
-                'success': True, 
+                    conn.commit()
+                    
+                    return jsonify({
+                        'success': True, 
                         'message': 'Post published successfully to Facebook',
                         'platform_post_id': facebook_post_id,
                         'facebook_response': result
@@ -652,32 +678,58 @@ def post_to_facebook():
                 post_content = content or f"Check out {product['name']} - £{product['price']}"
                 product_image = product['image_url']
                 
-                # Use Facebook Photos API to post with image
-                url = f"https://graph.facebook.com/v18.0/{page_id}/photos"
+                # Two-step approach: Upload photo first, then create feed post
+                import requests
                 
-                payload = {
-                    'message': post_content,
-                    'url': product_image,  # Use 'url' for photos endpoint
-                    'published': True,  # Force immediate publishing
+                # Step 1: Upload photo as unpublished to get media_fbid
+                upload_url = f"https://graph.facebook.com/v18.0/{page_id}/photos"
+                upload_payload = {
+                    'url': product_image,
+                    'published': 'false',  # Important: just stage it
+                    'temporary': 'false',
                     'access_token': access_token
                 }
                 
-                # Make the API call
-                import requests
-                print(f"DEBUG: Facebook API call - URL: {url}")
-                print(f"DEBUG: Facebook API call - Payload: {payload}")
-                print(f"DEBUG: Product image URL: {product_image}")
-                print(f"DEBUG: Access token being used: {access_token[:20]}...")
-                response = requests.post(url, data=payload, timeout=30)
-                print(f"DEBUG: Facebook API response - Status: {response.status_code}")
-                print(f"DEBUG: Facebook API response - Content: {response.text}")
+                print(f"DEBUG: Step 1 - Upload photo - URL: {upload_url}")
+                print(f"DEBUG: Step 1 - Upload payload: {upload_payload}")
+                upload_response = requests.post(upload_url, data=upload_payload, timeout=30)
+                print(f"DEBUG: Step 1 - Upload response - Status: {upload_response.status_code}")
+                print(f"DEBUG: Step 1 - Upload response - Content: {upload_response.text}")
                 
-                # Also try the exact same curl command that worked
-                import subprocess
-                curl_cmd = f'curl -s -X POST "{url}" -d "message={post_content}&access_token={access_token}"'
-                print(f"DEBUG: Equivalent curl command: {curl_cmd}")
-                curl_result = subprocess.run(curl_cmd, shell=True, capture_output=True, text=True)
-                print(f"DEBUG: Curl result: {curl_result.stdout}")
+                if upload_response.status_code != 200:
+                    error_data = upload_response.json() if upload_response.content else {}
+                    error_msg = error_data.get('error', {}).get('message', 'Upload failed')
+                    return jsonify({
+                        'success': False, 
+                        'error': f'Photo upload failed: {upload_response.status_code}',
+                        'details': error_msg
+                    })
+                
+                upload_result = upload_response.json()
+                media_fbid = upload_result.get('id')
+                
+                if not media_fbid:
+                    return jsonify({
+                        'success': False, 
+                        'error': 'Photo upload failed - no media_fbid returned',
+                        'details': upload_result
+                    })
+                
+                print(f"DEBUG: Step 1 - Got media_fbid: {media_fbid}")
+                
+                # Step 2: Create feed post with attached media
+                feed_url = f"https://graph.facebook.com/v18.0/{page_id}/feed"
+                feed_payload = {
+                    'message': post_content,
+                    'attached_media[0]': f'{{"media_fbid": "{media_fbid}"}}',
+                    'access_token': access_token
+                }
+                
+                print(f"DEBUG: Step 2 - Create feed post - URL: {feed_url}")
+                print(f"DEBUG: Step 2 - Feed payload: {feed_payload}")
+                response = requests.post(feed_url, data=feed_payload, timeout=30)
+                print(f"DEBUG: Step 2 - Feed response - Status: {response.status_code}")
+                print(f"DEBUG: Step 2 - Feed response - Content: {response.text}")
                 
                 if response.status_code == 200:
                     result = response.json()
@@ -706,7 +758,7 @@ def post_to_facebook():
                         'success': False, 
                         'error': f'Facebook API error: {response.status_code}',
                         'details': error_msg
-            })
+                    })
             
     except Exception as e:
         logger.error(f"Error posting to Facebook: {e}")
