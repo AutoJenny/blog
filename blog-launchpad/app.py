@@ -1217,6 +1217,11 @@ def facebook_feed_post_redirect():
     """Redirect for backward compatibility to the generic route."""
     return redirect(url_for('channel_config', platform_name='facebook', channel_type='feed_post'))
 
+@app.route('/syndication/facebook/daily-product-posts')
+def daily_product_posts_redirect():
+    """Redirect to the daily product posts page."""
+    return redirect('/daily-product-posts')
+
 @app.route('/syndication/posting')
 def syndication_posting():
     """Platform-agnostic posting hub."""
