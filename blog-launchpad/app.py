@@ -254,13 +254,18 @@ def get_unified_timeline():
 
 @app.route('/daily-product-posts')
 def daily_product_posts():
-    """Daily Product Posts management page."""
+    """Daily Product Posts management page - redirect to new nested route."""
+    return redirect('/syndication/facebook/daily-product-posts')
+
+@app.route('/syndication/facebook/daily-product-posts')
+def facebook_daily_product_posts():
+    """Facebook Daily Product Posts management page."""
     return render_template('daily_product_posts.html')
 
 @app.route('/daily-product-posts/select')
 def daily_product_posts_select():
     """Redirect to main daily product posts page."""
-    return redirect('/daily-product-posts')
+    return redirect('/syndication/facebook/daily-product-posts')
 
 # Daily Product Posts API Endpoints
 @app.route('/api/daily-product-posts/test-categories', methods=['GET'])
