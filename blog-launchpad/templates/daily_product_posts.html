@@ -476,6 +476,49 @@
             50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.8); }
             100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
         }
+        
+        /* Breadcrumb styling */
+        .breadcrumb-nav {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #4a5568;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .breadcrumb {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 0;
+            margin: 0;
+            list-style: none;
+            background: transparent;
+        }
+        
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+            color: #a0aec0;
+        }
+        
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: ">";
+            color: #6b7280;
+            margin: 0 0.5rem;
+        }
+        
+        .breadcrumb-item.active {
+            color: #e0e0e0;
+        }
+        
+        .breadcrumb-item a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: #a5b4fc;
+        }
     </style>
 </head>
 <body>
@@ -483,20 +526,20 @@
     
     <div class="container">
         <!-- Breadcrumb Navigation -->
-        <div class="breadcrumb-nav" style="margin-bottom: 20px;">
+        <div class="breadcrumb-nav">
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0" style="background: transparent; padding: 0;">
+                <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item">
-                        <a href="/syndication" style="color: #a5b4fc; text-decoration: none;">
+                        <a href="/syndication">
                             <i class="fas fa-home me-1"></i>Syndication
                         </a>
                     </li>
                     <li class="breadcrumb-item">
-                        <a href="/syndication/facebook" style="color: #a5b4fc; text-decoration: none;">
+                        <a href="/syndication/facebook">
                             <i class="fab fa-facebook me-1"></i>Facebook
                         </a>
                     </li>
-                    <li class="breadcrumb-item active" aria-current="page" style="color: #e0e0e0;">
+                    <li class="breadcrumb-item active" aria-current="page">
                         <i class="fas fa-shopping-bag me-1"></i>Daily Product Posts
                     </li>
                 </ol>
