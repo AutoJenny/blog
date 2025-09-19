@@ -1222,6 +1222,53 @@ def facebook_feed_post_redirect():
     """Redirect for backward compatibility to the generic route."""
     return redirect(url_for('channel_config', platform_name='facebook', channel_type='feed_post'))
 
+@app.route('/syndication/facebook/blog-posts-backup')
+def facebook_blog_posts_backup():
+    """Backup version of Facebook blog posts page."""
+    # Create mock data for the backup template
+    platform = {
+        'display_name': 'Facebook',
+        'name': 'facebook',
+        'id': 1,
+        'description': 'Facebook platform',
+        'status': 'active',
+        'development_status': 'complete',
+        'total_posts_count': 0,
+        'success_rate_percentage': 0.0,
+        'average_response_time_ms': 0,
+        'last_activity_at': None,
+        'last_post_at': None,
+        'last_api_call_at': None
+    }
+    channel_type = {
+        'display_name': 'Feed Post',
+        'id': 1,
+        'name': 'feed_post',
+        'description': 'Facebook feed post'
+    }
+    process = {
+        'id': 1,
+        'process_name': 'facebook_feed_post',
+        'display_name': 'Facebook Feed Post',
+        'description': 'Facebook feed post process',
+        'development_status': 'complete',
+        'priority': 1.0,
+        'is_active': True,
+        'channel_type_name': 'feed_post',
+        'channel_display_name': 'Feed Post'
+    }
+    configs_count = 0
+    execution_data = []
+    requirements = []
+    
+    return render_template('facebook_feed_post_config_backup.html', 
+                         platform=platform, 
+                         channel_type=channel_type,
+                         process=process,
+                         configs_count=configs_count,
+                         execution_data=execution_data,
+                         requirements=requirements)
+
 @app.route('/syndication/posting')
 def syndication_posting():
     """Platform-agnostic posting hub."""
