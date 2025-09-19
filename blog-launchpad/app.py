@@ -4764,6 +4764,9 @@ def get_queue():
                        cp.sku, cp.price, cp.category_ids as categories
                 FROM posting_queue pq
                 LEFT JOIN clan_products cp ON pq.product_id = cp.id
+                WHERE pq.platform = 'facebook' 
+                AND pq.channel_type = 'feed_post' 
+                AND pq.content_type = 'product'
                 ORDER BY pq.scheduled_timestamp ASC, pq.created_at ASC
             """)
             
