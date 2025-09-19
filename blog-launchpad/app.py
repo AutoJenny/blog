@@ -1415,6 +1415,61 @@ def get_published_posts():
     except Exception as e:
         return {'error': str(e)}, 500
 
+@app.route('/api/syndication/posts')
+def get_posts():
+    """Get all published blog posts for manual selection"""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                cur.execute("""
+                    SELECT id, title, created_at, updated_at, status, slug
+                    FROM post 
+                    WHERE status = 'published'
+                    ORDER BY created_at DESC
+                """)
+                posts = cur.fetchall()
+                
+                return jsonify({
+                    'status': 'success',
+                    'posts': [dict(post) for post in posts]
+                })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/syndication/posts/<int:post_id>')
+def get_post_details(post_id):
+    """Get details for a specific blog post"""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                cur.execute("""
+                    SELECT id, title, created_at, updated_at, status, slug
+                    FROM post 
+                    WHERE id = %s AND status = 'published'
+                """, (post_id,))
+                post = cur.fetchone()
+                
+                if post:
+                    # Get section count
+                    cur.execute("""
+                        SELECT COUNT(*) as section_count
+                        FROM post_section 
+                        WHERE post_id = %s
+                    """, (post_id,))
+                    section_count = cur.fetchone()['section_count']
+                    
+                    post_dict = dict(post)
+                    post_dict['section_count'] = section_count
+                    
+                    return jsonify({
+                        'status': 'success',
+                        'post': post_dict
+                    })
+                else:
+                    return jsonify({'error': 'Post not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/syndication/post-sections/<int:post_id>')
 def get_post_sections(post_id):
     """Get all sections for a specific post."""
@@ -2106,7 +2161,7 @@ def get_post_sections_with_images(post_id):
         return sections
 
 @app.route('/api/posts')
-def get_posts():
+def get_all_posts():
     """Get all posts for the launchpad."""
     with get_db_connection() as conn:
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
