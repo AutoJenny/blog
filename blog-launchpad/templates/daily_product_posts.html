@@ -463,6 +463,19 @@
         .queue-item-table-delete:hover {
             background: #dc2626;
         }
+        
+        /* Highlight styles for URL parameter highlighting */
+        .queue-item-table.highlighted {
+            border: 2px solid #3b82f6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            animation: highlightPulse 2s ease-in-out;
+        }
+        
+        @keyframes highlightPulse {
+            0% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.8); }
+            100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+        }
     </style>
 </head>
 <body>
@@ -1086,8 +1099,93 @@
             }
         }
         
+        // Handle URL parameters for accordion expansion and item highlighting
+        function handleUrlParameters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const expand = urlParams.get('expand');
+            const highlight = urlParams.get('highlight');
+            const action = urlParams.get('action');
+            
+            if (expand === 'posting-queue') {
+                // Expand the posting queue accordion
+                const queueAccordion = document.querySelector('[data-accordion="posting-queue"]');
+                if (queueAccordion) {
+                    queueAccordion.classList.add('active');
+                    const content = queueAccordion.querySelector('.section-content');
+                    if (content) {
+                        content.style.display = 'block';
+                    }
+                    // Also trigger the accordion toggle
+                    const chevron = queueAccordion.querySelector('.accordion-chevron');
+                    if (chevron) {
+                        chevron.style.transform = 'rotate(90deg)';
+                    }
+                }
+                
+                // Load queue data if not already loaded
+                loadQueueData();
+                
+                // Highlight specific item if provided
+                if (highlight) {
+                    setTimeout(() => {
+                        highlightQueueItem(highlight, action);
+                    }, 1000); // Wait for data to load
+                }
+            }
+        }
+        
+        // Highlight a specific queue item
+        function highlightQueueItem(itemId, action) {
+            const item = document.querySelector(`[data-item-id="${itemId}"]`);
+            if (item) {
+                // Add highlight class
+                item.classList.add('highlighted');
+                
+                // Scroll to item
+                item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Show action-specific message
+                if (action === 'edit') {
+                    showNotification('Item highlighted for editing', 'info');
+                } else if (action === 'reschedule') {
+                    showNotification('Item highlighted for rescheduling', 'info');
+                }
+                
+                // Remove highlight after 5 seconds
+                setTimeout(() => {
+                    item.classList.remove('highlighted');
+                }, 5000);
+            }
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'info' ? '#3b82f6' : '#ef4444'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                z-index: 1000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
         // Load today's status on page load
         document.addEventListener('DOMContentLoaded', async () => {
+            // Handle URL parameters for accordion expansion and item highlighting
+            handleUrlParameters();
+            
             // Load categories first
             await loadCategories();
             
