@@ -582,178 +582,33 @@
             }
         }
 
-        // Automated Selection Functionality
-        function loadNextSection() {
+        // Manual Post Selection Functionality
+        function loadPosts() {
             const postSelector = document.getElementById('postSelector');
-            const postDetails = document.getElementById('postDetails');
-            const sectionsList = document.getElementById('sectionsList');
             
             // Show loading state
-            postSelector.innerHTML = '<option value="">Loading next section...</option>';
-            postDetails.classList.add('d-none');
-            sectionsList.classList.add('d-none');
+            postSelector.innerHTML = '<option value="">Loading posts...</option>';
             
-            // Get next unprocessed section for Facebook feed_post
-            fetch('/api/syndication/next-section?platform_id=1&channel_type_id=1')
+            // Get all published posts
+            fetch('/api/syndication/posts')
                 .then(response => response.json())
                 .then(data => {
-                    if (data.status === 'success' && data.next_section) {
-                        const section = data.next_section;
-                        
-                        // Update post selector to show the selected post
-                        postSelector.innerHTML = `<option value="${section.post_id}" selected>${section.post_title} (ID: ${section.post_id})</option>`;
-                        
-                        // Update post details
-                        updatePostDetails({
-                            id: section.post_id,
-                            title: section.post_title,
-                            created_at: section.post_created_at,
-                            updated_at: section.post_created_at,
-                            status: 'published',
-                            slug: 'auto-selected',
-                            section_count: 'Auto-selected'
+                    if (data.status === 'success' && data.posts && data.posts.length > 0) {
+                        postSelector.innerHTML = '<option value="">Select a post...</option>';
+                        data.posts.forEach(post => {
+                            const option = document.createElement('option');
+                            option.value = post.id;
+                            option.textContent = `${post.title} (ID: ${post.id})`;
+                            postSelector.appendChild(option);
                         });
-                        
-                        // Show the specific section
-                        showSelectedSection(section);
-                        
-                        // Mark as processing
-                        markSectionAsProcessing(section);
-                        
                     } else {
-                        // No unprocessed sections found
-                        postSelector.innerHTML = '<option value="">No unprocessed sections found</option>';
-                        showNoSectionsMessage();
+                        postSelector.innerHTML = '<option value="">No posts found</option>';
                     }
                 })
                 .catch(error => {
-                    console.error('Error loading next section:', error);
-                    postSelector.innerHTML = '<option value="">Error loading next section</option>';
+                    console.error('Error loading posts:', error);
+                    postSelector.innerHTML = '<option value="">Error loading posts</option>';
                 });
-        }
-        
-        function showSelectedSection(section) {
-            const sectionsContainer = document.getElementById('sectionsContainer');
-            const sectionsList = document.getElementById('sectionsList');
-            
-            sectionsContainer.innerHTML = `
-                <div class="mb-2 p-3 bg-success border border-success rounded">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong class="text-white">Section ${section.section_order}: ${section.section_heading || 'Untitled'}</strong>
-                            <small class="text-white d-block">${section.section_description ? section.section_description.substring(0, 100) + '...' : 'No description'}</small>
-                            <small class="text-white d-block">Status: <span class="badge bg-warning">${section.status}</span></small>
-                        </div>
-                        <div>
-                            <span class="badge bg-info">${section.section_id}</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            sectionsList.classList.remove('d-none');
-        }
-        
-        function showNoSectionsMessage() {
-            const sectionsContainer = document.getElementById('sectionsContainer');
-            const sectionsList = document.getElementById('sectionsList');
-            
-            sectionsContainer.innerHTML = `
-                <div class="text-center p-4">
-                    <i class="fas fa-check-circle text-success" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                    <h5 class="text-success">All Sections Processed!</h5>
-                    <p class="text-muted">All available blog post sections have been processed for Facebook feed posts.</p>
-                    <button class="btn btn-primary" onclick="loadNextSection()">
-                        <i class="fas fa-refresh me-2"></i>Check for New Sections
-                    </button>
-                </div>
-            `;
-            
-            sectionsList.classList.remove('d-none');
-        }
-        
-        function markSectionAsProcessing(section) {
-            fetch('/api/syndication/mark-processing', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    post_id: section.post_id,
-                    section_id: section.section_id,
-                    platform_id: section.platform_id,
-                    channel_type_id: section.channel_type_id,
-                    process_id: section.process_id
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    console.log('Section marked as processing');
-                } else {
-                    console.error('Failed to mark section as processing:', data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error marking section as processing:', error);
-            });
-        }
-        
-        function markSectionAsCompleted(section) {
-            fetch('/api/syndication/mark-completed', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    post_id: section.post_id,
-                    section_id: section.section_id,
-                    platform_id: section.platform_id,
-                    channel_type_id: section.channel_type_id,
-                    process_id: section.process_id
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    console.log('Section marked as completed');
-                    // Optionally reload to get next section
-                    setTimeout(() => loadNextSection(), 2000);
-                } else {
-                    console.error('Failed to mark section as completed:', data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error marking section as completed:', error);
-            });
-        }
-        
-        function markSectionAsFailed(section, errorMessage) {
-            fetch('/api/syndication/mark-failed', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    post_id: section.post_id,
-                    section_id: section.section_id,
-                    platform_id: section.platform_id,
-                    channel_type_id: section.channel_type_id,
-                    process_id: section.process_id,
-                    error_message: errorMessage
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    console.log('Section marked as failed');
-                } else {
-                    console.error('Failed to mark section as failed:', data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error marking section as failed:', error);
-            });
         }
 
         function loadPostSections(postId) {
@@ -809,18 +664,30 @@
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
-            // Load next unprocessed section automatically
-            loadNextSection();
+            // Load all posts for manual selection
+            loadPosts();
             
-            // Add refresh button functionality
-            const refreshButton = document.createElement('button');
-            refreshButton.className = 'btn btn-sm btn-outline-primary ms-2';
-            refreshButton.innerHTML = '<i class="fas fa-refresh me-1"></i>Refresh';
-            refreshButton.onclick = loadNextSection;
-            
-            // Add refresh button to the post selector area
-            const postSelectorContainer = document.querySelector('label[for="postSelector"]').parentElement;
-            postSelectorContainer.appendChild(refreshButton);
+            // Add event listener for post selection
+            document.getElementById('postSelector').addEventListener('change', function() {
+                const postId = this.value;
+                if (postId) {
+                    loadPostSections(postId);
+                    // Load post details
+                    fetch(`/api/syndication/posts/${postId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success' && data.post) {
+                                updatePostDetails(data.post);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error loading post details:', error);
+                        });
+                } else {
+                    document.getElementById('postDetails').classList.add('d-none');
+                    document.getElementById('sectionsList').classList.add('d-none');
+                }
+            });
         });
     </script>
 </body>
