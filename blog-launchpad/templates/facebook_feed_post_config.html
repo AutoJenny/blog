@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -183,8 +183,25 @@
             margin-bottom: 2rem;
         }
         
+        .breadcrumb {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 0;
+            margin: 0;
+            list-style: none;
+            background: transparent;
+        }
+        
         .breadcrumb-item {
+            display: flex;
+            align-items: center;
             color: #a0aec0;
+        }
+        
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: ">";
+            color: #6b7280;
+            margin: 0 0.5rem;
         }
         
         .breadcrumb-item.active {
@@ -262,6 +279,24 @@
         
         .accordion-chevron.expanded {
             transform: rotate(90deg);
+        }
+        
+        /* Header Styles */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
         }
         
         .status-badge {
@@ -349,9 +384,19 @@
             z-index: 1000;
         }
         
-        /* Add some margin to the main content to account for header */
-        .container-fluid {
-            margin-top: 0;
+        /* Body styling to match daily product posts */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+        
+        /* Container styling to match daily product posts */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
         }
         
         /* Additional header-related classes */
@@ -387,10 +432,10 @@
         }
     </style>
 </head>
-<body style="background-color: #0f1419; color: #e0e0e0;">
+<body>
     {% include 'shared/header.html' %}
     
-    <div class="container-fluid">
+    <div class="container">
         <!-- Breadcrumb Navigation -->
         <div class="breadcrumb-nav">
             <nav aria-label="breadcrumb">
@@ -408,6 +453,12 @@
             </nav>
         </div>
         
+        <!-- Page Header -->
+        <div class="header">
+            <h1>📰 Blog Posts</h1>
+            <p>Automated Facebook posts featuring blog content and articles</p>
+        </div>
+        
         <!-- Blog Post Management Accordions -->
         <!-- Item Selection Section -->
         <div class="section-card">
@@ -420,6 +471,21 @@
                 <div style="text-align: center; color: #94a3b8; padding: 40px 20px; font-style: italic;">
                     <i class="fas fa-newspaper" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
                     Item selection functionality will be implemented here
+                </div>
+            </div>
+        </div>
+        
+        <!-- Content Generation Section -->
+        <div class="section-card">
+            <div class="section-title" onclick="toggleAccordion('content-generation')">
+                <i class="fas fa-chevron-right accordion-chevron" id="content-generation-chevron"></i>
+                <i class="fas fa-robot"></i>
+                AI Content Generation
+            </div>
+            <div class="section-content" id="content-generation-content">
+                <div style="text-align: center; color: #94a3b8; padding: 40px 20px; font-style: italic;">
+                    <i class="fas fa-robot" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                    Content generation functionality will be implemented here
                 </div>
             </div>
         </div>
@@ -445,7 +511,7 @@
         </div>
         
         <!-- Posting Queue Section -->
-        <div class="section-card">
+        <div class="section-card" data-accordion="posting-queue">
             <div class="section-title with-right-content" onclick="toggleAccordion('posting-queue')">
                 <div class="section-title-left">
                     <i class="fas fa-chevron-right accordion-chevron" id="posting-queue-chevron"></i>
@@ -460,21 +526,6 @@
                 <div style="text-align: center; color: #94a3b8; padding: 40px 20px; font-style: italic;">
                     <i class="fas fa-list-alt" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
                     Posting queue functionality will be implemented here
-                </div>
-            </div>
-        </div>
-        
-        <!-- Content Generation Section -->
-        <div class="section-card">
-            <div class="section-title" onclick="toggleAccordion('content-generation')">
-                <i class="fas fa-chevron-right accordion-chevron" id="content-generation-chevron"></i>
-                <i class="fas fa-magic"></i>
-                Content Generation
-            </div>
-            <div class="section-content" id="content-generation-content">
-                <div style="text-align: center; color: #94a3b8; padding: 40px 20px; font-style: italic;">
-                    <i class="fas fa-magic" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
-                    Content generation functionality will be implemented here
                 </div>
             </div>
         </div>
