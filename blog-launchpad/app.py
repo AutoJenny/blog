@@ -5194,7 +5194,7 @@ def generate_batch_items():
                         INSERT INTO posting_queue 
                         (product_id, scheduled_date, scheduled_time, schedule_name, timezone, 
                          generated_content, queue_order, status, platform, channel_type, content_type, scheduled_timestamp)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, 'ready', 'facebook', 'feed_post', %s, %s)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, 'ready', 'facebook', 'feed_post', 'product', %s)
                         RETURNING id, created_at
                     """, (
                         selected_product['id'],
@@ -5204,7 +5204,6 @@ def generate_batch_items():
                         'GMT',  # Default timezone
                         generated_content,
                         current_count + i + 1,
-                        content_type['template_name'],  # Use actual content type from template
                         scheduled_timestamp
                     ))
                     
