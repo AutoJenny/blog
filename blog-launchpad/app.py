@@ -425,9 +425,6 @@ def generate_product_content():
             if not template:
                 return jsonify({'success': False, 'error': 'Content template not found'})
             
-            # Format price with pound sign
-            formatted_price = f"£{product['price']}" if product['price'] else "Price on request"
-            
             # Prepare prompt with URL for call to action
             if not product['description']:
                 raise ValueError(f"Product {product['name']} has no description")
@@ -435,7 +432,6 @@ def generate_product_content():
             prompt = template['template_prompt'].format(
                 product_name=product['name'],
                 product_description=product['description'],
-                product_price=formatted_price,
                 product_url=product['url']
             )
             
@@ -4585,7 +4581,6 @@ def generate_batch_items():
                     logger.debug(f"Selected content type: {content_type}")
                     
                     # Generate content using Ollama - MUST succeed or skip this item
-                    formatted_price = f"£{selected_product['price']}" if selected_product['price'] else "Price on request"
                     
                     # Prepare prompt with URL for call to action
                     try:
@@ -4595,7 +4590,6 @@ def generate_batch_items():
                         prompt = content_type['template_prompt'].format(
                             product_name=selected_product['name'],
                             product_description=selected_product['description'],
-                            product_price=formatted_price,
                             product_url=selected_product['url']
                         )
                     except KeyError as e:
@@ -4675,7 +4669,7 @@ def generate_batch_items():
                         'GMT',  # Default timezone
                         generated_content,
                         current_count + i + 1,
-                        content_type['name'],  # Use actual content type from template
+                        content_type['template_name'],  # Use actual content type from template
                         scheduled_timestamp
                     ))
                     
