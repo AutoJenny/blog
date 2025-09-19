@@ -4625,7 +4625,10 @@ def get_all_schedules():
             cur.execute("""
                 SELECT id, name, time, timezone, days, is_active, created_at, updated_at
                 FROM daily_posts_schedule
-                WHERE is_active = true
+                WHERE is_active = true 
+                AND platform = 'facebook' 
+                AND channel_type = 'feed_post' 
+                AND content_type = 'product'
                 ORDER BY display_order ASC, created_at ASC
             """)
             
