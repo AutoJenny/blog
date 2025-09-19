@@ -4592,7 +4592,7 @@ def get_blog_post_schedules():
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
                 cur.execute("""
                     SELECT id, name, days, time, timezone, is_active as active, created_at
-                    FROM daily_posts_schedule 
+                    FROM blog_post_schedules 
                     WHERE is_active = true
                     ORDER BY created_at DESC
                 """)
@@ -4634,7 +4634,7 @@ def create_blog_post_schedule():
         with get_db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    INSERT INTO daily_posts_schedule (name, days, time, timezone, is_active)
+                    INSERT INTO blog_post_schedules (name, days, time, timezone, is_active)
                     VALUES (%s, %s, %s, %s, %s)
                     RETURNING id
                 """, (
@@ -4686,7 +4686,7 @@ def update_blog_post_schedule(schedule_id):
                 update_values.append(schedule_id)
                 
                 cur.execute(f"""
-                    UPDATE daily_posts_schedule 
+                    UPDATE blog_post_schedules 
                     SET {', '.join(update_fields)}, updated_at = CURRENT_TIMESTAMP
                     WHERE id = %s
                     RETURNING id
@@ -4714,7 +4714,7 @@ def delete_blog_post_schedule(schedule_id):
         with get_db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    DELETE FROM daily_posts_schedule 
+                    DELETE FROM blog_post_schedules 
                     WHERE id = %s
                     RETURNING id
                 """, (schedule_id,))
