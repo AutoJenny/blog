@@ -39,84 +39,6 @@
             opacity: 0.9;
         }
         
-        .command-center-panel {
-            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-            border: 1px solid #475569;
-            border-radius: 16px;
-            padding: 30px;
-            margin-bottom: 40px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
-        
-        .command-center-panel:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.4);
-            text-decoration: none;
-            color: inherit;
-        }
-        
-        .command-center-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .command-center-info h2 {
-            font-size: 2rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #f1f5f9;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .command-center-info p {
-            font-size: 1.1rem;
-            color: #94a3b8;
-            margin: 0;
-        }
-        
-        .command-center-arrow {
-            font-size: 2rem;
-            color: #f59e0b;
-            transition: transform 0.3s ease;
-        }
-        
-        .command-center-panel:hover .command-center-arrow {
-            transform: translateX(5px);
-        }
-        
-        .kpi-preview {
-            display: flex;
-            gap: 20px;
-            margin-top: 20px;
-            opacity: 0.7;
-        }
-        
-        .kpi-item {
-            text-align: center;
-        }
-        
-        .kpi-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #10b981;
-            margin-bottom: 5px;
-        }
-        
-        .kpi-label {
-            font-size: 0.8rem;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
         .section-card {
             background: #1e293b;
             border: 1px solid #334155;
@@ -513,18 +435,6 @@
             display: block;
         }
         
-        .highlighted-item {
-            background: linear-gradient(90deg, #3b82f6 0%, #1e40af 100%) !important;
-            border: 2px solid #60a5fa !important;
-            animation: highlightPulse 2s ease-in-out;
-        }
-        
-        @keyframes highlightPulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-            100% { transform: scale(1); }
-        }
-        
         .queue-item-table-content-text {
             color: #e2e8f0;
             font-size: 0.85rem;
@@ -567,18 +477,18 @@
         <!-- Product Selection Section -->
         <div class="section-card">
             <div class="section-title" onclick="toggleAccordion('product-selection')">
-                    <i class="fas fa-shopping-bag"></i>
-                    Product Selection
+                <i class="fas fa-shopping-bag"></i>
+                Product Selection
                 <i class="fas fa-chevron-right accordion-chevron" id="product-selection-chevron"></i>
             </div>
             <div class="section-content" id="product-selection-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <div></div>
                     <button id="update-products-btn" class="btn btn-secondary">
-                    <i class="fas fa-sync-alt"></i>
-                    Check for Updates
-                </button>
-            </div>
+                        <i class="fas fa-sync-alt"></i>
+                        Check for Updates
+                    </button>
+                </div>
             
             <!-- Available Categories Accordion -->
             <div style="background: #23273a; border: 1px solid #475569; border-radius: 8px; margin-bottom: 20px;">
@@ -638,25 +548,25 @@
                     </div>
                     <div id="update-progress-text" style="color: #94a3b8; font-size: 0.8rem; margin-top: 5px; text-align: center;"></div>
                 </div>
-                </div>
+            </div>
             </div>
         </div>
         
         <!-- Content Generation Section -->
         <div class="section-card">
             <div class="section-title" onclick="toggleAccordion('content-generation')">
-                    <i class="fas fa-robot"></i>
-                    AI Content Generation
+                <i class="fas fa-robot"></i>
+                AI Content Generation
                 <i class="fas fa-chevron-right accordion-chevron" id="content-generation-chevron"></i>
             </div>
             <div class="section-content" id="content-generation-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <div></div>
                     <button id="start-ollama-btn" class="btn btn-secondary">
-                    <i class="fas fa-play"></i>
-                    Start Ollama
-                </button>
-            </div>
+                        <i class="fas fa-play"></i>
+                        Start Ollama
+                    </button>
+                </div>
             
             <div class="content-type-buttons">
                 <button class="content-type-btn active" data-type="feature">Feature Focus</button>
@@ -923,11 +833,6 @@
         // Post now
         postNowBtn.addEventListener('click', async () => {
             if (!selectedProduct || !generatedContent) return;
-            
-            // Show warning before posting live
-            if (!confirm('⚠️ WARNING: This will post LIVE to your Facebook page!\n\nAre you sure you want to publish this post now?')) {
-                return;
-            }
             
             postNowBtn.classList.add('loading');
             postNowBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Posting...';
@@ -1217,94 +1122,7 @@
             } catch (error) {
                 console.error('Error loading today\'s status:', error);
             }
-            
-            // Handle URL parameters for queue expansion and highlighting
-            handleUrlParams();
         });
-        
-        // Handle URL parameters for queue expansion and item highlighting
-        function handleUrlParams() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const expand = urlParams.get('expand');
-            const highlight = urlParams.get('highlight');
-            const action = urlParams.get('action');
-            
-            if (expand === 'posting-queue') {
-                // Expand the posting queue accordion
-                setTimeout(() => {
-                    const content = document.getElementById('posting-queue-content');
-                    const chevron = document.getElementById('posting-queue-chevron');
-                    
-                    if (content && chevron) {
-                        content.classList.add('expanded');
-                        chevron.classList.add('expanded');
-                        
-                        // Scroll to the queue section
-                        content.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        
-                        // Highlight specific item if provided
-                        if (highlight) {
-                            setTimeout(() => {
-                                highlightQueueItem(highlight, action);
-                            }, 1000); // Wait for queue to load
-                        }
-                    }
-                }, 100);
-            }
-        }
-        
-        // Highlight a specific queue item
-        function highlightQueueItem(itemId, action) {
-            const itemElement = document.querySelector(`.queue-item-table[data-item-id="${itemId}"]`);
-            if (itemElement) {
-                // Add highlight class
-                itemElement.classList.add('highlighted-item');
-                
-                // Scroll to the item
-                itemElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
-                // Show action-specific message
-                if (action === 'edit') {
-                    showNotification('Item highlighted for editing. Click the edit button to modify this post.', 'info');
-                } else if (action === 'reschedule') {
-                    showNotification('Item highlighted for rescheduling. Drag to reorder or click to edit schedule.', 'info');
-                }
-                
-                // Remove highlight after 5 seconds
-                setTimeout(() => {
-                    itemElement.classList.remove('highlighted-item');
-                }, 5000);
-            } else {
-                console.log('Item not found in queue, it may not be loaded yet');
-            }
-        }
-        
-        // Show notification
-        function showNotification(message, type = 'info') {
-            // Create notification element
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: ${type === 'info' ? '#3b82f6' : '#10b981'};
-                color: white;
-                padding: 15px 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                z-index: 1000;
-                max-width: 400px;
-                font-size: 0.9rem;
-            `;
-            notification.textContent = message;
-            
-            document.body.appendChild(notification);
-            
-            // Remove after 4 seconds
-            setTimeout(() => {
-                notification.remove();
-            }, 4000);
-        }
         
         // Schedule Management Functions
         function initializeScheduleControls() {
