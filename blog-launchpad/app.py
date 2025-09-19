@@ -480,9 +480,46 @@ def generate_product_content():
         logger.error(f"Error generating content: {e}")
         return jsonify({'success': False, 'error': str(e)})
 
+def post_to_facebook_page(page_id, access_token, post_content, product_image, page_name=""):
+    """Helper function to post to a single Facebook page."""
+    import requests
+    
+    feed_url = f"https://graph.facebook.com/v18.0/{page_id}/feed"
+    feed_payload = {
+        'message': post_content,
+        'link': product_image,
+        'published': True,
+        'access_token': access_token
+    }
+    
+    print(f"DEBUG: Posting to {page_name} (Page ID: {page_id})")
+    print(f"DEBUG: Facebook API call - URL: {feed_url}")
+    print(f"DEBUG: Product image URL: {product_image}")
+    print(f"DEBUG: Access token being used: {access_token[:20]}...")
+    
+    response = requests.post(feed_url, data=feed_payload, timeout=30)
+    print(f"DEBUG: Facebook API response - Status: {response.status_code}")
+    print(f"DEBUG: Facebook API response - Content: {response.text}")
+    
+    if response.status_code == 200:
+        result = response.json()
+        return {
+            'success': True,
+            'post_id': result.get('id'),
+            'response': result
+        }
+    else:
+        error_data = response.json() if response.content else {}
+        error_msg = error_data.get('error', {}).get('message', 'Unknown Facebook API error')
+        return {
+            'success': False,
+            'error': f'Facebook API error: {response.status_code}',
+            'details': error_msg
+        }
+
 @app.route('/api/daily-product-posts/post-now', methods=['POST'])
 def post_to_facebook():
-    """Post content to Facebook with product image."""
+    """Post content to Facebook with product image - posts to both pages."""
     try:
         data = request.get_json()
         
@@ -510,7 +547,7 @@ def post_to_facebook():
                 if not queue_item:
                     return jsonify({'success': False, 'error': 'Queue item not found'})
                 
-                # Get Facebook credentials
+                # Get Facebook credentials for both pages
                 cur.execute("""
                     SELECT credential_key, credential_value
                     FROM platform_credentials 
@@ -524,47 +561,67 @@ def post_to_facebook():
                 for cred in credentials:
                     creds[cred['credential_key']] = cred['credential_value']
                 
-                if not creds.get('page_access_token'):
-                    return jsonify({'success': False, 'error': 'Facebook Page Access Token not configured'})
-                
-                if not creds.get('page_id'):
-                    return jsonify({'success': False, 'error': 'Facebook Page ID not configured'})
-                
-                # Prepare Facebook API call with image
-                page_id = creds['page_id']
-                access_token = creds['page_access_token']
+                # Prepare post content
                 post_content = queue_item['generated_content']
                 product_image = queue_item['product_image']
                 
-                # Use link sharing approach for better visibility in Posts feed
-                import requests
+                # Define both pages to post to
+                pages_to_post = []
                 
-                # Create feed post with link to image (creates shared_story status_type)
-                feed_url = f"https://graph.facebook.com/v18.0/{page_id}/feed"
-                feed_payload = {
-                    'message': post_content,
-                    'link': product_image,  # Use link parameter for better visibility
-                    'access_token': access_token
-                }
+                # Page 1 (CLAN by Scotweb)
+                if creds.get('page_access_token') and creds.get('page_id'):
+                    pages_to_post.append({
+                        'page_id': creds['page_id'],
+                        'access_token': creds['page_access_token'],
+                        'name': 'CLAN by Scotweb'
+                    })
                 
-                print(f"DEBUG: Facebook API call - URL: {feed_url}")
-                print(f"DEBUG: Facebook API call - Payload: {feed_payload}")
-                print(f"DEBUG: Product image URL: {product_image}")
-                print(f"DEBUG: Access token being used: {access_token[:20]}...")
-                response = requests.post(feed_url, data=feed_payload, timeout=30)
-                print(f"DEBUG: Facebook API response - Status: {response.status_code}")
-                print(f"DEBUG: Facebook API response - Content: {response.text}")
+                # Page 2 (Scotweb CLAN)
+                if creds.get('page_access_token_2') and creds.get('page_id_2'):
+                    pages_to_post.append({
+                        'page_id': creds['page_id_2'],
+                        'access_token': creds['page_access_token_2'],
+                        'name': 'Scotweb CLAN'
+                    })
                 
-                if response.status_code == 200:
-                    result = response.json()
-                    facebook_post_id = result.get('id')
+                if not pages_to_post:
+                    return jsonify({'success': False, 'error': 'No Facebook pages configured'})
+                
+                # Post to both pages
+                results = []
+                successful_posts = []
+                failed_posts = []
+                
+                for page in pages_to_post:
+                    result = post_to_facebook_page(
+                        page['page_id'], 
+                        page['access_token'], 
+                        post_content, 
+                        product_image, 
+                        page['name']
+                    )
+                    results.append({
+                        'page_name': page['name'],
+                        'page_id': page['page_id'],
+                        'result': result
+                    })
                     
-                    # Update the queue item status with real Facebook post ID
+                    if result['success']:
+                        successful_posts.append(result['post_id'])
+                    else:
+                        failed_posts.append(f"{page['name']}: {result['error']}")
+                
+                # Update database based on results
+                if successful_posts:
+                    # Use the first successful post ID for the database
+                    primary_post_id = successful_posts[0]
+                    
+                    # Update the queue item status
                     cur.execute("""
                         UPDATE posting_queue 
                         SET status = 'published', platform_post_id = %s, updated_at = NOW()
                         WHERE id = %s
-                    """, (facebook_post_id, item_id))
+                    """, (primary_post_id, item_id))
                     
                     # Also update daily_posts if it exists
                     cur.execute("""
@@ -575,29 +632,36 @@ def post_to_facebook():
                     
                     conn.commit()
                     
+                    # Prepare response message
+                    success_message = f"Post published successfully to {len(successful_posts)} page(s)"
+                    if failed_posts:
+                        success_message += f" (Failed: {', '.join(failed_posts)})"
+                    
                     return jsonify({
-                        'success': True, 
-                        'message': 'Post published successfully to Facebook',
-                        'platform_post_id': facebook_post_id,
-                        'facebook_response': result
+                        'success': True,
+                        'message': success_message,
+                        'platform_post_id': primary_post_id,
+                        'all_results': results,
+                        'successful_posts': successful_posts,
+                        'failed_posts': failed_posts
                     })
                 else:
-                    error_data = response.json() if response.content else {}
-                    error_msg = error_data.get('error', {}).get('message', 'Unknown Facebook API error')
+                    # All posts failed
+                    error_message = f"Failed to post to any page: {'; '.join(failed_posts)}"
                     
                     # Update queue item with error
                     cur.execute("""
                         UPDATE posting_queue 
                         SET status = 'error', error_message = %s, updated_at = NOW()
                         WHERE id = %s
-                    """, (f"Facebook API error: {error_msg}", item_id))
+                    """, (error_message, item_id))
                     
                     conn.commit()
                     
                     return jsonify({
-                        'success': False, 
-                        'error': f'Facebook API error: {response.status_code}',
-                        'details': error_msg
+                        'success': False,
+                        'error': error_message,
+                        'all_results': results
                     })
             else:
                 # Old format: posting from daily-product-posts page
@@ -614,7 +678,7 @@ def post_to_facebook():
                 if not product:
                     return jsonify({'success': False, 'error': 'Product not found'})
                 
-                # Get Facebook credentials
+                # Get Facebook credentials for both pages
                 cur.execute("""
                     SELECT credential_key, credential_value
                     FROM platform_credentials 
@@ -628,40 +692,60 @@ def post_to_facebook():
                 for cred in credentials:
                     creds[cred['credential_key']] = cred['credential_value']
                 
-                if not creds.get('page_access_token'):
-                    return jsonify({'success': False, 'error': 'Facebook Page Access Token not configured'})
-                
-                if not creds.get('page_id'):
-                    return jsonify({'success': False, 'error': 'Facebook Page ID not configured'})
-                
-                # Prepare Facebook API call with image
-                page_id = creds['page_id']
-                access_token = creds['page_access_token']
+                # Prepare post content
                 post_content = content or f"Check out {product['name']} - £{product['price']}"
                 product_image = product['image_url']
                 
-                # Use link sharing approach for better visibility in Posts feed
-                import requests
+                # Define both pages to post to
+                pages_to_post = []
                 
-                # Create feed post with link to image (creates shared_story status_type)
-                feed_url = f"https://graph.facebook.com/v18.0/{page_id}/feed"
-                feed_payload = {
-                    'message': post_content,
-                    'link': product_image,  # Use link parameter for better visibility
-                    'access_token': access_token
-                }
+                # Page 1 (CLAN by Scotweb)
+                if creds.get('page_access_token') and creds.get('page_id'):
+                    pages_to_post.append({
+                        'page_id': creds['page_id'],
+                        'access_token': creds['page_access_token'],
+                        'name': 'CLAN by Scotweb'
+                    })
                 
-                print(f"DEBUG: Facebook API call - URL: {feed_url}")
-                print(f"DEBUG: Facebook API call - Payload: {feed_payload}")
-                print(f"DEBUG: Product image URL: {product_image}")
-                print(f"DEBUG: Access token being used: {access_token[:20]}...")
-                response = requests.post(feed_url, data=feed_payload, timeout=30)
-                print(f"DEBUG: Facebook API response - Status: {response.status_code}")
-                print(f"DEBUG: Facebook API response - Content: {response.text}")
+                # Page 2 (Scotweb CLAN)
+                if creds.get('page_access_token_2') and creds.get('page_id_2'):
+                    pages_to_post.append({
+                        'page_id': creds['page_id_2'],
+                        'access_token': creds['page_access_token_2'],
+                        'name': 'Scotweb CLAN'
+                    })
                 
-                if response.status_code == 200:
-                    result = response.json()
-                    facebook_post_id = result.get('id')
+                if not pages_to_post:
+                    return jsonify({'success': False, 'error': 'No Facebook pages configured'})
+                
+                # Post to both pages
+                results = []
+                successful_posts = []
+                failed_posts = []
+                
+                for page in pages_to_post:
+                    result = post_to_facebook_page(
+                        page['page_id'], 
+                        page['access_token'], 
+                        post_content, 
+                        product_image, 
+                        page['name']
+                    )
+                    results.append({
+                        'page_name': page['name'],
+                        'page_id': page['page_id'],
+                        'result': result
+                    })
+                    
+                    if result['success']:
+                        successful_posts.append(result['post_id'])
+                    else:
+                        failed_posts.append(f"{page['name']}: {result['error']}")
+                
+                # Update database based on results
+                if successful_posts:
+                    # Use the first successful post ID for the database
+                    primary_post_id = successful_posts[0]
                     
                     # Update daily_posts with real Facebook post ID
                     today = datetime.now().date()
@@ -669,23 +753,30 @@ def post_to_facebook():
                         UPDATE daily_posts 
                         SET status = 'posted', posted_at = NOW(), facebook_post_id = %s
                         WHERE product_id = %s AND post_date = %s
-                    """, (facebook_post_id, product_id, today))
+                    """, (primary_post_id, product_id, today))
                     conn.commit()
                     
-                    return jsonify({
-                        'success': True, 
-                        'message': 'Post published successfully to Facebook',
-                        'platform_post_id': facebook_post_id,
-                        'facebook_response': result
-                    })
-                else:
-                    error_data = response.json() if response.content else {}
-                    error_msg = error_data.get('error', {}).get('message', 'Unknown Facebook API error')
+                    # Prepare response message
+                    success_message = f"Post published successfully to {len(successful_posts)} page(s)"
+                    if failed_posts:
+                        success_message += f" (Failed: {', '.join(failed_posts)})"
                     
                     return jsonify({
-                        'success': False, 
-                        'error': f'Facebook API error: {response.status_code}',
-                        'details': error_msg
+                        'success': True,
+                        'message': success_message,
+                        'platform_post_id': primary_post_id,
+                        'all_results': results,
+                        'successful_posts': successful_posts,
+                        'failed_posts': failed_posts
+                    })
+                else:
+                    # All posts failed
+                    error_message = f"Failed to post to any page: {'; '.join(failed_posts)}"
+                    
+                    return jsonify({
+                        'success': False,
+                        'error': error_message,
+                        'all_results': results
                     })
             
     except Exception as e:
