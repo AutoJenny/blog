@@ -247,9 +247,51 @@
             background: #16a34a;
             color: white;
         }
+        
+        /* Header styling overrides for this page */
+        .header-gradient {
+            background: linear-gradient(90deg, #181c2a 0%, #23273a 100%) !important;
+            border-bottom: 1px solid #31364a !important;
+        }
+        
+        .header-gradient .nav-link {
+            color: #e0e0e0 !important;
+        }
+        
+        .header-gradient .nav-link:hover {
+            color: #ffffff !important;
+        }
+        
+        .header-gradient .dropdown-menu {
+            background: #23273a !important;
+            border: 1px solid #31364a !important;
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45) !important;
+        }
+        
+        .header-gradient .dropdown-item {
+            color: #e0e0e0 !important;
+        }
+        
+        .header-gradient .dropdown-item:hover {
+            background: #31364a !important;
+            color: #ffffff !important;
+        }
+        
+        /* Ensure header is above other content */
+        .header-gradient {
+            position: relative;
+            z-index: 1000;
+        }
+        
+        /* Add some margin to the main content to account for header */
+        .container-fluid {
+            margin-top: 0;
+        }
     </style>
 </head>
 <body style="background-color: #0f1419; color: #e0e0e0;">
+    {% include 'shared/header.html' %}
+    
     <div class="container-fluid">
         <!-- Breadcrumb Navigation -->
         <div class="breadcrumb-nav">
