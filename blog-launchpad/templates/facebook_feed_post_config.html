@@ -430,6 +430,280 @@
         .bg-dark-bg {
             background: #23273a;
         }
+        
+        /* Posting Control and Queue Styles */
+        .status-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-ready {
+            background: #10b981;
+            color: white;
+        }
+        
+        .status-posted {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .status-draft {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .content-type-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .content-type-btn {
+            padding: 8px 16px;
+            border: 1px solid #475569;
+            background: #23273a;
+            color: #94a3b8;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .content-type-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #1d4ed8;
+        }
+        
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #334155;
+            border-top: 2px solid #10b981;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Queue Styles */
+        .queue-item {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: move;
+            transition: all 0.3s ease;
+        }
+        
+        .queue-item:hover {
+            border-color: #475569;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .queue-item-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            cursor: pointer;
+        }
+        
+        .queue-item-thumbnail {
+            width: 50px;
+            height: 50px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1px solid #334155;
+        }
+        
+        .queue-item-info {
+            flex: 1;
+        }
+        
+        .queue-item-title {
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 4px;
+        }
+        
+        .queue-item-sku {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+        
+        .queue-item-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .queue-item-delete {
+            background: #ef4444;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 10px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
+        .queue-item-delete:hover {
+            background: #dc2626;
+        }
+        
+        .queue-item-content {
+            padding: 0 15px 15px 15px;
+            display: none;
+        }
+        
+        .queue-item-content.expanded {
+            display: block;
+        }
+        
+        .queue-item-content-text {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 12px;
+            color: #f1f5f9;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        /* Queue Table Styles */
+        .queue-table-row {
+            border-bottom: 1px solid #334155;
+        }
+        
+        .queue-table-row:last-child {
+            border-bottom: none;
+        }
+        
+        .schedule-cell {
+            width: 200px;
+            padding: 15px;
+            vertical-align: top;
+        }
+        
+        .schedule-time {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 4px;
+        }
+        
+        .schedule-date {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+        
+        .schedule-name {
+            font-size: 0.8rem;
+            color: #10b981;
+            background: #064e3b;
+            padding: 2px 8px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+        
+        .queue-items-cell {
+            padding: 15px;
+            vertical-align: top;
+        }
+        
+        .queue-item-table {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: move;
+            transition: all 0.3s ease;
+        }
+        
+        .queue-item-table:hover {
+            border-color: #475569;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .queue-item-table-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            cursor: pointer;
+        }
+        
+        .queue-item-table-thumbnail {
+            width: 50px;
+            height: 50px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1px solid #334155;
+        }
+        
+        .queue-item-table-info {
+            flex: 1;
+        }
+        
+        .queue-item-table-title {
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 4px;
+        }
+        
+        .queue-item-table-sku {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+        
+        .queue-item-table-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .queue-item-table-delete {
+            background: #ef4444;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 10px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
+        .queue-item-table-delete:hover {
+            background: #dc2626;
+        }
+        
+        .queue-item-table-content {
+            padding: 0 15px 15px 15px;
+            display: none;
+        }
+        
+        .queue-item-table-content.expanded {
+            display: block;
+        }
+        
+        .queue-item-table-content-text {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 12px;
+            color: #f1f5f9;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
@@ -549,44 +823,10 @@
         </div>
         
         <!-- Posting Control Section -->
-        <div class="section-card">
-            <div class="section-title with-right-content" onclick="toggleAccordion('posting-control')">
-                <div class="section-title-left">
-                    <i class="fas fa-chevron-right accordion-chevron" id="posting-control-chevron"></i>
-                    <i class="fas fa-paper-plane"></i>
-                    Posting Control
-                </div>
-                <div class="section-title-right" id="next-posts-info" style="font-size: 0.9rem; color: #94a3b8;">
-                    Loading...
-                </div>
-            </div>
-            <div class="section-content" id="posting-control-content">
-                <div style="text-align: center; color: #94a3b8; padding: 40px 20px; font-style: italic;">
-                    <i class="fas fa-paper-plane" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
-                    Posting control functionality will be implemented here
-                </div>
-            </div>
-        </div>
+        {% include 'includes/posting_control.html' %}
         
         <!-- Posting Queue Section -->
-        <div class="section-card" data-accordion="posting-queue">
-            <div class="section-title with-right-content" onclick="toggleAccordion('posting-queue')">
-                <div class="section-title-left">
-                    <i class="fas fa-chevron-right accordion-chevron" id="posting-queue-chevron"></i>
-                    <i class="fas fa-list-alt"></i>
-                    Posting Queue
-                </div>
-                <div class="section-title-right">
-                    <span id="queue-count" class="badge" style="background: #f59e0b; color: #0f172a;">0</span>
-                </div>
-            </div>
-            <div class="section-content" id="posting-queue-content">
-                <div style="text-align: center; color: #94a3b8; padding: 40px 20px; font-style: italic;">
-                    <i class="fas fa-list-alt" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
-                    Posting queue functionality will be implemented here
-                </div>
-            </div>
-        </div>
+        {% include 'includes/posting_queue.html' %}
         
     </div>
 
@@ -987,6 +1227,470 @@
                 chevron.classList.remove('fa-chevron-right');
                 chevron.classList.add('fa-chevron-down');
             }
+        }
+        
+        // Posting Control and Queue Management Functions
+        let queueData = [];
+        let scheduleData = [];
+        let draggedItem = null;
+        
+        // DOM elements for posting control and queue
+        const clearQueueBtn = document.getElementById('clear-queue-btn');
+        const queueCount = document.getElementById('queue-count');
+        const emptyQueue = document.getElementById('empty-queue');
+        const queueTableContainer = document.getElementById('queue-table-container');
+        const queueTableBody = document.getElementById('queue-table-body');
+        
+        // Initialize posting control and queue functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load schedule and queue data
+            loadScheduleData();
+            loadQueueData();
+            
+            // Add event listeners for posting control
+            initializePostingControl();
+            
+            // Add event listeners for queue management
+            initializeQueueManagement();
+        });
+        
+        // Initialize posting control functionality
+        function initializePostingControl() {
+            // Add schedule form handlers
+            const addScheduleBtn = document.getElementById('add-schedule-btn');
+            const addScheduleForm = document.getElementById('add-schedule-form');
+            const saveNewScheduleBtn = document.getElementById('save-new-schedule-btn');
+            const cancelNewScheduleBtn = document.getElementById('cancel-new-schedule-btn');
+            
+            if (addScheduleBtn) {
+                addScheduleBtn.addEventListener('click', () => {
+                    addScheduleForm.style.display = 'block';
+                });
+            }
+            
+            if (cancelNewScheduleBtn) {
+                cancelNewScheduleBtn.addEventListener('click', () => {
+                    addScheduleForm.style.display = 'none';
+                });
+            }
+            
+            if (saveNewScheduleBtn) {
+                saveNewScheduleBtn.addEventListener('click', saveNewSchedule);
+            }
+            
+            // Preset button handlers
+            const presetWeekdays = document.getElementById('new-preset-weekdays');
+            const presetWeekends = document.getElementById('new-preset-weekends');
+            const presetEveryday = document.getElementById('new-preset-everyday');
+            
+            if (presetWeekdays) {
+                presetWeekdays.addEventListener('click', () => setPresetDays([1,2,3,4,5]));
+            }
+            if (presetWeekends) {
+                presetWeekends.addEventListener('click', () => setPresetDays([6,7]));
+            }
+            if (presetEveryday) {
+                presetEveryday.addEventListener('click', () => setPresetDays([1,2,3,4,5,6,7]));
+            }
+            
+            // Global schedule controls
+            const testAllSchedulesBtn = document.getElementById('test-all-schedules-btn');
+            const clearAllSchedulesBtn = document.getElementById('clear-all-schedules-btn');
+            
+            if (testAllSchedulesBtn) {
+                testAllSchedulesBtn.addEventListener('click', testAllSchedules);
+            }
+            if (clearAllSchedulesBtn) {
+                clearAllSchedulesBtn.addEventListener('click', clearAllSchedules);
+            }
+            
+            // Manual controls
+            const postNowBtn = document.getElementById('post-now-btn');
+            const scheduleTomorrowBtn = document.getElementById('schedule-tomorrow-btn');
+            
+            if (postNowBtn) {
+                postNowBtn.addEventListener('click', postNow);
+            }
+            if (scheduleTomorrowBtn) {
+                scheduleTomorrowBtn.addEventListener('click', scheduleTomorrow);
+            }
+        }
+        
+        // Initialize queue management functionality
+        function initializeQueueManagement() {
+            // Add 10 items button handler
+            const add10ItemsBtn = document.getElementById('add-10-items-btn');
+            if (add10ItemsBtn) {
+                add10ItemsBtn.addEventListener('click', add10Items);
+            }
+            
+            // Clear queue button handler
+            if (clearQueueBtn) {
+                clearQueueBtn.addEventListener('click', clearQueue);
+            }
+        }
+        
+        // Load schedule data
+        async function loadScheduleData() {
+            try {
+                const response = await fetch('/api/daily-product-posts/schedules');
+                const data = await response.json();
+                
+                if (data.success) {
+                    scheduleData = data.schedules || [];
+                    displaySchedules(scheduleData);
+                    updateScheduleSummary(scheduleData);
+                }
+            } catch (error) {
+                console.error('Error loading schedules:', error);
+                displaySchedules([]);
+            }
+        }
+        
+        // Load queue data from database
+        async function loadQueueData() {
+            try {
+                console.log('Loading queue data...');
+                const response = await fetch('/api/daily-product-posts/queue');
+                const data = await response.json();
+                
+                console.log('Queue API response:', data);
+                
+                if (data.success) {
+                    queueData = data.queue_items.map(item => ({
+                        id: item.id,
+                        product: {
+                            id: item.product_id,
+                            name: item.product_name,
+                            image_url: item.product_image,
+                            sku: item.sku,
+                            price: item.price,
+                            categories: item.categories
+                        },
+                        content: item.generated_content,
+                        scheduled: {
+                            date: item.scheduled_date,
+                            time: item.scheduled_time,
+                            schedule_name: item.schedule_name,
+                            timezone: item.timezone
+                        }
+                    }));
+                    
+                    console.log('Transformed queue data:', queueData);
+                    console.log('Queue data length:', queueData.length);
+                    renderQueue();
+                } else {
+                    console.error('Error loading queue:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading queue:', error);
+            }
+        }
+        
+        // Display schedules
+        function displaySchedules(schedules) {
+            const schedulesList = document.getElementById('schedules-list');
+            
+            if (schedules.length === 0) {
+                schedulesList.innerHTML = '<div style="color: #94a3b8; font-style: italic; text-align: center; padding: 20px;">No schedules configured</div>';
+                return;
+            }
+            
+            let html = '';
+            schedules.forEach(schedule => {
+                const pattern = formatSchedulePattern(schedule.days, schedule.time, schedule.timezone);
+                const nextPost = calculateNextPostTime(schedule.days, schedule.time, schedule.timezone);
+                
+                html += `
+                    <div style="background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="flex: 1;">
+                            <div style="color: #f1f5f9; font-weight: 600; margin-bottom: 5px;">${schedule.name}</div>
+                            <div style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 3px;">${pattern}</div>
+                            <div style="color: #10b981; font-size: 0.85rem;">Next: ${nextPost}</div>
+                        </div>
+                        <button onclick="handleDeleteSchedule(${schedule.id})" 
+                                style="background: #ef4444; border: none; border-radius: 4px; padding: 6px 10px; color: white; cursor: pointer; font-size: 0.8rem;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            
+            schedulesList.innerHTML = html;
+        }
+        
+        // Update schedule summary
+        function updateScheduleSummary(schedules) {
+            const nextPostsInfo = document.getElementById('next-posts-info');
+            
+            if (schedules.length === 0) {
+                nextPostsInfo.textContent = 'No schedules active';
+                return;
+            }
+            
+            // Calculate next posts for all schedules
+            const nextPosts = schedules.map(schedule => {
+                const nextPost = calculateNextPostTime(schedule.days, schedule.time, schedule.timezone);
+                return `${schedule.name}: ${nextPost}`;
+            });
+            
+            nextPostsInfo.innerHTML = nextPosts.join('<br>');
+        }
+        
+        // Render queue as table
+        function renderQueue() {
+            console.log('renderQueue called with queueData length:', queueData.length);
+            console.log('queueData:', queueData);
+            
+            if (queueData.length === 0) {
+                console.log('No queue data, showing empty state');
+                emptyQueue.style.display = 'block';
+                queueTableContainer.style.display = 'none';
+                clearQueueBtn.style.display = 'none';
+                queueCount.textContent = '0';
+                return;
+            }
+            
+            emptyQueue.style.display = 'none';
+            queueTableContainer.style.display = 'block';
+            clearQueueBtn.style.display = 'inline-block';
+            queueCount.textContent = queueData.length;
+            
+            // Generate sequential posting times
+            const postingTimes = generateSequentialTimes(queueData.length);
+            
+            let html = '';
+            queueData.forEach((item, index) => {
+                const postingTime = postingTimes[index];
+                
+                // Fallback if postingTime is undefined
+                if (!postingTime) {
+                    console.error(`No posting time available for item ${index}`);
+                    return; // Skip this item
+                }
+                
+                const dateStr = postingTime.date.toLocaleDateString();
+                const timeStr = postingTime.date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
+                html += `
+                    <tr class="queue-table-row" data-row-index="${index}">
+                        <td class="schedule-cell">
+                            <div class="schedule-time">${timeStr}</div>
+                            <div class="schedule-date">${dateStr}</div>
+                            <div class="schedule-name">${postingTime.schedule.name}</div>
+                        </td>
+                        <td class="queue-items-cell">
+                            <div class="queue-item-table" data-item-id="${item.id}" draggable="true">
+                                <div class="queue-item-table-header" onclick="toggleQueueItemTable(${item.id})">
+                                    <img src="${item.product.image_url || '/static/images/placeholder.jpg'}" 
+                                         alt="${item.product.name}" 
+                                         class="queue-item-table-thumbnail">
+                                    <div class="queue-item-table-info">
+                                        <div class="queue-item-table-title">${item.product.name}</div>
+                                        <div class="queue-item-table-sku">${item.product.sku}</div>
+                                    </div>
+                                    <div class="queue-item-table-actions">
+                                        <button class="queue-item-table-delete" onclick="event.stopPropagation(); removeFromQueue(${item.id})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="queue-item-table-content" id="content-table-${item.id}">
+                                    <div class="queue-item-table-content-text">${item.content}</div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            queueTableBody.innerHTML = html;
+            
+            // Add drag and drop listeners
+            addDragAndDropListeners();
+        }
+        
+        // Generate sequential posting times
+        function generateSequentialTimes(count) {
+            const times = [];
+            const now = new Date();
+            
+            // Generate next 90 days of posting opportunities
+            const allSlots = [];
+            for (let i = 0; i < 90; i++) {
+                const date = new Date(now);
+                date.setDate(now.getDate() + i);
+                const dayOfWeek = date.getDay() || 7; // Convert Sunday (0) to 7
+                
+                // Find schedules for this day
+                const daySchedules = scheduleData.filter(schedule => {
+                    const days = schedule.days || [];
+                    return days.includes(dayOfWeek);
+                });
+                
+                daySchedules.forEach(schedule => {
+                    const slotDate = new Date(date);
+                    const [hours, minutes] = schedule.time.split(':');
+                    slotDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                    
+                    allSlots.push({
+                        date: slotDate,
+                        schedule: schedule
+                    });
+                });
+            }
+            
+            // Sort by date/time and take first 'count' slots
+            allSlots.sort((a, b) => a.date - b.date);
+            
+            // If we don't have enough slots, create additional ones
+            while (allSlots.length < count) {
+                const lastSlot = allSlots[allSlots.length - 1];
+                const newDate = new Date(lastSlot.date);
+                newDate.setHours(newDate.getHours() + 1); // Add 1 hour to the last slot
+                
+                allSlots.push({
+                    date: newDate,
+                    schedule: lastSlot.schedule
+                });
+            }
+            
+            return allSlots.slice(0, count);
+        }
+        
+        // Helper functions for schedule management
+        function formatSchedulePattern(days, time, timezone) {
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const selectedDays = days.map(d => dayNames[d - 1]).join(', ');
+            return `${selectedDays} at ${time} ${timezone}`;
+        }
+        
+        function calculateNextPostTime(days, time, timezone) {
+            const now = new Date();
+            const [hours, minutes] = time.split(':');
+            
+            // Find next occurrence
+            for (let i = 0; i < 7; i++) {
+                const checkDate = new Date(now);
+                checkDate.setDate(now.getDate() + i);
+                const dayOfWeek = checkDate.getDay() || 7;
+                
+                if (days.includes(dayOfWeek)) {
+                    checkDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                    if (checkDate > now) {
+                        return checkDate.toLocaleString();
+                    }
+                }
+            }
+            
+            return 'No upcoming posts';
+        }
+        
+        // Placeholder functions for schedule management
+        function saveNewSchedule() {
+            console.log('Save new schedule - to be implemented');
+        }
+        
+        function setPresetDays(days) {
+            // Set checkboxes for specified days
+            const dayCheckboxes = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+            dayCheckboxes.forEach((day, index) => {
+                const checkbox = document.getElementById(`new-day-${day}`);
+                if (checkbox) {
+                    checkbox.checked = days.includes(index + 1);
+                }
+            });
+        }
+        
+        function testAllSchedules() {
+            console.log('Test all schedules - to be implemented');
+        }
+        
+        function clearAllSchedules() {
+            console.log('Clear all schedules - to be implemented');
+        }
+        
+        function postNow() {
+            console.log('Post now - to be implemented');
+        }
+        
+        function scheduleTomorrow() {
+            console.log('Schedule tomorrow - to be implemented');
+        }
+        
+        function handleDeleteSchedule(scheduleId) {
+            console.log('Delete schedule - to be implemented', scheduleId);
+        }
+        
+        // Queue management functions
+        function add10Items() {
+            console.log('Add 10 items - to be implemented');
+        }
+        
+        function clearQueue() {
+            console.log('Clear queue - to be implemented');
+        }
+        
+        function toggleQueueItemTable(itemId) {
+            const content = document.getElementById(`content-table-${itemId}`);
+            if (content) {
+                content.classList.toggle('expanded');
+            }
+        }
+        
+        function removeFromQueue(itemId) {
+            console.log('Remove from queue - to be implemented', itemId);
+        }
+        
+        function addDragAndDropListeners() {
+            const queueItems = document.querySelectorAll('.queue-item-table');
+            
+            queueItems.forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+            });
+            
+            const tableRows = document.querySelectorAll('.queue-table-row');
+            
+            tableRows.forEach(row => {
+                const cell = row.querySelector('.queue-items-cell');
+                cell.addEventListener('dragover', handleDragOver);
+                cell.addEventListener('dragleave', handleDragLeave);
+                cell.addEventListener('drop', handleDrop);
+            });
+        }
+        
+        function handleDragStart(e) {
+            draggedItem = e.target;
+            e.target.style.opacity = '0.5';
+        }
+        
+        function handleDragEnd(e) {
+            e.target.style.opacity = '1';
+            draggedItem = null;
+        }
+        
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.style.backgroundColor = '#334155';
+        }
+        
+        function handleDragLeave(e) {
+            e.currentTarget.style.backgroundColor = '';
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.style.backgroundColor = '';
+            
+            if (draggedItem && e.currentTarget !== draggedItem.parentNode) {
+                e.currentTarget.appendChild(draggedItem);
+                updateQueueOrder();
+            }
+        }
+        
+        function updateQueueOrder() {
+            console.log('Update queue order - to be implemented');
         }
     </script>
 </body>
