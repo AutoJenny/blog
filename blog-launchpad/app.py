@@ -5074,7 +5074,7 @@ def get_schedule_status():
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             
             # Get active schedule
-                cur.execute("""
+            cur.execute("""
                 SELECT time, timezone, days, is_active, created_at, updated_at
                 FROM daily_posts_schedule
                 WHERE is_active = true 
@@ -5120,7 +5120,7 @@ def get_all_schedules():
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             
             # Get all active schedules
-                cur.execute("""
+            cur.execute("""
                 SELECT id, name, time, timezone, days, is_active, created_at, updated_at
                 FROM daily_posts_schedule
                 WHERE is_active = true 
@@ -5199,7 +5199,7 @@ def test_schedules():
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             
             # Get all active schedules
-                cur.execute("""
+            cur.execute("""
                 SELECT name, time, timezone, days
                 FROM daily_posts_schedule
                 WHERE is_active = true 
