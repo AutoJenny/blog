@@ -54,7 +54,7 @@
             color: #f1f5f9;
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: space-between;
             cursor: pointer;
             user-select: none;
             padding: 30px;
@@ -78,9 +78,14 @@
             padding: 0 30px 30px 30px;
         }
         
+        .section-title-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
         .accordion-chevron {
             transition: transform 0.3s ease;
-            margin-left: auto;
         }
         
         .accordion-chevron.expanded {
@@ -540,22 +545,24 @@
                         </a>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">
-                        <i class="fas fa-shopping-bag me-1"></i>Daily Product Posts
+                        <i class="fas fa-shopping-bag me-1"></i>Product Posts
                     </li>
                 </ol>
             </nav>
         </div>
         
         <div class="header">
-            <h1>🛍️ Daily Product Posts</h1>
+            <h1>🛍️ Product Posts</h1>
             <p>Automated daily Facebook posts featuring Clan.com products</p>
         </div>
         
         <!-- Product Selection Section -->
         <div class="section-card">
             <div class="section-title" onclick="toggleAccordion('product-selection')">
-                <i class="fas fa-shopping-bag"></i>
-                Product Selection
+                <div class="section-title-content">
+                    <i class="fas fa-shopping-bag"></i>
+                    Product Selection
+                </div>
                 <i class="fas fa-chevron-right accordion-chevron" id="product-selection-chevron"></i>
             </div>
             <div class="section-content" id="product-selection-content">
@@ -632,8 +639,10 @@
         <!-- Content Generation Section -->
         <div class="section-card">
             <div class="section-title" onclick="toggleAccordion('content-generation')">
-                <i class="fas fa-robot"></i>
-                AI Content Generation
+                <div class="section-title-content">
+                    <i class="fas fa-robot"></i>
+                    AI Content Generation
+                </div>
                 <i class="fas fa-chevron-right accordion-chevron" id="content-generation-chevron"></i>
             </div>
             <div class="section-content" id="content-generation-content">
