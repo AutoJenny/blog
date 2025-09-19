@@ -254,18 +254,13 @@ def get_unified_timeline():
 
 @app.route('/daily-product-posts')
 def daily_product_posts():
-    """Daily Product Posts management page - redirect to new nested route."""
-    return redirect('/syndication/facebook/daily-product-posts')
-
-@app.route('/syndication/facebook/daily-product-posts')
-def facebook_daily_product_posts():
-    """Facebook Daily Product Posts management page."""
+    """Daily Product Posts management page."""
     return render_template('daily_product_posts.html')
 
 @app.route('/daily-product-posts/select')
 def daily_product_posts_select():
     """Redirect to main daily product posts page."""
-    return redirect('/syndication/facebook/daily-product-posts')
+    return redirect('/daily-product-posts')
 
 # Daily Product Posts API Endpoints
 @app.route('/api/daily-product-posts/test-categories', methods=['GET'])
@@ -1222,53 +1217,6 @@ def facebook_feed_post_redirect():
     """Redirect for backward compatibility to the generic route."""
     return redirect(url_for('channel_config', platform_name='facebook', channel_type='feed_post'))
 
-@app.route('/syndication/facebook/blog-posts-backup')
-def facebook_blog_posts_backup():
-    """Backup version of Facebook blog posts page."""
-    # Create mock data for the backup template
-    platform = {
-        'display_name': 'Facebook',
-        'name': 'facebook',
-        'id': 1,
-        'description': 'Facebook platform',
-        'status': 'active',
-        'development_status': 'complete',
-        'total_posts_count': 0,
-        'success_rate_percentage': 0.0,
-        'average_response_time_ms': 0,
-        'last_activity_at': None,
-        'last_post_at': None,
-        'last_api_call_at': None
-    }
-    channel_type = {
-        'display_name': 'Feed Post',
-        'id': 1,
-        'name': 'feed_post',
-        'description': 'Facebook feed post'
-    }
-    process = {
-        'id': 1,
-        'process_name': 'facebook_feed_post',
-        'display_name': 'Facebook Feed Post',
-        'description': 'Facebook feed post process',
-        'development_status': 'complete',
-        'priority': 1.0,
-        'is_active': True,
-        'channel_type_name': 'feed_post',
-        'channel_display_name': 'Feed Post'
-    }
-    configs_count = 0
-    execution_data = []
-    requirements = []
-    
-    return render_template('facebook_feed_post_config_backup.html', 
-                         platform=platform, 
-                         channel_type=channel_type,
-                         process=process,
-                         configs_count=configs_count,
-                         execution_data=execution_data,
-                         requirements=requirements)
-
 @app.route('/syndication/posting')
 def syndication_posting():
     """Platform-agnostic posting hub."""
@@ -1415,61 +1363,6 @@ def get_published_posts():
     except Exception as e:
         return {'error': str(e)}, 500
 
-@app.route('/api/syndication/posts')
-def get_posts():
-    """Get all published blog posts for manual selection"""
-    try:
-        with get_db_connection() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-                cur.execute("""
-                    SELECT id, title, created_at, updated_at, status, slug
-                    FROM post 
-                    WHERE status = 'published'
-                    ORDER BY created_at DESC
-                """)
-                posts = cur.fetchall()
-                
-                return jsonify({
-                    'status': 'success',
-                    'posts': [dict(post) for post in posts]
-                })
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/syndication/posts/<int:post_id>')
-def get_post_details(post_id):
-    """Get details for a specific blog post"""
-    try:
-        with get_db_connection() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-                cur.execute("""
-                    SELECT id, title, created_at, updated_at, status, slug
-                    FROM post 
-                    WHERE id = %s AND status = 'published'
-                """, (post_id,))
-                post = cur.fetchone()
-                
-                if post:
-                    # Get section count
-                    cur.execute("""
-                        SELECT COUNT(*) as section_count
-                        FROM post_section 
-                        WHERE post_id = %s
-                    """, (post_id,))
-                    section_count = cur.fetchone()['section_count']
-                    
-                    post_dict = dict(post)
-                    post_dict['section_count'] = section_count
-                    
-                    return jsonify({
-                        'status': 'success',
-                        'post': post_dict
-                    })
-                else:
-                    return jsonify({'error': 'Post not found'}), 404
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
 @app.route('/api/syndication/post-sections/<int:post_id>')
 def get_post_sections(post_id):
     """Get all sections for a specific post."""
@@ -1543,6 +1436,435 @@ def publishing_docs():
         return render_template('markdown_viewer.html', content=content, title="Clan.com Publishing System")
     else:
         return "Documentation not found", 404
+
+@app.route('/api/syndication/posts')
+def get_syndication_posts():
+    """Get all published blog posts for manual selection."""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                cur.execute("""
+                    SELECT id, title, created_at, updated_at, status, slug
+                    FROM post
+                    WHERE status = 'published'
+                    ORDER BY created_at DESC
+                """)
+                posts = cur.fetchall()
+
+                return jsonify({
+                    'status': 'success',
+                    'posts': [dict(post) for post in posts]
+                })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/syndication/posts/<int:post_id>')
+def get_syndication_post_details(post_id):
+    """Get details for a specific blog post."""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                cur.execute("""
+                    SELECT id, title, created_at, updated_at, status, slug
+                    FROM post
+                    WHERE id = %s AND status = 'published'
+                """, (post_id,))
+                post = cur.fetchone()
+
+                if post:
+                    # Get section count
+                    cur.execute("""
+                        SELECT COUNT(*) as section_count
+                        FROM post_section
+                        WHERE post_id = %s
+                    """, (post_id,))
+                    section_count = cur.fetchone()['section_count']
+
+                    post_dict = dict(post)
+                    post_dict['section_count'] = section_count
+
+                    return jsonify({
+                        'status': 'success',
+                        'post': post_dict
+                    })
+                else:
+                    return jsonify({'error': 'Post not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/syndication/facebook/schedules', methods=['GET'])
+def get_blog_post_schedules():
+    """Get all schedules for blog post syndication."""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                cur.execute("""
+                    SELECT id, name, days, time, timezone, is_active as active, created_at
+                    FROM daily_posts_schedule 
+                    WHERE is_active = true 
+                    AND platform = 'facebook' 
+                    AND channel_type = 'feed_post' 
+                    AND content_type = 'blog_post'
+                    ORDER BY created_at DESC
+                """)
+                
+                schedules = cur.fetchall()
+                
+                transformed_schedules = []
+                for schedule in schedules:
+                    transformed_schedules.append({
+                        'id': schedule['id'],
+                        'name': schedule['name'],
+                        'days': schedule['days'],
+                        'time': str(schedule['time']),
+                        'timezone': schedule['timezone'],
+                        'active': schedule['active'],
+                        'created_at': schedule['created_at'].isoformat() if schedule['created_at'] else None
+                    })
+                
+                return jsonify({
+                    'success': True,
+                    'schedules': transformed_schedules
+                })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/syndication/facebook/schedules', methods=['POST'])
+def create_blog_post_schedule():
+    """Create a new schedule for blog post syndication."""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['name', 'days', 'time', 'timezone']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    INSERT INTO daily_posts_schedule (name, days, time, timezone, platform, channel_type, content_type, is_active)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id
+                """, (
+                    data['name'],
+                    data['days'],
+                    data['time'],
+                    data['timezone'],
+                    'facebook',
+                    'feed_post',
+                    'blog_post',
+                    data.get('active', True)
+                ))
+                
+                schedule_id = cur.fetchone()[0]
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Schedule created successfully',
+                    'schedule_id': schedule_id
+                })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/syndication/facebook/schedules/<int:schedule_id>', methods=['PUT'])
+def update_blog_post_schedule(schedule_id):
+    """Update a blog post schedule."""
+    try:
+        data = request.get_json()
+        
+        # Build update query dynamically
+        update_fields = []
+        update_values = []
+        
+        allowed_fields = ['name', 'days', 'time', 'timezone', 'active']
+        for field in allowed_fields:
+            if field in data:
+                if field == 'active':
+                    update_fields.append('is_active = %s')
+                else:
+                    update_fields.append(f'{field} = %s')
+                update_values.append(data[field])
+        
+        if not update_fields:
+            return jsonify({'error': 'No valid fields to update'}), 400
+        
+        update_values.append(schedule_id)
+        
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(f"""
+                    UPDATE daily_posts_schedule 
+                    SET {', '.join(update_fields)}, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s 
+                    AND platform = 'facebook' 
+                    AND channel_type = 'feed_post' 
+                    AND content_type = 'blog_post'
+                    RETURNING id
+                """, update_values)
+                
+                updated_schedule = cur.fetchone()
+                if not updated_schedule:
+                    return jsonify({'error': 'Schedule not found'}), 404
+                
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Schedule updated successfully'
+                })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/syndication/facebook/schedules/<int:schedule_id>', methods=['DELETE'])
+def delete_blog_post_schedule(schedule_id):
+    """Delete a blog post schedule."""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    DELETE FROM daily_posts_schedule 
+                    WHERE id = %s 
+                    AND platform = 'facebook' 
+                    AND channel_type = 'feed_post' 
+                    AND content_type = 'blog_post'
+                    RETURNING id
+                """, (schedule_id,))
+                
+                deleted_schedule = cur.fetchone()
+                if not deleted_schedule:
+                    return jsonify({'error': 'Schedule not found'}), 404
+                
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Schedule deleted successfully'
+                })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/syndication/facebook/queue', methods=['GET'])
+def get_blog_post_queue():
+    """Get all blog post items in the Facebook posting queue."""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                cur.execute("""
+                    SELECT 
+                        pq.id,
+                        pq.product_id as post_id,
+                        p.title as post_title,
+                        p.slug as post_slug,
+                        p.created_at as post_created_at,
+                        ps.section_heading as section_title,
+                        ps.section_order as section_order,
+                        pq.generated_content,
+                        pq.scheduled_date,
+                        pq.scheduled_time,
+                        pq.schedule_name,
+                        pq.timezone,
+                        pq.status,
+                        pq.queue_order,
+                        pq.created_at,
+                        pq.updated_at
+                    FROM posting_queue pq
+                    LEFT JOIN post p ON pq.product_id = p.id
+                    LEFT JOIN post_section ps ON pq.section_id = ps.id
+                    WHERE pq.platform = 'facebook' 
+                    AND pq.channel_type = 'feed_post' 
+                    AND pq.content_type = 'blog_post'
+                    ORDER BY pq.queue_order ASC, pq.created_at ASC
+                """)
+                
+                queue_items = cur.fetchall()
+                
+                transformed_items = []
+                for item in queue_items:
+                    transformed_items.append({
+                        'id': item['id'],
+                        'post_id': item['post_id'],
+                        'post_title': item['post_title'],
+                        'post_slug': item['post_slug'],
+                        'post_created_at': item['post_created_at'].isoformat() if item['post_created_at'] else None,
+                        'section_title': item['section_title'],
+                        'section_order': item['section_order'],
+                        'generated_content': item['generated_content'],
+                        'scheduled_date': item['scheduled_date'].isoformat() if item['scheduled_date'] else None,
+                        'scheduled_time': str(item['scheduled_time']) if item['scheduled_time'] else None,
+                        'schedule_name': item['schedule_name'],
+                        'timezone': item['timezone'],
+                        'status': item['status'],
+                        'queue_order': item['queue_order'],
+                        'created_at': item['created_at'].isoformat() if item['created_at'] else None,
+                        'updated_at': item['updated_at'].isoformat() if item['updated_at'] else None
+                    })
+                
+                return jsonify({
+                    'success': True,
+                    'queue_items': transformed_items
+                })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/syndication/facebook/queue', methods=['POST'])
+def add_to_blog_post_queue():
+    """Add a blog post item to the Facebook posting queue."""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['post_id', 'section_id', 'generated_content', 'scheduled_date', 'scheduled_time', 'schedule_name', 'timezone']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                # Get next queue order
+                cur.execute("""
+                    SELECT COALESCE(MAX(queue_order), 0) + 1 as next_order
+                    FROM posting_queue 
+                    WHERE platform = 'facebook' AND channel_type = 'feed_post' AND content_type = 'blog_post'
+                """)
+                next_order = cur.fetchone()[0]
+                
+                # Get post and section details
+                cur.execute("""
+                    SELECT p.title, ps.section_heading as section_title, ps.section_order as section_order
+                    FROM post p
+                    JOIN post_section ps ON p.id = ps.post_id
+                    WHERE p.id = %s AND ps.id = %s
+                """, (data['post_id'], data['section_id']))
+                
+                post_section = cur.fetchone()
+                if not post_section:
+                    return jsonify({'error': 'Post or section not found'}), 404
+                
+                # Insert into queue
+                cur.execute("""
+                    INSERT INTO posting_queue (
+                        product_id, section_id, generated_content, scheduled_date, scheduled_time, 
+                        schedule_name, timezone, status, queue_order, platform, channel_type, content_type
+                    )
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id
+                """, (
+                    data['post_id'],
+                    data['section_id'],
+                    data['generated_content'],
+                    data['scheduled_date'],
+                    data['scheduled_time'],
+                    data['schedule_name'],
+                    data['timezone'],
+                    data.get('status', 'ready'),
+                    next_order,
+                    'facebook',
+                    'feed_post',
+                    'blog_post'
+                ))
+                
+                queue_item_id = cur.fetchone()[0]
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Item added to queue successfully',
+                    'queue_item_id': queue_item_id
+                })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/syndication/facebook/queue/<int:item_id>', methods=['DELETE'])
+def remove_from_blog_post_queue(item_id):
+    """Remove a blog post item from the Facebook posting queue."""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    DELETE FROM posting_queue 
+                    WHERE id = %s AND platform = 'facebook' AND channel_type = 'feed_post' AND content_type = 'blog_post'
+                    RETURNING id
+                """, (item_id,))
+                
+                deleted_item = cur.fetchone()
+                if not deleted_item:
+                    return jsonify({'error': 'Queue item not found'}), 404
+                
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Item removed from queue successfully'
+                })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/syndication/facebook/queue/<int:item_id>', methods=['PUT'])
+def update_blog_post_queue_item(item_id):
+    """Update a blog post item in the Facebook posting queue."""
+    try:
+        data = request.get_json()
+        
+        # Build update query dynamically
+        update_fields = []
+        update_values = []
+        
+        allowed_fields = ['generated_content', 'scheduled_date', 'scheduled_time', 'schedule_name', 'timezone', 'status', 'queue_order']
+        for field in allowed_fields:
+            if field in data:
+                update_fields.append(f'{field} = %s')
+                update_values.append(data[field])
+        
+        if not update_fields:
+            return jsonify({'error': 'No valid fields to update'}), 400
+        
+        update_values.append(item_id)
+        
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(f"""
+                    UPDATE posting_queue 
+                    SET {', '.join(update_fields)}, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s AND platform = 'facebook' AND channel_type = 'feed_post' AND content_type = 'blog_post'
+                    RETURNING id
+                """, update_values)
+                
+                updated_item = cur.fetchone()
+                if not updated_item:
+                    return jsonify({'error': 'Queue item not found'}), 404
+                
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Queue item updated successfully'
+                })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/syndication/facebook/queue/clear', methods=['DELETE'])
+def clear_blog_post_queue():
+    """Clear all blog post items from the Facebook posting queue."""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    DELETE FROM posting_queue 
+                    WHERE platform = 'facebook' AND channel_type = 'feed_post' AND content_type = 'blog_post'
+                """)
+                
+                deleted_count = cur.rowcount
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': f'Cleared {deleted_count} items from queue'
+                })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/syndication/social-media-platforms')
 def get_social_media_platforms():
@@ -2161,7 +2483,7 @@ def get_post_sections_with_images(post_id):
         return sections
 
 @app.route('/api/posts')
-def get_all_posts():
+def get_posts():
     """Get all posts for the launchpad."""
     with get_db_connection() as conn:
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -3120,138 +3442,6 @@ def get_user_preferences(user_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/syndication/next-section', methods=['GET'])
-def get_next_section_api():
-    """API endpoint to get the next unprocessed section for syndication."""
-    try:
-        platform_id = request.args.get('platform_id', 1, type=int)  # Default to Facebook
-        channel_type_id = request.args.get('channel_type_id', 1, type=int)  # Default to feed_post
-        process_id = request.args.get('process_id', 1, type=int)
-        
-        next_section = get_next_section_for_syndication(platform_id, channel_type_id, process_id)
-        
-        if next_section:
-            return jsonify({
-                'status': 'success',
-                'next_section': next_section
-            })
-        else:
-            return jsonify({
-                'status': 'success',
-                'next_section': None,
-                'message': 'No unprocessed sections found'
-            })
-            
-    except Exception as e:
-        logger.error(f"Error in get_next_section_api: {e}")
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/syndication/mark-processing', methods=['POST'])
-def mark_processing_api():
-    """API endpoint to mark a section as currently being processed."""
-    try:
-        data = request.get_json()
-        required_fields = ['post_id', 'section_id', 'platform_id', 'channel_type_id']
-        
-        for field in required_fields:
-            if field not in data:
-                return jsonify({'error': f'Missing required field: {field}'}), 400
-        
-        success = mark_section_processing(
-            data['post_id'],
-            data['section_id'],
-            data['platform_id'],
-            data['channel_type_id'],
-            data.get('process_id', 1)
-        )
-        
-        if success:
-            return jsonify({'status': 'success', 'message': 'Section marked as processing'})
-        else:
-            return jsonify({'error': 'Failed to mark section as processing'}), 500
-            
-    except Exception as e:
-        logger.error(f"Error in mark_processing_api: {e}")
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/syndication/mark-completed', methods=['POST'])
-def mark_completed_api():
-    """API endpoint to mark a section as successfully completed."""
-    try:
-        data = request.get_json()
-        required_fields = ['post_id', 'section_id', 'platform_id', 'channel_type_id']
-        
-        for field in required_fields:
-            if field not in data:
-                return jsonify({'error': f'Missing required field: {field}'}), 400
-        
-        success = mark_section_completed(
-            data['post_id'],
-            data['section_id'],
-            data['platform_id'],
-            data['channel_type_id'],
-            data.get('process_id', 1)
-        )
-        
-        if success:
-            return jsonify({'status': 'success', 'message': 'Section marked as completed'})
-        else:
-            return jsonify({'error': 'Failed to mark section as completed'}), 500
-            
-    except Exception as e:
-        logger.error(f"Error in mark_completed_api: {e}")
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/syndication/mark-failed', methods=['POST'])
-def mark_failed_api():
-    """API endpoint to mark a section as failed with error message."""
-    try:
-        data = request.get_json()
-        required_fields = ['post_id', 'section_id', 'platform_id', 'channel_type_id', 'error_message']
-        
-        for field in required_fields:
-            if field not in data:
-                return jsonify({'error': f'Missing required field: {field}'}), 400
-        
-        success = mark_section_failed(
-            data['post_id'],
-            data['section_id'],
-            data['platform_id'],
-            data['channel_type_id'],
-            data['error_message'],
-            data.get('process_id', 1)
-        )
-        
-        if success:
-            return jsonify({'status': 'success', 'message': 'Section marked as failed'})
-        else:
-            return jsonify({'error': 'Failed to mark section as failed'}), 500
-            
-    except Exception as e:
-        logger.error(f"Error in mark_failed_api: {e}")
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/syndication/progress-summary', methods=['GET'])
-def progress_summary_api():
-    """API endpoint to get syndication progress summary."""
-    try:
-        platform_id = request.args.get('platform_id', type=int)
-        channel_type_id = request.args.get('channel_type_id', type=int)
-        
-        summary = get_syndication_progress_summary(platform_id, channel_type_id)
-        
-        if summary:
-            return jsonify({
-                'status': 'success',
-                'summary': summary
-            })
-        else:
-            return jsonify({'error': 'Failed to get progress summary'}), 500
-            
-    except Exception as e:
-        logger.error(f"Error in progress_summary_api: {e}")
-        return jsonify({'error': str(e)}), 500
-
 @app.route('/api/social-media/ui/session-state/<session_id>', methods=['GET'])
 def get_session_state(session_id):
     """Get session-specific UI state"""
@@ -3964,227 +4154,6 @@ def syndication_pieces():
         logger.error(f"Error handling syndication pieces: {e}")
         return jsonify({'error': f'Failed to handle syndication pieces: {str(e)}'}), 500
 
-def get_next_section_for_syndication(platform_id, channel_type_id, process_id=1):
-    """
-    Find the next unprocessed section for syndication.
-    Algorithm:
-    1. Start with most recent published post
-    2. Find first unprocessed section for the platform/channel
-    3. If no unprocessed sections, move to next most recent post
-    4. Continue until section found or all posts exhausted
-    """
-    try:
-        with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            
-            # Get all published posts ordered by creation date (most recent first)
-            cur.execute("""
-                SELECT id, title, created_at, status
-                FROM blog_posts 
-                WHERE status = 'published'
-                ORDER BY created_at DESC
-            """)
-            
-            published_posts = cur.fetchall()
-            
-            for post in published_posts:
-                post_id = post['id']
-                
-                # Get all sections for this post
-                cur.execute("""
-                    SELECT id, section_order, section_heading, section_description
-                    FROM post_section 
-                    WHERE post_id = %s 
-                    ORDER BY section_order
-                """, (post_id,))
-                
-                sections = cur.fetchall()
-                
-                # Check each section to see if it's been processed
-                for section in sections:
-                    section_id = section['id']
-                    
-                    # Check if this section has been processed for this platform/channel
-                    cur.execute("""
-                        SELECT id, status, completed_at
-                        FROM syndication_progress 
-                        WHERE post_id = %s 
-                        AND section_id = %s 
-                        AND platform_id = %s 
-                        AND channel_type_id = %s
-                    """, (post_id, section_id, platform_id, channel_type_id))
-                    
-                    progress = cur.fetchone()
-                    
-                    # If no progress record exists, this section hasn't been processed
-                    if not progress:
-                        return {
-                            'post_id': post_id,
-                            'post_title': post['title'],
-                            'post_created_at': post['created_at'].isoformat(),
-                            'section_id': section_id,
-                            'section_order': section['section_order'],
-                            'section_heading': section['section_heading'],
-                            'section_description': section['section_description'],
-                            'platform_id': platform_id,
-                            'channel_type_id': channel_type_id,
-                            'process_id': process_id,
-                            'status': 'pending'
-                        }
-                    
-                    # If progress exists but status is 'failed', we can retry
-                    elif progress['status'] == 'failed':
-                        return {
-                            'post_id': post_id,
-                            'post_title': post['title'],
-                            'post_created_at': post['created_at'].isoformat(),
-                            'section_id': section_id,
-                            'section_order': section['section_order'],
-                            'section_heading': section['section_heading'],
-                            'section_description': section['section_description'],
-                            'platform_id': platform_id,
-                            'channel_type_id': channel_type_id,
-                            'process_id': process_id,
-                            'status': 'failed_retry',
-                            'previous_error': progress.get('error_message', 'Unknown error')
-                        }
-            
-            # No unprocessed sections found
-            return None
-            
-    except Exception as e:
-        logger.error(f"Error finding next section for syndication: {e}")
-        return None
-
-def mark_section_processing(post_id, section_id, platform_id, channel_type_id, process_id=1):
-    """Mark a section as currently being processed."""
-    try:
-        with get_db_connection() as conn:
-            cur = conn.cursor()
-            
-            # Insert or update progress record
-            cur.execute("""
-                INSERT INTO syndication_progress 
-                (post_id, section_id, platform_id, channel_type_id, process_id, status, updated_at)
-                VALUES (%s, %s, %s, %s, %s, 'processing', CURRENT_TIMESTAMP)
-                ON CONFLICT (post_id, section_id, platform_id, channel_type_id)
-                DO UPDATE SET 
-                    status = 'processing',
-                    updated_at = CURRENT_TIMESTAMP,
-                    error_message = NULL
-            """, (post_id, section_id, platform_id, channel_type_id, process_id))
-            
-            conn.commit()
-            return True
-            
-    except Exception as e:
-        logger.error(f"Error marking section as processing: {e}")
-        return False
-
-def mark_section_completed(post_id, section_id, platform_id, channel_type_id, process_id=1):
-    """Mark a section as successfully completed."""
-    try:
-        with get_db_connection() as conn:
-            cur = conn.cursor()
-            
-            # Update progress record
-            cur.execute("""
-                UPDATE syndication_progress 
-                SET status = 'completed',
-                    completed_at = CURRENT_TIMESTAMP,
-                    updated_at = CURRENT_TIMESTAMP,
-                    error_message = NULL
-                WHERE post_id = %s 
-                AND section_id = %s 
-                AND platform_id = %s 
-                AND channel_type_id = %s
-            """, (post_id, section_id, platform_id, channel_type_id))
-            
-            conn.commit()
-            return True
-            
-    except Exception as e:
-        logger.error(f"Error marking section as completed: {e}")
-        return False
-
-def mark_section_failed(post_id, section_id, platform_id, channel_type_id, error_message, process_id=1):
-    """Mark a section as failed with error message."""
-    try:
-        with get_db_connection() as conn:
-            cur = conn.cursor()
-            
-            # Update progress record
-            cur.execute("""
-                UPDATE syndication_progress 
-                SET status = 'failed',
-                    updated_at = CURRENT_TIMESTAMP,
-                    error_message = %s
-                WHERE post_id = %s 
-                AND section_id = %s 
-                AND platform_id = %s 
-                AND channel_type_id = %s
-            """, (error_message, post_id, section_id, platform_id, channel_type_id))
-            
-            conn.commit()
-            return True
-            
-    except Exception as e:
-        logger.error(f"Error marking section as failed: {e}")
-        return False
-
-def get_syndication_progress_summary(platform_id=None, channel_type_id=None):
-    """Get a summary of syndication progress across all or specific platform/channel."""
-    try:
-        with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            
-            # Build query based on filters
-            where_clause = ""
-            params = []
-            
-            if platform_id:
-                where_clause += " AND sp.platform_id = %s"
-                params.append(platform_id)
-            
-            if channel_type_id:
-                where_clause += " AND sp.channel_type_id = %s"
-                params.append(channel_type_id)
-            
-            cur.execute(f"""
-                SELECT 
-                    sp.status,
-                    COUNT(*) as count,
-                    COUNT(CASE WHEN sp.completed_at IS NOT NULL THEN 1 END) as completed_count,
-                    COUNT(CASE WHEN sp.status = 'pending' THEN 1 END) as pending_count,
-                    COUNT(CASE WHEN sp.status = 'processing' THEN 1 END) as processing_count,
-                    COUNT(CASE WHEN sp.status = 'failed' THEN 1 END) as failed_count
-                FROM syndication_progress sp
-                WHERE 1=1 {where_clause}
-                GROUP BY sp.status
-                ORDER BY sp.status
-            """, params)
-            
-            results = cur.fetchall()
-            
-            # Also get total sections available for syndication
-            cur.execute("""
-                SELECT COUNT(*) as total_sections
-                FROM post_section ps
-                JOIN blog_posts bp ON ps.post_id = bp.id
-                WHERE bp.status = 'published'
-            """)
-            
-            total_sections = cur.fetchone()['total_sections']
-            
-            return {
-                'total_sections_available': total_sections,
-                'progress_by_status': [dict(row) for row in results]
-            }
-            
-    except Exception as e:
-        logger.error(f"Error getting syndication progress summary: {e}")
-        return None
-
 @app.route('/api/syndication/pieces/<int:piece_id>', methods=['GET', 'PUT', 'DELETE'])
 def syndication_piece(piece_id):
     """Handle individual syndication piece operations using existing llm_interaction table."""
@@ -4272,479 +4241,6 @@ def syndication_piece(piece_id):
     except Exception as e:
         logger.error(f"Error handling syndication piece {piece_id}: {e}")
         return jsonify({'error': f'Failed to handle syndication piece: {str(e)}'}), 500
-
-# Blog Post Queue API Endpoints
-@app.route('/api/syndication/facebook/queue', methods=['GET'])
-def get_blog_post_queue():
-    """Get all blog post items in the Facebook posting queue."""
-    try:
-        with get_db_connection() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-                cur.execute("""
-                    SELECT 
-                        pq.id,
-                        pq.product_id as post_id,
-                        pq.scheduled_date,
-                        pq.scheduled_time,
-                        pq.schedule_name,
-                        pq.timezone,
-                        pq.generated_content,
-                        pq.queue_order,
-                        pq.status,
-                        pq.created_at,
-                        pq.updated_at,
-                        pq.scheduled_timestamp,
-                        pq.platform_post_id,
-                        pq.error_message,
-                        p.title as post_title,
-                        p.slug as post_slug,
-                        p.created_at as post_created_at,
-                        ps.section_heading as section_title,
-                        ps.section_order as section_order
-                    FROM posting_queue pq
-                    LEFT JOIN post p ON pq.product_id = p.id
-                    LEFT JOIN post_section ps ON pq.product_id = ps.post_id AND pq.generated_content LIKE '%' || ps.section_heading || '%'
-                    WHERE pq.platform = 'facebook' 
-                    AND pq.channel_type = 'feed_post'
-                    AND pq.content_type = 'blog_post'
-                    ORDER BY pq.queue_order ASC, pq.scheduled_timestamp ASC
-                """)
-                
-                queue_items = cur.fetchall()
-                
-                # Transform the data for frontend consumption
-                transformed_items = []
-                for item in queue_items:
-                    transformed_items.append({
-                        'id': item['id'],
-                        'post_id': item['post_id'],
-                        'post_title': item['post_title'],
-                        'post_slug': item['post_slug'],
-                        'post_created_at': item['post_created_at'].isoformat() if item['post_created_at'] else None,
-                        'section_title': item['section_title'],
-                        'section_order': item['section_order'],
-                        'generated_content': item['generated_content'],
-                        'scheduled_date': item['scheduled_date'].isoformat() if item['scheduled_date'] else None,
-                        'scheduled_time': str(item['scheduled_time']) if item['scheduled_time'] else None,
-                        'schedule_name': item['schedule_name'],
-                        'timezone': item['timezone'],
-                        'queue_order': item['queue_order'],
-                        'status': item['status'],
-                        'created_at': item['created_at'].isoformat() if item['created_at'] else None,
-                        'updated_at': item['updated_at'].isoformat() if item['updated_at'] else None,
-                        'scheduled_timestamp': item['scheduled_timestamp'].isoformat() if item['scheduled_timestamp'] else None,
-                        'platform_post_id': item['platform_post_id'],
-                        'error_message': item['error_message']
-                    })
-                
-                return jsonify({
-                    'success': True,
-                    'queue_items': transformed_items
-                })
-                
-    except Exception as e:
-        logger.error(f"Error loading blog post queue: {e}")
-        return jsonify({'error': f'Failed to load queue: {str(e)}'}), 500
-
-@app.route('/api/syndication/facebook/queue', methods=['POST'])
-def add_to_blog_post_queue():
-    """Add a blog post item to the Facebook posting queue."""
-    try:
-        data = request.get_json()
-        
-        required_fields = ['post_id', 'section_id', 'generated_content']
-        for field in required_fields:
-            if field not in data:
-                return jsonify({'error': f'Missing required field: {field}'}), 400
-        
-        # Get the next queue order
-        with get_db_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    SELECT COALESCE(MAX(queue_order), 0) + 1 as next_order
-                    FROM posting_queue 
-                    WHERE platform = 'facebook' AND channel_type = 'feed_post'
-                """)
-                next_order = cur.fetchone()[0]
-                
-                # Get post and section details
-                cur.execute("""
-                    SELECT p.title, ps.section_heading as section_title, ps.section_order as section_order
-                    FROM post p
-                    JOIN post_section ps ON p.id = ps.post_id
-                    WHERE p.id = %s AND ps.id = %s
-                """, (data['post_id'], data['section_id']))
-                
-                post_details = cur.fetchone()
-                if not post_details:
-                    return jsonify({'error': 'Post or section not found'}), 404
-                
-                post_title, section_title, section_order = post_details
-                
-                # Calculate scheduled timestamp if provided
-                scheduled_timestamp = None
-                if data.get('scheduled_date') and data.get('scheduled_time'):
-                    from datetime import datetime
-                    scheduled_timestamp = datetime.combine(
-                        datetime.strptime(data['scheduled_date'], '%Y-%m-%d').date(),
-                        datetime.strptime(data['scheduled_time'], '%H:%M').time()
-                    )
-                
-                # Insert into queue
-                cur.execute("""
-                    INSERT INTO posting_queue (
-                        product_id, scheduled_date, scheduled_time, schedule_name, timezone,
-                        generated_content, queue_order, status, platform, channel_type, content_type,
-                        scheduled_timestamp
-                    ) VALUES (
-                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
-                    ) RETURNING id
-                """, (
-                    data['post_id'],
-                    data.get('scheduled_date'),
-                    data.get('scheduled_time'),
-                    data.get('schedule_name', 'Manual'),
-                    data.get('timezone', 'GMT'),
-                    data['generated_content'],
-                    next_order,
-                    data.get('status', 'ready'),
-                    'facebook',
-                    'feed_post',
-                    'blog_post',
-                    scheduled_timestamp
-                ))
-                
-                queue_item_id = cur.fetchone()[0]
-                conn.commit()
-                
-                return jsonify({
-                    'success': True,
-                    'queue_item': {
-                        'id': queue_item_id,
-                        'post_id': data['post_id'],
-                        'post_title': post_title,
-                        'section_title': section_title,
-                        'section_order': section_order,
-                        'generated_content': data['generated_content'],
-                        'queue_order': next_order,
-                        'status': data.get('status', 'ready')
-                    }
-                })
-                
-    except Exception as e:
-        logger.error(f"Error adding to blog post queue: {e}")
-        return jsonify({'error': f'Failed to add to queue: {str(e)}'}), 500
-
-@app.route('/api/syndication/facebook/queue/<int:item_id>', methods=['DELETE'])
-def remove_from_blog_post_queue(item_id):
-    """Remove a blog post item from the Facebook posting queue."""
-    try:
-        with get_db_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    DELETE FROM posting_queue 
-                    WHERE id = %s AND platform = 'facebook' AND channel_type = 'feed_post' AND content_type = 'blog_post'
-                    RETURNING id
-                """, (item_id,))
-                
-                deleted_item = cur.fetchone()
-                if not deleted_item:
-                    return jsonify({'error': 'Queue item not found'}), 404
-                
-                conn.commit()
-                
-                return jsonify({
-                    'success': True,
-                    'message': 'Item removed from queue'
-                })
-                
-    except Exception as e:
-        logger.error(f"Error removing from blog post queue: {e}")
-        return jsonify({'error': f'Failed to remove from queue: {str(e)}'}), 500
-
-@app.route('/api/syndication/facebook/queue/<int:item_id>', methods=['PUT'])
-def update_blog_post_queue_item(item_id):
-    """Update a blog post item in the Facebook posting queue."""
-    try:
-        data = request.get_json()
-        
-        with get_db_connection() as conn:
-            with conn.cursor() as cur:
-                # Build dynamic update query
-                update_fields = []
-                update_values = []
-                
-                allowed_fields = ['scheduled_date', 'scheduled_time', 'schedule_name', 'timezone', 
-                                'generated_content', 'queue_order', 'status', 'scheduled_timestamp']
-                
-                for field in allowed_fields:
-                    if field in data:
-                        update_fields.append(f"{field} = %s")
-                        update_values.append(data[field])
-                
-                if not update_fields:
-                    return jsonify({'error': 'No valid fields to update'}), 400
-                
-                update_values.append(item_id)
-                
-                cur.execute(f"""
-                    UPDATE posting_queue 
-                    SET {', '.join(update_fields)}, updated_at = CURRENT_TIMESTAMP
-                    WHERE id = %s AND platform = 'facebook' AND channel_type = 'feed_post' AND content_type = 'blog_post'
-                    RETURNING id
-                """, update_values)
-                
-                updated_item = cur.fetchone()
-                if not updated_item:
-                    return jsonify({'error': 'Queue item not found'}), 404
-                
-                conn.commit()
-                
-                return jsonify({
-                    'success': True,
-                    'message': 'Queue item updated successfully'
-                })
-                
-    except Exception as e:
-        logger.error(f"Error updating blog post queue item: {e}")
-        return jsonify({'error': f'Failed to update queue item: {str(e)}'}), 500
-
-@app.route('/api/syndication/facebook/queue/clear', methods=['DELETE'])
-def clear_blog_post_queue():
-    """Clear all blog post items from the Facebook posting queue."""
-    try:
-        with get_db_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    DELETE FROM posting_queue 
-                    WHERE platform = 'facebook' AND channel_type = 'feed_post' AND content_type = 'blog_post'
-                """)
-                
-                deleted_count = cur.rowcount
-                conn.commit()
-                
-                return jsonify({
-                    'success': True,
-                    'message': f'Cleared {deleted_count} items from queue'
-                })
-                
-    except Exception as e:
-        logger.error(f"Error clearing blog post queue: {e}")
-        return jsonify({'error': f'Failed to clear queue: {str(e)}'}), 500
-
-@app.route('/api/syndication/facebook/post', methods=['POST'])
-def post_blog_content_to_facebook():
-    """Post blog content to Facebook."""
-    try:
-        data = request.get_json()
-        
-        if not data.get('content'):
-            return jsonify({'error': 'Content is required'}), 400
-        
-        # Use existing Facebook posting logic
-        content = data['content']
-        
-        # Get Facebook credentials
-        with get_db_connection() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-                cur.execute("""
-                    SELECT page_id, page_access_token, page_name
-                    FROM facebook_credentials 
-                    WHERE active = true
-                    ORDER BY created_at DESC
-                    LIMIT 1
-                """)
-                
-                credentials = cur.fetchone()
-                if not credentials:
-                    return jsonify({'error': 'No active Facebook credentials found'}), 400
-        
-        # Post to Facebook using existing logic
-        success, result = post_to_facebook_page(
-            credentials['page_id'],
-            credentials['page_access_token'],
-            content,
-            credentials['page_name']
-        )
-        
-        if success:
-            return jsonify({
-                'success': True,
-                'post_id': result.get('id'),
-                'message': 'Successfully posted to Facebook'
-            })
-        else:
-            return jsonify({
-                'success': False,
-                'error': result
-            }), 500
-            
-    except Exception as e:
-        logger.error(f"Error posting blog content to Facebook: {e}")
-        return jsonify({'error': f'Failed to post to Facebook: {str(e)}'}), 500
-
-# Blog Post Schedule Management APIs
-@app.route('/api/syndication/facebook/schedules', methods=['GET'])
-def get_blog_post_schedules():
-    """Get all schedules for blog post syndication."""
-    try:
-        with get_db_connection() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-                cur.execute("""
-                    SELECT id, name, days, time, timezone, is_active as active, created_at
-                    FROM daily_posts_schedule 
-                    WHERE is_active = true 
-                    AND platform = 'facebook' 
-                    AND channel_type = 'feed_post' 
-                    AND content_type = 'blog_post'
-                    ORDER BY created_at DESC
-                """)
-                
-                schedules = cur.fetchall()
-                
-                transformed_schedules = []
-                for schedule in schedules:
-                    transformed_schedules.append({
-                        'id': schedule['id'],
-                        'name': schedule['name'],
-                        'days': schedule['days'] if isinstance(schedule['days'], list) else [],
-                        'time': str(schedule['time']) if schedule['time'] else None,
-                        'timezone': schedule['timezone'],
-                        'active': schedule['active'],
-                        'created_at': schedule['created_at'].isoformat() if schedule['created_at'] else None
-                    })
-                
-                return jsonify({
-                    'success': True,
-                    'schedules': transformed_schedules
-                })
-                
-    except Exception as e:
-        logger.error(f"Error loading blog post schedules: {e}")
-        return jsonify({'error': f'Failed to load schedules: {str(e)}'}), 500
-
-@app.route('/api/syndication/facebook/schedules', methods=['POST'])
-def create_blog_post_schedule():
-    """Create a new schedule for blog post syndication."""
-    try:
-        data = request.get_json()
-        
-        required_fields = ['name', 'days', 'time', 'timezone']
-        for field in required_fields:
-            if field not in data:
-                return jsonify({'error': f'Missing required field: {field}'}), 400
-        
-        with get_db_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    INSERT INTO daily_posts_schedule (name, days, time, timezone, platform, channel_type, content_type, is_active)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                    RETURNING id
-                """, (
-                    data['name'],
-                    data['days'],
-                    data['time'],
-                    data['timezone'],
-                    'facebook',
-                    'feed_post',
-                    'blog_post',
-                    data.get('active', True)
-                ))
-                
-                schedule_id = cur.fetchone()[0]
-                conn.commit()
-                
-                return jsonify({
-                    'success': True,
-                    'schedule_id': schedule_id,
-                    'message': 'Schedule created successfully'
-                })
-                
-    except Exception as e:
-        logger.error(f"Error creating blog post schedule: {e}")
-        return jsonify({'error': f'Failed to create schedule: {str(e)}'}), 500
-
-@app.route('/api/syndication/facebook/schedules/<int:schedule_id>', methods=['PUT'])
-def update_blog_post_schedule(schedule_id):
-    """Update a blog post schedule."""
-    try:
-        data = request.get_json()
-        
-        with get_db_connection() as conn:
-            with conn.cursor() as cur:
-                # Build dynamic update query
-                update_fields = []
-                update_values = []
-                
-                allowed_fields = ['name', 'days', 'time', 'timezone', 'active']
-                
-                for field in allowed_fields:
-                    if field in data:
-                        if field == 'active':
-                            update_fields.append("is_active = %s")
-                        else:
-                            update_fields.append(f"{field} = %s")
-                        update_values.append(data[field])
-                
-                if not update_fields:
-                    return jsonify({'error': 'No valid fields to update'}), 400
-                
-                update_values.append(schedule_id)
-                
-                cur.execute(f"""
-                    UPDATE daily_posts_schedule 
-                    SET {', '.join(update_fields)}, updated_at = CURRENT_TIMESTAMP
-                    WHERE id = %s 
-                    AND platform = 'facebook' 
-                    AND channel_type = 'feed_post' 
-                    AND content_type = 'blog_post'
-                    RETURNING id
-                """, update_values)
-                
-                updated_schedule = cur.fetchone()
-                if not updated_schedule:
-                    return jsonify({'error': 'Schedule not found'}), 404
-                
-                conn.commit()
-                
-                return jsonify({
-                    'success': True,
-                    'message': 'Schedule updated successfully'
-                })
-                
-    except Exception as e:
-        logger.error(f"Error updating blog post schedule: {e}")
-        return jsonify({'error': f'Failed to update schedule: {str(e)}'}), 500
-
-@app.route('/api/syndication/facebook/schedules/<int:schedule_id>', methods=['DELETE'])
-def delete_blog_post_schedule(schedule_id):
-    """Delete a blog post schedule."""
-    try:
-        with get_db_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    DELETE FROM daily_posts_schedule 
-                    WHERE id = %s 
-                    AND platform = 'facebook' 
-                    AND channel_type = 'feed_post' 
-                    AND content_type = 'blog_post'
-                    RETURNING id
-                """, (schedule_id,))
-                
-                deleted_schedule = cur.fetchone()
-                if not deleted_schedule:
-                    return jsonify({'error': 'Schedule not found'}), 404
-                
-                conn.commit()
-                
-                return jsonify({
-                    'success': True,
-                    'message': 'Schedule deleted successfully'
-                })
-                
-    except Exception as e:
-        logger.error(f"Error deleting blog post schedule: {e}")
-        return jsonify({'error': f'Failed to delete schedule: {str(e)}'}), 500
 
 @app.route('/api/daily-product-posts/update-products', methods=['POST'])
 def update_products():
@@ -5077,10 +4573,7 @@ def get_schedule_status():
             cur.execute("""
                 SELECT time, timezone, days, is_active, created_at, updated_at
                 FROM daily_posts_schedule
-                WHERE is_active = true 
-                AND platform = 'facebook' 
-                AND channel_type = 'feed_post' 
-                AND content_type = 'product'
+                WHERE is_active = true
                 ORDER BY created_at DESC
                 LIMIT 1
             """)
@@ -5123,10 +4616,7 @@ def get_all_schedules():
             cur.execute("""
                 SELECT id, name, time, timezone, days, is_active, created_at, updated_at
                 FROM daily_posts_schedule
-                WHERE is_active = true 
-                AND platform = 'facebook' 
-                AND channel_type = 'feed_post' 
-                AND content_type = 'product'
+                WHERE is_active = true
                 ORDER BY display_order ASC, created_at ASC
             """)
             
@@ -5202,10 +4692,7 @@ def test_schedules():
             cur.execute("""
                 SELECT name, time, timezone, days
                 FROM daily_posts_schedule
-                WHERE is_active = true 
-                AND platform = 'facebook' 
-                AND channel_type = 'feed_post' 
-                AND content_type = 'product'
+                WHERE is_active = true
                 ORDER BY display_order ASC, created_at ASC
             """)
             
