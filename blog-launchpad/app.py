@@ -4583,6 +4583,157 @@ def post_blog_content_to_facebook():
         logger.error(f"Error posting blog content to Facebook: {e}")
         return jsonify({'error': f'Failed to post to Facebook: {str(e)}'}), 500
 
+# Blog Post Schedule Management APIs
+@app.route('/api/syndication/facebook/schedules', methods=['GET'])
+def get_blog_post_schedules():
+    """Get all schedules for blog post syndication."""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                cur.execute("""
+                    SELECT id, name, days, time, timezone, is_active as active, created_at
+                    FROM daily_posts_schedule 
+                    WHERE is_active = true
+                    ORDER BY created_at DESC
+                """)
+                
+                schedules = cur.fetchall()
+                
+                transformed_schedules = []
+                for schedule in schedules:
+                    transformed_schedules.append({
+                        'id': schedule['id'],
+                        'name': schedule['name'],
+                        'days': schedule['days'] if isinstance(schedule['days'], list) else [],
+                        'time': str(schedule['time']) if schedule['time'] else None,
+                        'timezone': schedule['timezone'],
+                        'active': schedule['active'],
+                        'created_at': schedule['created_at'].isoformat() if schedule['created_at'] else None
+                    })
+                
+                return jsonify({
+                    'success': True,
+                    'schedules': transformed_schedules
+                })
+                
+    except Exception as e:
+        logger.error(f"Error loading blog post schedules: {e}")
+        return jsonify({'error': f'Failed to load schedules: {str(e)}'}), 500
+
+@app.route('/api/syndication/facebook/schedules', methods=['POST'])
+def create_blog_post_schedule():
+    """Create a new schedule for blog post syndication."""
+    try:
+        data = request.get_json()
+        
+        required_fields = ['name', 'days', 'time', 'timezone']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    INSERT INTO daily_posts_schedule (name, days, time, timezone, is_active)
+                    VALUES (%s, %s, %s, %s, %s)
+                    RETURNING id
+                """, (
+                    data['name'],
+                    data['days'],
+                    data['time'],
+                    data['timezone'],
+                    data.get('active', True)
+                ))
+                
+                schedule_id = cur.fetchone()[0]
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'schedule_id': schedule_id,
+                    'message': 'Schedule created successfully'
+                })
+                
+    except Exception as e:
+        logger.error(f"Error creating blog post schedule: {e}")
+        return jsonify({'error': f'Failed to create schedule: {str(e)}'}), 500
+
+@app.route('/api/syndication/facebook/schedules/<int:schedule_id>', methods=['PUT'])
+def update_blog_post_schedule(schedule_id):
+    """Update a blog post schedule."""
+    try:
+        data = request.get_json()
+        
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                # Build dynamic update query
+                update_fields = []
+                update_values = []
+                
+                allowed_fields = ['name', 'days', 'time', 'timezone', 'active']
+                
+                for field in allowed_fields:
+                    if field in data:
+                        if field == 'active':
+                            update_fields.append("is_active = %s")
+                        else:
+                            update_fields.append(f"{field} = %s")
+                        update_values.append(data[field])
+                
+                if not update_fields:
+                    return jsonify({'error': 'No valid fields to update'}), 400
+                
+                update_values.append(schedule_id)
+                
+                cur.execute(f"""
+                    UPDATE daily_posts_schedule 
+                    SET {', '.join(update_fields)}, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                    RETURNING id
+                """, update_values)
+                
+                updated_schedule = cur.fetchone()
+                if not updated_schedule:
+                    return jsonify({'error': 'Schedule not found'}), 404
+                
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Schedule updated successfully'
+                })
+                
+    except Exception as e:
+        logger.error(f"Error updating blog post schedule: {e}")
+        return jsonify({'error': f'Failed to update schedule: {str(e)}'}), 500
+
+@app.route('/api/syndication/facebook/schedules/<int:schedule_id>', methods=['DELETE'])
+def delete_blog_post_schedule(schedule_id):
+    """Delete a blog post schedule."""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    DELETE FROM daily_posts_schedule 
+                    WHERE id = %s
+                    RETURNING id
+                """, (schedule_id,))
+                
+                deleted_schedule = cur.fetchone()
+                if not deleted_schedule:
+                    return jsonify({'error': 'Schedule not found'}), 404
+                
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Schedule deleted successfully'
+                })
+                
+    except Exception as e:
+        logger.error(f"Error deleting blog post schedule: {e}")
+        return jsonify({'error': f'Failed to delete schedule: {str(e)}'}), 500
+
 @app.route('/api/daily-product-posts/update-products', methods=['POST'])
 def update_products():
     """Check for and update products with changes from Clan.com API"""

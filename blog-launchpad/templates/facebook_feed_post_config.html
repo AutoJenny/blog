@@ -1236,8 +1236,8 @@
             try {
                 console.log('Adding generated posts to queue...');
                 
-                // Get current schedules to calculate posting times
-                const scheduleResponse = await fetch('/api/daily-product-posts/schedules');
+                // Get current blog post schedules to calculate posting times
+                const scheduleResponse = await fetch('/api/syndication/facebook/schedules');
                 const scheduleData = await scheduleResponse.json();
                 
                 let schedules = [];
@@ -1390,20 +1390,27 @@
             }
         }
         
-        // Load schedule data
+        // Load schedule data for blog posts
         async function loadScheduleData() {
             try {
-                const response = await fetch('/api/daily-product-posts/schedules');
+                const response = await fetch('/api/syndication/facebook/schedules');
                 const data = await response.json();
                 
                 if (data.success) {
                     scheduleData = data.schedules || [];
                     displaySchedules(scheduleData);
                     updateScheduleSummary(scheduleData);
+                } else {
+                    console.log('No blog post schedules found, using empty array');
+                    scheduleData = [];
+                    displaySchedules([]);
+                    updateScheduleSummary([]);
                 }
             } catch (error) {
-                console.error('Error loading schedules:', error);
+                console.error('Error loading blog post schedules:', error);
+                scheduleData = [];
                 displaySchedules([]);
+                updateScheduleSummary([]);
             }
         }
         
@@ -1654,9 +1661,42 @@
             return 'No upcoming posts';
         }
         
-        // Placeholder functions for schedule management
-        function saveNewSchedule() {
-            console.log('Save new schedule - to be implemented');
+        // Schedule management functions for blog posts
+        async function saveNewSchedule() {
+            const form = document.getElementById('add-schedule-form');
+            const formData = new FormData(form);
+            
+            const scheduleData = {
+                name: formData.get('schedule-name'),
+                days: Array.from(document.querySelectorAll('input[name="new-schedule-days"]:checked')).map(cb => parseInt(cb.value)),
+                time: formData.get('schedule-time'),
+                timezone: formData.get('schedule-timezone')
+            };
+            
+            try {
+                const response = await fetch('/api/syndication/facebook/schedules', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(scheduleData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Hide form and reload schedules
+                    form.style.display = 'none';
+                    form.reset();
+                    await loadScheduleData();
+                    alert('Schedule created successfully!');
+                } else {
+                    alert('Error creating schedule: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error creating schedule:', error);
+                alert('Error creating schedule. Please try again.');
+            }
         }
         
         function setPresetDays(days) {
@@ -1670,12 +1710,33 @@
             });
         }
         
-        function testAllSchedules() {
-            console.log('Test all schedules - to be implemented');
+        async function testAllSchedules() {
+            if (scheduleData.length === 0) {
+                alert('No schedules to test');
+                return;
+            }
+            
+            alert(`Testing ${scheduleData.length} blog post schedules...`);
+            // TODO: Implement actual schedule testing
         }
         
-        function clearAllSchedules() {
-            console.log('Clear all schedules - to be implemented');
+        async function clearAllSchedules() {
+            if (confirm('Delete all blog post schedules?')) {
+                try {
+                    // Delete each schedule
+                    for (const schedule of scheduleData) {
+                        await fetch(`/api/syndication/facebook/schedules/${schedule.id}`, {
+                            method: 'DELETE'
+                        });
+                    }
+                    
+                    await loadScheduleData();
+                    alert('All schedules deleted successfully!');
+                } catch (error) {
+                    console.error('Error deleting schedules:', error);
+                    alert('Error deleting schedules. Please try again.');
+                }
+            }
         }
         
         async function postNow() {
@@ -1763,12 +1824,75 @@
             }
         }
         
-        function scheduleTomorrow() {
-            console.log('Schedule tomorrow - to be implemented');
+        async function scheduleTomorrow() {
+            if (queueData.length === 0) {
+                alert('No items in queue to schedule');
+                return;
+            }
+            
+            // Find the first ready item
+            const readyItem = queueData.find(item => item.status === 'ready');
+            if (!readyItem) {
+                alert('No ready items in queue to schedule');
+                return;
+            }
+            
+            // Schedule for tomorrow at 9 AM
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(9, 0, 0, 0);
+            
+            const scheduledDate = tomorrow.toISOString().split('T')[0];
+            const scheduledTime = '09:00';
+            
+            try {
+                const response = await fetch(`/api/syndication/facebook/queue/${readyItem.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        scheduled_date: scheduledDate,
+                        scheduled_time: scheduledTime,
+                        schedule_name: 'Tomorrow 9 AM',
+                        timezone: 'GMT'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    await loadQueueData();
+                    alert(`Scheduled "${readyItem.post.title}" for tomorrow at 9:00 AM GMT`);
+                } else {
+                    alert('Error scheduling item: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error scheduling item:', error);
+                alert('Error scheduling item. Please try again.');
+            }
         }
         
-        function handleDeleteSchedule(scheduleId) {
-            console.log('Delete schedule - to be implemented', scheduleId);
+        async function handleDeleteSchedule(scheduleId) {
+            if (confirm('Delete this schedule?')) {
+                try {
+                    const response = await fetch(`/api/syndication/facebook/schedules/${scheduleId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        await loadScheduleData();
+                        alert('Schedule deleted successfully!');
+                    } else {
+                        alert('Error deleting schedule: ' + result.error);
+                    }
+                } catch (error) {
+                    console.error('Error deleting schedule:', error);
+                    alert('Error deleting schedule. Please try again.');
+                }
+            }
         }
         
         // Queue management functions
