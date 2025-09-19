@@ -490,6 +490,7 @@
                     <table class="timeline-table">
                         <thead>
                             <tr>
+                                <th style="width: 60px;">Thumb</th>
                                 <th style="width: 120px;">Date/Time</th>
                                 <th style="width: 100px;">Platform</th>
                                 <th style="width: 100px;">Type</th>
@@ -632,6 +633,12 @@
                 
                 html += `
                     <tr>
+                        <td>
+                            ${item.product_image ? 
+                                `<img src="${item.product_image}" alt="Product thumbnail" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;" onerror="this.style.display='none'">` : 
+                                '<div style="width: 40px; height: 40px; background: #334155; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 0.7rem;">No img</div>'
+                            }
+                        </td>
                         <td>
                             <div style="font-weight: 600;">${dateStr}</div>
                             <div style="color: #94a3b8; font-size: 0.8rem;">${timeStr}</div>
@@ -944,6 +951,18 @@
         function getModuleUrl(platform, contentType, action) {
             const moduleMap = {
                 'facebook': {
+                    'Feature Focus': {
+                        'edit': '/daily-product-posts',
+                        'reschedule': '/daily-product-posts'
+                    },
+                    'Benefit Focus': {
+                        'edit': '/daily-product-posts',
+                        'reschedule': '/daily-product-posts'
+                    },
+                    'Story Focus': {
+                        'edit': '/daily-product-posts',
+                        'reschedule': '/daily-product-posts'
+                    },
                     'product': {
                         'edit': '/daily-product-posts',
                         'reschedule': '/daily-product-posts'
@@ -1024,6 +1043,9 @@
         function getDeleteUrl(platform, contentType) {
             const deleteMap = {
                 'facebook': {
+                    'Feature Focus': '/api/daily-product-posts/queue/',
+                    'Benefit Focus': '/api/daily-product-posts/queue/',
+                    'Story Focus': '/api/daily-product-posts/queue/',
                     'product': '/api/daily-product-posts/queue/',
                     'blog': '/api/syndication/pieces/',
                     'tartan': '/api/syndication/pieces/',
@@ -1056,6 +1078,9 @@
         function getPostUrl(platform, contentType) {
             const postMap = {
                 'facebook': {
+                    'Feature Focus': '/api/daily-product-posts/post-now',
+                    'Benefit Focus': '/api/daily-product-posts/post-now',
+                    'Story Focus': '/api/daily-product-posts/post-now',
                     'product': '/api/daily-product-posts/post-now',
                     'blog': '/api/syndication/pieces/',
                     'tartan': '/api/syndication/pieces/',

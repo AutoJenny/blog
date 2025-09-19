@@ -4232,7 +4232,7 @@ def get_queue():
                        cp.sku, cp.price, cp.category_ids as categories
                 FROM posting_queue pq
                 LEFT JOIN clan_products cp ON pq.product_id = cp.id
-                ORDER BY pq.queue_order ASC, pq.created_at ASC
+                ORDER BY pq.scheduled_timestamp ASC, pq.created_at ASC
             """)
             
             items = cur.fetchall()
