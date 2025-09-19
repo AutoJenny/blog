@@ -20,6 +20,13 @@ This document provides a comprehensive reference for the Social Media Syndicatio
 - **Timeline**: Immediate implementation
 - **Status**: **IMPLEMENTED AND WORKING**
 
+#### **NEW: Automated Syndication Selection System ✅**
+- **Goal**: Automatically select next unprocessed blog post section for syndication
+- **Scope**: Tracks progress across all platform/channel combinations
+- **Approach**: New `syndication_progress` table with smart selection algorithm
+- **Timeline**: Implemented 2025-01-19
+- **Status**: **IMPLEMENTED AND WORKING**
+
 #### **Database Integration Strategy**
 - **LLM Infrastructure**: Uses existing `llm_interaction` table for storing generated content
 - **Prompt Management**: Leverages existing `llm_prompt` table with "Social Media Syndication" prompt
@@ -129,6 +136,34 @@ The existing system uses a complex 17-table database schema that provides a soli
 - **`ui_display_rules`**: Conditional display logic and rules
 - **`ui_user_preferences`**: User-specific UI customization
 - **`ui_session_state`**: Session-specific UI state tracking
+
+#### **5. Syndication Progress Tracking (NEW)**
+- **`syndication_progress`**: Tracks which sections have been processed for each platform/channel combination
+
+```sql
+CREATE TABLE syndication_progress (
+    id SERIAL PRIMARY KEY,
+    post_id INTEGER NOT NULL,
+    section_id INTEGER NOT NULL,
+    platform_id INTEGER NOT NULL,
+    channel_type_id INTEGER NOT NULL,
+    process_id INTEGER NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    completed_at TIMESTAMP,
+    error_message TEXT,
+    
+    -- Ensure unique combination of post, section, platform, and channel
+    UNIQUE(post_id, section_id, platform_id, channel_type_id)
+);
+```
+
+**Status Values:**
+- **`pending`**: Section is available for processing
+- **`processing`**: Section is currently being processed
+- **`completed`**: Section has been successfully processed
+- **`failed`**: Section processing failed (can be retried)
 
 ### **Key Relationships and Constraints**
 
@@ -366,3 +401,11 @@ ui_user_preferences (many) → (1) ui_sections
 - ✅ Positioned enterprise framework as long-term goal
 - ✅ Clarified current implementation status
 - ✅ Added development guidelines and rules
+
+### **2025-01-19 - Automated Syndication Selection System**
+- ✅ Created `syndication_progress` table for tracking section processing
+- ✅ Implemented automated selection algorithm (most recent post first, look backwards)
+- ✅ Added API endpoints for progress tracking (mark-processing, mark-completed, mark-failed)
+- ✅ Integrated with Facebook Feed Post page for automatic section selection
+- ✅ Added comprehensive documentation for automated selection system
+- ✅ Created API reference and frontend integration guides
