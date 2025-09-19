@@ -200,6 +200,70 @@
             color: #a5b4fc;
         }
         
+        /* Accordion Styles for Blog Posts */
+        .section-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            user-select: none;
+            padding: 30px;
+            margin: 0;
+            transition: background-color 0.2s ease;
+        }
+        
+        .section-title.with-right-content {
+            justify-content: space-between;
+        }
+        
+        .section-title-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .section-title-right {
+            display: flex;
+            align-items: center;
+            text-align: right;
+        }
+        
+        .section-title:hover {
+            background-color: #334155;
+        }
+        
+        .section-content {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+        }
+        
+        .section-content.expanded {
+            max-height: 2000px;
+            padding: 0 30px 30px 30px;
+        }
+        
+        .accordion-chevron {
+            transition: transform 0.3s ease;
+        }
+        
+        .accordion-chevron.expanded {
+            transform: rotate(90deg);
+        }
+        
         .status-badge {
             display: inline-flex;
             align-items: center;
@@ -342,6 +406,77 @@
                     </li>
                 </ol>
             </nav>
+        </div>
+        
+        <!-- Blog Post Management Accordions -->
+        <!-- Item Selection Section -->
+        <div class="section-card">
+            <div class="section-title" onclick="toggleAccordion('item-selection')">
+                <i class="fas fa-chevron-right accordion-chevron" id="item-selection-chevron"></i>
+                <i class="fas fa-newspaper"></i>
+                Item Selection
+            </div>
+            <div class="section-content" id="item-selection-content">
+                <div style="text-align: center; color: #94a3b8; padding: 40px 20px; font-style: italic;">
+                    <i class="fas fa-newspaper" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                    Item selection functionality will be implemented here
+                </div>
+            </div>
+        </div>
+        
+        <!-- Posting Control Section -->
+        <div class="section-card">
+            <div class="section-title with-right-content" onclick="toggleAccordion('posting-control')">
+                <div class="section-title-left">
+                    <i class="fas fa-chevron-right accordion-chevron" id="posting-control-chevron"></i>
+                    <i class="fas fa-paper-plane"></i>
+                    Posting Control
+                </div>
+                <div class="section-title-right" id="next-posts-info" style="font-size: 0.9rem; color: #94a3b8;">
+                    Loading...
+                </div>
+            </div>
+            <div class="section-content" id="posting-control-content">
+                <div style="text-align: center; color: #94a3b8; padding: 40px 20px; font-style: italic;">
+                    <i class="fas fa-paper-plane" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                    Posting control functionality will be implemented here
+                </div>
+            </div>
+        </div>
+        
+        <!-- Posting Queue Section -->
+        <div class="section-card">
+            <div class="section-title with-right-content" onclick="toggleAccordion('posting-queue')">
+                <div class="section-title-left">
+                    <i class="fas fa-chevron-right accordion-chevron" id="posting-queue-chevron"></i>
+                    <i class="fas fa-list-alt"></i>
+                    Posting Queue
+                </div>
+                <div class="section-title-right">
+                    <span id="queue-count" class="badge" style="background: #f59e0b; color: #0f172a;">0</span>
+                </div>
+            </div>
+            <div class="section-content" id="posting-queue-content">
+                <div style="text-align: center; color: #94a3b8; padding: 40px 20px; font-style: italic;">
+                    <i class="fas fa-list-alt" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                    Posting queue functionality will be implemented here
+                </div>
+            </div>
+        </div>
+        
+        <!-- Content Generation Section -->
+        <div class="section-card">
+            <div class="section-title" onclick="toggleAccordion('content-generation')">
+                <i class="fas fa-chevron-right accordion-chevron" id="content-generation-chevron"></i>
+                <i class="fas fa-magic"></i>
+                Content Generation
+            </div>
+            <div class="section-content" id="content-generation-content">
+                <div style="text-align: center; color: #94a3b8; padding: 40px 20px; font-style: italic;">
+                    <i class="fas fa-magic" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                    Content generation functionality will be implemented here
+                </div>
+            </div>
         </div>
         
         <!-- Channel Header -->
@@ -1813,6 +1948,22 @@
                 }
             } catch (error) {
                 console.error('Error saving syndication piece:', error);
+            }
+        }
+        
+        // Accordion functionality for Blog Post Management
+        function toggleAccordion(sectionId) {
+            const content = document.getElementById(sectionId + '-content');
+            const chevron = document.getElementById(sectionId + '-chevron');
+            
+            if (content.classList.contains('expanded')) {
+                // Collapse
+                content.classList.remove('expanded');
+                chevron.classList.remove('expanded');
+            } else {
+                // Expand
+                content.classList.add('expanded');
+                chevron.classList.add('expanded');
             }
         }
     </script>
