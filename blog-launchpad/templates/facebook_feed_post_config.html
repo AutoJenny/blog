@@ -502,6 +502,20 @@
                     <div id="sectionsContainer">
                         <!-- Section titles will be populated here -->
                     </div>
+                    
+                    <!-- Generate All Sections Button -->
+                    <div class="mt-4 text-center">
+                        <button id="generateAllSectionsBtn" class="btn btn-success btn-lg" disabled>
+                            <i class="fas fa-magic me-2"></i>Generate all <span id="sectionCount">0</span> sections
+                        </button>
+                        <div id="generationProgress" class="mt-3 d-none">
+                            <div class="progress mb-2">
+                                <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                                     role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <small class="text-muted" id="progressText">Preparing...</small>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -514,9 +528,22 @@
                 AI Content Generation
             </div>
             <div class="section-content" id="content-generation-content">
-                <div style="text-align: center; color: #94a3b8; padding: 40px 20px; font-style: italic;">
-                    <i class="fas fa-robot" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
-                    AI content generation functionality will be implemented here
+                <!-- Generated Content Results -->
+                <div id="generatedContentResults" class="d-none">
+                    <h6 class="text-info mb-3">
+                        <i class="fas fa-check-circle me-2"></i>Generated Facebook Posts
+                    </h6>
+                    <div id="generatedPostsContainer">
+                        <!-- Generated posts will be displayed here -->
+                    </div>
+                </div>
+                
+                <!-- Placeholder when no content generated -->
+                <div id="contentGenerationPlaceholder">
+                    <div style="text-align: center; color: #94a3b8; padding: 40px 20px; font-style: italic;">
+                        <i class="fas fa-robot" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                        Select a post and click "Generate all sections" to create Facebook posts from your blog content.
+                    </div>
                 </div>
             </div>
         </div>
@@ -621,6 +648,13 @@
                     sectionsContainer.innerHTML = '';
                     
                     if (data.sections && data.sections.length > 0) {
+                        // Store sections globally for content generation
+                        currentSections = data.sections;
+                        currentPostId = postId;
+                        
+                        // Update section count and enable generate button
+                        updateSectionCount(data.sections.length);
+                        
                         data.sections.forEach(section => {
                             const sectionDiv = document.createElement('div');
                             sectionDiv.className = 'mb-2 p-2 bg-dark border border-secondary rounded';
@@ -639,12 +673,18 @@
                         });
                         sectionsList.classList.remove('d-none');
                     } else {
+                        currentSections = [];
+                        currentPostId = null;
+                        updateSectionCount(0);
                         sectionsContainer.innerHTML = '<p class="text-muted">No sections found for this post.</p>';
                         sectionsList.classList.remove('d-none');
                     }
                 })
                 .catch(error => {
                     console.error('Error loading sections:', error);
+                    currentSections = [];
+                    currentPostId = null;
+                    updateSectionCount(0);
                     sectionsContainer.innerHTML = '<p class="text-danger">Error loading sections</p>';
                     sectionsList.classList.remove('d-none');
                 });
@@ -688,7 +728,266 @@
                     document.getElementById('sectionsList').classList.add('d-none');
                 }
             });
+            
+            // Add event listener for Generate All Sections button
+            document.getElementById('generateAllSectionsBtn').addEventListener('click', function() {
+                generateAllSections();
+            });
         });
+        
+        // Content Generation Functions
+        let currentSections = [];
+        let currentPostId = null;
+        
+        function updateSectionCount(count) {
+            document.getElementById('sectionCount').textContent = count;
+            const generateBtn = document.getElementById('generateAllSectionsBtn');
+            generateBtn.disabled = count === 0;
+        }
+        
+        function showProgress(show = true) {
+            const progressDiv = document.getElementById('generationProgress');
+            if (show) {
+                progressDiv.classList.remove('d-none');
+            } else {
+                progressDiv.classList.add('d-none');
+            }
+        }
+        
+        function updateProgress(percent, text) {
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('progressText').textContent = text;
+        }
+        
+        async function generateAllSections() {
+            if (!currentPostId || currentSections.length === 0) {
+                alert('Please select a post with sections first.');
+                return;
+            }
+            
+            const generateBtn = document.getElementById('generateAllSectionsBtn');
+            const originalText = generateBtn.innerHTML;
+            
+            try {
+                // Disable button and show progress
+                generateBtn.disabled = true;
+                generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generating...';
+                showProgress(true);
+                
+                let completedCount = 0;
+                const totalCount = currentSections.length;
+                const generatedPosts = [];
+                
+                // Process each section sequentially
+                for (let i = 0; i < currentSections.length; i++) {
+                    const section = currentSections[i];
+                    
+                    // Update progress
+                    const percent = Math.round((completedCount / totalCount) * 100);
+                    updateProgress(percent, `Processing section ${completedCount + 1}/${totalCount}: ${section.title}`);
+                    
+                    try {
+                        // Generate content for this section
+                        const generatedContent = await processSectionWithLLM(section, i);
+                        generatedPosts.push({
+                            sectionId: section.id,
+                            sectionTitle: section.title,
+                            content: generatedContent,
+                            sectionIndex: i
+                        });
+                        
+                        completedCount++;
+                        
+                        // Small delay between sections
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
+                    } catch (error) {
+                        console.error(`Error processing section ${i + 1}:`, error);
+                        // Continue with next section
+                    }
+                }
+                
+                // Update progress to completion
+                updateProgress(100, `Completed! Generated ${completedCount} Facebook posts.`);
+                
+                // Display results
+                displayGeneratedPosts(generatedPosts);
+                
+                // Show success message
+                setTimeout(() => {
+                    showProgress(false);
+                    alert(`Successfully generated ${completedCount} Facebook posts! Check the AI Content Generation panel.`);
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Error generating content:', error);
+                alert(`Error generating content: ${error.message}`);
+                showProgress(false);
+            } finally {
+                // Restore button
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = originalText;
+            }
+        }
+        
+        async function processSectionWithLLM(section, sectionIndex) {
+            try {
+                // Get LLM settings (using defaults for now)
+                const llmRequest = {
+                    provider: 'ollama',
+                    model: 'mistral',
+                    prompt: assembleLLMPrompt(section),
+                    temperature: 0.7,
+                    max_tokens: 1000
+                };
+                
+                // Send to LLM service
+                const response = await fetch('/api/syndication/ollama/direct', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(llmRequest)
+                });
+                
+                const result = await response.json();
+                
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+                
+                // Extract response content
+                const responseContent = result.output || result.result || result.response || result.content || 'No response received';
+                
+                // Save to database
+                await saveSyndicationPiece(section, responseContent, llmRequest, sectionIndex);
+                
+                return responseContent;
+                
+            } catch (error) {
+                console.error('Error processing section with LLM:', error);
+                throw error;
+            }
+        }
+        
+        function assembleLLMPrompt(section) {
+            const systemPrompt = 'You are a social media content specialist. Write a Facebook feed post based on the blog section below.';
+            const userPrompt = `RULES:
+. Output ONLY the final post text — no explanations, no notes, no commentary, no placeholders, no brackets.
+. Use a conversational, engaging, and authentic tone.
+. Include a clear call-to-action.
+. Avoid the word 'delve'.
+. Use EXACTLY THREE relevant hashtags, placed ONLY at the very end.
+. Post length must be 150–200 characters.`;
+            
+            // Get blog post title
+            const postTitle = document.getElementById('postTitle').textContent || 'Blog Post';
+            
+            // Clean section content
+            let sectionText = section.content || section.polished || 'No content available';
+            sectionText = sectionText
+                .replace(/#\d+/g, '') // Remove post numbers like #53
+                .replace(/<[^>]*>/g, '') // Remove HTML tags
+                .replace(/\s+/g, ' ') // Normalize whitespace
+                .trim();
+            
+            // Build the blog details section
+            const blogDetails = `Title: ${postTitle}\nSection: ${section.title}\nText: ${sectionText}`;
+            
+            // Assemble the final prompt
+            const finalPrompt = `${systemPrompt}\n\n${userPrompt}\n\n=== BLOG DETAILS ===\n${blogDetails}\n\nNow write the final Facebook post`;
+            
+            return finalPrompt;
+        }
+        
+        async function saveSyndicationPiece(section, generatedContent, llmRequest, sectionIndex) {
+            try {
+                const pieceData = {
+                    post_id: currentPostId,
+                    section_id: section.id,
+                    platform_id: 1, // Facebook
+                    channel_type_id: 1, // feed_post
+                    process_id: 1, // Default process
+                    original_content: JSON.stringify({
+                        title: section.title,
+                        content: section.content,
+                        polished: section.polished
+                    }),
+                    generated_content: generatedContent,
+                    llm_model: llmRequest.model,
+                    llm_temperature: llmRequest.temperature,
+                    llm_max_tokens: llmRequest.max_tokens,
+                    llm_provider: llmRequest.provider,
+                    prompt_used: llmRequest.prompt,
+                    processing_time_ms: 0, // Will be calculated if needed
+                    platform_name: 'Facebook',
+                    channel_type_name: 'feed_post',
+                    requirements: 'Facebook feed post requirements'
+                };
+                
+                const response = await fetch('/api/syndication/pieces', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(pieceData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    console.log('Syndication piece saved successfully:', result);
+                } else {
+                    console.error('Failed to save syndication piece:', result.error);
+                }
+                
+            } catch (error) {
+                console.error('Error saving syndication piece:', error);
+            }
+        }
+        
+        function displayGeneratedPosts(generatedPosts) {
+            const resultsDiv = document.getElementById('generatedContentResults');
+            const placeholderDiv = document.getElementById('contentGenerationPlaceholder');
+            const container = document.getElementById('generatedPostsContainer');
+            
+            // Hide placeholder and show results
+            placeholderDiv.classList.add('d-none');
+            resultsDiv.classList.remove('d-none');
+            
+            // Clear previous results
+            container.innerHTML = '';
+            
+            // Display each generated post
+            generatedPosts.forEach((post, index) => {
+                const postElement = document.createElement('div');
+                postElement.className = 'generated-post mb-4 p-3 bg-dark border border-secondary rounded';
+                postElement.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="text-info mb-0">Section ${post.sectionIndex + 1}: ${post.sectionTitle}</h6>
+                        <span class="badge bg-success">Generated</span>
+                    </div>
+                    <div class="generated-content p-3 bg-secondary rounded">
+                        <p class="mb-0 text-white">${post.content}</p>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>Generated: ${new Date().toLocaleTimeString()}
+                        </small>
+                    </div>
+                `;
+                container.appendChild(postElement);
+            });
+            
+            // Auto-expand the AI Content Generation accordion
+            const accordionContent = document.getElementById('content-generation-content');
+            const chevron = document.getElementById('content-generation-chevron');
+            if (accordionContent && chevron) {
+                accordionContent.style.display = 'block';
+                chevron.classList.remove('fa-chevron-right');
+                chevron.classList.add('fa-chevron-down');
+            }
+        }
     </script>
 </body>
 </html>
