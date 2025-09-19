@@ -3065,6 +3065,138 @@ def get_user_preferences(user_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/syndication/next-section', methods=['GET'])
+def get_next_section_api():
+    """API endpoint to get the next unprocessed section for syndication."""
+    try:
+        platform_id = request.args.get('platform_id', 1, type=int)  # Default to Facebook
+        channel_type_id = request.args.get('channel_type_id', 1, type=int)  # Default to feed_post
+        process_id = request.args.get('process_id', 1, type=int)
+        
+        next_section = get_next_section_for_syndication(platform_id, channel_type_id, process_id)
+        
+        if next_section:
+            return jsonify({
+                'status': 'success',
+                'next_section': next_section
+            })
+        else:
+            return jsonify({
+                'status': 'success',
+                'next_section': None,
+                'message': 'No unprocessed sections found'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error in get_next_section_api: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/syndication/mark-processing', methods=['POST'])
+def mark_processing_api():
+    """API endpoint to mark a section as currently being processed."""
+    try:
+        data = request.get_json()
+        required_fields = ['post_id', 'section_id', 'platform_id', 'channel_type_id']
+        
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        success = mark_section_processing(
+            data['post_id'],
+            data['section_id'],
+            data['platform_id'],
+            data['channel_type_id'],
+            data.get('process_id', 1)
+        )
+        
+        if success:
+            return jsonify({'status': 'success', 'message': 'Section marked as processing'})
+        else:
+            return jsonify({'error': 'Failed to mark section as processing'}), 500
+            
+    except Exception as e:
+        logger.error(f"Error in mark_processing_api: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/syndication/mark-completed', methods=['POST'])
+def mark_completed_api():
+    """API endpoint to mark a section as successfully completed."""
+    try:
+        data = request.get_json()
+        required_fields = ['post_id', 'section_id', 'platform_id', 'channel_type_id']
+        
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        success = mark_section_completed(
+            data['post_id'],
+            data['section_id'],
+            data['platform_id'],
+            data['channel_type_id'],
+            data.get('process_id', 1)
+        )
+        
+        if success:
+            return jsonify({'status': 'success', 'message': 'Section marked as completed'})
+        else:
+            return jsonify({'error': 'Failed to mark section as completed'}), 500
+            
+    except Exception as e:
+        logger.error(f"Error in mark_completed_api: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/syndication/mark-failed', methods=['POST'])
+def mark_failed_api():
+    """API endpoint to mark a section as failed with error message."""
+    try:
+        data = request.get_json()
+        required_fields = ['post_id', 'section_id', 'platform_id', 'channel_type_id', 'error_message']
+        
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        success = mark_section_failed(
+            data['post_id'],
+            data['section_id'],
+            data['platform_id'],
+            data['channel_type_id'],
+            data['error_message'],
+            data.get('process_id', 1)
+        )
+        
+        if success:
+            return jsonify({'status': 'success', 'message': 'Section marked as failed'})
+        else:
+            return jsonify({'error': 'Failed to mark section as failed'}), 500
+            
+    except Exception as e:
+        logger.error(f"Error in mark_failed_api: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/syndication/progress-summary', methods=['GET'])
+def progress_summary_api():
+    """API endpoint to get syndication progress summary."""
+    try:
+        platform_id = request.args.get('platform_id', type=int)
+        channel_type_id = request.args.get('channel_type_id', type=int)
+        
+        summary = get_syndication_progress_summary(platform_id, channel_type_id)
+        
+        if summary:
+            return jsonify({
+                'status': 'success',
+                'summary': summary
+            })
+        else:
+            return jsonify({'error': 'Failed to get progress summary'}), 500
+            
+    except Exception as e:
+        logger.error(f"Error in progress_summary_api: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/social-media/ui/session-state/<session_id>', methods=['GET'])
 def get_session_state(session_id):
     """Get session-specific UI state"""
@@ -3776,6 +3908,227 @@ def syndication_pieces():
     except Exception as e:
         logger.error(f"Error handling syndication pieces: {e}")
         return jsonify({'error': f'Failed to handle syndication pieces: {str(e)}'}), 500
+
+def get_next_section_for_syndication(platform_id, channel_type_id, process_id=1):
+    """
+    Find the next unprocessed section for syndication.
+    Algorithm:
+    1. Start with most recent published post
+    2. Find first unprocessed section for the platform/channel
+    3. If no unprocessed sections, move to next most recent post
+    4. Continue until section found or all posts exhausted
+    """
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Get all published posts ordered by creation date (most recent first)
+            cur.execute("""
+                SELECT id, title, created_at, status
+                FROM blog_posts 
+                WHERE status = 'published'
+                ORDER BY created_at DESC
+            """)
+            
+            published_posts = cur.fetchall()
+            
+            for post in published_posts:
+                post_id = post['id']
+                
+                # Get all sections for this post
+                cur.execute("""
+                    SELECT id, section_order, section_heading, section_description
+                    FROM post_section 
+                    WHERE post_id = %s 
+                    ORDER BY section_order
+                """, (post_id,))
+                
+                sections = cur.fetchall()
+                
+                # Check each section to see if it's been processed
+                for section in sections:
+                    section_id = section['id']
+                    
+                    # Check if this section has been processed for this platform/channel
+                    cur.execute("""
+                        SELECT id, status, completed_at
+                        FROM syndication_progress 
+                        WHERE post_id = %s 
+                        AND section_id = %s 
+                        AND platform_id = %s 
+                        AND channel_type_id = %s
+                    """, (post_id, section_id, platform_id, channel_type_id))
+                    
+                    progress = cur.fetchone()
+                    
+                    # If no progress record exists, this section hasn't been processed
+                    if not progress:
+                        return {
+                            'post_id': post_id,
+                            'post_title': post['title'],
+                            'post_created_at': post['created_at'].isoformat(),
+                            'section_id': section_id,
+                            'section_order': section['section_order'],
+                            'section_heading': section['section_heading'],
+                            'section_description': section['section_description'],
+                            'platform_id': platform_id,
+                            'channel_type_id': channel_type_id,
+                            'process_id': process_id,
+                            'status': 'pending'
+                        }
+                    
+                    # If progress exists but status is 'failed', we can retry
+                    elif progress['status'] == 'failed':
+                        return {
+                            'post_id': post_id,
+                            'post_title': post['title'],
+                            'post_created_at': post['created_at'].isoformat(),
+                            'section_id': section_id,
+                            'section_order': section['section_order'],
+                            'section_heading': section['section_heading'],
+                            'section_description': section['section_description'],
+                            'platform_id': platform_id,
+                            'channel_type_id': channel_type_id,
+                            'process_id': process_id,
+                            'status': 'failed_retry',
+                            'previous_error': progress.get('error_message', 'Unknown error')
+                        }
+            
+            # No unprocessed sections found
+            return None
+            
+    except Exception as e:
+        logger.error(f"Error finding next section for syndication: {e}")
+        return None
+
+def mark_section_processing(post_id, section_id, platform_id, channel_type_id, process_id=1):
+    """Mark a section as currently being processed."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            # Insert or update progress record
+            cur.execute("""
+                INSERT INTO syndication_progress 
+                (post_id, section_id, platform_id, channel_type_id, process_id, status, updated_at)
+                VALUES (%s, %s, %s, %s, %s, 'processing', CURRENT_TIMESTAMP)
+                ON CONFLICT (post_id, section_id, platform_id, channel_type_id)
+                DO UPDATE SET 
+                    status = 'processing',
+                    updated_at = CURRENT_TIMESTAMP,
+                    error_message = NULL
+            """, (post_id, section_id, platform_id, channel_type_id, process_id))
+            
+            conn.commit()
+            return True
+            
+    except Exception as e:
+        logger.error(f"Error marking section as processing: {e}")
+        return False
+
+def mark_section_completed(post_id, section_id, platform_id, channel_type_id, process_id=1):
+    """Mark a section as successfully completed."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            # Update progress record
+            cur.execute("""
+                UPDATE syndication_progress 
+                SET status = 'completed',
+                    completed_at = CURRENT_TIMESTAMP,
+                    updated_at = CURRENT_TIMESTAMP,
+                    error_message = NULL
+                WHERE post_id = %s 
+                AND section_id = %s 
+                AND platform_id = %s 
+                AND channel_type_id = %s
+            """, (post_id, section_id, platform_id, channel_type_id))
+            
+            conn.commit()
+            return True
+            
+    except Exception as e:
+        logger.error(f"Error marking section as completed: {e}")
+        return False
+
+def mark_section_failed(post_id, section_id, platform_id, channel_type_id, error_message, process_id=1):
+    """Mark a section as failed with error message."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            # Update progress record
+            cur.execute("""
+                UPDATE syndication_progress 
+                SET status = 'failed',
+                    updated_at = CURRENT_TIMESTAMP,
+                    error_message = %s
+                WHERE post_id = %s 
+                AND section_id = %s 
+                AND platform_id = %s 
+                AND channel_type_id = %s
+            """, (error_message, post_id, section_id, platform_id, channel_type_id))
+            
+            conn.commit()
+            return True
+            
+    except Exception as e:
+        logger.error(f"Error marking section as failed: {e}")
+        return False
+
+def get_syndication_progress_summary(platform_id=None, channel_type_id=None):
+    """Get a summary of syndication progress across all or specific platform/channel."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Build query based on filters
+            where_clause = ""
+            params = []
+            
+            if platform_id:
+                where_clause += " AND sp.platform_id = %s"
+                params.append(platform_id)
+            
+            if channel_type_id:
+                where_clause += " AND sp.channel_type_id = %s"
+                params.append(channel_type_id)
+            
+            cur.execute(f"""
+                SELECT 
+                    sp.status,
+                    COUNT(*) as count,
+                    COUNT(CASE WHEN sp.completed_at IS NOT NULL THEN 1 END) as completed_count,
+                    COUNT(CASE WHEN sp.status = 'pending' THEN 1 END) as pending_count,
+                    COUNT(CASE WHEN sp.status = 'processing' THEN 1 END) as processing_count,
+                    COUNT(CASE WHEN sp.status = 'failed' THEN 1 END) as failed_count
+                FROM syndication_progress sp
+                WHERE 1=1 {where_clause}
+                GROUP BY sp.status
+                ORDER BY sp.status
+            """, params)
+            
+            results = cur.fetchall()
+            
+            # Also get total sections available for syndication
+            cur.execute("""
+                SELECT COUNT(*) as total_sections
+                FROM post_section ps
+                JOIN blog_posts bp ON ps.post_id = bp.id
+                WHERE bp.status = 'published'
+            """)
+            
+            total_sections = cur.fetchone()['total_sections']
+            
+            return {
+                'total_sections_available': total_sections,
+                'progress_by_status': [dict(row) for row in results]
+            }
+            
+    except Exception as e:
+        logger.error(f"Error getting syndication progress summary: {e}")
+        return None
 
 @app.route('/api/syndication/pieces/<int:piece_id>', methods=['GET', 'PUT', 'DELETE'])
 def syndication_piece(piece_id):
