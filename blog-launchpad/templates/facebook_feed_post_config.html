@@ -1703,11 +1703,22 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    // Hide form and reload schedules
+                    // Hide form and clear fields
                     const addScheduleForm = document.getElementById('add-schedule-form');
                     if (addScheduleForm) {
                         addScheduleForm.style.display = 'none';
-                        addScheduleForm.reset();
+                        // Clear form fields manually
+                        document.getElementById('new-schedule-name').value = '';
+                        document.getElementById('new-schedule-time').value = '17:00';
+                        document.getElementById('new-schedule-timezone').value = 'GMT';
+                        // Clear day checkboxes (set to weekdays default)
+                        const dayCheckboxes = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+                        dayCheckboxes.forEach((day, index) => {
+                            const checkbox = document.getElementById(`new-day-${day}`);
+                            if (checkbox) {
+                                checkbox.checked = index < 5; // Weekdays checked by default
+                            }
+                        });
                     }
                     await loadScheduleData();
                     alert('Schedule created successfully!');
