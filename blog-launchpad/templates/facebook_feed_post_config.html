@@ -1704,8 +1704,11 @@
                 
                 if (result.success) {
                     // Hide form and reload schedules
-                    form.style.display = 'none';
-                    form.reset();
+                    const addScheduleForm = document.getElementById('add-schedule-form');
+                    if (addScheduleForm) {
+                        addScheduleForm.style.display = 'none';
+                        addScheduleForm.reset();
+                    }
                     await loadScheduleData();
                     alert('Schedule created successfully!');
                 } else {
