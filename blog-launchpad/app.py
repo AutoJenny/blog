@@ -4592,8 +4592,11 @@ def get_blog_post_schedules():
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
                 cur.execute("""
                     SELECT id, name, days, time, timezone, is_active as active, created_at
-                    FROM blog_post_schedules 
-                    WHERE is_active = true
+                    FROM daily_posts_schedule 
+                    WHERE is_active = true 
+                    AND platform = 'facebook' 
+                    AND channel_type = 'feed_post' 
+                    AND content_type = 'blog_post'
                     ORDER BY created_at DESC
                 """)
                 
@@ -4634,14 +4637,17 @@ def create_blog_post_schedule():
         with get_db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    INSERT INTO blog_post_schedules (name, days, time, timezone, is_active)
-                    VALUES (%s, %s, %s, %s, %s)
+                    INSERT INTO daily_posts_schedule (name, days, time, timezone, platform, channel_type, content_type, is_active)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
                 """, (
                     data['name'],
                     data['days'],
                     data['time'],
                     data['timezone'],
+                    'facebook',
+                    'feed_post',
+                    'blog_post',
                     data.get('active', True)
                 ))
                 
@@ -4686,9 +4692,12 @@ def update_blog_post_schedule(schedule_id):
                 update_values.append(schedule_id)
                 
                 cur.execute(f"""
-                    UPDATE blog_post_schedules 
+                    UPDATE daily_posts_schedule 
                     SET {', '.join(update_fields)}, updated_at = CURRENT_TIMESTAMP
-                    WHERE id = %s
+                    WHERE id = %s 
+                    AND platform = 'facebook' 
+                    AND channel_type = 'feed_post' 
+                    AND content_type = 'blog_post'
                     RETURNING id
                 """, update_values)
                 
@@ -4714,8 +4723,11 @@ def delete_blog_post_schedule(schedule_id):
         with get_db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    DELETE FROM blog_post_schedules 
-                    WHERE id = %s
+                    DELETE FROM daily_posts_schedule 
+                    WHERE id = %s 
+                    AND platform = 'facebook' 
+                    AND channel_type = 'feed_post' 
+                    AND content_type = 'blog_post'
                     RETURNING id
                 """, (schedule_id,))
                 
@@ -5062,10 +5074,13 @@ def get_schedule_status():
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             
             # Get active schedule
-            cur.execute("""
+                cur.execute("""
                 SELECT time, timezone, days, is_active, created_at, updated_at
                 FROM daily_posts_schedule
-                WHERE is_active = true
+                WHERE is_active = true 
+                AND platform = 'facebook' 
+                AND channel_type = 'feed_post' 
+                AND content_type = 'product'
                 ORDER BY created_at DESC
                 LIMIT 1
             """)
@@ -5105,10 +5120,13 @@ def get_all_schedules():
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             
             # Get all active schedules
-            cur.execute("""
+                cur.execute("""
                 SELECT id, name, time, timezone, days, is_active, created_at, updated_at
                 FROM daily_posts_schedule
-                WHERE is_active = true
+                WHERE is_active = true 
+                AND platform = 'facebook' 
+                AND channel_type = 'feed_post' 
+                AND content_type = 'product'
                 ORDER BY display_order ASC, created_at ASC
             """)
             
@@ -5181,10 +5199,13 @@ def test_schedules():
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             
             # Get all active schedules
-            cur.execute("""
+                cur.execute("""
                 SELECT name, time, timezone, days
                 FROM daily_posts_schedule
-                WHERE is_active = true
+                WHERE is_active = true 
+                AND platform = 'facebook' 
+                AND channel_type = 'feed_post' 
+                AND content_type = 'product'
                 ORDER BY display_order ASC, created_at ASC
             """)
             
