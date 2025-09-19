@@ -54,7 +54,7 @@
             color: #f1f5f9;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            gap: 15px;
             cursor: pointer;
             user-select: none;
             padding: 30px;
@@ -76,12 +76,6 @@
         .section-content.expanded {
             max-height: 2000px;
             padding: 0 30px 30px 30px;
-        }
-        
-        .section-title-content {
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
         
         .accordion-chevron {
@@ -559,11 +553,9 @@
         <!-- Product Selection Section -->
         <div class="section-card">
             <div class="section-title" onclick="toggleAccordion('product-selection')">
-                <div class="section-title-content">
-                    <i class="fas fa-shopping-bag"></i>
-                    Product Selection
-                </div>
                 <i class="fas fa-chevron-right accordion-chevron" id="product-selection-chevron"></i>
+                <i class="fas fa-shopping-bag"></i>
+                Product Selection
             </div>
             <div class="section-content" id="product-selection-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -639,11 +631,9 @@
         <!-- Content Generation Section -->
         <div class="section-card">
             <div class="section-title" onclick="toggleAccordion('content-generation')">
-                <div class="section-title-content">
-                    <i class="fas fa-robot"></i>
-                    AI Content Generation
-                </div>
                 <i class="fas fa-chevron-right accordion-chevron" id="content-generation-chevron"></i>
+                <i class="fas fa-robot"></i>
+                AI Content Generation
             </div>
             <div class="section-content" id="content-generation-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
