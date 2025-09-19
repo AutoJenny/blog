@@ -4273,6 +4273,316 @@ def syndication_piece(piece_id):
         logger.error(f"Error handling syndication piece {piece_id}: {e}")
         return jsonify({'error': f'Failed to handle syndication piece: {str(e)}'}), 500
 
+# Blog Post Queue API Endpoints
+@app.route('/api/syndication/facebook/queue', methods=['GET'])
+def get_blog_post_queue():
+    """Get all blog post items in the Facebook posting queue."""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                cur.execute("""
+                    SELECT 
+                        pq.id,
+                        pq.product_id as post_id,
+                        pq.scheduled_date,
+                        pq.scheduled_time,
+                        pq.schedule_name,
+                        pq.timezone,
+                        pq.generated_content,
+                        pq.queue_order,
+                        pq.status,
+                        pq.created_at,
+                        pq.updated_at,
+                        pq.scheduled_timestamp,
+                        pq.platform_post_id,
+                        pq.error_message,
+                        p.title as post_title,
+                        p.slug as post_slug,
+                        p.created_at as post_created_at,
+                        ps.section_heading as section_title,
+                        ps.section_order as section_order
+                    FROM posting_queue pq
+                    LEFT JOIN post p ON pq.product_id = p.id
+                    LEFT JOIN post_section ps ON pq.product_id = ps.post_id AND pq.generated_content LIKE '%' || ps.section_heading || '%'
+                    WHERE pq.platform = 'facebook' 
+                    AND pq.channel_type = 'feed_post'
+                    AND pq.content_type = 'blog_post'
+                    ORDER BY pq.queue_order ASC, pq.scheduled_timestamp ASC
+                """)
+                
+                queue_items = cur.fetchall()
+                
+                # Transform the data for frontend consumption
+                transformed_items = []
+                for item in queue_items:
+                    transformed_items.append({
+                        'id': item['id'],
+                        'post_id': item['post_id'],
+                        'post_title': item['post_title'],
+                        'post_slug': item['post_slug'],
+                        'post_created_at': item['post_created_at'].isoformat() if item['post_created_at'] else None,
+                        'section_title': item['section_title'],
+                        'section_order': item['section_order'],
+                        'generated_content': item['generated_content'],
+                        'scheduled_date': item['scheduled_date'].isoformat() if item['scheduled_date'] else None,
+                        'scheduled_time': str(item['scheduled_time']) if item['scheduled_time'] else None,
+                        'schedule_name': item['schedule_name'],
+                        'timezone': item['timezone'],
+                        'queue_order': item['queue_order'],
+                        'status': item['status'],
+                        'created_at': item['created_at'].isoformat() if item['created_at'] else None,
+                        'updated_at': item['updated_at'].isoformat() if item['updated_at'] else None,
+                        'scheduled_timestamp': item['scheduled_timestamp'].isoformat() if item['scheduled_timestamp'] else None,
+                        'platform_post_id': item['platform_post_id'],
+                        'error_message': item['error_message']
+                    })
+                
+                return jsonify({
+                    'success': True,
+                    'queue_items': transformed_items
+                })
+                
+    except Exception as e:
+        logger.error(f"Error loading blog post queue: {e}")
+        return jsonify({'error': f'Failed to load queue: {str(e)}'}), 500
+
+@app.route('/api/syndication/facebook/queue', methods=['POST'])
+def add_to_blog_post_queue():
+    """Add a blog post item to the Facebook posting queue."""
+    try:
+        data = request.get_json()
+        
+        required_fields = ['post_id', 'section_id', 'generated_content']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        # Get the next queue order
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT COALESCE(MAX(queue_order), 0) + 1 as next_order
+                    FROM posting_queue 
+                    WHERE platform = 'facebook' AND channel_type = 'feed_post'
+                """)
+                next_order = cur.fetchone()[0]
+                
+                # Get post and section details
+                cur.execute("""
+                    SELECT p.title, ps.section_heading as section_title, ps.section_order as section_order
+                    FROM post p
+                    JOIN post_section ps ON p.id = ps.post_id
+                    WHERE p.id = %s AND ps.id = %s
+                """, (data['post_id'], data['section_id']))
+                
+                post_details = cur.fetchone()
+                if not post_details:
+                    return jsonify({'error': 'Post or section not found'}), 404
+                
+                post_title, section_title, section_order = post_details
+                
+                # Calculate scheduled timestamp if provided
+                scheduled_timestamp = None
+                if data.get('scheduled_date') and data.get('scheduled_time'):
+                    from datetime import datetime
+                    scheduled_timestamp = datetime.combine(
+                        datetime.strptime(data['scheduled_date'], '%Y-%m-%d').date(),
+                        datetime.strptime(data['scheduled_time'], '%H:%M').time()
+                    )
+                
+                # Insert into queue
+                cur.execute("""
+                    INSERT INTO posting_queue (
+                        product_id, scheduled_date, scheduled_time, schedule_name, timezone,
+                        generated_content, queue_order, status, platform, channel_type, content_type,
+                        scheduled_timestamp
+                    ) VALUES (
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                    ) RETURNING id
+                """, (
+                    data['post_id'],
+                    data.get('scheduled_date'),
+                    data.get('scheduled_time'),
+                    data.get('schedule_name', 'Manual'),
+                    data.get('timezone', 'GMT'),
+                    data['generated_content'],
+                    next_order,
+                    data.get('status', 'ready'),
+                    'facebook',
+                    'feed_post',
+                    'blog_post',
+                    scheduled_timestamp
+                ))
+                
+                queue_item_id = cur.fetchone()[0]
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'queue_item': {
+                        'id': queue_item_id,
+                        'post_id': data['post_id'],
+                        'post_title': post_title,
+                        'section_title': section_title,
+                        'section_order': section_order,
+                        'generated_content': data['generated_content'],
+                        'queue_order': next_order,
+                        'status': data.get('status', 'ready')
+                    }
+                })
+                
+    except Exception as e:
+        logger.error(f"Error adding to blog post queue: {e}")
+        return jsonify({'error': f'Failed to add to queue: {str(e)}'}), 500
+
+@app.route('/api/syndication/facebook/queue/<int:item_id>', methods=['DELETE'])
+def remove_from_blog_post_queue(item_id):
+    """Remove a blog post item from the Facebook posting queue."""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    DELETE FROM posting_queue 
+                    WHERE id = %s AND platform = 'facebook' AND channel_type = 'feed_post' AND content_type = 'blog_post'
+                    RETURNING id
+                """, (item_id,))
+                
+                deleted_item = cur.fetchone()
+                if not deleted_item:
+                    return jsonify({'error': 'Queue item not found'}), 404
+                
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Item removed from queue'
+                })
+                
+    except Exception as e:
+        logger.error(f"Error removing from blog post queue: {e}")
+        return jsonify({'error': f'Failed to remove from queue: {str(e)}'}), 500
+
+@app.route('/api/syndication/facebook/queue/<int:item_id>', methods=['PUT'])
+def update_blog_post_queue_item(item_id):
+    """Update a blog post item in the Facebook posting queue."""
+    try:
+        data = request.get_json()
+        
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                # Build dynamic update query
+                update_fields = []
+                update_values = []
+                
+                allowed_fields = ['scheduled_date', 'scheduled_time', 'schedule_name', 'timezone', 
+                                'generated_content', 'queue_order', 'status', 'scheduled_timestamp']
+                
+                for field in allowed_fields:
+                    if field in data:
+                        update_fields.append(f"{field} = %s")
+                        update_values.append(data[field])
+                
+                if not update_fields:
+                    return jsonify({'error': 'No valid fields to update'}), 400
+                
+                update_values.append(item_id)
+                
+                cur.execute(f"""
+                    UPDATE posting_queue 
+                    SET {', '.join(update_fields)}, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s AND platform = 'facebook' AND channel_type = 'feed_post' AND content_type = 'blog_post'
+                    RETURNING id
+                """, update_values)
+                
+                updated_item = cur.fetchone()
+                if not updated_item:
+                    return jsonify({'error': 'Queue item not found'}), 404
+                
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Queue item updated successfully'
+                })
+                
+    except Exception as e:
+        logger.error(f"Error updating blog post queue item: {e}")
+        return jsonify({'error': f'Failed to update queue item: {str(e)}'}), 500
+
+@app.route('/api/syndication/facebook/queue/clear', methods=['DELETE'])
+def clear_blog_post_queue():
+    """Clear all blog post items from the Facebook posting queue."""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    DELETE FROM posting_queue 
+                    WHERE platform = 'facebook' AND channel_type = 'feed_post' AND content_type = 'blog_post'
+                """)
+                
+                deleted_count = cur.rowcount
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': f'Cleared {deleted_count} items from queue'
+                })
+                
+    except Exception as e:
+        logger.error(f"Error clearing blog post queue: {e}")
+        return jsonify({'error': f'Failed to clear queue: {str(e)}'}), 500
+
+@app.route('/api/syndication/facebook/post', methods=['POST'])
+def post_blog_content_to_facebook():
+    """Post blog content to Facebook."""
+    try:
+        data = request.get_json()
+        
+        if not data.get('content'):
+            return jsonify({'error': 'Content is required'}), 400
+        
+        # Use existing Facebook posting logic
+        content = data['content']
+        
+        # Get Facebook credentials
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                cur.execute("""
+                    SELECT page_id, page_access_token, page_name
+                    FROM facebook_credentials 
+                    WHERE active = true
+                    ORDER BY created_at DESC
+                    LIMIT 1
+                """)
+                
+                credentials = cur.fetchone()
+                if not credentials:
+                    return jsonify({'error': 'No active Facebook credentials found'}), 400
+        
+        # Post to Facebook using existing logic
+        success, result = post_to_facebook_page(
+            credentials['page_id'],
+            credentials['page_access_token'],
+            content,
+            credentials['page_name']
+        )
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'post_id': result.get('id'),
+                'message': 'Successfully posted to Facebook'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': result
+            }), 500
+            
+    except Exception as e:
+        logger.error(f"Error posting blog content to Facebook: {e}")
+        return jsonify({'error': f'Failed to post to Facebook: {str(e)}'}), 500
+
 @app.route('/api/daily-product-posts/update-products', methods=['POST'])
 def update_products():
     """Check for and update products with changes from Clan.com API"""

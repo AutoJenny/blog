@@ -1053,10 +1053,13 @@
                 // Display results
                 displayGeneratedPosts(generatedPosts);
                 
+                // Add generated posts to queue
+                await addGeneratedPostsToQueue(generatedPosts);
+                
                 // Show success message
                 setTimeout(() => {
                     showProgress(false);
-                    alert(`Successfully generated ${completedCount} Facebook posts! Check the AI Content Generation panel.`);
+                    alert(`Successfully generated ${completedCount} Facebook posts and added them to the queue! Check the Posting Queue panel.`);
                 }, 1000);
                 
             } catch (error) {
@@ -1229,6 +1232,63 @@
             }
         }
         
+        async function addGeneratedPostsToQueue(generatedPosts) {
+            try {
+                console.log('Adding generated posts to queue...');
+                
+                // Get current schedules to calculate posting times
+                const scheduleResponse = await fetch('/api/daily-product-posts/schedules');
+                const scheduleData = await scheduleResponse.json();
+                
+                let schedules = [];
+                if (scheduleData.success) {
+                    schedules = scheduleData.schedules || [];
+                }
+                
+                // Generate sequential posting times
+                const postingTimes = generateSequentialTimes(generatedPosts.length, schedules);
+                
+                // Add each generated post to the queue
+                for (let i = 0; i < generatedPosts.length; i++) {
+                    const post = generatedPosts[i];
+                    const postingTime = postingTimes[i];
+                    
+                    const queueData = {
+                        post_id: currentPostId,
+                        section_id: post.sectionId,
+                        generated_content: post.content,
+                        scheduled_date: postingTime.date.toISOString().split('T')[0],
+                        scheduled_time: postingTime.schedule.time,
+                        schedule_name: postingTime.schedule.name,
+                        timezone: postingTime.schedule.timezone,
+                        status: 'ready'
+                    };
+                    
+                    const response = await fetch('/api/syndication/facebook/queue', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(queueData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (!result.success) {
+                        console.error(`Failed to add section ${i + 1} to queue:`, result.error);
+                    }
+                }
+                
+                // Reload the queue to show the new items
+                await loadQueueData();
+                
+                console.log('Successfully added generated posts to queue');
+                
+            } catch (error) {
+                console.error('Error adding generated posts to queue:', error);
+            }
+        }
+        
         // Posting Control and Queue Management Functions
         let queueData = [];
         let scheduleData = [];
@@ -1350,22 +1410,24 @@
         // Load queue data from database
         async function loadQueueData() {
             try {
-                console.log('Loading queue data...');
-                const response = await fetch('/api/daily-product-posts/queue');
+                console.log('Loading blog post queue data...');
+                const response = await fetch('/api/syndication/facebook/queue');
                 const data = await response.json();
                 
-                console.log('Queue API response:', data);
+                console.log('Blog post queue API response:', data);
                 
                 if (data.success) {
                     queueData = data.queue_items.map(item => ({
                         id: item.id,
-                        product: {
-                            id: item.product_id,
-                            name: item.product_name,
-                            image_url: item.product_image,
-                            sku: item.sku,
-                            price: item.price,
-                            categories: item.categories
+                        post: {
+                            id: item.post_id,
+                            title: item.post_title,
+                            slug: item.post_slug,
+                            created_at: item.post_created_at
+                        },
+                        section: {
+                            title: item.section_title,
+                            order: item.section_order
                         },
                         content: item.generated_content,
                         scheduled: {
@@ -1373,17 +1435,19 @@
                             time: item.scheduled_time,
                             schedule_name: item.schedule_name,
                             timezone: item.timezone
-                        }
+                        },
+                        status: item.status,
+                        queue_order: item.queue_order
                     }));
                     
-                    console.log('Transformed queue data:', queueData);
+                    console.log('Transformed blog post queue data:', queueData);
                     console.log('Queue data length:', queueData.length);
                     renderQueue();
                 } else {
-                    console.error('Error loading queue:', data.error);
+                    console.error('Error loading blog post queue:', data.error);
                 }
             } catch (error) {
-                console.error('Error loading queue:', error);
+                console.error('Error loading blog post queue:', error);
             }
         }
         
@@ -1482,12 +1546,15 @@
                         <td class="queue-items-cell">
                             <div class="queue-item-table" data-item-id="${item.id}" draggable="true">
                                 <div class="queue-item-table-header" onclick="toggleQueueItemTable(${item.id})">
-                                    <img src="${item.product.image_url || '/static/images/placeholder.jpg'}" 
-                                         alt="${item.product.name}" 
-                                         class="queue-item-table-thumbnail">
+                                    <div class="queue-item-table-thumbnail" style="background: #3b82f6; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem;">
+                                        📝
+                                    </div>
                                     <div class="queue-item-table-info">
-                                        <div class="queue-item-table-title">${item.product.name}</div>
-                                        <div class="queue-item-table-sku">${item.product.sku}</div>
+                                        <div class="queue-item-table-title">${item.post.title}</div>
+                                        <div class="queue-item-table-sku">Section ${item.section.order}: ${item.section.title}</div>
+                                        <div class="queue-item-table-status" style="font-size: 0.8rem; color: #10b981; margin-top: 2px;">
+                                            Status: ${item.status || 'ready'}
+                                        </div>
                                     </div>
                                     <div class="queue-item-table-actions">
                                         <button class="queue-item-table-delete" onclick="event.stopPropagation(); removeFromQueue(${item.id})">
@@ -1511,9 +1578,10 @@
         }
         
         // Generate sequential posting times
-        function generateSequentialTimes(count) {
+        function generateSequentialTimes(count, schedules = null) {
             const times = [];
             const now = new Date();
+            const schedulesToUse = schedules || scheduleData;
             
             // Generate next 90 days of posting opportunities
             const allSlots = [];
@@ -1523,7 +1591,7 @@
                 const dayOfWeek = date.getDay() || 7; // Convert Sunday (0) to 7
                 
                 // Find schedules for this day
-                const daySchedules = scheduleData.filter(schedule => {
+                const daySchedules = schedulesToUse.filter(schedule => {
                     const days = schedule.days || [];
                     return days.includes(dayOfWeek);
                 });
@@ -1610,8 +1678,89 @@
             console.log('Clear all schedules - to be implemented');
         }
         
-        function postNow() {
-            console.log('Post now - to be implemented');
+        async function postNow() {
+            if (queueData.length === 0) {
+                alert('No items in queue to post');
+                return;
+            }
+            
+            // Find the first ready item
+            const readyItem = queueData.find(item => item.status === 'ready');
+            if (!readyItem) {
+                alert('No ready items in queue to post');
+                return;
+            }
+            
+            if (confirm(`Post "${readyItem.post.title}" - Section ${readyItem.section.order}: ${readyItem.section.title}?`)) {
+                try {
+                    // Update status to processing
+                    const updateResponse = await fetch(`/api/syndication/facebook/queue/${readyItem.id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ status: 'processing' })
+                    });
+                    
+                    if (!updateResponse.ok) {
+                        throw new Error('Failed to update item status');
+                    }
+                    
+                    // Post to Facebook (using existing Facebook posting logic)
+                    const postResponse = await fetch('/api/syndication/facebook/post', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            content: readyItem.content,
+                            post_id: readyItem.id
+                        })
+                    });
+                    
+                    const postResult = await postResponse.json();
+                    
+                    if (postResult.success) {
+                        // Update status to posted
+                        await fetch(`/api/syndication/facebook/queue/${readyItem.id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ 
+                                status: 'posted',
+                                platform_post_id: postResult.post_id || 'posted'
+                            })
+                        });
+                        
+                        // Reload queue
+                        await loadQueueData();
+                        
+                        alert('Successfully posted to Facebook!');
+                    } else {
+                        // Update status to failed
+                        await fetch(`/api/syndication/facebook/queue/${readyItem.id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ 
+                                status: 'failed',
+                                error_message: postResult.error || 'Unknown error'
+                            })
+                        });
+                        
+                        // Reload queue
+                        await loadQueueData();
+                        
+                        alert(`Failed to post: ${postResult.error || 'Unknown error'}`);
+                    }
+                    
+                } catch (error) {
+                    console.error('Error posting to Facebook:', error);
+                    alert(`Error posting to Facebook: ${error.message}`);
+                }
+            }
         }
         
         function scheduleTomorrow() {
@@ -1627,8 +1776,27 @@
             console.log('Add 10 items - to be implemented');
         }
         
-        function clearQueue() {
-            console.log('Clear queue - to be implemented');
+        async function clearQueue() {
+            if (confirm('Clear all blog post items from queue?')) {
+                try {
+                    const response = await fetch('/api/syndication/facebook/queue/clear', {
+                        method: 'DELETE'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        queueData = [];
+                        renderQueue();
+                        alert('Queue cleared successfully!');
+                    } else {
+                        alert('Error clearing queue: ' + data.error);
+                    }
+                } catch (error) {
+                    console.error('Error clearing queue:', error);
+                    alert('Error clearing queue. Please try again.');
+                }
+            }
         }
         
         function toggleQueueItemTable(itemId) {
@@ -1638,8 +1806,25 @@
             }
         }
         
-        function removeFromQueue(itemId) {
-            console.log('Remove from queue - to be implemented', itemId);
+        async function removeFromQueue(itemId) {
+            try {
+                const response = await fetch(`/api/syndication/facebook/queue/${itemId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Remove from local data
+                    queueData = queueData.filter(item => item.id !== itemId);
+                    renderQueue();
+                } else {
+                    alert('Error removing from queue: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error removing from queue:', error);
+                alert('Error removing from queue. Please try again.');
+            }
         }
         
         function addDragAndDropListeners() {
