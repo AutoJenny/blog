@@ -54,12 +54,24 @@
             color: #f1f5f9;
             display: flex;
             align-items: center;
-            gap: 15px;
+            justify-content: space-between;
             cursor: pointer;
             user-select: none;
             padding: 30px;
             margin: 0;
             transition: background-color 0.2s ease;
+        }
+        
+        .section-title-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .section-title-right {
+            display: flex;
+            align-items: center;
+            text-align: right;
         }
         
         .section-title:hover {
@@ -673,11 +685,11 @@
             </div>
         </div>
         
-        <!-- Posting Queue Section -->
-        {% include 'includes/posting_queue.html' %}
-        
         <!-- Posting Control Section -->
         {% include 'includes/posting_control.html' %}
+        
+        <!-- Posting Queue Section -->
+        {% include 'includes/posting_queue.html' %}
     </div>
     
     <script>
@@ -1621,10 +1633,10 @@
         }
         
         function updateScheduleSummary(schedules) {
-            const nextPostsList = document.getElementById('next-posts-list');
+            const nextPostsInfo = document.getElementById('next-posts-info');
             
             if (schedules.length === 0) {
-                nextPostsList.textContent = 'No schedules active';
+                nextPostsInfo.textContent = 'No schedules active';
                 return;
             }
             
@@ -1634,7 +1646,7 @@
                 return `${schedule.name}: ${nextPost}`;
             });
             
-            nextPostsList.innerHTML = nextPosts.join('<br>');
+            nextPostsInfo.innerHTML = nextPosts.join('<br>');
         }
         
         // Table-based Queue Management

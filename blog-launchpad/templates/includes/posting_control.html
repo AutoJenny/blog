@@ -1,9 +1,14 @@
 <!-- Posting Control Section -->
 <div class="section-card">
     <div class="section-title" onclick="toggleAccordion('posting-control')">
-        <i class="fas fa-chevron-right accordion-chevron" id="posting-control-chevron"></i>
-        <i class="fas fa-paper-plane"></i>
-        Posting Control
+        <div class="section-title-left">
+            <i class="fas fa-chevron-right accordion-chevron" id="posting-control-chevron"></i>
+            <i class="fas fa-paper-plane"></i>
+            Posting Control
+        </div>
+        <div class="section-title-right" id="next-posts-info" style="font-size: 0.9rem; color: #94a3b8;">
+            Loading...
+        </div>
     </div>
     <div class="section-content" id="posting-control-content">
     
@@ -124,11 +129,6 @@
             </div>
         </div>
         
-        <!-- Schedule Summary -->
-        <div id="schedule-summary" style="background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 12px; margin-bottom: 15px;">
-            <div style="color: #f1f5f9; font-weight: 600; margin-bottom: 5px;">Next Posts</div>
-            <div id="next-posts-list" style="color: #94a3b8; font-size: 0.9rem;">No schedules active</div>
-        </div>
         
         <!-- Global Schedule Controls -->
         <div style="display: flex; gap: 10px;">
