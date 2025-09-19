@@ -1661,16 +1661,34 @@
             return 'No upcoming posts';
         }
         
+        // Helper function to get selected days
+        function getSelectedDays() {
+            const dayMap = {
+                'new-day-mon': 1,
+                'new-day-tue': 2,
+                'new-day-wed': 3,
+                'new-day-thu': 4,
+                'new-day-fri': 5,
+                'new-day-sat': 6,
+                'new-day-sun': 7
+            };
+            
+            const selectedDays = [];
+            for (const [checkboxId, dayNumber] of Object.entries(dayMap)) {
+                if (document.getElementById(checkboxId).checked) {
+                    selectedDays.push(dayNumber);
+                }
+            }
+            return selectedDays;
+        }
+        
         // Schedule management functions for blog posts
         async function saveNewSchedule() {
-            const form = document.getElementById('add-schedule-form');
-            const formData = new FormData(form);
-            
             const scheduleData = {
-                name: formData.get('schedule-name'),
-                days: Array.from(document.querySelectorAll('input[name="new-schedule-days"]:checked')).map(cb => parseInt(cb.value)),
-                time: formData.get('schedule-time'),
-                timezone: formData.get('schedule-timezone')
+                name: document.getElementById('new-schedule-name').value,
+                days: getSelectedDays(),
+                time: document.getElementById('new-schedule-time').value,
+                timezone: document.getElementById('new-schedule-timezone').value
             };
             
             try {
