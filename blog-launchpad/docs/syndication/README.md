@@ -22,6 +22,12 @@ Complete API endpoint documentation with request/response formats, error handlin
 #### **4. [Frontend Integration Guide](frontend_integration.md)**
 How to integrate the syndication system into frontend applications including JavaScript functions, HTML structure, and styling.
 
+#### **5. [Content Generation System](content_generation_system.md)**
+Complete guide to the AI-powered content generation system for converting blog sections into Facebook posts, including user workflow, technical implementation, and database storage.
+
+#### **6. [User Guide](user_guide.md)**
+Step-by-step user guide for generating Facebook posts from blog content, including troubleshooting, best practices, and system requirements.
+
 ---
 
 ## 🚀 **QUICK START**
@@ -30,6 +36,12 @@ How to integrate the syndication system into frontend applications including Jav
 1. Read [Automated Selection System](automated_selection_system.md) for system overview
 2. Reference [API Reference](api_reference.md) for endpoint details
 3. Implement [Frontend Integration Guide](frontend_integration.md) for UI integration
+4. Review [Content Generation System](content_generation_system.md) for AI-powered content creation
+
+### **For Users**
+1. Start with [User Guide](user_guide.md) for step-by-step instructions
+2. Reference [Content Generation System](content_generation_system.md) for technical details
+3. Check troubleshooting sections for common issues
 
 ### **For Database Administrators**
 1. Review [Database Schema](database_schema.md) for table structures
@@ -53,14 +65,21 @@ How to integrate the syndication system into frontend applications including Jav
 - **Sections API**: Retrieve post sections
 
 ### **Frontend Layer**
-- **Facebook Feed Post Page**: Main syndication interface
-- **Automated Selection**: No manual post selection required
-- **Progress Tracking**: Visual status indicators
+- **Facebook Feed Post Page**: Main syndication interface with content generation
+- **Manual Selection**: Post and section selection for content generation
+- **AI Content Generation**: Automated conversion of blog sections to Facebook posts
+- **Progress Tracking**: Visual status indicators and real-time updates
 - **Error Handling**: Retry logic for failed sections
 
 ---
 
 ## 📊 **KEY FEATURES**
+
+### **Content Generation**
+- AI-powered conversion of blog sections to Facebook posts
+- Manual post and section selection interface
+- Real-time progress tracking with visual indicators
+- Permanent storage in database with full metadata
 
 ### **Automated Selection**
 - Smart algorithm starts with most recent posts, looks backwards
@@ -79,6 +98,11 @@ How to integrate the syndication system into frontend applications including Jav
 ## ✅ **IMPLEMENTATION STATUS**
 
 ### **Completed Features**
+- [x] Content generation system for Facebook posts
+- [x] Manual post and section selection interface
+- [x] AI-powered content conversion with Ollama/Mistral
+- [x] Real-time progress tracking and status updates
+- [x] Permanent database storage with full metadata
 - [x] Automated selection algorithm
 - [x] Progress tracking database
 - [x] API endpoints for all operations
