@@ -1549,7 +1549,7 @@ def create_blog_post_schedule():
                     RETURNING id
                 """, (
                     data['name'],
-                    data['days'],
+                    json.dumps(data['days']),  # Convert array to JSON string
                     data['time'],
                     data['timezone'],
                     'facebook',
@@ -1584,6 +1584,10 @@ def update_blog_post_schedule(schedule_id):
             if field in data:
                 if field == 'active':
                     update_fields.append('is_active = %s')
+                elif field == 'days':
+                    update_fields.append('days = %s')
+                    update_values.append(json.dumps(data[field]))  # Convert array to JSON string
+                    continue
                 else:
                     update_fields.append(f'{field} = %s')
                 update_values.append(data[field])
