@@ -61,11 +61,18 @@ class ProductImageUpdater:
             for i in range(0, len(basic_products), batch_size):
                 batch = basic_products[i:i + batch_size]
                 logger.info(f"Processing batch {i//batch_size + 1}/{(len(basic_products) + batch_size - 1)//batch_size}")
-                
+
                 for product in batch:
-                    if isinstance(product, list) and len(product) > 1:
-                        sku = product[1]
-                        try:
+                    # Handle new API format - product is now a dict, not a list
+                    if isinstance(product, dict):
+                        sku = product.get('sku')
+                    elif isinstance(product, list) and len(product) > 1:
+                        sku = product[1]  # Fallback for old format
+                    else:
+                        logger.warning(f"Unexpected product format: {product}")
+                        continue
+                    
+                    try:
                             # Get detailed product data with images
                             detail_url = f"{self.api_base_url}/getProductData"
                             detail_params = {

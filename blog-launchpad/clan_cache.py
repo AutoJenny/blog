@@ -112,8 +112,8 @@ class ClanCache:
             # Insert new products
             for product in products:
                 cursor.execute('''
-                    INSERT INTO clan_products (id, name, sku, price, image_url, url, description, category_ids)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    INSERT INTO clan_products (id, name, sku, price, image_url, url, description, category_ids, printable_design_type)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                     ON CONFLICT (id) DO UPDATE SET
                         name = EXCLUDED.name,
                         sku = EXCLUDED.sku,
@@ -121,16 +121,18 @@ class ClanCache:
                         image_url = EXCLUDED.image_url,
                         url = EXCLUDED.url,
                         description = EXCLUDED.description,
-                        category_ids = EXCLUDED.category_ids
+                        category_ids = EXCLUDED.category_ids,
+                        printable_design_type = EXCLUDED.printable_design_type
                 ''', (
-                    product.get('id'),
-                    product.get('name'),
+                    product.get('product_id') or product.get('id'),  # Handle both new and old API formats
+                    product.get('title') or product.get('name'),     # Handle both new and old API formats
                     product.get('sku'),
                     product.get('price'),
-                    product.get('image_url'),
-                    product.get('url'),
+                    product.get('image') or product.get('image_url'),  # Handle both new and old API formats
+                    product.get('product_url') or product.get('url'),  # Handle both new and old API formats
                     product.get('description'),
-                    json.dumps(product.get('category_ids', []))
+                    json.dumps(product.get('category_ids', [])),
+                    product.get('printable_design_type')
                 ))
             
             conn.commit()
