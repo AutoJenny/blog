@@ -194,9 +194,13 @@ def get_unified_timeline():
                        pq.scheduled_timestamp, pq.generated_content, pq.status,
                        pq.platform_post_id, pq.error_message,
                        cp.name as product_name, cp.sku, cp.image_url as product_image,
-                       cp.price, pq.created_at, pq.updated_at
+                       cp.price, 
+                       p.title as post_title, ps.section_heading as section_title,
+                       pq.created_at, pq.updated_at
                 FROM posting_queue pq
                 LEFT JOIN clan_products cp ON pq.product_id = cp.id
+                LEFT JOIN post p ON pq.product_id = p.id AND pq.content_type = 'blog_post'
+                LEFT JOIN post_section ps ON pq.section_id = ps.id
                 WHERE pq.status IN ('pending', 'ready', 'published', 'failed')
                 ORDER BY pq.scheduled_timestamp ASC, pq.created_at ASC
                 LIMIT 50

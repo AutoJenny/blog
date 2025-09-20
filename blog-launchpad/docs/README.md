@@ -1,193 +1,82 @@
-# Blog Launchpad - Documentation
+# Blog Launchpad Documentation
 
 ## Overview
-This directory contains comprehensive documentation for the Blog Launchpad system, focusing on the Daily Product Posts automation and the planned Social Media Command Center.
 
-**Document Version**: 1.0  
-**Created**: 2025-01-27  
-**Status**: **ACTIVE DEVELOPMENT**  
-**Author**: AI Assistant
+Blog Launchpad is a comprehensive content management and social media automation platform with a unified queue system for managing all social media content.
 
----
-
-## 📚 **DOCUMENTATION INDEX**
-
-### **Core System Documentation**
-
-#### **1. Daily Product Posts System** (`daily_product_posts_system.md`)
-- **Purpose**: Complete documentation for the Facebook product posting automation system
-- **Content**: System overview, features, API documentation, troubleshooting
-- **Status**: ✅ **COMPLETE** - Production-ready system fully documented
-- **Key Features**:
-  - AI-powered content generation with Ollama integration
-  - Queue management with drag-and-drop interface
-  - Schedule management with recurring patterns
-  - Product integration with Clan.com API
-  - Accordion-based responsive UI
-
-#### **2. API Documentation** (`api/`)
-- **Purpose**: Comprehensive API reference for all system endpoints
-- **Content**: Endpoint documentation, request/response examples, error handling
-- **Status**: ✅ **COMPLETE** - All major APIs documented
-- **Key Files**:
-  - `api/daily_product_posts.md` - Complete API reference for daily product posts
-
-### **Planning Documents**
-
-#### **3. Social Media Command Center MVP** (`temp/social_media_command_center_mvp.md`)
-- **Purpose**: Framework and planning document for centralized social media management
-- **Content**: MVP scope, UI design, technical implementation, development phases
-- **Status**: 📋 **PLANNING** - Ready for implementation
-- **Key Features**:
-  - Real-time posting timeline for all platforms
-  - Unified schedule management
-  - Annual events and themes calendar
-  - Analytics integration (future)
+**Version**: 2.0  
+**Last Updated**: 2025-01-27
 
 ---
 
-## 🎯 **CURRENT SYSTEM STATUS**
+## Documentation Structure
 
-### **Daily Product Posts System** ✅
-- **Status**: Production ready and fully functional
-- **Features**: AI content generation, queue management, scheduling
-- **Integration**: Ollama AI service, Clan.com API
-- **UI**: Accordion-based responsive interface
-
-### **Social Media Command Center** 📋
-- **Status**: Planning phase - MVP framework complete
-- **Next Steps**: Begin implementation of Phase 1A (basic structure)
-- **Integration**: Will incorporate existing Daily Product Posts functionality
+### 📚 Core Documentation
+- **[Unified Queue System](unified_queue_system.md)** - Central queue management system
+- **[API Reference](api/unified_queue_api.md)** - Complete API documentation
+- **[Database Schema](database/posting_queue_schema.md)** - Queue table structure
+- **[Frontend Integration](frontend/integration_guide.md)** - Frontend development guides
 
 ---
 
-## 🚀 **DEVELOPMENT ROADMAP**
+## Quick Start
 
-### **Phase 1: Social Media Command Center MVP**
-1. **Basic Structure**: Create main template and layout
-2. **Timeline Component**: Implement real-time posting timeline
-3. **Data Integration**: Connect to existing queue APIs
-4. **Quick Actions**: Add queue management controls
+### For Developers
+1. **Read the [Unified Queue System](unified_queue_system.md)** to understand the architecture
+2. **Check the [API Reference](api/unified_queue_api.md)** for endpoint details
+3. **Review the [Frontend Integration Guide](frontend/integration_guide.md)** for implementation
 
-### **Phase 2: Enhanced Features**
-1. **Multi-Platform Support**: Add Instagram, Twitter, LinkedIn
-2. **Calendar View**: Monthly/weekly calendar interface
-3. **Event Management**: Annual events and themes
-4. **Analytics Integration**: Performance tracking
-
-### **Phase 3: Advanced Features**
-1. **Team Collaboration**: Multi-user support
-2. **Advanced Analytics**: Detailed performance insights
-3. **A/B Testing**: Content optimization
-4. **Enterprise Features**: Scalable architecture
+### For Frontend Developers
+1. **Start with [Frontend Integration Guide](frontend/integration_guide.md)**
+2. **Use [API Reference](api/unified_queue_api.md)** for data integration
+3. **Check [Database Schema](database/posting_queue_schema.md)** for data structure
 
 ---
 
-## 🛠️ **TECHNICAL ARCHITECTURE**
+## System Architecture
 
-### **Current System**
-- **Backend**: Flask (Python)
-- **Database**: SQLite (development) / PostgreSQL (production)
-- **AI Service**: Ollama (local LLM)
-- **Frontend**: HTML/CSS/JavaScript with Tailwind CSS
-- **Integration**: Clan.com API for product data
+### Core Principles
+- **Unified Database**: Single table for all queue items
+- **Filtered APIs**: One API with filtering capabilities
+- **Centralized Management**: Command center for all content
 
-### **Planned Command Center**
-- **Unified Dashboard**: Centralized view of all social media activity
-- **Real-Time Updates**: Live data from all platforms
-- **Modular Components**: Reusable UI components
-- **API Integration**: Connect to all platform APIs
+### Key Components
+1. **Posting Queue**: Central storage for all social media content
+2. **Unified API**: Single endpoint system with filtering
+3. **Frontend Pages**: Filtered views for different content types
+4. **Command Center**: Centralized management interface
 
 ---
 
-## 📖 **HOW TO USE THIS DOCUMENTATION**
+## API Endpoints
 
-### **For Developers**
-1. **Start with System Overview**: Read `daily_product_posts_system.md` for architecture
-2. **API Reference**: Use `api/daily_product_posts.md` for endpoint details
-3. **Planning**: Review `temp/social_media_command_center_mvp.md` for future development
-4. **Implementation**: Follow the development roadmap for next steps
-
-### **For Project Managers**
-1. **Current Status**: Review system status and completed features
-2. **Planning**: Check the development roadmap and phases
-3. **Integration**: Understand how systems work together
-4. **Timeline**: Use the roadmap for project planning
-
-### **For Stakeholders**
-1. **Business Value**: Understand the automation and efficiency benefits
-2. **Current Capabilities**: Review what the system can do now
-3. **Future Vision**: See the planned Social Media Command Center
-4. **ROI**: Understand the value of centralized social media management
+### Unified Queue System
+- `GET /api/queue` - Get queue items with filtering
+- `POST /api/queue` - Add new item to queue
+- `PUT /api/queue/{id}` - Update queue item
+- `DELETE /api/queue/{id}` - Delete queue item
+- `DELETE /api/queue/clear` - Clear queue with filtering
 
 ---
 
-## 🔗 **KEY INTEGRATION POINTS**
+## Database Schema
 
-### **Current Working System**
-- **Daily Product Posts**: Fully functional Facebook automation
-- **AI Integration**: Ollama-powered content generation
-- **Queue Management**: Visual timeline and drag-and-drop interface
-- **Schedule Management**: Recurring posting patterns
-
-### **Planned Command Center**
-- **Unified Timeline**: All platform posts in one view
-- **Cross-Platform Scheduling**: Schedule across multiple platforms
-- **Content Adaptation**: Adapt content for different platforms
-- **Analytics Dashboard**: Performance tracking and insights
+### Core Tables
+- **`posting_queue`** - Central queue storage
+- **`clan_products`** - Product data
+- **`post`** - Blog post content
+- **`post_section`** - Blog post sections
+- **`daily_posts_schedule`** - Scheduling configuration
 
 ---
 
-## 🔍 **QUICK REFERENCE**
+## Frontend Integration
 
-### **Current Working Features**
-- **Route**: `/daily-product-posts`
-- **API**: 24 endpoints for complete functionality
-- **AI Service**: Automatic Ollama management
-- **Queue**: Visual timeline with drag-and-drop
-
-### **Next Development Priority**
-- **Social Media Command Center**: Begin Phase 1A implementation
-- **Timeline View**: Real-time posting timeline
-- **Unified Management**: Centralized control for all platforms
-- **Event Integration**: Annual events and themes calendar
-
-### **Long-term Vision**
-- **Multi-Platform**: Support for all major social media platforms
-- **AI-Powered**: Intelligent content generation and optimization
-- **Analytics**: Comprehensive performance tracking
-- **Enterprise**: Scalable, multi-user system
+### Page-Specific Filtering
+- **Daily Product Posts**: `content_type=product`
+- **Facebook Feed Post**: `content_type=blog_post`
+- **Command Center**: All content types with advanced filtering
 
 ---
 
-## 📝 **RECENT CHANGES**
-
-### **2025-01-27 - Documentation Transfer Complete**
-- ✅ **Created comprehensive API documentation** - Complete reference for all endpoints
-- ✅ **Created system overview document** - Architecture and features documentation
-- ✅ **Transferred knowledge from temp docs** - Moved to permanent documentation
-- ✅ **Created Social Media Command Center MVP** - Planning framework ready
-- ✅ **Organized documentation structure** - Clear navigation and reference
-
----
-
-## 🔍 **TROUBLESHOOTING**
-
-### **Common Issues**
-- **Ollama Not Starting**: Check installation and port availability
-- **Queue Display Issues**: Verify database connection and data
-- **Product Data Not Loading**: Check Clan.com API connectivity
-- **Schedule Not Working**: Verify schedule configuration and timezone
-
-### **Debug Information**
-- **Logs**: Check application logs for detailed error information
-- **Database**: Verify data integrity in database tables
-- **Network**: Check API connectivity and response times
-- **Browser**: Check browser console for JavaScript errors
-
----
-
-**Document Version**: 1.0  
-**Last Updated**: 2025-01-27  
-**Status**: **ACTIVE DEVELOPMENT**  
-**Next Review**: After Social Media Command Center Phase 1A implementation
+*This documentation is maintained by the Blog Launchpad development team.*
