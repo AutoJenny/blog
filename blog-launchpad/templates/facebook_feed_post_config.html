@@ -968,8 +968,8 @@
                         console.error('Error loading post details:', error);
                     });
                 
-                // Re-render queue to show items for the restored post
-                renderQueue();
+                // Note: renderQueue() will be called by loadScheduleData() after queue data is loaded
+                console.log('Post restored from localStorage, queue will render when data is loaded');
             }
             
             // Add event listener for post selection
@@ -1582,10 +1582,12 @@
             // Filter items to only show those for the currently selected post
             // If no post is selected, show all items; if a post is selected, show only that post's items
             if (currentPostId) {
-                filteredItems = queueData.filter(item => item.post.id === currentPostId);
+                filteredItems = queueData.filter(item => item.post.id === parseInt(currentPostId));
+                console.log(`Filtering queue for post ID ${currentPostId}, found ${filteredItems.length} items out of ${queueData.length} total`);
             } else {
                 // When no post is selected, show all items (for initial page load)
                 filteredItems = queueData;
+                console.log(`No post selected, showing all ${queueData.length} items`);
             }
             
             // Update count to reflect filtered items
