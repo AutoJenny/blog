@@ -1551,9 +1551,10 @@
                 
                 console.log('Blog post queue API response:', data);
                 
-                if (data.success) {
+                if (data.success && data.items && Array.isArray(data.items)) {
                     console.log('Queue API success, mapping items...');
                     console.log('Raw items:', data.items);
+                    console.log('Items count:', data.items.length);
                     queueData = data.items.map(item => ({
                         id: item.id,
                         post: {
