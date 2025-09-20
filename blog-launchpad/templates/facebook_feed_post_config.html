@@ -957,31 +957,6 @@
             // Load all posts for manual selection
             loadPosts();
             
-            // Restore previously selected post from localStorage
-            const savedPostId = localStorage.getItem('selectedBlogPostId');
-            if (savedPostId) {
-                // Set the selector value and trigger the change event
-                const postSelector = document.getElementById('postSelector');
-                postSelector.value = savedPostId;
-                currentPostId = parseInt(savedPostId);
-                
-                // Load sections and details for the saved post
-                loadPostSections(savedPostId);
-                fetch(`/api/syndication/posts/${savedPostId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success' && data.post) {
-                            updatePostDetails(data.post);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error loading post details:', error);
-                    });
-                
-                // Display queue items for restored post
-                displayQueueForSelectedPost(savedPostId);
-            }
-            
             // Add event listener for post selection
             document.getElementById('postSelector').addEventListener('change', function() {
                 const postId = this.value;
@@ -1420,6 +1395,9 @@
         
         // Initialize posting control and queue functionality
         document.addEventListener('DOMContentLoaded', function() {
+            // Load all posts for manual selection
+            loadPosts();
+            
             // Load schedule and queue data in coordinated manner
             loadQueueData();
             loadScheduleData();
@@ -1429,6 +1407,33 @@
             
             // Add event listeners for queue management
             initializeQueueManagement();
+            
+            // Restore previously selected post from localStorage AFTER data is loaded
+            const savedPostId = localStorage.getItem('selectedBlogPostId');
+            if (savedPostId) {
+                // Set the selector value and trigger the change event
+                const postSelector = document.getElementById('postSelector');
+                postSelector.value = savedPostId;
+                currentPostId = parseInt(savedPostId);
+                
+                // Load sections and details for the saved post
+                loadPostSections(savedPostId);
+                fetch(`/api/syndication/posts/${savedPostId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success' && data.post) {
+                            updatePostDetails(data.post);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading post details:', error);
+                    });
+                
+                // Display queue items for restored post
+                displayQueueForSelectedPost(savedPostId);
+                // Also update the Posting Queue panel
+                renderQueue();
+            }
         });
         
         // Initialize posting control functionality
