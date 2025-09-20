@@ -1400,6 +1400,7 @@
             
             // Load schedule and queue data in coordinated manner
             loadQueueData().then(() => {
+                console.log('loadQueueData completed, queueData length:', queueData.length);
                 loadScheduleData();
             });
             
@@ -1583,6 +1584,7 @@
                 }
             } catch (error) {
                 console.error('Error loading blog post queue:', error);
+                queueData = []; // Ensure queueData is always an array
             }
         }
         
