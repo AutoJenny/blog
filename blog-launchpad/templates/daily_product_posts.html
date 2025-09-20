@@ -575,7 +575,10 @@
             </div>
             <div class="section-content" id="product-selection-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <div></div>
+                    <div id="last-updated-display" style="color: #94a3b8; font-size: 0.9rem;">
+                        <i class="fas fa-clock"></i>
+                        <span id="last-updated-text">Loading...</span>
+                    </div>
                     <button id="update-products-btn" class="btn btn-secondary">
                         <i class="fas fa-sync-alt"></i>
                         Check for Updates
@@ -594,6 +597,44 @@
                 <div id="category-accordion-content" style="display: none; padding: 0 15px 15px 15px;">
                     <div id="category-list" style="color: #94a3b8; font-size: 0.8rem; max-height: 300px; overflow-y: auto;">
                         Loading categories...
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Products Browser Accordion -->
+            <div style="background: #23273a; border: 1px solid #475569; border-radius: 8px; margin-bottom: 20px;">
+                <div id="products-browser-accordion-header" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; cursor: pointer; user-select: none;" onclick="toggleProductsBrowserAccordion()">
+                    <h3 style="color: #f1f5f9; font-size: 1.1rem; margin: 0; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-chevron-right" id="products-browser-chevron" style="transition: transform 0.2s ease;"></i>
+                        Products Browser
+                    </h3>
+                    <span id="products-browser-count" style="color: #10b981; font-weight: 600;">Loading...</span>
+                </div>
+                <div id="products-browser-accordion-content" style="display: none; padding: 0 15px 15px 15px;">
+                    <!-- Filter Box -->
+                    <div style="margin-bottom: 15px;">
+                        <input type="text" id="product-filter" placeholder="Filter products by name..." 
+                               style="width: 100%; padding: 8px 12px; background: #1e293b; border: 1px solid #475569; border-radius: 6px; color: #f1f5f9; font-size: 0.9rem;">
+                    </div>
+                    
+                    <!-- Product Display -->
+                    <div id="product-browser-display" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 20px; margin-bottom: 15px;">
+                        <div style="text-align: center; color: #94a3b8; font-style: italic;">
+                            Loading products...
+                        </div>
+                    </div>
+                    
+                    <!-- Navigation Controls -->
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <button id="prev-product-btn" class="btn btn-secondary" disabled>
+                            <i class="fas fa-chevron-left"></i>
+                            Previous
+                        </button>
+                        <span id="product-counter" style="color: #94a3b8; font-size: 0.9rem;">Product 0 of 0</span>
+                        <button id="next-product-btn" class="btn btn-secondary" disabled>
+                            Next
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -702,6 +743,11 @@
         let generatedContent = '';
         let selectedContentType = 'feature';
         
+        // Products Browser state
+        let allProducts = [];
+        let filteredProducts = [];
+        let currentProductIndex = 0;
+        
         // Accordion toggle function
         function toggleCategoryAccordion() {
             const content = document.getElementById('category-accordion-content');
@@ -710,6 +756,24 @@
             if (content.style.display === 'none') {
                 content.style.display = 'block';
                 chevron.style.transform = 'rotate(90deg)';
+            } else {
+                content.style.display = 'none';
+                chevron.style.transform = 'rotate(0deg)';
+            }
+        }
+        
+        // Products Browser accordion toggle function
+        function toggleProductsBrowserAccordion() {
+            const content = document.getElementById('products-browser-accordion-content');
+            const chevron = document.getElementById('products-browser-chevron');
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                chevron.style.transform = 'rotate(90deg)';
+                // Load products when accordion is opened
+                if (allProducts.length === 0) {
+                    loadAllProducts();
+                }
             } else {
                 content.style.display = 'none';
                 chevron.style.transform = 'rotate(0deg)';
@@ -813,6 +877,9 @@
                     if (data.stats && data.stats.categories_updated) {
                         await loadCategories();
                     }
+                    
+                    // Refresh last updated timestamp
+                    await loadLastUpdated();
                 } else {
                     updateMessage.innerHTML = `<i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i> ${data.error}`;
                     updateSpinner.style.display = 'none';
@@ -1178,6 +1245,181 @@
             }
         }
         
+        // Load last updated timestamp
+        async function loadLastUpdated() {
+            try {
+                const response = await fetch('/api/daily-product-posts/last-updated');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const lastUpdatedText = document.getElementById('last-updated-text');
+                    if (data.last_updated) {
+                        const date = new Date(data.last_updated);
+                        const now = new Date();
+                        const diffMs = now - date;
+                        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                        const diffDays = Math.floor(diffHours / 24);
+                        
+                        let timeAgo;
+                        if (diffDays > 0) {
+                            timeAgo = `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+                        } else if (diffHours > 0) {
+                            timeAgo = `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+                        } else {
+                            timeAgo = 'Just now';
+                        }
+                        
+                        lastUpdatedText.textContent = `Last Updated: ${timeAgo} (${data.total_products} products)`;
+                    } else {
+                        lastUpdatedText.textContent = 'No products found';
+                    }
+                } else {
+                    console.error('Error loading last updated timestamp:', data.error);
+                    document.getElementById('last-updated-text').textContent = 'Error loading timestamp';
+                }
+            } catch (error) {
+                console.error('Error loading last updated timestamp:', error);
+                document.getElementById('last-updated-text').textContent = 'Error loading timestamp';
+            }
+        }
+        
+        // Load all products for the Products Browser
+        async function loadAllProducts() {
+            try {
+                const response = await fetch('/api/daily-product-posts/products');
+                const data = await response.json();
+                
+                if (data.success) {
+                    allProducts = data.products;
+                    filteredProducts = [...allProducts];
+                    currentProductIndex = 0;
+                    
+                    // Update count display
+                    document.getElementById('products-browser-count').textContent = `${allProducts.length} products`;
+                    
+                    // Display first product
+                    displayCurrentProduct();
+                    updateNavigationButtons();
+                } else {
+                    console.error('Error loading products:', data.error);
+                    document.getElementById('product-browser-display').innerHTML = 'Error loading products';
+                }
+            } catch (error) {
+                console.error('Error loading products:', error);
+                document.getElementById('product-browser-display').innerHTML = 'Error loading products';
+            }
+        }
+        
+        // Display current product in the browser
+        function displayCurrentProduct() {
+            if (filteredProducts.length === 0) {
+                document.getElementById('product-browser-display').innerHTML = 
+                    '<div style="text-align: center; color: #94a3b8; font-style: italic;">No products found</div>';
+                return;
+            }
+            
+            const product = filteredProducts[currentProductIndex];
+            const productCounter = document.getElementById('product-counter');
+            productCounter.textContent = `Product ${currentProductIndex + 1} of ${filteredProducts.length}`;
+            
+            // Create product display HTML
+            let html = `
+                <div style="display: flex; gap: 20px; margin-bottom: 15px;">
+                    <div style="flex-shrink: 0;">
+                        <img src="${product.image_url || '/static/images/placeholder.jpg'}" 
+                             alt="${product.name}" 
+                             style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid #334155;">
+                    </div>
+                    <div style="flex: 1;">
+                        <h4 style="color: #f1f5f9; margin: 0 0 10px 0; font-size: 1.2rem;">${product.name}</h4>
+                        <div style="color: #10b981; font-weight: 600; margin-bottom: 10px; font-size: 1.1rem;">£${product.price || 'N/A'}</div>
+                        <div style="color: #94a3b8; margin-bottom: 8px;"><strong>SKU:</strong> ${product.sku}</div>
+                        <div style="color: #94a3b8; margin-bottom: 8px;"><strong>ID:</strong> ${product.id}</div>
+                        ${product.printable_design_type ? `<div style="color: #94a3b8; margin-bottom: 8px;"><strong>Design Type:</strong> ${product.printable_design_type}</div>` : ''}
+                        ${product.url ? `<div style="color: #94a3b8; margin-bottom: 8px;"><strong>URL:</strong> <a href="${product.url}" target="_blank" style="color: #3b82f6;">View Product</a></div>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            if (product.description) {
+                html += `
+                    <div style="margin-top: 15px;">
+                        <h5 style="color: #f1f5f9; margin: 0 0 8px 0;">Description:</h5>
+                        <div style="color: #e2e8f0; line-height: 1.5; background: #0f172a; padding: 10px; border-radius: 6px; border: 1px solid #334155;">
+                            ${product.description}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (product.category_ids && product.category_ids.length > 0) {
+                html += `
+                    <div style="margin-top: 15px;">
+                        <h5 style="color: #f1f5f9; margin: 0 0 8px 0;">Categories:</h5>
+                        <div style="color: #e2e8f0;">
+                            ${product.category_ids.map(id => `<span style="background: #334155; padding: 2px 8px; border-radius: 4px; margin-right: 5px; font-size: 0.8rem;">${id}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('product-browser-display').innerHTML = html;
+        }
+        
+        // Update navigation buttons state
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prev-product-btn');
+            const nextBtn = document.getElementById('next-product-btn');
+            
+            prevBtn.disabled = currentProductIndex === 0;
+            nextBtn.disabled = currentProductIndex >= filteredProducts.length - 1;
+        }
+        
+        // Navigate to previous product
+        function goToPreviousProduct() {
+            if (currentProductIndex > 0) {
+                currentProductIndex--;
+                displayCurrentProduct();
+                updateNavigationButtons();
+            }
+        }
+        
+        // Navigate to next product
+        function goToNextProduct() {
+            if (currentProductIndex < filteredProducts.length - 1) {
+                currentProductIndex++;
+                displayCurrentProduct();
+                updateNavigationButtons();
+            }
+        }
+        
+        // Filter products by name
+        function filterProducts() {
+            const filterValue = document.getElementById('product-filter').value.toLowerCase();
+            
+            if (filterValue === '') {
+                filteredProducts = [...allProducts];
+            } else {
+                filteredProducts = allProducts.filter(product => 
+                    product.name.toLowerCase().includes(filterValue)
+                );
+            }
+            
+            currentProductIndex = 0;
+            displayCurrentProduct();
+            updateNavigationButtons();
+        }
+        
+        // Initialize Products Browser
+        function initializeProductsBrowser() {
+            // Add event listeners for navigation buttons
+            document.getElementById('prev-product-btn').addEventListener('click', goToPreviousProduct);
+            document.getElementById('next-product-btn').addEventListener('click', goToNextProduct);
+            
+            // Add event listener for filter input
+            document.getElementById('product-filter').addEventListener('input', filterProducts);
+        }
+        
         // Handle URL parameters for accordion expansion and item highlighting
         function handleUrlParameters() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -1268,8 +1510,14 @@
             // Load categories first
             await loadCategories();
             
+            // Load last updated timestamp
+            await loadLastUpdated();
+            
             // Initialize schedule controls
             initializeScheduleControls();
+            
+            // Initialize Products Browser
+            initializeProductsBrowser();
             
             try {
                 const response = await fetch('/api/daily-product-posts/today-status');

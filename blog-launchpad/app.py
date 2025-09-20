@@ -4376,6 +4376,68 @@ def update_products():
             'error': f'Failed to update products: {str(e)}'
         }), 500
 
+@app.route('/api/daily-product-posts/last-updated', methods=['GET'])
+def get_last_updated():
+    """Get the last updated timestamp for products."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            cur.execute("""
+                SELECT MAX(last_updated) as last_updated, COUNT(*) as total_products
+                FROM clan_products
+            """)
+            
+            result = cur.fetchone()
+            
+            if result and result['last_updated']:
+                return jsonify({
+                    'success': True,
+                    'last_updated': result['last_updated'].isoformat(),
+                    'total_products': result['total_products']
+                })
+            else:
+                return jsonify({
+                    'success': True,
+                    'last_updated': None,
+                    'total_products': 0
+                })
+                
+    except Exception as e:
+        logger.error(f"Error getting last updated timestamp: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to get last updated timestamp: {str(e)}'
+        }), 500
+
+@app.route('/api/daily-product-posts/products', methods=['GET'])
+def get_all_products():
+    """Get all products for the Products Browser."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            cur.execute("""
+                SELECT id, name, sku, price, image_url, url, description, 
+                       category_ids, printable_design_type, last_updated
+                FROM clan_products
+                ORDER BY name ASC
+            """)
+            
+            products = cur.fetchall()
+            
+            return jsonify({
+                'success': True,
+                'products': [dict(product) for product in products]
+            })
+                
+    except Exception as e:
+        logger.error(f"Error getting all products: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to get products: {str(e)}'
+        }), 500
+
 @app.route('/api/daily-product-posts/start-ollama', methods=['POST'])
 def start_ollama_daily_posts():
     """Start the Ollama service for AI content generation."""
