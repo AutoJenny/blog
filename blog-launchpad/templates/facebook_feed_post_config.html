@@ -947,10 +947,39 @@
             // Load all posts for manual selection
             loadPosts();
             
+            // Restore previously selected post from localStorage
+            const savedPostId = localStorage.getItem('selectedBlogPostId');
+            if (savedPostId) {
+                // Set the selector value and trigger the change event
+                const postSelector = document.getElementById('postSelector');
+                postSelector.value = savedPostId;
+                currentPostId = parseInt(savedPostId);
+                
+                // Load sections and details for the saved post
+                loadPostSections(savedPostId);
+                fetch(`/api/syndication/posts/${savedPostId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success' && data.post) {
+                            updatePostDetails(data.post);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading post details:', error);
+                    });
+                
+                // Re-render queue to show items for the restored post
+                renderQueue();
+            }
+            
             // Add event listener for post selection
             document.getElementById('postSelector').addEventListener('change', function() {
                 const postId = this.value;
                 if (postId) {
+                    // Save selected post to localStorage
+                    localStorage.setItem('selectedBlogPostId', postId);
+                    currentPostId = parseInt(postId);
+                    
                     loadPostSections(postId);
                     // Load post details
                     fetch(`/api/syndication/posts/${postId}`)
@@ -967,6 +996,10 @@
                     // Re-render queue to show items for selected post
                     renderQueue();
                 } else {
+                    // Clear saved post from localStorage
+                    localStorage.removeItem('selectedBlogPostId');
+                    currentPostId = null;
+                    
                     document.getElementById('postDetails').classList.add('d-none');
                     document.getElementById('sectionsList').classList.add('d-none');
                     // Re-render queue to show all items
