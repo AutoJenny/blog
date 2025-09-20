@@ -1418,13 +1418,13 @@
         async function loadQueueData() {
             try {
                 console.log('Loading blog post queue data...');
-                const response = await fetch('/api/syndication/facebook/queue');
+                const response = await fetch('/api/queue?content_type=blog_post&platform=facebook&channel_type=feed_post');
                 const data = await response.json();
                 
                 console.log('Blog post queue API response:', data);
                 
                 if (data.success) {
-                    queueData = data.queue_items.map(item => ({
+                    queueData = data.items.map(item => ({
                         id: item.id,
                         post: {
                             id: item.post_id,
@@ -1977,7 +1977,7 @@
         async function clearQueue() {
             if (confirm('Clear all blog post items from queue?')) {
                 try {
-                    const response = await fetch('/api/syndication/facebook/queue/clear', {
+                    const response = await fetch('/api/queue/clear?content_type=blog_post&platform=facebook&channel_type=feed_post', {
                         method: 'DELETE'
                     });
                     
