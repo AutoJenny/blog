@@ -4757,7 +4757,7 @@ def get_queue():
     """Get all items in the posting queue."""
     try:
         with get_db_connection() as conn:
-            cur = conn.cursor()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             
             cur.execute("""
                 SELECT pq.*, cp.name as product_name, cp.image_url as product_image, 
@@ -4775,38 +4775,38 @@ def get_queue():
             queue_items = []
             for item in items:
                 # Validate required fields - no fallbacks allowed
-                if not item[8]:  # status
-                    raise ValueError(f"Queue item {item[0]} is missing status information")
-                if not item[11]:  # platform
-                    raise ValueError(f"Queue item {item[0]} is missing platform information")
-                if not item[12]:  # channel_type
-                    raise ValueError(f"Queue item {item[0]} is missing channel_type information")
-                if not item[13]:  # content_type
-                    raise ValueError(f"Queue item {item[0]} is missing content_type information")
+                if not item['status']:
+                    raise ValueError(f"Queue item {item['id']} is missing status information")
+                if not item['platform']:
+                    raise ValueError(f"Queue item {item['id']} is missing platform information")
+                if not item['channel_type']:
+                    raise ValueError(f"Queue item {item['id']} is missing channel_type information")
+                if not item['content_type']:
+                    raise ValueError(f"Queue item {item['id']} is missing content_type information")
                 
                 queue_items.append({
-                    'id': item[0],
-                    'product_id': item[1],
-                    'scheduled_date': item[2].isoformat() if item[2] else None,
-                    'scheduled_time': str(item[3]) if item[3] else None,
-                    'schedule_name': item[4],
-                    'timezone': item[5],
-                    'generated_content': item[6],
-                    'queue_order': item[7],
-                    'status': item[8],
-                    'created_at': item[9].isoformat() if item[9] else None,
-                    'updated_at': item[10].isoformat() if item[10] else None,
-                    'platform': item[11],
-                    'channel_type': item[12],
-                    'content_type': item[13],
-                    'scheduled_timestamp': item[14].isoformat() if item[14] else None,
-                    'platform_post_id': item[15],
-                    'error_message': item[16],
-                    'product_name': item[17],
-                    'product_image': item[18],
-                    'sku': item[19],
-                    'price': str(item[20]) if item[20] else None,
-                    'categories': item[21] if item[21] else []
+                    'id': item['id'],
+                    'product_id': item['product_id'],
+                    'scheduled_date': item['scheduled_date'].isoformat() if item['scheduled_date'] else None,
+                    'scheduled_time': str(item['scheduled_time']) if item['scheduled_time'] else None,
+                    'schedule_name': item['schedule_name'],
+                    'timezone': item['timezone'],
+                    'generated_content': item['generated_content'],
+                    'queue_order': item['queue_order'],
+                    'status': item['status'],
+                    'created_at': item['created_at'].isoformat() if item['created_at'] else None,
+                    'updated_at': item['updated_at'].isoformat() if item['updated_at'] else None,
+                    'platform': item['platform'],
+                    'channel_type': item['channel_type'],
+                    'content_type': item['content_type'],
+                    'scheduled_timestamp': item['scheduled_timestamp'].isoformat() if item['scheduled_timestamp'] else None,
+                    'platform_post_id': item['platform_post_id'],
+                    'error_message': item['error_message'],
+                    'product_name': item['product_name'],
+                    'product_image': item['product_image'],
+                    'sku': item['sku'],
+                    'price': str(item['price']) if item['price'] else None,
+                    'categories': item['categories'] if item['categories'] else []
                 })
             
             return jsonify({
