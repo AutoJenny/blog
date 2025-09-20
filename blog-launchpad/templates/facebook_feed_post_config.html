@@ -1005,6 +1005,8 @@
                     
                     // Display queue items for selected post
                     displayQueueForSelectedPost(postId);
+                    // Also update the Posting Queue panel
+                    renderQueue();
                 } else {
                     // Clear saved post from localStorage
                     localStorage.removeItem('selectedBlogPostId');
@@ -1014,6 +1016,8 @@
                     document.getElementById('sectionsList').classList.add('d-none');
                     // Show placeholder when no post selected
                     displayQueueForSelectedPost(null);
+                    // Also update the Posting Queue panel to show all items
+                    renderQueue();
                 }
             });
             
@@ -1639,20 +1643,6 @@
                 placeholderDiv.classList.add('d-none');
             }
             
-            if (queueData.length === 0) {
-                console.log('No queue data, showing empty state');
-                emptyQueue.style.display = 'block';
-                queueTableContainer.style.display = 'none';
-                clearQueueBtn.style.display = 'none';
-                queueCount.textContent = '0';
-                return;
-            }
-            
-            emptyQueue.style.display = 'none';
-            queueTableContainer.style.display = 'block';
-            clearQueueBtn.style.display = 'inline-block';
-            queueCount.textContent = queueData.length;
-            
             // Generate sequential posting times (will be updated after filtering)
             let postingTimes = generateSequentialTimes(queueData.length);
             
@@ -1662,7 +1652,7 @@
             // Filter items to only show those for the currently selected post
             // If no post is selected, show all items; if a post is selected, show only that post's items
             if (currentPostId) {
-                filteredItems = queueData.filter(item => item.post.id === parseInt(currentPostId));
+                filteredItems = queueData.filter(item => item.post_id === parseInt(currentPostId));
                 console.log(`Filtering queue for post ID ${currentPostId}, found ${filteredItems.length} items out of ${queueData.length} total`);
             } else {
                 // When no post is selected, show all items (for initial page load)
