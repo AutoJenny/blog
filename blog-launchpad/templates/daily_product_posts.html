@@ -1335,7 +1335,7 @@
                         <div style="color: #10b981; font-weight: 600; margin-bottom: 10px; font-size: 1.1rem;">£${product.price || 'N/A'}</div>
                         <div style="color: #94a3b8; margin-bottom: 8px;"><strong>SKU:</strong> ${product.sku}</div>
                         <div style="color: #94a3b8; margin-bottom: 8px;"><strong>ID:</strong> ${product.id}</div>
-                        ${product.printable_design_type ? `<div style="color: #94a3b8; margin-bottom: 8px;"><strong>Design Type:</strong> ${product.printable_design_type}</div>` : ''}
+                        <div style="color: #94a3b8; margin-bottom: 8px;"><strong>Design Type:</strong> ${product.printable_design_type || 'N/A'}</div>
                         ${product.url ? `<div style="color: #94a3b8; margin-bottom: 8px;"><strong>URL:</strong> <a href="${product.url}" target="_blank" style="color: #3b82f6;">View Product</a></div>` : ''}
                     </div>
                 </div>
