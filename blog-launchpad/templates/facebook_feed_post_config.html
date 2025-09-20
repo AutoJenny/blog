@@ -812,7 +812,17 @@
                     </div>
                 </div>
                 
-                <!-- Placeholder when no content generated -->
+                <!-- Queue Display for Selected Post -->
+                <div id="queueDisplay" class="d-none">
+                    <h6 class="text-success mb-3">
+                        <i class="fas fa-list me-2"></i>Queue Items for Selected Post
+                    </h6>
+                    <div id="queueItemsContainer">
+                        <!-- Queue items will be displayed here -->
+                    </div>
+                </div>
+                
+                <!-- Placeholder when no post selected -->
                 <div id="contentGenerationPlaceholder">
                     <div style="text-align: center; color: #94a3b8; padding: 40px 20px; font-style: italic;">
                         <i class="fas fa-robot" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
@@ -968,8 +978,8 @@
                         console.error('Error loading post details:', error);
                     });
                 
-                // Note: renderQueue() will be called by loadScheduleData() after queue data is loaded
-                console.log('Post restored from localStorage, queue will render when data is loaded');
+                // Display queue items for restored post
+                displayQueueForSelectedPost(savedPostId);
             }
             
             // Add event listener for post selection
@@ -993,8 +1003,8 @@
                             console.error('Error loading post details:', error);
                         });
                     
-                    // Re-render queue to show items for selected post
-                    renderQueue();
+                    // Display queue items for selected post
+                    displayQueueForSelectedPost(postId);
                 } else {
                     // Clear saved post from localStorage
                     localStorage.removeItem('selectedBlogPostId');
@@ -1002,8 +1012,8 @@
                     
                     document.getElementById('postDetails').classList.add('d-none');
                     document.getElementById('sectionsList').classList.add('d-none');
-                    // Re-render queue to show all items
-                    renderQueue();
+                    // Show placeholder when no post selected
+                    displayQueueForSelectedPost(null);
                 }
             });
             
@@ -1086,18 +1096,18 @@
                 }
                 
                 // Update progress to completion
-                updateProgress(100, `Completed! Generated ${completedCount} Facebook posts.`);
+                updateProgress(100, `Saving to database...`);
                 
-                // Display results
-                displayGeneratedPosts(generatedPosts);
-                
-                // Add generated posts to queue
+                // Add generated posts to queue (saves to database)
                 await addGeneratedPostsToQueue(generatedPosts);
+                
+                // Display from database (not from generatedPosts array)
+                await displayQueueForSelectedPost(currentPostId);
                 
                 // Show success message
                 setTimeout(() => {
                     showProgress(false);
-                    alert(`Successfully generated ${completedCount} Facebook posts and added them to the queue! Check the Posting Queue panel.`);
+                    alert(`Successfully generated ${completedCount} Facebook posts and saved them to the database!`);
                 }, 1000);
                 
             } catch (error) {
@@ -1267,6 +1277,68 @@
                 accordionContent.style.display = 'block';
                 chevron.classList.remove('fa-chevron-right');
                 chevron.classList.add('fa-chevron-down');
+            }
+        }
+        
+        // Clean function to display queue items for selected post
+        async function displayQueueForSelectedPost(postId) {
+            if (!postId) {
+                // No post selected, show placeholder
+                document.getElementById('contentGenerationPlaceholder').classList.remove('d-none');
+                document.getElementById('queueDisplay').classList.add('d-none');
+                document.getElementById('generatedContentResults').classList.add('d-none');
+                return;
+            }
+            
+            try {
+                // Fetch queue items for this specific post
+                const response = await fetch(`/api/queue?content_type=blog_post&platform=facebook&channel_type=feed_post&post_id=${postId}`);
+                const data = await response.json();
+                
+                if (data.success && data.items && data.items.length > 0) {
+                    // Show queue items
+                    document.getElementById('contentGenerationPlaceholder').classList.add('d-none');
+                    document.getElementById('generatedContentResults').classList.add('d-none');
+                    document.getElementById('queueDisplay').classList.remove('d-none');
+                    
+                    // Display queue items
+                    const container = document.getElementById('queueItemsContainer');
+                    container.innerHTML = '';
+                    
+                    data.items.forEach((item, index) => {
+                        const itemElement = document.createElement('div');
+                        itemElement.className = 'queue-item mb-3 p-3 bg-dark border border-secondary rounded';
+                        itemElement.innerHTML = `
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="text-success mb-0">${item.section_title}</h6>
+                                <span class="badge bg-primary">${item.status}</span>
+                            </div>
+                            <div class="queue-content p-3 bg-secondary rounded mb-2">
+                                <p class="mb-0 text-white">${item.generated_content}</p>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>${item.scheduled_date} at ${item.scheduled_time}
+                                </small>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>Queue Order: ${item.queue_order}
+                                </small>
+                            </div>
+                        `;
+                        container.appendChild(itemElement);
+                    });
+                } else {
+                    // No queue items for this post, show placeholder
+                    document.getElementById('contentGenerationPlaceholder').classList.remove('d-none');
+                    document.getElementById('queueDisplay').classList.add('d-none');
+                    document.getElementById('generatedContentResults').classList.add('d-none');
+                }
+            } catch (error) {
+                console.error('Error loading queue for post:', error);
+                // Show placeholder on error
+                document.getElementById('contentGenerationPlaceholder').classList.remove('d-none');
+                document.getElementById('queueDisplay').classList.add('d-none');
+                document.getElementById('generatedContentResults').classList.add('d-none');
             }
         }
         
