@@ -1421,10 +1421,11 @@
             }
             
             // Load schedule and queue data in coordinated manner
-            loadQueueData().then(() => {
+            (async () => {
+                await loadQueueData();
                 console.log('loadQueueData completed, queueData length:', queueData.length);
-                loadScheduleData();
-            });
+                await loadScheduleData();
+            })();
             
             // Add event listeners for posting control
             initializePostingControl();
@@ -1540,6 +1541,7 @@
         
         // Load queue data from database
         async function loadQueueData() {
+            console.log('=== LOADQUEUEDATA CALLED ===');
             try {
                 console.log('Loading blog post queue data...');
                 const response = await fetch('/api/queue?content_type=blog_post&platform=facebook&channel_type=feed_post');
@@ -1581,6 +1583,7 @@
                 console.error('Error loading blog post queue:', error);
                 queueData = []; // Ensure queueData is always an array
             }
+            console.log('=== LOADQUEUEDATA COMPLETED, queueData length:', queueData.length, '===');
         }
         
         // Display schedules
