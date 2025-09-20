@@ -1311,9 +1311,9 @@
         
         // Initialize posting control and queue functionality
         document.addEventListener('DOMContentLoaded', function() {
-            // Load schedule and queue data
-            loadScheduleData();
+            // Load schedule and queue data in coordinated manner
             loadQueueData();
+            loadScheduleData();
             
             // Add event listeners for posting control
             initializePostingControl();
@@ -1547,8 +1547,12 @@
             let filteredItems = queueData;
             
             // Filter items to only show those for the currently selected post
+            // If no post is selected, show all items; if a post is selected, show only that post's items
             if (currentPostId) {
                 filteredItems = queueData.filter(item => item.post.id === currentPostId);
+            } else {
+                // When no post is selected, show all items (for initial page load)
+                filteredItems = queueData;
             }
             
             // Update count to reflect filtered items
