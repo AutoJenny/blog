@@ -1652,8 +1652,19 @@
             
             // Filter items to only show those for the currently selected post
             // If no post is selected, show all items; if a post is selected, show only that post's items
+            console.log('renderQueue - currentPostId:', currentPostId, 'type:', typeof currentPostId);
+            console.log('renderQueue - queueData length:', queueData.length);
+            if (queueData.length > 0) {
+                console.log('renderQueue - first item:', queueData[0]);
+                console.log('renderQueue - first item post.id:', queueData[0].post?.id, 'type:', typeof queueData[0].post?.id);
+            }
+            
             if (currentPostId) {
-                filteredItems = queueData.filter(item => item.post.id === parseInt(currentPostId));
+                filteredItems = queueData.filter(item => {
+                    const match = item.post.id === parseInt(currentPostId);
+                    console.log(`Item ${item.id}: post.id=${item.post.id} === parseInt(${currentPostId})=${parseInt(currentPostId)} = ${match}`);
+                    return match;
+                });
                 console.log(`Filtering queue for post ID ${currentPostId}, found ${filteredItems.length} items out of ${queueData.length} total`);
             } else {
                 // When no post is selected, show all items (for initial page load)
