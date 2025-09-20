@@ -625,7 +625,7 @@
                     </div>
                     
                     <!-- Navigation Controls -->
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <button id="prev-product-btn" class="btn btn-secondary" disabled>
                             <i class="fas fa-chevron-left"></i>
                             Previous
@@ -634,6 +634,18 @@
                         <button id="next-product-btn" class="btn btn-secondary" disabled>
                             Next
                             <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Product Selection Buttons -->
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button id="select-this-product-btn" class="btn btn-success" style="padding: 12px 24px; font-size: 1rem; font-weight: 600;" disabled>
+                            <i class="fas fa-check-circle"></i>
+                            Select This Product
+                        </button>
+                        <button id="select-random-product-btn" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.9rem;" disabled>
+                            <i class="fas fa-random"></i>
+                            Random
                         </button>
                     </div>
                 </div>
@@ -662,12 +674,6 @@
                 <p>No product selected for today</p>
             </div>
             
-            <div style="text-align: center; margin-top: 20px;">
-                <button id="select-product-btn" class="btn btn-primary">
-                    <i class="fas fa-random"></i>
-                    Select Random Product
-                </button>
-            </div>
             
             <!-- Update Status Display -->
             <div id="update-status" style="display: none; margin-top: 15px; padding: 15px; background: #1e293b; border: 1px solid #334155; border-radius: 8px;">
@@ -774,6 +780,9 @@
                 if (allProducts.length === 0) {
                     loadAllProducts();
                 }
+                // Enable selection buttons when accordion is opened
+                selectThisProductBtn.disabled = false;
+                selectRandomProductBtn.disabled = false;
             } else {
                 content.style.display = 'none';
                 chevron.style.transform = 'rotate(0deg)';
@@ -783,7 +792,8 @@
         // DOM elements
         const productDisplay = document.getElementById('product-display');
         const noProduct = document.getElementById('no-product');
-        const selectProductBtn = document.getElementById('select-product-btn');
+        const selectThisProductBtn = document.getElementById('select-this-product-btn');
+        const selectRandomProductBtn = document.getElementById('select-random-product-btn');
         const generateContentBtn = document.getElementById('generate-content-btn');
         const editContentBtn = document.getElementById('edit-content-btn');
         const postNowBtn = document.getElementById('post-now-btn');
@@ -801,10 +811,29 @@
             });
         });
         
+        // Select current product (from Products Browser)
+        selectThisProductBtn.addEventListener('click', async () => {
+            if (filteredProducts.length === 0) {
+                alert('No products available to select.');
+                return;
+            }
+            
+            const currentProduct = filteredProducts[currentProductIndex];
+            selectedProduct = currentProduct;
+            displayProduct(selectedProduct);
+            generateContentBtn.disabled = false;
+            
+            // Hide Add to Queue button until content is generated
+            addToQueueBtn.style.display = 'none';
+            addToQueueBtn.disabled = true;
+            
+            showNotification(`Selected: ${currentProduct.name}`, 'success');
+        });
+        
         // Select random product
-        selectProductBtn.addEventListener('click', async () => {
-            selectProductBtn.classList.add('loading');
-            selectProductBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Selecting...';
+        selectRandomProductBtn.addEventListener('click', async () => {
+            selectRandomProductBtn.classList.add('loading');
+            selectRandomProductBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Selecting...';
             
             try {
                 const response = await fetch('/api/daily-product-posts/select-product', {
@@ -833,8 +862,8 @@
                 console.error('Error selecting product:', error);
                 alert('Error selecting product. Please try again.');
             } finally {
-                selectProductBtn.classList.remove('loading');
-                selectProductBtn.innerHTML = '<i class="fas fa-random"></i> Select Random Product';
+                selectRandomProductBtn.classList.remove('loading');
+                selectRandomProductBtn.innerHTML = '<i class="fas fa-random"></i> Random';
             }
         });
         
