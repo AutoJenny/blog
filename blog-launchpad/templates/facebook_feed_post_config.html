@@ -1398,19 +1398,7 @@
             // Load all posts for manual selection
             loadPosts();
             
-            // Load schedule and queue data in coordinated manner
-            loadQueueData().then(() => {
-                console.log('loadQueueData completed, queueData length:', queueData.length);
-                loadScheduleData();
-            });
-            
-            // Add event listeners for posting control
-            initializePostingControl();
-            
-            // Add event listeners for queue management
-            initializeQueueManagement();
-            
-            // Restore previously selected post from localStorage AFTER data is loaded
+            // Restore previously selected post from localStorage FIRST
             const savedPostId = localStorage.getItem('selectedBlogPostId');
             if (savedPostId) {
                 // Set the selector value and trigger the change event
@@ -1430,12 +1418,19 @@
                     .catch(error => {
                         console.error('Error loading post details:', error);
                     });
-                
-                // Display queue items for restored post
-                displayQueueForSelectedPost(savedPostId);
-                // Also update the Posting Queue panel
-                renderQueue();
             }
+            
+            // Load schedule and queue data in coordinated manner
+            loadQueueData().then(() => {
+                console.log('loadQueueData completed, queueData length:', queueData.length);
+                loadScheduleData();
+            });
+            
+            // Add event listeners for posting control
+            initializePostingControl();
+            
+            // Add event listeners for queue management
+            initializeQueueManagement();
         });
         
         // Initialize posting control functionality
