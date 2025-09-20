@@ -1409,11 +1409,16 @@
                     displaySchedules([]);
                     updateScheduleSummary([]);
                 }
+                
+                // Now render the queue since schedules are loaded
+                renderQueue();
             } catch (error) {
                 console.error('Error loading blog post schedules:', error);
                 scheduleData = [];
                 displaySchedules([]);
                 updateScheduleSummary([]);
+                // Still render queue even if schedules failed to load
+                renderQueue();
             }
         }
         
@@ -1452,7 +1457,7 @@
                     
                     console.log('Transformed blog post queue data:', queueData);
                     console.log('Queue data length:', queueData.length);
-                    renderQueue();
+                    // Don't call renderQueue() here - it will be called after schedules are loaded
                 } else {
                     console.error('Error loading blog post queue:', data.error);
                 }
