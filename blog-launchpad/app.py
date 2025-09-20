@@ -652,6 +652,235 @@ def clear_unified_queue():
             'error': f'Failed to clear queue: {str(e)}'
         }), 500
 
+# Unified Schedule API Endpoints
+@app.route('/api/schedules', methods=['GET'])
+def get_unified_schedules():
+    """Get schedules with optional filtering."""
+    try:
+        # Get query parameters
+        content_type = request.args.get('content_type')
+        platform = request.args.get('platform')
+        channel_type = request.args.get('channel_type')
+        is_active = request.args.get('is_active')
+        
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Build WHERE clause dynamically
+            where_conditions = []
+            params = []
+            
+            if content_type:
+                where_conditions.append("content_type = %s")
+                params.append(content_type)
+            
+            if platform:
+                where_conditions.append("platform = %s")
+                params.append(platform)
+                
+            if channel_type:
+                where_conditions.append("channel_type = %s")
+                params.append(channel_type)
+                
+            if is_active is not None:
+                where_conditions.append("is_active = %s")
+                params.append(is_active.lower() == 'true')
+            
+            where_clause = ""
+            if where_conditions:
+                where_clause = "WHERE " + " AND ".join(where_conditions)
+            
+            # Get schedules
+            query = f"""
+                SELECT id, name, time, timezone, days, is_active, platform, channel_type, content_type,
+                       created_at, updated_at
+                FROM daily_posts_schedule
+                {where_clause}
+                ORDER BY created_at DESC
+            """
+            
+            cur.execute(query, params)
+            schedules = cur.fetchall()
+            
+            # Transform schedules
+            schedule_list = []
+            for schedule in schedules:
+                schedule_dict = {
+                    'id': schedule['id'],
+                    'name': schedule['name'],
+                    'time': str(schedule['time']),
+                    'timezone': schedule['timezone'],
+                    'days': schedule['days'],
+                    'is_active': schedule['is_active'],
+                    'platform': schedule['platform'],
+                    'channel_type': schedule['channel_type'],
+                    'content_type': schedule['content_type'],
+                    'created_at': schedule['created_at'].isoformat() if schedule['created_at'] else None,
+                    'updated_at': schedule['updated_at'].isoformat() if schedule['updated_at'] else None
+                }
+                schedule_list.append(schedule_dict)
+            
+            return jsonify({
+                'success': True,
+                'schedules': schedule_list
+            })
+            
+    except Exception as e:
+        logger.error(f"Error getting unified schedules: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to get schedules: {str(e)}'
+        }), 500
+
+@app.route('/api/schedules', methods=['POST'])
+def create_unified_schedule():
+    """Create a new schedule."""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['name', 'time', 'timezone', 'days', 'platform', 'channel_type', 'content_type']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({
+                    'success': False,
+                    'error': f'Missing required field: {field}',
+                    'code': 'VALIDATION_ERROR'
+                }), 400
+        
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            # Insert new schedule
+            cur.execute("""
+                INSERT INTO daily_posts_schedule (
+                    name, time, timezone, days, platform, channel_type, content_type, is_active
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
+            """, (
+                data['name'],
+                data['time'],
+                data['timezone'],
+                json.dumps(data['days']),  # Convert array to JSON string
+                data['platform'],
+                data['channel_type'],
+                data['content_type'],
+                data.get('is_active', True)
+            ))
+            
+            schedule_id = cur.fetchone()[0]
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'schedule_id': schedule_id,
+                'message': 'Schedule created successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error creating unified schedule: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to create schedule: {str(e)}'
+        }), 500
+
+@app.route('/api/schedules/<int:schedule_id>', methods=['PUT'])
+def update_unified_schedule(schedule_id):
+    """Update an existing schedule."""
+    try:
+        data = request.get_json()
+        
+        # Build update query dynamically
+        update_fields = []
+        update_values = []
+        
+        allowed_fields = ['name', 'time', 'timezone', 'days', 'is_active', 'platform', 'channel_type', 'content_type']
+        for field in allowed_fields:
+            if field in data:
+                if field == 'days':
+                    update_fields.append("days = %s")
+                    update_values.append(json.dumps(data[field]))
+                else:
+                    update_fields.append(f"{field} = %s")
+                    update_values.append(data[field])
+        
+        if not update_fields:
+            return jsonify({
+                'success': False,
+                'error': 'No valid fields to update',
+                'code': 'VALIDATION_ERROR'
+            }), 400
+        
+        update_values.append(schedule_id)
+        
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            cur.execute(f"""
+                UPDATE daily_posts_schedule 
+                SET {', '.join(update_fields)}, updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+                RETURNING id
+            """, update_values)
+            
+            updated_schedule = cur.fetchone()
+            if not updated_schedule:
+                return jsonify({
+                    'success': False,
+                    'error': 'Schedule not found',
+                    'code': 'ITEM_NOT_FOUND'
+                }), 404
+            
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Schedule updated successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error updating unified schedule: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to update schedule: {str(e)}'
+        }), 500
+
+@app.route('/api/schedules/<int:schedule_id>', methods=['DELETE'])
+def delete_unified_schedule(schedule_id):
+    """Delete a schedule."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            cur.execute("""
+                DELETE FROM daily_posts_schedule 
+                WHERE id = %s
+                RETURNING id
+            """, (schedule_id,))
+            
+            deleted_schedule = cur.fetchone()
+            if not deleted_schedule:
+                return jsonify({
+                    'success': False,
+                    'error': 'Schedule not found',
+                    'code': 'ITEM_NOT_FOUND'
+                }), 404
+            
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Schedule deleted successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error deleting unified schedule: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to delete schedule: {str(e)}'
+        }), 500
+
 @app.route('/daily-product-posts')
 def daily_product_posts():
     """Daily Product Posts management page."""
