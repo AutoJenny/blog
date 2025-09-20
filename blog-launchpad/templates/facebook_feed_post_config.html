@@ -1399,8 +1399,9 @@
             loadPosts();
             
             // Load schedule and queue data in coordinated manner
-            loadQueueData();
-            loadScheduleData();
+            loadQueueData().then(() => {
+                loadScheduleData();
+            });
             
             // Add event listeners for posting control
             initializePostingControl();
