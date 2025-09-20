@@ -73,29 +73,29 @@ class ProductImageUpdater:
                         continue
                     
                     try:
-                            # Get detailed product data with images
-                            detail_url = f"{self.api_base_url}/getProductData"
-                            detail_params = {
-                                'sku': sku,
-                                'all_images': '1'
-                            }
-                            
-                            detail_response = self.session.get(detail_url, params=detail_params, timeout=30)
-                            detail_response.raise_for_status()
-                            
-                            detail_data = detail_response.json()
-                            if detail_data.get('success') and detail_data.get('data'):
-                                detailed_products.append(detail_data['data'])
-                                logger.info(f"✅ Fetched detailed data for SKU: {sku}")
-                            else:
-                                logger.warning(f"⚠️ No detailed data for SKU: {sku}")
-                            
-                            # Rate limiting delay
-                            time.sleep(0.5)
-                            
-                        except Exception as e:
-                            logger.error(f"❌ Error fetching details for SKU {sku}: {e}")
-                            continue
+                        # Get detailed product data with images
+                        detail_url = f"{self.api_base_url}/getProductData"
+                        detail_params = {
+                            'sku': sku,
+                            'all_images': '1'
+                        }
+                        
+                        detail_response = self.session.get(detail_url, params=detail_params, timeout=30)
+                        detail_response.raise_for_status()
+                        
+                        detail_data = detail_response.json()
+                        if detail_data.get('success') and detail_data.get('data'):
+                            detailed_products.append(detail_data['data'])
+                            logger.info(f"✅ Fetched detailed data for SKU: {sku}")
+                        else:
+                            logger.warning(f"⚠️ No detailed data for SKU: {sku}")
+                        
+                        # Rate limiting delay
+                        time.sleep(0.5)
+                        
+                    except Exception as e:
+                        logger.error(f"❌ Error fetching details for SKU {sku}: {e}")
+                        continue
                 
                 # Longer delay between batches
                 time.sleep(1)

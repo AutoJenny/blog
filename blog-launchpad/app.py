@@ -4283,12 +4283,14 @@ def update_products():
                 SELECT sku, name, last_updated,
                        CASE WHEN image_url IS NULL OR image_url = '' THEN 1 ELSE 0 END as needs_image,
                        CASE WHEN category_ids IS NULL OR category_ids = '[]'::jsonb THEN 1 ELSE 0 END as needs_categories,
-                       CASE WHEN price IS NULL OR price = '' OR price = '0.00' THEN 1 ELSE 0 END as needs_price
+                       CASE WHEN price IS NULL OR price = '' OR price = '0.00' THEN 1 ELSE 0 END as needs_price,
+                       CASE WHEN printable_design_type IS NULL OR printable_design_type = '' THEN 1 ELSE 0 END as needs_printable_design_type
                 FROM clan_products 
                 WHERE last_updated < NOW() - INTERVAL '1 day' 
                    OR image_url IS NULL OR image_url = ''
                    OR category_ids IS NULL OR category_ids = '[]'::jsonb
                    OR price IS NULL OR price = '' OR price = '0.00'
+                   OR printable_design_type IS NULL OR printable_design_type = ''
                 ORDER BY last_updated ASC
                 LIMIT 50
             """)
@@ -4352,11 +4354,28 @@ def update_products():
                 except Exception as e:
                     logger.error(f"Error updating prices: {e}")
                     stats['errors'].append(f"Price update error: {str(e)}")
+            
+            # Update printable_design_type if needed
+            products_needing_printable_design_type = [p for p in products_to_update if p['needs_printable_design_type']]
+            logger.info(f"Found {len(products_needing_printable_design_type)} products needing printable_design_type updates")
+            if products_needing_printable_design_type:
+                logger.info(f"Updating printable_design_type for {len(products_needing_printable_design_type)} products...")
+                try:
+                    # Use any of the updaters to get fresh data from API
+                    price_updater = ProductPriceUpdater()
+                    products_with_printable_design_type = price_updater.fetch_products_by_sku([p['sku'] for p in products_needing_printable_design_type])
+                    if products_with_printable_design_type:
+                        printable_design_type_stats = update_printable_design_types(products_with_printable_design_type)
+                        stats['printable_design_types_updated'] = printable_design_type_stats.get('successful_updates', 0)
+                        stats['errors'].extend(printable_design_type_stats.get('errors', []))
+                except Exception as e:
+                    logger.error(f"Error updating printable_design_type: {e}")
+                    stats['errors'].append(f"Printable design type update error: {str(e)}")
         
-        total_updates = stats['images_updated'] + stats['categories_updated'] + stats['prices_updated']
+        total_updates = stats['images_updated'] + stats['categories_updated'] + stats['prices_updated'] + stats.get('printable_design_types_updated', 0)
         
         if total_updates > 0:
-            message = f"Successfully updated {total_updates} products: {stats['images_updated']} images, {stats['categories_updated']} categories, {stats['prices_updated']} prices"
+            message = f"Successfully updated {total_updates} products: {stats['images_updated']} images, {stats['categories_updated']} categories, {stats['prices_updated']} prices, {stats.get('printable_design_types_updated', 0)} printable design types"
         else:
             message = "No products needed updates, but checked for changes"
         
@@ -4375,6 +4394,66 @@ def update_products():
             'success': False,
             'error': f'Failed to update products: {str(e)}'
         }), 500
+
+def update_printable_design_types(products):
+    """Update printable_design_type field for products"""
+    stats = {
+        'total_processed': 0,
+        'successful_updates': 0,
+        'failed_updates': 0,
+        'errors': []
+    }
+    
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            for product in products:
+                stats['total_processed'] += 1
+                
+                try:
+                    sku = product.get('sku')
+                    if not sku:
+                        logger.warning(f"Product missing SKU: {product}")
+                        stats['failed_updates'] += 1
+                        continue
+                    
+                    # Get the printable_design_type
+                    printable_design_type = product.get('printable_design_type')
+                    
+                    if printable_design_type is None:
+                        logger.warning(f"No printable_design_type found for SKU: {sku}")
+                        stats['failed_updates'] += 1
+                        continue
+                    
+                    # Update the database
+                    cur.execute("""
+                        UPDATE clan_products 
+                        SET printable_design_type = %s, last_updated = CURRENT_TIMESTAMP
+                        WHERE sku = %s
+                    """, (printable_design_type, sku))
+                    
+                    if cur.rowcount > 0:
+                        stats['successful_updates'] += 1
+                        logger.info(f"✅ Updated printable_design_type for SKU: {sku} - {printable_design_type}")
+                    else:
+                        logger.warning(f"⚠️ No product found with SKU: {sku}")
+                        stats['failed_updates'] += 1
+                        
+                except Exception as e:
+                    logger.error(f"❌ Error updating printable_design_type for SKU {sku}: {e}")
+                    stats['errors'].append(f"SKU {sku}: {str(e)}")
+                    stats['failed_updates'] += 1
+                    continue
+            
+            conn.commit()
+            logger.info(f"Printable design type update completed: {stats['successful_updates']} successful, {stats['failed_updates']} failed")
+            
+    except Exception as e:
+        logger.error(f"Error in update_printable_design_types: {e}")
+        stats['errors'].append(f"Database error: {str(e)}")
+    
+    return stats
 
 @app.route('/api/daily-product-posts/last-updated', methods=['GET'])
 def get_last_updated():

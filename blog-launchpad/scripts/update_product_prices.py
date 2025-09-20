@@ -73,28 +73,28 @@ class ProductPriceUpdater:
                         continue
                     
                     try:
-                            # Get detailed product data with price
-                            detail_url = f"{self.api_base_url}/getProductData"
-                            detail_params = {
-                                'sku': sku
-                            }
-                            
-                            detail_response = self.session.get(detail_url, params=detail_params, timeout=30)
-                            detail_response.raise_for_status()
-                            
-                            detail_data = detail_response.json()
-                            if detail_data.get('success') and detail_data.get('data'):
-                                detailed_products.append(detail_data['data'])
-                                logger.info(f"✅ Fetched price data for SKU: {sku}")
-                            else:
-                                logger.warning(f"⚠️ No price data for SKU: {sku}")
-                            
-                            # Rate limiting delay
-                            time.sleep(0.5)
-                            
-                        except Exception as e:
-                            logger.error(f"❌ Error fetching price for SKU {sku}: {e}")
-                            continue
+                        # Get detailed product data with price
+                        detail_url = f"{self.api_base_url}/getProductData"
+                        detail_params = {
+                            'sku': sku
+                        }
+                        
+                        detail_response = self.session.get(detail_url, params=detail_params, timeout=30)
+                        detail_response.raise_for_status()
+                        
+                        detail_data = detail_response.json()
+                        if detail_data.get('success') and detail_data.get('data'):
+                            detailed_products.append(detail_data['data'])
+                            logger.info(f"✅ Fetched price data for SKU: {sku}")
+                        else:
+                            logger.warning(f"⚠️ No price data for SKU: {sku}")
+                        
+                        # Rate limiting delay
+                        time.sleep(0.5)
+                        
+                    except Exception as e:
+                        logger.error(f"❌ Error fetching price for SKU {sku}: {e}")
+                        continue
                 
                 # Longer delay between batches
                 time.sleep(1)
