@@ -1237,7 +1237,7 @@
                 console.log('Adding generated posts to queue...');
                 
                 // Get current blog post schedules to calculate posting times
-                const scheduleResponse = await fetch('/api/syndication/facebook/schedules');
+                const scheduleResponse = await fetch('/api/schedules?content_type=blog_post&platform=facebook&channel_type=feed_post');
                 const scheduleData = await scheduleResponse.json();
                 
                 let schedules = [];
@@ -1396,7 +1396,7 @@
         // Load schedule data for blog posts
         async function loadScheduleData() {
             try {
-                const response = await fetch('/api/syndication/facebook/schedules');
+                const response = await fetch('/api/schedules?content_type=blog_post&platform=facebook&channel_type=feed_post');
                 const data = await response.json();
                 
                 if (data.success) {
@@ -1695,12 +1695,20 @@
             };
             
             try {
-                const response = await fetch('/api/syndication/facebook/schedules', {
+                // Add required fields for unified API
+                const unifiedScheduleData = {
+                    ...scheduleData,
+                    platform: 'facebook',
+                    channel_type: 'feed_post',
+                    content_type: 'blog_post'
+                };
+                
+                const response = await fetch('/api/schedules', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(scheduleData)
+                    body: JSON.stringify(unifiedScheduleData)
                 });
                 
                 const result = await response.json();
@@ -1760,7 +1768,7 @@
                 try {
                     // Delete each schedule
                     for (const schedule of scheduleData) {
-                        await fetch(`/api/syndication/facebook/schedules/${schedule.id}`, {
+                        await fetch(`/api/schedules/${schedule.id}`, {
                             method: 'DELETE'
                         });
                     }
@@ -1910,10 +1918,10 @@
         
         async function handleDeleteSchedule(scheduleId) {
             if (confirm('Delete this schedule?')) {
-                try {
-                    const response = await fetch(`/api/syndication/facebook/schedules/${scheduleId}`, {
-                        method: 'DELETE'
-                    });
+            try {
+                const response = await fetch(`/api/schedules/${scheduleId}`, {
+                    method: 'DELETE'
+                });
                     
                     const result = await response.json();
                     
