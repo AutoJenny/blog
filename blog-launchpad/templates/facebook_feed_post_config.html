@@ -1248,13 +1248,16 @@
                 // Generate sequential posting times
                 const postingTimes = generateSequentialTimes(generatedPosts.length, schedules);
                 
-                // Add each generated post to the queue
+                // Add each generated post to the queue using unified API
                 for (let i = 0; i < generatedPosts.length; i++) {
                     const post = generatedPosts[i];
                     const postingTime = postingTimes[i];
                     
                     const queueData = {
-                        post_id: currentPostId,
+                        platform: 'facebook',
+                        channel_type: 'feed_post',
+                        content_type: 'blog_post',
+                        product_id: currentPostId,  // product_id stores post_id for blog posts
                         section_id: post.sectionId,
                         generated_content: post.content,
                         scheduled_date: postingTime.date.toISOString().split('T')[0],
@@ -1264,7 +1267,7 @@
                         status: 'ready'
                     };
                     
-                    const response = await fetch('/api/syndication/facebook/queue', {
+                    const response = await fetch('/api/queue', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
