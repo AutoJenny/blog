@@ -1470,6 +1470,8 @@
                 console.log('Blog post queue API response:', data);
                 
                 if (data.success) {
+                    console.log('Queue API success, mapping items...');
+                    console.log('Raw items:', data.items);
                     queueData = data.items.map(item => ({
                         id: item.id,
                         post: {
@@ -1558,6 +1560,12 @@
         function renderQueue() {
             console.log('renderQueue called with queueData length:', queueData.length);
             console.log('queueData:', queueData);
+            
+            // Hide the placeholder when rendering queue
+            const placeholderDiv = document.getElementById('contentGenerationPlaceholder');
+            if (placeholderDiv) {
+                placeholderDiv.classList.add('d-none');
+            }
             
             if (queueData.length === 0) {
                 console.log('No queue data, showing empty state');
