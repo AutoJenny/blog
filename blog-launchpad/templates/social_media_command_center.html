@@ -587,17 +587,17 @@
             renderTimeline(); // Re-render with current filter
         }
         
-        // Load timeline data
+        // Load timeline data using unified API
         async function loadTimelineData() {
             console.log('Loading timeline data...');
             try {
-                const response = await fetch('/api/social-media/timeline');
+                const response = await fetch('/api/queue');
                 const data = await response.json();
                 
                 if (data.success) {
-                    timelineData = data.timeline;
+                    timelineData = data.items;
                     renderTimeline();
-                    updateKPIs(data.timeline);
+                    updateKPIs(data.items);
                 } else {
                     console.error('Error loading timeline:', data.error);
                     showEmptyState();
@@ -631,13 +631,20 @@
                 const dateStr = date.toLocaleDateString();
                 const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 
+                // Get thumbnail based on content type
+                let thumbnail = '';
+                if (item.content_type === 'product' && item.product_image) {
+                    thumbnail = `<img src="${item.product_image}" alt="Product thumbnail" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;" onerror="this.style.display='none'">`;
+                } else if (item.content_type === 'blog_post' && item.post_title) {
+                    thumbnail = `<div style="width: 40px; height: 40px; background: #3b82f6; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.7rem; font-weight: bold;">B</div>`;
+                } else {
+                    thumbnail = '<div style="width: 40px; height: 40px; background: #334155; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 0.7rem;">No img</div>';
+                }
+                
                 html += `
                     <tr>
                         <td>
-                            ${item.product_image ? 
-                                `<img src="${item.product_image}" alt="Product thumbnail" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;" onerror="this.style.display='none'">` : 
-                                '<div style="width: 40px; height: 40px; background: #334155; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 0.7rem;">No img</div>'
-                            }
+                            ${thumbnail}
                         </td>
                         <td>
                             <div style="font-weight: 600;">${dateStr}</div>
@@ -656,8 +663,12 @@
                         </td>
                         <td>
                             <div style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;">
-                                <div style="font-weight: 600; margin-bottom: 5px;">${item.product_name}</div>
-                                <div style="color: #94a3b8; font-size: 0.9rem;">${item.content.substring(0, 100)}${item.content.length > 100 ? '...' : ''}</div>
+                                <div style="font-weight: 600; margin-bottom: 5px;">
+                                    ${item.content_type === 'product' ? item.product_name : (item.post_title || 'Blog Post')}
+                                </div>
+                                <div style="color: #94a3b8; font-size: 0.9rem;">
+                                    ${item.generated_content ? item.generated_content.substring(0, 100) + (item.generated_content.length > 100 ? '...' : '') : 'No content'}
+                                </div>
                             </div>
                         </td>
                         <td>

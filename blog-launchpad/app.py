@@ -256,6 +256,402 @@ def get_unified_timeline():
             'error': f'Failed to get timeline: {str(e)}'
         }), 500
 
+# Unified Queue API Endpoints
+@app.route('/api/queue', methods=['GET'])
+def get_unified_queue():
+    """Get queue items with optional filtering."""
+    try:
+        # Get query parameters
+        content_type = request.args.get('content_type')
+        platform = request.args.get('platform')
+        channel_type = request.args.get('channel_type')
+        status = request.args.get('status')
+        date_from = request.args.get('date_from')
+        date_to = request.args.get('date_to')
+        limit = int(request.args.get('limit', 50))
+        offset = int(request.args.get('offset', 0))
+        
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Build WHERE clause dynamically
+            where_conditions = []
+            params = []
+            
+            if content_type:
+                where_conditions.append("pq.content_type = %s")
+                params.append(content_type)
+            
+            if platform:
+                where_conditions.append("pq.platform = %s")
+                params.append(platform)
+                
+            if channel_type:
+                where_conditions.append("pq.channel_type = %s")
+                params.append(channel_type)
+                
+            if status:
+                where_conditions.append("pq.status = %s")
+                params.append(status)
+                
+            if date_from:
+                where_conditions.append("pq.scheduled_timestamp >= %s")
+                params.append(f"{date_from} 00:00:00")
+                
+            if date_to:
+                where_conditions.append("pq.scheduled_timestamp <= %s")
+                params.append(f"{date_to} 23:59:59")
+            
+            where_clause = ""
+            if where_conditions:
+                where_clause = "WHERE " + " AND ".join(where_conditions)
+            
+            # Get total count
+            count_query = f"""
+                SELECT COUNT(*) as total
+                FROM posting_queue pq
+                {where_clause}
+            """
+            cur.execute(count_query, params)
+            total_count = cur.fetchone()['total']
+            
+            # Get items with joins
+            query = f"""
+                SELECT pq.id, pq.platform, pq.channel_type, pq.content_type,
+                       pq.scheduled_timestamp, pq.generated_content, pq.status,
+                       pq.platform_post_id, pq.error_message, pq.queue_order,
+                       pq.scheduled_date, pq.scheduled_time, pq.schedule_name, pq.timezone,
+                       pq.product_id, pq.section_id,
+                       cp.name as product_name, cp.sku, cp.image_url as product_image, cp.price,
+                       p.title as post_title, ps.section_heading as section_title,
+                       pq.created_at, pq.updated_at
+                FROM posting_queue pq
+                LEFT JOIN clan_products cp ON pq.product_id = cp.id
+                LEFT JOIN post_section ps ON pq.section_id = ps.id
+                LEFT JOIN post p ON ps.post_id = p.id
+                {where_clause}
+                ORDER BY pq.scheduled_timestamp ASC, pq.created_at ASC
+                LIMIT %s OFFSET %s
+            """
+            
+            cur.execute(query, params + [limit, offset])
+            items = cur.fetchall()
+            
+            # Transform items
+            queue_items = []
+            for item in items:
+                queue_item = {
+                    'id': item['id'],
+                    'platform': item['platform'],
+                    'channel_type': item['channel_type'],
+                    'content_type': item['content_type'],
+                    'status': item['status'],
+                    'scheduled_timestamp': item['scheduled_timestamp'].isoformat() if item['scheduled_timestamp'] else None,
+                    'generated_content': item['generated_content'],
+                    'platform_post_id': item['platform_post_id'],
+                    'error_message': item['error_message'],
+                    'queue_order': item['queue_order'],
+                    'scheduled_date': str(item['scheduled_date']) if item['scheduled_date'] else None,
+                    'scheduled_time': str(item['scheduled_time']) if item['scheduled_time'] else None,
+                    'schedule_name': item['schedule_name'],
+                    'timezone': item['timezone'],
+                    'created_at': item['created_at'].isoformat() if item['created_at'] else None,
+                    'updated_at': item['updated_at'].isoformat() if item['updated_at'] else None
+                }
+                
+                # Add content-specific fields
+                if item['content_type'] == 'product':
+                    queue_item.update({
+                        'product_id': item.get('product_id'),
+                        'product_name': item['product_name'],
+                        'product_image': item['product_image'],
+                        'sku': item['sku'],
+                        'price': str(item['price']) if item['price'] else None
+                    })
+                elif item['content_type'] == 'blog_post':
+                    queue_item.update({
+                        'post_id': item.get('product_id'),  # product_id stores post_id for blog posts
+                        'section_id': item.get('section_id'),
+                        'post_title': item['post_title'],
+                        'section_title': item['section_title']
+                    })
+                
+                queue_items.append(queue_item)
+            
+            # Build filters applied response
+            filters_applied = {}
+            if content_type: filters_applied['content_type'] = content_type
+            if platform: filters_applied['platform'] = platform
+            if channel_type: filters_applied['channel_type'] = channel_type
+            if status: filters_applied['status'] = status
+            if date_from: filters_applied['date_from'] = date_from
+            if date_to: filters_applied['date_to'] = date_to
+            
+            return jsonify({
+                'success': True,
+                'items': queue_items,
+                'count': len(queue_items),
+                'total': total_count,
+                'filters_applied': filters_applied
+            })
+            
+    except Exception as e:
+        logger.error(f"Error getting unified queue: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to get queue: {str(e)}'
+        }), 500
+
+@app.route('/api/queue', methods=['POST'])
+def add_to_unified_queue():
+    """Add a new item to the unified queue."""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['platform', 'channel_type', 'content_type', 'generated_content']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({
+                    'success': False,
+                    'error': f'Missing required field: {field}',
+                    'code': 'VALIDATION_ERROR'
+                }), 400
+        
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            # Get next queue order
+            cur.execute("SELECT COALESCE(MAX(queue_order), 0) + 1 FROM posting_queue")
+            next_order = cur.fetchone()[0]
+            
+            # Calculate scheduled_timestamp if both date and time are provided
+            scheduled_timestamp = None
+            if data.get('scheduled_date') and data.get('scheduled_time'):
+                from datetime import datetime
+                try:
+                    scheduled_timestamp = datetime.combine(
+                        datetime.strptime(data['scheduled_date'], '%Y-%m-%d').date(),
+                        datetime.strptime(data['scheduled_time'], '%H:%M').time()
+                    )
+                except:
+                    scheduled_timestamp = None
+            
+            # Insert new queue item
+            cur.execute("""
+                INSERT INTO posting_queue (
+                    product_id, section_id, platform, channel_type, content_type,
+                    scheduled_date, scheduled_time, scheduled_timestamp,
+                    schedule_name, timezone, generated_content, queue_order, status
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
+            """, (
+                data.get('product_id'),
+                data.get('section_id'),
+                data['platform'],
+                data['channel_type'],
+                data['content_type'],
+                data.get('scheduled_date'),
+                data.get('scheduled_time'),
+                scheduled_timestamp,
+                data.get('schedule_name'),
+                data.get('timezone'),
+                data['generated_content'],
+                next_order,
+                data.get('status', 'ready')
+            ))
+            
+            item_id = cur.fetchone()[0]
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'item_id': item_id,
+                'message': 'Item added to queue successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error adding to unified queue: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to add item: {str(e)}'
+        }), 500
+
+@app.route('/api/queue/<int:item_id>', methods=['PUT'])
+def update_unified_queue_item(item_id):
+    """Update an existing queue item."""
+    try:
+        data = request.get_json()
+        
+        # Build update query dynamically
+        update_fields = []
+        update_values = []
+        
+        allowed_fields = [
+            'generated_content', 'scheduled_date', 'scheduled_time', 
+            'schedule_name', 'timezone', 'status', 'queue_order',
+            'platform_post_id', 'error_message'
+        ]
+        
+        for field in allowed_fields:
+            if field in data:
+                update_fields.append(f"{field} = %s")
+                update_values.append(data[field])
+        
+        if not update_fields:
+            return jsonify({
+                'success': False,
+                'error': 'No valid fields to update',
+                'code': 'VALIDATION_ERROR'
+            }), 400
+        
+        # Recalculate scheduled_timestamp if date/time changed
+        if 'scheduled_date' in data or 'scheduled_time' in data:
+            from datetime import datetime
+            try:
+                scheduled_date = data.get('scheduled_date')
+                scheduled_time = data.get('scheduled_time')
+                if scheduled_date and scheduled_time:
+                    scheduled_timestamp = datetime.combine(
+                        datetime.strptime(scheduled_date, '%Y-%m-%d').date(),
+                        datetime.strptime(scheduled_time, '%H:%M').time()
+                    )
+                    update_fields.append("scheduled_timestamp = %s")
+                    update_values.append(scheduled_timestamp)
+            except:
+                pass
+        
+        update_values.append(item_id)
+        
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            cur.execute(f"""
+                UPDATE posting_queue 
+                SET {', '.join(update_fields)}, updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+                RETURNING id
+            """, update_values)
+            
+            updated_item = cur.fetchone()
+            if not updated_item:
+                return jsonify({
+                    'success': False,
+                    'error': 'Queue item not found',
+                    'code': 'ITEM_NOT_FOUND'
+                }), 404
+            
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Queue item updated successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error updating unified queue item: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to update item: {str(e)}'
+        }), 500
+
+@app.route('/api/queue/<int:item_id>', methods=['DELETE'])
+def delete_unified_queue_item(item_id):
+    """Delete a queue item."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            cur.execute("""
+                DELETE FROM posting_queue 
+                WHERE id = %s
+                RETURNING id
+            """, (item_id,))
+            
+            deleted_item = cur.fetchone()
+            if not deleted_item:
+                return jsonify({
+                    'success': False,
+                    'error': 'Queue item not found',
+                    'code': 'ITEM_NOT_FOUND'
+                }), 404
+            
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Queue item deleted successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error deleting unified queue item: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to delete item: {str(e)}'
+        }), 500
+
+@app.route('/api/queue/clear', methods=['DELETE'])
+def clear_unified_queue():
+    """Clear queue items with optional filtering."""
+    try:
+        # Get query parameters for filtering
+        content_type = request.args.get('content_type')
+        platform = request.args.get('platform')
+        channel_type = request.args.get('channel_type')
+        status = request.args.get('status')
+        
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            # Build WHERE clause dynamically
+            where_conditions = []
+            params = []
+            
+            if content_type:
+                where_conditions.append("content_type = %s")
+                params.append(content_type)
+            
+            if platform:
+                where_conditions.append("platform = %s")
+                params.append(platform)
+                
+            if channel_type:
+                where_conditions.append("channel_type = %s")
+                params.append(channel_type)
+                
+            if status:
+                where_conditions.append("status = %s")
+                params.append(status)
+            
+            where_clause = ""
+            if where_conditions:
+                where_clause = "WHERE " + " AND ".join(where_conditions)
+            
+            # Get count before deletion
+            count_query = f"SELECT COUNT(*) FROM posting_queue {where_clause}"
+            cur.execute(count_query, params)
+            deleted_count = cur.fetchone()[0]
+            
+            # Delete items
+            delete_query = f"DELETE FROM posting_queue {where_clause}"
+            cur.execute(delete_query, params)
+            
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'deleted_count': deleted_count,
+                'message': 'Queue cleared successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error clearing unified queue: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to clear queue: {str(e)}'
+        }), 500
+
 @app.route('/daily-product-posts')
 def daily_product_posts():
     """Daily Product Posts management page."""
