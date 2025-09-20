@@ -1928,8 +1928,50 @@
         }
         
         // Queue management functions
-        function add10Items() {
-            console.log('Add 10 items - to be implemented');
+        async function add10Items() {
+            if (confirm('Generate 10 new blog post items for the queue? This may take a few minutes.')) {
+                const add10ItemsBtn = document.getElementById('add-10-items-btn');
+                add10ItemsBtn.classList.add('loading');
+                add10ItemsBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+                add10ItemsBtn.disabled = true;
+                
+                try {
+                    // Generate blog post content using the existing generation logic
+                    // For now, we'll generate content for the currently selected post
+                    if (!currentPostId || !currentSections || currentSections.length === 0) {
+                        alert('Please select a post and generate content first before adding items to queue.');
+                        return;
+                    }
+                    
+                    // Generate content for all sections
+                    const generatedPosts = [];
+                    for (let i = 0; i < Math.min(10, currentSections.length); i++) {
+                        const section = currentSections[i];
+                        try {
+                            const generatedContent = await processSectionWithLLM(section, i);
+                            generatedPosts.push({
+                                sectionId: section.id,
+                                content: generatedContent,
+                                sectionTitle: section.section_heading
+                            });
+                        } catch (error) {
+                            console.error(`Error generating content for section ${i + 1}:`, error);
+                        }
+                    }
+                    
+                    // Add generated posts to queue
+                    await addGeneratedPostsToQueue(generatedPosts);
+                    
+                    alert(`Successfully generated ${generatedPosts.length} blog post items for the queue!`);
+                } catch (error) {
+                    console.error('Error generating blog post items:', error);
+                    alert('Error generating items: ' + error.message);
+                } finally {
+                    add10ItemsBtn.classList.remove('loading');
+                    add10ItemsBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Add 10 Items';
+                    add10ItemsBtn.disabled = false;
+                }
+            }
         }
         
         async function clearQueue() {
