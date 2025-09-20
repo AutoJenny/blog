@@ -963,9 +963,14 @@
                         .catch(error => {
                             console.error('Error loading post details:', error);
                         });
+                    
+                    // Re-render queue to show items for selected post
+                    renderQueue();
                 } else {
                     document.getElementById('postDetails').classList.add('d-none');
                     document.getElementById('sectionsList').classList.add('d-none');
+                    // Re-render queue to show all items
+                    renderQueue();
                 }
             });
             
@@ -1535,11 +1540,31 @@
             clearQueueBtn.style.display = 'inline-block';
             queueCount.textContent = queueData.length;
             
-            // Generate sequential posting times
-            const postingTimes = generateSequentialTimes(queueData.length);
+            // Generate sequential posting times (will be updated after filtering)
+            let postingTimes = generateSequentialTimes(queueData.length);
             
             let html = '';
-            queueData.forEach((item, index) => {
+            let filteredItems = queueData;
+            
+            // Filter items to only show those for the currently selected post
+            if (currentPostId) {
+                filteredItems = queueData.filter(item => item.post.id === currentPostId);
+            }
+            
+            // Update count to reflect filtered items
+            queueCount.textContent = filteredItems.length;
+            
+            if (filteredItems.length === 0) {
+                emptyQueue.style.display = 'block';
+                queueTableContainer.style.display = 'none';
+                clearQueueBtn.style.display = 'none';
+                return;
+            }
+            
+            // Regenerate posting times for filtered items
+            postingTimes = generateSequentialTimes(filteredItems.length);
+            
+            filteredItems.forEach((item, index) => {
                 const postingTime = postingTimes[index];
                 
                 // Fallback if postingTime is undefined
