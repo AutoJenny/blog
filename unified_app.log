@@ -1835,3 +1835,32 @@ HINT:  Perhaps you meant to reference the column "posting_queue.updated_at".
 2025-09-22 16:51:27,622 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:51:27] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
 2025-09-22 16:51:32,156 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:51:32] "GET /launchpad/syndication/facebook/blog_post HTTP/1.1" 200 -
 2025-09-22 16:51:32,753 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:51:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 16:52:03,756 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:52:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 16:52:34,756 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:52:34] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 16:53:05,756 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:53:05] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 16:53:36,754 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:53:36] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 16:54:07,756 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:54:07] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 16:54:38,757 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:54:38] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 16:55:09,757 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:55:09] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 16:55:40,758 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:55:40] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 16:56:11,756 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:56:11] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 16:56:42,757 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:56:42] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 16:57:01,957 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:57:01] "GET /launchpad/syndication/facebook/blog_post HTTP/1.1" 200 -
+2025-09-22 16:57:01,979 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:57:01] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-22 16:57:01,980 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:57:01] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 16:57:01,980 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:57:01] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-22 16:57:02,022 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:57:02] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-22 16:57:02,022 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:57:02] "GET /static/js/ai-content-generation.js HTTP/1.1" 200 -
+2025-09-22 16:57:02,023 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:57:02] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-22 16:57:02,036 - blueprints.launchpad - ERROR - Error in get_queue: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 16:57:02,037 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:57:02] "[35m[1mGET /launchpad/api/queue HTTP/1.1[0m" 500 -
+2025-09-22 16:57:02,042 - blueprints.launchpad - ERROR - Error in get_today_status: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 16:57:02,042 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:57:02] "[35m[1mGET /launchpad/api/syndication/today-status HTTP/1.1[0m" 500 -
+2025-09-22 16:57:02,042 - blueprints.launchpad - ERROR - Error in get_schedules: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 16:57:02,042 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:57:02] "[35m[1mGET /launchpad/api/syndication/schedules HTTP/1.1[0m" 500 -
+2025-09-22 16:57:12,758 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:57:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 16:57:42,754 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:57:42] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 16:58:12,756 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:58:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 16:58:36,968 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:58:36] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-22 16:58:41,221 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:58:41] "GET /launchpad/syndication/facebook/blog_post HTTP/1.1" 200 -
+2025-09-22 16:58:42,756 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:58:42] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -

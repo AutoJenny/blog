@@ -187,8 +187,50 @@ body {
     color: #0f172a;
     padding: 0.25rem 0.75rem;
     border-radius: 9999px;
-    font-size: 0.875rem;
-    font-weight: 600;
+}
+
+/* AI Content Generation Styles */
+.content-type-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.content-type-btn {
+    padding: 8px 16px;
+    border: 1px solid #475569;
+    background: #23273a;
+    color: #94a3b8;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.content-type-btn:hover {
+    background: #334155;
+    color: #f1f5f9;
+}
+
+.content-type-btn.active {
+    background: #3b82f6;
+    color: white;
+    border-color: #1d4ed8;
+}
+
+.content-preview {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    min-height: 100px;
+}
+
+.content-text {
+    color: #f1f5f9;
+    line-height: 1.6;
+    font-size: 0.95rem;
 }
 
 .header {
