@@ -143,6 +143,44 @@ def workflow_main(post_id=None, stage=None, substage=None, step=None):
             logger.warning(f"Error getting first step: {e}")
             step = 'initial_concept'  # fallback
     
+    # Validate step exists - if not, redirect to first valid step
+    if step:
+        try:
+            with db_manager.get_cursor() as cursor:
+                # Convert step name from URL format to database format
+                db_step_name = step.replace('_', ' ').title()
+                
+                cursor.execute("""
+                    SELECT wse.name
+                    FROM workflow_step_entity wse
+                    JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id
+                    JOIN workflow_stage_entity wst ON wsse.stage_id = wst.id
+                    WHERE wst.name ILIKE %s AND wsse.name ILIKE %s
+                    AND wse.name ILIKE %s
+                """, (stage, substage, db_step_name))
+                step_exists = cursor.fetchone()
+                
+                if not step_exists:
+                    # Step doesn't exist, redirect to first valid step
+                    cursor.execute("""
+                        SELECT wse.name
+                        FROM workflow_step_entity wse
+                        JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id
+                        JOIN workflow_stage_entity wst ON wsse.stage_id = wst.id
+                        WHERE wst.name ILIKE %s AND wsse.name ILIKE %s
+                        ORDER BY wse.step_order ASC
+                        LIMIT 1
+                    """, (stage, substage))
+                    first_step_result = cursor.fetchone()
+                    if first_step_result:
+                        valid_step = first_step_result['name'].lower().replace(' ', '_')
+                        return redirect(f'/workflow/posts/{post_id}/{stage}/{substage}/{valid_step}')
+                    else:
+                        step = 'initial_concept'  # fallback
+        except Exception as e:
+            logger.warning(f"Error validating step: {e}")
+            step = 'initial_concept'  # fallback
+    
     # Get step_id and step configuration from database
     step_id = None
     step_name = None

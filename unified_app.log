@@ -1054,3 +1054,136 @@ HINT:  Perhaps you meant to reference the column "cp.channel_type_id".
 2025-09-22 15:07:43,566 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:07:43] "[33mGET /api/step-config/writing/sections/ideas_to_include HTTP/1.1[0m" 404 -
 2025-09-22 15:07:56,587 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:07:56] "[33mGET /api/sections/53 HTTP/1.1[0m" 404 -
 2025-09-22 15:08:32,979 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:08:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:09:41,386 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:09:41] "GET /post-sections/sections?stage=writing&substage=sections&step=ideas_to_include&post_id=53&v=4345 HTTP/1.1" 200 -
+2025-09-22 15:09:43,964 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:09:43] "GET /llm-actions/api/step-config/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 15:09:48,044 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:09:48] "GET /db/tables HTTP/1.1" 200 -
+2025-09-22 15:09:51,970 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:09:51] "GET /db/simple HTTP/1.1" 200 -
+2025-09-22 15:09:55,398 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:09:55] "GET /llm-actions/api/step-config/planning/idea/provisional_title HTTP/1.1" 200 -
+2025-09-22 15:10:12,977 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:10:37,872 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:37] "GET /workflow/posts/53/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 15:10:40,872 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:40] "GET /llm-actions/api/step-config/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 15:10:43,299 - blueprints.post_sections - ERROR - Error getting sections for post 53: column ps.title does not exist
+LINE 2:                 SELECT ps.id, ps.title, ps.content, ps.secti...
+                                      ^
+2025-09-22 15:10:43,299 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:43] "GET /post-sections/api/sections/53 HTTP/1.1" 200 -
+2025-09-22 15:10:54,688 - blueprints.core - WARNING - Error getting step configuration: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 15:10:54,688 - blueprints.core - WARNING - Error getting posts: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 15:10:54,689 - blueprints.core - WARNING - Error getting workflow structure: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 15:10:54,689 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:54] "GET /workflow/posts/53/writing/sections/ideas_to_include HTTP/1.1" 200 -
+2025-09-22 15:10:54,820 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:54] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 15:10:54,821 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:54] "[36mGET /static/workflow_nav/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-22 15:10:54,821 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:54] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 15:10:54,979 - blueprints.llm_actions - WARNING - Could not get step_id: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 15:10:54,979 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:54] "GET /post-sections/sections?stage=writing&substage=sections&step=ideas_to_include&post_id=53&v=6094 HTTP/1.1" 200 -
+2025-09-22 15:10:54,980 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:54] "GET /llm-actions/?stage=writing&substage=sections&step=ideas_to_include&post_id=53&v=8930 HTTP/1.1" 200 -
+2025-09-22 15:10:54,997 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:54] "GET /static/css/sections.css HTTP/1.1" 200 -
+2025-09-22 15:10:54,998 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:54] "GET /static/js/section_drag_drop.js HTTP/1.1" 200 -
+2025-09-22 15:10:54,998 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:54] "GET /static/js/sections.js HTTP/1.1" 200 -
+2025-09-22 15:10:55,015 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:55] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-22 15:10:55,017 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:55] "[36mGET /static/js/logger.js HTTP/1.1[0m" 304 -
+2025-09-22 15:10:55,019 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:55] "[36mGET /static/js/message-manager-core.js HTTP/1.1[0m" 304 -
+2025-09-22 15:10:55,019 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:55] "[36mGET /static/js/prompt-manager.js HTTP/1.1[0m" 304 -
+2025-09-22 15:10:55,019 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:55] "[36mGET /static/js/ui-config.js HTTP/1.1[0m" 304 -
+2025-09-22 15:10:55,020 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:55] "GET /static/js/llm-actions.js HTTP/1.1" 200 -
+2025-09-22 15:10:55,020 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:55] "[36mGET /static/js/config-manager.js HTTP/1.1[0m" 304 -
+2025-09-22 15:10:55,021 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:55] "[36mGET /static/js/field-selector.js HTTP/1.1[0m" 304 -
+2025-09-22 15:10:55,022 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:55] "[36mGET /static/js/message-manager-ui.js HTTP/1.1[0m" 304 -
+2025-09-22 15:10:55,023 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:55] "[36mGET /static/js/message-manager-elements.js HTTP/1.1[0m" 304 -
+2025-09-22 15:10:55,024 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:55] "[36mGET /static/js/message-manager-preview.js HTTP/1.1[0m" 304 -
+2025-09-22 15:10:55,025 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:55] "[36mGET /static/js/message-manager-storage.js HTTP/1.1[0m" 304 -
+2025-09-22 15:10:55,026 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:55] "[36mGET /static/js/accordion-manager.js HTTP/1.1[0m" 304 -
+2025-09-22 15:10:55,027 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:55] "[36mGET /static/js/debug-modules.js HTTP/1.1[0m" 304 -
+2025-09-22 15:10:55,028 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:55] "[33mGET /api/sections/53 HTTP/1.1[0m" 404 -
+2025-09-22 15:10:55,028 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:55] "[36mGET /static/js/llm-config-manager.js HTTP/1.1[0m" 304 -
+2025-09-22 15:10:55,136 - blueprints.llm_actions - ERROR - Error getting step config: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 15:10:55,136 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:55] "[35m[1mGET /llm-actions/api/step-config/writing/sections/ideas_to_include HTTP/1.1[0m" 500 -
+2025-09-22 15:10:57,145 - blueprints.post_sections - ERROR - Error getting sections for post 53: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 15:10:57,145 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:10:57] "GET /post-sections/api/sections/53 HTTP/1.1" 200 -
+2025-09-22 15:11:29,930 - blueprints.core - WARNING - Error getting step configuration: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 15:11:29,930 - blueprints.core - WARNING - Error getting posts: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 15:11:29,931 - blueprints.core - WARNING - Error getting workflow structure: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 15:11:29,942 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:29] "GET /workflow/posts/53/writing/sections/ideas_to_include HTTP/1.1" 200 -
+2025-09-22 15:11:30,066 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "[36mGET /static/workflow_nav/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-22 15:11:30,067 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 15:11:30,067 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 15:11:30,121 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "GET /post-sections/sections?stage=writing&substage=sections&step=ideas_to_include&post_id=53&v=6905 HTTP/1.1" 200 -
+2025-09-22 15:11:30,121 - blueprints.llm_actions - WARNING - Could not get step_id: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 15:11:30,122 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "GET /llm-actions/?stage=writing&substage=sections&step=ideas_to_include&post_id=53&v=9952 HTTP/1.1" 200 -
+2025-09-22 15:11:30,137 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "[36mGET /static/css/sections.css HTTP/1.1[0m" 304 -
+2025-09-22 15:11:30,138 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "[36mGET /static/js/section_drag_drop.js HTTP/1.1[0m" 304 -
+2025-09-22 15:11:30,139 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "[36mGET /static/js/sections.js HTTP/1.1[0m" 304 -
+2025-09-22 15:11:30,151 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-22 15:11:30,155 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "[36mGET /static/js/logger.js HTTP/1.1[0m" 304 -
+2025-09-22 15:11:30,155 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "[36mGET /static/js/ui-config.js HTTP/1.1[0m" 304 -
+2025-09-22 15:11:30,155 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "[36mGET /static/js/message-manager-core.js HTTP/1.1[0m" 304 -
+2025-09-22 15:11:30,155 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "[36mGET /static/js/config-manager.js HTTP/1.1[0m" 304 -
+2025-09-22 15:11:30,157 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "[36mGET /static/js/prompt-manager.js HTTP/1.1[0m" 304 -
+2025-09-22 15:11:30,157 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "GET /static/js/llm-actions.js HTTP/1.1" 200 -
+2025-09-22 15:11:30,158 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "[36mGET /static/js/field-selector.js HTTP/1.1[0m" 304 -
+2025-09-22 15:11:30,158 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "[36mGET /static/js/message-manager-ui.js HTTP/1.1[0m" 304 -
+2025-09-22 15:11:30,159 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "[36mGET /static/js/message-manager-elements.js HTTP/1.1[0m" 304 -
+2025-09-22 15:11:30,161 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "[36mGET /static/js/message-manager-preview.js HTTP/1.1[0m" 304 -
+2025-09-22 15:11:30,162 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "[36mGET /static/js/message-manager-storage.js HTTP/1.1[0m" 304 -
+2025-09-22 15:11:30,162 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "[36mGET /static/js/accordion-manager.js HTTP/1.1[0m" 304 -
+2025-09-22 15:11:30,163 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "[36mGET /static/js/debug-modules.js HTTP/1.1[0m" 304 -
+2025-09-22 15:11:30,164 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "[36mGET /static/js/llm-config-manager.js HTTP/1.1[0m" 304 -
+2025-09-22 15:11:30,164 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "[33mGET /api/sections/53 HTTP/1.1[0m" 404 -
+2025-09-22 15:11:30,271 - blueprints.llm_actions - ERROR - Error getting step config: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 15:11:30,271 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:30] "[35m[1mGET /llm-actions/api/step-config/writing/sections/ideas_to_include HTTP/1.1[0m" 500 -
+2025-09-22 15:11:32,286 - blueprints.post_sections - ERROR - Error getting sections for post 53: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 15:11:32,287 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:32] "GET /post-sections/api/sections/53 HTTP/1.1" 200 -
+2025-09-22 15:11:52,978 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:11:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:12:40,066 - blueprints.llm_actions - ERROR - Error getting step config: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 15:12:40,066 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:12:40] "[35m[1mGET /llm-actions/api/step-config/planning/idea/ideas_to_include HTTP/1.1[0m" 500 -
+2025-09-22 15:12:43,760 - blueprints.llm_actions - ERROR - Error getting step config: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 15:12:43,761 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:12:43] "[35m[1mGET /llm-actions/api/step-config/planning/idea/initial_concept HTTP/1.1[0m" 500 -
+2025-09-22 15:12:47,170 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:12:47] "[35m[1mGET /db/test HTTP/1.1[0m" 500 -
+2025-09-22 15:13:02,427 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 15:13:02,438 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-22 15:13:02,438 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-22 15:13:02,438 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 15:13:03,313 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 15:13:03,319 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 15:13:03,329 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 15:13:03,359 - config.database - INFO - Database connection established
+2025-09-22 15:13:03,367 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:13:03] "GET /db/ HTTP/1.1" 200 -
+2025-09-22 15:13:03,372 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:13:03] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 15:13:03,498 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:13:03] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 15:13:03,499 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:13:03] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 15:13:03,608 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:13:03] "GET /db/tables HTTP/1.1" 200 -
+2025-09-22 15:13:08,057 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:13:08] "GET /db/test HTTP/1.1" 200 -
+2025-09-22 15:13:09,454 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:13:09] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-22 15:13:09,455 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:13:09] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-22 15:13:09,456 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:13:09] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-22 15:13:12,010 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:13:12] "GET /llm-actions/api/step-config/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 15:13:16,718 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:13:16] "[33mGET /llm-actions/api/step-config/planning/idea/ideas_to_include HTTP/1.1[0m" 404 -
+2025-09-22 15:13:22,604 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:13:22] "GET /llm-actions/api/step-config/planning/idea/provisional_title HTTP/1.1" 200 -
+2025-09-22 15:13:31,107 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:13:31] "GET /workflow/posts/53/planning/idea/ideas_to_include HTTP/1.1" 200 -
+2025-09-22 15:13:32,978 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:13:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:13:36,198 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:13:36] "GET /workflow/posts/53/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 15:14:00,062 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:14:00] "GET / HTTP/1.1" 200 -
+2025-09-22 15:14:00,212 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:14:00] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-22 15:14:00,215 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:14:00] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 15:14:00,215 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:14:00] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-22 15:14:00,215 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:14:00] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 15:14:00,216 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:14:00] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-22 15:14:03,228 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:14:03] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-22 15:14:03,640 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:14:03] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 15:14:03,857 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:14:03] "GET /api/posts HTTP/1.1" 200 -
+2025-09-22 15:14:07,578 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:14:07] "[33mGET /social-media-command-center HTTP/1.1[0m" 404 -
+2025-09-22 15:14:12,140 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:14:12] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-22 15:14:12,141 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:14:12] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-22 15:14:12,141 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:14:12] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-22 15:14:19,447 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:14:19] "[33mGET /syndication/facebook/product_post HTTP/1.1[0m" 404 -
+2025-09-22 15:15:05,111 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/core.py', reloading
+2025-09-22 15:15:05,311 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 15:15:06,168 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 15:15:06,174 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 15:15:06,185 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 15:15:09,354 - config.database - INFO - Database connection established
+2025-09-22 15:15:09,358 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:15:09] "[32mHEAD /workflow/posts/53/planning/idea/ideas_to_include HTTP/1.1[0m" 302 -
+2025-09-22 15:15:12,826 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:15:12] "GET /workflow/posts/53/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 15:15:12,980 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:15:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:15:16,155 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:15:16] "GET /llm-actions/?stage=planning&substage=idea&step=initial_concept&post_id=53 HTTP/1.1" 200 -
+2025-09-22 15:15:19,076 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:15:19] "GET /llm-actions/api/step-config/planning/idea/initial_concept HTTP/1.1" 200 -
