@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Headers Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #1e3a8a;
+            color: #e5e7eb;
+        }
+        
+        .headers-container {
+            padding: 16px;
+            height: 100%;
+            background-color: #1e3a8a;
+        }
+        
+        .header-section {
+            margin-bottom: 16px;
+        }
+        
+        .header-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .section-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #93c5fd;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+        
+        .section-content {
+            background-color: #1e40af;
+            border: 1px solid #3b82f6;
+            border-radius: 6px;
+            padding: 8px 12px;
+            min-height: 20px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .section-content.empty {
+            color: #9ca3af;
+            font-style: italic;
+        }
+        
+        .title-content {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .subtitle-content {
+            font-size: 14px;
+            color: #d1d5db;
+        }
+        
+        .intro-content {
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #3b82f6;
+        }
+        
+        .panel-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #e5e7eb;
+        }
+        
+        .panel-icon {
+            color: #60a5fa;
+            font-size: 16px;
+        }
+        
+        /* Dropdown styling */
+        select {
+            cursor: pointer;
+            outline: none;
+        }
+        
+        select:focus {
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+        }
+        
+        select option {
+            background-color: #1e40af;
+            color: #e5e7eb;
+            padding: 8px;
+        }
+        
+        select option:hover {
+            background-color: #3b82f6;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mainTitleSelect = document.getElementById('main-title-select');
+            const subtitleSelect = document.getElementById('subtitle-select');
+            const postId = {{ post_id }};
+            
+            // Handle main title selection
+            mainTitleSelect.addEventListener('change', function() {
+                const selectedTitle = this.value;
+                if (selectedTitle) {
+                    saveTitleSelection('main_title', selectedTitle);
+                }
+            });
+            
+            // Handle subtitle selection
+            subtitleSelect.addEventListener('change', function() {
+                const selectedSubtitle = this.value;
+                if (selectedSubtitle) {
+                    saveTitleSelection('subtitle', selectedSubtitle);
+                }
+            });
+            
+            function saveTitleSelection(field, value) {
+                // Both main_title and subtitle should be saved to the post table
+                const endpoint = `http://localhost:5002/api/workflow/posts/${postId}/post`;
+                
+                const data = {};
+                // Map main_title to title for the post table
+                const postField = field === 'main_title' ? 'title' : field;
+                data[postField] = value;
+                
+                console.log(`Sending data for ${field}:`, data);
+                console.log(`Request body:`, JSON.stringify(data));
+                
+                fetch(endpoint, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => {
+                    if (response.ok) {
+                        console.log(`${field} saved successfully:`, value);
+                        // Update the display to show the selected value
+                        if (field === 'main_title') {
+                            mainTitleSelect.style.color = '#e5e7eb';
+                            mainTitleSelect.classList.remove('empty');
+                            // Refresh the page to show the updated selection
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 500);
+                        } else if (field === 'subtitle') {
+                            subtitleSelect.style.color = '#e5e7eb';
+                            subtitleSelect.classList.remove('empty');
+                            // Refresh the page to show the updated selection
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 500);
+                        }
+                    } else {
+                        console.error(`Error saving ${field}:`, response.statusText);
+                        return response.text().then(text => {
+                            console.error(`Response body:`, text);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error(`Error saving ${field}:`, error);
+                });
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="headers-container">
+        <div class="panel-header">
+            <i class="fas fa-heading panel-icon"></i>
+            <span class="panel-title">Post Headers</span>
+        </div>
+        
+        <div class="header-section">
+            <div class="section-label">Main Title</div>
+            <select id="main-title-select" class="section-content title-content" style="width: 100%; border: none; background: transparent; color: inherit; font-size: inherit; font-weight: inherit;">
+                <option value="">Select a title...</option>
+                {% if post.title_choices %}
+                    {% set title_choices = post.title_choices|from_json %}
+                    {% for choice in title_choices %}
+                        <option value="{{ choice.title }}" {% if post.title == choice.title %}selected{% endif %}>
+                            {{ choice.title }}
+                        </option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+        </div>
+        
+        <div class="header-section">
+            <div class="section-label">Subtitle</div>
+            <select id="subtitle-select" class="section-content subtitle-content" style="width: 100%; border: none; background: transparent; color: inherit; font-size: inherit;">
+                <option value="">Select a subtitle...</option>
+                {% if post.title_choices %}
+                    {% set title_choices = post.title_choices|from_json %}
+                    {% for choice in title_choices %}
+                        <option value="{{ choice.subtitle }}" {% if post.subtitle == choice.subtitle %}selected{% endif %}>
+                            {{ choice.subtitle }}
+                        </option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+        </div>
+        
+        <div class="header-section">
+            <div class="section-label">Introduction</div>
+            <div class="section-content intro-content {% if not post.intro_blurb %}empty{% endif %}">
+                {{ post.intro_blurb or 'No introduction set' }}
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

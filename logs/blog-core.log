@@ -1,0 +1,106 @@
+ * Serving Flask app 'app'
+ * Debug mode: on
+2025-09-21 11:26:58,152 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.0.4.32:5000
+2025-09-21 11:26:58,152 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-21 11:26:58,153 - werkzeug - INFO -  * Restarting with stat
+2025-09-21 11:26:58,325 - werkzeug - WARNING -  * Debugger is active!
+2025-09-21 11:26:58,331 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-21 11:27:03,012 - werkzeug - INFO - 127.0.0.1 - - [21/Sep/2025 11:27:03] "GET / HTTP/1.1" 200 -
+2025-09-21 11:27:31,344 - werkzeug - INFO - 127.0.0.1 - - [21/Sep/2025 11:27:31] "GET / HTTP/1.1" 200 -
+2025-09-21 13:09:29,919 - werkzeug - INFO - 127.0.0.1 - - [21/Sep/2025 13:09:29] "GET / HTTP/1.1" 200 -
+2025-09-21 13:10:03,189 - werkzeug - INFO - 127.0.0.1 - - [21/Sep/2025 13:10:03] "GET /static/images/site/brand-logo.png HTTP/1.1" 200 -
+2025-09-21 13:10:33,110 - werkzeug - INFO - 127.0.0.1 - - [21/Sep/2025 13:10:33] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-21 13:55:02,290 - werkzeug - INFO - 127.0.0.1 - - [21/Sep/2025 13:55:02] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-21 13:55:16,533 - werkzeug - INFO - 127.0.0.1 - - [21/Sep/2025 13:55:16] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-21 13:55:16,535 - werkzeug - INFO - 127.0.0.1 - - [21/Sep/2025 13:55:16] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-21 13:55:16,537 - werkzeug - INFO - 127.0.0.1 - - [21/Sep/2025 13:55:16] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-21 13:55:16,606 - werkzeug - INFO - 127.0.0.1 - - [21/Sep/2025 13:55:16] "GET /workflow/posts/53/writing/content/initial_concept HTTP/1.1" 200 -
+2025-09-21 14:08:15,077 - werkzeug - INFO - 127.0.0.1 - - [21/Sep/2025 14:08:15] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-21 14:08:28,229 - werkzeug - INFO - 127.0.0.1 - - [21/Sep/2025 14:08:28] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-21 14:08:28,243 - werkzeug - INFO - 127.0.0.1 - - [21/Sep/2025 14:08:28] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-21 14:08:30,661 - werkzeug - INFO - 127.0.0.1 - - [21/Sep/2025 14:08:30] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-21 14:08:55,953 - werkzeug - INFO - 127.0.0.1 - - [21/Sep/2025 14:08:55] "GET /db/ HTTP/1.1" 200 -
+2025-09-21 14:08:56,270 - werkzeug - INFO - 127.0.0.1 - - [21/Sep/2025 14:08:56] "GET /static/css/dist/main.css HTTP/1.1" 200 -
+2025-09-21 14:08:56,272 - werkzeug - INFO - 127.0.0.1 - - [21/Sep/2025 14:08:56] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-21 14:08:56,299 - werkzeug - INFO - 127.0.0.1 - - [21/Sep/2025 14:08:56] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-21 14:08:56,599 - werkzeug - INFO - 127.0.0.1 - - [21/Sep/2025 14:08:56] "[35m[1mGET /db/tables HTTP/1.1[0m" 500 -
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py", line 1478, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py", line 1458, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/autojenny/Documents/projects/blog/blog-core/app/database/routes.py", line 235, in list_tables
+    return jsonify({"tables": tables, "groups": groups})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/json/__init__.py", line 170, in jsonify
+    return current_app.json.response(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/json/provider.py", line 215, in response
+    f"{self.dumps(obj, **dump_args)}\n", mimetype=self.mimetype
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/json/provider.py", line 180, in dumps
+    return json.dumps(obj, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 202, in encode
+    chunks = list(chunks)
+             ^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 432, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 326, in _iterencode_list
+    yield from chunks
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 326, in _iterencode_list
+    yield from chunks
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 326, in _iterencode_list
+    yield from chunks
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 439, in _iterencode
+    o = _default(o)
+        ^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/json/provider.py", line 120, in _default
+    raise TypeError(f"Object of type {type(o).__name__} is not JSON serializable")
+TypeError: Object of type time is not JSON serializable
+2025-09-21 14:09:02,048 - werkzeug - INFO - 127.0.0.1 - - [21/Sep/2025 14:09:02] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-21 14:09:02,050 - werkzeug - INFO - 127.0.0.1 - - [21/Sep/2025 14:09:02] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-21 14:09:02,051 - werkzeug - INFO - 127.0.0.1 - - [21/Sep/2025 14:09:02] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-21 14:09:30,237 - werkzeug - INFO - 127.0.0.1 - - [21/Sep/2025 14:09:30] "GET /db/ HTTP/1.1" 200 -
+2025-09-21 14:09:47,360 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/db.py', reloading
+2025-09-21 14:09:47,428 - werkzeug - INFO -  * Restarting with stat
+Traceback (most recent call last):
+  File "/Users/autojenny/Documents/projects/blog/blog-core/app.py", line 10, in <module>
+    from db import get_db_conn
+  File "/Users/autojenny/Documents/projects/blog/blog-core/db.py", line 1, in <module>
+    import psycopg
+ModuleNotFoundError: No module named 'psycopg'

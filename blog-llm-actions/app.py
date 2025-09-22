@@ -22,7 +22,7 @@ CORS(app, origins=["http://localhost:5000", "http://localhost:5001", "http://loc
 
 # Configuration
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key')
-app.config['DATABASE_URL'] = os.getenv('DATABASE_URL', 'postgresql://nickfiddes@localhost/blog')
+app.config['DATABASE_URL'] = os.getenv('DATABASE_URL', 'postgresql://autojenny@localhost:5432/blog')
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)

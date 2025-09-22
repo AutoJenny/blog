@@ -1,0 +1,371 @@
+<!-- Famous Clans Tab Content -->
+<!-- Clan Selection Area -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="accordion" id="clanSelectionAccordion">
+            <div class="accordion-item bg-dark text-white border-secondary">
+                <h2 class="accordion-header" id="clanSelectionHeader">
+                    <button class="accordion-button collapsed bg-dark text-white border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#clanSelectionCollapse" aria-expanded="false" aria-controls="clanSelectionCollapse">
+                        <i class="fas fa-crown me-2"></i><span id="clanAccordionTitle">Select Famous Clan for Content</span>
+                    </button>
+                </h2>
+                <div id="clanSelectionCollapse" class="accordion-collapse collapse" aria-labelledby="clanSelectionHeader" data-bs-parent="#clanSelectionAccordion">
+                    <div class="accordion-body">
+                        <!-- Clan Selection Controls -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="clanSelector" class="form-label">Choose a clan:</label>
+                                    <select class="form-select bg-dark text-white border-secondary" id="clanSelector">
+                                        <option value="">Loading clans...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="randomClanBtn" class="form-label">Or pick random:</label>
+                                    <button class="btn btn-outline-warning w-100" id="randomClanBtn">
+                                        <i class="fas fa-dice me-2"></i>Pick Random Clan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Selected Clan Details -->
+                        <div id="clanDetails" class="d-none">
+                            <hr class="border-secondary">
+                            <h6 class="text-info mb-3">Clan Details</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Clan Name:</strong> <span id="clanName"></span></p>
+                                    <p><strong>Clan ID:</strong> <span id="clanId"></span></p>
+                                    <p><strong>Region:</strong> <span id="clanRegion"></span></p>
+                                    <p><strong>Motto:</strong> <span id="clanMotto"></span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Chief:</strong> <span id="clanChief"></span></p>
+                                    <p><strong>Seat:</strong> <span id="clanSeat"></span></p>
+                                    <p><strong>Founded:</strong> <span id="clanFounded"></span></p>
+                                    <p><strong>Status:</strong> <span id="clanStatus"></span></p>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <p><strong>Description:</strong></p>
+                                    <div id="clanDescription" class="text-muted"></div>
+                                    <p class="mt-3"><strong>Historical Significance:</strong></p>
+                                    <div id="clanHistory" class="text-muted"></div>
+                                    <p class="mt-3"><strong>Notable Members:</strong></p>
+                                    <div id="clanNotableMembers" class="text-muted"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Conversion Selection Panel -->
+<div id="clanConversionPanel" style="display: block;">
+    <div class="conversion-container">
+        <div class="accordion" id="clanConversionSettingsAccordion">
+            <div class="accordion-item bg-dark border-secondary">
+                <h2 class="accordion-header" id="clanConversionSettingsHeader">
+                    <button class="accordion-button collapsed bg-dark text-white border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#clanConversionSettingsCollapse" aria-expanded="false" aria-controls="clanConversionSettingsCollapse">
+                        <i class="fas fa-exchange-alt me-2"></i>Conversion Settings: <span id="clanConversionHeaderDisplay" class="text-info ms-2">Select platform and process...</span>
+                    </button>
+                </h2>
+                <div id="clanConversionSettingsCollapse" class="accordion-collapse collapse" aria-labelledby="clanConversionSettingsHeader" data-bs-parent="#clanConversionSettingsAccordion">
+                    <div class="accordion-body text-white">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="clanPlatformSelector" class="form-label text-white">Social Media Platform:</label>
+                                    <select class="form-select bg-dark text-white border-secondary" id="clanPlatformSelector">
+                                        <option value="">Loading platforms...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="clanProcessSelector" class="form-label text-white">Content Process:</label>
+                                    <select class="form-select bg-dark text-white border-secondary" id="clanProcessSelector" disabled>
+                                        <option value="">Select a platform first...</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Process Info -->
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <h6 class="text-info mb-3">
+                                    <i class="fas fa-cog me-2"></i>Process Information
+                                </h6>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label text-white">Selected Process:</label>
+                                    <div class="form-control-plaintext text-white" id="clanDebugProcessName">No process selected</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label text-white">Process Description:</label>
+                                    <div class="form-control-plaintext text-white" id="clanDebugProcessDescription">No description available</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <div id="clanProcessDetails" class="process-details-panel" style="display: block;">
+                                    <!-- Clan Requirements Component -->
+                                    <div class="card bg-secondary border-dark">
+                                        <div class="card-header">
+                                            <h6 class="mb-0 text-white">
+                                                <i class="fas fa-list-check me-2"></i>Clan Social Media Requirements
+                                            </h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="clanRequirements">
+                                                <p class="text-muted">Requirements will be loaded based on selected platform and process...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- LLM Processing Debug Panel -->
+<div id="clanLlmDebugPanel" style="display: block;">
+    <div class="llm-debug-container">
+        <div class="accordion" id="clanLlmDebugAccordion">
+            <div class="accordion-item bg-dark border-secondary">
+                <h2 class="accordion-header" id="clanLlmDebugHeader">
+                    <button class="accordion-button collapsed bg-dark text-white border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#clanLlmDebugCollapse" aria-expanded="false" aria-controls="clanLlmDebugCollapse">
+                        <i class="fas fa-brain me-2"></i>LLM Processing Debug Panel
+                    </button>
+                </h2>
+                <div id="clanLlmDebugCollapse" class="accordion-collapse collapse" aria-labelledby="clanLlmDebugHeader" data-bs-parent="#clanLlmDebugAccordion">
+                    <div class="accordion-body text-white">
+                        <!-- Process Execution Controls -->
+                        <div class="execution-controls mb-4">
+                            <div class="d-flex gap-2 mb-3">
+                                <button class="btn btn-success" id="clanStartOllamaBtn">
+                                    <i class="fas fa-play me-2"></i>Start Ollama
+                                </button>
+                                <button class="btn btn-primary" id="clanProcessBtn">
+                                    <i class="fas fa-rocket me-2"></i>Process Clan
+                                </button>
+                                <button class="btn btn-outline-light" id="clanClearResultsBtn">
+                                    <i class="fas fa-eraser me-2"></i>Clear Results
+                                </button>
+                            </div>
+                            <div class="execution-status-bar">
+                                <span class="badge bg-secondary me-3">Status: <span id="clanLlmStatus">Ready</span></span>
+                                <span class="badge bg-secondary me-3">Last Processed: <span id="clanLlmLastProcessed">Never</span></span>
+                                <span class="badge bg-secondary">Processing Time: <span id="clanLlmProcessingTime">--</span></span>
+                            </div>
+                        </div>
+
+                        <!-- Main Debug Content -->
+                        <div class="row">
+                            <!-- Input Assembly Section (Left Column) -->
+                            <div class="col-md-6">
+                                <div class="debug-section">
+                                    <h6 class="text-info mb-3">
+                                        <i class="fas fa-arrow-down me-2"></i>Input Assembly - What We're Sending to the LLM
+                                    </h6>
+                                    
+                                    <!-- Process Configuration -->
+                                    <div class="debug-item mb-3">
+                                        <label class="debug-label">Process Configuration:</label>
+                                        
+                                        <!-- JSON Elements Table -->
+                                        <div class="debug-item mb-3">
+                                            <label class="debug-label">JSON Elements Breakdown:</label>
+                                            <div class="debug-table-box">
+                                                <table class="table table-dark table-striped table-sm" style="font-size: 0.85rem;">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="text-info">Title</th>
+                                                            <th class="text-info">Content</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td><strong>Provider</strong></td>
+                                                            <td id="clanTableProvider">ollama</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong>Model</strong></td>
+                                                            <td id="clanTableModel">mistral</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong>Prompt</strong></td>
+                                                            <td style="background-color: #1a1a2e; border: 1px solid #2d3748; padding: 1rem;">
+                                                                <!-- System & Task Section -->
+                                                                <div style="margin-bottom: 1rem; padding: 0.75rem; border-radius: 0.375rem; background-color: #2d3748; border-left: 4px solid #4299e1;">
+                                                                    <div id="clanTableSystemPrompt">Loading system prompt...</div>
+                                                                    <br>
+                                                                    <div id="clanTableUserPromptTemplate">Loading user prompt template...</div>
+                                                                </div>
+                                                                
+                                                                <!-- Clan Details Section -->
+                                                                <div style="text-align: center; font-weight: bold; color: #a0aec0; margin: 1rem 0; padding: 0.5rem; background-color: #1a202c; border-radius: 0.25rem; font-family: monospace;">=== CLAN DETAILS ===</div>
+                                                                <div style="margin-bottom: 1rem; padding: 0.75rem; border-radius: 0.375rem; background-color: #2d3748; border-left: 4px solid #48bb78;">
+                                                                    <span id="clanDynamicDetails">Loading clan details...</span>
+                                                                </div>
+                                                                
+                                                                <!-- Requirements Section -->
+                                                                <div style="text-align: center; font-weight: bold; color: #a0aec0; margin: 1rem 0; padding: 0.5rem; background-color: #1a202c; border-radius: 0.25rem; font-family: monospace;">=== REQUIREMENTS ===</div>
+                                                                <div style="margin-bottom: 1rem; padding: 0.75rem; border-radius: 0.375rem; background-color: #2d3748; border-left: 4px solid #ed8936;">
+                                                                    <span id="clanDynamicRequirements">Loading requirements...</span>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong>Temperature</strong></td>
+                                                            <td>0.8</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong>Max Tokens</strong></td>
+                                                            <td>1500</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="debug-config-box">
+                                            <div class="config-section mb-2">
+                                                <strong>LLM Prompt:</strong>
+                                                <div class="config-value" id="clanDebugLLMPrompt">No prompt configured</div>
+                                            </div>
+                                            <div class="config-section mb-2">
+                                                <strong>Constraints:</strong>
+                                                <div class="config-value" id="clanDebugConstraints">No constraints configured</div>
+                                            </div>
+                                            <div class="config-section mb-2">
+                                                <strong>Style Guide:</strong>
+                                                <div class="config-value" id="clanDebugStyleGuide">No style guide configured</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Clan Content -->
+                                    <div class="debug-item mb-3">
+                                        <label class="debug-label">Clan Content:</label>
+                                        <div class="debug-content-box" id="clanDebugContent">No clan content available</div>
+                                    </div>
+                                    
+                                    <!-- Final Assembled Prompt -->
+                                    <div class="debug-item mb-3">
+                                        <label class="debug-label">Final Assembled Prompt (What We're Sending to the LLM):</label>
+                                        <div class="debug-prompt-box prompt-structured" id="clanDebugAssembledPrompt">
+                                            <!-- System & Task Section -->
+                                            <div class="prompt-section system-task-section">
+                                                <div id="clanPromptSystemTask">No prompt configured</div>
+                                            </div>
+                                            
+                                            <!-- Clan Details Section -->
+                                            <div class="prompt-separator">=== CLAN DETAILS ===</div>
+                                            <div class="prompt-section clan-details-section">
+                                                <div id="clanPromptDetails">No clan content available</div>
+                                            </div>
+                                            
+                                            <!-- Requirements Section -->
+                                            <div class="prompt-separator">=== REQUIREMENTS ===</div>
+                                            <div class="prompt-section requirements-section">
+                                                <div id="clanPromptRequirements">No requirements configured</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- LLM Response Section (Right Column) -->
+                            <div class="col-md-6">
+                                <div class="debug-section">
+                                    <h6 class="text-info mb-3">
+                                        <i class="fas fa-arrow-up me-2"></i>LLM Response - What We Received Back
+                                    </h6>
+                                    
+                                    <!-- Processing Details -->
+                                    <div class="debug-item mb-3">
+                                        <label class="debug-label">Processing Details:</label>
+                                        <div class="debug-details-box">
+                                            <div class="detail-row">
+                                                <span class="detail-label">Request Time:</span>
+                                                <span class="detail-value" id="clanDebugRequestTime">--</span>
+                                            </div>
+                                            <div class="detail-row">
+                                                <span class="detail-label">Response Time:</span>
+                                                <span class="detail-value" id="clanDebugResponseTime">--</span>
+                                            </div>
+                                            <div class="detail-row">
+                                                <span class="detail-label">Total Duration:</span>
+                                                <span class="detail-value" id="clanDebugTotalDuration">--</span>
+                                            </div>
+                                            <div class="detail-row">
+                                                <span class="detail-label">Model Used:</span>
+                                                <span class="detail-value" id="clanDebugModelUsed">--</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- LLM Response -->
+                                    <div class="debug-item mb-3">
+                                        <label class="debug-label">LLM Response (What We Got Back):</label>
+                                        <div class="debug-response-box" id="clanDebugRawResponse">No response yet</div>
+                                    </div>
+                                    
+                                    <!-- Validation Results -->
+                                    <div class="debug-item mb-3">
+                                        <label class="debug-label">Validation Results:</label>
+                                        <div class="debug-validation-box" id="clanDebugValidationResults">No validation performed yet</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Clan Tasks and Content Area -->
+<div id="clanTasksContent" style="display: block;">
+    <div class="sections-pieces-container">
+        <table class="sections-pieces-table">
+            <thead>
+                <tr>
+                    <th class="tasks-header">
+                        <i class="fas fa-tasks me-2"></i>Tasks
+                    </th>
+                    <th class="sections-header">
+                        <i class="fas fa-crown me-2"></i>Clans
+                    </th>
+                    <th class="pieces-header">
+                        <i class="fas fa-puzzle-piece me-2"></i>Content Pieces
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="clanTasksBody">
+                <!-- Row pairs will be dynamically created here -->
+                <!-- Each row ensures perfect alignment: Task 1 | Clan 1 | Piece 1 -->
+            </tbody>
+        </table>
+    </div>
+</div>

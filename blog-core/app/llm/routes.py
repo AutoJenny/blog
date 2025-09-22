@@ -9,8 +9,8 @@ from app.llm import bp
 from app.llm.services import execute_llm_request
 import httpx
 from app.blog.fields import WORKFLOW_FIELDS
-import psycopg2
-import psycopg2.extras
+import psycopg
+from psycopg.rows import dict_row
 from app.database.routes import get_db_conn
 import requests
 from app.utils.decorators import deprecated_endpoint
@@ -51,7 +51,7 @@ def actions():
     actions = []
     prompts = []
     with get_db_conn() as conn:
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
             cur.execute("SELECT * FROM llm_action ORDER BY id")
             actions = cur.fetchall()
             cur.execute("SELECT * FROM llm_prompt ORDER BY id")
@@ -69,7 +69,7 @@ def action_detail(action_id):
     action_prompt_parts = []
     all_prompt_parts = []
     with get_db_conn() as conn:
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
             cur.execute("""
                 SELECT * FROM llm_action WHERE id = %s
             """, (action_id,))

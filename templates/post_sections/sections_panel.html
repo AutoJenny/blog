@@ -1,0 +1,31 @@
+<!-- sections_panel.html: Green Panel Sections UI (dynamic, full fidelity) -->
+<!-- FontAwesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<div id="sections-panel" style="background-color: #013828; min-height: 400px; border-radius: 8px; padding: 0; border: 1px solid #065f46; overflow: visible;">
+    <!-- Manual Sync Button -->
+    <div class="mb-4 flex justify-center" style="margin-bottom: 1rem; display: flex; justify-content: center;">
+        <button id="manual-sync-sections-btn" 
+                class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow-lg transition-colors duration-200 text-sm"
+                style="background-color: #059669; color: white; font-weight: bold; padding: 0.5rem 1rem; border-radius: 0.25rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: background-color 0.2s; font-size: 0.875rem;">
+            🔄 Manual Sync Sections
+        </button>
+    </div>
+    
+    <!-- Database Indicator -->
+    <div style="background: #065f46; border: 1px solid #10b981; border-radius: 6px; padding: 6px 10px; margin-bottom: 15px; display: flex; align-items: center; gap: 6px; font-size: 11px; color: #a7f3d0;">
+        <i class="fas fa-database" style="color: #10b981;"></i>
+        <span><strong>DB:</strong> blog | <strong>Table:</strong> post_section</span>
+    </div>
+    <!-- Sections Panel Content (populated by JS) -->
+    <div id="sections-panel-content" class="text-gray-200" style="color: #e5e7eb;">
+        <p>Loading sections...</p>
+        <p style="color: #10b981; font-size: 12px;">If you see this message, JavaScript is not working properly.</p>
+        <p><a href="/sections-static/22" style="color: #7dd3fc;">Click here for static version</a></p>
+    </div>
+</div>
+
+<!-- Include our CSS and JS files -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sections.css') }}">
+<script src="{{ url_for('static', filename='js/sections.js') }}"></script>
+<script src="{{ url_for('static', filename='js/section_drag_drop.js') }}"></script> 

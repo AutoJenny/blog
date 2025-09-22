@@ -1,0 +1,1844 @@
+ * Serving Flask app 'app'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5005
+ * Running on http://10.0.4.32:5005
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 830-133-383
+127.0.0.1 - - [21/Sep/2025 11:27:28] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 11:27:31] "[33mGET /health HTTP/1.1[0m" 404 -
+127.0.0.1 - - [21/Sep/2025 19:18:47] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:47] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:47] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:47] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:47] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:18:47] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:47] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:18:47] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:47] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:18:47] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:47] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:47] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:47] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:47] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:18:47] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:18:47] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:47] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:18:47] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:47] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:18:47] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:18:59] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:59] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:59] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:18:59] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:59] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:59] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:59] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:18:59] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:18:59] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:59] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:59] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:59] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:59] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:59] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:18:59] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:18:59] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:59] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:18:59] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:18:59] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:18:59] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:19:17] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:17] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:17] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:17] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:19:17] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:17] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:17] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:19:17] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:19:17] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:17] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:17] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:17] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:17] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:17] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:19:17] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:19:17] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:19:17] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:17] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:17] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:19:18] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:19:47] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:47] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:47] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:47] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:19:47] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:47] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:47] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:19:47] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:19:47] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:47] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:47] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:47] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:47] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:47] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:19:47] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:19:47] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:19:47] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:48] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:19:48] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:19:48] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:17] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:17] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:17] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:17] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:17] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:17] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:18] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:18] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:18] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:18] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:18] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:18] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:18] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:18] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:18] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:18] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:18] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:18] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:18] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:18] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:47] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:48] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:48] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:48] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:48] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:48] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:48] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:48] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:48] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:48] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:48] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:48] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:48] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:48] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:48] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:48] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:48] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:48] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:48] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:48] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:57] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:57] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:57] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:57] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:57] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:57] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:57] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:57] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:57] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:57] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:57] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:57] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:57] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:57] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:57] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:57] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:57] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:57] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:20:57] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:20:57] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:18] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:18] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:18] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:18] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:18] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:18] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:18] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:18] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:18] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:18] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:18] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:18] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:18] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:18] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:18] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:18] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:18] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:18] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:18] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:18] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:27] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:27] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:27] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:27] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:27] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:27] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:27] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:27] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:27] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:27] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:27] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:27] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:27] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:27] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:27] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+127.0.0.1 - - [21/Sep/2025 19:21:27] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:27] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:27] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:27] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:27] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:48] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:48] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:48] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:48] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:48] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:48] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:48] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:48] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:48] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:48] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:48] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:48] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:48] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:48] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:48] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:48] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:48] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:48] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:48] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:48] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:57] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:57] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:57] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:57] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:57] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:57] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:57] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:57] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:57] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:57] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:57] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:57] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:57] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:57] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:57] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:57] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:57] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:57] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:21:57] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:21:57] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:22:27] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:27] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:27] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:27] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:22:27] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:27] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:27] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:22:27] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:22:27] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:27] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:27] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:27] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:27] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:27] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:22:27] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:22:27] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:22:27] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:27] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:27] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:22:27] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:22:57] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:57] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:58] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:58] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:22:58] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:58] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:58] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:22:58] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:22:58] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:58] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:58] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:58] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:58] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:58] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:22:58] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:22:58] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:22:58] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:58] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:22:58] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:22:58] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:25] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:25] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:25] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:25] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:25] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:25] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:25] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:25] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:25] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:25] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:25] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:25] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:25] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:25] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:25] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:25] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:25] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:25] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:25] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:25] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:27] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:27] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:28] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:28] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:28] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:28] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:28] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:28] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:28] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:28] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:28] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:28] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:28] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:28] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:28] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:28] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:28] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:28] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:28] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:28] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:57] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:58] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:58] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:58] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:58] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:58] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:58] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:58] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:58] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:58] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:58] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:58] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:58] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:58] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:58] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:58] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:58] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:58] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:23:58] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:23:58] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:25:13] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:25:13] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:25:13] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:25:13] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:25:13] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:25:13] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:25:13] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:25:13] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:25:13] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:25:13] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:25:13] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:25:13] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:25:13] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:25:13] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:25:13] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:25:13] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:25:13] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:25:13] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:25:13] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:25:13] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:25:26] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:25:26] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:25:27] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:25:27] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:25:27] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:25:27] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:25:27] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:25:27] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:25:27] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:25:27] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:25:27] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+127.0.0.1 - - [21/Sep/2025 19:25:27] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:25:27] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:25:27] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:25:27] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:25:27] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:25:27] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:25:27] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:25:27] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:25:27] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:26:53] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:26:53] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:26:53] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:26:53] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:26:53] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:26:53] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:26:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:26:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:26:53] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:26:53] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:26:53] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:26:53] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:26:53] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:26:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:26:53] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:26:53] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:26:53] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:26:53] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:26:53] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:26:53] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:27:06] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:27:06] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:27:07] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:27:07] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:27:07] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:27:07] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:27:07] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:27:07] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:27:07] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:27:07] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:27:07] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:27:07] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:27:07] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:27:07] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:27:07] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:27:07] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:27:07] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:27:07] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:27:07] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:27:07] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:28:33] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:28:33] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:28:33] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:28:33] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:28:33] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:28:33] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:28:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:28:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:28:33] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:28:33] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:28:33] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:28:33] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:28:33] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:28:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:28:33] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:28:33] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:28:33] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:28:33] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:28:33] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:28:33] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:30:13] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:30:13] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:30:13] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:30:13] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:30:13] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:30:13] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:30:13] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:30:13] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:30:13] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:30:13] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:30:13] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:30:13] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:30:13] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:30:13] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:30:13] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:30:13] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:30:13] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:30:13] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:30:13] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:30:13] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:31:53] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:31:53] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:31:53] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:31:53] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:31:53] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:31:53] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:31:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:31:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:31:53] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:31:53] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:31:53] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:31:53] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:31:53] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:31:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:31:53] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:31:53] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:31:53] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:31:53] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:31:53] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:31:53] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:33:33] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:33:33] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:33:33] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:33:33] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:33:33] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:33:33] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:33:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:33:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:33:33] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:33:33] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:33:33] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:33:33] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:33:33] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:33:33] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:33:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:33:33] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:33:33] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:33:33] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:33:33] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:33:33] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:35:13] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:35:13] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:35:13] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:35:13] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:35:13] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:35:13] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:35:13] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:35:13] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:35:13] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:35:13] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:35:13] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:35:13] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:35:13] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:35:13] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:35:13] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:35:13] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:35:13] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:35:13] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:35:13] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:35:13] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:36:53] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:36:53] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:36:53] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:36:53] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:36:53] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:36:53] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:36:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:36:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:36:53] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:36:53] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:36:53] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:36:53] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:36:53] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:36:53] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:36:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:36:53] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:36:53] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:36:53] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:36:53] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:36:53] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:38:33] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:38:33] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:38:33] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:38:33] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:38:33] "GET /api/images/53/upload HTTP/1.1" 200 -
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+127.0.0.1 - - [21/Sep/2025 19:38:33] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:38:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:38:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:38:33] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:38:33] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:38:33] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:38:33] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:38:33] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:38:33] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:38:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:38:33] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:38:33] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:38:33] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:38:33] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:38:33] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:40:13] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:40:13] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:40:13] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:40:13] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:40:13] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:40:13] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:40:14] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:40:14] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:40:14] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:40:14] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:40:14] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:40:14] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:40:14] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:40:14] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:40:14] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:40:14] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:40:14] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:40:14] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:40:14] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:40:14] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:42:27] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:42:27] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:42:27] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:42:27] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:42:27] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:42:27] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:42:27] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:42:28] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:42:28] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:42:28] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:42:28] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:42:28] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:42:28] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:42:28] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:42:28] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:42:28] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:42:28] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:42:28] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:42:28] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:42:28] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:43:33] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:43:33] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:43:33] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:43:33] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:43:33] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:43:33] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:43:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:43:33] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:43:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:43:33] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:43:33] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:43:33] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:43:33] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:43:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:43:33] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:43:33] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:43:33] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:43:33] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:43:33] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:43:33] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:44:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:44:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:44:30] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:44:30] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:44:30] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:44:30] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:44:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:44:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:44:30] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:44:30] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:44:30] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:44:30] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:44:30] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:44:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:44:30] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:44:30] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:44:30] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:44:30] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:44:30] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:44:30] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:46:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:46:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:46:30] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:46:30] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:46:30] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:46:30] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:46:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:46:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:46:30] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:46:30] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:46:30] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:46:30] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:46:30] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:46:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:46:30] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:46:30] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:46:30] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:46:30] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:46:30] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:46:30] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:48:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:48:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:48:30] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:48:30] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:48:30] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:48:30] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:48:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:48:30] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:48:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:48:30] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:48:30] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:48:30] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:48:30] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:48:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:48:30] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:48:30] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:48:30] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:48:30] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:48:30] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:48:30] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:50:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:50:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:50:30] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:50:30] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:50:30] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:50:30] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:50:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:50:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:50:30] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:50:30] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:50:30] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:50:30] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:50:30] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:50:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:50:30] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:50:30] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:50:30] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:50:30] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:50:30] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:50:30] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:52:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:52:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:52:30] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:52:30] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:52:30] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:52:30] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:52:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:52:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:52:30] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:52:30] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:52:30] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:52:30] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:52:30] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:52:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:52:30] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:52:30] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:52:30] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+127.0.0.1 - - [21/Sep/2025 19:52:30] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:52:30] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:52:30] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:54:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:54:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:54:29] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:54:29] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:54:29] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:54:29] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:54:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:54:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:54:30] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:54:30] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:54:30] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:54:30] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:54:30] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:54:30] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:54:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:54:30] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:54:30] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:54:30] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:54:30] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:54:30] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:56:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:56:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:56:29] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:56:29] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:56:30] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:56:30] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:56:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:56:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:56:30] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:56:30] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:56:30] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:56:30] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:56:30] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:56:30] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:56:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:56:30] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:56:30] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:56:30] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:56:30] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:56:30] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:58:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:58:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:58:30] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:58:30] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:58:30] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:58:30] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:58:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:58:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:58:30] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:58:30] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:58:30] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:58:30] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:58:30] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:58:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:58:30] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:58:30] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:58:30] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:58:30] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 19:58:30] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 19:58:30] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:00:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:00:30] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:00:30] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:00:30] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:00:30] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:00:30] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:00:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:00:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:00:30] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:00:30] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:00:30] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:00:30] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:00:30] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:00:30] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:00:30] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:00:30] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:00:30] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:00:30] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:00:30] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:00:30] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:01:53] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:01:53] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:01:53] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:01:53] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:01:53] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:01:53] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:01:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:01:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:01:53] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:01:53] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:01:53] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:01:53] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:01:53] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:01:53] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:01:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:01:53] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:01:53] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:01:53] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:01:53] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:01:53] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:03:33] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:03:33] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:03:33] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:03:33] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:03:33] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:03:33] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:03:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:03:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:03:33] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:03:33] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:03:33] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:03:33] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:03:33] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:03:33] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:03:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:03:33] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:03:33] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:03:33] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:03:33] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:03:33] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:05:13] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:05:13] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:05:13] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:05:13] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:05:13] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:05:13] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:05:13] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:05:13] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:05:13] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:05:13] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:05:13] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:05:13] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:05:13] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:05:13] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:05:13] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:05:13] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:05:13] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:05:13] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:05:13] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:05:13] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:06:53] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:06:53] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:06:53] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:06:53] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:06:53] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:06:53] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:06:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:06:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:06:53] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:06:53] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:06:53] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:06:53] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:06:53] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:06:53] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:06:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:06:53] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:06:53] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:06:53] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [21/Sep/2025 20:06:53] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [21/Sep/2025 20:06:53] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:32:43] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:32:43] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:32:43] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:32:43] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:32:43] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:32:43] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:32:43] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:32:43] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:32:43] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:32:43] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:32:43] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:32:43] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+127.0.0.1 - - [22/Sep/2025 08:32:43] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:32:43] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:32:43] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:32:43] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:32:43] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:32:43] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:32:43] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:32:43] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:33:33] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:33:33] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:33:33] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:33:33] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:33:33] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:33:33] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:33:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:33:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:33:33] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:33:33] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:33:33] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:33:33] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:33:33] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:33:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:33:33] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:33:33] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:33:33] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:33:33] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:33:33] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:33:33] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:35:13] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:35:13] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:35:13] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:35:13] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:35:13] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:35:13] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:35:13] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:35:13] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:35:13] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:35:13] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:35:13] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:35:13] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:35:13] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:35:13] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:35:13] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:35:13] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:35:13] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:35:13] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:35:13] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:35:13] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:36:53] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:36:53] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:36:53] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:36:53] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:36:53] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:36:53] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:36:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:36:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:36:53] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:36:53] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:36:53] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:36:53] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:36:53] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:36:53] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:36:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:36:53] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:36:53] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:36:53] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:36:53] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:36:53] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:38:33] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:38:33] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:38:33] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:38:33] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:38:33] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:38:33] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:38:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:38:33] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:38:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:38:33] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:38:33] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:38:33] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:38:33] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:38:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:38:33] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:38:33] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:38:33] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:38:33] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:38:33] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:38:33] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:40:13] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:40:13] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:40:13] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:40:13] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:40:13] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:40:13] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:40:13] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:40:13] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:40:13] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:40:13] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:40:13] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:40:13] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:40:13] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:40:13] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:40:13] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:40:13] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:40:13] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:40:13] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:40:13] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:40:13] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:41:53] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:41:53] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:41:53] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:41:53] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:41:53] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:41:53] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:41:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:41:53] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:41:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:41:53] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:41:53] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:41:53] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:41:53] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:41:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:41:53] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:41:53] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:41:53] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:41:53] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:41:53] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:41:53] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:43:33] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:43:33] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:43:33] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:43:33] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:43:33] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:43:33] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:43:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:43:33] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:43:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:43:33] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:43:33] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:43:33] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:43:33] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:43:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:43:33] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:43:33] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:43:33] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:43:33] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:43:33] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:43:33] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:45:13] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:45:13] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:45:13] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:45:13] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:45:13] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:45:13] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:45:13] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:45:13] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:45:13] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:45:13] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:45:13] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:45:13] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:45:13] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:45:13] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:45:13] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:45:13] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:45:13] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:45:13] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:45:13] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:45:13] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:46:53] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:46:53] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:46:53] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:46:53] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:46:53] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:46:53] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:46:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:46:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:46:53] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+Database error getting titles: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+127.0.0.1 - - [22/Sep/2025 08:46:53] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:46:53] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:46:53] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:46:53] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:46:53] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:46:53] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:46:53] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:46:53] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:46:53] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:46:53] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:46:53] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:48:33] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:48:33] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:48:33] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:48:33] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:48:33] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:48:33] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:48:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:48:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:48:33] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:48:33] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:48:33] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:48:33] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:48:33] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:48:33] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:48:33] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:48:33] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:48:33] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:48:33] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 08:48:33] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 08:48:33] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 09:03:03] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 09:03:03] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 09:03:04] "[35m[1mGET /api/sections/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 09:03:04] "GET /api/images/53/upload HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 09:03:04] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 09:03:04] "GET /api/images/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 09:03:04] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 09:03:04] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 09:03:04] "GET /api/images/optimized/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 09:03:04] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 09:03:04] "GET /api/watermark/stats/53 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 09:03:04] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 09:03:04] "GET /api/images/53/raw HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 09:03:04] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 09:03:04] "[35m[1mGET /api/images/53/selected HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 09:03:04] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 09:03:04] "GET /api/images/53/optimized HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 09:03:04] "GET /api/images/53/watermarked HTTP/1.1" 200 -
+127.0.0.1 - - [22/Sep/2025 09:03:04] "[35m[1mGET /api/captions/53 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/Sep/2025 09:03:04] "[35m[1mGET /api/pipeline/jobs/53 HTTP/1.1[0m" 500 -

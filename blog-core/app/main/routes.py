@@ -4,8 +4,8 @@ import psutil
 import time
 import redis
 import os
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import psycopg
+from psycopg.rows import dict_row
 from dotenv import load_dotenv, dotenv_values
 import markdown
 import re
@@ -25,14 +25,14 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 def get_db_conn():
     config = dotenv_values(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
     db_url = config.get('DATABASE_URL')
-    return psycopg2.connect(db_url, cursor_factory=RealDictCursor)
+    return psycopg.connect(db_url)
 
 @bp.route("/")
 def index():
     """Homepage with workflow stages."""
     # Get the latest post
     with get_db_conn() as conn:
-        with conn.cursor() as cur:
+        with conn.cursor(row_factory=dict_row) as cur:
             cur.execute("""
                 SELECT p.id, pd.idea_seed
                 FROM post p
@@ -66,7 +66,7 @@ def detailed_health_check():
     # Check database connection
     try:
         with get_db_conn() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(row_factory=dict_row) as cur:
                 cur.execute("SELECT 1")
                 health_status["components"]["database"] = {
                     "status": "healthy",
@@ -188,7 +188,7 @@ def llm_dashboard():
 def llm_providers():
     providers = []
     with get_db_conn() as conn:
-        with conn.cursor() as cur:
+        with conn.cursor(row_factory=dict_row) as cur:
             cur.execute('SELECT * FROM llm_provider ORDER BY id')
             providers = cur.fetchall()
     return render_template('main/llm_providers.html', providers=providers)
@@ -203,7 +203,7 @@ def llm_prompts():
     prompts = []
     prompt_parts = []
     with get_db_conn() as conn:
-        with conn.cursor() as cur:
+        with conn.cursor(row_factory=dict_row) as cur:
             cur.execute('''
                 SELECT id, name, prompt_json
                 FROM llm_prompt
@@ -306,7 +306,7 @@ def api_update_field_mapping():
 @bp.route('/api/workflow/stages', methods=['GET'])
 def api_get_workflow_stages():
     with get_db_conn() as conn:
-        with conn.cursor() as cur:
+        with conn.cursor(row_factory=dict_row) as cur:
             cur.execute('SELECT id, name FROM workflow_stage_entity ORDER BY stage_order')
             stages = cur.fetchall()
             cur.execute('SELECT id, stage_id, name FROM workflow_sub_stage_entity ORDER BY sub_stage_order')
@@ -319,7 +319,7 @@ def api_get_workflow_stages():
 @bp.route('/docs/view/database/schema.md')
 def docs_live_field_mapping():
     with get_db_conn() as conn:
-        with conn.cursor() as cur:
+        with conn.cursor(row_factory=dict_row) as cur:
             cur.execute('''
                 SELECT wfm.field_name, ws.name as stage_name, wss.name as substage_name, wfm.order_index
                 FROM workflow_field_mapping wfm
@@ -390,7 +390,7 @@ def posts_listing():
     """Posts listing page."""
     try:
         with get_db_conn() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(row_factory=dict_row) as cur:
                 cur.execute("""
                     SELECT p.id, p.title, p.slug, p.status, p.created_at, p.updated_at,
                            pd.idea_seed

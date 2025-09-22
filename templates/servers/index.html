@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Management - BlogForge</title>
+    <link href="/static/css/dist/main.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        .header-gradient {
+            background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
+        }
+        .nav-dropdown {
+            background: #23273a;
+            border: 1px solid #31364a;
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+        }
+        .nav-dropdown a {
+            color: #e0e0e0;
+        }
+        .nav-dropdown a:hover {
+            background: #23273a;
+            color: #a5b4fc;
+        }
+        .content-area {
+            min-height: 400px;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+            margin-top: 0;
+            box-shadow: none;
+        }
+        .gradient-header {
+            background: linear-gradient(90deg, #23273a 0%, #181c2a 100%);
+            border: 1px solid #31364a;
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+        }
+        .icon-circle {
+            background: #23273a;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25);
+        }
+        .card-dark {
+            background: #181c2a;
+            border: 1px solid #31364a;
+            color: #e0e0e0;
+            box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.3);
+        }
+        .card-dark:hover {
+            background: #23273a;
+            border-color: #6366f1;
+            transform: translateY(-2px);
+            transition: all 0.2s ease;
+        }
+        .section-title {
+            color: #a5b4fc;
+            font-weight: 700;
+        }
+        .server-thumbnail {
+            width: 100%;
+            height: 250px;
+            border: 2px solid #31364a;
+            border-radius: 8px;
+            background: #23273a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-size: 0.9rem;
+            overflow: hidden;
+            position: relative;
+        }
+        .server-thumbnail iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            transform: none;
+            transform-origin: top left;
+        }
+        .server-thumbnail.placeholder {
+            background: linear-gradient(135deg, #23273a 0%, #181c2a 100%);
+        }
+        .server-thumbnail.placeholder .placeholder-content {
+            text-align: center;
+            color: #6b7280;
+        }
+        .server-thumbnail.placeholder .placeholder-content i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.5;
+        }
+        .server-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin: 8px 0;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        .status-running {
+            background: #065f46;
+            color: #a7f3d0;
+            border: 1px solid #10b981;
+        }
+        .status-stopped {
+            background: #7f1d1d;
+            color: #fecaca;
+            border: 1px solid #dc2626;
+        }
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .status-indicator.running {
+            background: #10b981;
+            box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+        }
+        .status-indicator.stopped {
+            background: #dc2626;
+        }
+        .server-controls {
+            display: flex;
+            gap: 6px;
+            margin: 8px 0;
+        }
+        .server-controls button {
+            flex: 1;
+            padding: 6px 10px;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .server-controls .btn-start {
+            background: #059669;
+            color: white;
+        }
+        .server-controls .btn-start:hover {
+            background: #047857;
+        }
+        .server-controls .btn-stop {
+            background: #dc2626;
+            color: white;
+        }
+        .server-controls .btn-stop:hover {
+            background: #b91c1c;
+        }
+        .iframe-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            transform: none;
+            transform-origin: top left;
+        }
+        .iframe-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border-radius: 8px;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .iframe-container:hover .iframe-overlay {
+            opacity: 1;
+        }
+        .overlay-content {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .overlay-content i {
+            font-size: 1.5rem;
+        }
+        .overlay-content span {
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .server-links {
+            display: flex;
+            gap: 6px;
+            margin: 8px 0;
+        }
+        .server-links a {
+            flex: 1;
+            padding: 6px 10px;
+            text-decoration: none;
+            border: 1px solid #6366f1;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+            color: #6366f1;
+        }
+        .server-links a:hover {
+            background: #6366f1;
+            color: white;
+        }
+        .loading {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #31364a;
+            border-top: 2px solid #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .global-controls {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+        }
+        .global-controls button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .global-controls .btn-restart {
+            background: #6366f1;
+            color: white;
+        }
+        .global-controls .btn-restart:hover {
+            background: #4f46e5;
+        }
+        .global-controls .btn-stop-all {
+            background: #dc2626;
+            color: white;
+        }
+        .global-controls .btn-stop-all:hover {
+            background: #b91c1c;
+        }
+        .global-controls .btn-refresh {
+            background: #059669;
+            color: white;
+        }
+        .global-controls .btn-refresh:hover {
+            background: #047857;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-dark-bg text-dark-text flex flex-col">
+    {% include 'shared/header.html' %}
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="content-area">
+            <div class="max-w-7xl mx-auto">
+                <!-- Compact Header with Global Controls -->
+                <section class="mb-6">
+                    <div class="gradient-header rounded-xl p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="icon-circle">
+                                    <i class="fa-solid fa-server text-green-400 text-lg"></i>
+                                </span>
+                                <div>
+                                    <h1 class="text-xl font-bold text-white">Server Management</h1>
+                                    <p class="text-dark-accent text-sm">Monitor and control all microservices</p>
+                                </div>
+                            </div>
+                            <div class="global-controls">
+                                <button class="btn-restart" onclick="restartAllServers()">
+                                    <i class="fas fa-sync-alt"></i>
+                                    Restart All
+                                </button>
+                                <button class="btn-stop-all" onclick="stopAllServers()">
+                                    <i class="fas fa-stop"></i>
+                                    Stop All
+                                </button>
+                                <button class="btn-refresh" onclick="refreshStatus()">
+                                    <i class="fas fa-refresh"></i>
+                                    Refresh
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Servers Grid -->
+                <section>
+                    <h2 class="text-lg section-title mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-network-wired"></i> Microservices
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="serversGrid">
+                        {% for port, server in servers.items() %}
+                        <div class="card-dark rounded-lg p-4">
+                            <!-- Server Header -->
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h3 class="text-sm font-bold text-white mb-1">{{ server.name }}</h3>
+                                    <div class="bg-indigo-600 text-white px-2 py-1 rounded-full text-xs font-bold">
+                                        Port {{ port }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Server Description -->
+                            <p class="text-dark-accent text-xs mb-3">{{ server.description }}</p>
+                            
+                            <!-- Server Thumbnail -->
+                            <div class="server-thumbnail {% if server.status != 'running' %}placeholder{% endif %}" id="thumbnail-{{ port }}">
+                                {% if server.status == 'running' %}
+                                    <div class="iframe-container" onclick="navigateToServer('{{ server.home_url }}')">
+                                        <iframe src="{{ server.home_url }}" title="{{ server.name }}"></iframe>
+                                        <div class="iframe-overlay">
+                                            <div class="overlay-content">
+                                                <i class="fas fa-external-link-alt"></i>
+                                                <span>Click to visit {{ server.name }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="placeholder-content">
+                                        <i class="fas fa-server"></i>
+                                        <p class="text-xs">Not running</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Server Status -->
+                            <div class="server-status status-{{ server.status }}" id="status-{{ port }}">
+                                <span class="status-indicator {{ server.status }}"></span>
+                                <span id="status-text-{{ port }}">
+                                    {% if server.status == 'running' %}
+                                        <i class="fas fa-check-circle"></i> Running
+                                    {% else %}
+                                        <i class="fas fa-times-circle"></i> Stopped
+                                    {% endif %}
+                                </span>
+                            </div>
+                            
+                            <!-- Server Controls -->
+                            <div class="server-controls">
+                                <button class="btn-start" onclick="startServer({{ port }})" id="start-{{ port }}">
+                                    <i class="fas fa-play"></i> Start
+                                </button>
+                                <button class="btn-stop" onclick="stopServer({{ port }})" id="stop-{{ port }}">
+                                    <i class="fas fa-stop"></i> Stop
+                                </button>
+                            </div>
+                            
+                            <!-- Server Links -->
+                            <div class="server-links">
+                                <a href="{{ server.home_url }}" target="_blank">
+                                    <i class="fas fa-external-link-alt"></i> Home
+                                </a>
+                                <a href="{{ server.health_url }}" target="_blank">
+                                    <i class="fas fa-heartbeat"></i> Health
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-indigo-950 border-t border-dark-border py-4 mt-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-xs text-dark-text">
+                &copy; 2025 BlogForge. All rights reserved. |
+                <a href="/docs" class="text-indigo-300 hover:text-indigo-100 underline ml-2">Docs</a>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Auto-refresh status every 30 seconds
+        setInterval(refreshStatus, 30000);
+        
+        async function refreshStatus() {
+            try {
+                const response = await fetch('/servers/api/status');
+                const servers = await response.json();
+                
+                for (const [port, server] of Object.entries(servers)) {
+                    updateServerStatus(port, server.status);
+                }
+            } catch (error) {
+                console.error('Error refreshing status:', error);
+            }
+        }
+        
+        function updateServerStatus(port, status) {
+            const statusElement = document.getElementById(`status-${port}`);
+            const statusText = document.getElementById(`status-text-${port}`);
+            const thumbnail = document.getElementById(`thumbnail-${port}`);
+            
+            // Update status indicator
+            statusElement.className = `server-status status-${status}`;
+            
+            // Update status text
+            if (status === 'running') {
+                statusText.innerHTML = '<i class="fas fa-check-circle"></i> Running';
+                thumbnail.className = 'server-thumbnail';
+                thumbnail.innerHTML = `
+                    <div class="iframe-container" onclick="navigateToServer('http://localhost:${port}')">
+                        <iframe src="http://localhost:${port}" title="Server ${port}"></iframe>
+                        <div class="iframe-overlay">
+                            <div class="overlay-content">
+                                <i class="fas fa-external-link-alt"></i>
+                                <span>Click to visit Server ${port}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                statusText.innerHTML = '<i class="fas fa-times-circle"></i> Stopped';
+                thumbnail.className = 'server-thumbnail placeholder';
+                thumbnail.innerHTML = `
+                    <div class="placeholder-content">
+                        <i class="fas fa-server"></i>
+                        <p class="text-xs">Not running</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function startServer(port) {
+            const button = document.getElementById(`start-${port}`);
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = '<span class="loading"></span> Starting...';
+            button.disabled = true;
+            
+            try {
+                const response = await fetch(`/servers/api/start/${port}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Wait a moment for server to start, then refresh status
+                    setTimeout(() => {
+                        refreshStatus();
+                        button.disabled = false;
+                        button.innerHTML = originalText;
+                    }, 3000);
+                } else {
+                    alert('Error starting server: ' + result.error);
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                }
+            } catch (error) {
+                alert('Error starting server: ' + error.message);
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
+        }
+        
+        async function stopServer(port) {
+            const button = document.getElementById(`stop-${port}`);
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = '<span class="loading"></span> Stopping...';
+            button.disabled = true;
+            
+            try {
+                const response = await fetch(`/servers/api/stop/${port}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    setTimeout(() => {
+                        refreshStatus();
+                        button.disabled = false;
+                        button.innerHTML = originalText;
+                    }, 1000);
+                } else {
+                    alert('Error stopping server: ' + result.error);
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                }
+            } catch (error) {
+                alert('Error stopping server: ' + error.message);
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
+        }
+        
+        async function restartAllServers() {
+            if (!confirm('Are you sure you want to restart all servers? This will stop all running services and start them again.')) {
+                return;
+            }
+            
+            const button = event.target.closest('button');
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = '<span class="loading"></span> Restarting...';
+            button.disabled = true;
+            
+            try {
+                const response = await fetch('/servers/api/restart-all');
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Wait longer for restart script to complete
+                    setTimeout(() => {
+                        refreshStatus();
+                        button.disabled = false;
+                        button.innerHTML = originalText;
+                    }, 10000);
+                } else {
+                    alert('Error restarting servers: ' + result.error);
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                }
+            } catch (error) {
+                alert('Error restarting servers: ' + error.message);
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
+        }
+        
+        async function stopAllServers() {
+            if (!confirm('Are you sure you want to stop all servers?')) {
+                return;
+            }
+            
+            const button = event.target.closest('button');
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = '<span class="loading"></span> Stopping...';
+            button.disabled = true;
+            
+            try {
+                const response = await fetch('/servers/api/stop-all');
+                const result = await response.json();
+                
+                if (result.success) {
+                    setTimeout(() => {
+                        refreshStatus();
+                        button.disabled = false;
+                        button.innerHTML = originalText;
+                    }, 2000);
+                } else {
+                    alert('Error stopping servers: ' + result.error);
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                }
+            } catch (error) {
+                alert('Error stopping servers: ' + error.message);
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
+        }
+
+        function navigateToServer(url) {
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+</html>

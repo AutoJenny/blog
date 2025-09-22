@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <!-- SEO Meta Tags -->
+    <title>{% if post.seo_title %}{{ post.seo_title }}{% else %}{{ post.title }}{% endif %}</title>
+    <meta name="description" content="{% if post.seo_description %}{{ post.seo_description }}{% elif post.subtitle %}{{ post.subtitle }}{% else %}{{ post.title }}{% endif %}">
+    <meta name="keywords" content="{% if post.keywords %}{{ post.keywords|join(', ') }}{% endif %}">
+    <meta name="author" content="{% if post.author_id %}Clan.com{% else %}Clan.com{% endif %}">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Canonical URL -->
+    {% if post.canonical_url %}
+    <link rel="canonical" href="{{ post.canonical_url }}">
+    {% endif %}
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="{% if post.social_title %}{{ post.social_title }}{% else %}{{ post.title }}{% endif %}">
+    <meta property="og:description" content="{% if post.social_description %}{{ post.social_description }}{% elif post.seo_description %}{{ post.seo_description }}{% elif post.subtitle %}{{ post.subtitle }}{% else %}{{ post.title }}{% endif %}">
+    {% if post.header_image %}
+    <meta property="og:image" content="{{ post.header_image.path }}">
+    <meta property="og:image:width" content="{{ post.header_image.width or 1200 }}">
+    <meta property="og:image:height" content="{{ post.header_image.height or 630 }}">
+    {% endif %}
+    {% if post.canonical_url %}
+    <meta property="og:url" content="{{ post.canonical_url }}">
+    {% endif %}
+    <meta property="og:site_name" content="Clan.com Blog">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% if post.social_title %}{{ post.social_title }}{% else %}{{ post.title }}{% endif %}">
+    <meta name="twitter:description" content="{% if post.social_description %}{{ post.social_description }}{% elif post.seo_description %}{{ post.seo_description }}{% elif post.subtitle %}{{ post.subtitle }}{% else %}{{ post.title }}{% endif %}">
+    {% if post.header_image %}
+    <meta name="twitter:image" content="{{ post.header_image.path }}">
+    {% endif %}
+    
+    <!-- Additional Meta Tags -->
+    <meta name="theme-color" content="#007bff">
+    <meta name="msapplication-TileColor" content="#007bff">
+    
+    <!-- Favicon and App Icons -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='site/favicon.ico') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='site/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='site/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='site/favicon-16x16.png') }}">
+    
+    <!-- RSS Feed -->
+    <link rel="alternate" type="application/rss+xml" title="Clan.com Blog RSS Feed" href="{{ url_for('static', filename='rss.xml') }}">
+    
+    <!-- Preconnect to external domains for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    
+    <!-- Structured Data / JSON-LD -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "{{ post.title }}",
+        {% if post.subtitle %}"alternativeHeadline": "{{ post.subtitle }}",{% endif %}
+        {% if post.seo_description %}"description": "{{ post.seo_description }}",{% endif %}
+        {% if post.header_image %}"image": "{{ post.header_image.path }}",{% endif %}
+        "author": {
+            "@type": "Organization",
+            "name": "Clan.com"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "Clan.com",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://www.clan.com/skin/frontend/default/clan/images/logo.png"
+            }
+        },
+        "datePublished": "{{ post.created_at.isoformat() if post.created_at else '' }}",
+        "dateModified": "{{ post.updated_at.isoformat() if post.updated_at else '' }}",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "{% if post.canonical_url %}{{ post.canonical_url }}{% endif %}"
+        }
+    }
+    </script>
+    
+    <!-- Google Fonts: Lato and Open Sans -->
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700,900|Open+Sans:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Clan.com blog-matching CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/clan_blog.css') }}">
+    
+    <!-- Clan.com CSS - Hosted Locally -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/clan/main.css') }}" />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/clan/secondary.css') }}" media="all" />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/clan/third.css') }}" media="print" />
+    <style>
+        .header-image {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .header-image__img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .section-image {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .section-image__img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .image-error {
+            color: #d32f2f;
+            background: #ffebee;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .image-placeholder {
+            background: #f5f5f5;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            margin: 20px 0;
+            color: #666;
+        }
+        .image-placeholder i {
+            font-size: 48px;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .image-caption {
+            text-align: center;
+            font-style: italic;
+            color: #666;
+            margin-top: 10px;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+        .edit-button-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        .edit-button, .meta-button {
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .edit-button {
+            background-color: #28a745;
+            color: white;
+        }
+        .edit-button:hover {
+            background-color: #218838;
+        }
+        .meta-button {
+            background-color: #007bff;
+            color: white;
+        }
+        .meta-button:hover {
+            background-color: #0056b3;
+        }
+        
+        /* Cross-promotion widget styles */
+        .cross-promotion-widget {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .cross-promotion-widget.category-widget {
+            background-color: #e3f2fd;
+            border: 2px solid #2196f3;
+        }
+        
+        .cross-promotion-widget.product-widget {
+            background-color: #f3e5f5;
+            border: 2px solid #9c27b0;
+        }
+        
+        .cross-promotion-widget h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.2em;
+        }
+        
+        .cross-promotion-widget p {
+            margin: 0 0 8px 0;
+            font-size: 0.95em;
+        }
+        
+        .cross-promotion-widget small {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+        
+                .cross-promotion-widget i {
+            margin-right: 8px;
+        }
+        .meta-button.active {
+            background-color: #0056b3;
+        }
+        .image-meta-panel {
+            display: none;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 8px;
+            font-size: 12px;
+            text-align: left;
+        }
+        .image-meta-panel.show {
+            display: block;
+        }
+        .meta-item {
+            margin-bottom: 5px;
+        }
+        .meta-item:last-child {
+            margin-bottom: 0;
+        }
+        .meta-item strong {
+            color: #495057;
+        }
+        .cross-promotion-widget {
+            margin: 40px 0;
+            padding: 20px;
+            border: 2px dashed #007bff;
+            border-radius: 8px;
+            background: #f8f9fa;
+            text-align: center;
+        }
+        .cross-promotion-widget.category-widget {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+        .cross-promotion-widget.product-widget {
+            border-color: #ffc107;
+            background: #fffef8;
+        }
+        .widget-preview {
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .widget-loading {
+            color: #666;
+            font-style: italic;
+        }
+        .widget-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        /* Breadcrumb Navigation */
+        .breadcrumb-nav {
+            margin: 20px 0;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .breadcrumb {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            font-size: 14px;
+        }
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+        }
+        .breadcrumb-item:not(:last-child)::after {
+            content: '/';
+            margin: 0 8px;
+            color: #666;
+        }
+        .breadcrumb-item a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .breadcrumb-item a:hover {
+            text-decoration: underline;
+        }
+        .breadcrumb-item.active {
+            color: #666;
+        }
+        
+
+        
+        /* Product styling moved to clan_blog.css */
+    </style>
+</head>
+<body>
+    <!-- Edit and Meta Buttons - Top Right -->
+    <div class="edit-button-container">
+        <a href="http://localhost:5000/workflow/posts/{{ post.id }}/planning/idea/initial_concept" class="edit-button">
+            <i class="fas fa-edit"></i> Edit Post
+        </a>
+        <button class="meta-button" onclick="toggleMetaDisplay()">
+            <i class="fas fa-info-circle"></i> View Meta
+        </button>
+    </div>
+    
+    <!-- Site Header -->
+    <div class="site-header">
+        <img src="{{ url_for('static', filename='site/header.jpg') }}" alt="Site Header">
+    </div>
+    
+    <div class="preview-container">
+        <!-- Breadcrumb Navigation -->
+        <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item"><a href="/blog">Blog</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ post.title or 'Untitled Post' }}</li>
+            </ol>
+        </nav>
+        
+        <header class="preview-header">
+            <!-- Calculate word count and reading time -->
+            {% set total_chars = 7859 %}
+            {% set sections_count = 7 %}
+            {% set word_count = 1571 %}
+            {% set reading_time = 8 %}
+            
+            <h1>{{ post.title or post.idea_seed or 'Untitled Post' }}</h1>
+            {% if post.subtitle %}
+            <div class="blog-post__subtitle">{{ post.subtitle }}</div>
+            {% endif %}
+            
+            {% if post.header_image %}
+                <div class="header-image">
+                    <img src="{{ post.header_image.path }}" 
+                         alt="{{ post.header_image.alt_text }}" 
+                         class="header-image__img"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="image-error" style="display: none;">
+                        <small><strong>Header image not found:</strong> {{ post.header_image.path }}</small>
+                    </div>
+                    {% if post.header_image.caption %}
+                        <div class="image-caption">{{ post.header_image.caption }}</div>
+                    {% endif %}
+                    <div class="image-meta-panel" id="header-meta-panel">
+                        <div class="meta-item">
+                            <strong>Alt Text:</strong> {{ post.header_image.alt_text }}
+                        </div>
+                        {% if post.header_image.title %}
+                        <div class="meta-item">
+                            <strong>Title:</strong> {{ post.header_image.title }}
+                        </div>
+                        {% endif %}
+                        {% if post.header_image.width and post.header_image.height %}
+                        <div class="meta-item">
+                            <strong>Dimensions:</strong> {{ post.header_image.width }} × {{ post.header_image.height }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+            
+            <div class="post-meta">
+                <span class="post-meta__author">
+                    By Caitrin Stewart
+                </span>
+                <span class="post-meta__separator"> | </span>
+                <span class="post-meta__date">
+                    {{ post.created_at.strftime('%B %d, %Y') if post.created_at else 'Unknown date' }}
+                </span>
+                <span class="post-meta__separator"> | </span>
+                <span class="post-meta__reading-time">
+                    {{ reading_time }} min read
+                </span>
+            </div>
+            
+            <!-- Post Metadata Panel -->
+            <div class="image-meta-panel" id="post-meta-panel">
+                <div class="meta-item">
+                    <strong>Title:</strong> {{ post.title or 'Not set' }}
+                </div>
+                <div class="meta-item">
+                    <strong>Subtitle:</strong> {{ post.subtitle or 'Not set' }}
+                </div>
+                <div class="meta-item">
+                    <strong>Slug:</strong> {{ post.slug or 'Not set' }}
+                </div>
+                <div class="meta-item">
+                    <strong>Status:</strong> {{ post.status or 'Not set' }}
+                </div>
+                <div class="meta-item">
+                    <strong>Created:</strong> {{ post.created_at.strftime('%B %d, %Y') if post.created_at else 'Not set' }}
+                </div>
+                <div class="meta-item">
+                    <strong>Updated:</strong> {{ post.updated_at.strftime('%B %d, %Y') if post.updated_at else 'Not set' }}
+                </div>
+                <div class="meta-item">
+                    <strong>Author:</strong> Caitrin Stewart
+                </div>
+                <div class="meta-item">
+                    <strong>Word Count:</strong> {{ word_count|round(0, 'ceil')|int }} words
+                </div>
+                <div class="meta-item">
+                    <strong>Reading Time:</strong> {{ reading_time }} minutes
+                </div>
+                <div class="meta-item">
+                    <strong>Total Characters:</strong> {{ total_chars }} characters
+                </div>
+                <div class="meta-item">
+                    <strong>Sections Count:</strong> {{ sections_count }} sections
+                </div>
+
+            </div>
+        </header>
+        {% if sections %}
+        <div class="blog-sections">
+            <!-- Cross-promotion error handling -->
+            {% if not post.cross_promotion %}
+                <div class="cross-promotion-error" style="background-color: #ffebee; border: 2px solid #f44336; padding: 15px; margin: 20px 0; border-radius: 8px; color: #c62828;">
+                    <h4 style="margin: 0 0 10px 0; color: #d32f2f;">
+                        <i class="fas fa-exclamation-triangle"></i> Cross-Promotion Configuration Missing
+                    </h4>
+                    <p style="margin: 0; font-size: 0.9em;">
+                        No cross-promotion widgets are configured for this post. 
+                        <a href="http://localhost:5001/cross-promotion" style="color: #d32f2f; text-decoration: underline;">Configure widgets here</a>.
+                    </p>
+                </div>
+            {% endif %}
+            {% for section in sections %}
+            <section class="blog-section" id="section-{{ loop.index }}">
+                <h2>{{ section.section_heading or 'Untitled Section' }}</h2>
+                <div class="section-text">
+                    {% if section.polished %}
+                        {{ section.polished|strip_html_doc|safe }}
+                    {% elif section.draft %}
+                        {{ section.draft|strip_html_doc|safe }}
+                    {% elif section.content %}
+                        {{ section.content|strip_html_doc|safe }}
+                    {% else %}
+                        <em>No content available for this section.</em>
+                    {% endif %}
+                    
+                    {% if section.image %}
+                        {% if section.image.path and not section.image.placeholder %}
+                            <figure class="section-image">
+                                                            <a title="{{ section.image_captions or section.image.alt_text or 'Section image' }}" 
+                               href="{{ section.image.path }}" 
+                               rel="lightbox[mpblog_{{ post.id }}]" 
+                               target="_blank">
+                                <img alt="{{ section.image.alt_text }}" 
+                                     src="{{ section.image.path }}"
+                                     onerror="this.style.display='none'; this.closest('figure').querySelector('.image-error').style.display='block';">
+                            </a>
+                            <div class="image-error" style="display: none;">
+                                <small><strong>Image not found:</strong> {{ section.image.path }}</small>
+                            </div>
+                            {% if section.image_captions %}
+                                <figcaption>{{ section.image_captions }}</figcaption>
+                            {% endif %}
+                                <div class="image-meta-panel" id="section-meta-panel-{{ section.id }}">
+                                    <div class="meta-item">
+                                        <strong>Alt Text:</strong> {{ section.image.alt_text }}
+                                    </div>
+                                    {% if section.image.title %}
+                                    <div class="meta-item">
+                                        <strong>Title:</strong> {{ section.image.title }}
+                                    </div>
+                                    {% endif %}
+                                    {% if section.image.width and section.image.height %}
+                                    <div class="meta-item">
+                                        <strong>Dimensions:</strong> {{ section.image.width }} × {{ section.image.height }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                        {% else %}
+                            <div class="image-placeholder">
+                                <i class="fas fa-image"></i>
+                                <small>{{ section.image.alt_text }}</small>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </section>
+            
+            <!-- Cross-promotion widgets between sections -->
+            {% if post.cross_promotion and post.cross_promotion.category_position == loop.index %}
+                {% if post.cross_promotion.category_id %}
+                    <div class="cross-promotion-widget category-widget" style="background-color: #e3f2fd; border: 2px solid #2196f3; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                        <h3 style="color: #1976d2; margin: 0 0 10px 0;">
+                            <i class="fas fa-tags"></i> 
+                            {{ post.cross_promotion.category_title or 'Related Department' }}
+                        </h3>
+                        <p style="margin: 0; color: #1565c0;">
+                            <strong>Category Widget:</strong> Will display category ID {{ post.cross_promotion.category_id }}
+                        </p>
+                        <small style="color: #42a5f5;">Position: After section {{ loop.index }}</small>
+                    </div>
+                {% endif %}
+            {% endif %}
+            
+            {% if post.cross_promotion and post.cross_promotion.product_position == loop.index %}
+                {% if post.cross_promotion.product_id %}
+                    <div class="cross-promotion-widget product-widget" style="background-color: #f3e5f5; border: 2px solid #9c27b0; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                        <h3 style="color: #7b1fa2; margin: 0 0 10px 0;">
+                            <i class="fas fa-shopping-bag"></i> 
+                            {{ post.cross_promotion.product_title or 'Related Products' }}
+                        </h3>
+                        <p style="margin: 0; color: #6a1b9a;">
+                            <strong>Product Widget:</strong> Will display product ID {{ post.cross_promotion.product_id }}
+                        </p>
+                        <small style="color: #ab47bc;">Position: After section {{ loop.index }}</small>
+                    </div>
+                {% endif %}
+            {% endif %}
+            
+            {% endfor %}
+            
+            <!-- Cross-promotion widgets after the last section -->
+            {% if post.cross_promotion %}
+                {% if post.cross_promotion.category_position == sections|length + 1 and post.cross_promotion.category_id %}
+                    <div class="cross-promotion-widget category-widget" style="background-color: #e3f2fd; border: 2px solid #2196f3; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                        <h3 style="color: #1976d2; margin: 0 0 10px 0;">
+                            <i class="fas fa-tags"></i> 
+                            {{ post.cross_promotion.category_title or 'Related Department' }}
+                        </h3>
+                        <p style="margin: 0; color: #1565c0;">
+                            <strong>Category Widget:</strong> Will display category ID {{ post.cross_promotion.category_id }}
+                        </p>
+                        <small style="color: #42a5f5;">Position: After all sections</small>
+                    </div>
+                {% endif %}
+                
+                {% if post.cross_promotion.product_position == sections|length + 1 and post.cross_promotion.product_id %}
+                    <div class="cross-promotion-widget product-widget" style="background-color: #f3e5f5; border: 2px solid #9c27b0; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                        <h3 style="color: #7b1fa2; margin: 0 0 10px 0;">
+                            <i class="fas fa-shopping-bag"></i> 
+                            {{ post.cross_promotion.product_title or 'Related Products' }}
+                        </h3>
+                        <p style="margin: 0; color: #6a1b9a;">
+                            <strong>Product Widget:</strong> Will display product ID {{ post.cross_promotion.product_id }}
+                        </p>
+                        <small style="color: #ab47bc;">Position: After all sections</small>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+        {% endif %}
+        {% if not post.idea_seed and not post.intro_blurb and not sections %}
+        <div class="preview-content">
+            <p><em>No content available for this post yet. Use the workflow to add content.</em></p>
+        </div>
+        {% endif %}
+        
+
+    </div>
+    
+    <!-- Site Footer -->
+    <div class="site-footer">
+        <img src="{{ url_for('static', filename='site/footer.jpg') }}" alt="Site Footer">
+    </div>
+    
+    <script>
+        function toggleMetaDisplay() {
+            const metaButton = document.querySelector('.meta-button');
+            const metaPanels = document.querySelectorAll('.image-meta-panel');
+            
+            if (metaButton.classList.contains('active')) {
+                // Hide meta panels
+                metaPanels.forEach(panel => {
+                    panel.classList.remove('show');
+                });
+                metaButton.classList.remove('active');
+                metaButton.innerHTML = '<i class="fas fa-info-circle"></i> View Meta';
+            } else {
+                // Show meta panels
+                metaPanels.forEach(panel => {
+                    panel.classList.add('show');
+                });
+                metaButton.classList.add('active');
+                metaButton.innerHTML = '<i class="fas fa-eye-slash"></i> Hide Meta';
+            }
+        }
+        
+        // Load widget data when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, starting widget data load...');
+            loadWidgetData();
+        });
+        
+        async function loadWidgetData() {
+            console.log('loadWidgetData called');
+            const widgets = document.querySelectorAll('.widget-preview');
+            console.log(`Found ${widgets.length} widgets`);
+            
+            // Get cross-promotion data for this post
+            const postId = {{ post.id }};
+            console.log(`Post ID: ${postId}`);
+            const crossPromotionData = await getCrossPromotionData(postId);
+            
+            widgets.forEach(widget => {
+                const widgetType = widget.dataset.widgetType;
+                
+                if (widgetType === 'category') {
+                    // Use configured category from cross-promotion data
+                    if (crossPromotionData.category_id) {
+                        loadCategoryProducts(widget, crossPromotionData.category_id, crossPromotionData.category_title);
+                    } else {
+                        widget.innerHTML = '<div class="widget-loading">No category configured for this post.</div>';
+                    }
+                } else if (widgetType === 'product') {
+                    // Use configured product from cross-promotion data
+                    if (crossPromotionData.product_id) {
+                        loadRelatedProducts(widget, crossPromotionData.product_id, crossPromotionData.product_title);
+                    } else {
+                        widget.innerHTML = '<div class="widget-loading">No product configured for this post.</div>';
+                    }
+                }
+            });
+        }
+        
+        async function getCrossPromotionData(postId) {
+            try {
+                console.log(`Fetching cross-promotion data for post ${postId}...`);
+                const response = await fetch(`/api/cross-promotion/${postId}`);
+                console.log('Cross-promotion response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Cross-promotion data loaded:', data);
+                return data;
+            } catch (error) {
+                console.error('Error fetching cross-promotion data:', error);
+                return {
+                    category_id: null,
+                    category_title: null,
+                    product_id: null,
+                    product_title: null
+                };
+            }
+        }
+        
+        // Helper function to format price
+        function formatPrice(price) {
+            if (!price) return '£29.99';
+            
+            // Convert to number and format
+            const numPrice = parseFloat(price);
+            if (isNaN(numPrice)) return '£29.99';
+            
+            // Format to 2 decimal places only if not .00
+            const formatted = numPrice.toFixed(2);
+            if (formatted.endsWith('.00')) {
+                return `£${numPrice.toFixed(0)}`;
+            } else {
+                return `£${formatted}`;
+            }
+        }
+        
+        async function loadCategoryProducts(widget, categoryId, categoryTitle) {
+            try {
+                console.log(`Loading category products from clan.com via proxy for category ${categoryId}...`);
+                
+                // Use our proxy endpoint to avoid CORS issues - limit to 3 products with randomization
+                const response = await fetch(`/api/clan/widget/products?limit=3&offset=0`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const products = await response.json();
+                console.log('Category products loaded via proxy:', products);
+                
+                if (products && products.length > 0) {
+                    widget.innerHTML = `
+                        <div class="product-grid">
+                            ${products.map(product => `
+                                <a href="${product.url}" target="_blank" class="product-card">
+                                    <div class="product-image">
+                                        <img src="${product.image_url}" alt="${product.name}">
+                                        <div class="product-description-overlay">
+                                            ${product.description ? product.description.replace(/<[^>]*>/g, '') : 'No description available'}
+                                        </div>
+                                    </div>
+                                    <h4>${product.name}</h4>
+                                    <div class="price">${formatPrice(product.price)}</div>
+                                    <div class="btn btn-primary btn-sm">View Product</div>
+                                </a>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    widget.innerHTML = `
+                        <div class="widget-loading">No products found in this category.</div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading category products via proxy:', error);
+                widget.innerHTML = `
+                    <div class="widget-loading">Error loading products. Please try again.</div>
+                `;
+            }
+        }
+        
+        async function loadRelatedProducts(widget, productId, productTitle) {
+            try {
+                console.log(`Loading related products from clan.com via proxy for product ${productId}...`);
+                
+                // Use our proxy endpoint to avoid CORS issues - limit to 3 products with different randomization
+                const response = await fetch(`/api/clan/widget/products?limit=3&offset=1`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const products = await response.json();
+                console.log('Related products loaded via proxy:', products);
+                
+                if (products && products.length > 0) {
+                    console.log('Rendering related products...');
+                    widget.innerHTML = `
+                        <div class="product-grid">
+                            ${products.map(product => `
+                                <a href="${product.url}" target="_blank" class="product-card">
+                                    <div class="product-image">
+                                        <img src="${product.image_url}" alt="${product.name}">
+                                        <div class="product-description-overlay">
+                                            ${product.description ? product.description.replace(/<[^>]*>/g, '') : 'No description available'}
+                                        </div>
+                                    </div>
+                                    <h4>${product.name}</h4>
+                                    <div class="price">${formatPrice(product.price)}</div>
+                                    <div class="btn btn-primary btn-sm">View Product</div>
+                                </a>
+                            `).join('')}
+                        </div>
+                    `;
+                    console.log('Related products rendered successfully');
+                } else {
+                    console.log('No related products found, showing error message');
+                    widget.innerHTML = `
+                        <div class="widget-loading">No related products found.</div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading related products via proxy:', error);
+                widget.innerHTML = `
+                    <div class="widget-loading">Error loading products: ${error.message}</div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html> 

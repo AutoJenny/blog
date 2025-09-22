@@ -1,5 +1,5 @@
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import psycopg
+from psycopg.rows import dict_row
 from flask import current_app
 import logging
 import os
@@ -27,24 +27,22 @@ def get_db_conn():
                 port = match.group(4) or '5432'
                 dbname = match.group(5)
                 
-                conn = psycopg2.connect(
+                conn = psycopg.connect(
                     dbname=dbname,
                     user=user,
                     password=password,
                     host=host,
-                    port=port,
-                    cursor_factory=RealDictCursor
+                    port=port
                 )
                 return conn
         
         # Fallback to Flask config if DATABASE_URL not available
-        conn = psycopg2.connect(
+        conn = psycopg.connect(
             dbname=current_app.config['DB_NAME'],
             user=current_app.config['DB_USER'],
             password=current_app.config['DB_PASSWORD'],
             host=current_app.config['DB_HOST'],
-            port=current_app.config['DB_PORT'],
-            cursor_factory=RealDictCursor
+            port=current_app.config['DB_PORT']
         )
         return conn
     except Exception as e:

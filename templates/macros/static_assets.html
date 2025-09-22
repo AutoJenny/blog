@@ -1,0 +1,109 @@
+<!-- templates/macros/static_assets.html -->
+<!-- Static Assets Macros for Unified Application -->
+
+{% macro css_assets(blueprint_name=None) %}
+    {% if blueprint_name %}
+        <!-- Blueprint-specific CSS -->
+        {% if blueprint_name == 'core' %}
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/main.css') }}">
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/nav.dist.css') }}">
+        {% elif blueprint_name == 'launchpad' %}
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/main.css') }}">
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/launchpad.css') }}">
+        {% elif blueprint_name == 'llm_actions' %}
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/main.css') }}">
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/llm-actions.css') }}">
+        {% elif blueprint_name == 'post_sections' %}
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/main.css') }}">
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/post-sections.css') }}">
+        {% elif blueprint_name == 'post_info' %}
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/main.css') }}">
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/post-info.css') }}">
+        {% elif blueprint_name == 'images' %}
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/main.css') }}">
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/images.css') }}">
+        {% elif blueprint_name == 'clan_api' %}
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/main.css') }}">
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/clan-api.css') }}">
+        {% else %}
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/main.css') }}">
+        {% endif %}
+    {% else %}
+        <!-- All CSS assets -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/main.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/nav.dist.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/llm-actions.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/launchpad.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/post-sections.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/post-info.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/images.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/clan-api.css') }}">
+    {% endif %}
+{% endmacro %}
+
+{% macro js_assets(blueprint_name=None) %}
+    {% if blueprint_name %}
+        <!-- Blueprint-specific JavaScript -->
+        {% if blueprint_name == 'core' %}
+            <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+            <script src="{{ url_for('static', filename='js/workflow-nav.js') }}"></script>
+        {% elif blueprint_name == 'launchpad' %}
+            <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+            <script src="{{ url_for('static', filename='js/launchpad.js') }}"></script>
+        {% elif blueprint_name == 'llm_actions' %}
+            <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+            <script src="{{ url_for('static', filename='js/llm-actions.js') }}"></script>
+        {% elif blueprint_name == 'post_sections' %}
+            <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+            <script src="{{ url_for('static', filename='js/post-sections.js') }}"></script>
+        {% elif blueprint_name == 'post_info' %}
+            <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+            <script src="{{ url_for('static', filename='js/post-info.js') }}"></script>
+        {% elif blueprint_name == 'images' %}
+            <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+            <script src="{{ url_for('static', filename='js/images.js') }}"></script>
+        {% elif blueprint_name == 'clan_api' %}
+            <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+            <script src="{{ url_for('static', filename='js/clan-api.js') }}"></script>
+        {% else %}
+            <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+        {% endif %}
+    {% else %}
+        <!-- All JavaScript assets -->
+        <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/workflow-nav.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/llm-actions.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/launchpad.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/post-sections.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/post-info.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/images.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/clan-api.js') }}"></script>
+    {% endif %}
+{% endmacro %}
+
+{% macro image_url(image_name) %}
+    {% if image_name == 'brand_logo' %}
+        {{ url_for('static', filename='images/site/brand-logo.png') }}
+    {% elif image_name == 'header' %}
+        {{ url_for('static', filename='images/site/header.jpg') }}
+    {% elif image_name == 'footer' %}
+        {{ url_for('static', filename='images/site/footer.jpg') }}
+    {% elif image_name == 'clan_watermark' %}
+        {{ url_for('static', filename='images/site/clan-watermark.png') }}
+    {% else %}
+        {{ url_for('static', filename='images/' + image_name) }}
+    {% endif %}
+{% endmacro %}
+
+{% macro favicon_assets() %}
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/site/favicon.ico') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/site/apple-touch-icon.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='images/site/apple-touch-icon-180x180.png') }}">
+{% endmacro %}
+
+{% macro cdn_assets() %}
+    <!-- External CDN assets -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+{% endmacro %}

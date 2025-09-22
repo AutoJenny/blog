@@ -1,5 +1,5 @@
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import psycopg
+from psycopg.rows import dict_row
 import logging
 import os
 from dotenv import load_dotenv, dotenv_values
@@ -26,24 +26,22 @@ def get_db_conn():
                 port = match.group(4) or '5432'
                 dbname = match.group(5)
                 
-                conn = psycopg2.connect(
+                conn = psycopg.connect(
                     dbname=dbname,
                     user=user,
                     password=password,
                     host=host,
-                    port=port,
-                    cursor_factory=RealDictCursor
+                    port=port
                 )
                 return conn
         
         # Fallback to environment variables
-        conn = psycopg2.connect(
+        conn = psycopg.connect(
             dbname=os.getenv('DB_NAME', 'blog'),
-            user=os.getenv('DB_USER', 'nickfiddes'),
+            user=os.getenv('DB_USER', 'autojenny'),
             password=os.getenv('DB_PASSWORD', ''),
             host=os.getenv('DB_HOST', 'localhost'),
-            port=os.getenv('DB_PORT', '5432'),
-            cursor_factory=RealDictCursor
+            port=os.getenv('DB_PORT', '5432')
         )
         return conn
     except Exception as e:

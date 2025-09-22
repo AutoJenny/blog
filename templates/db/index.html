@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Management - BlogForge</title>
+    <link href="/static/css/dist/main.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        .header-gradient {
+            background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
+        }
+        .admin-card {
+            background: #23273a;
+            border: 1px solid #31364a;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25);
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: #6366f1;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5855eb;
+        }
+        .btn-secondary {
+            background: #374151;
+            color: #e5e7eb;
+        }
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        .form-input {
+            background: #1f2937;
+            border: 1px solid #374151;
+            color: #e5e7eb;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-dark-bg text-dark-text flex flex-col">
+    {% include 'shared/header.html' %}
+
+    <!-- Main Content -->
+    <main class="flex-grow">
+        <div class="max-w-5xl mx-auto py-8 px-4">
+            <h1 class="text-3xl font-bold text-white mb-8 flex items-center gap-2">
+                <i class="fas fa-database text-indigo-400"></i> Database Management
+            </h1>
+            
+            <!-- Database Indicator -->
+            <div class="bg-[#2a2f45] border border-dark-border rounded-lg p-3 mb-6">
+                <div class="flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-database text-yellow-400"></i>
+                    <span class="text-yellow-200 font-medium">Database:</span>
+                    <span class="text-white">{{ current_db_name }}</span>
+                </div>
+            </div>
+
+            <!-- Global Database Search -->
+            <div class="admin-card mb-6">
+                <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                    <i class="fas fa-search text-indigo-400"></i> Global Database Search
+                </h2>
+                <div class="flex items-center gap-4">
+                    <div class="flex-1">
+                        <input 
+                            type="text" 
+                            id="globalDbSearch" 
+                            placeholder="Search across all database tables (e.g., Dagda, Morrigan, etc.)" 
+                            class="form-input w-full px-3 py-2 rounded border border-gray-600 bg-dark-card text-white"
+                        >
+                        <p class="text-xs text-gray-400 mt-1">Searches all text columns in all tables</p>
+                    </div>
+                    <button id="executeDbSearch" class="btn btn-primary flex items-center gap-2">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                    <button id="clearDbSearch" class="btn btn-secondary flex items-center gap-2">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                </div>
+                <div id="searchResults" class="mt-4 hidden">
+                    <div class="bg-gray-800 rounded p-4">
+                        <h3 class="text-lg font-semibold mb-2 text-white">Search Results</h3>
+                        <div id="searchResultsContent"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Global Field Name Filter -->
+            <div class="admin-card mb-6">
+                <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                    <i class="fas fa-columns text-indigo-400"></i> Field Name Filter
+                </h2>
+                <div class="flex items-center gap-4">
+                    <div class="flex-1">
+                        <input 
+                            type="text" 
+                            id="globalFieldFilter" 
+                            placeholder="Type to filter tables by field names (e.g., image_prompts, section_*)" 
+                            class="form-input w-full px-3 py-2 rounded border border-gray-600 bg-dark-card text-white"
+                        >
+                        <p class="text-xs text-gray-400 mt-1">Tables without matching fields will be hidden</p>
+                    </div>
+                    <button id="clearFieldFilter" class="btn btn-secondary flex items-center gap-2">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                </div>
+            </div>
+
+            <!-- DB Content Accordion -->
+            <div id="db-content-accordion" class="mb-10">
+                <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                    <i class="fas fa-table text-indigo-400"></i> Database Content
+                </h2>
+                <div id="db-tables-accordion" class="space-y-4"></div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-8 space-y-8">
+                <!-- Backup & Restore -->
+                <div class="admin-card">
+                    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <i class="fas fa-database text-indigo-400"></i> Backup & Restore
+                    </h2>
+                    <div class="flex flex-col gap-3">
+                        <button id="backupNowBtn" class="btn btn-primary flex items-center gap-2">
+                            <i class="fas fa-download"></i> Backup Now
+                        </button>
+                        <div class="flex flex-col md:flex-row gap-2 items-center">
+                            <select id="restoreBackupSelect"
+                                class="form-input px-4 py-2 rounded border border-gray-600 bg-dark-card text-white">
+                                <option value="">Select backup file...</option>
+                                {% for f in backup_files %}
+                                <option value="{{ f }}">{{ f }}</option>
+                                {% endfor %}
+                            </select>
+                            <button id="restoreBackupBtn" class="btn btn-secondary flex items-center gap-2">
+                                <i class="fas fa-upload"></i> Restore
+                            </button>
+                        </div>
+                        <div id="backupStatus" class="mt-2 text-sm"></div>
+                    </div>
+                </div>
+
+                <!-- Monitoring -->
+                <div class="admin-card">
+                    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <i class="fas fa-chart-bar text-indigo-400"></i> Monitoring
+                    </h2>
+                    <div class="flex flex-col gap-3">
+                        <a href="/db/stats" class="btn btn-secondary flex items-center gap-2">
+                            <i class="fas fa-chart-bar"></i> Database Statistics
+                        </a>
+                        <a href="/db/logs" class="btn btn-secondary flex items-center gap-2">
+                            <i class="fas fa-list"></i> View Logs
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Advanced -->
+                <div class="admin-card">
+                    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <i class="fas fa-cogs text-indigo-400"></i> Advanced
+                    </h2>
+                    <div class="flex flex-col gap-3">
+                        <a href="/db/migrations" class="btn btn-secondary flex items-center gap-2">
+                            <i class="fas fa-code-branch"></i> Manage Migrations
+                        </a>
+                        <a href="/db/replication" class="btn btn-secondary flex items-center gap-2">
+                            <i class="fas fa-sync"></i> Replication Status
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-indigo-950 border-t border-dark-border py-6 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-dark-text">
+                &copy; 2025 BlogForge. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <script type="module">
+        // Global state
+        let allTableData = null;
+        let currentFieldFilter = '';
+
+        // Robust DB UI: fallback to flat tables, use dark theme
+        async function renderDbUi() {
+            const accordion = document.getElementById('db-tables-accordion');
+            accordion.innerHTML = '<div class="text-gray-400 py-8 text-center">Loading database tables...</div>';
+            
+            try {
+                const res = await fetch('/db/tables');
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                allTableData = await res.json();
+                
+                // Apply current field filter if any
+                applyFieldFilter();
+                
+            } catch (e) {
+                accordion.innerHTML = `<div class="text-red-500 py-8 text-center">Error loading tables: ${e}</div>`;
+                return;
+            }
+        }
+
+        function applyFieldFilter() {
+            if (!allTableData) return;
+            
+            const accordion = document.getElementById('db-tables-accordion');
+            const fieldFilter = currentFieldFilter.toLowerCase();
+            
+            // Filter tables based on field names
+            let filteredData = { ...allTableData };
+            
+            if (fieldFilter) {
+                if (filteredData.groups) {
+                    filteredData.groups = filteredData.groups.map(group => ({
+                        ...group,
+                        tables: group.tables.filter(table => 
+                            table.columns.some(col => 
+                                col.name.toLowerCase().includes(fieldFilter)
+                            )
+                        ).map(table => ({
+                            ...table,
+                            columns: table.columns.filter(col => 
+                                col.name.toLowerCase().includes(fieldFilter) || col.name.toLowerCase() === 'id'
+                            )
+                        }))
+                    })).filter(group => group.tables.length > 0);
+                }
+                
+                if (filteredData.tables) {
+                    filteredData.tables = filteredData.tables.filter(table => 
+                        table.columns.some(col => 
+                            col.name.toLowerCase().includes(fieldFilter)
+                        )
+                    ).map(table => ({
+                        ...table,
+                        columns: table.columns.filter(col => 
+                            col.name.toLowerCase().includes(fieldFilter) || col.name.toLowerCase() === 'id'
+                        )
+                    }));
+                }
+            }
+            
+            // Render the filtered data
+            if (filteredData.groups && Array.isArray(filteredData.groups) && filteredData.groups.length) {
+                renderGroups(filteredData.groups, accordion);
+            } else if (filteredData.tables && Array.isArray(filteredData.tables) && filteredData.tables.length) {
+                renderFlatTables(filteredData.tables, accordion);
+            } else {
+                accordion.innerHTML = '<div class="text-red-500 py-8 text-center">No tables found matching the field filter.</div>';
+            }
+        }
+
+        function renderGroups(groups, accordion) {
+            accordion.innerHTML = '';
+            groups.forEach((group, gidx) => {
+                if (!group.tables || !group.tables.length) return;
+                // Group container
+                const groupSection = document.createElement('section');
+                groupSection.className = 'mb-8 border rounded-lg bg-dark-surface';
+                // Group header
+                const groupHeader = document.createElement('button');
+                groupHeader.type = 'button';
+                groupHeader.className = 'w-full flex justify-between items-center px-6 py-4 text-lg font-bold text-indigo-400 bg-dark-bg focus:outline-none focus:ring-2 focus:ring-indigo-400 rounded-t-lg group-header';
+                groupHeader.setAttribute('aria-expanded', gidx === 0 ? 'true' : 'false');
+                groupHeader.setAttribute('aria-controls', `group-panel-${gidx}`);
+                groupHeader.innerHTML = `<span><i class="fas fa-layer-group mr-2"></i>${group.group}</span><span class="chevron transition-transform">&#9654;</span>`;
+                // Group panel
+                const groupPanel = document.createElement('div');
+                groupPanel.id = `group-panel-${gidx}`;
+                groupPanel.className = gidx === 0 ? 'block p-4 bg-dark-surface' : 'hidden p-4 bg-dark-surface';
+                // Tables in group
+                group.tables.forEach((table, tidx) => {
+                    renderTableAccordion(table, groupPanel, gidx, tidx, gidx === 0 && tidx === 0);
+                });
+                // Compose group section
+                groupSection.appendChild(groupHeader);
+                groupSection.appendChild(groupPanel);
+                accordion.appendChild(groupSection);
+                // Group accordion logic
+                groupHeader.addEventListener('click', function () {
+                    const expanded = groupPanel.classList.contains('block');
+                    groupPanel.className = expanded ? 'hidden p-4 bg-dark-surface' : 'block p-4 bg-dark-surface';
+                    groupHeader.setAttribute('aria-expanded', !expanded);
+                    const chevron = groupHeader.querySelector('.chevron');
+                    if (chevron) chevron.style.transform = expanded ? '' : 'rotate(90deg)';
+                });
+                // Expand first group by default
+                if (gidx === 0) {
+                    setTimeout(() => {
+                        groupPanel.className = 'block p-4 bg-dark-surface';
+                        groupHeader.setAttribute('aria-expanded', 'true');
+                        const chevron = groupHeader.querySelector('.chevron');
+                        if (chevron) chevron.style.transform = 'rotate(90deg)';
+                    }, 50);
+                }
+            });
+        }
+
+        function renderFlatTables(tables, accordion) {
+            accordion.innerHTML = '';
+            tables.forEach((table, idx) => {
+                renderTableAccordion(table, accordion, 0, idx, idx === 0);
+            });
+        }
+
+        function renderTableAccordion(table, parent, gidx, tidx, expanded) {
+            const tableSection = document.createElement('section');
+            tableSection.className = 'mb-6 border rounded bg-dark-surface';
+            
+            // Table header
+            const tableHeader = document.createElement('button');
+            tableHeader.type = 'button';
+            tableHeader.className = 'w-full flex justify-between items-center px-4 py-2 text-base font-semibold text-purple-300 bg-dark-bg focus:outline-none focus:ring-2 focus:ring-purple-400 rounded-t table-header';
+            tableHeader.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            tableHeader.setAttribute('aria-controls', `table-panel-${gidx}-${tidx}`);
+            tableHeader.innerHTML = `<span><i class="fas fa-table mr-2"></i>${table.name}</span><span class="chevron transition-transform">&#9654;</span>`;
+            
+            // Table panel
+            const tablePanel = document.createElement('div');
+            tablePanel.id = `table-panel-${gidx}-${tidx}`;
+            tablePanel.className = expanded ? 'block p-2' : 'hidden p-2';
+            
+            // Add content filter for this table
+            const contentFilterHtml = `
+                <div class="mb-4 p-3 bg-dark-card rounded border border-gray-600">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fas fa-search text-gray-400"></i>
+                        <label class="text-sm font-medium text-gray-300">Filter rows in ${table.name}:</label>
+                    </div>
+                    <input 
+                        type="text" 
+                        class="table-content-filter form-input w-full px-3 py-2 rounded border border-gray-600 bg-dark-card text-white"
+                        placeholder="Search within table contents..."
+                        data-table-id="${table.name}"
+                    >
+                    <p class="text-xs text-gray-400 mt-1">Filters rows that contain the search term</p>
+                </div>
+            `;
+            
+            // Table content
+            const tableHtml = [];
+            tableHtml.push(contentFilterHtml);
+            tableHtml.push('<div class="overflow-x-auto"><table class="w-full border-collapse text-sm">');
+            tableHtml.push('<thead><tr>');
+            table.columns.forEach(col => {
+                tableHtml.push(`<th class="p-2 text-left border-b border-dark-border">${col.name}<br><span class="text-xs text-gray-500">${col.type}</span></th>`);
+            });
+            tableHtml.push('</tr></thead>');
+            tableHtml.push('<tbody>');
+            if (Array.isArray(table.rows) && table.rows.length) {
+                table.rows.forEach((row, rowIndex) => {
+                    tableHtml.push('<tr class="border-b border-dark-border">');
+                    table.columns.forEach(col => {
+                        let val = row && row[col.name] !== undefined && row[col.name] !== null ? row[col.name] : '';
+                        // Pretty-print JSON/JSONB columns
+                        if ((col.type && (col.type.toLowerCase().includes('json'))) && (typeof val === 'object')) {
+                            try {
+                                val = JSON.stringify(val, null, 2);
+                            } catch (e) {
+                                val = String(val);
+                            }
+                        }
+                        
+                        // Determine if this cell is editable (text-like fields)
+                        const isEditable = isTextColumn(col.type);
+                        const editableClass = isEditable ? 'editable-cell cursor-pointer hover:bg-gray-700' : '';
+                        const dataAttrs = isEditable ? 
+                            `data-table="${table.name}" data-row-id="${row.id || rowIndex}" data-column="${col.name}" data-original-value="${escapeHtml(val)}"` : '';
+                        
+                        tableHtml.push(`<td class="p-2 font-mono truncate ${editableClass}" ${dataAttrs}>`);
+                        if (isEditable) {
+                            tableHtml.push(`<div class="cell-content">${escapeHtml(val)}</div>`);
+                        } else {
+                            tableHtml.push(escapeHtml(val));
+                        }
+                        tableHtml.push('</td>');
+                    });
+                    tableHtml.push('</tr>');
+                });
+            } else {
+                tableHtml.push('<tr><td colspan="' + table.columns.length + '" class="p-4 text-center text-gray-500">No data</td></tr>');
+            }
+            tableHtml.push('</tbody></table></div>');
+            tablePanel.innerHTML = tableHtml.join('');
+            
+            // Compose table section
+            tableSection.appendChild(tableHeader);
+            tableSection.appendChild(tablePanel);
+            parent.appendChild(tableSection);
+            
+            // Table accordion logic
+            tableHeader.addEventListener('click', function () {
+                const expanded = tablePanel.classList.contains('block');
+                tablePanel.className = expanded ? 'hidden p-2' : 'block p-2';
+                tableHeader.setAttribute('aria-expanded', !expanded);
+                const chevron = tableHeader.querySelector('.chevron');
+                if (chevron) chevron.style.transform = expanded ? '' : 'rotate(90deg)';
+            });
+            
+            // Expand first table by default
+            if (expanded) {
+                setTimeout(() => {
+                    tablePanel.className = 'block p-2';
+                    tableHeader.setAttribute('aria-expanded', 'true');
+                    const chevron = tableHeader.querySelector('.chevron');
+                    if (chevron) chevron.style.transform = 'rotate(90deg)';
+                }, 50);
+            }
+            
+            // Add content filter functionality
+            const contentFilter = tablePanel.querySelector('.table-content-filter');
+            if (contentFilter) {
+                contentFilter.addEventListener('input', function() {
+                    filterTableRows(table.name, this.value);
+                });
+            }
+            
+            // Add CRUD functionality
+            setupCRUD(tablePanel, table.name);
+        }
+        
+        function isTextColumn(columnType) {
+            const textTypes = ['text', 'varchar', 'character varying', 'char', 'character'];
+            return textTypes.some(type => columnType.toLowerCase().includes(type));
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function unescapeHtml(html) {
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            return div.textContent;
+        }
+        
+        function setupCRUD(tablePanel, tableName) {
+            const editableCells = tablePanel.querySelectorAll('.editable-cell');
+            
+            editableCells.forEach(cell => {
+                const cellContent = cell.querySelector('.cell-content');
+                
+                // Click to open modal
+                cellContent.addEventListener('click', function() {
+                    openEditModal(cell, tableName);
+                });
+            });
+        }
+        
+        function openEditModal(cell, tableName) {
+            const rowId = cell.getAttribute('data-row-id');
+            const column = cell.getAttribute('data-column');
+            
+            // Get content directly from the cell instead of data attribute
+            const cellContent = cell.querySelector('.cell-content');
+            const originalValue = cellContent ? cellContent.textContent : '';
+            
+            console.log('Opening modal for:', { tableName, rowId, column, originalValue: originalValue.substring(0, 100) + '...' });
+            
+            // Create modal overlay
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.id = 'edit-modal';
+            
+            // Create modal content
+            const modalContent = document.createElement('div');
+            modalContent.className = 'bg-dark-surface border border-gray-600 rounded-lg p-6 max-w-6xl w-full mx-4 max-h-[95vh] overflow-y-auto';
+            
+            modalContent.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-white">Edit Cell</h3>
+                    <button class="close-modal text-gray-400 hover:text-white text-xl">&times;</button>
+                </div>
+                <div class="mb-4">
+                    <div class="grid grid-cols-2 gap-4 text-sm text-gray-300 mb-2">
+                        <div><strong>Table:</strong> ${tableName}</div>
+                        <div><strong>Row ID:</strong> ${rowId}</div>
+                        <div><strong>Column:</strong> ${column}</div>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Content:</label>
+                    <textarea 
+                        id="modal-edit-input" 
+                        class="w-full p-3 bg-gray-800 border border-gray-600 rounded text-white resize-none min-h-[500px] text-sm"
+                        placeholder="Enter content..."
+                        style="font-family: monospace; line-height: 1.4;"
+                    >${originalValue}</textarea>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button id="modal-cancel-btn" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+                        Cancel
+                    </button>
+                    <button id="modal-save-btn" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                        Save Changes
+                    </button>
+                </div>
+            `;
+            
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            // Focus on textarea
+            const textarea = modal.querySelector('#modal-edit-input');
+            textarea.focus();
+            textarea.select();
+            
+            // Auto-resize textarea
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 800) + 'px';
+            });
+            
+            // Set initial height based on content
+            setTimeout(() => {
+                textarea.style.height = 'auto';
+                textarea.style.height = Math.min(textarea.scrollHeight, 800) + 'px';
+            }, 100);
+            
+            // Event listeners
+            modal.querySelector('.close-modal').addEventListener('click', () => closeEditModal(modal));
+            modal.querySelector('#modal-cancel-btn').addEventListener('click', () => closeEditModal(modal));
+            modal.querySelector('#modal-save-btn').addEventListener('click', () => saveModalCell(modal, cell, tableName));
+            
+            // Keyboard shortcuts
+            textarea.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                    e.preventDefault();
+                    saveModalCell(modal, cell, tableName);
+                } else if (e.key === 'Escape') {
+                    closeEditModal(modal);
+                }
+            });
+            
+            // Click outside to close
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeEditModal(modal);
+                }
+            });
+        }
+        
+        function closeEditModal(modal) {
+            modal.remove();
+        }
+        
+        async function saveModalCell(modal, cell, tableName) {
+            const textarea = modal.querySelector('#modal-edit-input');
+            const newValue = textarea.value;
+            const originalValue = cell.getAttribute('data-original-value');
+            const rowId = cell.getAttribute('data-row-id');
+            const column = cell.getAttribute('data-column');
+            
+            // Don't save if value hasn't changed
+            if (newValue === originalValue) {
+                closeEditModal(modal);
+                return;
+            }
+            
+            // Show loading state
+            const saveBtn = modal.querySelector('#modal-save-btn');
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = 'Saving...';
+            saveBtn.disabled = true;
+            
+            try {
+                const response = await fetch(`/db/update-cell`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        table: tableName,
+                        row_id: rowId,
+                        column: column,
+                        value: newValue
+                    })
+                });
+                
+                if (response.ok) {
+                    // Update the cell content and original value
+                    const cellContent = cell.querySelector('.cell-content');
+                    cellContent.textContent = newValue;
+                    cell.setAttribute('data-original-value', newValue);
+                    
+                    // Show success feedback
+                    showToast('Cell updated successfully', 'success');
+                    closeEditModal(modal);
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to update cell');
+                }
+            } catch (error) {
+                console.error('Error saving cell:', error);
+                showToast(`Error: ${error.message}`, 'error');
+            } finally {
+                // Reset button state
+                saveBtn.textContent = originalText;
+                saveBtn.disabled = false;
+            }
+        }
+        
+        function showToast(message, type = 'info') {
+            // Create toast notification
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 p-4 rounded shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-600 text-white' :
+                type === 'error' ? 'bg-red-600 text-white' :
+                'bg-blue-600 text-white'
+            }`;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        function filterTableRows(tableName, filterText) {
+            // Find all table panels for this table
+            const tablePanels = document.querySelectorAll(`[data-table-id="${tableName}"]`);
+            tablePanels.forEach(filterInput => {
+                const tablePanel = filterInput.closest('.p-2');
+                const tbody = tablePanel.querySelector('tbody');
+                const rows = tbody.querySelectorAll('tr');
+                
+                rows.forEach((row, index) => {
+                    const cells = row.querySelectorAll('td');
+                    let rowText = '';
+                    
+                    // Get text content from cells, handling both regular cells and editable cells
+                    cells.forEach(cell => {
+                        const cellContent = cell.querySelector('.cell-content');
+                        if (cellContent) {
+                            rowText += cellContent.textContent.toLowerCase() + ' ';
+                        } else {
+                            rowText += cell.textContent.toLowerCase() + ' ';
+                        }
+                    });
+                    
+                    const matches = !filterText || rowText.includes(filterText.toLowerCase());
+                    
+                    // Properly hide/show rows without leaving gaps
+                    if (matches) {
+                        row.style.display = 'table-row';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+                
+                // Update row count display if it exists
+                const visibleRows = Array.from(rows).filter(row => 
+                    row.style.display !== 'none'
+                );
+                updateRowCount(tablePanel, visibleRows.length, rows.length);
+            });
+        }
+        
+        function updateRowCount(tablePanel, visibleCount, totalCount) {
+            // Find or create row count display
+            let countDisplay = tablePanel.querySelector('.row-count-display');
+            if (!countDisplay) {
+                countDisplay = document.createElement('div');
+                countDisplay.className = 'row-count-display text-xs text-gray-400 mt-2';
+                tablePanel.appendChild(countDisplay);
+            }
+            
+            if (visibleCount === totalCount) {
+                countDisplay.textContent = `Showing ${totalCount} rows`;
+            } else {
+                countDisplay.textContent = `Showing ${visibleCount} of ${totalCount} rows`;
+            }
+        }
+
+        // Global database search functionality
+        async function executeGlobalSearch(searchTerm) {
+            if (!searchTerm.trim()) {
+                document.getElementById('searchResults').classList.add('hidden');
+                return;
+            }
+            
+            const searchResults = document.getElementById('searchResults');
+            const searchResultsContent = document.getElementById('searchResultsContent');
+            
+            // Show loading state
+            searchResultsContent.innerHTML = '<div class="text-gray-400 py-4 text-center">Searching database...</div>';
+            searchResults.classList.remove('hidden');
+            
+            try {
+                const response = await fetch(`/db/search?q=${encodeURIComponent(searchTerm)}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    searchResultsContent.innerHTML = `<div class="text-red-500 py-4 text-center">Error: ${data.error}</div>`;
+                    return;
+                }
+                
+                if (data.results.length === 0) {
+                    searchResultsContent.innerHTML = `<div class="text-gray-400 py-4 text-center">No results found for "${searchTerm}"</div>`;
+                    return;
+                }
+                
+                // Render results
+                let html = `<div class="text-sm text-gray-300 mb-4">
+                    Found ${data.tables_with_matches} table(s) with matches for "${searchTerm}" 
+                    (searched ${data.total_tables_searched} tables)
+                </div>`;
+                
+                data.results.forEach(result => {
+                    html += `<div class="mb-6 border border-gray-600 rounded p-4">`;
+                    html += `<h4 class="text-lg font-semibold text-white mb-2">${result.table} (${result.count} matches)</h4>`;
+                    html += `<div class="overflow-x-auto">`;
+                    html += `<table class="w-full border-collapse text-sm">`;
+                    html += `<thead><tr>`;
+                    result.columns.forEach(col => {
+                        html += `<th class="p-2 text-left border-b border-gray-600 text-gray-300">${col.name}<br><span class="text-xs text-gray-500">${col.type}</span></th>`;
+                    });
+                    html += `</tr></thead><tbody>`;
+                    
+                    result.rows.forEach(row => {
+                        html += `<tr class="border-b border-gray-700">`;
+                        result.columns.forEach(col => {
+                            let val = row && row[col.name] !== undefined && row[col.name] !== null ? row[col.name] : '';
+                            
+                            // Highlight search term in results
+                            if (typeof val === 'string' && val.toLowerCase().includes(searchTerm.toLowerCase())) {
+                                const regex = new RegExp(`(${searchTerm})`, 'gi');
+                                val = val.replace(regex, '<mark class="bg-yellow-200 text-black">$1</mark>');
+                            }
+                            
+                            // Pretty-print JSON/JSONB columns
+                            if ((col.type && (col.type.toLowerCase().includes('json'))) && (typeof val === 'object')) {
+                                try {
+                                    val = JSON.stringify(val, null, 2);
+                                } catch (e) {
+                                    val = String(val);
+                                }
+                            }
+                            
+                            html += `<td class="p-2 font-mono text-gray-300 max-w-xs truncate">${val}</td>`;
+                        });
+                        html += `</tr>`;
+                    });
+                    
+                    html += `</tbody></table></div></div>`;
+                });
+                
+                searchResultsContent.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Search error:', error);
+                searchResultsContent.innerHTML = `<div class="text-red-500 py-4 text-center">Search failed: ${error.message}</div>`;
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Global database search
+            const globalDbSearch = document.getElementById('globalDbSearch');
+            const executeDbSearch = document.getElementById('executeDbSearch');
+            const clearDbSearch = document.getElementById('clearDbSearch');
+            
+            executeDbSearch.addEventListener('click', function() {
+                executeGlobalSearch(globalDbSearch.value);
+            });
+            
+            globalDbSearch.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    executeGlobalSearch(this.value);
+                }
+            });
+            
+            clearDbSearch.addEventListener('click', function() {
+                globalDbSearch.value = '';
+                document.getElementById('searchResults').classList.add('hidden');
+            });
+            
+            // Global field filter
+            const globalFieldFilter = document.getElementById('globalFieldFilter');
+            const clearFieldFilter = document.getElementById('clearFieldFilter');
+            
+            globalFieldFilter.addEventListener('input', function() {
+                currentFieldFilter = this.value;
+                applyFieldFilter();
+            });
+            
+            clearFieldFilter.addEventListener('click', function() {
+                globalFieldFilter.value = '';
+                currentFieldFilter = '';
+                applyFieldFilter();
+            });
+        });
+
+        // Backup logic
+        const backupBtn = document.getElementById('backupNowBtn');
+        const backupStatus = document.getElementById('backupStatus');
+        if (backupBtn) {
+            backupBtn.addEventListener('click', async function () {
+                backupBtn.disabled = true;
+                backupBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Backing up...';
+                backupStatus.textContent = '';
+                try {
+                    const res = await fetch('/db/backup', { method: 'POST' });
+                    const data = await res.json();
+                    if (data.success) {
+                        backupStatus.innerHTML = `<span class='text-green-400'>Backup created: ${data.backup}</span>`;
+                    } else {
+                        backupStatus.innerHTML = `<span class='text-red-400'>Backup failed: ${data.error || 'Unknown error'}</span>`;
+                    }
+                } catch (e) {
+                    backupStatus.innerHTML = `<span class='text-red-400'>Backup failed: ${e}</span>`;
+                } finally {
+                    backupBtn.disabled = false;
+                    backupBtn.innerHTML = '<i class="fas fa-download"></i> Backup Now';
+                }
+            });
+        }
+
+        // Restore from Backup logic
+        const restoreBtn = document.getElementById('restoreBackupBtn');
+        const restoreSelect = document.getElementById('restoreBackupSelect');
+        if (restoreBtn && restoreSelect) {
+            restoreBtn.addEventListener('click', async function () {
+                const file = restoreSelect.value;
+                if (!file) {
+                    backupStatus.innerHTML = `<span class='text-red-400'>Please select a backup file.</span>`;
+                    return;
+                }
+                restoreBtn.disabled = true;
+                restoreBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Restoring...';
+                backupStatus.textContent = '';
+                try {
+                    const res = await fetch('/db/restore', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ file })
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        backupStatus.innerHTML = `<span class='text-green-400'>Restore complete: ${data.restored}</span>`;
+                    } else {
+                        backupStatus.innerHTML = `<span class='text-red-400'>Restore failed: ${data.error || 'Unknown error'}</span>`;
+                    }
+                } catch (e) {
+                    backupStatus.innerHTML = `<span class='text-red-400'>Restore failed: ${e}</span>`;
+                }
+                restoreBtn.disabled = false;
+                restoreBtn.innerHTML = '<i class="fas fa-upload"></i> Restore';
+            });
+        }
+
+        // Initial load
+        renderDbUi();
+    </script>
+</body>
+</html>

@@ -3,8 +3,8 @@ Social Media Platform Database Models
 Handles social media platform data and specifications
 """
 
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import psycopg
+from psycopg.rows import dict_row
 from typing import Dict, List, Optional, Any
 import logging
 
@@ -19,8 +19,8 @@ class SocialMediaPlatform:
     def get_connection(self):
         """Get database connection"""
         try:
-            return psycopg2.connect(**self.db_config)
-        except psycopg2.Error as e:
+            return psycopg.connect(**self.db_config)
+        except psycopg.Error as e:
             logger.error(f"Database connection error: {e}")
             raise
     
@@ -28,10 +28,10 @@ class SocialMediaPlatform:
         """Get all social media platforms with their status"""
         try:
             with self.get_connection() as conn:
-                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                with conn.cursor(row_factory=dict_row) as cur:
                     cur.execute("""
-                        SELECT id, platform_name, display_name, status, priority, icon_url
-                        FROM social_media_platforms
+                        SELECT id, name as platform_name, display_name, status, priority, logo_url as icon_url
+                        FROM platforms
                         ORDER BY priority, display_name
                     """)
                     return cur.fetchall()
@@ -43,10 +43,10 @@ class SocialMediaPlatform:
         """Get a specific platform by name"""
         try:
             with self.get_connection() as conn:
-                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                with conn.cursor(row_factory=dict_row) as cur:
                     cur.execute("""
-                        SELECT id, platform_name, display_name, status, priority, icon_url
-                        FROM social_media_platforms
+                        SELECT id, name as platform_name, display_name, status, priority, logo_url as icon_url
+                        FROM platforms
                         ORDER BY priority, display_name
                     """, (platform_name,))
                     return cur.fetchone()
@@ -58,7 +58,7 @@ class SocialMediaPlatform:
         """Get all specifications for a platform, organized by category"""
         try:
             with self.get_connection() as conn:
-                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                with conn.cursor(row_factory=dict_row) as cur:
                     cur.execute("""
                         SELECT id, spec_category, spec_key, spec_value, spec_type, 
                                is_required, display_order
@@ -112,11 +112,11 @@ class SocialMediaPlatform:
         """Get all platforms with a specific status"""
         try:
             with self.get_connection() as conn:
-                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                with conn.cursor(row_factory=dict_row) as cur:
                     cur.execute("""
-                        SELECT id, platform_name, display_name, status, priority, icon_url
-                        FROM social_media_platforms
-                        WHERE status = %s
+                        SELECT id, name as platform_name, display_name, status, priority, logo_url as icon_url
+                        FROM platforms
+                        WHERE development_status = %s
                         ORDER BY priority, display_name
                     """, (status,))
                     return cur.fetchall()
@@ -133,8 +133,8 @@ class SocialMediaSpecification:
     def get_connection(self):
         """Get database connection"""
         try:
-            return psycopg2.connect(**self.db_config)
-        except psycopg2.Error as e:
+            return psycopg.connect(**self.db_config)
+        except psycopg.Error as e:
             logger.error(f"Database connection error: {e}")
             raise
     

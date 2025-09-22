@@ -8,8 +8,8 @@ import json
 import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import psycopg
+from psycopg.rows import dict_row
 
 logger = logging.getLogger(__name__)
 
@@ -19,15 +19,15 @@ class ClanCache:
     def __init__(self):
         self.db_config = {
             'host': 'localhost',
-            'database': 'blog',
-            'user': 'postgres',
-            'password': 'postgres'
+            'dbname': 'blog',
+            'user': 'autojenny',
+            'password': ''
         }
         self.init_database()
     
     def get_db_conn(self):
         """Get database connection"""
-        return psycopg2.connect(**self.db_config)
+        return psycopg.connect(**self.db_config)
     
     def init_database(self):
         """Initialize the database tables"""

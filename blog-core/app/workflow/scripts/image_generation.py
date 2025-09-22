@@ -12,12 +12,12 @@ import requests
 from datetime import datetime
 import os
 import time
-import psycopg2
-import psycopg2.extras
+import psycopg
+from psycopg.rows import dict_row
 
 def get_db_conn():
     """Get database connection."""
-    return psycopg2.connect(
+    return psycopg.connect(
         host="localhost",
         database="blog",
         user="nickfiddes",
@@ -36,7 +36,7 @@ def get_step_prompts(step_id: int) -> Dict[str, Any]:
     """
     try:
         with get_db_conn() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
             # Get both task prompt and system prompt for the step
             cur.execute("""
@@ -106,7 +106,7 @@ def get_section_image_prompts(post_id: int, section_id: int) -> Dict[str, Any]:
     """
     try:
         with get_db_conn() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
             # Get ONLY image_prompts for the section
             cur.execute("""

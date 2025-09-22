@@ -1,0 +1,692 @@
+2025-09-22 09:50:12,928 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-22 09:50:12,928 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-22 09:50:12,937 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 09:50:13,061 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 09:50:13,070 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 09:58:32,740 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/images.py', reloading
+2025-09-22 09:58:32,767 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 09:58:32,874 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 09:58:32,882 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 09:58:38,957 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-launchpad/app.py', reloading
+2025-09-22 09:58:38,984 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 09:58:39,088 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 09:58:39,095 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 10:00:09,630 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:00:09] "GET / HTTP/1.1" 200 -
+2025-09-22 10:00:12,901 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:00:12] "GET /health HTTP/1.1" 200 -
+2025-09-22 10:00:57,021 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/unified_app.py', reloading
+2025-09-22 10:00:57,040 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 10:00:57,211 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 10:00:57,216 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 10:01:06,361 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/unified_app.py', reloading
+2025-09-22 10:01:06,398 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 10:01:06,545 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 10:01:06,550 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 10:01:18,589 - config.database - INFO - Database connection established
+2025-09-22 10:01:18,591 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:01:18] "GET /db/test HTTP/1.1" 200 -
+2025-09-22 10:02:11,375 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/unified_app.py', reloading
+2025-09-22 10:02:11,409 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 10:02:11,556 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 10:02:11,560 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 10:03:09,676 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:03:09] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 10:03:14,033 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:03:14] "GET / HTTP/1.1" 200 -
+2025-09-22 10:03:14,058 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:03:14] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-22 10:03:14,059 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:03:14] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-22 10:03:14,061 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:03:14] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-22 10:03:29,145 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:03:29] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-22 10:03:29,147 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:03:29] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-22 10:03:29,149 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:03:29] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-22 10:04:13,126 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:04:13] "GET / HTTP/1.1" 200 -
+2025-09-22 10:05:13,007 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:05:13] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 10:05:33,636 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/unified_app.py', reloading
+2025-09-22 10:05:33,675 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 10:05:33,836 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 10:05:33,841 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 10:05:50,172 - config.database - INFO - Database connection established
+2025-09-22 10:05:50,179 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:05:50] "GET / HTTP/1.1" 200 -
+2025-09-22 10:05:53,425 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:05:53] "GET / HTTP/1.1" 200 -
+2025-09-22 10:06:07,319 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/unified_app.py', reloading
+2025-09-22 10:06:07,355 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 10:06:07,499 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 10:06:07,504 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 10:06:53,020 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:06:53] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 10:07:27,285 - config.database - INFO - Database connection established
+2025-09-22 10:07:27,296 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:07:27] "GET / HTTP/1.1" 200 -
+2025-09-22 10:07:27,327 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:07:27] "GET /static/css/dist/main.css HTTP/1.1" 200 -
+2025-09-22 10:07:27,328 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:07:27] "GET /static/images/site/brand-logo.png HTTP/1.1" 200 -
+2025-09-22 10:08:33,015 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:08:33] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 10:09:35,790 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/core.py', reloading
+2025-09-22 10:09:35,828 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 10:09:35,993 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 10:09:35,999 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 10:10:12,935 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:10:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 10:11:11,367 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/unified_app.py', reloading
+2025-09-22 10:11:11,392 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 10:11:11,554 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 10:11:11,560 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 10:11:17,650 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/unified_app.py', reloading
+2025-09-22 10:11:17,693 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 10:11:17,857 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 10:11:17,863 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 10:11:36,744 - config.database - INFO - Database connection established
+2025-09-22 10:11:36,751 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:11:36] "GET / HTTP/1.1" 200 -
+2025-09-22 10:11:39,833 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:11:39] "[32mGET /workflow/ HTTP/1.1[0m" 302 -
+2025-09-22 10:11:43,215 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:11:43] "[35m[1mGET /workflow/posts/53/planning/idea/initial_concept HTTP/1.1[0m" 500 -
+2025-09-22 10:11:52,026 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:11:52] "[35m[1mGET /workflow/posts/53/planning/idea/initial_concept HTTP/1.1[0m" 500 -
+2025-09-22 10:11:53,013 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:11:53] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 10:12:01,469 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:12:01] "GET /workflow/posts/53/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 10:12:05,843 - blueprints.core - ERROR - Error fetching posts: column pd.target_audience does not exist
+LINE 3:                        pd.idea_seed, pd.target_audience, pd....
+                                             ^
+2025-09-22 10:12:05,843 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:12:05] "[35m[1mGET /api/posts HTTP/1.1[0m" 500 -
+2025-09-22 10:12:15,925 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:12:15] "[35m[1mGET /db/test HTTP/1.1[0m" 500 -
+2025-09-22 10:12:24,760 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/core.py', reloading
+2025-09-22 10:12:24,790 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 10:12:24,953 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 10:12:24,959 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 10:12:31,881 - config.database - INFO - Database connection established
+2025-09-22 10:12:31,887 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:12:31] "GET /api/posts HTTP/1.1" 200 -
+2025-09-22 10:13:27,733 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/unified_app.py', reloading
+2025-09-22 10:13:27,762 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 10:13:27,909 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 10:13:27,913 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 10:13:33,021 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:13:33] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 10:15:12,961 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:15:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 10:19:37,234 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 10:19:37,256 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 10:19:37,405 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 10:19:37,410 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 10:19:48,566 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/unified_app.py', reloading
+2025-09-22 10:19:48,603 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 10:20:39,435 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-22 10:20:39,435 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-22 10:20:39,435 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 10:20:39,617 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 10:20:39,623 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 10:20:46,300 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:20:46] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-22 10:20:49,447 - config.database - INFO - Database connection established
+2025-09-22 10:20:49,453 - blueprints.launchpad - ERROR - Error in syndication: column cp.name does not exist
+LINE 2:                 SELECT cp.id, cp.name, cp.platform_id, cp.ch...
+                                      ^
+HINT:  Perhaps you meant to reference the column "p.name".
+2025-09-22 10:20:49,453 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:20:49] "[35m[1mGET /launchpad/syndication HTTP/1.1[0m" 500 -
+2025-09-22 10:20:53,159 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:20:53] "[35m[1mGET /db/test HTTP/1.1[0m" 500 -
+2025-09-22 10:21:01,883 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 10:21:01,909 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 10:21:02,100 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 10:21:02,113 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 10:21:08,216 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 10:21:08,244 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 10:21:08,436 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 10:21:08,442 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 10:21:10,911 - config.database - INFO - Database connection established
+2025-09-22 10:21:10,916 - blueprints.launchpad - ERROR - Error in syndication: column cp.channel_type does not exist
+LINE 2:                 SELECT cp.id, cp.platform_id, cp.channel_typ...
+                                                      ^
+HINT:  Perhaps you meant to reference the column "cp.channel_type_id".
+2025-09-22 10:21:10,916 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:21:10] "[35m[1mGET /launchpad/syndication HTTP/1.1[0m" 500 -
+2025-09-22 10:21:18,568 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 10:21:18,593 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 10:21:18,770 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 10:21:18,775 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 10:21:24,857 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 10:21:24,883 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 10:21:25,063 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 10:21:25,068 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 10:21:26,963 - config.database - INFO - Database connection established
+2025-09-22 10:21:26,967 - blueprints.launchpad - ERROR - Error in syndication: column cp.content_type does not exist
+LINE 2: ...SELECT cp.id, cp.platform_id, cp.channel_type_id, cp.content...
+                                                             ^
+2025-09-22 10:21:26,967 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:21:26] "[35m[1mGET /launchpad/syndication HTTP/1.1[0m" 500 -
+2025-09-22 10:21:34,172 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 10:21:34,199 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 10:21:34,389 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 10:21:34,395 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 10:21:41,484 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 10:21:41,516 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 10:21:41,689 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 10:21:41,695 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 10:21:44,836 - config.database - INFO - Database connection established
+2025-09-22 10:21:44,844 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:21:44] "GET /launchpad/syndication HTTP/1.1" 200 -
+2025-09-22 10:21:48,211 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:21:48] "GET /launchpad/api/syndication/social-media-platforms HTTP/1.1" 200 -
+2025-09-22 10:21:50,962 - blueprints.launchpad - ERROR - Error in get_content_processes: column cp.status does not exist
+LINE 2: ...SELECT cp.id, cp.platform_id, cp.channel_type_id, cp.status,
+                                                             ^
+HINT:  Perhaps you meant to reference the column "p.status".
+2025-09-22 10:21:50,962 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:21:50] "[35m[1mGET /launchpad/api/syndication/content-processes HTTP/1.1[0m" 500 -
+2025-09-22 10:21:57,870 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 10:21:57,896 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 10:21:58,091 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 10:21:58,098 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 10:22:00,328 - config.database - INFO - Database connection established
+2025-09-22 10:22:00,332 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 10:22:00] "GET /launchpad/api/syndication/content-processes HTTP/1.1" 200 -
+2025-09-22 10:23:16,008 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 10:23:16,037 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 10:23:16,213 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 10:23:16,218 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 11:02:29,913 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/llm_actions.py', reloading
+2025-09-22 11:02:29,950 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 11:02:30,148 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 11:02:30,154 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 11:04:37,172 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/llm_actions.py', reloading
+2025-09-22 11:04:37,196 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 11:04:37,390 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 11:04:37,396 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 11:04:43,509 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/unified_app.py', reloading
+2025-09-22 11:04:43,550 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 11:04:43,744 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 11:04:43,750 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 11:04:57,026 - config.database - INFO - Database connection established
+2025-09-22 11:04:57,038 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:04:57] "GET /llm-actions/ HTTP/1.1" 200 -
+2025-09-22 11:05:00,483 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-22 11:05:00,484 - blueprints.llm_actions - ERROR - Error getting models for ollama: HTTPConnectionPool(host='localhost', port=11434): Max retries exceeded with url: /api/tags (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x105d76ba0>: Failed to establish a new connection: [Errno 61] Connection refused'))
+2025-09-22 11:05:00,484 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:05:00] "GET /llm-actions/api/llm/providers HTTP/1.1" 200 -
+2025-09-22 11:05:02,978 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:05:02] "GET /llm-actions/api/llm/actions HTTP/1.1" 200 -
+2025-09-22 11:05:05,596 - blueprints.llm_actions - ERROR - Error getting step config: the JSON object must be str, bytes or bytearray, not dict
+2025-09-22 11:05:05,596 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:05:05] "[35m[1mGET /llm-actions/api/step-config/planning/idea/provisional_title HTTP/1.1[0m" 500 -
+2025-09-22 11:05:12,236 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/llm_actions.py', reloading
+2025-09-22 11:05:12,264 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 11:05:12,441 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 11:05:12,446 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 11:05:15,463 - config.database - INFO - Database connection established
+2025-09-22 11:05:15,467 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:05:15] "GET /llm-actions/api/step-config/planning/idea/provisional_title HTTP/1.1" 200 -
+2025-09-22 11:05:37,881 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:05:37] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 11:05:40,537 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:05:40] "GET / HTTP/1.1" 200 -
+2025-09-22 11:05:40,560 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:05:40] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 11:05:40,561 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:05:40] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 11:05:40,579 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:05:40] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-22 11:05:40,580 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:05:40] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-22 11:05:40,580 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:05:40] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-22 11:05:44,982 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:05:44] "[32mGET /workflow/posts/53/planning/idea HTTP/1.1[0m" 302 -
+2025-09-22 11:05:45,021 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:05:45] "GET /workflow/posts/53/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 11:05:45,025 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:05:45] "GET /static/workflow_nav/css/nav.dist.css HTTP/1.1" 200 -
+2025-09-22 11:05:45,044 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:05:45] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 11:05:45,046 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:05:45] "GET /static/workflow_nav/css/nav.dist.css HTTP/1.1" 200 -
+2025-09-22 11:05:45,046 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:05:45] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 11:06:40,886 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/unified_app.py', reloading
+2025-09-22 11:06:40,927 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 11:06:41,106 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 11:06:41,111 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 11:06:52,985 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:06:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 11:08:12,171 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:08:12] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-22 11:08:12,176 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:08:12] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-22 11:08:12,190 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:08:12] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-22 11:08:12,194 - config.database - INFO - Database connection established
+2025-09-22 11:08:12,229 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:08:12] "GET /workflow/posts/53/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 11:08:32,979 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:08:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 11:10:12,985 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:10:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 11:11:52,987 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:11:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 11:13:32,988 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:13:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 11:15:13,084 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:15:13] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 11:15:28,441 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/clan_api.py', reloading
+2025-09-22 11:15:28,483 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 11:15:28,682 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 11:15:28,688 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 11:16:05,158 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/images.py', reloading
+2025-09-22 11:16:05,202 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 11:16:05,392 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 11:16:05,397 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 11:16:45,910 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/post_sections.py', reloading
+2025-09-22 11:16:45,955 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 11:16:46,147 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 11:16:46,153 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 11:16:53,085 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:16:53] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 11:18:33,084 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:18:33] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 11:19:29,517 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/post_info.py', reloading
+2025-09-22 11:19:29,547 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 11:19:29,736 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 11:19:29,741 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 11:19:37,854 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/unified_app.py', reloading
+2025-09-22 11:19:37,888 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 11:19:40,795 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 11:19:40,799 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 11:19:40,810 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 11:19:48,088 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 11:19:52,416 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:19:52] "GET /clan-api/ HTTP/1.1" 200 -
+2025-09-22 11:19:56,514 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:19:56] "GET /post-sections/test HTTP/1.1" 200 -
+2025-09-22 11:19:58,983 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:19:58] "GET /post-info/test HTTP/1.1" 200 -
+2025-09-22 11:20:02,800 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:20:02] "GET /images/test HTTP/1.1" 200 -
+2025-09-22 11:20:13,133 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:20:13] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 11:21:14,239 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/images.py', reloading
+2025-09-22 11:21:14,421 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 11:21:15,305 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 11:21:15,309 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 11:21:15,320 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 11:21:53,197 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:21:53] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 11:27:25,699 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:27:25] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 11:27:26,543 - config.database - INFO - Database connection established
+2025-09-22 11:27:26,571 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:27:26] "GET /workflow/posts/53/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 11:27:26,596 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:27:26] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 11:27:26,597 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:27:26] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 11:27:26,598 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:27:26] "[36mGET /static/workflow_nav/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-22 11:27:32,535 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:27:32] "GET / HTTP/1.1" 200 -
+2025-09-22 11:27:32,558 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:27:32] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 11:27:32,558 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:27:32] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 11:27:35,800 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:27:35] "[32mGET /workflow/posts/53/planning/idea HTTP/1.1[0m" 302 -
+2025-09-22 11:27:35,807 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:27:35] "GET /workflow/posts/53/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 11:27:35,826 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:27:35] "[36mGET /static/workflow_nav/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-22 11:27:35,827 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:27:35] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 11:27:35,827 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:27:35] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 11:28:32,969 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:28:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 11:29:31,418 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/core.py', reloading
+2025-09-22 11:29:31,582 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 11:29:32,424 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 11:29:32,429 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 11:29:32,439 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 11:30:12,977 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:30:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 11:31:52,977 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:31:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 11:33:10,341 - config.database - INFO - Database connection established
+2025-09-22 11:33:10,368 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:33:10] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-09-22 11:33:20,797 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:33:20] "GET / HTTP/1.1" 200 -
+2025-09-22 11:33:32,975 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:33:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 11:34:23,098 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/core.py', reloading
+2025-09-22 11:34:23,266 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 11:34:24,132 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 11:34:24,138 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 11:34:24,148 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 11:35:13,005 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:35:13] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 11:36:53,171 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:36:53] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 11:38:33,096 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:38:33] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 11:40:13,004 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:40:13] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 11:41:53,004 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:41:53] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 11:57:35,827 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 11:57:35] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:04:02,039 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:04:02] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:05:12,974 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:05:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:06:07,242 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/unified_app.py', reloading
+2025-09-22 12:06:07,433 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 12:08:02,294 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 12:08:02,304 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-22 12:08:02,304 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-22 12:08:02,304 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 12:08:03,085 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 12:08:03,089 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 12:08:03,099 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 12:08:32,979 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:08:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:10:12,973 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:10:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:11:53,065 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:11:53] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:13:33,019 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:13:33] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:15:13,020 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:15:13] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:15:57,856 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/config/unified_config.py', reloading
+2025-09-22 12:15:58,073 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 12:15:58,980 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 12:15:58,984 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 12:15:58,995 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 12:16:04,988 - config.database - INFO - Database connection established
+2025-09-22 12:16:05,015 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:16:05] "GET / HTTP/1.1" 200 -
+2025-09-22 12:16:07,941 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:16:07] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-22 12:16:07,959 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:16:07] "GET /llm-actions/ HTTP/1.1" 200 -
+2025-09-22 12:16:07,968 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:16:07] "GET /post-sections/test HTTP/1.1" 200 -
+2025-09-22 12:16:53,017 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:16:53] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:17:00,772 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /health HTTP/1.1" 200 -
+2025-09-22 12:17:00,775 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET / HTTP/1.1" 200 -
+2025-09-22 12:17:00,776 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /health HTTP/1.1" 200 -
+2025-09-22 12:17:00,781 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /api/posts HTTP/1.1" 200 -
+2025-09-22 12:17:00,783 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[32mGET /workflow/ HTTP/1.1[0m" 302 -
+2025-09-22 12:17:00,804 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /workflow/posts/53/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 12:17:00,806 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[32mGET /workflow/posts/1 HTTP/1.1[0m" 302 -
+2025-09-22 12:17:00,809 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /workflow/posts/1/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 12:17:00,811 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[32mGET /workflow/posts/1/planning HTTP/1.1[0m" 302 -
+2025-09-22 12:17:00,813 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /workflow/posts/1/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 12:17:00,815 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[32mGET /workflow/posts/1/planning/idea HTTP/1.1[0m" 302 -
+2025-09-22 12:17:00,818 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /workflow/posts/1/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 12:17:00,822 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /workflow/posts/1/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 12:17:00,823 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /db/test HTTP/1.1" 200 -
+2025-09-22 12:17:00,825 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[33mGET /db/simple HTTP/1.1[0m" 404 -
+2025-09-22 12:17:00,827 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-22 12:17:00,834 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /launchpad/cross-promotion HTTP/1.1" 200 -
+2025-09-22 12:17:00,839 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /launchpad/publishing HTTP/1.1" 200 -
+2025-09-22 12:17:00,840 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[33mGET /launchpad/social-media-command-center HTTP/1.1[0m" 404 -
+2025-09-22 12:17:00,847 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /launchpad/syndication HTTP/1.1" 200 -
+2025-09-22 12:17:00,849 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[33mGET /launchpad/api/social-media/timeline HTTP/1.1[0m" 404 -
+2025-09-22 12:17:00,851 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /launchpad/api/syndication/social-media-platforms HTTP/1.1" 200 -
+2025-09-22 12:17:00,852 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /launchpad/api/syndication/content-processes HTTP/1.1" 200 -
+2025-09-22 12:17:00,855 - blueprints.launchpad - ERROR - Error in syndication_platform_channel: column cp.channel_type does not exist
+LINE 5:                 JOIN channel_types ct ON cp.channel_type = c...
+                                                 ^
+HINT:  Perhaps you meant to reference the column "cp.channel_type_id".
+2025-09-22 12:17:00,855 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[35m[1mGET /launchpad/syndication/facebook/blog_post HTTP/1.1[0m" 500 -
+2025-09-22 12:17:00,858 - blueprints.launchpad - ERROR - Error in syndication_platform_channel: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 12:17:00,858 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[35m[1mGET /launchpad/syndication/facebook/product_post HTTP/1.1[0m" 500 -
+2025-09-22 12:17:00,860 - blueprints.llm_actions - WARNING - Could not get step_id: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 12:17:00,860 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /llm-actions/ HTTP/1.1" 200 -
+2025-09-22 12:17:00,861 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /llm-actions/health HTTP/1.1" 200 -
+2025-09-22 12:17:00,864 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-22 12:17:00,865 - blueprints.llm_actions - ERROR - Error getting models for ollama: HTTPConnectionPool(host='localhost', port=11434): Max retries exceeded with url: /api/tags (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x11d8dda30>: Failed to establish a new connection: [Errno 61] Connection refused'))
+2025-09-22 12:17:00,865 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /llm-actions/api/llm/providers HTTP/1.1" 200 -
+2025-09-22 12:17:00,867 - blueprints.llm_actions - ERROR - Error getting actions: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 12:17:00,867 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[35m[1mGET /llm-actions/api/llm/actions HTTP/1.1[0m" 500 -
+2025-09-22 12:17:00,869 - blueprints.llm_actions - ERROR - Error getting step config: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 12:17:00,869 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[35m[1mGET /llm-actions/api/step-config/planning/idea/initial_concept HTTP/1.1[0m" 500 -
+2025-09-22 12:17:00,870 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /post-sections/test HTTP/1.1" 200 -
+2025-09-22 12:17:00,872 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[33mGET /post-sections/test-sections HTTP/1.1[0m" 404 -
+2025-09-22 12:17:00,873 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[33mGET /post-sections/test-minimal HTTP/1.1[0m" 404 -
+2025-09-22 12:17:00,875 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /post-sections/?post_id=1 HTTP/1.1" 200 -
+2025-09-22 12:17:00,877 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /post-sections/sections?post_id=1 HTTP/1.1" 200 -
+2025-09-22 12:17:00,879 - blueprints.post_sections - ERROR - Error getting sections for post 1: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 12:17:00,880 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /post-sections/sections-summary?post_id=1 HTTP/1.1" 200 -
+2025-09-22 12:17:00,883 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /post-sections/sections-images?post_id=1 HTTP/1.1" 200 -
+2025-09-22 12:17:00,884 - blueprints.post_info - ERROR - Error loading index page: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 12:17:00,886 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /post-info/ HTTP/1.1" 200 -
+2025-09-22 12:17:00,888 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /post-info/health HTTP/1.1" 200 -
+2025-09-22 12:17:00,890 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /post-info/test HTTP/1.1" 200 -
+2025-09-22 12:17:00,891 - blueprints.post_info - ERROR - Error listing posts info: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 12:17:00,891 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[35m[1mGET /post-info/api/post-info HTTP/1.1[0m" 500 -
+2025-09-22 12:17:00,893 - blueprints.post_info - ERROR - Error getting post info: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 12:17:00,893 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[35m[1mGET /post-info/api/post-info/1 HTTP/1.1[0m" 500 -
+2025-09-22 12:17:00,894 - blueprints.post_info - ERROR - Error getting post SEO: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 12:17:00,894 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[35m[1mGET /post-info/api/post-info/1/seo HTTP/1.1[0m" 500 -
+2025-09-22 12:17:00,896 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /images/test HTTP/1.1" 200 -
+2025-09-22 12:17:00,906 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /images/?post_id=1 HTTP/1.1" 200 -
+2025-09-22 12:17:00,909 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /images/upload?post_id=1 HTTP/1.1" 200 -
+2025-09-22 12:17:00,911 - blueprints.images - ERROR - Error getting sections for post 1: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 12:17:00,911 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[35m[1mGET /images/api/sections/1 HTTP/1.1[0m" 500 -
+2025-09-22 12:17:00,912 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /images/api/images/1 HTTP/1.1" 200 -
+2025-09-22 12:17:00,914 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /images/api/images/1/1 HTTP/1.1" 200 -
+2025-09-22 12:17:00,915 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /clan-api/ HTTP/1.1" 200 -
+2025-09-22 12:17:00,916 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /clan-api/test HTTP/1.1" 200 -
+2025-09-22 12:17:00,917 - blueprints.clan_api - INFO - Testing single product fetch from clan.com API
+2025-09-22 12:17:00,917 - blueprints.clan_api - ERROR - API error: Clan API not available
+2025-09-22 12:17:00,918 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[35m[1mGET /clan-api/api/test-product HTTP/1.1[0m" 500 -
+2025-09-22 12:17:00,919 - blueprints.clan_api - INFO - Fetching categories from clan.com API
+2025-09-22 12:17:00,919 - blueprints.clan_api - ERROR - API error: Clan API not available
+2025-09-22 12:17:00,919 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[35m[1mGET /clan-api/api/categories HTTP/1.1[0m" 500 -
+2025-09-22 12:17:00,920 - blueprints.clan_api - INFO - Fetching products from clan.com API (limit: 50, query: '')
+2025-09-22 12:17:00,920 - blueprints.clan_api - ERROR - API error: Clan API not available
+2025-09-22 12:17:00,920 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[35m[1mGET /clan-api/api/products HTTP/1.1[0m" 500 -
+2025-09-22 12:17:00,922 - blueprints.clan_api - INFO - Fetching product 1 from clan.com API
+2025-09-22 12:17:00,922 - blueprints.clan_api - ERROR - API error: Clan API not available
+2025-09-22 12:17:00,922 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[35m[1mGET /clan-api/api/products/1 HTTP/1.1[0m" 500 -
+2025-09-22 12:17:00,923 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[33mGET /clan-api/api/products/1/images HTTP/1.1[0m" 404 -
+2025-09-22 12:17:00,924 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[33mGET /clan-api/api/products/1/categories HTTP/1.1[0m" 404 -
+2025-09-22 12:17:00,926 - blueprints.clan_api - INFO - Fetching related products for product 1
+2025-09-22 12:17:00,926 - blueprints.clan_api - ERROR - API error: Clan API not available
+2025-09-22 12:17:00,926 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[35m[1mGET /clan-api/api/products/1/related HTTP/1.1[0m" 500 -
+2025-09-22 12:17:00,929 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /static/css/dist/main.css HTTP/1.1" 200 -
+2025-09-22 12:17:00,931 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /static/workflow_nav/css/nav.dist.css HTTP/1.1" 200 -
+2025-09-22 12:17:00,932 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /static/images/site/brand-logo.png HTTP/1.1" 200 -
+2025-09-22 12:17:00,936 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[33mGET /static/js/dist/main.js HTTP/1.1[0m" 404 -
+2025-09-22 12:17:00,937 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[33mGET /nonexistent HTTP/1.1[0m" 404 -
+2025-09-22 12:17:00,938 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[33mGET /launchpad/nonexistent HTTP/1.1[0m" 404 -
+2025-09-22 12:17:00,940 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[33mGET /llm-actions/nonexistent HTTP/1.1[0m" 404 -
+2025-09-22 12:17:00,944 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "[35m[1mGET /post-sections/ HTTP/1.1[0m" 500 -
+2025-09-22 12:17:00,945 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /images/ HTTP/1.1" 200 -
+2025-09-22 12:17:00,947 - blueprints.core - WARNING - Could not fetch latest post: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 12:17:00,947 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET / HTTP/1.1" 200 -
+2025-09-22 12:17:00,949 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-22 12:17:00,951 - blueprints.llm_actions - WARNING - Could not get step_id: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 12:17:00,951 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /llm-actions/ HTTP/1.1" 200 -
+2025-09-22 12:17:00,952 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /post-sections/test HTTP/1.1" 200 -
+2025-09-22 12:17:00,954 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /post-info/test HTTP/1.1" 200 -
+2025-09-22 12:17:00,955 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /images/test HTTP/1.1" 200 -
+2025-09-22 12:17:00,956 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:00] "GET /clan-api/test HTTP/1.1" 200 -
+2025-09-22 12:17:10,948 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/unified_app.py', reloading
+2025-09-22 12:17:11,163 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 12:17:45,477 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 12:17:45,485 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-22 12:17:45,485 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-22 12:17:45,485 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 12:17:46,365 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 12:17:46,370 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 12:17:46,381 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 12:17:50,214 - config.database - INFO - Database connection established
+2025-09-22 12:17:50,228 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:50] "GET /db/simple HTTP/1.1" 200 -
+2025-09-22 12:17:53,017 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:17:53] "GET /db/simple HTTP/1.1" 200 -
+2025-09-22 12:18:33,068 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:18:33] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:18:37,085 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/config/unified_config.py', reloading
+2025-09-22 12:18:37,278 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 12:18:38,130 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 12:18:38,135 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 12:18:38,145 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 12:21:50,773 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:21:50] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:21:53,988 - config.database - INFO - Database connection established
+2025-09-22 12:21:54,011 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:21:54] "GET / HTTP/1.1" 200 -
+2025-09-22 12:21:54,040 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:21:54] "[33mGET /static/js/main.js HTTP/1.1[0m" 404 -
+2025-09-22 12:21:54,040 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:21:54] "[33mGET /static/js/workflow-nav.js HTTP/1.1[0m" 404 -
+2025-09-22 12:21:54,042 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:21:54] "GET /static/css/nav.dist.css HTTP/1.1" 200 -
+2025-09-22 12:21:54,045 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:21:54] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 12:21:54,045 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:21:54] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 12:21:54,169 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:21:54] "[33mGET /static/images/site/favicon.ico HTTP/1.1[0m" 404 -
+2025-09-22 12:21:54,176 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:21:54] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-22 12:21:54,177 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:21:54] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-22 12:21:54,177 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:21:54] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-22 12:21:54,177 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:21:54] "[33mGET /static/images/site/favicon.ico HTTP/1.1[0m" 404 -
+2025-09-22 12:21:54,178 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:21:54] "[33mGET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1[0m" 404 -
+2025-09-22 12:21:54,179 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:21:54] "[33mGET /static/images/site/apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-22 12:22:35,915 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:22:35] "GET / HTTP/1.1" 200 -
+2025-09-22 12:22:35,946 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:22:35] "[33mGET /static/js/main.js HTTP/1.1[0m" 404 -
+2025-09-22 12:22:35,947 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:22:35] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-22 12:22:35,948 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:22:35] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 12:22:35,950 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:22:35] "[33mGET /static/js/workflow-nav.js HTTP/1.1[0m" 404 -
+2025-09-22 12:22:35,951 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:22:35] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 12:22:38,497 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:22:38] "[32mGET /workflow/posts/53/planning/idea HTTP/1.1[0m" 302 -
+2025-09-22 12:22:38,527 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:22:38] "GET /workflow/posts/53/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 12:22:38,547 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:22:38] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 12:22:38,548 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:22:38] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 12:22:38,549 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:22:38] "[36mGET /static/workflow_nav/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-22 12:22:38,571 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:22:38] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-22 12:22:38,572 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:22:38] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-22 12:22:38,572 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:22:38] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-22 12:23:09,012 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:23:09] "GET / HTTP/1.1" 200 -
+2025-09-22 12:23:09,043 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:23:09] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-22 12:23:09,045 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:23:09] "[33mGET /static/js/main.js HTTP/1.1[0m" 404 -
+2025-09-22 12:23:09,046 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:23:09] "[33mGET /static/js/workflow-nav.js HTTP/1.1[0m" 404 -
+2025-09-22 12:23:09,048 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:23:09] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 12:23:09,048 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:23:09] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 12:23:15,213 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:23:15] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-22 12:23:15,214 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:23:15] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-22 12:23:15,216 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:23:15] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-22 12:23:15,218 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:23:15] "[33mGET /static/images/site/favicon.ico HTTP/1.1[0m" 404 -
+2025-09-22 12:23:15,219 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:23:15] "[33mGET /static/images/site/apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-22 12:23:15,220 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:23:15] "[33mGET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1[0m" 404 -
+2025-09-22 12:23:33,033 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:23:33] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:25:12,940 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:25:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:25:38,157 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:25:38] "[32mGET /workflow/posts/53/planning/idea HTTP/1.1[0m" 302 -
+2025-09-22 12:25:38,166 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:25:38] "GET /workflow/posts/53/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 12:25:38,236 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:25:38] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 12:25:38,236 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:25:38] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 12:25:38,236 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:25:38] "[36mGET /static/workflow_nav/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-22 12:25:46,689 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:25:46] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-22 12:25:46,690 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:25:46] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-22 12:25:46,691 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:25:46] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-22 12:26:52,936 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:26:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:26:55,689 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:26:55] "GET / HTTP/1.1" 200 -
+2025-09-22 12:27:07,681 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:27:07] "GET / HTTP/1.1" 200 -
+2025-09-22 12:27:12,108 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:27:12] "GET /workflow/posts/53/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 12:28:32,942 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:28:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:30:12,941 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:30:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:31:52,937 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:31:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:33:32,935 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:33:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:35:12,937 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:35:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:35:40,844 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:35:40] "GET / HTTP/1.1" 200 -
+2025-09-22 12:35:40,894 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:35:40] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-22 12:35:40,895 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:35:40] "[33mGET /static/js/main.js HTTP/1.1[0m" 404 -
+2025-09-22 12:35:40,896 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:35:40] "[33mGET /static/js/workflow-nav.js HTTP/1.1[0m" 404 -
+2025-09-22 12:35:40,896 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:35:40] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 12:35:40,897 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:35:40] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 12:36:52,935 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:36:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:38:32,933 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:38:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:39:21,797 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:39:21] "GET /static/js/main.js HTTP/1.1" 200 -
+2025-09-22 12:39:25,905 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:39:25] "GET /static/js/workflow-nav.js HTTP/1.1" 200 -
+2025-09-22 12:39:30,326 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:39:30] "GET / HTTP/1.1" 200 -
+2025-09-22 12:39:51,097 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:39:51] "GET / HTTP/1.1" 200 -
+2025-09-22 12:39:51,144 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:39:51] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-22 12:39:51,147 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:39:51] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 12:39:51,147 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:39:51] "GET /static/js/workflow-nav.js HTTP/1.1" 200 -
+2025-09-22 12:39:51,148 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:39:51] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 12:39:51,148 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:39:51] "GET /static/js/main.js HTTP/1.1" 200 -
+2025-09-22 12:40:04,505 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:40:04] "[32mGET /workflow/posts/53/planning/idea HTTP/1.1[0m" 302 -
+2025-09-22 12:40:04,514 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:40:04] "GET /workflow/posts/53/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 12:40:04,550 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:40:04] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 12:40:04,551 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:40:04] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 12:40:04,552 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:40:04] "[36mGET /static/workflow_nav/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-22 12:40:12,931 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:40:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:40:26,312 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:40:26] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-22 12:40:26,314 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:40:26] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-22 12:40:26,316 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:40:26] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-22 12:41:52,932 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:41:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:43:32,931 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:43:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:44:12,497 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:44:12] "GET /workflow/posts/53/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 12:44:15,677 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:44:15] "GET /workflow/posts/53/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 12:44:47,067 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:44:47] "GET /workflow/posts/53/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 12:44:50,077 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:44:50] "GET /workflow/posts/53/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 12:44:53,186 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:44:53] "GET /workflow/posts/53/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 12:45:12,935 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:45:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:46:52,934 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:46:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:48:32,934 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:48:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:50:12,932 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:50:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:51:52,957 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:51:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:52:02,920 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:52:02] "GET /workflow/posts/53/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 12:52:02,952 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:52:02] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 12:52:02,953 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:52:02] "[36mGET /static/workflow_nav/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-22 12:52:02,953 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:52:02] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 12:52:26,108 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:52:26] "GET /workflow/posts/53/planning/research/initial_concept HTTP/1.1" 200 -
+2025-09-22 12:52:26,436 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:52:26] "[36mGET /static/workflow_nav/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-22 12:52:26,436 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:52:26] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 12:52:26,437 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:52:26] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 12:52:27,104 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:52:27] "GET /workflow/posts/53/planning/structure/initial_concept HTTP/1.1" 200 -
+2025-09-22 12:52:27,427 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:52:27] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 12:52:27,429 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:52:27] "[36mGET /static/workflow_nav/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-22 12:52:27,430 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:52:27] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 12:52:30,454 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:52:30] "GET /workflow/posts/53/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 12:52:30,509 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:52:30] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 12:52:30,509 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:52:30] "[36mGET /static/workflow_nav/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-22 12:52:30,510 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:52:30] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 12:52:48,506 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:52:48] "[33mGET /db/ HTTP/1.1[0m" 404 -
+2025-09-22 12:52:48,511 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:52:48] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 12:52:53,863 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:52:53] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-22 12:52:53,865 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:52:53] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-22 12:52:53,867 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:52:53] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-22 12:53:32,952 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:53:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:53:59,943 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/database.py', reloading
+2025-09-22 12:54:00,125 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 12:54:01,050 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 12:54:01,055 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 12:54:01,066 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 12:54:41,593 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/unified_app.py', reloading
+2025-09-22 12:54:41,806 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 12:54:58,001 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 12:54:58,014 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-22 12:54:58,014 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-22 12:54:58,014 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 12:54:58,933 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 12:54:58,939 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 12:54:58,949 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 12:55:12,954 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:55:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:56:52,953 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:56:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 12:58:32,953 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 12:58:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 13:00:12,955 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:00:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 13:00:56,366 - config.database - INFO - Database connection established
+2025-09-22 13:00:56,425 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:00:56] "GET /db/ HTTP/1.1" 200 -
+2025-09-22 13:00:56,500 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:00:56] "[33mGET /static/css/post-info.css HTTP/1.1[0m" 404 -
+2025-09-22 13:00:56,501 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:00:56] "[33mGET /static/css/post-sections.css HTTP/1.1[0m" 404 -
+2025-09-22 13:00:56,501 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:00:56] "GET /static/css/llm-actions.css HTTP/1.1" 200 -
+2025-09-22 13:00:56,501 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:00:56] "[33mGET /static/css/images.css HTTP/1.1[0m" 404 -
+2025-09-22 13:00:56,502 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:00:56] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-22 13:00:56,504 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:00:56] "[33mGET /static/css/clan-api.css HTTP/1.1[0m" 404 -
+2025-09-22 13:00:56,505 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:00:56] "GET /static/css/launchpad.css HTTP/1.1" 200 -
+2025-09-22 13:00:56,505 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:00:56] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 13:00:56,507 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:00:56] "[33mGET /static/js/launchpad.js HTTP/1.1[0m" 404 -
+2025-09-22 13:00:56,508 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:00:56] "GET /static/js/llm-actions.js HTTP/1.1" 200 -
+2025-09-22 13:00:56,509 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:00:56] "[33mGET /static/js/post-sections.js HTTP/1.1[0m" 404 -
+2025-09-22 13:00:56,510 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:00:56] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-22 13:00:56,511 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:00:56] "[33mGET /static/js/post-info.js HTTP/1.1[0m" 404 -
+2025-09-22 13:00:56,512 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:00:56] "[33mGET /static/js/images.js HTTP/1.1[0m" 404 -
+2025-09-22 13:00:56,512 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:00:56] "[33mGET /static/js/clan-api.js HTTP/1.1[0m" 404 -
+2025-09-22 13:00:56,514 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:00:56] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-22 13:00:56,514 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:00:56] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 13:01:52,953 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:01:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 13:02:51,373 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:02:51] "GET /db/simple HTTP/1.1" 200 -
+2025-09-22 13:03:10,869 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:03:10] "GET /db/ HTTP/1.1" 200 -
+2025-09-22 13:03:32,952 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:03:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 13:03:40,240 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/database.py', reloading
+2025-09-22 13:03:40,459 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 13:03:41,350 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 13:03:41,356 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 13:03:41,367 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 13:03:45,815 - config.database - INFO - Database connection established
+2025-09-22 13:03:45,826 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:03:45] "GET /db/ HTTP/1.1" 200 -
+2025-09-22 13:03:53,325 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:03:53] "GET /db/ HTTP/1.1" 200 -
+2025-09-22 13:03:53,386 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:03:53] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 13:03:53,387 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:03:53] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 13:03:53,585 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:03:53] "GET /db/tables HTTP/1.1" 200 -
+2025-09-22 13:03:57,612 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/database.py', reloading
+2025-09-22 13:03:57,794 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 13:03:58,617 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 13:03:58,624 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 13:03:58,633 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 13:04:56,768 - config.database - INFO - Database connection established
+2025-09-22 13:04:56,793 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:04:56] "GET /db/tables HTTP/1.1" 200 -
+2025-09-22 13:05:01,965 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:05:01] "GET /db/tables HTTP/1.1" 200 -
+2025-09-22 13:05:12,956 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:05:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 13:06:52,958 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:06:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 13:08:02,932 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:08:02] "GET /db/tables HTTP/1.1" 200 -
+2025-09-22 13:08:05,858 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:08:05] "GET /db/tables HTTP/1.1" 200 -
+2025-09-22 13:08:09,048 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:08:09] "GET /db/tables HTTP/1.1" 200 -
+2025-09-22 13:08:12,134 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:08:12] "GET /db/tables HTTP/1.1" 200 -
+2025-09-22 13:08:15,879 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:08:15] "GET /db/tables/post HTTP/1.1" 200 -
+2025-09-22 13:08:19,014 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:08:19] "GET /db/tables/workflow HTTP/1.1" 200 -
+2025-09-22 13:08:23,841 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:08:23] "GET /db/tables/image HTTP/1.1" 200 -
+2025-09-22 13:08:27,058 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:08:27] "GET /db/tables/platforms HTTP/1.1" 200 -
+2025-09-22 13:08:30,026 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:08:30] "GET /db/tables/llm_provider HTTP/1.1" 200 -
+2025-09-22 13:08:32,956 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:08:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 13:10:12,960 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:10:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 13:11:52,957 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:11:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 13:13:32,953 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:13:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 13:14:08,885 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/database.py', reloading
+2025-09-22 13:14:09,116 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 13:14:10,017 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 13:14:10,024 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 13:14:10,035 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 13:14:17,591 - config.database - INFO - Database connection established
+2025-09-22 13:14:17,701 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:14:17] "GET /db/tables HTTP/1.1" 200 -
+2025-09-22 13:14:20,557 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:14:20] "GET /db/tables HTTP/1.1" 200 -
+2025-09-22 13:14:24,733 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:14:24] "GET /db/ HTTP/1.1" 200 -
+2025-09-22 13:14:40,497 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/database.py', reloading
+2025-09-22 13:14:40,663 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 13:14:41,484 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 13:14:41,491 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 13:14:41,500 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 13:15:12,960 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:15:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 13:16:52,957 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:16:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 13:18:32,959 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:18:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 13:20:12,958 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:20:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 13:21:52,960 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:21:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 13:23:32,935 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:23:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 13:23:42,684 - config.database - INFO - Database connection established
+2025-09-22 13:23:42,698 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:23:42] "GET /db/ HTTP/1.1" 200 -
+2025-09-22 13:23:42,760 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:23:42] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 13:23:42,760 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:23:42] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 13:23:42,861 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:23:42] "GET /db/tables HTTP/1.1" 200 -
+2025-09-22 13:24:26,645 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:24:26] "GET /db/tables HTTP/1.1" 200 -
+2025-09-22 13:24:33,776 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:24:33] "GET /db/ HTTP/1.1" 200 -
+2025-09-22 13:25:02,358 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:25:02] "GET /db/tables HTTP/1.1" 200 -
+2025-09-22 13:25:10,100 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/database.py', reloading
+2025-09-22 13:25:10,276 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 13:25:11,206 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 13:25:11,215 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 13:25:11,225 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 13:25:12,932 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:25:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 13:25:14,274 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/database.py', reloading
+2025-09-22 13:25:14,471 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 13:25:15,333 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 13:25:15,340 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 13:25:15,350 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 13:25:17,621 - config.database - INFO - Database connection established
+2025-09-22 13:25:17,704 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:25:17] "GET /db/tables HTTP/1.1" 200 -
+2025-09-22 13:25:21,054 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:25:21] "GET /db/ HTTP/1.1" 200 -
+2025-09-22 13:25:24,977 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:25:24] "GET /db/tables HTTP/1.1" 200 -
+2025-09-22 13:25:37,624 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/database.py', reloading
+2025-09-22 13:25:37,801 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 13:25:38,671 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 13:25:38,678 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 13:25:38,689 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 13:25:38,719 - config.database - INFO - Database connection established
+2025-09-22 13:25:38,729 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:25:38] "GET /db/ HTTP/1.1" 200 -
+2025-09-22 13:25:38,785 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:25:38] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 13:25:38,786 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:25:38] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 13:25:38,869 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:25:38] "GET /db/tables HTTP/1.1" 200 -
+2025-09-22 13:26:52,932 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 13:26:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -

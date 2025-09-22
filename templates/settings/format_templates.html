@@ -1,0 +1,1014 @@
+{% extends 'base.html' %}
+
+{% block title %}Format Templates{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1 class="admin-title">Format Templates</h1>
+        <button type="button" class="btn btn-primary" id="newFormatBtn">
+            <i class="fas fa-plus"></i> New Format
+        </button>
+    </div>
+
+    <div class="admin-content">
+        <!-- Format Templates Overview -->
+        <div class="admin-card mb-6">
+            <div class="admin-card-header">
+                <h2 class="admin-card-title">Format Templates Overview</h2>
+            </div>
+            <div class="admin-card-body">
+                <div class="format-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">{{ input_templates|length }}</span>
+                        <span class="stat-label">Input Formats</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">{{ output_templates|length }}</span>
+                        <span class="stat-label">Output Formats</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">{{ bidirectional_templates|length }}</span>
+                        <span class="stat-label">Bidirectional Formats</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Format Templates by Type -->
+        <div class="format-templates-grid">
+            <!-- Input Formats Column -->
+            <div class="format-column">
+                <div class="format-column-header">
+                    <h3 class="format-column-title">
+                        <i class="fas fa-arrow-down text-blue-400"></i>
+                        Input Formats
+                    </h3>
+                    <span class="format-count">{{ input_templates|length }}</span>
+                </div>
+                <div class="format-column-content">
+                    {% if input_templates %}
+                    {% for template in input_templates|sort(attribute='name') %}
+                    <div class="format-card" data-id="{{ template.id }}">
+                        <div class="format-card-header">
+                            <div>
+                                <h4 class="format-card-title">{{ template.name }}</h4>
+                                {% if template.description %}
+                                <p class="text-sm text-gray-400 mt-1">{{ template.description }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Format Fields Preview -->
+                        <div class="format-fields-preview mt-3"
+                            style="background: rgba(255,255,255,0.03); border-radius: 0.5rem; padding: 1.25rem;">
+                            <h5 class="text-sm font-medium text-gray-300 mb-4" style="font-size: 1.1rem;">Fields ({{
+                                template.fields|length }}):</h5>
+                            <table class="fields-table"
+                                style="width: 100%; border-collapse: separate; border-spacing: 0 0.5rem;">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid var(--admin-border);">
+                                        <th style="text-align: left; color: var(--admin-accent); font-weight: 600;">Name
+                                        </th>
+                                        <th style="text-align: left; color: var(--admin-text-secondary);">Type</th>
+                                        <th style="text-align: left; color: var(--admin-text-secondary);">Required</th>
+                                        <th style="text-align: left; color: var(--admin-text-secondary);">Description
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for field in template.fields %}
+                                    <tr style="background: rgba(255,255,255,0.02); border-radius: 0.25rem;">
+                                        <td
+                                            style="font-weight: bold; font-size: 1.08rem; color: #fff; padding: 0.3rem 0.5rem;">
+                                            {{ field.name }}</td>
+                                        <td style="color: var(--admin-accent); padding: 0.3rem 0.5rem;">{{ field.type }}
+                                        </td>
+                                        <td style="padding: 0.3rem 0.5rem;">
+                                            {% if field.required %}
+                                            <span style="color: #ef4444; font-weight: 600;">&#9733; Required</span>
+                                            {% else %}
+                                            <span style="color: #64748b;">Optional</span>
+                                            {% endif %}
+                                        </td>
+                                        <td style="color: var(--admin-text-secondary); padding: 0.3rem 0.5rem;">{{
+                                            field.description }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {% if template.llm_instructions %}
+                        <div class="llm-instructions-preview mt-3">
+                            <h5 class="text-sm font-medium text-gray-300 mb-2">LLM Instructions:</h5>
+                            <p class="text-sm text-gray-400">{{ template.llm_instructions[:100] }}{% if
+                                template.llm_instructions|length > 100 %}...{% endif %}</p>
+                        </div>
+                        {% endif %}
+
+                        <div class="format-card-actions mt-4">
+                            <button class="btn btn-secondary btn-sm view-details" data-id="{{ template.id }}">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="btn btn-secondary btn-sm edit-format" data-id="{{ template.id }}">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-danger btn-sm delete-format" data-id="{{ template.id }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="empty-state">
+                        <p class="text-gray-400 text-center">No input formats defined</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Output Formats Column -->
+            <div class="format-column">
+                <div class="format-column-header">
+                    <h3 class="format-column-title">
+                        <i class="fas fa-arrow-up text-green-400"></i>
+                        Output Formats
+                    </h3>
+                    <span class="format-count">{{ output_templates|length }}</span>
+                </div>
+                <div class="format-column-content">
+                    {% if output_templates %}
+                    {% for template in output_templates|sort(attribute='name') %}
+                    <div class="format-card" data-id="{{ template.id }}">
+                        <div class="format-card-header">
+                            <div>
+                                <h4 class="format-card-title">{{ template.name }}</h4>
+                                {% if template.description %}
+                                <p class="text-sm text-gray-400 mt-1">{{ template.description }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Format Fields Preview -->
+                        <div class="format-fields-preview mt-3"
+                            style="background: rgba(255,255,255,0.03); border-radius: 0.5rem; padding: 1.25rem;">
+                            <h5 class="text-sm font-medium text-gray-300 mb-4" style="font-size: 1.1rem;">Fields ({{
+                                template.fields|length }}):</h5>
+                            <table class="fields-table"
+                                style="width: 100%; border-collapse: separate; border-spacing: 0 0.5rem;">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid var(--admin-border);">
+                                        <th style="text-align: left; color: var(--admin-accent); font-weight: 600;">Name
+                                        </th>
+                                        <th style="text-align: left; color: var(--admin-text-secondary);">Type</th>
+                                        <th style="text-align: left; color: var(--admin-text-secondary);">Required</th>
+                                        <th style="text-align: left; color: var(--admin-text-secondary);">Description
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for field in template.fields %}
+                                    <tr style="background: rgba(255,255,255,0.02); border-radius: 0.25rem;">
+                                        <td
+                                            style="font-weight: bold; font-size: 1.08rem; color: #fff; padding: 0.3rem 0.5rem;">
+                                            {{ field.name }}</td>
+                                        <td style="color: var(--admin-accent); padding: 0.3rem 0.5rem;">{{ field.type }}
+                                        </td>
+                                        <td style="padding: 0.3rem 0.5rem;">
+                                            {% if field.required %}
+                                            <span style="color: #ef4444; font-weight: 600;">&#9733; Required</span>
+                                            {% else %}
+                                            <span style="color: #64748b;">Optional</span>
+                                            {% endif %}
+                                        </td>
+                                        <td style="color: var(--admin-text-secondary); padding: 0.3rem 0.5rem;">{{
+                                            field.description }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {% if template.llm_instructions %}
+                        <div class="llm-instructions-preview mt-3">
+                            <h5 class="text-sm font-medium text-gray-300 mb-2">LLM Instructions:</h5>
+                            <p class="text-sm text-gray-400">{{ template.llm_instructions[:100] }}{% if
+                                template.llm_instructions|length > 100 %}...{% endif %}</p>
+                        </div>
+                        {% endif %}
+
+                        <div class="format-card-actions mt-4">
+                            <button class="btn btn-secondary btn-sm view-details" data-id="{{ template.id }}">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="btn btn-secondary btn-sm edit-format" data-id="{{ template.id }}">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-danger btn-sm delete-format" data-id="{{ template.id }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="empty-state">
+                        <p class="text-gray-400 text-center">No output formats defined</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Bidirectional Formats Column -->
+            {% if bidirectional_templates %}
+            <div class="format-column">
+                <div class="format-column-header">
+                    <h3 class="format-column-title">
+                        <i class="fas fa-arrows-alt-h text-purple-400"></i>
+                        Bidirectional Formats
+                    </h3>
+                    <span class="format-count">{{ bidirectional_templates|length }}</span>
+                </div>
+                <div class="format-column-content">
+                    {% for template in bidirectional_templates|sort(attribute='name') %}
+                    <div class="format-card" data-id="{{ template.id }}">
+                        <div class="format-card-header">
+                            <div>
+                                <h4 class="format-card-title">{{ template.name }}</h4>
+                                {% if template.description %}
+                                <p class="text-sm text-gray-400 mt-1">{{ template.description }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Format Fields Preview -->
+                        <div class="format-fields-preview mt-3"
+                            style="background: rgba(255,255,255,0.03); border-radius: 0.5rem; padding: 1.25rem;">
+                            <h5 class="text-sm font-medium text-gray-300 mb-4" style="font-size: 1.1rem;">Fields ({{
+                                template.fields|length }}):</h5>
+                            <table class="fields-table"
+                                style="width: 100%; border-collapse: separate; border-spacing: 0 0.5rem;">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid var(--admin-border);">
+                                        <th style="text-align: left; color: var(--admin-accent); font-weight: 600;">Name
+                                        </th>
+                                        <th style="text-align: left; color: var(--admin-text-secondary);">Type</th>
+                                        <th style="text-align: left; color: var(--admin-text-secondary);">Required</th>
+                                        <th style="text-align: left; color: var(--admin-text-secondary);">Description
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for field in template.fields %}
+                                    <tr style="background: rgba(255,255,255,0.02); border-radius: 0.25rem;">
+                                        <td
+                                            style="font-weight: bold; font-size: 1.08rem; color: #fff; padding: 0.3rem 0.5rem;">
+                                            {{ field.name }}</td>
+                                        <td style="color: var(--admin-accent); padding: 0.3rem 0.5rem;">{{ field.type }}
+                                        </td>
+                                        <td style="padding: 0.3rem 0.5rem;">
+                                            {% if field.required %}
+                                            <span style="color: #ef4444; font-weight: 600;">&#9733; Required</span>
+                                            {% else %}
+                                            <span style="color: #64748b;">Optional</span>
+                                            {% endif %}
+                                        </td>
+                                        <td style="color: var(--admin-text-secondary); padding: 0.3rem 0.5rem;">{{
+                                            field.description }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {% if template.llm_instructions %}
+                        <div class="llm-instructions-preview mt-3">
+                            <h5 class="text-sm font-medium text-gray-300 mb-2">LLM Instructions:</h5>
+                            <p class="text-sm text-gray-400">{{ template.llm_instructions[:100] }}{% if
+                                template.llm_instructions|length > 100 %}...{% endif %}</p>
+                        </div>
+                        {% endif %}
+
+                        <div class="format-card-actions mt-4">
+                            <button class="btn btn-secondary btn-sm view-details" data-id="{{ template.id }}">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="btn btn-secondary btn-sm edit-format" data-id="{{ template.id }}">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-danger btn-sm delete-format" data-id="{{ template.id }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Format Template Modal -->
+<div id="formatModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title" id="modalTitle">New Format Template</h2>
+            <button type="button" class="modal-close" id="modalCloseBtn">&times;</button>
+        </div>
+        <form id="formatForm">
+            <input type="hidden" id="formatId" name="id">
+
+            <div class="form-group">
+                <label class="form-label" for="formatName">Template Name</label>
+                <input type="text" id="formatName" name="name" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="formatDescription">Description</label>
+                <textarea id="formatDescription" name="description" class="form-textarea" rows="3"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="formatType">Format Type</label>
+                <select id="formatType" name="format_type" class="form-select" required>
+                    <option value="">Select Format Type...</option>
+                    <option value="input">Input Format</option>
+                    <option value="output">Output Format</option>
+                    <option value="bidirectional">Bidirectional Format</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="llmInstructions">LLM Instructions</label>
+                <textarea id="llmInstructions" name="llm_instructions" class="form-textarea" rows="3"
+                    placeholder="Provide clear instructions for the LLM on how to interpret input data or structure output responses..."></textarea>
+                <p class="admin-help-text">
+                    For input formats: Explain how to interpret the input data structure.<br>
+                    For output formats: Explain how to structure the response (e.g., "Return only the JSON object with
+                    no commentary").
+                </p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="formatFields">Format Fields (JSON)</label>
+                <div class="format-editor">
+                    <textarea id="formatFields" name="fields" class="form-textarea" required
+                        placeholder='[{"name": "title", "type": "string", "required": true, "description": "The title"}]'></textarea>
+                </div>
+                <p class="admin-help-text">
+                    Define the format fields using JSON. Each field should have: name, type, required, and description.
+                </p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Format Preview</label>
+                <div id="formatPreview" class="format-preview">
+                    <div class="preview-content">
+                        <pre><code id="previewCode">Select a format to preview...</code></pre>
+                    </div>
+                    <div class="preview-validation">
+                        <div id="validationStatus" class="validation-status">
+                            <!-- Validation status will be shown here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-4">
+                <button type="button" class="btn btn-secondary" id="testFormatBtn">Test Format</button>
+                <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Format</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Format Details Modal -->
+<div id="detailsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Format Template Details</h2>
+            <button type="button" class="modal-close" id="detailsModalCloseBtn">&times;</button>
+        </div>
+        <div id="detailsContent" class="modal-body">
+            <!-- Details will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<!-- Test Format Modal -->
+<div id="testModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Test Format</h2>
+            <button type="button" class="modal-close" id="testModalCloseBtn">&times;</button>
+        </div>
+        <form id="testForm">
+            <div class="form-group">
+                <label class="form-label" for="testInput">Test Data (JSON)</label>
+                <textarea id="testInput" class="form-textarea" required
+                    placeholder="Enter test data in JSON format..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Validation Result</label>
+                <div id="testResult" class="test-result">
+                    <!-- Test results will be shown here -->
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-4">
+                <button type="button" class="btn btn-secondary" id="closeTestBtn">Close</button>
+                <button type="submit" class="btn btn-primary">Validate</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .format-stats {
+        display: flex;
+        gap: 2rem;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+        background: var(--admin-bg-card);
+        border: 1px solid var(--admin-border);
+        border-radius: 0.5rem;
+        min-width: 120px;
+    }
+
+    .stat-number {
+        display: block;
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--admin-accent);
+    }
+
+    .stat-label {
+        display: block;
+        font-size: 0.875rem;
+        color: var(--admin-text-secondary);
+        margin-top: 0.5rem;
+    }
+
+    .format-templates-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+
+    .format-column {
+        background: var(--admin-bg-card);
+        border: 1px solid var(--admin-border);
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+
+    .format-column-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: var(--admin-bg-row-odd);
+        border-bottom: 1px solid var(--admin-border);
+    }
+
+    .format-column-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--admin-text);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .format-count {
+        background: var(--admin-accent);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .format-column-content {
+        padding: 1rem;
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    .format-column-content .format-card {
+        margin-bottom: 2rem;
+        background: #23293a;
+        border: 2px solid #3b82f6;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+        transition: all 0.2s ease;
+    }
+
+    .format-column-content .format-card:hover {
+        border-color: #10b981;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22);
+        transform: translateY(-2px) scale(1.01);
+    }
+
+    .format-column-content .format-card:last-child {
+        margin-bottom: 0;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: var(--admin-text-secondary);
+    }
+
+    .llm-instructions-preview {
+        background: var(--admin-bg-row-odd);
+        border-radius: 0.25rem;
+        padding: 0.75rem;
+        border-left: 3px solid var(--admin-accent);
+    }
+
+    .format-editor {
+        position: relative;
+    }
+
+    .form-textarea {
+        min-height: 200px;
+        font-family: 'Monaco', 'Menlo', monospace;
+        line-height: 1.6;
+        resize: vertical;
+    }
+
+    .format-preview {
+        background: var(--admin-bg-card);
+        border: 1px solid var(--admin-border);
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+
+    .preview-content {
+        padding: 1rem;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .preview-content pre {
+        margin: 0;
+        white-space: pre-wrap;
+    }
+
+    .preview-validation {
+        border-top: 1px solid var(--admin-border);
+        padding: 0.5rem 1rem;
+        background: var(--admin-bg-row-odd);
+    }
+
+    .validation-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-height: 1.5rem;
+    }
+
+    .validation-status.valid {
+        color: var(--admin-success);
+    }
+
+    .validation-status.invalid {
+        color: var(--admin-error);
+    }
+
+    .test-result {
+        background: var(--admin-bg-card);
+        border: 1px solid var(--admin-border);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        min-height: 100px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .test-result.valid {
+        border-color: var(--admin-success);
+    }
+
+    .test-result.invalid {
+        border-color: var(--admin-error);
+    }
+
+    #formatTemplatesList .format-card {
+        background: var(--admin-bg-card);
+        border: 1px solid var(--admin-border);
+        border-radius: 0.5rem;
+        padding: 1rem;
+    }
+
+    #formatTemplatesList .format-card:hover {
+        border-color: var(--admin-accent);
+    }
+
+    .format-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.5rem;
+    }
+
+    .format-card-title {
+        font-weight: 600;
+        color: var(--admin-text);
+    }
+
+    .format-card-actions {
+        margin-top: 2rem;
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+    }
+
+    .fields-table th,
+    .fields-table td {
+        border: none;
+        vertical-align: top;
+    }
+
+    .fields-table tr+tr {
+        border-top: 1px solid var(--admin-border);
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-content {
+        background-color: #1e293b;
+        border: 1px solid #475569;
+        border-radius: 0.5rem;
+        padding: 0;
+        width: 90%;
+        max-width: 800px;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid #475569;
+        background-color: #334155;
+    }
+
+    .modal-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #e2e8f0;
+        margin: 0;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 0;
+        width: 2rem;
+        height: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.25rem;
+    }
+
+    .modal-close:hover {
+        background-color: #475569;
+        color: #e2e8f0;
+    }
+
+    .modal-body {
+        padding: 1rem;
+    }
+
+    /* Form Styles */
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 500;
+        color: #e2e8f0;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-input,
+    .form-textarea,
+    .form-select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #475569;
+        border-radius: 0.375rem;
+        background-color: #1e293b;
+        color: #e2e8f0;
+        font-size: 0.875rem;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 1px #3b82f6;
+    }
+
+    /* Button Styles */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background-color: #3b82f6;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #2563eb;
+    }
+
+    .btn-secondary {
+        background-color: #475569;
+        color: #e2e8f0;
+    }
+
+    .btn-secondary:hover {
+        background-color: #64748b;
+    }
+
+    .btn-danger {
+        background-color: #dc2626;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background-color: #b91c1c;
+    }
+
+    .btn-sm {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.75rem;
+    }
+
+    white-space: nowrap;
+</style>
+
+<script>
+    // Format template management
+    let currentFormatId = null;
+
+    // Show format modal
+    function showFormatModal(isNew = true) {
+        const modal = document.getElementById('formatModal');
+        const form = document.getElementById('formatForm');
+        const title = document.getElementById('modalTitle');
+
+        title.textContent = isNew ? 'New Format Template' : 'Edit Format Template';
+        if (isNew) {
+            form.reset();
+            document.getElementById('formatId').value = '';
+            currentFormatId = null;
+        }
+
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    // View format details
+    async function viewFormatDetails(id) {
+        try {
+            const response = await fetch(`/api/workflow/formats/templates/${id}`);
+            const format = await response.json();
+
+            const detailsContent = document.getElementById('detailsContent');
+            detailsContent.innerHTML = `
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="text-lg font-semibold">${format.name}</h3>
+                        <p class="text-sm text-gray-400">${format.description || 'No description'}</p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium mb-2">Format Type</h4>
+                        <span class="inline-block px-2 py-1 bg-gray-700 rounded text-sm">${format.format_type}</span>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium mb-2">Fields (${format.fields.length})</h4>
+                        <div class="space-y-2">
+                            ${format.fields.map(field => `
+                                <div class="bg-gray-800 p-3 rounded">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="font-medium">${field.name}</span>
+                                        <span class="text-xs px-2 py-1 bg-blue-600 rounded">${field.type}</span>
+                                        ${field.required ? '<span class="text-xs px-2 py-1 bg-red-600 rounded">Required</span>' : ''}
+                                    </div>
+                                    ${field.description ? `<p class="text-sm text-gray-400">${field.description}</p>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium mb-2">Raw JSON</h4>
+                        <pre class="bg-gray-800 p-3 rounded overflow-x-auto text-sm"><code>${JSON.stringify(format, null, 2)}</code></pre>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('detailsModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        } catch (error) {
+            alert('Failed to load format details');
+        }
+    }
+
+    // Edit format
+    async function editFormat(id) {
+        try {
+            const response = await fetch(`/api/workflow/formats/templates/${id}`);
+            const format = await response.json();
+
+            document.getElementById('formatId').value = format.id;
+            document.getElementById('formatName').value = format.name;
+            document.getElementById('formatDescription').value = format.description || '';
+            document.getElementById('formatType').value = format.format_type;
+            document.getElementById('formatFields').value = JSON.stringify(format.fields, null, 2);
+            document.getElementById('llmInstructions').value = format.llm_instructions || '';
+
+            currentFormatId = id;
+            showFormatModal(false);
+            updatePreview();
+        } catch (error) {
+            alert('Failed to load format template');
+        }
+    }
+
+    // Delete format
+    async function deleteFormat(id) {
+        if (!confirm('Are you sure you want to delete this format template?')) return;
+
+        try {
+            await fetch(`/api/workflow/formats/templates/${id}`, { method: 'DELETE' });
+            location.reload(); // Reload to show updated list
+        } catch (error) {
+            alert('Failed to delete format template');
+        }
+    }
+
+    // Update preview
+    function updatePreview() {
+        const fieldsText = document.getElementById('formatFields').value;
+        const previewCode = document.getElementById('previewCode');
+
+        try {
+            const fields = JSON.parse(fieldsText);
+            previewCode.textContent = JSON.stringify(fields, null, 2);
+            document.getElementById('validationStatus').innerHTML = '<span class="valid">✓ Valid JSON</span>';
+        } catch (error) {
+            previewCode.textContent = 'Invalid JSON';
+            document.getElementById('validationStatus').innerHTML = '<span class="invalid">✗ Invalid JSON</span>';
+        }
+    }
+
+    // Validate test data
+    async function validateTestData(event) {
+        event.preventDefault();
+        const testInput = document.getElementById('testInput').value;
+        const testResult = document.getElementById('testResult');
+
+        try {
+            const testData = JSON.parse(testInput);
+            const response = await fetch('/api/workflow/formats/validate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    fields: currentFormatFields,
+                    test_data: testData
+                })
+            });
+
+            const result = await response.json();
+            testResult.innerHTML = result.valid
+                ? '<span class="valid">✓ Valid data</span>'
+                : `<span class="invalid">✗ Invalid data: ${result.error}</span>`;
+            testResult.className = `test-result ${result.valid ? 'valid' : 'invalid'}`;
+        } catch (error) {
+            testResult.innerHTML = '<span class="invalid">✗ Invalid JSON</span>';
+            testResult.className = 'test-result invalid';
+        }
+    }
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('newFormatBtn').addEventListener('click', () => showFormatModal(true));
+
+        document.querySelectorAll('.view-details').forEach(btn => {
+            btn.addEventListener('click', () => viewFormatDetails(btn.dataset.id));
+        });
+
+        document.querySelectorAll('.edit-format').forEach(btn => {
+            btn.addEventListener('click', () => editFormat(btn.dataset.id));
+        });
+
+        document.querySelectorAll('.delete-format').forEach(btn => {
+            btn.addEventListener('click', () => deleteFormat(btn.dataset.id));
+        });
+
+        document.getElementById('formatFields').addEventListener('input', updatePreview);
+        document.getElementById('formatType').addEventListener('change', updatePreview);
+
+        document.getElementById('formatForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = {
+                name: formData.get('name'),
+                description: formData.get('description'),
+                format_type: formData.get('format_type'),
+                fields: JSON.parse(formData.get('fields')),
+                llm_instructions: formData.get('llm_instructions')
+            };
+
+            try {
+                const method = currentFormatId ? 'PUT' : 'POST';
+                const url = currentFormatId
+                    ? `/api/workflow/formats/templates/${currentFormatId}`
+                    : '/api/workflow/formats/templates';
+
+                await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                document.getElementById('formatModal').classList.remove('active');
+                document.body.style.overflow = '';
+                location.reload(); // Reload to show updated list
+            } catch (error) {
+                alert('Failed to save format template');
+            }
+        });
+
+        document.getElementById('testForm').addEventListener('submit', validateTestData);
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            document.getElementById('formatModal').classList.remove('active');
+            document.body.style.overflow = '';
+        });
+        document.getElementById('closeTestBtn').addEventListener('click', () => {
+            document.getElementById('testModal').classList.remove('active');
+        });
+        document.getElementById('modalCloseBtn').addEventListener('click', () => {
+            document.getElementById('formatModal').classList.remove('active');
+            document.body.style.overflow = '';
+        });
+        document.getElementById('detailsModalCloseBtn').addEventListener('click', () => {
+            document.getElementById('detailsModal').classList.remove('active');
+            document.body.style.overflow = '';
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,166 @@
+<!-- Posting Control Section -->
+<div class="section-card">
+    <div class="section-title with-right-content" onclick="toggleAccordion('posting-control')">
+        <div class="section-title-left">
+            <i class="fas fa-chevron-right accordion-chevron" id="posting-control-chevron"></i>
+            <i class="fas fa-paper-plane"></i>
+            Posting Control
+        </div>
+        <div class="section-title-right" id="next-posts-info" style="font-size: 0.9rem; color: #94a3b8;">
+            Loading...
+        </div>
+    </div>
+    <div class="section-content" id="posting-control-content">
+    
+    <!-- Current Status -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <div style="font-weight: 600; margin-bottom: 5px;">Today's Post Status</div>
+            <div id="post-status" class="status-indicator status-draft">Draft</div>
+        </div>
+        <div id="last-post-info" style="color: #94a3b8; font-size: 0.9rem;">
+            No posts today
+        </div>
+    </div>
+    
+    <!-- Schedule Settings -->
+    <div style="background: #23273a; border: 1px solid #475569; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="color: #f1f5f9; font-size: 1.1rem; margin: 0; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-clock"></i>
+                Schedule Settings
+            </h3>
+            <button id="add-schedule-btn" class="btn btn-primary" style="font-size: 0.9rem; padding: 6px 12px;">
+                <i class="fas fa-plus"></i>
+                Add Schedule
+            </button>
+        </div>
+        
+        <!-- Active Schedules List -->
+        <div id="schedules-list" style="margin-bottom: 20px;">
+            <!-- Schedules will be dynamically loaded here -->
+        </div>
+        
+        <!-- Add New Schedule Form (Hidden by default) -->
+        <div id="add-schedule-form" style="display: none; background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 15px; margin-bottom: 15px;">
+            <h4 style="color: #f1f5f9; font-size: 1rem; margin: 0 0 15px 0;">Add New Schedule</h4>
+            
+            <!-- Schedule Name -->
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; color: #f1f5f9; font-weight: 600; margin-bottom: 8px;">Schedule Name</label>
+                <input type="text" id="new-schedule-name" placeholder="e.g., Weekdays, Weekends, Daily" 
+                       style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 8px 12px; color: #f1f5f9; font-size: 0.9rem; width: 100%;">
+            </div>
+            
+            <!-- Time Selection -->
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; color: #f1f5f9; font-weight: 600; margin-bottom: 8px;">Posting Time</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="time" id="new-schedule-time" value="17:00" 
+                           style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 8px 12px; color: #f1f5f9; font-size: 0.9rem;">
+                    <select id="new-schedule-timezone" 
+                            style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 8px 12px; color: #f1f5f9; font-size: 0.9rem;">
+                        <option value="GMT">GMT</option>
+                        <option value="EST">EST</option>
+                        <option value="PST">PST</option>
+                        <option value="CET">CET</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Day Selection -->
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; color: #f1f5f9; font-weight: 600; margin-bottom: 8px;">Posting Days</label>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <label style="display: flex; align-items: center; gap: 5px; color: #f1f5f9; font-size: 0.9rem; cursor: pointer;">
+                        <input type="checkbox" id="new-day-mon" checked style="accent-color: #f59e0b;">
+                        Mon
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; color: #f1f5f9; font-size: 0.9rem; cursor: pointer;">
+                        <input type="checkbox" id="new-day-tue" checked style="accent-color: #f59e0b;">
+                        Tue
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; color: #f1f5f9; font-size: 0.9rem; cursor: pointer;">
+                        <input type="checkbox" id="new-day-wed" checked style="accent-color: #f59e0b;">
+                        Wed
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; color: #f1f5f9; font-size: 0.9rem; cursor: pointer;">
+                        <input type="checkbox" id="new-day-thu" checked style="accent-color: #f59e0b;">
+                        Thu
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; color: #f1f5f9; font-size: 0.9rem; cursor: pointer;">
+                        <input type="checkbox" id="new-day-fri" checked style="accent-color: #f59e0b;">
+                        Fri
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; color: #f1f5f9; font-size: 0.9rem; cursor: pointer;">
+                        <input type="checkbox" id="new-day-sat" style="accent-color: #f59e0b;">
+                        Sat
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; color: #f1f5f9; font-size: 0.9rem; cursor: pointer;">
+                        <input type="checkbox" id="new-day-sun" style="accent-color: #f59e0b;">
+                        Sun
+                    </label>
+                </div>
+                
+                <!-- Preset Options -->
+                <div style="margin-top: 10px; display: flex; gap: 10px;">
+                    <button type="button" id="new-preset-weekdays" class="btn btn-sm btn-secondary" style="font-size: 0.8rem; padding: 4px 8px;">
+                        Weekdays Only
+                    </button>
+                    <button type="button" id="new-preset-weekends" class="btn btn-sm btn-secondary" style="font-size: 0.8rem; padding: 4px 8px;">
+                        Weekends Only
+                    </button>
+                    <button type="button" id="new-preset-everyday" class="btn btn-sm btn-secondary" style="font-size: 0.8rem; padding: 4px 8px;">
+                        Every Day
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Form Controls -->
+            <div style="display: flex; gap: 10px;">
+                <button id="save-new-schedule-btn" class="btn btn-success">
+                    <i class="fas fa-save"></i>
+                    Save Schedule
+                </button>
+                <button id="cancel-new-schedule-btn" class="btn btn-secondary">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </button>
+            </div>
+        </div>
+        
+        
+        <!-- Global Schedule Controls -->
+        <div style="display: flex; gap: 10px;">
+            <button id="test-all-schedules-btn" class="btn btn-secondary">
+                <i class="fas fa-eye"></i>
+                Preview All Schedules
+            </button>
+            <button id="clear-all-schedules-btn" class="btn btn-secondary">
+                <i class="fas fa-calendar-times"></i>
+                Clear All Schedules
+            </button>
+        </div>
+    </div>
+    
+    <!-- Manual Controls -->
+    <div style="background: #23273a; border: 1px solid #475569; border-radius: 8px; padding: 20px;">
+        <h3 style="color: #f1f5f9; font-size: 1.1rem; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-hand-paper"></i>
+            Manual Controls
+        </h3>
+        
+        <div style="text-align: center;">
+            <button id="post-now-btn" class="btn btn-success" disabled>
+                <i class="fas fa-paper-plane"></i>
+                Post Now
+            </button>
+            <button id="schedule-tomorrow-btn" class="btn btn-secondary" disabled>
+                <i class="fas fa-calendar-plus"></i>
+                Schedule for Tomorrow
+            </button>
+        </div>
+    </div>
+    </div>
+</div>
+

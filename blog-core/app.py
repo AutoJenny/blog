@@ -8,7 +8,7 @@ from datetime import datetime
 import pytz
 from humanize import naturaltime
 from db import get_db_conn
-import psycopg2.extras
+import psycopg.rows
 
 # Configure logging
 logging.basicConfig(
@@ -21,6 +21,9 @@ logging.basicConfig(
 )
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
+
+# Set secret key for sessions
+app.secret_key = 'your-secret-key-here-change-in-production'
 
 # Enable CORS for cross-origin requests from microservices
 CORS(app, origins=["http://localhost:5002", "http://localhost:5005"], supports_credentials=True)
@@ -63,11 +66,11 @@ def workflow_substage_redirect(post_id, stage, substage):
     
     # Get the first step for this substage
     from db import get_db_conn
-    import psycopg2.extras
+    import psycopg.rows
     
     try:
         with get_db_conn() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+            with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 cur.execute("""
                     SELECT wse.name
                     FROM workflow_step_entity wse
@@ -99,7 +102,7 @@ def workflow_main(post_id=None, stage=None, substage=None, step=None):
     from modules.nav.services import get_workflow_context
     from app.services.shared import get_all_posts_from_db
     from db import get_db_conn
-    import psycopg2.extras
+    import psycopg.rows
     import json
     
     all_posts = get_all_posts_from_db()
@@ -120,7 +123,7 @@ def workflow_main(post_id=None, stage=None, substage=None, step=None):
     if not step:
         try:
             with get_db_conn() as conn:
-                with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                     cur.execute("""
                         SELECT wse.name
                         FROM workflow_step_entity wse
@@ -147,10 +150,10 @@ def workflow_main(post_id=None, stage=None, substage=None, step=None):
     
     try:
         from db import get_db_conn
-        import psycopg2.extras
+        import psycopg.rows
         
         with get_db_conn() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+            with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 # Convert URL format (lowercase with underscores) to DB format (title case with spaces)
                 display_step = step.replace('_', ' ').title()
                 
@@ -252,7 +255,7 @@ def health():
 def posts_listing():
     """Posts listing page with full functionality."""
     import logging
-    import psycopg2.extras
+    import psycopg.rows
     logger = logging.getLogger("blog_debug")
     posts = []
     substages = {}
@@ -261,7 +264,7 @@ def posts_listing():
     
     try:
         with get_db_conn() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+            with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 # Get all substages
                 cur.execute("SELECT id, name FROM workflow_sub_stage_entity ORDER BY id;")
                 substages = {row['id']: row['name'] for row in cur.fetchall()}
@@ -322,7 +325,7 @@ def post_public(post_id):
     # In the future, this could be enhanced to show the full post content
     try:
         with get_db_conn() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(row_factory=dict_row) as cur:
                 cur.execute("""
                     SELECT p.*, pd.idea_seed, pd.provisional_title, pd.intro_blurb
                     FROM post p
@@ -354,7 +357,7 @@ def update_post_status(post_id):
         status = data.get('value', 'draft')
         
         with get_db_conn() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(row_factory=dict_row) as cur:
                 cur.execute("""
                     UPDATE post SET status = %s, updated_at = NOW() 
                     WHERE id = %s
@@ -460,10 +463,10 @@ def llm_actions_content():
         step_id = None
         try:
             from db import get_db_conn
-            import psycopg2.extras
+            import psycopg.rows
             
             with get_db_conn() as conn:
-                with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                     # Convert URL format to DB format
                     display_step = step.replace('_', ' ').title()
                     
@@ -581,10 +584,10 @@ def llm_actions_field_mappings():
 def get_all_prompts():
     """Get all prompts from the llm_prompt table."""
     from db import get_db_conn
-    import psycopg2.extras
+    import psycopg.rows
     
     with get_db_conn() as conn:
-        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
             cur.execute("""
                 SELECT id, name, 
                        COALESCE(system_prompt, prompt_text) as prompt_text,
@@ -604,10 +607,10 @@ def get_all_prompts():
 def get_system_prompts():
     """Get system prompts from the llm_prompt table."""
     from db import get_db_conn
-    import psycopg2.extras
+    import psycopg.rows
     
     with get_db_conn() as conn:
-        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
             cur.execute("""
                 SELECT id, name, description, prompt_text, system_prompt
                 FROM llm_prompt
@@ -622,10 +625,10 @@ def get_system_prompts():
 def get_step_prompts(step_id):
     """Get prompts for a specific step."""
     from db import get_db_conn
-    import psycopg2.extras
+    import psycopg.rows
     
     with get_db_conn() as conn:
-        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
             cur.execute("""
                 SELECT 
                     wsp.system_prompt_id,
@@ -665,7 +668,7 @@ def save_step_prompts(step_id):
         abort(400, "Missing required fields")
     
     with get_db_conn() as conn:
-        with conn.cursor() as cur:
+        with conn.cursor(row_factory=dict_row) as cur:
             # Delete existing prompts for this step
             cur.execute("""
                 DELETE FROM workflow_step_prompt
@@ -685,10 +688,10 @@ def save_step_prompts(step_id):
 def get_post_development(post_id):
     """Get all development fields for a post."""
     from db import get_db_conn
-    import psycopg2.extras
+    import psycopg.rows
     
     with get_db_conn() as conn:
-        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
             # Get column names from post_development table
             cur.execute("""
                 SELECT column_name 
@@ -715,7 +718,7 @@ def get_post_development(post_id):
 def get_available_fields():
     """Get all available fields from post_development table."""
     from db import get_db_conn
-    import psycopg2.extras
+    import psycopg.rows
     from flask import request
     
     step_id = request.args.get('step_id', type=int)
@@ -723,7 +726,7 @@ def get_available_fields():
     stage_id = request.args.get('stage_id', type=int)
     
     with get_db_conn() as conn:
-        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
             # Get post_development fields
             cur.execute("""
                 SELECT column_name
@@ -839,7 +842,7 @@ def services_status():
 def persist_step_settings():
     """Get or persist workflow step settings (task prompt and system prompt) to database."""
     from db import get_db_conn
-    import psycopg2.extras
+    import psycopg.rows
     import json
     import logging
     
@@ -851,7 +854,7 @@ def persist_step_settings():
         
         try:
             with get_db_conn() as conn:
-                with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                     cur.execute("""
                         SELECT task_prompt_id, system_prompt_id
                         FROM workflow_step_prompt
@@ -888,7 +891,7 @@ def persist_step_settings():
         
         try:
             with get_db_conn() as conn:
-                with conn.cursor() as cur:
+                with conn.cursor(row_factory=dict_row) as cur:
                     # Check if entry exists for this step
                     cur.execute("SELECT id FROM workflow_step_prompt WHERE step_id = %s", (step_id,))
                     existing = cur.fetchone()
@@ -1010,7 +1013,7 @@ def get_step_id():
     
     try:
         with get_db_conn() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 # Convert URL format (lowercase with underscores) to DB format (title case with spaces)
                 db_step_name = step.replace('_', ' ').title()
                 
@@ -1071,7 +1074,7 @@ def get_llm_providers():
     """Get available LLM providers from database."""
     try:
         conn = get_db_conn()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         cur.execute("SELECT id, name, type, api_url FROM llm_provider ORDER BY name")
         providers = cur.fetchall()
         cur.close()
@@ -1085,7 +1088,7 @@ def get_llm_models():
     """Get available LLM models from database."""
     try:
         conn = get_db_conn()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         cur.execute("""
             SELECT m.id, m.name, m.provider_id, p.name as provider_name 
             FROM llm_model m 
@@ -1104,7 +1107,7 @@ def step_llm_settings(step_id):
     """Get or update LLM settings for a workflow step."""
     try:
         conn = get_db_conn()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         
         if request.method == 'GET':
             cur.execute("SELECT config FROM workflow_step_entity WHERE id = %s", (step_id,))

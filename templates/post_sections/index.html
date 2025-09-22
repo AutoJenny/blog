@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sections Microservice - BlogForge</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --sections-green: #013828;
+            --sections-green-dark: #065f46;
+            --sections-green-light: #10b981;
+            --sections-bg: #013828;
+            --sections-surface: #065f46;
+            --sections-border: #10b981;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--sections-bg);
+            color: #e0e0e0;
+        }
+        .sections-container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .sections-header {
+            background: var(--sections-surface);
+            border-radius: 12px;
+            border: 1px solid var(--sections-border);
+            padding: 32px 24px;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+        .sections-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--sections-green-light);
+        }
+        .sections-desc {
+            color: #b9fbc0;
+            margin-top: 12px;
+            font-size: 1.1rem;
+        }
+        .sections-placeholder {
+            background: #022c22;
+            border-radius: 8px;
+            padding: 32px;
+            text-align: center;
+            color: #b9fbc0;
+            font-size: 1.2rem;
+            border: 1px solid var(--sections-green-dark);
+        }
+    </style>
+</head>
+<body>
+    <div class="sections-container">
+        <div class="sections-header">
+            <div class="sections-title"><i class="fas fa-layer-group"></i> Sections Microservice</div>
+            <div class="sections-desc">This is the placeholder for the post Sections panel (port 5003).</div>
+        </div>
+        <div class="sections-placeholder">
+            <i class="fas fa-cogs fa-2x"></i><br><br>
+            Sections microservice running!<br>
+            (Replace this with your actual UI soon.)
+        </div>
+    </div>
+</body>
+</html> 

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page - Sections Microservice</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --sections-green: #013828;
+            --sections-green-dark: #065f46;
+            --sections-green-light: #10b981;
+            --sections-bg: #013828;
+            --sections-surface: #065f46;
+            --sections-border: #10b981;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--sections-bg);
+            color: #e0e0e0;
+        }
+        .test-container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-header {
+            background: var(--sections-surface);
+            border-radius: 12px;
+            border: 2px solid var(--sections-green-light);
+            padding: 24px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        .test-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--sections-green-light);
+            margin-bottom: 12px;
+        }
+        .test-status {
+            background: #10b981;
+            color: #013828;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .test-content {
+            background: #022c22;
+            border-radius: 8px;
+            padding: 24px;
+            border: 1px solid var(--sections-green-dark);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            background: var(--sections-surface);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border-left: 4px solid var(--sections-green-light);
+        }
+        .test-section h3 {
+            color: var(--sections-green-light);
+            margin-top: 0;
+        }
+        .success-indicator {
+            background: #10b981;
+            color: #013828;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .info-box {
+            background: #1e40af;
+            color: #dbeafe;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #3b82f6;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <div class="test-title">
+                <i class="fas fa-check-circle"></i> Sections Microservice Test Page
+            </div>
+            <div class="test-status">✅ IFRAME WORKING</div>
+        </div>
+
+        <div class="info-box">
+            <strong>If you can see this page, the iframe embedding is working correctly!</strong><br>
+            This confirms that blog-core (port 5001) can successfully embed content from blog-post-sections (port 5003).
+        </div>
+
+        <div class="test-content">
+            <h2><i class="fas fa-info-circle"></i> Test Information</h2>
+            
+            <div class="test-section">
+                <h3><i class="fas fa-server"></i> Service Status</h3>
+                <p><span class="success-indicator">RUNNING</span> blog-post-sections on port 5003</p>
+                <p><span class="success-indicator">RESPONDING</span> to HTTP requests</p>
+                <p><span class="success-indicator">EMBEDDED</span> in main workflow page</p>
+            </div>
+
+            <div class="test-section">
+                <h3><i class="fas fa-code"></i> Technical Details</h3>
+                <p><strong>Service:</strong> blog-post-sections</p>
+                <p><strong>Port:</strong> 5003</p>
+                <p><strong>Framework:</strong> Flask</p>
+                <p><strong>Embedding:</strong> iframe from blog-core (port 5001)</p>
+            </div>
+
+            <div class="test-section">
+                <h3><i class="fas fa-palette"></i> Visual Confirmation</h3>
+                <p>This green-themed page confirms the sections microservice is:</p>
+                <ul>
+                    <li>✅ Running and accessible</li>
+                    <li>✅ Properly styled with sections theme</li>
+                    <li>✅ Successfully embedded in the main workflow</li>
+                    <li>✅ Ready for actual sections functionality</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="test-content">
+            <h2><i class="fas fa-clock"></i> Next Steps</h2>
+            <p>Now that the iframe embedding is confirmed working, the next step is to implement actual sections functionality:</p>
+            <ul>
+                <li>Database integration for sections</li>
+                <li>API endpoints for CRUD operations</li>
+                <li>Sections management UI</li>
+                <li>Integration with the main workflow system</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html> 

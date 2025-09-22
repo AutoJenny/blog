@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Test</h1>
+    <div id="result">Loading...</div>
+    
+    <script>
+        async function testAPI() {
+            try {
+                console.log('Testing API...');
+                const response = await fetch('/api/clan/product/35676/related');
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const products = await response.json();
+                console.log('Products:', products);
+                
+                const resultDiv = document.getElementById('result');
+                if (products && products.length > 0) {
+                    resultDiv.innerHTML = `
+                        <h2>Found ${products.length} products:</h2>
+                        ${products.map(product => `
+                            <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+                                <h3>${product.name}</h3>
+                                <p>Price: ${product.price}</p>
+                                <p>SKU: ${product.sku}</p>
+                                <img src="${product.image_url}" alt="${product.name}" style="max-width: 100px;">
+                            </div>
+                        `).join('')}
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<h2>No products found</h2>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = `<h2>Error: ${error.message}</h2>`;
+            }
+        }
+        
+        // Test when page loads
+        document.addEventListener('DOMContentLoaded', testAPI);
+    </script>
+</body>
+</html>
+
+
+

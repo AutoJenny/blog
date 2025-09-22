@@ -1,0 +1,71 @@
+ * Serving Flask app 'app'
+ * Debug mode: on
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://10.0.4.32:5001
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:werkzeug: * Restarting with stat
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 830-133-383
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 11:27:08] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 11:27:31] "GET /health HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:09:31] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:10:03] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:10:03] "GET /api/posts HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:10:03] "GET /api/daily-product-posts/today-status HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:10:03] "[31m[1mGET /api/syndication/pieces HTTP/1.1[0m" 400 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:10:03] "GET /api/social-media/timeline HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:10:03] "GET /api/syndication/facebook/credentials HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:10:03] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:10:03] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:10:03] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:10:21] "[33mGET /syndication/facebook/product_post HTTP/1.1[0m" 404 -
+ERROR:__main__:Error in channel_config: facebook_feed_post_config.html
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:10:28] "[35m[1mGET /syndication/facebook/blog_post HTTP/1.1[0m" 500 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:10:32] "GET /publishing HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:10:33] "GET /api/posts HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:10:45] "GET /api/posts HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:10:45] "GET /api/daily-product-posts/today-status HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:10:45] "[31m[1mGET /api/syndication/pieces HTTP/1.1[0m" 400 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:10:45] "GET /api/social-media/timeline HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:10:45] "GET /api/syndication/facebook/credentials HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:10:47] "[33mGET /syndication/facebook/product_post HTTP/1.1[0m" 404 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:10:51] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:10:51] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:10:51] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:11:13] "[33mGET /syndication/facebook/product_post HTTP/1.1[0m" 404 -
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:11:15] "[33mGET /syndication/ HTTP/1.1[0m" 404 -
+ERROR:models.content_process:Error fetching processes by status developed: relation "social_media_content_processes" does not exist
+LINE 7:                         FROM social_media_content_processes ...
+                                     ^
+
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:11:25] "GET /api/syndication/content-processes HTTP/1.1" 200 -
+ERROR:models.social_media:Error fetching platforms by status developed: relation "social_media_platforms" does not exist
+LINE 3:                         FROM social_media_platforms
+                                     ^
+
+INFO:werkzeug:127.0.0.1 - - [21/Sep/2025 13:11:27] "GET /api/syndication/social-media-platforms HTTP/1.1" 200 -
+INFO:werkzeug: * Detected change in '/Users/autojenny/Documents/projects/blog/blog-launchpad/app.py', reloading
+INFO:werkzeug: * Restarting with stat
+Traceback (most recent call last):
+  File "/Users/autojenny/Documents/projects/blog/blog-launchpad/app.py", line 2581, in <module>
+    from clan_api import get_categories, get_products, get_category_products, get_related_products, refresh_cache, get_cache_stats
+  File "/Users/autojenny/Documents/projects/blog/blog-launchpad/clan_api.py", line 10, in <module>
+    from clan_cache import clan_cache
+  File "/Users/autojenny/Documents/projects/blog/blog-launchpad/clan_cache.py", line 571, in <module>
+    clan_cache = ClanCache()
+                 ^^^^^^^^^^^
+  File "/Users/autojenny/Documents/projects/blog/blog-launchpad/clan_cache.py", line 26, in __init__
+    self.init_database()
+  File "/Users/autojenny/Documents/projects/blog/blog-launchpad/clan_cache.py", line 34, in init_database
+    with self.get_db_conn() as conn:
+         ^^^^^^^^^^^^^^^^^^
+  File "/Users/autojenny/Documents/projects/blog/blog-launchpad/clan_cache.py", line 30, in get_db_conn
+    return psycopg2.connect(**self.db_config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "postgres" does not exist
+

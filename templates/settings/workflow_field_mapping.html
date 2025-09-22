@@ -1,0 +1,673 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Workflow Step Management{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto mt-8 bg-dark-bg border border-dark-border rounded-xl shadow-lg p-8">
+    <h1 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+        <i class="fa-solid fa-gear text-indigo-400"></i> Settings: Workflow Step Management
+    </h1>
+    <p class="text-dark-text mb-4">
+        Manage workflow steps by stage and substage. Drag and drop to reorder, click step names to edit details.
+    </p>
+
+    <div class="overflow-x-auto rounded-lg">
+        <div class="min-w-full bg-[#23273a] text-sm">
+            {% for stage in stages %}
+            <div class="stage-group">
+                <div class="bg-indigo-950 text-indigo-200 font-bold px-4 py-3 text-lg border-t border-indigo-700">
+                    <span class="stage-name">{{ stage.name|capitalize }}</span>
+                </div>
+
+                {# Stage-level table selection #}
+                <div class="px-4 py-2 bg-[#23273a] border-b border-indigo-800 flex items-center gap-2">
+                    <label class="text-xs text-indigo-200 font-semibold mr-2">Available Tables for LLM Actions:</label>
+                    <select multiple
+                        class="stage-table-select bg-[#181c2a] text-indigo-100 border border-dark-border rounded px-2 py-1 text-xs"
+                        data-stage-id="{{ stage.id }}">
+                        <option value="post_development" {% if stage.config and 'llm_available_tables' in stage.config
+                            and 'post_development' in stage.config['llm_available_tables'] %}selected{% endif %}>
+                            post_development</option>
+                        <option value="post_section" {% if stage.config and 'llm_available_tables' in stage.config
+                            and 'post_section' in stage.config['llm_available_tables'] %}selected{% endif %}>
+                            post_section</option>
+                    </select>
+                    <span class="text-xs text-indigo-400 ml-2" id="stage-override-flag-{{ stage.id }}"></span>
+                </div>
+
+                {% for substage in substages if substage.stage_id == stage.id %}
+                <div class="substage-group">
+                    <div
+                        class="bg-indigo-900 text-indigo-100 font-semibold px-4 py-2 text-base border-t border-indigo-800">
+                        <div class="flex items-center justify-between">
+                            <span>Substage: {{ substage.substage_name|capitalize }}</span>
+                            <div class="flex items-center gap-2">
+                                <button type="button"
+                                    class="add-step-btn bg-green-600 hover:bg-green-700 text-white font-semibold px-3 py-1 rounded shadow transition focus:ring-2 focus:ring-green-400 focus:outline-none text-sm flex items-center gap-2"
+                                    data-substage-id="{{ substage.substage_id }}">
+                                    <i class="fa-solid fa-plus"></i>
+                                    Add Step
+                                </button>
+                                <button type="button"
+                                    class="save-order-btn bg-green-600 hover:bg-green-700 text-white font-semibold px-3 py-1 rounded shadow transition focus:ring-2 focus:ring-green-400 focus:outline-none text-sm flex items-center gap-2"
+                                    data-substage-id="{{ substage.substage_id }}">
+                                    <i class="fa-solid fa-floppy-disk"></i>
+                                    Save Order
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Substage-level table selection #}
+                    <div class="px-4 py-2 bg-[#23273a] border-b border-indigo-900 flex items-center gap-2">
+                        <label class="text-xs text-indigo-100 font-semibold mr-2">Available Tables for LLM
+                            Actions:</label>
+                        <select multiple
+                            class="substage-table-select bg-[#181c2a] text-indigo-100 border border-dark-border rounded px-2 py-1 text-xs"
+                            data-substage-id="{{ substage.substage_id }}">
+                            <option value="post_development" {% if substage.config and 'llm_available_tables' in
+                                substage.config and 'post_development' in substage.config['llm_available_tables']
+                                %}selected{% endif %}>post_development</option>
+                            <option value="post_section" {% if substage.config and 'llm_available_tables' in
+                                substage.config and 'post_section' in substage.config['llm_available_tables']
+                                %}selected{% endif %}>post_section</option>
+                        </select>
+                        <span class="text-xs text-indigo-400 ml-2"
+                            id="substage-override-flag-{{ substage.substage_id }}"></span>
+                    </div>
+
+                    <div class="step-dnd-group" data-substage-id="{{ substage.substage_id }}">
+                        {% for step in steps if step.substage_id == substage.substage_id %}
+                        <div class="step-accordion" data-step-id="{{ step.id }}">
+                            <!-- Step Header (Always Visible) -->
+                            <div class="step-header flex items-center bg-[#23273a] border border-dark-border rounded mb-1 px-3 py-2 cursor-pointer hover:bg-[#2a2f42] transition-colors"
+                                onclick="toggleStepAccordion({{ step.id }})">
+                                <span class="cursor-move text-lg mr-3 drag-handle">
+                                    <i class="fa-solid fa-grip-lines"></i>
+                                </span>
+                                <span class="step-name flex-1 text-white font-semibold" data-step-id="{{ step.id }}"
+                                    onclick="event.stopPropagation(); startInlineEdit({{ step.id }})">
+                                    {{ step.name }}
+                                </span>
+                                <span class="text-xs text-indigo-200 px-2">{{ stage.name }}</span>
+                                <span class="text-xs text-indigo-200 px-2">{{ substage.substage_name }}</span>
+                                <span class="order-cell text-xs text-gray-400 px-2">{{ loop.index }}</span>
+                                <button type="button"
+                                    class="delete-step-btn bg-red-600 hover:bg-red-700 text-white font-semibold px-2 py-1 rounded shadow transition focus:ring-2 focus:ring-red-400 focus:outline-none text-xs ml-2"
+                                    data-step-id="{{ step.id }}"
+                                    onclick="event.stopPropagation(); deleteStep({{ step.id }}, '{{ step.name }}')">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                                <span class="accordion-icon text-indigo-300 ml-2">
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </span>
+                            </div>
+
+                            <!-- Step Details (Collapsible) -->
+                            <div
+                                class="step-details hidden bg-[#1e2235] border border-dark-border rounded mb-1 px-3 py-3">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <!-- Step Configuration -->
+                                    <div>
+                                        <h4 class="text-indigo-200 font-semibold mb-2">Step Configuration</h4>
+                                        <div class="space-y-2">
+                                            <div>
+                                                <label class="block text-xs text-gray-400 mb-1">Step Name</label>
+                                                <input type="text"
+                                                    class="step-name-input w-full bg-[#23273a] text-white border border-dark-border rounded px-2 py-1 text-sm"
+                                                    value="{{ step.name }}" data-step-id="{{ step.id }}">
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs text-gray-400 mb-1">Stage</label>
+                                                <select
+                                                    class="stage-select w-full bg-[#23273a] text-white border border-dark-border rounded px-2 py-1 text-sm"
+                                                    data-step-id="{{ step.id }}">
+                                                    {% for stage_opt in stages %}
+                                                    <option value="{{ stage_opt.id }}" {% if stage_opt.id==stage.id
+                                                        %}selected{% endif %}>
+                                                        {{ stage_opt.name|capitalize }}
+                                                    </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs text-gray-400 mb-1">Substage</label>
+                                                <select
+                                                    class="substage-select w-full bg-[#23273a] text-white border border-dark-border rounded px-2 py-1 text-sm"
+                                                    data-step-id="{{ step.id }}">
+                                                    {% for substage_opt in substages if substage_opt.stage_id ==
+                                                    stage.id %}
+                                                    <option value="{{ substage_opt.substage_id }}" {% if
+                                                        substage_opt.substage_id==substage.substage_id %}selected{%
+                                                        endif %}>
+                                                        {{ substage_opt.substage_name|capitalize }}
+                                                    </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step Config JSON -->
+                                    <div>
+                                        <h4 class="text-indigo-200 font-semibold mb-2 flex items-center">Configuration
+                                            <span class="ml-2 text-xs text-gray-400 cursor-help"
+                                                title="Advanced: Store custom settings for this step as JSON. Used for overrides, mappings, or LLM integration details.">
+                                                <i class="fa-solid fa-circle-question"></i>
+                                            </span>
+                                        </h4>
+                                        <textarea
+                                            class="step-config-input w-full h-32 bg-[#23273a] text-white border border-dark-border rounded px-2 py-1 text-xs font-mono"
+                                            data-step-id="{{ step.id }}"
+                                            placeholder="Step configuration JSON...">{{ step.config|tojson(indent=2) if step.config else '{}' }}</textarea>
+                                    </div>
+                                </div>
+
+                                <!-- Save Button -->
+                                <div class="mt-3 flex justify-end">
+                                    <button type="button"
+                                        class="save-step-btn bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-1 rounded shadow transition focus:ring-2 focus:ring-indigo-400 focus:outline-none text-sm"
+                                        data-step-id="{{ step.id }}">
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- SortableJS CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
+<script>
+    // Initialize SortableJS for drag and drop
+    document.addEventListener('DOMContentLoaded', function () {
+        const dndGroups = document.querySelectorAll('.step-dnd-group');
+
+        dndGroups.forEach(group => {
+            new Sortable(group, {
+                animation: 150,
+                handle: '.drag-handle',
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                dragClass: 'sortable-drag',
+                onEnd: function (evt) {
+                    updateOrderNumbers(group);
+                }
+            });
+        });
+    });
+
+    // Update order numbers after drag and drop
+    function updateOrderNumbers(group) {
+        const steps = group.querySelectorAll('.step-accordion');
+        steps.forEach((step, index) => {
+            const orderCell = step.querySelector('.order-cell');
+            if (orderCell) {
+                orderCell.textContent = index + 1;
+            }
+        });
+    }
+
+    // Toggle accordion sections
+    function toggleStepAccordion(stepId) {
+        const stepAccordion = document.querySelector(`[data-step-id="${stepId}"]`);
+        const details = stepAccordion.querySelector('.step-details');
+        const icon = stepAccordion.querySelector('.accordion-icon i');
+
+        if (details.classList.contains('hidden')) {
+            details.classList.remove('hidden');
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+        } else {
+            details.classList.add('hidden');
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    }
+
+    // Inline editing for step names
+    function startInlineEdit(stepId) {
+        const stepName = document.querySelector(`.step-name[data-step-id="${stepId}"]`);
+        const currentName = stepName.textContent.trim();
+
+        // Create input field
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = currentName;
+        input.className = 'bg-[#23273a] text-white border border-indigo-400 rounded px-2 py-1 text-sm font-semibold flex-1';
+
+        // Replace text with input
+        stepName.innerHTML = '';
+        stepName.appendChild(input);
+        input.focus();
+        input.select();
+
+        // Handle save on enter or blur
+        function saveEdit() {
+            const newName = input.value.trim();
+            if (newName && newName !== currentName) {
+                stepName.textContent = newName;
+                // Also update the input field in the accordion
+                const accordionInput = document.querySelector(`.step-name-input[data-step-id="${stepId}"]`);
+                if (accordionInput) {
+                    accordionInput.value = newName;
+                }
+            } else {
+                stepName.textContent = currentName;
+            }
+        }
+
+        input.addEventListener('blur', saveEdit);
+        input.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                saveEdit();
+            }
+        });
+    }
+
+    // Save order button functionality
+    document.querySelectorAll('.save-order-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const substageId = this.dataset.substageId;
+            const group = document.querySelector(`.step-dnd-group[data-substage-id="${substageId}"]`);
+            const steps = group ? group.querySelectorAll('.step-accordion') : [];
+
+            const orderData = Array.from(steps).map((step, index) => ({
+                step_id: parseInt(step.dataset.stepId),
+                order: index + 1
+            }));
+
+            if (!substageId || orderData.length === 0) {
+                alert('Cannot save order: substageId or steps missing.');
+                return;
+            }
+
+            // Save order to backend
+            fetch('/settings/api/step-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    substage_id: parseInt(substageId),
+                    steps: orderData
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Visual feedback
+                        btn.classList.add('bg-green-500');
+                        btn.innerHTML = '<i class="fa-solid fa-check"></i> Saved';
+                        setTimeout(() => {
+                            btn.classList.remove('bg-green-500');
+                            btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Order';
+                        }, 2000);
+                    } else {
+                        alert('Failed to save order: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error saving order:', error);
+                    alert('Error saving order');
+                });
+        });
+    });
+
+    // Add step button functionality
+    document.querySelectorAll('.add-step-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const substageId = this.dataset.substageId;
+
+            // Prompt for step name
+            const stepName = prompt('Enter the name for the new step:');
+            if (!stepName || stepName.trim() === '') {
+                return;
+            }
+
+            // Show loading state
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding...';
+            btn.disabled = true;
+
+            // Get the stage name for this substage to determine default config
+            const substageGroup = btn.closest('.substage-group');
+            const stageGroup = substageGroup.closest('.stage-group');
+            const stageName = stageGroup.querySelector('.stage-name')?.textContent || '';
+            
+            // Create default config based on stage
+            let defaultConfig = {
+                "settings": {
+                    "llm": {
+                        "model": "llama3.2:latest",
+                        "timeout": 360,
+                        "provider": "ollama",
+                        "parameters": {
+                            "top_p": 0.9,
+                            "max_tokens": 1000,
+                            "temperature": 0.7,
+                            "presence_penalty": 0.0,
+                            "frequency_penalty": 0.0
+                        }
+                    }
+                }
+            };
+            
+            // Set default llm_available_tables based on stage
+            if (stageName.toLowerCase().includes('writing')) {
+                defaultConfig.llm_available_tables = ["post_section"];
+            } else {
+                defaultConfig.llm_available_tables = ["post_development"];
+            }
+            
+            // Create new step
+            fetch('/settings/api/step', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: stepName.trim(),
+                    substage_id: parseInt(substageId),
+                    config: JSON.stringify(defaultConfig)
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Reload the page to show the new step
+                        window.location.reload();
+                    } else {
+                        alert('Failed to create step: ' + (data.message || 'Unknown error'));
+                        // Restore button
+                        btn.innerHTML = originalContent;
+                        btn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error creating step:', error);
+                    alert('Error creating step');
+                    // Restore button
+                    btn.innerHTML = originalContent;
+                    btn.disabled = false;
+                });
+        });
+    });
+
+    // Save individual step changes
+    document.querySelectorAll('.save-step-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const stepId = this.dataset.stepId;
+            const stepAccordion = document.querySelector(`[data-step-id="${stepId}"]`);
+
+            const stepData = {
+                id: parseInt(stepId),
+                name: stepAccordion.querySelector('.step-name-input').value,
+                stage_id: parseInt(stepAccordion.querySelector('.stage-select').value),
+                substage_id: parseInt(stepAccordion.querySelector('.substage-select').value),
+                config: stepAccordion.querySelector('.step-config-input').value
+            };
+
+            // Save step to backend
+            fetch('/settings/api/step', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(stepData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Visual feedback
+                        btn.classList.add('bg-green-500');
+                        btn.textContent = 'Saved';
+                        setTimeout(() => {
+                            btn.classList.remove('bg-green-500');
+                            btn.textContent = 'Save Changes';
+                        }, 2000);
+
+                        // Update the main step name display
+                        const stepName = document.querySelector(`.step-name[data-step-id="${stepId}"]`);
+                        stepName.textContent = stepData.name;
+                    } else {
+                        alert('Failed to save step: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error saving step:', error);
+                    alert('Error saving step');
+                });
+        });
+    });
+
+    // Delete step functionality
+    function deleteStep(stepId, stepName) {
+        // Show confirmation dialog
+        if (!confirm(`Are you sure you want to delete the step "${stepName}"?\n\nThis action will remove all dependencies and cannot be undone.`)) {
+            return;
+        }
+
+        // Find the step accordion element
+        const stepAccordion = document.querySelector(`[data-step-id="${stepId}"]`);
+        if (!stepAccordion) {
+            alert('Step not found');
+            return;
+        }
+
+        // Show loading state
+        const deleteBtn = stepAccordion.querySelector('.delete-step-btn');
+        const originalContent = deleteBtn.innerHTML;
+        deleteBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        deleteBtn.disabled = true;
+
+        // Call force delete API (since we only have one delete button now)
+        fetch(`/settings/api/step/${stepId}/force-delete`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove the step from the DOM with animation
+                    stepAccordion.style.transition = 'all 0.3s ease';
+                    stepAccordion.style.opacity = '0';
+                    stepAccordion.style.transform = 'translateX(-100%)';
+
+                    setTimeout(() => {
+                        stepAccordion.remove();
+                        // Update order numbers for remaining steps
+                        const group = stepAccordion.closest('.step-dnd-group');
+                        if (group) {
+                            updateOrderNumbers(group);
+                        }
+                    }, 300);
+                } else {
+                    alert('Failed to delete step: ' + (data.message || 'Unknown error'));
+                    // Restore button
+                    deleteBtn.innerHTML = originalContent;
+                    deleteBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting step:', error);
+                alert('Error deleting step');
+                // Restore button
+                deleteBtn.innerHTML = originalContent;
+                deleteBtn.disabled = false;
+            });
+    }
+
+
+
+    // Handle stage changes to update substage options
+    document.querySelectorAll('.stage-select').forEach(select => {
+        select.addEventListener('change', function () {
+            const stepId = this.dataset.stepId;
+            const stageId = parseInt(this.value);
+            const substageSelect = document.querySelector(`.substage-select[data-step-id="${stepId}"]`);
+
+            // Get substages for this stage from the server
+            fetch(`/settings/api/substages?stage_id=${stageId}`)
+                .then(response => response.json())
+                .then(data => {
+                    substageSelect.innerHTML = '';
+                    data.substages.forEach(substage => {
+                        const option = document.createElement('option');
+                        option.value = substage.id;
+                        option.textContent = substage.name.charAt(0).toUpperCase() + substage.name.slice(1);
+                        substageSelect.appendChild(option);
+                    });
+                });
+        });
+    });
+
+    // Helper: get selected values from a multi-select
+    function getSelectedOptions(select) {
+        return Array.from(select.options).filter(opt => opt.selected).map(opt => opt.value);
+    }
+
+    // Save table selection for stage
+    function saveStageTables(stageId, tables) {
+        fetch(`/settings/api/stage/${stageId}/llm_tables`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ llm_available_tables: tables })
+        });
+    }
+
+    // Save table selection for substage
+    function saveSubstageTables(substageId, tables) {
+        fetch(`/settings/api/substage/${substageId}/llm_tables`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ llm_available_tables: tables })
+        });
+    }
+
+    // Save table selection for step
+    function saveStepTables(stepId, tables) {
+        fetch(`/settings/api/step/${stepId}/llm_tables`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ llm_available_tables: tables })
+        });
+    }
+
+    // Wire up dropdowns and override flagging
+    function updateOverrideFlags() {
+        // For each substage, check if it overrides stage
+        document.querySelectorAll('.substage-table-select').forEach(subSel => {
+            const substageId = subSel.dataset.substageId;
+            const stageGroup = subSel.closest('.stage-group');
+            const stageSel = stageGroup.querySelector('.stage-table-select');
+            const subTables = getSelectedOptions(subSel);
+            const stageTables = getSelectedOptions(stageSel);
+            const flag = document.getElementById(`substage-override-flag-${substageId}`);
+            if (JSON.stringify(subTables) !== JSON.stringify(stageTables)) {
+                flag.textContent = 'Overridden from Stage';
+                flag.classList.add('text-yellow-400');
+            } else {
+                flag.textContent = '';
+                flag.classList.remove('text-yellow-400');
+            }
+        });
+        // For each step, check if it overrides substage or stage
+        document.querySelectorAll('.step-table-select').forEach(stepSel => {
+            const stepId = stepSel.dataset.stepId;
+            const stepAccordion = stepSel.closest('.step-accordion');
+            const substageGroup = stepAccordion.closest('.substage-group');
+            const subSel = substageGroup.querySelector('.substage-table-select');
+            const stageGroup = stepAccordion.closest('.stage-group');
+            const stageSel = stageGroup.querySelector('.stage-table-select');
+            const stepTables = getSelectedOptions(stepSel);
+            const subTables = getSelectedOptions(subSel);
+            const stageTables = getSelectedOptions(stageSel);
+            const flag = document.getElementById(`step-override-flag-${stepId}`);
+            if (JSON.stringify(stepTables) !== JSON.stringify(subTables)) {
+                flag.textContent = 'Overridden from Substage';
+                flag.classList.add('text-yellow-400');
+            } else if (JSON.stringify(stepTables) !== JSON.stringify(stageTables)) {
+                flag.textContent = 'Overridden from Stage';
+                flag.classList.add('text-yellow-400');
+            } else {
+                flag.textContent = '';
+                flag.classList.remove('text-yellow-400');
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Stage table select
+        document.querySelectorAll('.stage-table-select').forEach(sel => {
+            sel.addEventListener('change', function () {
+                const stageId = this.dataset.stageId;
+                const tables = getSelectedOptions(this);
+                saveStageTables(stageId, tables);
+                // Update all substages/steps override flags
+                setTimeout(updateOverrideFlags, 200);
+            });
+        });
+        // Substage table select
+        document.querySelectorAll('.substage-table-select').forEach(sel => {
+            sel.addEventListener('change', function () {
+                const substageId = this.dataset.substageId;
+                const tables = getSelectedOptions(this);
+                saveSubstageTables(substageId, tables);
+                setTimeout(updateOverrideFlags, 200);
+            });
+        });
+        // Step table select
+        document.querySelectorAll('.step-table-select').forEach(sel => {
+            sel.addEventListener('change', function () {
+                const stepId = this.dataset.stepId;
+                const tables = getSelectedOptions(this);
+                saveStepTables(stepId, tables);
+                setTimeout(updateOverrideFlags, 200);
+            });
+        });
+        // Initial override flag update
+        setTimeout(updateOverrideFlags, 500);
+    });
+</script>
+
+<style>
+    .sortable-ghost {
+        opacity: 0.5;
+        background: #4f46e5 !important;
+    }
+
+    .sortable-chosen {
+        background: #3730a3 !important;
+    }
+
+    .sortable-drag {
+        background: #1e1b4b !important;
+    }
+
+    .step-accordion {
+        transition: all 0.2s ease;
+    }
+
+    .step-details {
+        transition: all 0.2s ease;
+        background: #181c2a !important;
+        /* much darker bg for clarity */
+        border: 1.5px solid #23273a;
+        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.18);
+    }
+
+    .save-order-btn {
+        background: #3b3b5c !important;
+        color: #e0e7ff !important;
+        border: 1px solid #4f46e5 !important;
+    }
+
+    .save-order-btn:hover {
+        background: #4f46e5 !important;
+        color: #fff !important;
+    }
+</style>
+{% endblock %}

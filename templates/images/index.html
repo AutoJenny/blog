@@ -1,0 +1,3244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified Image Processing Interface - BlogForge</title>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* BlogForge Header Styles */
+        .blogforge-header {
+            background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
+            border-bottom: 1px solid #31364a;
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+            padding: 16px 0;
+            margin-bottom: 20px;
+        }
+
+        .blogforge-nav {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .logo-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #23273a;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo-text {
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav-center {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-dropdown-container {
+            position: relative;
+        }
+
+        .nav-dropdown-btn {
+            background: none;
+            border: none;
+            color: #e0e0e0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: color 0.3s;
+        }
+
+        .nav-dropdown-btn:hover {
+            color: #a5b4fc;
+        }
+
+        .nav-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #23273a;
+            border: 1px solid #31364a;
+            border-radius: 8px;
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+            min-width: 180px;
+            z-index: 1000;
+            display: none;
+            margin-top: 8px;
+        }
+
+        .nav-dropdown-container:hover .nav-dropdown-menu {
+            display: block;
+        }
+
+        .nav-dropdown-menu a {
+            display: block;
+            padding: 8px 16px;
+            color: #e0e0e0;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-dropdown-menu a:hover {
+            background: #31364a;
+            color: #a5b4fc;
+        }
+
+        .nav-dropdown-menu i {
+            margin-right: 8px;
+            width: 16px;
+        }
+
+        .nav-dropdown-menu a:nth-child(1) i { color: #a78bfa; }
+        .nav-dropdown-menu a:nth-child(2) i { color: #f472b6; }
+        .nav-dropdown-menu a:nth-child(3) i { color: #a5b4fc; }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-link {
+            color: #e0e0e0;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: #a5b4fc;
+        }
+
+        .nav-button {
+            background: #a5b4fc;
+            color: white;
+            border: 1px solid #a5b4fc;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+
+        .nav-button:hover {
+            background: #23273a;
+            transform: translateY(-1px);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 30px;
+            height: calc(100vh - 120px);
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-area {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+
+        .post-selector {
+            margin-bottom: 30px;
+        }
+
+        .post-selector h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 1.2em;
+        }
+
+        .post-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e6ed;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: border-color 0.3s;
+        }
+
+        .post-selector select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .image-types {
+            margin-bottom: 30px;
+        }
+
+        .image-types h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 1.2em;
+        }
+
+        .image-type-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .image-type-card:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .image-type-card.active {
+            border-color: #667eea;
+            background: #e3f2fd;
+        }
+
+        .image-type-card .type-info h4 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .image-type-card .type-info p {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .image-type-card .type-count {
+            color: #667eea;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .processing-pipeline {
+            margin-bottom: 30px;
+        }
+
+        .processing-pipeline h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 1.2em;
+        }
+
+        .pipeline-step {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pipeline-step:hover {
+            background: #f0f8ff;
+            transform: translateX(5px);
+            border-color: #667eea;
+        }
+
+        .pipeline-step.completed {
+            border-color: #27ae60;
+            background: #d5f4e6;
+        }
+
+        .pipeline-step.processing {
+            border-color: #f39c12;
+            background: #fef9e7;
+        }
+
+        .pipeline-step.pending {
+            border-color: #bdc3c7;
+            background: #f8f9fa;
+        }
+
+        .step-info {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .step-details {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            flex: 1;
+        }
+
+        .step-name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1em;
+        }
+
+        .step-count {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .step-size {
+            font-size: 0.8em;
+            color: #888;
+            font-style: italic;
+        }
+
+        .step-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .step-icon.completed {
+            background: #27ae60;
+            color: white;
+        }
+
+        .step-icon.processing {
+            background: #f39c12;
+            color: white;
+        }
+
+        .step-icon.pending {
+            background: #bdc3c7;
+            color: white;
+        }
+
+        .quick-actions {
+            margin-top: 30px;
+        }
+
+        .quick-actions h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 1.2em;
+        }
+
+        .quick-action-btn {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            border: 2px solid #e0e6ed;
+            border-radius: 8px;
+            background: white;
+            color: #2c3e50;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .quick-action-btn:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateY(-2px);
+        }
+
+        .action-center {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 15px;
+        }
+
+        .current-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .status-focus {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .status-details {
+            color: #7f8c8d;
+        }
+
+        /* Image Type Tabs */
+        .image-type-tabs {
+            display: flex;
+            background: white;
+            border-radius: 12px;
+            padding: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            gap: 4px;
+        }
+
+        .tab {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+            border: 2px solid transparent;
+        }
+
+        .tab:hover {
+            background: #e3f2fd;
+            transform: translateY(-2px);
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+            border-color: #5a6fd8;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .tab-icon {
+            font-size: 1.2em;
+            margin-bottom: 4px;
+        }
+
+        .tab-label {
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .tab-count {
+            font-size: 0.75em;
+            opacity: 0.8;
+        }
+
+        .tab.active .tab-count {
+            opacity: 1;
+        }
+
+        /* Accordion Styles */
+        .accordion-container {
+            margin-bottom: 25px;
+        }
+
+        .accordion-item {
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .accordion-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e9ecef;
+            transition: background-color 0.3s;
+        }
+
+        .accordion-header:hover {
+            background: #e9ecef;
+        }
+
+        .accordion-header h3 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+
+        .accordion-icon {
+            transition: transform 0.3s;
+            color: #667eea;
+        }
+
+        .accordion-item.active .accordion-icon {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: white;
+        }
+
+        .accordion-item.active .accordion-content {
+            max-height: 1000px;
+            padding: 20px;
+        }
+
+        /* Stage-specific content styles */
+        .stage-content {
+            display: block;
+        }
+
+        .stage-content.hidden {
+            display: none;
+        }
+
+        .stage-header {
+            margin-bottom: 20px;
+        }
+
+        .stage-header h4 {
+            color: #2c3e50;
+            font-size: 1.2em;
+            margin-bottom: 8px;
+        }
+
+        .stage-header p {
+            color: #7f8c8d;
+            font-size: 0.95em;
+            line-height: 1.4;
+        }
+
+        .selection-instructions {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .instruction-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            color: #2c3e50;
+        }
+
+        .instruction-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .instruction-item i {
+            color: #667eea;
+            width: 16px;
+            text-align: center;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .content-header h2 {
+            color: #2c3e50;
+            font-size: 1.8em;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .stat-size {
+            color: #667eea;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        /* Processing stage button styling */
+        .processing-stage-btn {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .processing-stage-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        .processing-stage-btn.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .processing-stage-btn.active .stat-number,
+        .processing-stage-btn.active .stat-label,
+        .processing-stage-btn.active .stat-size {
+            color: white;
+        }
+
+        .processing-controls {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .processing-controls h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .control-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .control-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .control-item label {
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .control-item input, .control-item select, .control-item textarea {
+            padding: 8px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .control-item textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .prompt-display {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .prompt-display label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .prompt-content {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin-bottom: 10px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-small:hover {
+            background: #5a6268;
+        }
+
+        .batch-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .progress-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 65%;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .image-grid.section-layout {
+            display: block;
+            grid-template-columns: none;
+        }
+
+        .image-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .image-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .image-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 16px;
+            text-align: center;
+        }
+
+        .image-title h3 {
+            margin: 0;
+            font-size: 0.9em;
+            font-weight: 600;
+            line-height: 1.3;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .image-preview {
+            height: 200px;
+            background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), 
+                        linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #f0f0f0 75%), 
+                        linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+
+        .image-preview .placeholder {
+            color: #bdc3c7;
+            font-size: 3em;
+        }
+
+        .image-info {
+            padding: 15px;
+        }
+
+        .image-info h4 {
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .image-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .image-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .status-raw {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-optimized {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-final {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .image-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        .metadata-display {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        
+        .metadata-item {
+            margin-bottom: 5px;
+        }
+        
+        .metadata-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .metadata-item strong {
+            color: #495057;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .status-message.success {
+            background: rgba(39, 174, 96, 0.1);
+            border: 1px solid #27ae60;
+            color: #27ae60;
+        }
+
+        .status-message.error {
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+        }
+
+        .status-message.info {
+            background: rgba(52, 152, 219, 0.1);
+            border: 1px solid #3498db;
+            color: #3498db;
+        }
+
+        /* Grey out mock/placeholder functionality */
+        .mock-placeholder {
+            opacity: 0.4;
+            position: relative;
+            pointer-events: none;
+        }
+
+        .mock-placeholder::after {
+            content: "Mock";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .mock-placeholder:hover::after {
+            opacity: 1;
+        }
+
+        /* Specific styling for different types of mock elements */
+        .mock-placeholder.mock-button {
+            cursor: not-allowed;
+        }
+
+        .mock-placeholder.mock-section {
+            background: rgba(128, 128, 128, 0.1);
+            border: 1px dashed #ccc;
+        }
+
+        .mock-placeholder.mock-progress {
+            background: rgba(128, 128, 128, 0.2);
+        }
+
+        .mock-placeholder.mock-pipeline {
+            background: rgba(128, 128, 128, 0.1);
+        }
+
+        /* New styles for section layout */
+        .section-row {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .section-title h3 {
+            margin-bottom: 0;
+        }
+
+        .section-count {
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+
+        .section-images {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            scrollbar-width: thin;
+            scrollbar-color: #667eea #f0f0f0;
+        }
+
+        .section-images::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .section-images::-webkit-scrollbar-track {
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
+
+        .section-images::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        .section-images::-webkit-scrollbar-thumb:hover {
+            background: #5a6fd8;
+        }
+
+        .section-images .image-card {
+            flex: 0 0 250px;
+            min-width: 250px;
+        }
+
+        /* Selection styles */
+        .image-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .image-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .image-card.selected {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        }
+
+        .image-card.selected::before {
+            content: "✓";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #667eea;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            z-index: 10;
+        }
+
+        .processing-stage-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .processing-stage-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .processing-stage-btn.active {
+            background: linear-gradient(135deg, #4c63d2 0%, #5a4ba2 100%);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .stat-label {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .stat-breakdown {
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 0;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }
+
+        .breakdown-item.clickable {
+            cursor: pointer;
+        }
+
+        .breakdown-item.clickable:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .breakdown-item.active {
+            background-color: rgba(255, 255, 255, 0.3);
+            font-weight: bold;
+        }
+
+        .breakdown-label {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .breakdown-count {
+            font-weight: bold;
+            color: white;
+        }
+
+        .stat-size {
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        .image-section {
+            margin-bottom: 30px;
+        }
+
+        .image-section .section-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .image-grid-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- BlogForge Header -->
+        <header class="blogforge-header">
+            <nav class="blogforge-nav">
+                <div class="nav-container">
+                    <div class="nav-left">
+                        <!-- Logo and Title -->
+                        <a href="/" class="logo-link">
+                            <img src="http://localhost:5000/static/images/site/brand-logo.png" alt="BlogForge Logo" class="logo-img" />
+                            <span class="logo-text">BlogForge</span>
+                        </a>
+                    </div>
+                    <div class="nav-center">
+                        <!-- Modules Dropdown -->
+                        <div class="nav-dropdown-container">
+                            <button class="nav-dropdown-btn">
+                                <i class="fa-solid fa-cubes"></i> Modules <i class="fa fa-caret-down"></i>
+                            </button>
+                            <div class="nav-dropdown-menu">
+                                <a href="http://localhost:5000/db/"><i class="fa-solid fa-database"></i> Database</a>
+                                <a href="http://localhost:5000/llm/"><i class="fa-solid fa-brain"></i> AI</a>
+                                <a href="http://localhost:5005/"><i class="fa-solid fa-image"></i> Images</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="nav-right">
+                        <a href="http://localhost:5000/posts" class="nav-link">Posts</a>
+                        <button class="nav-button">
+                            <i class="fa-solid fa-plus"></i> New Post
+                        </button>
+                        <a href="http://localhost:5000/docs/" class="nav-link">Docs</a>
+                        <a href="http://localhost:5000/settings" class="nav-link">Settings</a>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="main-content">
+            <!-- Enhanced Sidebar -->
+            <div class="sidebar">
+                <!-- Post Selection -->
+                <div class="post-selector">
+                    <h3>📊 POST</h3>
+                    <select id="post-select">
+                        <option value="53">Post 53: Scottish Storytelling</option>
+                        <option value="54">Post 54: Celtic Traditions</option>
+                        <option value="55">Post 55: Highland Legends</option>
+                    </select>
+                </div>
+
+
+
+                <!-- Enhanced Processing Pipeline with details -->
+                <div class="processing-pipeline">
+                    <h3>🔄 PROCESSING PIPELINE</h3>
+                    <div class="pipeline-step" data-stage="upload">
+                        <div class="step-info">
+                            <div class="step-icon pending">○</div>
+                            <div class="step-details">
+                                <span class="step-name">Upload Raw</span>
+                                <span class="step-count" id="upload-step-count">(0 total)</span>
+                                <span class="step-size" id="upload-step-size">0MB total size</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pipeline-step" data-stage="raw">
+                        <div class="step-info">
+                            <div class="step-icon pending">○</div>
+                            <div class="step-details">
+                                <span class="step-name">Raw → Selected</span>
+                                <span class="step-count" id="raw-step-count">(10 total: 1 header + 9 sections)</span>
+                                <span class="step-size" id="raw-step-size">60.0MB total size</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pipeline-step" data-stage="selected">
+                        <div class="step-info">
+                            <div class="step-icon pending">○</div>
+                            <div class="step-details">
+                                <span class="step-name">Selected → Optimised</span>
+                                <span class="step-count" id="selected-step-count">(8 total: 1 header + 7 sections)</span>
+                                <span class="step-size" id="selected-step-size">7.5MB total size</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pipeline-step" data-stage="optimized">
+                        <div class="step-info">
+                            <div class="step-icon pending">○</div>
+                            <div class="step-details">
+                                <span class="step-name">Optimised → Watermarked</span>
+                                <span class="step-count" id="optimized-step-count">(8 total: 1 header + 7 sections)</span>
+                                <span class="step-size" id="optimized-step-size">28.5MB total size</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pipeline-step" data-stage="watermarked">
+                        <div class="step-info">
+                            <div class="step-icon pending">○</div>
+                            <div class="step-details">
+                                <span class="step-name">Watermarked → Captioned</span>
+                                <span class="step-count" id="watermarked-step-count">(8 total: 1 header + 7 sections)</span>
+                                <span class="step-size" id="watermarked-step-size">1.7MB total size</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <h3>⚡ QUICK ACTIONS</h3>
+                    <button class="quick-action-btn" onclick="showUploadDialog()">📤 Upload New</button>
+                    <button class="quick-action-btn" onclick="showGenerateDialog()">🎨 Generate</button>
+                    <button class="quick-action-btn" onclick="showBatchDialog()">🔄 Batch Process</button>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="content-area">
+                <div class="content-header">
+                    <h2 id="content-title">Header Images - Post 53</h2>
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary mock-placeholder mock-button" onclick="showStats()">📊 View Stats</button>
+                        <button class="btn btn-primary" onclick="showBatchControls()">🔄 Batch Process</button>
+                        <button class="btn btn-success mock-placeholder mock-button" onclick="generateNew()">➕ Generate New</button>
+                    </div>
+                </div>
+
+                <!-- Minimal Action Center -->
+                <div class="action-center">
+                    <div class="current-status">
+                        <span class="status-focus">🎯 <span id="current-focus-text">All Images</span></span>
+                        <span class="status-details">in <span id="current-pipeline-stage">raw</span> stage • <span id="current-stage-count">10</span> images • <span id="current-stage-size">60.0MB</span> • <span id="current-stage-status">Ready</span></span>
+                    </div>
+                </div>
+
+                <!-- Image Type Tabs -->
+                <div class="image-type-tabs">
+                    <div class="tab active" data-type="all">
+                        <span class="tab-icon">📊</span>
+                        <span class="tab-label">All Images</span>
+                        <span class="tab-count" id="all-tab-count">(8)</span>
+                    </div>
+                    <div class="tab" data-type="header">
+                        <span class="tab-icon">📄</span>
+                        <span class="tab-label">Header</span>
+                        <span class="tab-count" id="header-tab-count">(1)</span>
+                    </div>
+                    <div class="tab" data-type="section">
+                        <span class="tab-icon">📝</span>
+                        <span class="tab-label">Sections</span>
+                        <span class="tab-count" id="section-tab-count">(7)</span>
+                    </div>
+                    <div class="tab mock-placeholder" data-type="featured">
+                        <span class="tab-icon">⭐</span>
+                        <span class="tab-label">Featured</span>
+                        <span class="tab-count">(0)</span>
+                    </div>
+                </div>
+
+                <!-- Accordion for Batch Processing Controls -->
+                <div class="accordion-container">
+                    <div class="accordion-item">
+                        <div class="accordion-header" onclick="toggleAccordion('batch-controls')">
+                            <h3>🔄 Batch Processing Controls</h3>
+                            <i class="fa fa-chevron-down accordion-icon" id="batch-controls-icon"></i>
+                        </div>
+                        <div class="accordion-content" id="batch-controls-content">
+                            <!-- Stage-specific content will be loaded here -->
+                            <div id="raw-stage-content" class="stage-content">
+                                <div class="stage-header">
+                                    <h4>📋 Selection Process</h4>
+                                    <p>Select the best image for each section below. Click on images to mark them as selected.</p>
+                                </div>
+                                <div class="selection-instructions">
+                                    <div class="instruction-item">
+                                        <i class="fa fa-check-circle"></i>
+                                        <span>Review all generated images for each section</span>
+                                    </div>
+                                    <div class="instruction-item">
+                                        <i class="fa fa-mouse-pointer"></i>
+                                        <span>Click on the best image for each section to select it</span>
+                                    </div>
+                                    <div class="instruction-item">
+                                        <i class="fa fa-arrow-right"></i>
+                                        <span>Selected images will be moved to the "Selected" stage</span>
+                                    </div>
+                                </div>
+                                <div class="batch-actions">
+                                    <button class="btn btn-primary" onclick="processSelection()">✅ Complete Selection</button>
+                                    <button class="btn btn-secondary" onclick="autoSelectBest()">🤖 Auto-Select Best</button>
+                                    <button class="btn btn-secondary" onclick="clearAllSelections()">🗑️ Clear All</button>
+                                </div>
+                            </div>
+                            
+                            <div id="upload-stage-content" class="stage-content hidden">
+                                <div class="stage-header">
+                                    <h4>📤 Upload Raw Images</h4>
+                                    <p>Upload new images to begin processing.</p>
+                                </div>
+                                <div class="batch-actions">
+                                    <button class="btn btn-primary" onclick="showUploadDialog()">📤 Upload Images</button>
+                                    <button class="btn btn-secondary" onclick="showGenerateDialog()">🎨 Generate Images</button>
+                                </div>
+                            </div>
+                            
+                            <div id="raw-stage-content" class="stage-content hidden">
+                                <div class="stage-header">
+                                    <h4>🎯 Raw → Selected</h4>
+                                    <p>Select the best images from raw uploads.</p>
+                                </div>
+                                <div class="batch-actions">
+                                    <button class="btn btn-primary" onclick="processSelection()">🎯 Process Selection</button>
+                                    <button class="btn btn-secondary" onclick="autoSelectBest()">🤖 Auto-Select Best</button>
+                                    <button class="btn btn-secondary" onclick="clearAllSelections()">🗑️ Clear All</button>
+                                </div>
+                            </div>
+                            
+                            <div id="selected-stage-content" class="stage-content hidden">
+                                <div class="stage-header">
+                                    <h4>⚙️ Selected → Optimised</h4>
+                                    <p>Optimize selected images for web use.</p>
+                                </div>
+                                <div class="control-group">
+                                    <div class="control-item">
+                                        <label>Optimization Settings:</label>
+                                        <select id="optimization-settings">
+                                            <option value="webp_1200_85" selected>WebP 1200px (Recommended)</option>
+                                            <option value="webp_800_85">WebP 800px (Mobile)</option>
+                                            <option value="webp_1600_85">WebP 1600px (High Res)</option>
+                                            <option value="jpeg_1200_85">JPEG 1200px</option>
+                                            <option value="png_1200_lossless">PNG 1200px (Lossless)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="batch-actions">
+                                    <button class="btn btn-primary" onclick="startOptimization()">🚀 Start Optimization</button>
+                                    <button class="btn btn-secondary" onclick="previewOptimization()">👁️ Preview</button>
+                                </div>
+                            </div>
+                            
+                            <div id="optimized-stage-content" class="stage-content hidden">
+                                <div class="stage-header">
+                                    <h4>🏷️ Optimised → Watermarked</h4>
+                                    <p>Add watermarks and AI-generated text to optimized images.</p>
+                                </div>
+                                <div class="control-group">
+                                    <div class="control-item">
+                                        <label>Watermark Style:</label>
+                                        <select id="watermark-style">
+                                            <option value="clan">Clan Watermark (Default)</option>
+                                        </select>
+                                    </div>
+                                    <div class="control-item">
+                                        <label>Watermark Position:</label>
+                                        <select id="watermark-position">
+                                            <option value="bottom-right" selected>Bottom Right</option>
+                                            <option value="bottom-left">Bottom Left</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="batch-actions">
+                                    <button class="btn btn-primary" onclick="startWatermarking()">🚀 Start Watermarking</button>
+                                    <button class="btn btn-secondary" onclick="previewWatermarking()">👁️ Preview</button>
+                                </div>
+                            </div>
+                            
+                            <div id="watermarked-stage-content" class="stage-content hidden">
+                                <div class="stage-header">
+                                    <h4>🏷️ Watermarked → Captioned</h4>
+                                    <p>Add captions and metadata to watermarked images.</p>
+                                </div>
+                                <div class="control-group">
+                                    <div class="control-item">
+                                        <label>Caption Style:</label>
+                                        <select id="caption-style">
+                                            <option>Descriptive</option>
+                                            <option>Creative</option>
+                                            <option>Technical</option>
+                                        </select>
+                                    </div>
+                                    <div class="control-item">
+                                        <label>Language:</label>
+                                        <select id="caption-language">
+                                            <option>English</option>
+                                            <option>Spanish</option>
+                                            <option>French</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="prompt-display">
+                                    <label>Current Prompt:</label>
+                                    <div class="prompt-content" id="current-prompt-display">
+                                        <em>Click "Preview" to see the prompt that will be sent to the LLM</em>
+                                    </div>
+                                    <button class="btn btn-small" onclick="refreshPromptDisplay()">🔄 Refresh Prompt</button>
+                                </div>
+                                <div class="batch-actions">
+                                    <button class="btn btn-primary" onclick="startCaptioning()">🚀 Start Captioning</button>
+                                    <button class="btn btn-secondary" onclick="previewCaptions()">👁️ Preview</button>
+                                </div>
+                                <div class="batch-actions">
+                                    <button class="btn btn-primary" onclick="startMetadataGeneration()">📋 Generate Metadata</button>
+                                    <button class="btn btn-secondary" onclick="previewMetadata()">👁️ Preview Metadata</button>
+                                </div>
+                            </div>
+                            
+                            <div id="captioned-stage-content" class="stage-content hidden">
+                                <div class="stage-header">
+                                    <h4>📝 Captioned Images</h4>
+                                    <p>Review all images with their generated captions.</p>
+                                </div>
+                                <div class="batch-actions">
+                                    <button class="btn btn-primary" onclick="approveAll()">✅ Approve All</button>
+                                    <button class="btn btn-secondary" onclick="exportImages()">📤 Export</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <div class="accordion-header" onclick="toggleAccordion('progress-section')">
+                            <h3>📊 Processing Progress</h3>
+                            <i class="fa fa-chevron-down accordion-icon" id="progress-section-icon"></i>
+                        </div>
+                        <div class="accordion-content" id="progress-section-content">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progress-fill"></div>
+                            </div>
+                            <div class="progress-text">
+                                <span id="processing-file">Processing: header_optimized_v2.png</span>
+                                <span id="progress-percentage">65% Complete</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="status-message" class="status-message hidden"></div>
+
+                <div class="image-grid" id="image-grid">
+                    <!-- Images will be loaded here dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentPostId = 53;
+        let currentPipelineStage = 'upload'; // upload, raw, selected, optimized, watermarked
+        let currentImageTypeTab = 'all'; // all, header, section, featured
+        let selectedImages = [];
+        let processingJobs = [];
+        let selectedImageMap = {}; // Map of section_id -> selected filename
+
+        // Initialize the interface
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPosts();
+            loadSelectedImages();
+            loadCurrentPipelineStage();
+            updateStatistics();
+            updatePipelineStatus();
+            updateActionCenter();
+            updateTabCounts();
+            updateBatchControls();
+            setupSidebarInteractions();
+            setupTabInteractions();
+            
+            // Set up iframe communication
+            updateIframeHeight();
+            
+            // Add click handlers for processing stage buttons
+            document.querySelectorAll('.processing-stage-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const stage = this.getAttribute('data-stage');
+                    switchPipelineStage(stage);
+                    updateActionCenter();
+                });
+            });
+        });
+
+        // Load available posts from blog-core
+        async function loadPosts() {
+            console.log('Loading posts from blog-core...');
+            try {
+                const response = await fetch('http://localhost:5000/posts?debug=1');
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Posts data:', data);
+                    const posts = data.posts || [];
+                    
+                    // Populate the post selector dropdown
+                    const postSelect = document.getElementById('post-select');
+                    postSelect.innerHTML = '';
+                    
+                    posts.forEach(post => {
+                        const option = document.createElement('option');
+                        option.value = post.id;
+                        option.textContent = `Post ${post.id}: ${post.title}`;
+                        postSelect.appendChild(option);
+                    });
+                    
+                    // Set current post ID to the first post
+                    if (posts.length > 0) {
+                        currentPostId = posts[0].id;
+                        postSelect.value = currentPostId;
+                    }
+                    
+                    console.log(`Loaded ${posts.length} posts`);
+                } else {
+                    console.error('Response not ok:', response.status, response.statusText);
+                }
+            } catch (error) {
+                console.error('Error loading posts:', error);
+                // Keep the default mock posts if loading fails
+            }
+        }
+
+        // Switch pipeline stage
+        function switchPipelineStage(stage) {
+            console.log('switchPipelineStage called with stage:', stage);
+            
+            currentPipelineStage = stage;
+            loadCurrentPipelineStage();
+            
+            // Update active state for processing stage buttons
+            document.querySelectorAll('.processing-stage-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-stage="${stage}"]`).classList.add('active');
+            
+            // Update tab counts, action center, and batch controls
+            updateTabCounts();
+            updateActionCenter();
+            updateBatchControls();
+        }
+
+        // Switch image type tab
+        function switchImageTypeTab(type) {
+            console.log('switchImageTypeTab called with type:', type);
+            
+            currentImageTypeTab = type;
+            loadCurrentPipelineStage(); // This will apply the current filter
+            
+            // Update active state for tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-type="${type}"]`).classList.add('active');
+            
+            // Update action center
+            updateActionCenter();
+        }
+
+
+
+        // Load current pipeline stage with combined filtering
+        async function loadCurrentPipelineStage() {
+            try {
+                let url;
+                if (currentPipelineStage === 'selected') {
+                    url = `/api/images/${currentPostId}/selected`;
+                } else if (currentPipelineStage === 'captioned') {
+                    // For captioned stage, load watermarked images and captions
+                    url = `/api/images/${currentPostId}/watermarked`;
+                } else {
+                    url = `/api/images/${currentPostId}/${currentPipelineStage}`;
+                }
+                
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    let images = data.images || [];
+                    
+                    // Apply image type filter
+                    if (currentImageTypeTab === 'header') {
+                        images = images.filter(img => img.type === 'header');
+                    } else if (currentImageTypeTab === 'section') {
+                        images = images.filter(img => img.type === 'section');
+                    }
+                    // 'all' shows all images, 'featured' would be filtered when implemented
+                    
+                    displayImagesWithCombinedFilter(images, currentPipelineStage, currentImageTypeTab);
+                    
+                    // Load captions if we're in watermarking or captioned stage
+                    if (currentPipelineStage === 'watermarked' || currentPipelineStage === 'captioned') {
+                        await loadCaptions();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading images:', error);
+            }
+        }
+
+
+
+        // Display images with combined filter support
+        function displayImagesWithCombinedFilter(images, pipelineStage, imageType) {
+            const grid = document.getElementById('image-grid');
+            
+            console.log('displayImagesWithCombinedFilter called with:', { 
+                images: images.length, 
+                pipelineStage, 
+                imageType 
+            });
+            
+            if (images.length === 0) {
+                grid.innerHTML = `
+                    <div class="no-images">
+                        <div style="font-size: 3em; margin-bottom: 20px;">📷</div>
+                        <h3>No images found</h3>
+                        <p>No ${imageType} images available in ${pipelineStage} stage</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // For "all" image type, show header first, then sections
+            if (imageType === 'all') {
+                displayAllImagesWithHeader(images);
+            } else if (pipelineStage === 'selected') {
+                displaySelectedImages(images);
+            } else {
+                displaySectionImages(images);
+            }
+        }
+
+        // Display all images with header first
+        function displayAllImagesWithHeader(images) {
+            const grid = document.getElementById('image-grid');
+            
+            // Separate header and section images
+            const headerImages = images.filter(img => img.type === 'header');
+            const sectionImages = images.filter(img => img.type === 'section');
+            
+            let html = '';
+            
+            // Add header images section if any exist
+            if (headerImages.length > 0) {
+                const postTitle = headerImages[0]?.section_title || 'Header Images';
+                html += `
+                    <div class="image-section">
+                        <h3 class="section-title">${postTitle}</h3>
+                        <div class="image-grid-section">
+                            ${headerImages.map(image => createImageCardHTML(image, 'header')).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Add section images
+            if (sectionImages.length > 0) {
+                // Group section images by section_id
+                const sections = {};
+                sectionImages.forEach(image => {
+                    if (!sections[image.section_id]) {
+                        sections[image.section_id] = [];
+                    }
+                    sections[image.section_id].push(image);
+                });
+                
+                Object.keys(sections).sort().forEach(sectionId => {
+                    const sectionImages = sections[sectionId];
+                    // Use the first image's section_title for the descriptive header
+                    const sectionTitle = sectionImages[0]?.section_title || `Section ${sectionId}`;
+                    
+                    html += `
+                        <div class="section-row">
+                            <div class="section-title">
+                                <h3>${sectionTitle}</h3>
+                                <span class="section-count">${sectionImages.length} image${sectionImages.length > 1 ? 's' : ''}</span>
+                            </div>
+                            <div class="section-images">
+                                ${sectionImages.map(image => createImageCardHTML(image, sectionId)).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            grid.innerHTML = html;
+            grid.classList.add('section-layout');
+            
+            // Add click handlers
+            setTimeout(() => {
+                document.querySelectorAll('.image-card').forEach(card => {
+                    card.addEventListener('click', function() {
+                        const sectionId = this.getAttribute('data-section-id');
+                        const filename = this.getAttribute('data-filename');
+                        if (sectionId && filename && sectionId !== 'header') {
+                            selectImage(sectionId, filename);
+                        }
+                    });
+                });
+                
+                // Show selected state for existing selections
+                Object.keys(selectedImageMap).forEach(sectionId => {
+                    const selectedFilename = selectedImageMap[sectionId];
+                    updateImageSelection(sectionId, selectedFilename);
+                });
+            }, 100);
+        }
+
+        // Display images in grid
+        function displayImages(images, type) {
+            const grid = document.getElementById('image-grid');
+            
+            console.log('displayImages called with:', { images: images.length, currentImageType: type });
+            
+            if (images.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #7f8c8d;">
+                        <div style="font-size: 3em; margin-bottom: 20px;">📷</div>
+                        <h3>No images found</h3>
+                        <p>No ${type} images available for this post</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // For section images, group by section_id
+            if (type === 'section') {
+                console.log('Using section layout for', images.length, 'images');
+                displaySectionImages(images);
+            } else if (type === 'selected') {
+                console.log('Using selected layout for', images.length, 'images');
+                displaySelectedImages(images);
+            } else {
+                console.log('Using regular grid layout for', images.length, 'images');
+                displayRegularImages(images);
+            }
+        }
+
+        // Display section images in vertical layout with section titles
+        function displaySectionImages(images) {
+            const grid = document.getElementById('image-grid');
+            
+            // Group images by section_id
+            const sections = {};
+            images.forEach(image => {
+                if (!sections[image.section_id]) {
+                    sections[image.section_id] = [];
+                }
+                sections[image.section_id].push(image);
+            });
+            
+            // Create vertical layout with section rows
+            let html = '';
+            Object.keys(sections).sort().forEach(sectionId => {
+                const sectionImages = sections[sectionId];
+                // Use the first image's section_title for the descriptive header
+                const sectionTitle = sectionImages[0]?.section_title || `Section ${sectionId}`;
+                
+                html += `
+                    <div class="section-row">
+                        <div class="section-title">
+                            <h3>${sectionTitle}</h3>
+                            <span class="section-count">${sectionImages.length} image${sectionImages.length > 1 ? 's' : ''}</span>
+                        </div>
+                        <div class="section-images">
+                            ${sectionImages.map(image => createImageCardHTML(image, sectionId)).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            grid.innerHTML = html;
+            grid.classList.add('section-layout'); // Add class for specific styling
+            
+            // Add click handlers for image selection
+            setTimeout(() => {
+                document.querySelectorAll('.image-card').forEach(card => {
+                    card.addEventListener('click', function() {
+                        const sectionId = this.getAttribute('data-section-id');
+                        const filename = this.getAttribute('data-filename');
+                        if (sectionId && filename) {
+                            selectImage(sectionId, filename);
+                        }
+                    });
+                });
+                
+                // Show selected state for existing selections
+                Object.keys(selectedImageMap).forEach(sectionId => {
+                    const selectedFilename = selectedImageMap[sectionId];
+                    updateImageSelection(sectionId, selectedFilename);
+                });
+            }, 100);
+        }
+
+        // Display regular images in grid layout
+        function displayRegularImages(images) {
+            const grid = document.getElementById('image-grid');
+            grid.innerHTML = '';
+            images.forEach(image => {
+                const card = createImageCard(image);
+                grid.appendChild(card);
+            });
+            grid.classList.remove('section-layout'); // Remove class for regular grid
+        }
+
+        // Display selected images in a special layout
+        function displaySelectedImages(images) {
+            const grid = document.getElementById('image-grid');
+            
+            // Create a simple grid layout for selected images
+            let html = '';
+            images.forEach(image => {
+                html += createImageCardHTML(image, image.section_id);
+            });
+            
+            grid.innerHTML = html;
+            grid.classList.remove('section-layout'); // Remove section layout class
+            
+            // Add click handlers for image selection (even though these are already selected)
+            setTimeout(() => {
+                document.querySelectorAll('.image-card').forEach(card => {
+                    card.addEventListener('click', function() {
+                        const sectionId = this.getAttribute('data-section-id');
+                        const filename = this.getAttribute('data-filename');
+                        if (sectionId && filename) {
+                            selectImage(sectionId, filename);
+                        }
+                    });
+                });
+                
+                // Show selected state for all images (they're all selected)
+                images.forEach(image => {
+                    updateImageSelection(image.section_id, image.filename);
+                });
+            }, 100);
+        }
+
+        // Create image card HTML string for section layout
+        function createImageCardHTML(image, sectionId) {
+            // Determine status based on path (raw, optimized, etc.)
+            let status = 'raw';
+            let statusClass = 'status-raw';
+            if (image.path && image.path.includes('/optimized/')) {
+                status = 'optimized';
+                statusClass = 'status-optimized';
+            } else if (image.path && (image.path.includes('/web/') || image.path.includes('/social/'))) {
+                status = 'final';
+                statusClass = 'status-final';
+            }
+            
+            // Check if this image is selected
+            let isSelected = false;
+            if (sectionId === 'header') {
+                // For header images, check if any header image is selected (simplified approach)
+                isSelected = image.is_selected || false;
+            } else {
+                isSelected = selectedImageMap[sectionId] === image.filename;
+            }
+            const selectedClass = isSelected ? 'selected' : '';
+            
+            // Get file size (mock for now, could be enhanced with real file size)
+            const fileSize = '1.2MB'; // TODO: Get actual file size
+            
+            // Get title for display - use simple identifier for purple bar
+            let title = '';
+            if (sectionId === 'header') {
+                title = 'Header'; // Simple identifier for header images
+            } else {
+                title = `Section ${sectionId}`; // Simple identifier with section number
+            }
+            
+            return `
+                <div class="image-card ${selectedClass}" data-section-id="${sectionId}" data-filename="${image.filename}" data-type="${sectionId === 'header' ? 'header' : 'section'}">
+                    <div class="image-title">
+                        <h3>${title}</h3>
+                    </div>
+                    <div class="image-preview">
+                        <img src="${image.url}" alt="${image.filename}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <div class="placeholder" style="display: none;">🖼️</div>
+                    </div>
+                    <div class="image-caption" style="display: none; padding: 8px; background: #f8f9fa; border-top: 1px solid #dee2e6; font-size: 0.9em; color: #495057;">
+                        <em>Caption will appear here after generation</em>
+                    </div>
+                    <div class="image-info">
+                        <h4>${image.filename}</h4>
+                        <div class="image-meta">
+                            <span class="image-status ${statusClass}">${status}</span>
+                            <span>${fileSize}</span>
+                        </div>
+                        <div class="image-actions">
+                            <button class="btn btn-small btn-primary mock-placeholder mock-button" onclick="viewImage('${image.filename}')">👁️ View</button>
+                            <button class="btn btn-small btn-secondary mock-placeholder mock-button" onclick="editImage('${image.filename}')">📝 Edit</button>
+                            <button class="btn btn-small btn-secondary mock-placeholder mock-button" onclick="deleteImage('${image.filename}')">🗑️ Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Create image card for regular layout
+        function createImageCard(image) {
+            const card = document.createElement('div');
+            card.className = 'image-card';
+            card.innerHTML = createImageCardHTML(image, 'dummy_section_id'); // Pass a dummy sectionId for regular images
+            return card;
+        }
+
+        // Update statistics display
+        async function updateStatistics() {
+            try {
+                // Get general image stats
+                const statsResponse = await fetch(`/api/images/stats/${currentPostId}`);
+                const stats = await statsResponse.json();
+                
+                // Get selected images using unified API
+                const selectedResponse = await fetch(`/api/images/${currentPostId}/selected`);
+                const selectedData = await selectedResponse.json();
+                
+                // Get optimized images stats
+                const optimizedResponse = await fetch(`/api/images/optimized/stats/${currentPostId}`);
+                const optimizedStats = await optimizedResponse.json();
+                
+                // Get watermarked images stats
+                const watermarkedResponse = await fetch(`/api/watermark/stats/${currentPostId}`);
+                const watermarkedStats = await watermarkedResponse.json();
+                
+                // Store stats in window object for pipeline function to access
+                window.currentStats = stats;
+                window.currentOptimizedStats = optimizedStats;
+                window.currentWatermarkedStats = watermarkedStats;
+                
+                // Convert bytes to MB/GB
+                const totalSizeMB = (stats.total_size / (1024 * 1024)).toFixed(1);
+                // For selected images, use optimized size since they're the same files
+                const selectedSizeMB = (optimizedStats.optimized_size / (1024 * 1024)).toFixed(1);
+                const optimizedSizeMB = (optimizedStats.optimized_size / (1024 * 1024)).toFixed(1);
+                
+                // Update breakdown counts with null checks
+                const updateElement = (id, value) => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.textContent = value;
+                    }
+                };
+                
+                updateElement('raw-all-count', stats.total_images);
+                updateElement('raw-header-count', stats.header_images || 0);
+                updateElement('raw-sections-count', stats.section_images || 0);
+                updateElement('raw-size', totalSizeMB + 'MB');
+                
+                updateElement('selected-all-count', selectedData.total || 0);
+                updateElement('selected-header-count', selectedData.header_count || 0);
+                updateElement('selected-sections-count', selectedData.section_count || 0);
+                updateElement('selected-size', selectedSizeMB + 'MB');
+                
+                updateElement('optimized-all-count', optimizedStats.optimized_images || 0);
+                updateElement('optimized-header-count', optimizedStats.optimized_header_images || 0);
+                updateElement('optimized-sections-count', optimizedStats.optimized_section_images || 0);
+                updateElement('optimized-size', optimizedSizeMB + 'MB');
+                
+                const watermarkedSizeMB = (watermarkedStats.watermarked_size / (1024 * 1024)).toFixed(1);
+                
+                updateElement('watermarked-all-count', watermarkedStats.watermarked_count || 0);
+                updateElement('watermarked-header-count', '0'); // TODO: Add header count
+                updateElement('watermarked-sections-count', '0'); // TODO: Add section count
+                updateElement('watermarked-size', watermarkedSizeMB + 'MB');
+                
+                updateElement('captioned-all-count', '0');
+                updateElement('captioned-header-count', '0');
+                updateElement('captioned-sections-count', '0');
+                updateElement('captioned-size', '0MB');
+                
+                // Update pipeline status based on the new statistics
+                await updatePipelineStatus();
+                
+            } catch (error) {
+                console.error('Error updating statistics:', error);
+            }
+        }
+
+        // Switch processing stage
+        function switchProcessingStage(stage) {
+            // Update active button
+            document.querySelectorAll('.processing-stage-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-stage="${stage}"]`).classList.add('active');
+            
+            // Update content title to show current stage
+            const titles = {
+                'raw': 'Raw Images',
+                'selected': 'Selected Images',
+                'optimized': 'Optimized Images',
+                'captioned': 'Captioned Images'
+            };
+            const imageTypeTitles = {
+                'header': 'Header Images',
+                'section': 'Section Images',
+                'featured': 'Featured Images'
+            };
+            const currentImageTypeTitle = imageTypeTitles[currentImageType] || 'Images';
+            const contentTitleElement = document.getElementById('content-title');
+            if (contentTitleElement) {
+                contentTitleElement.textContent = `${currentImageTypeTitle} - ${titles[stage]} - Post ${currentPostId}`;
+            }
+            
+            // TODO: Filter images by processing stage
+            // For now, just reload current image type
+            loadImageType(currentImageType);
+        }
+
+        // Update pipeline status based on actual image counts
+        async function updatePipelineStatus() {
+            console.log('updatePipelineStatus called for post:', currentPostId);
+            try {
+                // Get image counts for each stage
+                const rawResponse = await fetch(`/api/images/${currentPostId}/raw`);
+                const selectedResponse = await fetch(`/api/images/${currentPostId}/selected`);
+                const optimizedResponse = await fetch(`/api/images/${currentPostId}/optimized`);
+                const watermarkedResponse = await fetch(`/api/images/${currentPostId}/watermarked`);
+                
+                const rawData = await rawResponse.json();
+                const selectedData = await selectedResponse.json();
+                const optimizedData = await optimizedResponse.json();
+                const watermarkedData = await watermarkedResponse.json();
+                
+                console.log('API responses:', { raw: rawData, selected: selectedData, optimized: optimizedData, watermarked: watermarkedData });
+                
+                // Check for captions in database
+                let captionedData = { total: 0, header_count: 0, section_count: 0 };
+                try {
+                    const captionsResponse = await fetch(`/api/captions/${currentPostId}`);
+                    if (captionsResponse.ok) {
+                        const captionsData = await captionsResponse.json();
+                        if (captionsData.success) {
+                            // Count captions - if we have watermarked images and captions, consider it captioned
+                            if (watermarkedData.total > 0) {
+                                let captionCount = 0;
+                                if (captionsData.captions.header && captionsData.captions.header.caption) captionCount++;
+                                captionsData.captions.sections.forEach(section => {
+                                    if (section.caption) captionCount++;
+                                });
+                                
+                                if (captionCount > 0) {
+                                    captionedData = {
+                                        total: watermarkedData.total,
+                                        header_count: watermarkedData.header_count,
+                                        section_count: watermarkedData.section_count
+                                    };
+                                }
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.log('Error checking captions:', error);
+                }
+                
+                // Update pipeline steps based on actual data
+                updatePipelineStepsFromData({
+                    raw: rawData,
+                    selected: selectedData,
+                    optimized: optimizedData,
+                    watermarked: watermarkedData,
+                    captioned: captionedData
+                });
+                
+                // Also check for existing jobs
+                const response = await fetch(`/api/pipeline/jobs/${currentPostId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    processingJobs = data.jobs || [];
+                    
+                    // Update pipeline visualization for active jobs only
+                    if (processingJobs.length > 0) {
+                        const latestJob = processingJobs[0];
+                        // Only override with job status if the job is actually processing
+                        if (latestJob.status === 'processing' && latestJob.progress > 0) {
+                            updatePipelineStepsFromJob(latestJob);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating pipeline status:', error);
+            }
+        }
+
+        // Update pipeline steps based on actual image data
+        function updatePipelineStepsFromData(data) {
+            console.log('updatePipelineStepsFromData called with:', data);
+            
+            const pipelineSteps = [
+                { stage: 'raw', data: data.raw },
+                { stage: 'selected', data: data.selected },
+                { stage: 'optimized', data: data.optimized },
+                { stage: 'watermarked', data: data.watermarked },
+                { stage: 'captioned', data: data.captioned || { total: 0, header_count: 0, section_count: 0 } },
+                { stage: 'metadata', data: { total: 0, header_count: 0, section_count: 0 } } // Not implemented yet
+            ];
+            
+            pipelineSteps.forEach(({ stage, data }) => {
+                const stepElement = document.querySelector(`[data-stage="${stage}"]`);
+                if (!stepElement) {
+                    console.log(`Step element not found for stage: ${stage}`);
+                    return;
+                }
+                
+                const stepIcon = stepElement.querySelector('.step-icon');
+                if (!stepIcon) {
+                    console.log(`Step icon not found for stage: ${stage}`);
+                    return;
+                }
+                
+                // Check if this stage has images for both header and sections
+                const hasHeaderImages = data.header_count > 0;
+                const hasSectionImages = data.section_count > 0;
+                const hasImages = data.total > 0;
+                
+                console.log(`Stage ${stage}: total=${data.total}, header=${data.header_count}, sections=${data.section_count}, hasImages=${hasImages}`);
+                
+                // Update step details
+                const stepCountElement = stepElement.querySelector('.step-count');
+                const stepSizeElement = stepElement.querySelector('.step-size');
+                
+                if (stepCountElement) {
+                    stepCountElement.textContent = `(${data.total} total: ${data.header_count} header + ${data.section_count} sections)`;
+                }
+                
+                if (stepSizeElement && data.total > 0) {
+                    // Calculate size based on stage
+                    let sizeText = '0MB';
+                    if (stage === 'raw') {
+                        // Use total size from general stats
+                        const totalSizeMB = (window.currentStats?.total_size || 0) / (1024 * 1024);
+                        sizeText = `${totalSizeMB.toFixed(1)}MB`;
+                    } else if (stage === 'selected' || stage === 'optimized') {
+                        // Use optimized size for both selected and optimized
+                        const optimizedSizeMB = (window.currentOptimizedStats?.optimized_size || 0) / (1024 * 1024);
+                        sizeText = `${optimizedSizeMB.toFixed(1)}MB`;
+                    } else if (stage === 'watermarked') {
+                        // Use watermarked size
+                        const watermarkedSizeMB = (window.currentWatermarkedStats?.watermarked_size || 0) / (1024 * 1024);
+                        sizeText = `${watermarkedSizeMB.toFixed(1)}MB`;
+                    }
+                    stepSizeElement.textContent = `${sizeText} total size`;
+                }
+                
+                // For now, we'll consider a step complete if it has any images
+                // In the future, we could make this more sophisticated
+                if (hasImages) {
+                    stepElement.className = 'pipeline-step completed';
+                    stepIcon.className = 'step-icon completed';
+                    stepIcon.textContent = '✓';
+                    console.log(`Set ${stage} to completed`);
+                } else {
+                    stepElement.className = 'pipeline-step pending';
+                    stepIcon.className = 'step-icon pending';
+                    stepIcon.textContent = '○';
+                    console.log(`Set ${stage} to pending`);
+                }
+            });
+        }
+
+        // Update pipeline steps visualization from job data
+        function updatePipelineStepsFromJob(job) {
+            const steps = ['raw', 'selected', 'optimized', 'watermarked', 'captioned', 'metadata'];
+            const stepElements = document.querySelectorAll('.pipeline-step');
+            
+            steps.forEach((step, index) => {
+                const stepElement = stepElements[index];
+                if (!stepElement) return;
+                
+                const stepIcon = stepElement.querySelector('.step-icon');
+                
+                // Update step status based on job progress
+                if (job.progress >= (index + 1) * 16.67) { // 100% / 6 steps
+                    stepElement.className = 'pipeline-step completed';
+                    stepIcon.className = 'step-icon completed';
+                    stepIcon.textContent = '✓';
+                } else if (job.progress >= index * 16.67) {
+                    stepElement.className = 'pipeline-step processing';
+                    stepIcon.className = 'step-icon processing';
+                    stepIcon.textContent = '⟳';
+                } else {
+                    stepElement.className = 'pipeline-step pending';
+                    stepIcon.className = 'step-icon pending';
+                    stepIcon.textContent = '○';
+                }
+            });
+        }
+
+        // Update action center with current focus information
+        function updateActionCenter() {
+            const currentFocusText = document.getElementById('current-focus-text');
+            const currentPipelineStageText = document.getElementById('current-pipeline-stage');
+            const currentStageCount = document.getElementById('current-stage-count');
+            const currentStageSize = document.getElementById('current-stage-size');
+            const currentStageStatus = document.getElementById('current-stage-status');
+            
+            if (currentFocusText) {
+                const imageTypeNames = {
+                    all: 'All Images',
+                    header: 'Header Images',
+                    section: 'Section Images',
+                    featured: 'Featured Images'
+                };
+                currentFocusText.textContent = imageTypeNames[currentImageTypeTab] || 'Images';
+            }
+            
+            if (currentPipelineStageText) {
+                currentPipelineStageText.textContent = currentPipelineStage;
+            }
+            
+            // Update current stage info based on selected processing stage
+            const stageData = {
+                raw: { count: 10, size: '60.0MB', status: 'Ready' },
+                selected: { count: 8, size: '7.5MB', status: 'Ready' },
+                optimized: { count: 8, size: '28.5MB', status: 'Ready' },
+                captioned: { count: 0, size: '0MB', status: 'Not implemented' }
+            };
+            
+            const data = stageData[currentPipelineStage] || { count: 0, size: '0MB', status: 'Unknown' };
+            
+            if (currentStageCount) currentStageCount.textContent = data.count;
+            if (currentStageSize) currentStageSize.textContent = data.size;
+            if (currentStageStatus) currentStageStatus.textContent = data.status;
+        }
+
+        // Update tab counts
+        function updateTabCounts() {
+            const allCountElement = document.getElementById('all-tab-count');
+            const headerCountElement = document.getElementById('header-tab-count');
+            const sectionCountElement = document.getElementById('section-tab-count');
+            
+            // This would be populated from API data in a real implementation
+            // For now, using static data based on current pipeline stage
+            const stageCounts = {
+                raw: { all: 10, header: 1, section: 9 },
+                selected: { all: 8, header: 1, section: 7 },
+                optimized: { all: 8, header: 1, section: 7 },
+                captioned: { all: 0, header: 0, section: 0 }
+            };
+            
+            const counts = stageCounts[currentPipelineStage] || { all: 0, header: 0, section: 0 };
+            
+            if (allCountElement) allCountElement.textContent = `(${counts.all})`;
+            if (headerCountElement) headerCountElement.textContent = `(${counts.header})`;
+            if (sectionCountElement) sectionCountElement.textContent = `(${counts.section})`;
+        }
+
+        // Update batch controls based on current stage
+        function updateBatchControls() {
+            // Hide all stage content
+            document.querySelectorAll('.stage-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Map pipeline stages to content sections
+            const stageContentMap = {
+                'upload': 'upload-stage-content',
+                'raw': 'raw-stage-content',
+                'selected': 'selected-stage-content', 
+                'optimized': 'optimized-stage-content',
+                'watermarked': 'watermarked-stage-content'   // Captioning controls (with metadata)
+            };
+            
+            // Show content for current stage
+            const contentId = stageContentMap[currentPipelineStage];
+            if (contentId) {
+                const currentStageContent = document.getElementById(contentId);
+                if (currentStageContent) {
+                    currentStageContent.classList.remove('hidden');
+                }
+            }
+        }
+
+        // Add click handlers for sidebar elements
+        function setupSidebarInteractions() {
+            // Pipeline step clicks
+            document.querySelectorAll('.pipeline-step').forEach(step => {
+                step.addEventListener('click', function() {
+                    const stage = this.dataset.stage;
+                    console.log(`Pipeline step clicked: ${stage}`);
+                    
+                    // Switch to this processing stage
+                    switchPipelineStage(stage);
+                    
+                    // Update action center
+                    updateActionCenter();
+                });
+            });
+        }
+
+        // Add click handlers for tab elements
+        function setupTabInteractions() {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const type = this.dataset.type;
+                    console.log(`Tab clicked: ${type}`);
+                    
+                    // Switch to this image type tab
+                    switchImageTypeTab(type);
+                    
+                    // Update action center
+                    updateActionCenter();
+                });
+            });
+        }
+
+        // Quick action functions
+        function showUploadDialog() {
+            console.log('Upload dialog requested');
+            // This would open a file upload dialog
+            alert('Upload functionality would open here');
+        }
+
+        function showGenerateDialog() {
+            console.log('Generate dialog requested');
+            // This would open an image generation dialog
+            alert('Image generation dialog would open here');
+        }
+
+        function showBatchDialog() {
+            console.log('Batch dialog requested');
+            showBatchControls();
+        }
+
+        // Toggle accordion
+        function toggleAccordion(id) {
+            const item = document.querySelector(`#${id}-content`).parentElement;
+            const icon = document.getElementById(`${id}-icon`);
+            
+            if (item.classList.contains('active')) {
+                item.classList.remove('active');
+            } else {
+                // Close all other accordion items
+                document.querySelectorAll('.accordion-item').forEach(accItem => {
+                    accItem.classList.remove('active');
+                });
+                // Open this one
+                item.classList.add('active');
+            }
+        }
+
+        // Show batch controls (now opens accordion)
+        function showBatchControls() {
+            toggleAccordion('batch-controls');
+        }
+
+        // Raw stage functions
+        function processSelection() {
+            console.log('Processing selection for raw stage');
+            alert('Selection processing would move selected images to the "Selected" stage');
+        }
+
+        function autoSelectBest() {
+            console.log('Auto-selecting best images');
+            alert('Auto-selection would use AI to pick the best image for each section');
+        }
+
+        function clearAllSelections() {
+            console.log('Clearing all selections');
+            alert('All selections would be cleared');
+        }
+
+        // Selected stage functions
+        function startOptimization() {
+            console.log('Starting optimization');
+            
+            // Get optimization settings from dropdown
+            const settingsSelect = document.getElementById('optimization-settings');
+            const settings = settingsSelect ? settingsSelect.value : 'webp_1200_85';
+            
+            // Show loading state
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = '🔄 Processing...';
+            button.disabled = true;
+            
+            // Call optimization API
+            fetch(`/api/optimize/rename/${currentPostId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    settings: settings
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Optimization complete! ${data.optimized_count} images optimized and moved to optimized stage.`);
+                    // Refresh the display
+                    loadCurrentPipelineStage();
+                    updateStatistics();
+                    updatePipelineStatus();
+                } else {
+                    alert(`Error: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                console.error('Optimization error:', error);
+                alert('Error during optimization process');
+            })
+            .finally(() => {
+                // Restore button state
+                button.textContent = originalText;
+                button.disabled = false;
+            });
+        }
+
+        function previewOptimization() {
+            console.log('Previewing optimization');
+            
+            // Get optimization settings from dropdown
+            const settingsSelect = document.getElementById('optimization-settings');
+            const settings = settingsSelect ? settingsSelect.value : 'webp_1200_85';
+            
+            // Show preview of what will be optimized
+            fetch(`/api/optimize/preview/${currentPostId}?settings=${settings}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let previewText = `Files to be optimized (${settings}):\n\n`;
+                    data.preview.forEach(item => {
+                        previewText += `${item.original} → ${item.new_name}\n`;
+                    });
+                    alert(previewText);
+                } else {
+                    alert(`Error: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                console.error('Preview error:', error);
+                alert('Error generating preview');
+            });
+        }
+
+        // Optimized stage functions (Watermarking)
+        function startWatermarking() {
+            console.log('Starting watermarking');
+            
+            // Show loading state
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = '🔄 Processing...';
+            button.disabled = true;
+            
+            // Call watermarking API
+            fetch(`/api/watermark/process/${currentPostId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Watermarking complete! ${data.watermarked_count} images watermarked and moved to watermarked stage.`);
+                    // Refresh the display
+                    loadCurrentPipelineStage();
+                    updateStatistics();
+                    updatePipelineStatus();
+                } else {
+                    alert(`Error: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                console.error('Watermarking error:', error);
+                alert('Error during watermarking process');
+            })
+            .finally(() => {
+                // Restore button state
+                button.textContent = originalText;
+                button.disabled = false;
+            });
+        }
+
+        function previewWatermarking() {
+            console.log('Previewing watermarking');
+            
+            // Show preview of what will be watermarked
+            fetch(`/api/watermark/preview/${currentPostId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let previewText = `Files to be watermarked:\n\n`;
+                    data.preview.forEach(item => {
+                        previewText += `${item.original} → ${item.new_name}\n`;
+                    });
+                    alert(previewText);
+                } else {
+                    alert(`Error: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                console.error('Preview error:', error);
+                alert('Error generating preview');
+            });
+        }
+
+        // Watermarked stage functions (Captioning)
+        async function startCaptioning() {
+            console.log('Starting captioning');
+            
+            const captionStyle = document.getElementById('caption-style').value;
+            const captionLanguage = document.getElementById('caption-language').value;
+            
+            try {
+                showStatus('Generating captions...', 'info');
+                
+                const response = await fetch('/api/process/caption', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        post_id: currentPostId,
+                        caption_style: captionStyle,
+                        caption_language: captionLanguage
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        showStatus(`Successfully generated captions for ${data.captions_generated} images!`, 'success');
+                        
+                        // Update the display to show captions
+                        await loadCaptions();
+                        
+                        // Update pipeline status
+                        updatePipelineStatus();
+                        updateStatistics();
+                    } else {
+                        showStatus(`Error: ${data.error}`, 'error');
+                    }
+                } else {
+                    const error = await response.json();
+                    showStatus(`Error: ${error.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function previewCaptions() {
+            console.log('Previewing captions');
+            
+            // First, refresh the prompt display
+            await refreshPromptDisplay();
+            
+            try {
+                const response = await fetch(`/api/captions/${currentPostId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        let previewText = 'Current Captions:\n\n';
+                        
+                        if (data.captions.header.caption) {
+                            previewText += `Header: ${data.captions.header.caption}\n\n`;
+                        }
+                        
+                        data.captions.sections.forEach(section => {
+                            if (section.caption) {
+                                previewText += `${section.section_heading}: ${section.caption}\n\n`;
+                            }
+                        });
+                        
+                        alert(previewText);
+                    } else {
+                        alert('No captions found');
+                    }
+                } else {
+                    alert('Error loading captions');
+                }
+            } catch (error) {
+                alert('Error previewing captions');
+            }
+        }
+
+        async function refreshPromptDisplay() {
+            console.log('Refreshing prompt display');
+            
+            const captionStyle = document.getElementById('caption-style').value;
+            const captionLanguage = document.getElementById('caption-language').value;
+            const promptDisplay = document.getElementById('current-prompt-display');
+            
+            try {
+                // Fetch the current prompt from the backend
+                const response = await fetch('/api/caption/prompt', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        post_id: currentPostId,
+                        caption_style: captionStyle,
+                        caption_language: captionLanguage
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        promptDisplay.textContent = data.prompt;
+                    } else {
+                        promptDisplay.textContent = 'Error: Could not fetch prompt';
+                    }
+                } else {
+                    promptDisplay.textContent = 'Error: Could not fetch prompt';
+                }
+            } catch (error) {
+                console.error('Error fetching prompt:', error);
+                promptDisplay.textContent = 'Error: Could not fetch prompt';
+            }
+        }
+
+        // Metadata generation functions
+        async function startMetadataGeneration() {
+            console.log('Starting metadata generation');
+            
+            try {
+                showStatus('Generating metadata...', 'info');
+                
+                const response = await fetch('/api/process/metadata', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        post_id: currentPostId
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        showStatus(`Successfully generated metadata for ${data.metadata_generated} images!`, 'success');
+                        
+                        // Update the display to show metadata
+                        await loadMetadata();
+                        
+                        // Update pipeline status
+                        updatePipelineStatus();
+                        updateStatistics();
+                    } else {
+                        showStatus(`Error: ${data.error}`, 'error');
+                    }
+                } else {
+                    const error = await response.json();
+                    showStatus(`Error: ${error.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function previewMetadata() {
+            console.log('Previewing metadata');
+            
+            try {
+                // Get metadata from database
+                const response = await fetch(`/api/metadata/${currentPostId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        let previewText = 'Current Metadata:\n\n';
+                        
+                        if (data.metadata.header) {
+                            previewText += `Header:\n`;
+                            previewText += `  Alt: ${data.metadata.header.alt_text}\n`;
+                            previewText += `  Title: ${data.metadata.header.title_text}\n`;
+                            previewText += `  Size: ${data.metadata.header.width}x${data.metadata.header.height}\n\n`;
+                        }
+                        
+                        data.metadata.sections.forEach(section => {
+                            previewText += `${section.section_heading}:\n`;
+                            previewText += `  Alt: ${section.alt_text}\n`;
+                            previewText += `  Title: ${section.title_text}\n`;
+                            previewText += `  Size: ${section.width}x${section.height}\n\n`;
+                        });
+                        
+                        alert(previewText);
+                    } else {
+                        alert('No metadata found');
+                    }
+                } else {
+                    alert('Error loading metadata');
+                }
+            } catch (error) {
+                alert('Error previewing metadata');
+            }
+        }
+
+        async function loadMetadata() {
+            console.log('Loading metadata');
+            
+            try {
+                const response = await fetch(`/api/metadata/${currentPostId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        updateMetadataDisplay(data.metadata);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading metadata:', error);
+            }
+        }
+
+        function updateMetadataDisplay(metadata) {
+            // Update the image cards to show metadata
+            const imageCards = document.querySelectorAll('.image-card');
+            
+            imageCards.forEach(card => {
+                const imagePath = card.querySelector('img').src;
+                const imageType = card.dataset.type;
+                const sectionId = card.dataset.sectionId;
+                
+                // Find matching metadata
+                let imageMetadata = null;
+                if (imageType === 'header' && metadata.header) {
+                    imageMetadata = metadata.header;
+                } else if (imageType === 'section' && metadata.sections) {
+                    imageMetadata = metadata.sections.find(s => s.section_id == sectionId);
+                }
+                
+                if (imageMetadata) {
+                    // Update or create metadata display
+                    let metadataDiv = card.querySelector('.metadata-display');
+                    if (!metadataDiv) {
+                        metadataDiv = document.createElement('div');
+                        metadataDiv.className = 'metadata-display';
+                        card.appendChild(metadataDiv);
+                    }
+                    
+                    metadataDiv.innerHTML = `
+                        <div class="metadata-item">
+                            <strong>Alt:</strong> ${imageMetadata.alt_text}
+                        </div>
+                        <div class="metadata-item">
+                            <strong>Title:</strong> ${imageMetadata.title_text}
+                        </div>
+                        <div class="metadata-item">
+                            <strong>Size:</strong> ${imageMetadata.width}x${imageMetadata.height}
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        async function loadCaptions() {
+            try {
+                const response = await fetch(`/api/captions/${currentPostId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        // Store captions globally for display
+                        window.currentCaptions = data.captions;
+                        
+                        // Update caption display in watermarking stage
+                        updateCaptionDisplay();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading captions:', error);
+            }
+        }
+
+        function updateCaptionDisplay() {
+            if (!window.currentCaptions) return;
+            
+            // Update header caption if exists
+            const headerImages = document.querySelectorAll('.image-card[data-type="header"]');
+            headerImages.forEach(container => {
+                const captionElement = container.querySelector('.image-caption');
+                if (captionElement && window.currentCaptions.header && window.currentCaptions.header.caption) {
+                    captionElement.textContent = window.currentCaptions.header.caption;
+                    captionElement.style.display = 'block';
+                }
+            });
+            
+            // Update section captions
+            const sectionImages = document.querySelectorAll('.image-card[data-type="section"]');
+            sectionImages.forEach(container => {
+                const sectionId = container.dataset.sectionId;
+                const captionElement = container.querySelector('.image-caption');
+                
+                const sectionCaption = window.currentCaptions.sections.find(s => s.id == sectionId);
+                if (captionElement && sectionCaption && sectionCaption.caption) {
+                    captionElement.textContent = sectionCaption.caption;
+                    captionElement.style.display = 'block';
+                }
+            });
+        }
+
+        // Captioned stage functions
+        function approveAll() {
+            console.log('Approving all images');
+            alert('All images would be approved');
+        }
+
+        function exportImages() {
+            console.log('Exporting images');
+            alert('Images would be exported');
+        }
+
+        // Start batch processing
+        async function startBatchProcessing() {
+            const settings = {
+                processing_stage: document.getElementById('processing-stage').value,
+                quality_level: document.getElementById('quality-level').value,
+                watermark_style: document.getElementById('watermark-style').value,
+                custom_prompt: document.getElementById('custom-prompt').value
+            };
+            
+            try {
+                const response = await fetch('/api/pipeline/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        post_id: currentPostId,
+                        image_ids: selectedImages,
+                        settings: settings,
+                        job_type: 'batch'
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showStatus(`Batch processing started! Job ID: ${data.job_id}`, 'success');
+                    document.getElementById('processing-controls').classList.add('hidden');
+                    document.getElementById('progress-section').classList.remove('hidden');
+                    
+                    // Start progress animation
+                    startProgressAnimation();
+                    
+                    // Start polling for status updates
+                    pollJobStatus(data.job_id);
+                } else {
+                    const error = await response.json();
+                    showStatus(`Error: ${error.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Start progress animation
+        function startProgressAnimation() {
+            const progressFill = document.getElementById('progress-fill');
+            const progressPercentage = document.getElementById('progress-percentage');
+            let progress = 65;
+            
+            const interval = setInterval(() => {
+                progress += Math.random() * 2;
+                if (progress > 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    showStatus('Processing completed!', 'success');
+                    document.getElementById('progress-section').classList.add('hidden');
+                }
+                progressFill.style.width = progress + '%';
+                progressPercentage.textContent = Math.round(progress) + '% Complete';
+            }, 2000);
+        }
+
+        // Poll job status
+        async function pollJobStatus(jobId) {
+            const interval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/pipeline/status/${jobId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        if (data.status === 'completed' || data.status === 'failed' || data.status === 'cancelled') {
+                            clearInterval(interval);
+                            showStatus(`Job ${data.status}!`, data.status === 'completed' ? 'success' : 'error');
+                            updatePipelineStatus();
+                            updateStatistics();
+                        } else {
+                            updatePipelineSteps(data);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error polling job status:', error);
+                }
+            }, 2000);
+        }
+
+        // Retry failed images
+        async function retryFailed() {
+            try {
+                const response = await fetch('/api/advanced/retry-failed', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        post_id: currentPostId,
+                        image_ids: selectedImages
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showStatus(`Retry processing started! Job ID: ${data.job_id}`, 'success');
+                    pollJobStatus(data.job_id);
+                } else {
+                    const error = await response.json();
+                    showStatus(`Error: ${error.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Show status message
+        function showStatus(message, type) {
+            const statusElement = document.getElementById('status-message');
+            statusElement.textContent = message;
+            statusElement.className = `status-message ${type}`;
+            statusElement.classList.remove('hidden');
+            
+            setTimeout(() => {
+                statusElement.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Feature functions
+        function showStats() {
+            showStatus('Statistics dashboard coming soon!', 'info');
+        }
+
+        function generateNew() {
+            showStatus('Image generation coming soon!', 'info');
+        }
+
+        function pauseProcessing() {
+            showStatus('Pause functionality coming soon!', 'info');
+        }
+
+        function viewImage(filename) {
+            showStatus(`Viewing ${filename}`, 'info');
+        }
+
+        function editImage(filename) {
+            showStatus('Image editing coming soon!', 'info');
+        }
+
+        function deleteImage(filename) {
+            if (confirm(`Are you sure you want to delete ${filename}?`)) {
+                showStatus(`${filename} deleted successfully!`, 'success');
+            }
+        }
+
+        // Load selected images for the current post
+        async function loadSelectedImages() {
+            try {
+                const response = await fetch(`/api/sections/${currentPostId}/selected`);
+                if (response.ok) {
+                    const data = await response.json();
+                    selectedImageMap = {};
+                    data.selected_images.forEach(item => {
+                        selectedImageMap[item.section_id] = item.selected_image;
+                    });
+                    console.log('Loaded selected images:', selectedImageMap);
+                }
+            } catch (error) {
+                console.error('Error loading selected images:', error);
+            }
+        }
+
+        // Select an image for a section or header
+        async function selectImage(sectionId, filename) {
+            try {
+                let response;
+                
+                if (sectionId === 'header') {
+                    // Select header image
+                    response = await fetch(`/api/header/${currentPostId}/select`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ filename: filename })
+                    });
+                } else {
+                    // Select section image
+                    response = await fetch(`/api/sections/${currentPostId}/${sectionId}/select`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ filename: filename })
+                    });
+                }
+                
+                if (response.ok) {
+                    if (sectionId === 'header') {
+                        console.log(`Selected ${filename} for header`);
+                    } else {
+                        selectedImageMap[sectionId] = filename;
+                        console.log(`Selected ${filename} for section ${sectionId}`);
+                    }
+                    
+                    // Update the display to show selection
+                    updateImageSelection(sectionId, filename);
+                    
+                    // Update statistics
+                    updateStatistics();
+                }
+            } catch (error) {
+                console.error('Error selecting image:', error);
+            }
+        }
+
+        // Update image selection display
+        function updateImageSelection(sectionId, selectedFilename) {
+            if (sectionId === 'header') {
+                // Remove selection from all header images
+                document.querySelectorAll(`[data-section-id="header"]`).forEach(card => {
+                    card.classList.remove('selected');
+                });
+                
+                // Add selection to the selected header image
+                const selectedCard = document.querySelector(`[data-section-id="header"][data-filename="${selectedFilename}"]`);
+                if (selectedCard) {
+                    selectedCard.classList.add('selected');
+                }
+            } else {
+                // Remove selection from all images in this section
+                document.querySelectorAll(`[data-section-id="${sectionId}"]`).forEach(card => {
+                    card.classList.remove('selected');
+                });
+                
+                // Add selection to the selected image
+                const selectedCard = document.querySelector(`[data-section-id="${sectionId}"][data-filename="${selectedFilename}"]`);
+                if (selectedCard) {
+                    selectedCard.classList.add('selected');
+                }
+            }
+        }
+
+        // Image type switching
+        document.querySelectorAll('.image-type-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const type = this.getAttribute('data-type');
+                switchImageType(type);
+            });
+        });
+
+        // Post selector
+        document.getElementById('post-select').addEventListener('change', function() {
+            currentPostId = this.value;
+            loadSelectedImages();
+            loadImageType(currentImageType);
+            updateStatistics();
+            updatePipelineStatus();
+        });
+
+        // Processing stage buttons
+        document.querySelectorAll('.processing-stage-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const stage = this.getAttribute('data-stage');
+                switchProcessingStage(stage);
+            });
+        });
+
+        // Iframe communication
+        function updateIframeHeight() {
+            if (window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'resize',
+                    source: 'blog-images',
+                    height: document.body.scrollHeight
+                }, '*');
+            }
+        }
+
+        // Update height when content changes
+        const observer = new MutationObserver(updateIframeHeight);
+        observer.observe(document.body, { childList: true, subtree: true });
+    </script>
+</body>
+</html>
+</html>
