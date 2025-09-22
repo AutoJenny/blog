@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 import pytz
 from humanize import naturaltime
-import psycopg2.extras
+import psycopg.rows
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -116,11 +116,11 @@ def serve_header_image(post_id, directory, filename):
 # Database connection function (shared with blog-core)
 def get_db_connection():
     """Get database connection."""
-    import psycopg2
-    return psycopg2.connect(
+    import psycopg
+    return psycopg.connect(
         host=os.getenv('DB_HOST', 'localhost'),
-        database=os.getenv('DB_NAME', 'blog'),
-        user=os.getenv('DB_USER', 'nickfiddes'),
+        dbname=os.getenv('DB_NAME', 'blog'),
+        user=os.getenv('DB_USER', 'autojenny'),
         password=os.getenv('DB_PASSWORD', '')
     )
 
@@ -138,7 +138,7 @@ def index():
 def cross_promotion():
     """Cross-promotion management page."""
     with get_db_connection() as conn:
-        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         cur.execute("""
             SELECT p.id, p.title, p.subtitle, p.created_at, p.updated_at, p.status, p.slug,
                    pd.idea_seed, pd.intro_blurb, pd.main_title,
@@ -194,13 +194,9 @@ def get_unified_timeline():
                        pq.scheduled_timestamp, pq.generated_content, pq.status,
                        pq.platform_post_id, pq.error_message,
                        cp.name as product_name, cp.sku, cp.image_url as product_image,
-                       cp.price, 
-                       p.title as post_title, ps.section_heading as section_title,
-                       pq.created_at, pq.updated_at
+                       cp.price, pq.created_at, pq.updated_at
                 FROM posting_queue pq
                 LEFT JOIN clan_products cp ON pq.product_id = cp.id
-                LEFT JOIN post p ON pq.product_id = p.id AND pq.content_type = 'blog_post'
-                LEFT JOIN post_section ps ON pq.section_id = ps.id
                 WHERE pq.status IN ('pending', 'ready', 'published', 'failed')
                 ORDER BY pq.scheduled_timestamp ASC, pq.created_at ASC
                 LIMIT 50
@@ -256,631 +252,6 @@ def get_unified_timeline():
             'error': f'Failed to get timeline: {str(e)}'
         }), 500
 
-# Unified Queue API Endpoints
-@app.route('/api/queue', methods=['GET'])
-def get_unified_queue():
-    """Get queue items with optional filtering."""
-    try:
-        # Get query parameters
-        content_type = request.args.get('content_type')
-        platform = request.args.get('platform')
-        channel_type = request.args.get('channel_type')
-        status = request.args.get('status')
-        date_from = request.args.get('date_from')
-        date_to = request.args.get('date_to')
-        limit = int(request.args.get('limit', 50))
-        offset = int(request.args.get('offset', 0))
-        
-        with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            
-            # Build WHERE clause dynamically
-            where_conditions = []
-            params = []
-            
-            if content_type:
-                where_conditions.append("pq.content_type = %s")
-                params.append(content_type)
-            
-            if platform:
-                where_conditions.append("pq.platform = %s")
-                params.append(platform)
-                
-            if channel_type:
-                where_conditions.append("pq.channel_type = %s")
-                params.append(channel_type)
-                
-            if status:
-                where_conditions.append("pq.status = %s")
-                params.append(status)
-                
-            if date_from:
-                where_conditions.append("pq.scheduled_timestamp >= %s")
-                params.append(f"{date_from} 00:00:00")
-                
-            if date_to:
-                where_conditions.append("pq.scheduled_timestamp <= %s")
-                params.append(f"{date_to} 23:59:59")
-            
-            where_clause = ""
-            if where_conditions:
-                where_clause = "WHERE " + " AND ".join(where_conditions)
-            
-            # Get total count
-            count_query = f"""
-                SELECT COUNT(*) as total
-                FROM posting_queue pq
-                {where_clause}
-            """
-            cur.execute(count_query, params)
-            total_count = cur.fetchone()['total']
-            
-            # Get items with joins
-            query = f"""
-                SELECT pq.id, pq.platform, pq.channel_type, pq.content_type,
-                       pq.scheduled_timestamp, pq.generated_content, pq.status,
-                       pq.platform_post_id, pq.error_message, pq.queue_order,
-                       pq.scheduled_date, pq.scheduled_time, pq.schedule_name, pq.timezone,
-                       pq.product_id, pq.section_id,
-                       cp.name as product_name, cp.sku, cp.image_url as product_image, cp.price,
-                       p.title as post_title, ps.section_heading as section_title,
-                       pq.created_at, pq.updated_at
-                FROM posting_queue pq
-                LEFT JOIN clan_products cp ON pq.product_id = cp.id
-                LEFT JOIN post_section ps ON pq.section_id = ps.id
-                LEFT JOIN post p ON ps.post_id = p.id
-                {where_clause}
-                ORDER BY pq.scheduled_timestamp ASC, pq.created_at ASC
-                LIMIT %s OFFSET %s
-            """
-            
-            cur.execute(query, params + [limit, offset])
-            items = cur.fetchall()
-            
-            # Transform items
-            queue_items = []
-            for item in items:
-                queue_item = {
-                    'id': item['id'],
-                    'platform': item['platform'],
-                    'channel_type': item['channel_type'],
-                    'content_type': item['content_type'],
-                    'status': item['status'],
-                    'scheduled_timestamp': item['scheduled_timestamp'].isoformat() if item['scheduled_timestamp'] else None,
-                    'generated_content': item['generated_content'],
-                    'platform_post_id': item['platform_post_id'],
-                    'error_message': item['error_message'],
-                    'queue_order': item['queue_order'],
-                    'scheduled_date': str(item['scheduled_date']) if item['scheduled_date'] else None,
-                    'scheduled_time': str(item['scheduled_time']) if item['scheduled_time'] else None,
-                    'schedule_name': item['schedule_name'],
-                    'timezone': item['timezone'],
-                    'created_at': item['created_at'].isoformat() if item['created_at'] else None,
-                    'updated_at': item['updated_at'].isoformat() if item['updated_at'] else None
-                }
-                
-                # Add content-specific fields
-                if item['content_type'] == 'product':
-                    queue_item.update({
-                        'product_id': item.get('product_id'),
-                        'product_name': item['product_name'],
-                        'product_image': item['product_image'],
-                        'sku': item['sku'],
-                        'price': str(item['price']) if item['price'] else None
-                    })
-                elif item['content_type'] == 'blog_post':
-                    queue_item.update({
-                        'post_id': item.get('product_id'),  # product_id stores post_id for blog posts
-                        'section_id': item.get('section_id'),
-                        'post_title': item['post_title'],
-                        'section_title': item['section_title']
-                    })
-                
-                queue_items.append(queue_item)
-            
-            # Build filters applied response
-            filters_applied = {}
-            if content_type: filters_applied['content_type'] = content_type
-            if platform: filters_applied['platform'] = platform
-            if channel_type: filters_applied['channel_type'] = channel_type
-            if status: filters_applied['status'] = status
-            if date_from: filters_applied['date_from'] = date_from
-            if date_to: filters_applied['date_to'] = date_to
-            
-            return jsonify({
-                'success': True,
-                'items': queue_items,
-                'count': len(queue_items),
-                'total': total_count,
-                'filters_applied': filters_applied
-            })
-            
-    except Exception as e:
-        logger.error(f"Error getting unified queue: {e}")
-        return jsonify({
-            'success': False,
-            'error': f'Failed to get queue: {str(e)}'
-        }), 500
-
-@app.route('/api/queue', methods=['POST'])
-def add_to_unified_queue():
-    """Add a new item to the unified queue."""
-    try:
-        data = request.get_json()
-        
-        # Validate required fields
-        required_fields = ['platform', 'channel_type', 'content_type', 'generated_content']
-        for field in required_fields:
-            if field not in data:
-                return jsonify({
-                    'success': False,
-                    'error': f'Missing required field: {field}',
-                    'code': 'VALIDATION_ERROR'
-                }), 400
-        
-        with get_db_connection() as conn:
-            cur = conn.cursor()
-            
-            # Get next queue order
-            cur.execute("SELECT COALESCE(MAX(queue_order), 0) + 1 FROM posting_queue")
-            next_order = cur.fetchone()[0]
-            
-            # Calculate scheduled_timestamp if both date and time are provided
-            scheduled_timestamp = None
-            if data.get('scheduled_date') and data.get('scheduled_time'):
-                from datetime import datetime
-                try:
-                    scheduled_timestamp = datetime.combine(
-                        datetime.strptime(data['scheduled_date'], '%Y-%m-%d').date(),
-                        datetime.strptime(data['scheduled_time'], '%H:%M').time()
-                    )
-                except:
-                    scheduled_timestamp = None
-            
-            # Insert new queue item
-            cur.execute("""
-                INSERT INTO posting_queue (
-                    product_id, section_id, platform, channel_type, content_type,
-                    scheduled_date, scheduled_time, scheduled_timestamp,
-                    schedule_name, timezone, generated_content, queue_order, status
-                )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                RETURNING id
-            """, (
-                data.get('product_id'),
-                data.get('section_id'),
-                data['platform'],
-                data['channel_type'],
-                data['content_type'],
-                data.get('scheduled_date'),
-                data.get('scheduled_time'),
-                scheduled_timestamp,
-                data.get('schedule_name'),
-                data.get('timezone'),
-                data['generated_content'],
-                next_order,
-                data.get('status', 'ready')
-            ))
-            
-            item_id = cur.fetchone()[0]
-            conn.commit()
-            
-            return jsonify({
-                'success': True,
-                'item_id': item_id,
-                'message': 'Item added to queue successfully'
-            })
-            
-    except Exception as e:
-        logger.error(f"Error adding to unified queue: {e}")
-        return jsonify({
-            'success': False,
-            'error': f'Failed to add item: {str(e)}'
-        }), 500
-
-@app.route('/api/queue/<int:item_id>', methods=['PUT'])
-def update_unified_queue_item(item_id):
-    """Update an existing queue item."""
-    try:
-        data = request.get_json()
-        
-        # Build update query dynamically
-        update_fields = []
-        update_values = []
-        
-        allowed_fields = [
-            'generated_content', 'scheduled_date', 'scheduled_time', 
-            'schedule_name', 'timezone', 'status', 'queue_order',
-            'platform_post_id', 'error_message'
-        ]
-        
-        for field in allowed_fields:
-            if field in data:
-                update_fields.append(f"{field} = %s")
-                update_values.append(data[field])
-        
-        if not update_fields:
-            return jsonify({
-                'success': False,
-                'error': 'No valid fields to update',
-                'code': 'VALIDATION_ERROR'
-            }), 400
-        
-        # Recalculate scheduled_timestamp if date/time changed
-        if 'scheduled_date' in data or 'scheduled_time' in data:
-            from datetime import datetime
-            try:
-                scheduled_date = data.get('scheduled_date')
-                scheduled_time = data.get('scheduled_time')
-                if scheduled_date and scheduled_time:
-                    scheduled_timestamp = datetime.combine(
-                        datetime.strptime(scheduled_date, '%Y-%m-%d').date(),
-                        datetime.strptime(scheduled_time, '%H:%M').time()
-                    )
-                    update_fields.append("scheduled_timestamp = %s")
-                    update_values.append(scheduled_timestamp)
-            except:
-                pass
-        
-        update_values.append(item_id)
-        
-        with get_db_connection() as conn:
-            cur = conn.cursor()
-            
-            cur.execute(f"""
-                UPDATE posting_queue 
-                SET {', '.join(update_fields)}, updated_at = CURRENT_TIMESTAMP
-                WHERE id = %s
-                RETURNING id
-            """, update_values)
-            
-            updated_item = cur.fetchone()
-            if not updated_item:
-                return jsonify({
-                    'success': False,
-                    'error': 'Queue item not found',
-                    'code': 'ITEM_NOT_FOUND'
-                }), 404
-            
-            conn.commit()
-            
-            return jsonify({
-                'success': True,
-                'message': 'Queue item updated successfully'
-            })
-            
-    except Exception as e:
-        logger.error(f"Error updating unified queue item: {e}")
-        return jsonify({
-            'success': False,
-            'error': f'Failed to update item: {str(e)}'
-        }), 500
-
-@app.route('/api/queue/<int:item_id>', methods=['DELETE'])
-def delete_unified_queue_item(item_id):
-    """Delete a queue item."""
-    try:
-        with get_db_connection() as conn:
-            cur = conn.cursor()
-            
-            cur.execute("""
-                DELETE FROM posting_queue 
-                WHERE id = %s
-                RETURNING id
-            """, (item_id,))
-            
-            deleted_item = cur.fetchone()
-            if not deleted_item:
-                return jsonify({
-                    'success': False,
-                    'error': 'Queue item not found',
-                    'code': 'ITEM_NOT_FOUND'
-                }), 404
-            
-            conn.commit()
-            
-            return jsonify({
-                'success': True,
-                'message': 'Queue item deleted successfully'
-            })
-            
-    except Exception as e:
-        logger.error(f"Error deleting unified queue item: {e}")
-        return jsonify({
-            'success': False,
-            'error': f'Failed to delete item: {str(e)}'
-        }), 500
-
-@app.route('/api/queue/clear', methods=['DELETE'])
-def clear_unified_queue():
-    """Clear queue items with optional filtering."""
-    try:
-        # Get query parameters for filtering
-        content_type = request.args.get('content_type')
-        platform = request.args.get('platform')
-        channel_type = request.args.get('channel_type')
-        status = request.args.get('status')
-        
-        with get_db_connection() as conn:
-            cur = conn.cursor()
-            
-            # Build WHERE clause dynamically
-            where_conditions = []
-            params = []
-            
-            if content_type:
-                where_conditions.append("content_type = %s")
-                params.append(content_type)
-            
-            if platform:
-                where_conditions.append("platform = %s")
-                params.append(platform)
-                
-            if channel_type:
-                where_conditions.append("channel_type = %s")
-                params.append(channel_type)
-                
-            if status:
-                where_conditions.append("status = %s")
-                params.append(status)
-            
-            where_clause = ""
-            if where_conditions:
-                where_clause = "WHERE " + " AND ".join(where_conditions)
-            
-            # Get count before deletion
-            count_query = f"SELECT COUNT(*) FROM posting_queue {where_clause}"
-            cur.execute(count_query, params)
-            deleted_count = cur.fetchone()[0]
-            
-            # Delete items
-            delete_query = f"DELETE FROM posting_queue {where_clause}"
-            cur.execute(delete_query, params)
-            
-            conn.commit()
-            
-            return jsonify({
-                'success': True,
-                'deleted_count': deleted_count,
-                'message': 'Queue cleared successfully'
-            })
-            
-    except Exception as e:
-        logger.error(f"Error clearing unified queue: {e}")
-        return jsonify({
-            'success': False,
-            'error': f'Failed to clear queue: {str(e)}'
-        }), 500
-
-# Unified Schedule API Endpoints
-@app.route('/api/schedules', methods=['GET'])
-def get_unified_schedules():
-    """Get schedules with optional filtering."""
-    try:
-        # Get query parameters
-        content_type = request.args.get('content_type')
-        platform = request.args.get('platform')
-        channel_type = request.args.get('channel_type')
-        is_active = request.args.get('is_active')
-        
-        with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            
-            # Build WHERE clause dynamically
-            where_conditions = []
-            params = []
-            
-            if content_type:
-                where_conditions.append("content_type = %s")
-                params.append(content_type)
-            
-            if platform:
-                where_conditions.append("platform = %s")
-                params.append(platform)
-                
-            if channel_type:
-                where_conditions.append("channel_type = %s")
-                params.append(channel_type)
-                
-            if is_active is not None:
-                where_conditions.append("is_active = %s")
-                params.append(is_active.lower() == 'true')
-            
-            where_clause = ""
-            if where_conditions:
-                where_clause = "WHERE " + " AND ".join(where_conditions)
-            
-            # Get schedules
-            query = f"""
-                SELECT id, name, time, timezone, days, is_active, platform, channel_type, content_type,
-                       created_at, updated_at
-                FROM daily_posts_schedule
-                {where_clause}
-                ORDER BY created_at DESC
-            """
-            
-            cur.execute(query, params)
-            schedules = cur.fetchall()
-            
-            # Transform schedules
-            schedule_list = []
-            for schedule in schedules:
-                schedule_dict = {
-                    'id': schedule['id'],
-                    'name': schedule['name'],
-                    'time': str(schedule['time']),
-                    'timezone': schedule['timezone'],
-                    'days': schedule['days'],
-                    'is_active': schedule['is_active'],
-                    'platform': schedule['platform'],
-                    'channel_type': schedule['channel_type'],
-                    'content_type': schedule['content_type'],
-                    'created_at': schedule['created_at'].isoformat() if schedule['created_at'] else None,
-                    'updated_at': schedule['updated_at'].isoformat() if schedule['updated_at'] else None
-                }
-                schedule_list.append(schedule_dict)
-            
-            return jsonify({
-                'success': True,
-                'schedules': schedule_list
-            })
-            
-    except Exception as e:
-        logger.error(f"Error getting unified schedules: {e}")
-        return jsonify({
-            'success': False,
-            'error': f'Failed to get schedules: {str(e)}'
-        }), 500
-
-@app.route('/api/schedules', methods=['POST'])
-def create_unified_schedule():
-    """Create a new schedule."""
-    try:
-        data = request.get_json()
-        
-        # Validate required fields
-        required_fields = ['name', 'time', 'timezone', 'days', 'platform', 'channel_type', 'content_type']
-        for field in required_fields:
-            if field not in data:
-                return jsonify({
-                    'success': False,
-                    'error': f'Missing required field: {field}',
-                    'code': 'VALIDATION_ERROR'
-                }), 400
-        
-        with get_db_connection() as conn:
-            cur = conn.cursor()
-            
-            # Insert new schedule
-            cur.execute("""
-                INSERT INTO daily_posts_schedule (
-                    name, time, timezone, days, platform, channel_type, content_type, is_active
-                )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                RETURNING id
-            """, (
-                data['name'],
-                data['time'],
-                data['timezone'],
-                json.dumps(data['days']),  # Convert array to JSON string
-                data['platform'],
-                data['channel_type'],
-                data['content_type'],
-                data.get('is_active', True)
-            ))
-            
-            schedule_id = cur.fetchone()[0]
-            conn.commit()
-            
-            return jsonify({
-                'success': True,
-                'schedule_id': schedule_id,
-                'message': 'Schedule created successfully'
-            })
-            
-    except Exception as e:
-        logger.error(f"Error creating unified schedule: {e}")
-        return jsonify({
-            'success': False,
-            'error': f'Failed to create schedule: {str(e)}'
-        }), 500
-
-@app.route('/api/schedules/<int:schedule_id>', methods=['PUT'])
-def update_unified_schedule(schedule_id):
-    """Update an existing schedule."""
-    try:
-        data = request.get_json()
-        
-        # Build update query dynamically
-        update_fields = []
-        update_values = []
-        
-        allowed_fields = ['name', 'time', 'timezone', 'days', 'is_active', 'platform', 'channel_type', 'content_type']
-        for field in allowed_fields:
-            if field in data:
-                if field == 'days':
-                    update_fields.append("days = %s")
-                    update_values.append(json.dumps(data[field]))
-                else:
-                    update_fields.append(f"{field} = %s")
-                    update_values.append(data[field])
-        
-        if not update_fields:
-            return jsonify({
-                'success': False,
-                'error': 'No valid fields to update',
-                'code': 'VALIDATION_ERROR'
-            }), 400
-        
-        update_values.append(schedule_id)
-        
-        with get_db_connection() as conn:
-            cur = conn.cursor()
-            
-            cur.execute(f"""
-                UPDATE daily_posts_schedule 
-                SET {', '.join(update_fields)}, updated_at = CURRENT_TIMESTAMP
-                WHERE id = %s
-                RETURNING id
-            """, update_values)
-            
-            updated_schedule = cur.fetchone()
-            if not updated_schedule:
-                return jsonify({
-                    'success': False,
-                    'error': 'Schedule not found',
-                    'code': 'ITEM_NOT_FOUND'
-                }), 404
-            
-            conn.commit()
-            
-            return jsonify({
-                'success': True,
-                'message': 'Schedule updated successfully'
-            })
-            
-    except Exception as e:
-        logger.error(f"Error updating unified schedule: {e}")
-        return jsonify({
-            'success': False,
-            'error': f'Failed to update schedule: {str(e)}'
-        }), 500
-
-@app.route('/api/schedules/<int:schedule_id>', methods=['DELETE'])
-def delete_unified_schedule(schedule_id):
-    """Delete a schedule."""
-    try:
-        with get_db_connection() as conn:
-            cur = conn.cursor()
-            
-            cur.execute("""
-                DELETE FROM daily_posts_schedule 
-                WHERE id = %s
-                RETURNING id
-            """, (schedule_id,))
-            
-            deleted_schedule = cur.fetchone()
-            if not deleted_schedule:
-                return jsonify({
-                    'success': False,
-                    'error': 'Schedule not found',
-                    'code': 'ITEM_NOT_FOUND'
-                }), 404
-            
-            conn.commit()
-            
-            return jsonify({
-                'success': True,
-                'message': 'Schedule deleted successfully'
-            })
-            
-    except Exception as e:
-        logger.error(f"Error deleting unified schedule: {e}")
-        return jsonify({
-            'success': False,
-            'error': f'Failed to delete schedule: {str(e)}'
-        }), 500
-
 @app.route('/daily-product-posts')
 def daily_product_posts():
     """Daily Product Posts management page."""
@@ -897,7 +268,7 @@ def test_categories():
     """Test category query to debug DictCursor issue."""
     try:
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
             cur.execute("""
                 SELECT id, name FROM clan_categories 
@@ -924,7 +295,7 @@ def test_simple():
     """Test simple product selection without category filtering."""
     try:
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
             cur.execute("""
                 SELECT id, name, sku, price, description, image_url, url, category_ids
@@ -951,7 +322,7 @@ def select_random_product():
     """Select a random product from Clan.com catalogue using category-first approach."""
     try:
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
             # First, get all products and filter by category (simple approach)
             cur.execute("""
@@ -1035,7 +406,7 @@ def generate_product_content():
         content_type = data.get('content_type', 'feature')
         
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
             # Get product details
             cur.execute("SELECT * FROM clan_products WHERE id = %s", (product_id,))
@@ -1160,7 +531,7 @@ def post_to_facebook():
         platform = data.get('platform', 'facebook')
         
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
             if item_id:
                 # New format: posting from timeline
@@ -1417,7 +788,7 @@ def get_categories():
     """Get available product categories."""
     try:
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
             # Get categories with hierarchy (all 258 categories)
             cur.execute("""
@@ -1441,7 +812,7 @@ def get_today_status():
     """Get today's post status."""
     try:
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
             today = datetime.now().date()
             cur.execute("""
@@ -1471,7 +842,7 @@ def syndication():
     """Social Media Syndication homepage."""
     try:
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
             # Get total platforms count
             cur.execute("SELECT COUNT(*) as total_platforms FROM platforms")
@@ -1506,7 +877,7 @@ def syndication_dashboard():
     """New social media syndication dashboard with platform management."""
     try:
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
             # Get Facebook platform data
             cur.execute("""
@@ -1592,7 +963,7 @@ def channel_config(platform_name, channel_type):
     """Generic channel configuration for any platform and channel type."""
     try:
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
             # Get platform data
             cur.execute("""
@@ -1669,7 +1040,7 @@ def channel_config(platform_name, channel_type):
             """, (platform_name, channel_type))
             requirements = cur.fetchall()
             
-            return render_template('facebook_feed_post_config.html',
+            return render_template(f'syndication/{platform_name}/{channel_type}.html',
                                 platform=platform,
                                 channel_type=channel_type_data,
                                 process=process,
@@ -1686,7 +1057,7 @@ def facebook_posting_hub():
     """Consolidated Facebook posting hub with credentials and content management."""
     try:
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
             # Get Facebook platform data
             cur.execute("""
@@ -1746,7 +1117,7 @@ def facebook_credentials():
     """Get or save Facebook API credentials."""
     try:
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
             if request.method == 'GET':
                 # Get existing credentials
@@ -1808,7 +1179,7 @@ def test_facebook_post():
     try:
         # Get Facebook credentials
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             cur.execute("""
                 SELECT credential_key, credential_value
                 FROM platform_credentials 
@@ -1877,7 +1248,7 @@ def syndication_create_piece():
     """Create Piece page for social media syndication."""
     try:
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
             # Get Facebook platform data (default)
             cur.execute("""
@@ -1941,13 +1312,13 @@ def syndication_create_piece_includes():
 def get_published_posts():
     """Get all posts with status=published for syndication."""
     try:
-        import psycopg2
-        from psycopg2.extras import RealDictCursor
+        import psycopg
+        from psycopg.rows import dict_row
         
         # Database connection
-        conn = psycopg2.connect(
+        conn = psycopg.connect(
             host="localhost",
-            database="blog",
+            dbname="blog",
             user="postgres",
             password="postgres"
         )
@@ -2001,13 +1372,13 @@ def get_published_posts():
 def get_post_sections(post_id):
     """Get all sections for a specific post."""
     try:
-        import psycopg2
-        from psycopg2.extras import RealDictCursor
+        import psycopg
+        from psycopg.rows import dict_row
         
         # Database connection
-        conn = psycopg2.connect(
+        conn = psycopg.connect(
             host="localhost",
-            database="blog",
+            dbname="blog",
             user="postgres",
             password="postgres"
         )
@@ -2076,7 +1447,7 @@ def get_syndication_posts():
     """Get all published blog posts for manual selection."""
     try:
         with get_db_connection() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+            with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 cur.execute("""
                     SELECT id, title, created_at, updated_at, status, slug
                     FROM post
@@ -2097,7 +1468,7 @@ def get_syndication_post_details(post_id):
     """Get details for a specific blog post."""
     try:
         with get_db_connection() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+            with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 cur.execute("""
                     SELECT id, title, created_at, updated_at, status, slug
                     FROM post
@@ -2126,11 +1497,382 @@ def get_syndication_post_details(post_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/syndication/facebook/schedules', methods=['GET'])
+def get_blog_post_schedules():
+    """Get all schedules for blog post syndication."""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
+                cur.execute("""
+                    SELECT id, name, days, time, timezone, is_active as active, created_at
+                    FROM daily_posts_schedule 
+                    WHERE is_active = true 
+                    AND platform = 'facebook' 
+                    AND channel_type = 'feed_post' 
+                    AND content_type = 'blog_post'
+                    ORDER BY created_at DESC
+                """)
+                
+                schedules = cur.fetchall()
+                
+                transformed_schedules = []
+                for schedule in schedules:
+                    transformed_schedules.append({
+                        'id': schedule['id'],
+                        'name': schedule['name'],
+                        'days': schedule['days'],
+                        'time': str(schedule['time']),
+                        'timezone': schedule['timezone'],
+                        'active': schedule['active'],
+                        'created_at': schedule['created_at'].isoformat() if schedule['created_at'] else None
+                    })
+                
+                return jsonify({
+                    'success': True,
+                    'schedules': transformed_schedules
+                })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
+@app.route('/api/syndication/facebook/schedules', methods=['POST'])
+def create_blog_post_schedule():
+    """Create a new schedule for blog post syndication."""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['name', 'days', 'time', 'timezone']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    INSERT INTO daily_posts_schedule (name, days, time, timezone, platform, channel_type, content_type, is_active)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id
+                """, (
+                    data['name'],
+                    json.dumps(data['days']),  # Convert array to JSON string
+                    data['time'],
+                    data['timezone'],
+                    'facebook',
+                    'feed_post',
+                    'blog_post',
+                    data.get('active', True)
+                ))
+                
+                schedule_id = cur.fetchone()[0]
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Schedule created successfully',
+                    'schedule_id': schedule_id
+                })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
+@app.route('/api/syndication/facebook/schedules/<int:schedule_id>', methods=['PUT'])
+def update_blog_post_schedule(schedule_id):
+    """Update a blog post schedule."""
+    try:
+        data = request.get_json()
+        
+        # Build update query dynamically
+        update_fields = []
+        update_values = []
+        
+        allowed_fields = ['name', 'days', 'time', 'timezone', 'active']
+        for field in allowed_fields:
+            if field in data:
+                if field == 'active':
+                    update_fields.append('is_active = %s')
+                elif field == 'days':
+                    update_fields.append('days = %s')
+                    update_values.append(json.dumps(data[field]))  # Convert array to JSON string
+                    continue
+                else:
+                    update_fields.append(f'{field} = %s')
+                update_values.append(data[field])
+        
+        if not update_fields:
+            return jsonify({'error': 'No valid fields to update'}), 400
+        
+        update_values.append(schedule_id)
+        
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(f"""
+                    UPDATE daily_posts_schedule 
+                    SET {', '.join(update_fields)}, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s 
+                    AND platform = 'facebook' 
+                    AND channel_type = 'feed_post' 
+                    AND content_type = 'blog_post'
+                    RETURNING id
+                """, update_values)
+                
+                updated_schedule = cur.fetchone()
+                if not updated_schedule:
+                    return jsonify({'error': 'Schedule not found'}), 404
+                
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Schedule updated successfully'
+                })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
+@app.route('/api/syndication/facebook/schedules/<int:schedule_id>', methods=['DELETE'])
+def delete_blog_post_schedule(schedule_id):
+    """Delete a blog post schedule."""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    DELETE FROM daily_posts_schedule 
+                    WHERE id = %s 
+                    AND platform = 'facebook' 
+                    AND channel_type = 'feed_post' 
+                    AND content_type = 'blog_post'
+                    RETURNING id
+                """, (schedule_id,))
+                
+                deleted_schedule = cur.fetchone()
+                if not deleted_schedule:
+                    return jsonify({'error': 'Schedule not found'}), 404
+                
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Schedule deleted successfully'
+                })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
+@app.route('/api/syndication/facebook/queue', methods=['GET'])
+def get_blog_post_queue():
+    """Get all blog post items in the Facebook posting queue."""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
+                cur.execute("""
+                    SELECT 
+                        pq.id,
+                        pq.product_id as post_id,
+                        p.title as post_title,
+                        p.slug as post_slug,
+                        p.created_at as post_created_at,
+                        ps.section_heading as section_title,
+                        ps.section_order as section_order,
+                        pq.generated_content,
+                        pq.scheduled_date,
+                        pq.scheduled_time,
+                        pq.schedule_name,
+                        pq.timezone,
+                        pq.status,
+                        pq.queue_order,
+                        pq.created_at,
+                        pq.updated_at
+                    FROM posting_queue pq
+                    LEFT JOIN post p ON pq.product_id = p.id
+                    LEFT JOIN post_section ps ON pq.section_id = ps.id
+                    WHERE pq.platform = 'facebook' 
+                    AND pq.channel_type = 'feed_post' 
+                    AND pq.content_type = 'blog_post'
+                    ORDER BY pq.queue_order ASC, pq.created_at ASC
+                """)
+                
+                queue_items = cur.fetchall()
+                
+                transformed_items = []
+                for item in queue_items:
+                    transformed_items.append({
+                        'id': item['id'],
+                        'post_id': item['post_id'],
+                        'post_title': item['post_title'],
+                        'post_slug': item['post_slug'],
+                        'post_created_at': item['post_created_at'].isoformat() if item['post_created_at'] else None,
+                        'section_title': item['section_title'],
+                        'section_order': item['section_order'],
+                        'generated_content': item['generated_content'],
+                        'scheduled_date': item['scheduled_date'].isoformat() if item['scheduled_date'] else None,
+                        'scheduled_time': str(item['scheduled_time']) if item['scheduled_time'] else None,
+                        'schedule_name': item['schedule_name'],
+                        'timezone': item['timezone'],
+                        'status': item['status'],
+                        'queue_order': item['queue_order'],
+                        'created_at': item['created_at'].isoformat() if item['created_at'] else None,
+                        'updated_at': item['updated_at'].isoformat() if item['updated_at'] else None
+                    })
+                
+                return jsonify({
+                    'success': True,
+                    'queue_items': transformed_items
+                })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
+@app.route('/api/syndication/facebook/queue', methods=['POST'])
+def add_to_blog_post_queue():
+    """Add a blog post item to the Facebook posting queue."""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['post_id', 'section_id', 'generated_content', 'scheduled_date', 'scheduled_time', 'schedule_name', 'timezone']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                # Get next queue order
+                cur.execute("""
+                    SELECT COALESCE(MAX(queue_order), 0) + 1 as next_order
+                    FROM posting_queue 
+                    WHERE platform = 'facebook' AND channel_type = 'feed_post' AND content_type = 'blog_post'
+                """)
+                next_order = cur.fetchone()[0]
+                
+                # Get post and section details
+                cur.execute("""
+                    SELECT p.title, ps.section_heading as section_title, ps.section_order as section_order
+                    FROM post p
+                    JOIN post_section ps ON p.id = ps.post_id
+                    WHERE p.id = %s AND ps.id = %s
+                """, (data['post_id'], data['section_id']))
+                
+                post_section = cur.fetchone()
+                if not post_section:
+                    return jsonify({'error': 'Post or section not found'}), 404
+                
+                # Insert into queue
+                cur.execute("""
+                    INSERT INTO posting_queue (
+                        product_id, section_id, generated_content, scheduled_date, scheduled_time, 
+                        schedule_name, timezone, status, queue_order, platform, channel_type, content_type
+                    )
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id
+                """, (
+                    data['post_id'],
+                    data['section_id'],
+                    data['generated_content'],
+                    data['scheduled_date'],
+                    data['scheduled_time'],
+                    data['schedule_name'],
+                    data['timezone'],
+                    data.get('status', 'ready'),
+                    next_order,
+                    'facebook',
+                    'feed_post',
+                    'blog_post'
+                ))
+                
+                queue_item_id = cur.fetchone()[0]
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Item added to queue successfully',
+                    'queue_item_id': queue_item_id
+                })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/syndication/facebook/queue/<int:item_id>', methods=['DELETE'])
+def remove_from_blog_post_queue(item_id):
+    """Remove a blog post item from the Facebook posting queue."""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    DELETE FROM posting_queue 
+                    WHERE id = %s AND platform = 'facebook' AND channel_type = 'feed_post' AND content_type = 'blog_post'
+                    RETURNING id
+                """, (item_id,))
+                
+                deleted_item = cur.fetchone()
+                if not deleted_item:
+                    return jsonify({'error': 'Queue item not found'}), 404
+                
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Item removed from queue successfully'
+                })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/syndication/facebook/queue/<int:item_id>', methods=['PUT'])
+def update_blog_post_queue_item(item_id):
+    """Update a blog post item in the Facebook posting queue."""
+    try:
+        data = request.get_json()
+        
+        # Build update query dynamically
+        update_fields = []
+        update_values = []
+        
+        allowed_fields = ['generated_content', 'scheduled_date', 'scheduled_time', 'schedule_name', 'timezone', 'status', 'queue_order']
+        for field in allowed_fields:
+            if field in data:
+                update_fields.append(f'{field} = %s')
+                update_values.append(data[field])
+        
+        if not update_fields:
+            return jsonify({'error': 'No valid fields to update'}), 400
+        
+        update_values.append(item_id)
+        
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(f"""
+                    UPDATE posting_queue 
+                    SET {', '.join(update_fields)}, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s AND platform = 'facebook' AND channel_type = 'feed_post' AND content_type = 'blog_post'
+                    RETURNING id
+                """, update_values)
+                
+                updated_item = cur.fetchone()
+                if not updated_item:
+                    return jsonify({'error': 'Queue item not found'}), 404
+                
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Queue item updated successfully'
+                })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/syndication/facebook/queue/clear', methods=['DELETE'])
+def clear_blog_post_queue():
+    """Clear all blog post items from the Facebook posting queue."""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    DELETE FROM posting_queue 
+                    WHERE platform = 'facebook' AND channel_type = 'feed_post' AND content_type = 'blog_post'
+                """)
+                
+                deleted_count = cur.rowcount
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': f'Cleared {deleted_count} items from queue'
+                })
+    except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/syndication/social-media-platforms')
@@ -2138,7 +1880,7 @@ def get_social_media_platforms():
     """Get only developed social media platforms for the dropdown selector."""
     try:
         from models.social_media import SocialMediaPlatform
-        db_config = {'host': 'localhost', 'database': 'blog', 'user': 'postgres', 'password': 'postgres'}
+        db_config = {'host': 'localhost', 'dbname': 'blog', 'user': 'autojenny', 'password': ''}
         platform_model = SocialMediaPlatform(db_config)
         platforms = platform_model.get_platforms_by_status('developed')
         platforms_list = [{'id': p['id'], 'platform_name': p['platform_name'], 'display_name': p['display_name'], 'status': p['status'], 'priority': p['priority'], 'icon_url': p['icon_url']} for p in platforms]
@@ -2152,7 +1894,7 @@ def get_content_processes():
     """Get only developed content processes for syndication."""
     try:
         from models.content_process import ContentProcess
-        db_config = {'host': 'localhost', 'database': 'blog', 'user': 'postgres', 'password': 'postgres'}
+        db_config = {'host': 'localhost', 'dbname': 'blog', 'user': 'autojenny', 'password': ''}
         process_model = ContentProcess(db_config)
         processes = process_model.get_processes_by_development_status('developed')
         processes_list = [{'id': p['id'], 'process_name': p['process_name'], 'display_name': p['display_name'], 'platform_id': p['platform_id'], 'platform_name': p['platform_name'], 'platform_display_name': p['platform_display_name'], 'content_type': p['content_type'], 'description': p['description'], 'is_active': p['is_active'], 'priority': p['priority'], 'development_status': p.get('development_status', 'draft')} for p in processes]
@@ -2166,7 +1908,7 @@ def get_all_content_processes():
     """Get all content processes (including draft/undeveloped) for admin purposes."""
     try:
         from models.content_process import ContentProcess
-        db_config = {'host': 'localhost', 'database': 'blog', 'user': 'postgres', 'password': 'postgres'}
+        db_config = {'host': 'localhost', 'dbname': 'blog', 'user': 'autojenny', 'password': ''}
         process_model = ContentProcess(db_config)
         processes = process_model.get_all_processes()
         processes_list = [{'id': p['id'], 'process_name': p['process_name'], 'display_name': p['display_name'], 'platform_id': p['platform_id'], 'platform_name': p['platform_name'], 'platform_display_name': p['platform_display_name'], 'content_type': p['content_type'], 'description': p['description'], 'is_active': p['is_active'], 'priority': p['priority'], 'development_status': p.get('development_status', 'draft')} for p in processes]
@@ -2180,7 +1922,7 @@ def get_process_configs(process_id):
     """Get configurations for a specific content process."""
     try:
         from models.content_process import ContentProcess
-        db_config = {'host': 'localhost', 'database': 'blog', 'user': 'postgres', 'password': 'postgres'}
+        db_config = {'host': 'localhost', 'dbname': 'blog', 'user': 'autojenny', 'password': ''}
         process_model = ContentProcess(db_config)
         configs = process_model.get_process_configs(process_id)
         configs_list = [{'id': c['id'], 'config_category': c['config_category'], 'config_key': c['config_key'], 'config_value': c['config_value'], 'config_type': c['config_type'], 'is_required': c['is_required'], 'display_order': c['display_order']} for c in configs]
@@ -2194,7 +1936,7 @@ def update_process_config(process_id):
     """Update a specific process configuration."""
     try:
         from models.content_process import ContentProcess
-        db_config = {'host': 'localhost', 'database': 'blog', 'user': 'postgres', 'password': 'postgres'}
+        db_config = {'host': 'localhost', 'dbname': 'blog', 'user': 'autojenny', 'password': ''}
         process_model = ContentProcess(db_config)
         
         data = request.get_json()
@@ -2221,7 +1963,7 @@ def update_process_development_status(process_id):
     """Update the development status of a content process."""
     try:
         from models.content_process import ContentProcess
-        db_config = {'host': 'localhost', 'database': 'blog', 'user': 'postgres', 'password': 'postgres'}
+        db_config = {'host': 'localhost', 'dbname': 'blog', 'user': 'autojenny', 'password': ''}
         process_model = ContentProcess(db_config)
         
         data = request.get_json()
@@ -2276,7 +2018,7 @@ def preview_post(post_id):
     if header_image_path:
         # Get header image caption from database
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             cur.execute("""
                 SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
                        cross_promotion_category_id, cross_promotion_category_title,
@@ -2325,7 +2067,7 @@ def clan_post_html(post_id):
     if header_image_path:
         # Get header image caption from database
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             cur.execute("""
                 SELECT header_image_caption, header_image_title, header_image_width, header_image_height
                 FROM post WHERE id = %s
@@ -2355,7 +2097,7 @@ def clan_post_html(post_id):
         uploaded_images = {}
         try:
             with get_db_connection() as conn:
-                cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                cur = conn.cursor(row_factory=psycopg.rows.dict_row)
                 cur.execute("""
                     SELECT local_image_path, clan_uploaded_url 
                     FROM section_image_mappings 
@@ -2418,7 +2160,7 @@ def clan_api_data(post_id):
     header_image_path = find_header_image(post_id)
     if header_image_path:
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             cur.execute("""
                 SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
                        cross_promotion_category_id, cross_promotion_category_title,
@@ -2509,7 +2251,7 @@ def get_section_image_mappings(post_id):
     """Get the stored image mappings for a post's sections."""
     try:
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
             cur.execute("""
                 SELECT 
@@ -2557,7 +2299,7 @@ def get_section_image_mappings(post_id):
 def get_post_with_development(post_id):
     """Fetch post with development data."""
     with get_db_connection() as conn:
-        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         
         # Get post data, alias post.id as post_id
         cur.execute("""
@@ -2679,7 +2421,7 @@ def find_section_image(post_id, section_id):
 def get_post_sections_with_images(post_id):
     """Fetch sections with complete image metadata."""
     with get_db_connection() as conn:
-        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         
         # Get all sections for the post
         cur.execute("""
@@ -2753,7 +2495,7 @@ def get_post_sections_with_images(post_id):
 def get_posts():
     """Get all posts for the launchpad."""
     with get_db_connection() as conn:
-        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         cur.execute("""
             SELECT p.id, p.title, p.created_at, p.updated_at, p.status,
                    p.clan_post_id, p.clan_last_attempt, p.clan_error, p.clan_uploaded_url,
@@ -2770,7 +2512,7 @@ def get_posts():
 def get_cross_promotion(post_id):
     """Get cross-promotion data for a post."""
     with get_db_connection() as conn:
-        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         cur.execute("""
             SELECT cross_promotion_category_id, cross_promotion_category_title,
                    cross_promotion_product_id, cross_promotion_product_title
@@ -3000,7 +2742,7 @@ def publish_post_to_clan(post_id):
         header_image_path = find_header_image(post_id)
         if header_image_path:
             with get_db_connection() as conn:
-                cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                cur = conn.cursor(row_factory=psycopg.rows.dict_row)
                 cur.execute("""
                     SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
                            cross_promotion_category_id, cross_promotion_category_title,
@@ -3184,7 +2926,7 @@ def get_platform(platform_name):
     """Get platform information by name"""
     try:
         conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         
         cur.execute("""
             SELECT id, name, display_name, description, status, priority, 
@@ -3222,7 +2964,7 @@ def get_platform_capabilities(platform_id):
     """Get platform capabilities by platform ID"""
     try:
         conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         
         cur.execute("""
             SELECT id, capability_type, capability_name, capability_value, description,
@@ -3257,7 +2999,7 @@ def get_channels():
     """Get all channels with platform support information"""
     try:
         conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         
         cur.execute("""
             SELECT ct.id, ct.name, ct.display_name, ct.description, ct.content_type,
@@ -3298,7 +3040,7 @@ def get_process_config(process_name):
     """Get process configuration by process name"""
     try:
         conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         
         # First get the process details
         cur.execute("""
@@ -3387,7 +3129,7 @@ def get_platform_channels(platform_id):
     """Get all channels for a specific platform"""
     try:
         conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         
         cur.execute("""
             SELECT ct.id, ct.name, ct.display_name, ct.description, ct.content_type,
@@ -3428,7 +3170,7 @@ def get_channel_requirements(platform_id, channel_id):
     """Get requirements for a specific channel on a specific platform"""
     try:
         conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         
         cur.execute("""
             SELECT cr.id, cr.requirement_category, cr.requirement_key, cr.requirement_value,
@@ -3466,7 +3208,7 @@ def get_all_platforms():
     """Get all platforms with basic information"""
     try:
         conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         
         cur.execute("""
             SELECT id, name, display_name, description, status, priority, 
@@ -3506,7 +3248,7 @@ def get_ui_sections():
     """Get UI sections with their display properties"""
     try:
         conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         
         cur.execute("""
             SELECT id, name, display_name, description, section_type, parent_section_id,
@@ -3541,7 +3283,7 @@ def get_ui_menu_items():
     """Get UI menu items with navigation structure"""
     try:
         conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         
         cur.execute("""
             SELECT id, name, display_name, description, menu_type, parent_menu_id,
@@ -3577,7 +3319,7 @@ def get_ui_display_rules():
     """Get UI display rules for conditional rendering"""
     try:
         conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         
         cur.execute("""
             SELECT id, rule_name, description, rule_type, target_type, target_id,
@@ -3611,7 +3353,7 @@ def get_content_priorities():
     """Get content priority scores and factors"""
     try:
         conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         
         cur.execute("""
             SELECT id, content_type, content_id, priority_score, priority_factors,
@@ -3645,7 +3387,7 @@ def get_priority_factors():
     """Get priority calculation factors and weights"""
     try:
         conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         
         cur.execute("""
             SELECT id, factor_name, display_name, description, factor_type, weight,
@@ -3680,7 +3422,7 @@ def get_user_preferences(user_id):
     """Get user-specific UI preferences"""
     try:
         conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         
         cur.execute("""
             SELECT id, user_id, preference_key, preference_value, preference_type,
@@ -3714,7 +3456,7 @@ def get_session_state(session_id):
     """Get session-specific UI state"""
     try:
         conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         
         cur.execute("""
             SELECT id, session_id, user_id, state_key, state_value, state_type,
@@ -3748,7 +3490,7 @@ def calculate_content_priorities():
     """Calculate and update content priority scores"""
     try:
         conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         
         # Get all priority factors
         cur.execute("""
@@ -3842,7 +3584,7 @@ def get_llm_providers():
     """Get available LLM providers for dropdown population."""
     try:
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             cur.execute("""
                 SELECT id, name, type, description 
                 FROM llm_provider 
@@ -3869,7 +3611,7 @@ def get_llm_models(provider_id):
     """Get available models for a specific provider."""
     try:
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             cur.execute("""
                 SELECT id, name, description, strengths, weaknesses
                 FROM llm_model 
@@ -3898,7 +3640,7 @@ def get_llm_settings():
     """Get saved LLM settings for the current process."""
     try:
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             cur.execute("""
                 SELECT config_key, config_value, config_category
                 FROM process_configurations 
@@ -3927,7 +3669,7 @@ def save_llm_settings():
             return jsonify({'error': 'No data provided'}), 400
         
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
             for key, value in data.items():
                 # Insert or update each setting
@@ -4321,7 +4063,7 @@ def syndication_pieces():
                     return jsonify({'error': f'Missing required field: {field}'}), 400
             
             with get_db_connection() as conn:
-                cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                cur = conn.cursor(row_factory=psycopg.rows.dict_row)
                 
                 # Use the existing llm_interaction table
                 # Store metadata in interaction_metadata JSON field
@@ -4377,7 +4119,7 @@ def syndication_pieces():
                 return jsonify({'error': 'post_id parameter required'}), 400
             
             with get_db_connection() as conn:
-                cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                cur = conn.cursor(row_factory=psycopg.rows.dict_row)
                 
                 cur.execute("""
                     SELECT 
@@ -4427,7 +4169,7 @@ def syndication_piece(piece_id):
     try:
         if request.method == 'GET':
             with get_db_connection() as conn:
-                cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                cur = conn.cursor(row_factory=psycopg.rows.dict_row)
                 
                 cur.execute("""
                     SELECT 
@@ -4463,7 +4205,7 @@ def syndication_piece(piece_id):
             data = request.get_json()
             
             with get_db_connection() as conn:
-                cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                cur = conn.cursor(row_factory=psycopg.rows.dict_row)
                 
                 # Update the piece - only output_text can be updated
                 if 'generated_content' not in data:
@@ -4534,21 +4276,19 @@ def update_products():
         
         # Check for products that need updates (older than 1 day or missing data)
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
             # Find products that need updates
             cur.execute("""
                 SELECT sku, name, last_updated,
                        CASE WHEN image_url IS NULL OR image_url = '' THEN 1 ELSE 0 END as needs_image,
                        CASE WHEN category_ids IS NULL OR category_ids = '[]'::jsonb THEN 1 ELSE 0 END as needs_categories,
-                       CASE WHEN price IS NULL OR price = '' OR price = '0.00' THEN 1 ELSE 0 END as needs_price,
-                       CASE WHEN printable_design_type IS NULL OR printable_design_type = '' THEN 1 ELSE 0 END as needs_printable_design_type
+                       CASE WHEN price IS NULL OR price = '' OR price = '0.00' THEN 1 ELSE 0 END as needs_price
                 FROM clan_products 
                 WHERE last_updated < NOW() - INTERVAL '1 day' 
                    OR image_url IS NULL OR image_url = ''
                    OR category_ids IS NULL OR category_ids = '[]'::jsonb
                    OR price IS NULL OR price = '' OR price = '0.00'
-                   OR printable_design_type IS NULL OR printable_design_type = ''
                 ORDER BY last_updated ASC
                 LIMIT 50
             """)
@@ -4612,28 +4352,11 @@ def update_products():
                 except Exception as e:
                     logger.error(f"Error updating prices: {e}")
                     stats['errors'].append(f"Price update error: {str(e)}")
-            
-            # Update printable_design_type if needed
-            products_needing_printable_design_type = [p for p in products_to_update if p['needs_printable_design_type']]
-            logger.info(f"Found {len(products_needing_printable_design_type)} products needing printable_design_type updates")
-            if products_needing_printable_design_type:
-                logger.info(f"Updating printable_design_type for {len(products_needing_printable_design_type)} products...")
-                try:
-                    # Use any of the updaters to get fresh data from API
-                    price_updater = ProductPriceUpdater()
-                    products_with_printable_design_type = price_updater.fetch_products_by_sku([p['sku'] for p in products_needing_printable_design_type])
-                    if products_with_printable_design_type:
-                        printable_design_type_stats = update_printable_design_types(products_with_printable_design_type)
-                        stats['printable_design_types_updated'] = printable_design_type_stats.get('successful_updates', 0)
-                        stats['errors'].extend(printable_design_type_stats.get('errors', []))
-                except Exception as e:
-                    logger.error(f"Error updating printable_design_type: {e}")
-                    stats['errors'].append(f"Printable design type update error: {str(e)}")
         
-        total_updates = stats['images_updated'] + stats['categories_updated'] + stats['prices_updated'] + stats.get('printable_design_types_updated', 0)
+        total_updates = stats['images_updated'] + stats['categories_updated'] + stats['prices_updated']
         
         if total_updates > 0:
-            message = f"Successfully updated {total_updates} products: {stats['images_updated']} images, {stats['categories_updated']} categories, {stats['prices_updated']} prices, {stats.get('printable_design_types_updated', 0)} printable design types"
+            message = f"Successfully updated {total_updates} products: {stats['images_updated']} images, {stats['categories_updated']} categories, {stats['prices_updated']} prices"
         else:
             message = "No products needed updates, but checked for changes"
         
@@ -4651,128 +4374,6 @@ def update_products():
         return jsonify({
             'success': False,
             'error': f'Failed to update products: {str(e)}'
-        }), 500
-
-def update_printable_design_types(products):
-    """Update printable_design_type field for products"""
-    stats = {
-        'total_processed': 0,
-        'successful_updates': 0,
-        'failed_updates': 0,
-        'errors': []
-    }
-    
-    try:
-        with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            
-            for product in products:
-                stats['total_processed'] += 1
-                
-                try:
-                    sku = product.get('sku')
-                    if not sku:
-                        logger.warning(f"Product missing SKU: {product}")
-                        stats['failed_updates'] += 1
-                        continue
-                    
-                    # Get the printable_design_type
-                    printable_design_type = product.get('printable_design_type')
-                    
-                    if printable_design_type is None:
-                        logger.warning(f"No printable_design_type found for SKU: {sku}")
-                        stats['failed_updates'] += 1
-                        continue
-                    
-                    # Update the database
-                    cur.execute("""
-                        UPDATE clan_products 
-                        SET printable_design_type = %s, last_updated = CURRENT_TIMESTAMP
-                        WHERE sku = %s
-                    """, (printable_design_type, sku))
-                    
-                    if cur.rowcount > 0:
-                        stats['successful_updates'] += 1
-                        logger.info(f"✅ Updated printable_design_type for SKU: {sku} - {printable_design_type}")
-                    else:
-                        logger.warning(f"⚠️ No product found with SKU: {sku}")
-                        stats['failed_updates'] += 1
-                        
-                except Exception as e:
-                    logger.error(f"❌ Error updating printable_design_type for SKU {sku}: {e}")
-                    stats['errors'].append(f"SKU {sku}: {str(e)}")
-                    stats['failed_updates'] += 1
-                    continue
-            
-            conn.commit()
-            logger.info(f"Printable design type update completed: {stats['successful_updates']} successful, {stats['failed_updates']} failed")
-            
-    except Exception as e:
-        logger.error(f"Error in update_printable_design_types: {e}")
-        stats['errors'].append(f"Database error: {str(e)}")
-    
-    return stats
-
-@app.route('/api/daily-product-posts/last-updated', methods=['GET'])
-def get_last_updated():
-    """Get the last updated timestamp for products."""
-    try:
-        with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            
-            cur.execute("""
-                SELECT MAX(last_updated) as last_updated, COUNT(*) as total_products
-                FROM clan_products
-            """)
-            
-            result = cur.fetchone()
-            
-            if result and result['last_updated']:
-                return jsonify({
-                    'success': True,
-                    'last_updated': result['last_updated'].isoformat(),
-                    'total_products': result['total_products']
-                })
-            else:
-                return jsonify({
-                    'success': True,
-                    'last_updated': None,
-                    'total_products': 0
-                })
-                
-    except Exception as e:
-        logger.error(f"Error getting last updated timestamp: {e}")
-        return jsonify({
-            'success': False,
-            'error': f'Failed to get last updated timestamp: {str(e)}'
-        }), 500
-
-@app.route('/api/daily-product-posts/products', methods=['GET'])
-def get_all_products():
-    """Get all products for the Products Browser."""
-    try:
-        with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            
-            cur.execute("""
-                SELECT id, name, sku, price, image_url, url, description, 
-                       category_ids, printable_design_type, last_updated
-                FROM clan_products
-                ORDER BY name ASC
-            """)
-            
-            products = cur.fetchall()
-            
-            return jsonify({
-                'success': True,
-                'products': [dict(product) for product in products]
-            })
-                
-    except Exception as e:
-        logger.error(f"Error getting all products: {e}")
-        return jsonify({
-            'success': False,
-            'error': f'Failed to get products: {str(e)}'
         }), 500
 
 @app.route('/api/daily-product-posts/start-ollama', methods=['POST'])
@@ -4975,7 +4576,7 @@ def get_schedule_status():
     """Get the current posting schedule status."""
     try:
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
             # Get active schedule
             cur.execute("""
@@ -5013,6 +4614,407 @@ def get_schedule_status():
             'error': f'Failed to get schedule status: {str(e)}'
         }), 500
 
+@app.route('/api/daily-product-posts/schedules')
+def get_all_schedules():
+    """Get all active posting schedules."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
+            
+            # Get all active schedules
+            cur.execute("""
+                SELECT id, name, time, timezone, days, is_active, created_at, updated_at
+                FROM daily_posts_schedule
+                WHERE is_active = true 
+                AND platform = 'facebook' 
+                AND channel_type = 'feed_post' 
+                AND content_type = 'product'
+                ORDER BY display_order ASC, created_at ASC
+            """)
+            
+            schedules = cur.fetchall()
+            
+            # Convert to list of dictionaries
+            schedule_list = []
+            for schedule in schedules:
+                schedule_list.append({
+                    'id': schedule['id'],
+                    'name': schedule['name'],
+                    'time': str(schedule['time']),
+                    'timezone': schedule['timezone'],
+                    'days': schedule['days'] if isinstance(schedule['days'], list) else json.loads(schedule['days']) if schedule['days'] else [],
+                    'is_active': schedule['is_active'],
+                    'created_at': schedule['created_at'].isoformat() if schedule['created_at'] else None,
+                    'updated_at': schedule['updated_at'].isoformat() if schedule['updated_at'] else None
+                })
+            
+            return jsonify({
+                'success': True,
+                'schedules': schedule_list
+            })
+        
+    except Exception as e:
+        logger.error(f"Error getting schedules: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to get schedules: {str(e)}'
+        }), 500
+
+@app.route('/api/daily-product-posts/delete-schedule/<int:schedule_id>', methods=['DELETE'])
+def delete_schedule(schedule_id):
+    """Delete a specific posting schedule."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            # Check if schedule exists
+            cur.execute("SELECT name FROM daily_posts_schedule WHERE id = %s", (schedule_id,))
+            schedule = cur.fetchone()
+            
+            if not schedule:
+                return jsonify({
+                    'success': False,
+                    'error': 'Schedule not found'
+                }), 404
+            
+            # Delete the schedule
+            cur.execute("DELETE FROM daily_posts_schedule WHERE id = %s", (schedule_id,))
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': f'Schedule "{schedule[0]}" deleted successfully'
+            })
+        
+    except Exception as e:
+        logger.error(f"Error deleting schedule: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to delete schedule: {str(e)}'
+        }), 500
+
+@app.route('/api/daily-product-posts/test-schedules')
+def test_schedules():
+    """Test all schedules and return a preview of next 7 days."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
+            
+            # Get all active schedules
+            cur.execute("""
+                SELECT name, time, timezone, days
+                FROM daily_posts_schedule
+                WHERE is_active = true
+                ORDER BY display_order ASC, created_at ASC
+            """)
+            
+            schedules = cur.fetchall()
+            
+            if not schedules:
+                return jsonify({
+                    'success': True,
+                    'preview': 'No schedules active'
+                })
+            
+            # Generate preview for next 7 days
+            from datetime import datetime, timedelta
+            now = datetime.now()
+            preview_lines = []
+            
+            for i in range(7):
+                date = now + timedelta(days=i)
+                dayOfWeek = date.weekday() + 1  # Convert Monday=0 to Monday=1, Sunday=6 to Sunday=7
+                dateStr = date.strftime('%m/%d/%Y')
+                
+                day_schedules = []
+                for schedule in schedules:
+                    days = schedule['days'] if isinstance(schedule['days'], list) else json.loads(schedule['days']) if schedule['days'] else []
+                    if dayOfWeek in days:
+                        time_formatted = str(schedule['time'])[:5]  # HH:MM format
+                        day_schedules.append(f"{schedule['name']} at {time_formatted} {schedule['timezone']}")
+                
+                if day_schedules:
+                    day_name = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][date.weekday()]
+                    preview_lines.append(f"{day_name} {dateStr}: {', '.join(day_schedules)}")
+            
+            preview = '\n'.join(preview_lines) if preview_lines else 'No posts scheduled in the next 7 days'
+            
+            return jsonify({
+                'success': True,
+                'preview': preview
+            })
+        
+    except Exception as e:
+        logger.error(f"Error testing schedules: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to test schedules: {str(e)}'
+        }), 500
+
+# Queue Management API Endpoints
+@app.route('/api/daily-product-posts/queue', methods=['GET'])
+def get_queue():
+    """Get all items in the posting queue."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            cur.execute("""
+                SELECT pq.*, cp.name as product_name, cp.image_url as product_image, 
+                       cp.sku, cp.price, cp.category_ids as categories
+                FROM posting_queue pq
+                LEFT JOIN clan_products cp ON pq.product_id = cp.id
+                WHERE pq.platform = 'facebook' 
+                AND pq.channel_type = 'feed_post' 
+                AND pq.content_type = 'product'
+                ORDER BY pq.scheduled_timestamp ASC, pq.created_at ASC
+            """)
+            
+            items = cur.fetchall()
+            
+            queue_items = []
+            for item in items:
+                # Validate required fields - no fallbacks allowed
+                if not item[8]:  # status
+                    raise ValueError(f"Queue item {item[0]} is missing status information")
+                if not item[11]:  # platform
+                    raise ValueError(f"Queue item {item[0]} is missing platform information")
+                if not item[12]:  # channel_type
+                    raise ValueError(f"Queue item {item[0]} is missing channel_type information")
+                if not item[13]:  # content_type
+                    raise ValueError(f"Queue item {item[0]} is missing content_type information")
+                
+                queue_items.append({
+                    'id': item[0],
+                    'product_id': item[1],
+                    'scheduled_date': item[2].isoformat() if item[2] else None,
+                    'scheduled_time': str(item[3]) if item[3] else None,
+                    'schedule_name': item[4],
+                    'timezone': item[5],
+                    'generated_content': item[6],
+                    'queue_order': item[7],
+                    'status': item[8],
+                    'created_at': item[9].isoformat() if item[9] else None,
+                    'updated_at': item[10].isoformat() if item[10] else None,
+                    'platform': item[11],
+                    'channel_type': item[12],
+                    'content_type': item[13],
+                    'scheduled_timestamp': item[14].isoformat() if item[14] else None,
+                    'platform_post_id': item[15],
+                    'error_message': item[16],
+                    'product_name': item[17],
+                    'product_image': item[18],
+                    'sku': item[19],
+                    'price': str(item[20]) if item[20] else None,
+                    'categories': item[21] if item[21] else []
+                })
+            
+            return jsonify({
+                'success': True,
+                'queue_items': queue_items
+            })
+        
+    except Exception as e:
+        logger.error(f"Error getting queue: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to get queue: {str(e)}'
+        }), 500
+
+@app.route('/api/daily-product-posts/queue', methods=['POST'])
+def add_to_queue():
+    """Add an item to the posting queue."""
+    try:
+        data = request.get_json()
+        product_id = data.get('product_id')
+        generated_content = data.get('generated_content')
+        scheduled_date = data.get('scheduled_date')
+        scheduled_time = data.get('scheduled_time')
+        schedule_name = data.get('schedule_name')
+        timezone = data.get('timezone')
+        
+        if not product_id or not generated_content:
+            return jsonify({
+                'success': False,
+                'error': 'Product ID and generated content are required'
+            }), 400
+        
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            # Get next queue order
+            cur.execute("SELECT COALESCE(MAX(queue_order), 0) + 1 FROM posting_queue")
+            next_order = cur.fetchone()[0]
+            
+            # Calculate scheduled_timestamp if both date and time are provided
+            scheduled_timestamp = None
+            if scheduled_date and scheduled_time:
+                from datetime import datetime
+                try:
+                    scheduled_timestamp = datetime.combine(scheduled_date, scheduled_time)
+                except:
+                    scheduled_timestamp = None
+            
+            # Insert new queue item - platform/channel/type come from daily-product-posts module context
+            cur.execute("""
+                INSERT INTO posting_queue 
+                (product_id, scheduled_date, scheduled_time, schedule_name, timezone, 
+                 generated_content, queue_order, status, platform, channel_type, content_type, scheduled_timestamp)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, 'ready', 'facebook', 'feed_post', 'product', %s)
+                RETURNING id, created_at
+            """, (product_id, scheduled_date, scheduled_time, schedule_name, timezone, 
+                  generated_content, next_order, scheduled_timestamp))
+            
+            result = cur.fetchone()
+            queue_id = result[0]
+            created_at = result[1]
+            
+            # Get product details
+            cur.execute("""
+                SELECT name, image_url, sku, price, category_ids
+                FROM clan_products WHERE id = %s
+            """, (product_id,))
+            
+            product = cur.fetchone()
+            
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Item added to queue successfully',
+                'queue_item': {
+                    'id': queue_id,
+                    'product_id': product_id,
+                    'scheduled_date': scheduled_date,
+                    'scheduled_time': scheduled_time,
+                    'schedule_name': schedule_name,
+                    'timezone': timezone,
+                    'generated_content': generated_content,
+                    'queue_order': next_order,
+                    'status': 'ready',  # This will be the database default
+                    'created_at': created_at.isoformat(),
+                    'updated_at': created_at.isoformat(),
+                    'product_name': product[0] if product else None,
+                    'product_image': product[1] if product else None,
+                    'sku': product[2] if product else None,
+                    'price': str(product[3]) if product and product[3] else None,
+                    'categories': product[4] if product and product[4] else []
+                }
+            })
+        
+    except Exception as e:
+        logger.error(f"Error adding to queue: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to add to queue: {str(e)}'
+        }), 500
+
+@app.route('/api/daily-product-posts/queue/<int:item_id>', methods=['PUT'])
+def update_queue_item(item_id):
+    """Update a queue item's schedule information."""
+    try:
+        data = request.get_json()
+        scheduled_date = data.get('scheduled_date')
+        scheduled_time = data.get('scheduled_time')
+        schedule_name = data.get('schedule_name')
+        timezone = data.get('timezone')
+        queue_order = data.get('queue_order')
+        
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            # Check if item exists
+            cur.execute("SELECT id FROM posting_queue WHERE id = %s", (item_id,))
+            if not cur.fetchone():
+                return jsonify({
+                    'success': False,
+                    'error': 'Queue item not found'
+                }), 404
+            
+            # Update the item
+            if queue_order is not None:
+                cur.execute("""
+                    UPDATE posting_queue 
+                    SET scheduled_date = %s, scheduled_time = %s, schedule_name = %s, 
+                        timezone = %s, queue_order = %s, updated_at = NOW()
+                    WHERE id = %s
+                """, (scheduled_date, scheduled_time, schedule_name, timezone, queue_order, item_id))
+            else:
+                cur.execute("""
+                    UPDATE posting_queue 
+                    SET scheduled_date = %s, scheduled_time = %s, schedule_name = %s, 
+                        timezone = %s, updated_at = NOW()
+                    WHERE id = %s
+                """, (scheduled_date, scheduled_time, schedule_name, timezone, item_id))
+            
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Queue item updated successfully'
+            })
+        
+    except Exception as e:
+        logger.error(f"Error updating queue item: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to update queue item: {str(e)}'
+        }), 500
+
+@app.route('/api/daily-product-posts/queue/<int:item_id>', methods=['DELETE'])
+def remove_from_queue(item_id):
+    """Remove an item from the posting queue."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            # Check if item exists
+            cur.execute("SELECT id FROM posting_queue WHERE id = %s", (item_id,))
+            if not cur.fetchone():
+                return jsonify({
+                    'success': False,
+                    'error': 'Queue item not found'
+                }), 404
+            
+            # Delete the item
+            cur.execute("DELETE FROM posting_queue WHERE id = %s", (item_id,))
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Item removed from queue successfully'
+            })
+        
+    except Exception as e:
+        logger.error(f"Error removing from queue: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to remove from queue: {str(e)}'
+        }), 500
+
+@app.route('/api/daily-product-posts/queue/clear', methods=['DELETE'])
+def clear_queue():
+    """Clear all items from the posting queue."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            # Delete all items
+            cur.execute("DELETE FROM posting_queue")
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Queue cleared successfully'
+            })
+        
+    except Exception as e:
+        logger.error(f"Error clearing queue: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to clear queue: {str(e)}'
+        }), 500
+
 @app.route('/api/daily-product-posts/generate-batch', methods=['POST'])
 def generate_batch_items():
     """Generate multiple items for the posting queue automatically."""
@@ -5041,7 +5043,7 @@ def generate_batch_items():
         errors = []
         
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
             # Get current queue count for scheduling
             cur.execute("SELECT COUNT(*) as count FROM posting_queue WHERE status = 'pending'")

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ platform_name|title }} {{ channel_type|title }} Posting - Blog Launchpad</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/launchpad.css') }}">
+    <style>
+        /* Platform Posting Specific Styles */
+        .platform-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .config-section {
+            background: #1a1f2e;
+            border: 1px solid #2d3748;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .config-section h5 {
+            color: #e0e0e0;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #2d3748;
+        }
+        
+        .form-control, .form-select {
+            background: #23273a;
+            border: 1px solid #2d3748;
+            color: #e0e0e0;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background: #23273a;
+            border-color: #667eea;
+            color: #e0e0e0;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .form-label {
+            color: #a0aec0;
+            font-weight: 600;
+        }
+        
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .status-connected {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .status-disconnected {
+            background: #f56565;
+            color: white;
+        }
+        
+        .status-pending {
+            background: #ed8936;
+            color: white;
+        }
+        
+        .test-result {
+            background: #23273a;
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .test-success {
+            border-color: #48bb78;
+            background: rgba(72, 187, 120, 0.1);
+        }
+        
+        .test-error {
+            border-color: #f56565;
+            background: rgba(245, 101, 101, 0.1);
+        }
+        
+        .preview-container {
+            background: #23273a;
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .platform-preview {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            color: #333;
+            max-width: 500px;
+        }
+        
+        .action-button {
+            background: #667eea;
+            border: 1px solid #667eea;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .action-button:hover {
+            background: #5a67d8;
+            border-color: #5a67d8;
+            color: white;
+        }
+        
+        .action-button:disabled {
+            background: #4a5568;
+            border-color: #4a5568;
+            cursor: not-allowed;
+        }
+        
+        .action-button.secondary {
+            background: #2d3748;
+            border-color: #4a5568;
+            color: #a0aec0;
+        }
+        
+        .action-button.secondary:hover {
+            background: #4a5568;
+            border-color: #667eea;
+            color: #e0e0e0;
+        }
+        
+        .action-button.danger {
+            background: #f56565;
+            border-color: #f56565;
+            color: white;
+        }
+        
+        .action-button.danger:hover {
+            background: #e53e3e;
+            border-color: #e53e3e;
+        }
+        
+        .credential-field {
+            position: relative;
+        }
+        
+        .credential-field .form-control {
+            padding-right: 3rem;
+        }
+        
+        .credential-field .toggle-visibility {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #a0aec0;
+            cursor: pointer;
+        }
+        
+        .credential-field .toggle-visibility:hover {
+            color: #e0e0e0;
+        }
+        
+        .rate-limit-info {
+            background: #23273a;
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .error-log {
+            background: #23273a;
+            border: 1px solid #f56565;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .error-log pre {
+            color: #f56565;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+    </style>
+</head>
+<body class="bg-dark">
+    {% include 'shared/header.html' %}
+
+    <!-- Platform Header -->
+    <div class="platform-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-12">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/syndication" class="text-white-50">Syndication</a></li>
+                            <li class="breadcrumb-item"><a href="/syndication/posting" class="text-white-50">Posting Hub</a></li>
+                            <li class="breadcrumb-item active text-white">{{ platform_name|title }}</li>
+                        </ol>
+                    </nav>
+                    <h1 class="mb-2">
+                        <i class="fab fa-{{ platform_name }} me-3"></i>{{ platform_name|title }} {{ channel_type|title }} Posting
+                    </h1>
+                    <p class="mb-0 opacity-75">Configure and manage {{ platform_name }} {{ channel_type }} posts</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <!-- Left Column: Configuration -->
+            <div class="col-lg-8">
+                <!-- API Configuration -->
+                <div class="config-section">
+                    <h5>
+                        <i class="fas fa-cog me-2"></i>API Configuration
+                        <span class="status-indicator status-disconnected ms-3">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Not Connected
+                        </span>
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">API Endpoint</label>
+                            <input type="text" class="form-control" value="https://graph.facebook.com/v18.0" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">API Version</label>
+                            <select class="form-select">
+                                <option value="v18.0" selected>v18.0 (Latest)</option>
+                                <option value="v17.0">v17.0</option>
+                                <option value="v16.0">v16.0</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Page Access Token</label>
+                            <div class="credential-field">
+                                <input type="password" class="form-control" id="accessToken" placeholder="Enter page access token">
+                                <button type="button" class="toggle-visibility" onclick="togglePasswordVisibility('accessToken')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Page ID</label>
+                            <input type="text" class="form-control" placeholder="Enter Facebook page ID">
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Rate Limit (posts/hour)</label>
+                            <input type="number" class="form-control" value="60" min="1" max="1000">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Timeout (seconds)</label>
+                            <input type="number" class="form-control" value="30" min="5" max="300">
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <button class="action-button me-2" onclick="testConnection()">
+                            <i class="fas fa-plug me-2"></i>Test Connection
+                        </button>
+                        <button class="action-button secondary" onclick="saveConfiguration()">
+                            <i class="fas fa-save me-2"></i>Save Configuration
+                        </button>
+                    </div>
+                    
+                    <div id="testResult" class="test-result" style="display: none;">
+                        <!-- Test results will appear here -->
+                    </div>
+                </div>
+
+                <!-- Post Formatting -->
+                <div class="config-section">
+                    <h5>
+                        <i class="fas fa-edit me-2"></i>Post Formatting
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Character Limit</label>
+                            <input type="number" class="form-control" value="2200" readonly>
+                            <small class="text-muted">Facebook feed post character limit</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Image Dimensions</label>
+                            <input type="text" class="form-control" value="1200x630" readonly>
+                            <small class="text-muted">Recommended image size</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Hashtag Limit</label>
+                            <input type="number" class="form-control" value="3" min="0" max="10">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Link Placement</label>
+                            <select class="form-select">
+                                <option value="end">End of post</option>
+                                <option value="middle">Before hashtags</option>
+                                <option value="beginning">Beginning of post</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="autoResizeImages" checked>
+                            <label class="form-check-label" for="autoResizeImages">
+                                Automatically resize images to optimal dimensions
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="validateContent" checked>
+                            <label class="form-check-label" for="validateContent">
+                                Validate content before posting
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error Handling -->
+                <div class="config-section">
+                    <h5>
+                        <i class="fas fa-exclamation-triangle me-2"></i>Error Handling
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Max Retry Attempts</label>
+                            <input type="number" class="form-control" value="3" min="1" max="10">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Retry Delay (seconds)</label>
+                            <input type="number" class="form-control" value="5" min="1" max="60">
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="notifyOnError" checked>
+                            <label class="form-check-label" for="notifyOnError">
+                                Send notifications on posting errors
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="logErrors" checked>
+                            <label class="form-check-label" for="logErrors">
+                                Log all errors for debugging
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Preview & Actions -->
+            <div class="col-lg-4">
+                <!-- Connection Status -->
+                <div class="config-section">
+                    <h5>
+                        <i class="fas fa-info-circle me-2"></i>Connection Status
+                    </h5>
+                    
+                    <div class="rate-limit-info">
+                        <div class="d-flex justify-content-between">
+                            <span>Rate Limit Usage:</span>
+                            <span>0/60 posts/hour</span>
+                        </div>
+                        <div class="progress mt-2" style="height: 8px;">
+                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Last API Call:</span>
+                            <span class="text-muted">Never</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Last Successful Post:</span>
+                            <span class="text-muted">Never</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Total Posts:</span>
+                            <span class="text-muted">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Post Preview -->
+                <div class="config-section">
+                    <h5>
+                        <i class="fas fa-eye me-2"></i>Post Preview
+                    </h5>
+                    
+                    <div class="preview-container">
+                        <div class="platform-preview">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-user text-white"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">Your Page Name</div>
+                                    <small class="text-muted">Just now</small>
+                                </div>
+                            </div>
+                            <p class="mb-3">This is a preview of how your post will appear on {{ platform_name|title }}. The actual content will be generated from your blog posts.</p>
+                            <div class="d-flex align-items-center">
+                                <img src="https://via.placeholder.com/1200x630/667eea/ffffff?text=Blog+Image" class="img-fluid rounded" alt="Preview image">
+                            </div>
+                            <div class="mt-3 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="far fa-thumbs-up me-2"></i>
+                                    <i class="far fa-comment me-2"></i>
+                                    <i class="far fa-share"></i>
+                                </div>
+                                <small class="text-muted">#hashtag1 #hashtag2 #hashtag3</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="config-section">
+                    <h5>
+                        <i class="fas fa-tasks me-2"></i>Actions
+                    </h5>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="action-button" onclick="testPost()">
+                            <i class="fas fa-vial me-2"></i>Test Post (Dry Run)
+                        </button>
+                        <button class="action-button secondary" onclick="validateConfiguration()">
+                            <i class="fas fa-check-circle me-2"></i>Validate Configuration
+                        </button>
+                        <button class="action-button secondary" onclick="viewErrorLog()">
+                            <i class="fas fa-bug me-2"></i>View Error Log
+                        </button>
+                        <button class="action-button danger" onclick="resetConfiguration()">
+                            <i class="fas fa-undo me-2"></i>Reset Configuration
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Error Log (Hidden by default) -->
+                <div id="errorLog" class="error-log" style="display: none;">
+                    <h6 class="text-danger mb-3">
+                        <i class="fas fa-bug me-2"></i>Error Log
+                    </h6>
+                    <pre>No errors logged yet.</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Password visibility toggle
+        function togglePasswordVisibility(fieldId) {
+            const field = document.getElementById(fieldId);
+            const button = field.nextElementSibling;
+            const icon = button.querySelector('i');
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                field.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Test connection
+        function testConnection() {
+            const testResult = document.getElementById('testResult');
+            testResult.style.display = 'block';
+            testResult.className = 'test-result test-success';
+            testResult.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-check-circle text-success me-2"></i>
+                    <span>Connection successful! API credentials are valid.</span>
+                </div>
+            `;
+            
+            // Update connection status
+            const statusIndicator = document.querySelector('.status-indicator');
+            statusIndicator.className = 'status-indicator status-connected ms-3';
+            statusIndicator.innerHTML = '<i class="fas fa-check-circle me-2"></i>Connected';
+        }
+
+        // Save configuration
+        function saveConfiguration() {
+            alert('Configuration saved successfully! (This would call the backend API)');
+        }
+
+        // Test post (dry run)
+        function testPost() {
+            alert('Test post completed successfully! (This would simulate posting without actually posting)');
+        }
+
+        // Validate configuration
+        function validateConfiguration() {
+            alert('Configuration validation completed! All settings are valid.');
+        }
+
+        // View error log
+        function viewErrorLog() {
+            const errorLog = document.getElementById('errorLog');
+            if (errorLog.style.display === 'none') {
+                errorLog.style.display = 'block';
+            } else {
+                errorLog.style.display = 'none';
+            }
+        }
+
+        // Reset configuration
+        function resetConfiguration() {
+            if (confirm('Are you sure you want to reset all configuration settings? This action cannot be undone.')) {
+                alert('Configuration reset successfully! (This would reset all settings to defaults)');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set platform-specific styling
+            const platformName = '{{ platform_name }}';
+            const platformIcon = document.querySelector('.platform-header i');
+            
+            // Platform-specific colors and icons
+            const platformStyles = {
+                'facebook': { color: '#1877f2', icon: 'fab fa-facebook-f' },
+                'instagram': { color: 'linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)', icon: 'fab fa-instagram' },
+                'twitter': { color: '#1da1f2', icon: 'fab fa-twitter' }
+            };
+            
+            if (platformStyles[platformName]) {
+                const style = platformStyles[platformName];
+                platformIcon.className = style.icon + ' me-3';
+                document.querySelector('.platform-header').style.background = `linear-gradient(135deg, ${style.color} 0%, #764ba2 100%)`;
+            }
+        });
+    </script>
+</body>
+</html>

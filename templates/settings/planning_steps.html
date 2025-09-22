@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Planning Steps{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto mt-8 bg-dark-bg border border-dark-border rounded-xl shadow-lg p-8">
+    <h1 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+        <i class="fa-solid fa-gear text-indigo-400"></i> Settings: Planning Steps
+    </h1>
+    <p class="text-dark-text mb-4">
+        View planning steps configuration from planning_steps.json.
+    </p>
+
+    <div class="space-y-6">
+        {% for stage_name, stage_data in config.items() %}
+        <div class="bg-[#23273a] rounded-lg border border-dark-border p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-indigo-400"></i>
+                    {{ stage_name|replace('_', ' ')|title }}
+                </h2>
+                <button type="button" onclick="toggleStage('{{ stage_name }}')"
+                    class="text-indigo-400 hover:text-indigo-300 transition">
+                    <i class="fa-solid fa-chevron-down" id="stage-icon-{{ stage_name }}"></i>
+                </button>
+            </div>
+            <div id="stage-content-{{ stage_name }}" class="hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-[#181c2a] text-indigo-200">
+                            <tr>
+                                <th class="px-4 py-2 font-semibold">Step</th>
+                                <th class="px-4 py-2 font-semibold">Description</th>
+                                <th class="px-4 py-2 font-semibold">Inputs</th>
+                                <th class="px-4 py-2 font-semibold">Outputs</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for step in stage_data %}
+                            <tr class="border-b border-dark-border">
+                                <td class="px-4 py-2 text-white">{{ step.name|replace('_', ' ')|title }}</td>
+                                <td class="px-4 py-2 text-indigo-200">{{ step.description }}</td>
+                                <td class="px-4 py-2">
+                                    <ul class="list-disc list-inside text-indigo-200">
+                                        {% for input in step.inputs %}
+                                        <li>{{ input|replace('_', ' ')|title }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </td>
+                                <td class="px-4 py-2">
+                                    <ul class="list-disc list-inside text-indigo-200">
+                                        {% for output in step.outputs %}
+                                        <li>{{ output|replace('_', ' ')|title }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function toggleStage(stageName) {
+        const content = document.getElementById(`stage-content-${stageName}`);
+        const icon = document.getElementById(`stage-icon-${stageName}`);
+        if (content && icon) {
+            content.classList.toggle('hidden');
+            icon.classList.toggle('fa-chevron-down');
+            icon.classList.toggle('fa-chevron-up');
+        }
+    }
+</script>
+{% endblock %}

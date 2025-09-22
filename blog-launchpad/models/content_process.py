@@ -3,8 +3,8 @@ Content Process Database Models
 Handles content process registry and configuration management
 """
 
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import psycopg
+from psycopg.rows import dict_row
 from typing import Dict, List, Optional, Any
 import logging
 
@@ -19,8 +19,8 @@ class ContentProcess:
     def get_connection(self):
         """Get database connection"""
         try:
-            return psycopg2.connect(**self.db_config)
-        except psycopg2.Error as e:
+            return psycopg.connect(**self.db_config)
+        except psycopg.Error as e:
             logger.error(f"Database connection error: {e}")
             raise
     
@@ -28,15 +28,15 @@ class ContentProcess:
         """Get all active content processes with platform information"""
         try:
             with self.get_connection() as conn:
-                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                with conn.cursor(row_factory=dict_row) as cur:
                     cur.execute("""
                         SELECT 
                             cp.id, cp.process_name, cp.display_name, cp.platform_id,
-                            cp.content_type, cp.description, cp.is_active, cp.priority,
+                            'social_media' as content_type, cp.description, cp.is_active, cp.priority,
                             cp.development_status, cp.created_at, cp.updated_at,
-                            smp.platform_name, smp.display_name as platform_display_name
-                        FROM social_media_content_processes cp
-                        JOIN social_media_platforms smp ON cp.platform_id = smp.id
+                            p.name as platform_name, p.display_name as platform_display_name
+                        FROM content_processes cp
+                        JOIN platforms p ON cp.platform_id = p.id
                         WHERE cp.is_active = true
                         ORDER BY cp.platform_id, cp.priority, cp.display_name
                     """)
@@ -49,15 +49,15 @@ class ContentProcess:
         """Get all processes for a specific platform"""
         try:
             with self.get_connection() as conn:
-                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                with conn.cursor(row_factory=dict_row) as cur:
                     cur.execute("""
                         SELECT 
                             cp.id, cp.process_name, cp.display_name, cp.platform_id,
-                            cp.content_type, cp.description, cp.is_active, cp.priority,
+                            'social_media' as content_type, cp.description, cp.is_active, cp.priority,
                             cp.development_status, cp.created_at, cp.updated_at,
-                            smp.platform_name, smp.display_name as platform_display_name
-                        FROM social_media_content_processes cp
-                        JOIN social_media_platforms smp ON cp.platform_id = smp.id
+                            p.name as platform_name, p.display_name as platform_display_name
+                        FROM content_processes cp
+                        JOIN platforms p ON cp.platform_id = p.id
                         WHERE cp.platform_id = %s AND cp.is_active = true
                         ORDER BY cp.priority, cp.display_name
                     """, (platform_id,))
@@ -70,15 +70,15 @@ class ContentProcess:
         """Get all processes with a specific development status"""
         try:
             with self.get_connection() as conn:
-                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                with conn.cursor(row_factory=dict_row) as cur:
                     cur.execute("""
                         SELECT 
                             cp.id, cp.process_name, cp.display_name, cp.platform_id,
-                            cp.content_type, cp.description, cp.is_active, cp.priority,
+                            'social_media' as content_type, cp.description, cp.is_active, cp.priority,
                             cp.development_status, cp.created_at, cp.updated_at,
-                            smp.platform_name, smp.display_name as platform_display_name
-                        FROM social_media_content_processes cp
-                        JOIN social_media_platforms smp ON cp.platform_id = smp.id
+                            p.name as platform_name, p.display_name as platform_display_name
+                        FROM content_processes cp
+                        JOIN platforms p ON cp.platform_id = p.id
                         WHERE cp.development_status = %s AND cp.is_active = true
                         ORDER BY cp.platform_id, cp.priority, cp.display_name
                     """, (status,))
@@ -91,15 +91,15 @@ class ContentProcess:
         """Get a specific process by name"""
         try:
             with self.get_connection() as conn:
-                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                with conn.cursor(row_factory=dict_row) as cur:
                     cur.execute("""
                         SELECT 
                             cp.id, cp.process_name, cp.display_name, cp.platform_id,
-                            cp.content_type, cp.description, cp.is_active, cp.priority,
+                            'social_media' as content_type, cp.description, cp.is_active, cp.priority,
                             cp.development_status, cp.created_at, cp.updated_at,
-                            smp.platform_name, smp.display_name as platform_display_name
-                        FROM social_media_content_processes cp
-                        JOIN social_media_platforms smp ON cp.platform_id = smp.id
+                            p.name as platform_name, p.display_name as platform_display_name
+                        FROM content_processes cp
+                        JOIN platforms p ON cp.platform_id = p.id
                         WHERE cp.process_name = %s AND cp.is_active = true
                     """, (process_name,))
                     return cur.fetchone()
@@ -111,7 +111,7 @@ class ContentProcess:
         """Get all configurations for a specific process"""
         try:
             with self.get_connection() as conn:
-                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                with conn.cursor(row_factory=dict_row) as cur:
                     cur.execute("""
                         SELECT id, process_id, config_category, config_key, config_value,
                                config_type, is_required, display_order
@@ -128,7 +128,7 @@ class ContentProcess:
         """Get configurations for a specific process and category"""
         try:
             with self.get_connection() as conn:
-                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                with conn.cursor(row_factory=dict_row) as cur:
                     cur.execute("""
                         SELECT id, process_id, config_category, config_key, config_value,
                                config_type, is_required, display_order
@@ -182,7 +182,7 @@ class ContentProcess:
         """Get execution history with optional filters"""
         try:
             with self.get_connection() as conn:
-                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                with conn.cursor(row_factory=dict_row) as cur:
                     query = """
                         SELECT 
                             e.id, e.process_id, e.post_id, e.section_id, e.status,

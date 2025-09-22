@@ -7,8 +7,8 @@ import os
 from flask import current_app
 from datetime import datetime
 from jinja2 import Template
-import psycopg2
-import psycopg2.extras
+import psycopg
+from psycopg.rows import dict_row
 import requests
 import json
 from typing import Dict, Any, Optional

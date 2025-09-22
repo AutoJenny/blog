@@ -1,5 +1,5 @@
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import psycopg
+from psycopg.rows import dict_row
 from flask import current_app
 import logging
 import os
@@ -27,13 +27,12 @@ def get_db_conn():
                 port = match.group(4) or '5432'
                 dbname = match.group(5)
                 
-                conn = psycopg2.connect(
+                conn = psycopg.connect(
                     dbname=dbname,
                     user=user,
                     password=password,
                     host=host,
-                    port=port,
-                    cursor_factory=RealDictCursor
+                    port=port
                 )
                 return conn
         

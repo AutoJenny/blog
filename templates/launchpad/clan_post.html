@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ post.title or post.main_title or post.provisional_title or 'Untitled Post' }} - Clan.com</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .view-toggle {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.8;
+        }
+        .raw-html {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 80vh;
+            overflow-y: auto;
+            display: none;
+        }
+        .rendered-content {
+            display: block;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .blog-post {
+            line-height: 1.6;
+        }
+        .blog-post h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .blog-post h2 {
+            color: #555;
+            margin-top: 30px;
+        }
+        .blog-post img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .blog-post p {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="view-toggle">
+            <button id="rendered-btn" class="btn btn-primary" onclick="showRendered()">
+                Rendered View
+            </button>
+            <button id="raw-btn" class="btn btn-secondary" onclick="showRawHtml()">
+                Raw HTML
+            </button>
+        </div>
+
+        <div id="raw-html" class="raw-html">
+{{ raw_html|e }}
+        </div>
+
+        <div id="rendered-content" class="rendered-content blog-post">
+            <h1>{{ post.title or post.main_title or post.provisional_title or 'Untitled Post' }}</h1>
+            
+            {% if post.subtitle %}
+            <h2>{{ post.subtitle }}</h2>
+            {% endif %}
+
+            {% if post.header_image %}
+            <img src="{{ post.header_image.path }}" 
+                 alt="{{ post.header_image.alt_text or 'Header image' }}"
+                 {% if post.header_image.width %}width="{{ post.header_image.width }}"{% endif %}
+                 {% if post.header_image.height %}height="{{ post.header_image.height }}"{% endif %}>
+            {% if post.header_image.caption %}
+            <p><em>{{ post.header_image.caption }}</em></p>
+            {% endif %}
+            {% endif %}
+
+            {% if post.summary %}
+            <p><strong>{{ post.summary }}</strong></p>
+            {% endif %}
+
+            {% if sections %}
+            <!-- Cross-promotion error handling -->
+            {% if not post.cross_promotion %}
+                <div class="cross-promotion-error" style="background-color: #ffebee; border: 2px solid #f44336; padding: 15px; margin: 20px 0; border-radius: 8px; color: #c62828;">
+                    <h4 style="margin: 0 0 10px 0; color: #d32f2f;">
+                        <i class="fas fa-exclamation-triangle"></i> Cross-Promotion Configuration Missing
+                    </h4>
+                    <p style="margin: 0; font-size: 0.9em;">
+                        No cross-promotion widgets are configured for this post. 
+                        <a href="http://localhost:5001/cross-promotion" style="color: #d32f2f; text-decoration: underline;">Configure widgets here</a>.
+                    </p>
+                </div>
+            {% endif %}
+            
+            {% for section in sections %}
+            <section>
+                <h2>{{ section.section_heading or 'Untitled Section' }}</h2>
+                <div>
+                    {% if section.polished %}
+                        {{ section.polished|safe }}
+                    {% elif section.draft %}
+                        {{ section.draft|safe }}
+                    {% elif section.content %}
+                        {{ section.content|safe }}
+                    {% else %}
+                        <p>No content available for this section.</p>
+                    {% endif %}
+                </div>
+                
+                {% if section.image and section.image.path and not section.image.placeholder %}
+                <figure>
+                    <img alt="{{ section.image.alt_text or 'Section image' }}" 
+                         src="{{ section.image.path }}"
+                         {% if section.image.width %}width="{{ section.image.width }}"{% endif %}
+                         {% if section.image.height %}height="{{ section.image.height }}"{% endif %}>
+                    {% if section.image_captions %}
+                    <figcaption><em>{{ section.image_captions }}</em></figcaption>
+                    {% endif %}
+                </figure>
+                {% endif %}
+            </section>
+            
+            <!-- Cross-promotion widgets between sections -->
+            {% if post.cross_promotion and post.cross_promotion.category_position == loop.index %}
+                {% if post.cross_promotion.category_widget_html %}
+                    <!-- Category Cross-Sell Widget -->
+                    {{ post.cross_promotion.category_widget_html|safe }}
+                {% endif %}
+            {% endif %}
+            
+            {% if post.cross_promotion and post.cross_promotion.product_position == loop.index %}
+                {% if post.cross_promotion.product_widget_html %}
+                    <!-- Product Cross-Sell Widget -->
+                    {{ post.cross_promotion.product_widget_html|safe }}
+                {% endif %}
+            {% endif %}
+            
+            {% endfor %}
+            
+            <!-- Cross-promotion widgets after the last section -->
+            {% if post.cross_promotion %}
+                {% if post.cross_promotion.category_position == sections|length + 1 and post.cross_promotion.category_widget_html %}
+                    <!-- Category Cross-Sell Widget -->
+                    {{ post.cross_promotion.category_widget_html|safe }}
+                {% endif %}
+                
+                {% if post.cross_promotion.product_position == sections|length + 1 and post.cross_promotion.product_widget_html %}
+                    <!-- Product Cross-Sell Widget -->
+                    {{ post.cross_promotion.product_widget_html|safe }}
+                {% endif %}
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        function showRendered() {
+            document.getElementById('rendered-content').style.display = 'block';
+            document.getElementById('raw-html').style.display = 'none';
+            document.getElementById('rendered-btn').className = 'btn btn-primary';
+            document.getElementById('raw-btn').className = 'btn btn-secondary';
+        }
+
+        function showRawHtml() {
+            document.getElementById('rendered-content').style.display = 'none';
+            document.getElementById('raw-html').style.display = 'block';
+            document.getElementById('rendered-btn').className = 'btn btn-secondary';
+            document.getElementById('raw-btn').className = 'btn btn-primary';
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            showRendered();
+        });
+    </script>
+</body>
+</html>

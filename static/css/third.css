@@ -1,0 +1,32 @@
+.mobile,
+.desktop {
+  display: block !important;
+}
+.mobile section.content,
+.desktop section.content {
+  display: block !important;
+  width: 100% !important;
+}
+.mobile section.content .mobile-block,
+.desktop section.content .mobile-block,
+.mobile section.content .desktop-block,
+.desktop section.content .desktop-block {
+  display: block !important;
+}
+.mobile section.content .swipe-me,
+.desktop section.content .swipe-me {
+  display: none !important;
+}
+.mobile section.content .mp-blog-print,
+.desktop section.content .mp-blog-print {
+  display: none !important;
+}
+.mobile section.content .mpblog-social-container,
+.desktop section.content .mpblog-social-container {
+  display: none !important;
+}
+.mobile aside,
+.desktop aside {
+  display: none !important;
+}
+

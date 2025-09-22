@@ -1,0 +1,1512 @@
+        // LLM Settings Initialization Function
+        function waitForLLMSettingsAndInitialize() {
+            console.log('Initializing LLM settings...');
+            // Initialize LLM settings and structured prompt display
+            initializeLLMSettings();
+        }
+
+        // Initialize LLM Settings
+        function initializeLLMSettings() {
+            console.log('LLM settings initialized');
+            // LLM settings are now available for use
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOMContentLoaded event fired');
+            
+            // Initialize the structured prompt display
+            console.log('Calling waitForLLMSettingsAndInitialize...');
+            waitForLLMSettingsAndInitialize();
+            
+            // Initialize button states - first checkbox is pre-selected
+            updateProcessAllButtonState(true);
+            const postSelector = document.getElementById('postSelector');
+            const postDetails = document.getElementById('postDetails');
+            console.log('postSelector:', postSelector);
+            console.log('postDetails:', postDetails);
+            
+            // Fetch published posts
+            console.log('Fetching published posts...');
+            fetch('/api/syndication/published-posts')
+                .then(response => {
+                    console.log('Response received:', response);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Data received:', data);
+                    if (data.error) {
+                        console.error('Error fetching posts:', data.error);
+                        postSelector.innerHTML = '<option value="">Error loading posts</option>';
+                        return;
+                    }
+                    
+                    const posts = data.posts;
+                    if (posts.length === 0) {
+                        postSelector.innerHTML = '<option value="">No published posts found</option>';
+                        return;
+                    }
+                    
+                    // Clear loading option and add posts
+                    postSelector.innerHTML = '<option value="">Select a post...</option>';
+                    posts.forEach(post => {
+                        const option = document.createElement('option');
+                        option.value = post.id;
+                        option.textContent = `${post.title} (ID: ${post.id})`;
+                        postSelector.appendChild(option);
+                    });
+                    
+                    // Auto-select the first (most recent) post
+                    if (posts.length > 0) {
+                        postSelector.value = posts[0].id;
+                        displayPostDetails(posts[0]);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    postSelector.innerHTML = '<option value="">Error loading posts</option>';
+                });
+            
+            // Handle post selection change
+            postSelector.addEventListener('change', function() {
+                const selectedId = this.value;
+                if (selectedId) {
+                    // Find the selected post data
+                    fetch('/api/syndication/published-posts')
+                        .then(response => response.json())
+                        .then(data => {
+                            const selectedPost = data.posts.find(post => post.id == selectedId);
+                            if (selectedPost) {
+                                displayPostDetails(selectedPost);
+                                // Update blog details display after post is selected
+                                setTimeout(() => {
+                                    if (typeof updateBlogDetailsDisplay === 'function') {
+                                        updateBlogDetailsDisplay();
+                                    }
+                                }, 500); // Small delay to ensure sections are loaded
+                            }
+                        });
+                } else {
+                    postDetails.classList.add('d-none');
+                }
+            });
+            
+            function displayPostDetails(post) {
+                document.getElementById('postTitle').textContent = post.title;
+                document.getElementById('postId').textContent = post.id;
+                document.getElementById('postStatus').textContent = post.status;
+                document.getElementById('postSlug').textContent = post.slug || 'N/A';
+                document.getElementById('postSectionCount').textContent = post.section_count;
+                
+                // Format dates
+                const createdDate = post.created_at ? new Date(post.created_at).toLocaleDateString() : 'N/A';
+                const updatedDate = post.updated_at ? new Date(post.updated_at).toLocaleDateString() : 'N/A';
+                
+                document.getElementById('postCreatedAt').textContent = createdDate;
+                document.getElementById('postUpdatedAt').textContent = updatedDate;
+                
+                // Update accordion title to show selected post
+                document.getElementById('accordionTitle').textContent = `Post: ${post.title}`;
+                
+                postDetails.classList.remove('d-none');
+                
+                // Show conversion panel and sections content area
+                initializeConversionPanel();
+                document.getElementById('sectionsContent').style.display = 'block';
+                fetchPostSections(post.id);
+            }
+            
+            function fetchPostSections(postId) {
+                // Fetch sections for the selected post
+                fetch(`/api/syndication/post-sections/${postId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            console.error('Error fetching sections:', data.error);
+                            displaySectionsError('Error loading sections');
+                            return;
+                        }
+                        
+                        const sections = data.sections || [];
+                        if (sections.length === 0) {
+                            displaySectionsError('No sections found for this post');
+                            return;
+                        }
+                        
+                        displaySections(sections, postId);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        displaySectionsError('Error loading sections');
+                    });
+            }
+            
+            function displaySections(sections, postId) {
+                console.log('displaySections called with:', sections.length, 'sections');
+                
+                // Store sections data globally for access by other functions
+                window.currentSectionsData = sections;
+                
+                const sectionsPiecesBody = document.getElementById('sectionsPiecesBody');
+                console.log('sectionsPiecesBody element:', sectionsPiecesBody);
+                sectionsPiecesBody.innerHTML = '';
+                
+                sections.forEach((section, index) => {
+                    // Debug logging
+                    console.log(`Section ${index + 1}:`, section);
+                    console.log(`Section ${index + 1} image_path:`, section.image_path);
+                    
+                    // Create a new table row for each section-piece pair
+                    const tableRow = document.createElement('tr');
+                    
+                    // Create the task checkbox cell (left column)
+                    const taskCell = document.createElement('td');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.className = 'task-checkbox';
+                    checkbox.dataset.sectionId = section.id;
+                    checkbox.dataset.sectionIndex = index;
+                    checkbox.id = `task-checkbox-${index}`;
+                    
+                    console.log(`Created checkbox ${index} with sectionId: "${section.id}" (type: ${typeof section.id})`);
+                    
+                    // Hard-code the first checkbox as selected
+                    if (index === 0) {
+                        checkbox.checked = true;
+                    }
+                    
+                    // Add event listener for checkbox changes
+                    checkbox.addEventListener('change', function() {
+                        // Update button state when checkboxes change
+                        const selectedTasks = getSelectedTasks();
+                        updateProcessAllButtonState(selectedTasks.length > 0);
+                        
+                        // Update blog details display when selection changes
+                        if (typeof updateBlogDetailsDisplay === 'function') {
+                            updateBlogDetailsDisplay();
+                        }
+                    });
+                    
+                    console.log(`Created checkbox ${index}:`, checkbox);
+                    console.log(`Checkbox ${index} checked:`, checkbox.checked);
+                    
+                    // Pre-fill debug panel with section content for the first section
+                    if (index === 0) {
+                        setTimeout(() => {
+                            updateDebugPanelSectionContent(section);
+                            // Update blog details display
+                            if (typeof updateBlogDetailsDisplay === 'function') {
+                                updateBlogDetailsDisplay();
+                            }
+                        }, 100);
+                    }
+                    
+                    taskCell.appendChild(checkbox);
+                    taskCell.className = 'task-checkbox-cell';
+                    
+                    // Create the section cell (middle column)
+                    const sectionCell = document.createElement('td');
+                    const sectionItem = document.createElement('div');
+                    sectionItem.className = 'section-item';
+                    sectionItem.dataset.sectionId = section.id;
+                    sectionItem.dataset.sectionIndex = index;
+                    
+                    sectionItem.innerHTML = `
+                        <h6>${section.title || `Section ${index + 1}`}</h6>
+                        <div class="section-content-wrapper">
+                            <div class="section-text">
+                                <div class="field-label">[title]</div>
+                                <p class="section-title">${section.title || `Section ${index + 1}`}</p>
+                                
+                                <div class="field-label">[content]</div>
+                                <p class="section-content">${section.content || 'No content'}</p>
+                                
+                                <div class="field-label">[polished]</div>
+                                <div class="full-content-display">
+                                    ${section.polished || 'No polished content available'}
+                                </div>
+                            </div>
+                            <div class="section-image">
+                                ${section.image_path && section.image_path.trim() ? 
+                                    `<img src="${section.image_path}" alt="Section ${index + 1}" onerror="this.style.display='none'">` 
+                                    : 
+                                    `<div class="no-image">No image available</div>`
+                                }
+                                <div class="field-label">[image_path]</div>
+                                <div class="image-path-value">${section.image_path || 'No image path available'}</div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    sectionCell.appendChild(sectionItem);
+                    
+                    // Create the piece cell (right column)
+                    const pieceCell = document.createElement('td');
+                    const pieceItem = document.createElement('div');
+                    pieceItem.className = 'piece-item';
+                    pieceItem.dataset.pieceNumber = index + 1;
+                    
+                    pieceItem.innerHTML = `
+                        <h6>Piece ${index + 1}</h6>
+                        <p>Content piece based on section ${index + 1}</p>
+                    `;
+                    
+                    pieceCell.appendChild(pieceItem);
+                    
+                    // Add all three cells to the row
+                    tableRow.appendChild(taskCell);
+                    tableRow.appendChild(sectionCell);
+                    tableRow.appendChild(pieceCell);
+                    
+                    // Add the row to the table body
+                    sectionsPiecesBody.appendChild(tableRow);
+                });
+                
+                // Load any previously saved pieces for this post
+                setTimeout(() => {
+                    console.log('displaySections: Calling loadSavedPieces after 500ms delay');
+                    loadSavedPieces();
+                }, 500); // Small delay to ensure DOM is fully rendered
+            }
+            
+            function displaySectionsError(message) {
+                const sectionsPiecesBody = document.getElementById('sectionsPiecesBody');
+                sectionsPiecesBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center text-muted py-4">
+                            <i class="fas fa-exclamation-triangle me-2"></i>${message}
+                        </td>
+                    </tr>
+                `;
+            }
+            
+            // Conversion Panel Functionality
+            const platformSelector = document.getElementById('platformSelector');
+            const processSelector = document.getElementById('processSelector');
+            const processDetails = document.getElementById('processDetails');
+            
+            // Fetch social media platforms
+            function fetchSocialMediaPlatforms() {
+                console.log('fetchSocialMediaPlatforms called');
+                
+                // Hardcode Facebook platform since we're focusing on Facebook for now
+                const facebookPlatform = {
+                    id: 'facebook',
+                    name: 'facebook',
+                    display_name: 'Facebook'
+                };
+                
+                console.log('Creating Facebook platform option:', facebookPlatform);
+                
+                platformSelector.innerHTML = '<option value="">Select a platform...</option>';
+                const option = document.createElement('option');
+                option.value = facebookPlatform.id;
+                option.textContent = facebookPlatform.display_name;
+                option.dataset.platformName = facebookPlatform.name;
+                platformSelector.appendChild(option);
+                
+                console.log('Platform option created:', option);
+                console.log('Platform selector options after creation:', platformSelector.options.length);
+                
+                // Auto-select Facebook platform
+                platformSelector.value = facebookPlatform.id;
+                console.log('Platform selector value set to:', platformSelector.value);
+                console.log('Platform selector selected option:', platformSelector.options[platformSelector.selectedIndex]);
+                
+                updateConversionHeaderDisplay();
+                
+                // Auto-populate processes for Facebook
+                populateFacebookProcesses();
+            }
+            
+            // Populate Facebook processes
+            function populateFacebookProcesses() {
+                const platformProcesses = [
+                    { id: 'facebook_feed_post', display_name: 'Facebook Feed Post', content_type: 'feed_post' },
+                    { id: 'facebook_story_post', display_name: 'Facebook Story Post', content_type: 'story_post' },
+                    { id: 'facebook_reels_caption', display_name: 'Facebook Reels Caption', content_type: 'reels_caption' },
+                    { id: 'facebook_group_post', display_name: 'Facebook Group Post', content_type: 'group_post' }
+                ];
+                
+                processSelector.innerHTML = '<option value="">Select a process...</option>';
+                platformProcesses.forEach(process => {
+                    const option = document.createElement('option');
+                    option.value = process.id;
+                    option.textContent = `${process.display_name} (${process.content_type})`;
+                    processSelector.appendChild(option);
+                });
+                
+                processSelector.disabled = false;
+                
+                // Auto-select Facebook Feed Post
+                processSelector.value = 'facebook_feed_post';
+                updateConversionHeaderDisplay();
+                processSelector.dispatchEvent(new Event('change'));
+                
+                // Process selection completed
+            }
+            
+            // Fetch content processes for selected platform (simplified)
+            function fetchContentProcesses(platformId) {
+                // This function is now simplified since we auto-populate Facebook processes
+                // It's kept for compatibility with existing event handlers
+                console.log('Process fetching simplified - using auto-populated Facebook processes');
+            }
+            
+            // Handle platform selection change
+            platformSelector.addEventListener('change', function() {
+                const selectedPlatformId = this.value;
+                processSelector.innerHTML = '<option value="">Select a process...</option>';
+                processSelector.disabled = true;
+                processDetails.style.display = 'none';
+                
+                // Update header display
+                updateConversionHeaderDisplay();
+                
+                if (selectedPlatformId) {
+                    fetchContentProcesses(selectedPlatformId);
+                }
+            });
+            
+            // Handle process selection change
+            processSelector.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                console.log('Process selection changed:', selectedOption);
+                
+                if (selectedOption.value) {
+                    // Get platform name
+                    const platformSelector = document.getElementById('platformSelector');
+                    const selectedPlatformOption = platformSelector.options[platformSelector.selectedIndex];
+                    const platformName = selectedPlatformOption ? selectedPlatformOption.textContent : 'Unknown Platform';
+                    
+                    // Create process data from the option text and value
+                    const processData = {
+                        id: selectedOption.value,
+                        process_name: selectedOption.textContent.split(' (')[0],
+                        display_name: selectedOption.textContent.split(' (')[0],
+                        content_type: selectedOption.textContent.includes('(') ? selectedOption.textContent.split('(')[1].replace(')', '') : 'N/A',
+                        platform_name: platformName,
+                        development_status: 'ready',
+                        is_active: true,
+                        priority: '1',
+                        description: `This process converts blog post sections into optimized ${selectedOption.textContent.split(' (')[0]} content for ${platformName}.`
+                    };
+                    
+                    console.log('Created process data:', processData);
+                    displayProcessDetails(processData);
+                    
+                    // Pre-fill debug panel with available data
+                    setTimeout(() => {
+                        prefillDebugPanelWithLLMSettings();
+                    }, 100); // Small delay to ensure DOM elements are loaded
+                } else {
+                    console.log('No process selected, hiding details');
+                    processDetails.style.display = 'none';
+                }
+                
+                // Update header display
+                updateConversionHeaderDisplay();
+            });
+            
+            // Prompt update listeners setup completed
+            
+            // Display process details
+            function displayProcessDetails(process) {
+                // Update process overview with unified framework
+                const processDescriptionContent = document.getElementById('process-description-content');
+                if (processDescriptionContent) {
+                    const platformSelector = document.getElementById('platformSelector');
+                    const selectedPlatformOption = platformSelector.options[platformSelector.selectedIndex];
+                    const platformName = selectedPlatformOption ? selectedPlatformOption.textContent : 'Unknown Platform';
+                    
+                    processDescriptionContent.innerHTML = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="detail-item mb-2">
+                                    <span class="detail-label text-info">Process Name:</span>
+                                    <span class="detail-value text-white">${process.display_name || process.process_name}</span>
+                                </div>
+                                <div class="detail-item mb-2">
+                                    <span class="detail-label text-info">Content Type:</span>
+                                    <span class="detail-value text-white">${process.content_type || 'N/A'}</span>
+                                </div>
+                                <div class="detail-item mb-2">
+                                    <span class="detail-label text-info">Priority Level:</span>
+                                    <span class="detail-value text-white">${process.priority || '0'}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-item mb-2">
+                                    <span class="detail-label text-info">Platform:</span>
+                                    <span class="detail-value text-white">${platformName}</span>
+                                </div>
+                                <div class="detail-item mb-2">
+                                    <span class="detail-label text-info">Status:</span>
+                                    <span class="detail-value text-white">${process.development_status || 'draft'}</span>
+                                </div>
+                                <div class="detail-item mb-2">
+                                    <span class="detail-label text-info">Active:</span>
+                                    <span class="detail-value text-white">${process.is_active ? 'Yes' : 'No'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3 p-3 bg-dark rounded">
+                            <strong class="text-info">Description:</strong>
+                            <div class="text-white mt-2">${process.description || 'No description available'}</div>
+                        </div>
+                    `;
+                }
+                
+                // Show process details panel
+                processDetails.style.display = 'block';
+            }
+            
+            // Initialize conversion panel when post is selected
+            function initializeConversionPanel() {
+                document.getElementById('conversionPanel').style.display = 'block';
+                document.getElementById('llmDebugPanel').style.display = 'block';
+                fetchSocialMediaPlatforms();
+            }
+
+
+
+            // Update the conversion header display with current selections
+            function updateConversionHeaderDisplay() {
+                const headerDisplay = document.getElementById('conversionHeaderDisplay');
+                const platformSelector = document.getElementById('platformSelector');
+                const processSelector = document.getElementById('processSelector');
+                
+                const selectedPlatform = platformSelector.options[platformSelector.selectedIndex];
+                const selectedProcess = processSelector.options[processSelector.selectedIndex];
+                
+                if (selectedPlatform && selectedPlatform.value && selectedProcess && selectedProcess.value) {
+                    // Both platform and process selected
+                    headerDisplay.textContent = `${selectedPlatform.textContent} → ${selectedProcess.textContent.split(' (')[0]}`;
+                } else if (selectedPlatform && selectedPlatform.value) {
+                    // Only platform selected
+                    headerDisplay.textContent = `${selectedPlatform.textContent} → Select process...`;
+                } else {
+                    // Nothing selected
+                    headerDisplay.textContent = 'Select platform and process...';
+                }
+            }
+
+            // Fetch and display process configurations
+            function fetchProcessConfigurations(processId) {
+                fetch(`/api/syndication/content-processes/${processId}/configs`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            console.error('Error fetching process configs:', data.error);
+                            displayProcessConfigurations([]);
+                            return;
+                        }
+                        displayProcessConfigurations(data.configs || []);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        displayProcessConfigurations([]);
+                    });
+            }
+
+            // Display process configurations organized by category
+            function displayProcessConfigurations(configs) {
+                const configsContainer = document.getElementById('processConfigsContainer');
+                
+                if (!configs || configs.length === 0) {
+                    configsContainer.innerHTML = `
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-exclamation-triangle me-2"></i>No configuration found for this process
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Group configs by category
+                const configsByCategory = {};
+                configs.forEach(config => {
+                    if (!configsByCategory[config.config_category]) {
+                        configsByCategory[config.config_category] = [];
+                    }
+                    configsByCategory[config.config_category].push(config);
+                });
+
+                // Create HTML for each category
+                let html = '';
+                Object.keys(configsByCategory).forEach(category => {
+                    const categoryConfigs = configsByCategory[category];
+                    const categoryDisplayName = category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    
+                    html += `
+                        <div class="config-category mb-3">
+                            <div class="category-header p-2 bg-dark rounded mb-2">
+                                <strong class="text-warning">${categoryDisplayName}</strong>
+                            </div>
+                            <div class="row">
+                    `;
+                    
+                    categoryConfigs.forEach(config => {
+                        const configDisplayName = config.config_key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        html += `
+                            <div class="col-md-6 mb-2">
+                                <div class="config-item p-2 bg-secondary rounded">
+                                    <div class="config-key text-info mb-1">
+                                        <strong>${configDisplayName}:</strong>
+                                    </div>
+                                    <div class="config-value text-white">
+                                        ${config.config_value}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                });
+
+                configsDisplay.innerHTML = html;
+            }
+
+            // LLM Debug Panel Functions
+            function updateDebugPanel(processConfig, sectionContent) {
+                // Update process info
+                document.getElementById('debugProcessName').textContent = processConfig.process_name || 'No process selected';
+                document.getElementById('debugProcessDescription').textContent = processConfig.description || 'No description available';
+                
+                // Update process configuration
+                const llmPrompt = processConfig.configs?.find(c => c.config_category === 'llm_prompt' && c.config_key === 'system_prompt')?.config_value || 'No prompt configured';
+                const constraints = processConfig.configs?.find(c => c.config_category === 'constraints')?.config_value || 'No constraints configured';
+                const styleGuide = processConfig.configs?.find(c => c.config_category === 'style_guide')?.config_value || 'No style guide configured';
+                
+                document.getElementById('debugLLMPrompt').textContent = llmPrompt;
+                document.getElementById('debugConstraints').textContent = constraints;
+                document.getElementById('debugStyleGuide').textContent = styleGuide;
+                
+                // Update section content
+                if (sectionContent) {
+                    const contentText = `Title: ${sectionContent.title || 'No title'}\n\nContent: ${sectionContent.content || 'No content'}\n\nPolished: ${sectionContent.polished || 'No polished content'}\n\nImage: ${sectionContent.image_path || 'No image'}`;
+                    document.getElementById('debugSectionContent').textContent = contentText;
+                } else {
+                    document.getElementById('debugSectionContent').textContent = 'No section content available';
+                }
+                
+                // Assemble and display the final prompt
+                const assembledPrompt = assembleLLMPrompt(processConfig, sectionContent);
+                
+                // Show the actual assembled prompt
+                if (assembledPrompt && assembledPrompt !== 'No prompt assembled yet') {
+                    document.getElementById('debugAssembledPrompt').textContent = assembledPrompt;
+                } else {
+                    document.getElementById('debugAssembledPrompt').textContent = 'Select a process and wait for prompt assembly...';
+                }
+            }
+
+            // Pre-fill debug panel with LLM Settings data
+            function prefillDebugPanelWithLLMSettings() {
+                // Get LLM Settings from the form fields
+                const llmProviderSelect = document.getElementById('llmProviderSelect');
+                const llmModelSelect = document.getElementById('llmModelSelect');
+                const llmTemperature = document.getElementById('llmTemperature');
+                const llmMaxTokens = document.getElementById('llmMaxTokens');
+                const llmSystemPrompt = document.getElementById('llmSystemPrompt');
+                const llmUserPromptTemplate = document.getElementById('llmUserPromptTemplate');
+                
+                // Only update if we have valid LLM settings
+                if (llmProviderSelect && llmModelSelect && llmSystemPrompt) {
+                    if (llmSystemPrompt.value) {
+                        document.getElementById('debugLLMPrompt').textContent = llmSystemPrompt.value;
+                    }
+                    
+                    // Update constraints and style guide from Channel Requirements
+                    updateDebugPanelFromRequirements();
+                } else {
+                    // Clear debug panel if LLM settings aren't ready
+                    document.getElementById('debugLLMPrompt').textContent = 'LLM Settings not loaded yet';
+                    document.getElementById('debugConstraints').textContent = 'Waiting for requirements...';
+                    document.getElementById('debugStyleGuide').textContent = 'Waiting for requirements...';
+                    document.getElementById('debugAssembledPrompt').textContent = 'Select a process and configure LLM settings first...';
+                }
+            }
+
+            // Update debug panel with Channel Requirements data
+            function updateDebugPanelFromRequirements() {
+                // Get requirements from the Channel Requirements accordion
+                const requirementsAccordion = document.getElementById('mvpRequirementsAccordion');
+                if (!requirementsAccordion) return;
+                
+                let constraints = [];
+                let styleGuide = [];
+                
+                // Look for constraint and style guide requirements
+                const requirementItems = requirementsAccordion.querySelectorAll('.requirement-item');
+                console.log('Found requirement items:', requirementItems.length);
+                
+                requirementItems.forEach((item, index) => {
+                    const keyElement = item.querySelector('.badge');
+                    const valueElement = item.querySelector('strong');
+                    const descriptionElement = item.querySelector('small');
+                    
+                    if (keyElement && valueElement && descriptionElement) {
+                        const key = keyElement.textContent.toLowerCase();
+                        const value = valueElement.textContent;
+                        const description = descriptionElement.textContent.toLowerCase();
+                        
+                        console.log(`Requirement ${index + 1}:`, { key, value, description });
+                        
+                        // Categorize requirements with broader matching
+                        if (key.includes('constraint') || key.includes('rule') || key.includes('requirement') || 
+                            description.includes('constraint') || description.includes('rule') || description.includes('requirement')) {
+                            constraints.push(value);
+                            console.log('Added to constraints:', value);
+                        } else if (key.includes('style') || key.includes('tone') || key.includes('voice') || key.includes('guideline') ||
+                                 description.includes('style') || description.includes('tone') || description.includes('voice') || description.includes('guideline')) {
+                            styleGuide.push(value);
+                            console.log('Added to styleGuide:', value);
+                        }
+                    }
+                });
+                
+                console.log('Final constraints:', constraints);
+                console.log('Final styleGuide:', styleGuide);
+                
+                // Update debug panel
+                if (constraints.length > 0) {
+                    document.getElementById('debugConstraints').textContent = constraints.join('\n');
+                } else {
+                    document.getElementById('debugConstraints').textContent = 'No constraints configured';
+                }
+                if (styleGuide.length > 0) {
+                    document.getElementById('debugStyleGuide').textContent = styleGuide.join('\n');
+                } else {
+                    document.getElementById('debugStyleGuide').textContent = 'No style guide configured';
+                }
+            }
+
+            // Update debug panel with section content
+            function updateDebugPanelSectionContent(section) {
+                if (section) {
+                    // Clean up the polished content by removing HTML tags
+                    let polishedContent = section.polished || '';
+                    if (polishedContent) {
+                        // Remove HTML tags and clean up whitespace
+                        polishedContent = polishedContent.replace(/<[^>]*>/g, '').trim();
+                        // Replace multiple spaces/newlines with single spaces
+                        polishedContent = polishedContent.replace(/\s+/g, ' ');
+                    }
+                    
+                    // Create clean, LLM-friendly content
+                    const contentText = `${section.title || 'No title'}\n\n${polishedContent || section.content || 'No content available'}`;
+                    document.getElementById('debugSectionContent').textContent = contentText;
+                } else {
+                    document.getElementById('debugSectionContent').textContent = 'No section content available';
+                }
+            }
+
+            function assembleLLMPrompt(processConfig, sectionContent) {
+                console.log('assembleLLMPrompt called with:', { processConfig, sectionContent });
+                
+                if (!processConfig) {
+                    console.log('No process config, returning error');
+                    return 'No process configuration available';
+                }
+                if (!sectionContent) {
+                    console.log('No section content, returning error');
+                    return 'No section content available';
+                }
+                
+                // Get actual platform and process information
+                const platformSelector = document.getElementById('platformSelector');
+                const processSelector = document.getElementById('processSelector');
+                const selectedPlatform = platformSelector.options[platformSelector.selectedIndex];
+                const selectedProcess = processSelector.options[processSelector.selectedIndex];
+                
+                console.log('Selected platform:', selectedPlatform);
+                console.log('Selected process:', selectedProcess);
+                
+                const platformName = selectedPlatform ? selectedPlatform.textContent : 'Unknown Platform';
+                const processName = selectedProcess ? selectedProcess.textContent.split(' (')[0] : 'Unknown Process';
+                // Clean up the channel type to be more LLM-friendly
+                let channelType = selectedProcess ? selectedProcess.textContent.includes('(') ? selectedProcess.textContent.split('(')[1].replace(')', '') : 'N/A' : 'N/A';
+                
+                // Convert technical terms to natural language
+                if (channelType === 'feed_post') {
+                    channelType = 'feed post';
+                } else if (channelType === 'story_post') {
+                    channelType = 'story post';
+                } else if (channelType === 'reels_caption') {
+                    channelType = 'reels caption';
+                } else if (channelType === 'group_post') {
+                    channelType = 'group post';
+                }
+                
+                console.log('Channel type after conversion:', channelType);
+                
+                console.log('Extracted platform/process info:', { platformName, processName, channelType });
+                
+                // Get requirements from the Channel Requirements accordion
+                const requirementsAccordion = document.getElementById('mvpRequirementsAccordion');
+                console.log('Requirements accordion found:', requirementsAccordion);
+                
+                let channelRequirements = [];
+                
+                if (requirementsAccordion) {
+                    const requirementItems = requirementsAccordion.querySelectorAll('.requirement-item');
+                    console.log('Found requirement items:', requirementItems.length);
+                    
+                    requirementItems.forEach((item, index) => {
+                        const keyElement = item.querySelector('.badge');
+                        const valueElement = item.querySelector('strong');
+                        console.log(`Requirement ${index + 1}:`, { keyElement: keyElement?.textContent, valueElement: valueElement?.textContent });
+                        
+                        if (keyElement && valueElement) {
+                            channelRequirements.push(`${keyElement.textContent}: ${valueElement.textContent}`);
+                        }
+                    });
+                }
+                
+                const requirementsText = channelRequirements.length > 0 ? channelRequirements.join('\n') : 'No specific requirements';
+                console.log('Final requirements text:', requirementsText);
+                
+                // Get LLM settings for the actual prompt
+                const llmSettings = getLLMSettings();
+                console.log('LLM settings:', llmSettings);
+                
+                // Get prompts from database via UI elements (dynamic)
+                const systemPromptElement = document.getElementById('llmSystemPrompt');
+                const userPromptElement = document.getElementById('llmUserPromptTemplate');
+                
+                const systemPrompt = 'You are a social media content specialist. Write a Facebook feed post based on the blog section below.';
+                const userPrompt = `RULES:
+. Output ONLY the final post text — no explanations, no notes, no commentary, no placeholders, no brackets.
+. Use a conversational, engaging, and authentic tone.
+. Include a clear call-to-action.
+. Avoid the word 'delve'.
+. Use EXACTLY THREE relevant hashtags, placed ONLY at the very end.
+. Post length must be 150–200 characters.`;
+                
+                console.log('Base prompts:', { systemPrompt, userPrompt });
+                
+                // No placeholder replacement needed for clean rules format
+                let finalUserPrompt = userPrompt;
+                
+                console.log('Final user prompt after replacement:', finalUserPrompt);
+                
+                // Use the working logic that was already there
+                // Get the blog post title from the post selector
+                const postSelector = document.getElementById('postSelector');
+                const selectedPostOption = postSelector?.options[postSelector?.selectedIndex];
+                const blogTitle = selectedPostOption?.textContent || 'Unknown Blog Title';
+                
+                // Get section details from the sectionContent object
+                const sectionTitle = sectionContent?.title || 'Unknown Section Title';
+                let sectionText = sectionContent?.content || sectionContent?.polished || 'No content available';
+                
+                // Clean section text to remove post number references and HTML tags
+                sectionText = sectionText
+                    .replace(/#\d+/g, '') // Remove post numbers like #53
+                    .replace(/<[^>]*>/g, '') // Remove HTML tags
+                    .replace(/\s+/g, ' ') // Normalize whitespace
+                    .trim();
+                
+                // Build the blog details section (remove ID and simplify labels)
+                const cleanBlogTitle = blogTitle.replace(/\s*\(ID:\s*\d+\)/g, '');
+                const blogDetails = `Title: ${cleanBlogTitle}\nSection: ${sectionTitle}\nText: ${sectionText}`;
+                
+                // Assemble the final prompt with clean, consolidated format
+                const finalPrompt = `${systemPrompt}\n\n${finalUserPrompt}\n\n=== BLOG DETAILS ===\n${blogDetails}\n\nNow write the final Facebook post`;
+                
+                console.log('Final assembled prompt using working logic:', finalPrompt);
+                return finalPrompt;
+            }
+
+            function updateLLMResponse(llmResponse, llmRequest, processingDetails) {
+                // Update processing details
+                document.getElementById('debugRequestTime').textContent = processingDetails.requestTime || '--';
+                document.getElementById('debugResponseTime').textContent = processingDetails.responseTime || '--';
+                document.getElementById('debugTotalDuration').textContent = processingDetails.totalDuration || '--';
+                document.getElementById('debugModelUsed').textContent = processingDetails.modelUsed || '--';
+                
+                // Update response content - llmResponse is what we got back, llmRequest is what we sent
+                document.getElementById('debugRawResponse').textContent = llmResponse || 'No response yet';
+                document.getElementById('debugAssembledPrompt').textContent = llmRequest || 'No request data yet';
+                
+                // Update validation results (placeholder for now)
+                document.getElementById('debugValidationResults').textContent = 'Validation not implemented yet';
+            }
+
+            function clearDebugResults() {
+                document.getElementById('debugRawResponse').textContent = 'No response yet';
+                document.getElementById('debugAssembledPrompt').textContent = 'No request data yet';
+                document.getElementById('debugValidationResults').textContent = 'No validation performed yet';
+                document.getElementById('debugRequestTime').textContent = '--';
+                document.getElementById('debugResponseTime').textContent = '--';
+                document.getElementById('debugTotalDuration').textContent = '--';
+                document.getElementById('debugModelUsed').textContent = '--';
+                document.getElementById('llmStatus').textContent = 'Ready';
+                document.getElementById('llmLastProcessed').textContent = 'Never';
+                document.getElementById('llmProcessingTime').textContent = '--';
+            }
+
+            // Helper functions for LLM integration
+            function getSelectedTasks() {
+                console.log('getSelectedTasks() called');
+                const checkboxes = document.querySelectorAll('.task-checkbox:checked');
+                console.log('Found checkboxes:', checkboxes.length);
+                console.log('All checkboxes:', document.querySelectorAll('.task-checkbox'));
+                
+                const selectedTasks = Array.from(checkboxes).map(cb => ({
+                    sectionId: cb.dataset.sectionId,
+                    sectionIndex: parseInt(cb.dataset.sectionIndex)
+                }));
+                
+                console.log('Selected tasks result:', selectedTasks);
+                
+                // Update button state based on selection
+                updateProcessAllButtonState(selectedTasks.length > 0);
+                
+                return selectedTasks;
+            }
+            
+            function updateProcessAllButtonState(hasSelection) {
+                const processAllBtn = document.getElementById('processAllSectionsBtn');
+                if (processAllBtn) {
+                    // Process All Sections button is always enabled since it processes all sections
+                    processAllBtn.disabled = false;
+                    processAllBtn.classList.remove('btn-secondary');
+                    processAllBtn.classList.add('btn-success');
+                }
+            }
+
+            function getLLMSettings() {
+                return {
+                    provider_id: document.getElementById('llmProviderSelect')?.value || '',
+                    model_id: document.getElementById('llmModelSelect')?.value || '',
+                    system_prompt: document.getElementById('llmSystemPrompt')?.value || '',
+                    user_prompt_template: document.getElementById('llmUserPromptTemplate')?.value || '',
+                    temperature: document.getElementById('llmTemperature')?.value || '0.7',
+                    max_tokens: document.getElementById('llmMaxTokens')?.value || '1000'
+                };
+            }
+
+            function getSectionContent(sectionIndex) {
+                const sectionRow = document.querySelector(`#task-checkbox-${sectionIndex}`).closest('tr');
+                const sectionCell = sectionRow.querySelector('.section-item');
+                if (sectionCell) {
+                    return {
+                        title: sectionCell.querySelector('.section-title')?.textContent || '',
+                        content: sectionCell.querySelector('.section-content')?.textContent || '',
+                        polished: sectionCell.querySelector('.full-content-display')?.textContent || ''
+                    };
+                }
+                return null;
+            }
+
+            function updatePieceContent(sectionIndex, llmResponse) {
+                console.log(`updatePieceContent called with sectionIndex: ${sectionIndex}, llmResponse: ${llmResponse.substring(0, 100)}...`);
+                
+                const sectionRow = document.querySelector(`#task-checkbox-${sectionIndex}`).closest('tr');
+                console.log(`Found section row:`, sectionRow);
+                
+                if (!sectionRow) {
+                    console.error(`No section row found for section index: ${sectionIndex}`);
+                    return;
+                }
+                
+                const pieceCell = sectionRow.querySelector('.piece-item');
+                console.log(`Found piece cell:`, pieceCell);
+                
+                if (pieceCell) {
+                    console.log(`Updating piece cell content for section ${sectionIndex}`);
+                    pieceCell.innerHTML = `
+                        <h6>Piece ${sectionIndex + 1}</h6>
+                        <div class="piece-output">
+                            <div class="piece-text">${llmResponse}</div>
+                            <div class="piece-timestamp text-muted small">Generated: ${new Date().toLocaleTimeString()}</div>
+                        </div>
+                    `;
+                    console.log(`Piece cell updated successfully for section ${sectionIndex}`);
+                } else {
+                    console.error(`No piece cell found for section index: ${sectionIndex}`);
+                }
+            }
+
+            // Load saved syndication pieces from database
+            async function loadSavedPieces() {
+                console.log('loadSavedPieces() function called');
+                try {
+                    const postId = getCurrentPostId();
+                    console.log('getCurrentPostId() returned:', postId);
+                    
+                    if (!postId) {
+                        console.log('No post ID available, skipping saved pieces load');
+                        return;
+                    }
+                    
+                    console.log('Loading saved pieces for post:', postId);
+                    
+                    const response = await fetch(`/api/syndication/pieces?post_id=${postId}`);
+                    const result = await response.json();
+                    
+                    if (result.status === 'success' && result.pieces) {
+                        console.log('Loaded saved pieces:', result.pieces);
+                        
+                        // Group pieces by section_id and keep only the most recent one for each section
+                        const sectionPieces = {};
+                        result.pieces.forEach(piece => {
+                            const metadata = piece.interaction_metadata;
+                            if (metadata && metadata.section_id) {
+                                const sectionId = metadata.section_id;
+                                // If no piece exists for this section, or if this piece is newer, use this one
+                                if (!sectionPieces[sectionId] || new Date(piece.created_at) > new Date(sectionPieces[sectionId].created_at)) {
+                                    sectionPieces[sectionId] = piece;
+                                }
+                            }
+                        });
+                        
+                        console.log('Section pieces after filtering (most recent per section):', sectionPieces);
+                        
+                        // Update UI with the most recent piece for each section
+                        Object.values(sectionPieces).forEach(piece => {
+                            console.log('Processing piece:', piece);
+                            const metadata = piece.interaction_metadata;
+                            console.log('Piece metadata:', metadata);
+                            
+                            if (metadata && metadata.section_id) {
+                                console.log('Looking for section ID:', metadata.section_id);
+                                // Find the section index from the section ID
+                                const sectionIndex = getSectionIndexFromId(metadata.section_id);
+                                console.log('Found section index:', sectionIndex);
+                                
+                                if (sectionIndex !== -1) {
+                                    console.log('Updating piece for section index:', sectionIndex);
+                                    // Update the piece content
+                                    updatePieceContent(sectionIndex, piece.generated_content);
+                                    // Mark as saved
+                                    updatePieceSavedStatus(sectionIndex, true);
+                                    // Store the piece ID for future reference
+                                    storePieceId(sectionIndex, piece.id);
+                                } else {
+                                    console.log('Section index not found for section ID:', metadata.section_id);
+                                }
+                            } else {
+                                console.log('No metadata or section_id found in piece');
+                            }
+                        });
+                    } else {
+                        console.log('No saved pieces found or error loading pieces');
+                    }
+                } catch (error) {
+                    console.error('Error loading saved pieces:', error);
+                }
+            }
+            
+            // Helper function to get section index from section ID
+            function getSectionIndexFromId(sectionId) {
+                console.log('getSectionIndexFromId called with sectionId:', sectionId, 'type:', typeof sectionId);
+                const checkboxes = document.querySelectorAll('.task-checkbox');
+                console.log('Found checkboxes:', checkboxes.length);
+                
+                for (let i = 0; i < checkboxes.length; i++) {
+                    const checkbox = checkboxes[i];
+                    const checkboxSectionId = checkbox.dataset.sectionId;
+                    console.log(`Checkbox ${i}: sectionId = "${checkboxSectionId}" (type: ${typeof checkboxSectionId})`);
+                    
+                    if (checkboxSectionId === sectionId) {
+                        console.log(`Match found at index ${i}`);
+                        return i;
+                    }
+                }
+                console.log('No match found, returning -1');
+                return -1;
+            }
+            
+            // Store piece ID for future reference
+            function storePieceId(sectionIndex, pieceId) {
+                const sectionRow = document.querySelector(`#task-checkbox-${sectionIndex}`).closest('tr');
+                if (sectionRow) {
+                    sectionRow.dataset.pieceId = pieceId;
+                }
+            }
+            
+            // Save syndication piece to database
+            async function saveSyndicationPiece(sectionIndex, generatedContent, llmRequest, llmResult, processingTime) {
+                try {
+                    // Get current post and section information
+                    const postId = getCurrentPostId();
+                    const sectionId = getSectionId(sectionIndex);
+                    const platformId = getPlatformId();
+                    const channelTypeId = getChannelTypeId();
+                    const processId = getProcessId();
+                    
+                    if (!postId || !sectionId || !platformId || !channelTypeId || !processId) {
+                        console.warn('Missing required IDs for database save:', { postId, sectionId, platformId, channelTypeId, processId });
+                        return;
+                    }
+                    
+                    // Get original content
+                    const originalContent = getSectionContent(sectionIndex);
+                    
+                    // Prepare data for database
+                    const pieceData = {
+                        post_id: postId,
+                        section_id: sectionId,
+                        platform_id: platformId,
+                        channel_type_id: channelTypeId,
+                        process_id: processId,
+                        original_content: originalContent ? JSON.stringify(originalContent) : 'No content available',
+                        generated_content: generatedContent,
+                        llm_model: llmRequest.model,
+                        llm_temperature: llmRequest.temperature,
+                        llm_max_tokens: llmRequest.max_tokens,
+                        llm_provider: llmRequest.provider,
+                        prompt_used: llmRequest.prompt,
+                        processing_time_ms: Math.round(parseFloat(processingTime) * 1000),
+                        platform_name: getPlatformName(),
+                        channel_type_name: getChannelTypeName(),
+                        requirements: getRequirementsText()
+                    };
+                    
+                    // Save to database
+                    const response = await fetch('/api/syndication/pieces', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(pieceData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        console.log('Syndication piece saved successfully:', result);
+                        // Update the piece display to show it's saved
+                        updatePieceSavedStatus(sectionIndex, true);
+                    } else {
+                        console.error('Failed to save syndication piece:', result.error);
+                    }
+                    
+                } catch (error) {
+                    console.error('Error saving syndication piece:', error);
+                }
+            }
+            
+            // Process all sections with LLM (regardless of checkboxes)
+            async function processAllSelectedSections() {
+                try {
+                    // Get all sections (not just selected ones)
+                    const allSections = [];
+                    const checkboxes = document.querySelectorAll('.task-checkbox');
+                    for (let i = 0; i < checkboxes.length; i++) {
+                        allSections.push({ sectionIndex: i });
+                    }
+                    
+                    if (allSections.length === 0) {
+                        alert('No sections found to process');
+                        return;
+                    }
+                    
+                    // Disable the button and show progress
+                    const processAllBtn = document.getElementById('processAllSectionsBtn');
+                    const originalText = processAllBtn.textContent;
+                    processAllBtn.textContent = 'Processing...';
+                    processAllBtn.disabled = true;
+                    processAllBtn.classList.add('btn-secondary');
+                    processAllBtn.classList.remove('btn-success');
+                    
+                    let completedCount = 0;
+                    const totalCount = allSections.length;
+                    
+                    // Process each section sequentially
+                    for (const section of allSections) {
+                        try {
+                            // Update progress
+                            processAllBtn.textContent = `Processing ${completedCount + 1}/${totalCount}...`;
+                            
+                            // Process the section
+                            await processSectionWithLLM(section.sectionIndex);
+                            
+                            completedCount++;
+                            
+                            // Small delay between sections to avoid overwhelming the LLM
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                            
+                        } catch (error) {
+                            console.error(`Error processing section ${section.sectionIndex}:`, error);
+                            // Continue with next section
+                        }
+                    }
+                    
+                    // Restore button state
+                    processAllBtn.textContent = originalText;
+                    processAllBtn.disabled = false;
+                    processAllBtn.classList.remove('btn-secondary');
+                    processAllBtn.classList.add('btn-success');
+                    
+                    // Show completion message
+                    alert(`Processing complete! Successfully processed ${completedCount}/${totalCount} sections.`);
+                    
+                } catch (error) {
+                    console.error('Error processing all sections:', error);
+                    alert(`Error processing sections: ${error.message}`);
+                    
+                    // Restore button state
+                    const processAllBtn = document.getElementById('processAllSectionsBtn');
+                    if (processAllBtn) {
+                        processAllBtn.textContent = 'Process All Sections';
+                        processAllBtn.disabled = false;
+                        processAllBtn.classList.remove('btn-secondary');
+                        processAllBtn.classList.add('btn-success');
+                    }
+                }
+            }
+            
+            // Helper functions for database operations
+            function getCurrentPostId() {
+                // Extract post ID from URL or page data
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get('post_id') || '53'; // Default for testing
+            }
+            
+            function getSectionId(sectionIndex) {
+                // Get section ID from the DOM
+                const checkbox = document.getElementById(`task-checkbox-${sectionIndex}`);
+                return checkbox ? checkbox.dataset.sectionId : null;
+            }
+            
+            function getPlatformId() {
+                // Get platform ID from selector
+                const platformSelector = document.getElementById('platformSelector');
+                return platformSelector ? platformSelector.value : '1'; // Default to Facebook
+            }
+            
+            function getChannelTypeId() {
+                // Get channel type ID from selector
+                const channelTypeSelector = document.getElementById('channelTypeSelector');
+                return channelTypeSelector ? channelTypeSelector.value : '1'; // Default to feed_post
+            }
+            
+            function getProcessId() {
+                // Get process ID from selector
+                const processSelector = document.getElementById('processSelector');
+                return processSelector ? processSelector.value : '1'; // Default to first process
+            }
+            
+            function getPlatformName() {
+                // Get platform name from selector
+                const platformSelector = document.getElementById('platformSelector');
+                if (platformSelector && platformSelector.selectedIndex >= 0) {
+                    return platformSelector.options[platformSelector.selectedIndex].textContent;
+                }
+                return 'Unknown Platform';
+            }
+            
+            function getChannelTypeName() {
+                // Get channel type name from selector
+                const processSelector = document.getElementById('processSelector');
+                if (processSelector && processSelector.selectedIndex >= 0) {
+                    const processText = processSelector.options[processSelector.selectedIndex].textContent;
+                    // Extract channel type from parentheses
+                    const match = processText.match(/\(([^)]+)\)/);
+                    return match ? match[1] : 'Unknown Channel Type';
+                }
+                return 'Unknown Channel Type';
+            }
+            
+            function getRequirementsText() {
+                // Get requirements from the Channel Requirements accordion
+                const requirementsAccordion = document.getElementById('mvpRequirementsAccordion');
+                if (requirementsAccordion) {
+                    const requirementItems = requirementsAccordion.querySelectorAll('.requirement-item');
+                    const requirements = [];
+                    
+                    requirementItems.forEach(item => {
+                        const keyElement = item.querySelector('.badge');
+                        const valueElement = item.querySelector('strong');
+                        if (keyElement && valueElement) {
+                            requirements.push(`${keyElement.textContent}: ${valueElement.textContent}`);
+                        }
+                    });
+                    
+                    return requirements.join('\n');
+                }
+                return 'No specific requirements';
+            }
+            
+            function updatePieceSavedStatus(sectionIndex, isSaved) {
+                // Update the piece display to show it's been saved
+                const sectionRow = document.querySelector(`#task-checkbox-${sectionIndex}`).closest('tr');
+                if (sectionRow) {
+                    const pieceElement = sectionRow.querySelector('.piece-item');
+                    if (pieceElement) {
+                        if (isSaved) {
+                            pieceElement.classList.add('saved');
+                            // Add a small indicator that it's saved
+                            const savedIndicator = document.createElement('span');
+                            savedIndicator.className = 'badge bg-success ms-2';
+                            savedIndicator.textContent = 'Saved';
+                            savedIndicator.style.fontSize = '0.7em';
+                            
+                            // Remove existing indicator if present
+                            const existingIndicator = pieceElement.querySelector('.badge');
+                            if (existingIndicator) {
+                                existingIndicator.remove();
+                            }
+                            
+                            pieceElement.appendChild(savedIndicator);
+                        }
+                    }
+                }
+            }
+
+            async function processSectionWithLLM(sectionIndex) {
+                try {
+                    // Get LLM settings
+                    const llmSettings = getLLMSettings();
+                    if (!llmSettings.provider_id || !llmSettings.model_id) {
+                        alert('Please select a provider and model first');
+                        return;
+                    }
+
+                    // Get section content
+                    const sectionContent = getSectionContent(sectionIndex);
+                    if (!sectionContent) {
+                        alert('Could not find section content');
+                        return;
+                    }
+
+                    // Assemble prompt using the improved function
+                    const processConfig = {
+                        process_name: document.getElementById('debugProcessName')?.textContent || 'Unknown Process',
+                        description: document.getElementById('debugProcessDescription')?.textContent || 'No description available'
+                    };
+                    
+                    const fullPrompt = assembleLLMPrompt(processConfig, sectionContent);
+
+                    // Prepare LLM request with proper provider/model names
+                    const llmRequest = {
+                        provider: document.getElementById('llmProviderSelect')?.options[document.getElementById('llmProviderSelect')?.selectedIndex]?.textContent || 'ollama',
+                        model: document.getElementById('llmModelSelect')?.options[document.getElementById('llmModelSelect')?.selectedIndex]?.textContent || 'mistral',
+                        prompt: fullPrompt,
+                        temperature: parseFloat(llmSettings.temperature),
+                        max_tokens: parseInt(llmSettings.max_tokens)
+                    };
+
+                    // Update status
+                    document.getElementById('llmStatus').textContent = 'Processing...';
+                    const startTime = Date.now();
+
+                    // Send to LLM service
+                    const response = await fetch('/api/syndication/ollama/direct', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(llmRequest)
+                    });
+
+                    const result = await response.json();
+                    const endTime = Date.now();
+                    const processingTime = ((endTime - startTime) / 1000).toFixed(1) + 's';
+
+                    if (result.error) {
+                        throw new Error(result.error);
+                    }
+
+                    // Update status
+                    document.getElementById('llmStatus').textContent = 'Completed';
+                    document.getElementById('llmLastProcessed').textContent = new Date().toLocaleTimeString();
+                    document.getElementById('llmProcessingTime').textContent = processingTime;
+
+                    // Extract response content - LLM service returns output/result fields
+                    const responseContent = result.output || result.result || result.response || result.content || 'No response received';
+                    console.log('LLM Response received:', result);
+                    console.log('Extracted content:', responseContent);
+
+                    // Update piece content
+                    updatePieceContent(sectionIndex, responseContent);
+
+                    // Save to database
+                    await saveSyndicationPiece(sectionIndex, responseContent, llmRequest, result, processingTime);
+
+                    // Update debug panel
+                    const processingDetails = {
+                        requestTime: new Date(startTime).toLocaleTimeString(),
+                        responseTime: new Date(endTime).toLocaleTimeString(),
+                        totalDuration: processingTime,
+                        modelUsed: `${llmSettings.provider_id} (${llmSettings.model_id})`
+                    };
+
+                    // Update the debug panel with proper labels and content
+                    updateLLMResponse(
+                        responseContent, // This is the actual LLM response
+                        JSON.stringify(llmRequest, null, 2), // This is what we sent
+                        processingDetails
+                    );
+
+                } catch (error) {
+                    console.error('Error processing section:', error);
+                    document.getElementById('llmStatus').textContent = 'Error';
+                    alert(`Error processing section: ${error.message}`);
+                }
+            }
+
+            // Process multiple selected sections
+            async function processSelectedSections(selectedTasks) {
+                try {
+                    console.log('Processing selected sections:', selectedTasks);
+                    
+                    // Process each selected section sequentially
+                    for (let i = 0; i < selectedTasks.length; i++) {
+                        const task = selectedTasks[i];
+                        console.log(`Processing section ${i + 1}/${selectedTasks.length}:`, task);
+                        
+                        // Update status
+                        document.getElementById('llmStatus').textContent = `Processing section ${i + 1}/${selectedTasks.length}...`;
+                        
+                        // Process this section
+                        await processSectionWithLLM(task.sectionIndex);
+                        
+                        // Small delay between sections to avoid overwhelming the system
+                        if (i < selectedTasks.length - 1) {
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                        }
+                    }
+                    
+                    // Update status
+                    document.getElementById('llmStatus').textContent = 'All selected sections completed';
+                    document.getElementById('llmLastProcessed').textContent = new Date().toLocaleTimeString();
+                    
+                    console.log('All selected sections processed successfully');
+                    
+                } catch (error) {
+                    console.error('Error processing selected sections:', error);
+                    document.getElementById('llmStatus').textContent = 'Error';
+                    alert(`Error processing sections: ${error.message}`);
+                }
+            }
+
+            // Event listeners for debug panel buttons
+            const startOllamaBtn = document.getElementById('startOllamaBtn');
+            const processCheckedSectionsBtn = document.getElementById('processCheckedSectionsBtn');
+            const clearResultsBtn = document.getElementById('clearResultsBtn');
+            
+            if (startOllamaBtn) {
+                startOllamaBtn.addEventListener('click', async function() {
+                    console.log('Start Ollama button clicked!');
+                    
+                    // Visual feedback - disable button and show loading
+                    const originalText = this.textContent;
+                    this.textContent = 'Starting...';
+                    this.disabled = true;
+                    this.classList.add('btn-secondary');
+                    this.classList.remove('btn-success');
+                    
+                    try {
+                        // Update status
+                        document.getElementById('llmStatus').textContent = 'Starting Ollama...';
+                        
+                        // Start Ollama through our Flask endpoint
+                        const response = await fetch('/api/syndication/ollama/start', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log('Ollama start response:', data);
+                            
+                            if (data.already_running) {
+                                // Ollama was already running
+                                document.getElementById('llmStatus').textContent = 'Ollama Running';
+                                document.getElementById('llmLastProcessed').textContent = new Date().toLocaleTimeString();
+                                alert(`Ollama is already running! ${data.message}`);
+                            } else {
+                                // Ollama was started successfully
+                                document.getElementById('llmStatus').textContent = 'Ollama Running';
+                                document.getElementById('llmLastProcessed').textContent = new Date().toLocaleTimeString();
+                                alert(`Ollama started successfully! ${data.message}`);
+                            }
+                            
+                            // Change button to show it's running
+                            this.textContent = 'Ollama Running';
+                            this.classList.remove('btn-secondary');
+                            this.classList.add('btn-info');
+                        } else {
+                            const errorData = await response.json();
+                            throw new Error(errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+                        }
+                    } catch (error) {
+                        console.error('Error starting Ollama:', error);
+                        document.getElementById('llmStatus').textContent = 'Ollama Error';
+                        alert(`Error starting Ollama: ${error.message}\n\nPlease ensure Ollama is running on port 11434.`);
+                        
+                        // Restore button state
+                        this.textContent = originalText;
+                        this.disabled = false;
+                        this.classList.remove('btn-secondary');
+                        this.classList.add('btn-success');
+                    }
+                });
+            }
+            
+            if (processCheckedSectionsBtn) {
+                processCheckedSectionsBtn.addEventListener('click', function() {
+                    console.log('Process Checked Sections button clicked!');
+                    
+                    // Get selected tasks
+                    const selectedTasks = getSelectedTasks();
+                    console.log('Selected tasks:', selectedTasks);
+                    
+                    if (selectedTasks.length === 0) {
+                        alert('Please select at least one section to process.');
+                        return;
+                    }
+                    
+                    // Visual feedback - disable button and show loading
+                    const originalText = this.textContent;
+                    this.textContent = 'Processing...';
+                    this.disabled = false;
+                    this.classList.add('btn-secondary');
+                    this.classList.remove('btn-primary');
+                    
+                    // Process all selected tasks
+                    processSelectedSections(selectedTasks)
+                        .finally(() => {
+                            // Restore button state
+                            this.textContent = originalText;
+                            this.disabled = false;
+                            this.classList.remove('btn-secondary');
+                            this.classList.add('btn-primary');
+                        });
+                });
+            }
+            
+            if (clearResultsBtn) {
+                clearResultsBtn.addEventListener('click', clearDebugResults);
+            }
+            
+            // Add event listener for Process All Sections button
+            const processAllSectionsBtn = document.getElementById('processAllSectionsBtn');
+            if (processAllSectionsBtn) {
+                processAllSectionsBtn.addEventListener('click', processAllSelectedSections);
+            }
+
+            // Update debug panel when process is selected
+            function displayProcessDetails(process) {
+                console.log('Process selected:', process);
+                
+                // Update debug panel with process info
+                const processConfig = {
+                    process_name: process.process_name,
+                    description: process.description,
+                    configs: [] // Will be populated when configs are fetched
+                };
+                
+                // Update debug panel
+                updateDebugPanel(processConfig, null);
+            }
+        });

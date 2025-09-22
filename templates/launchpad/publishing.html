@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publishing Management - Blog Launchpad</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .header-gradient {
+            background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
+        }
+        .nav-dropdown {
+            background: #23273a;
+            border: 1px solid #31364a;
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+        }
+        .nav-dropdown a {
+            color: #e0e0e0;
+        }
+        .nav-dropdown a:hover {
+            background: #23273a;
+            color: #a5b4fc;
+        }
+        .publishing-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .post-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: box-shadow 0.2s;
+            color: #ffffff;
+        }
+        .post-card h5 {
+            color: #ffffff;
+        }
+        .post-card p {
+            color: #e2e8f0;
+        }
+        .post-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .post-card.published {
+            background: linear-gradient(135deg, #f0fff4 0%, #e6fffa 100%);
+            border-color: #9ae6b4;
+            color: #1a202c;
+        }
+        .post-card.published h5 {
+            color: #1a202c;
+        }
+        .post-card.published p {
+            color: #4a5568;
+        }
+        .post-card.error {
+            background: linear-gradient(135deg, #fff5f5 0%, #fef5e7 100%);
+            border-color: #fed7d7;
+            color: #1a202c;
+        }
+        .post-card.error h5 {
+            color: #1a202c;
+        }
+        .post-card.error p {
+            color: #4a5568;
+        }
+        .post-card.publishing {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border-color: #fde68a;
+            color: #1a202c;
+        }
+        .post-card.publishing h5 {
+            color: #1a202c;
+        }
+        .post-card.publishing p {
+            color: #4a5568;
+        }
+        .status-badge {
+            font-size: 0.85rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        .status-not-published {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
+        }
+        .status-published {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status-publishing {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .publish-btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            border: none;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            transition: all 0.3s;
+        }
+        .publish-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+            color: white;
+        }
+        .publish-btn:disabled {
+            background: #6c757d;
+            transform: none;
+            box-shadow: none;
+        }
+        .retry-btn {
+            background: linear-gradient(135deg, #ff9500 0%, #ff8c00 100%);
+            border: none;
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        .view-btn {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            border: none;
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        
+        .btn-outline-info {
+            border: 1px solid #17a2b8;
+            color: #17a2b8;
+            background: transparent;
+            transition: all 0.3s;
+        }
+        
+        .btn-outline-info:hover {
+            background: #17a2b8;
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .action-buttons-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: flex-end;
+        }
+        
+        .action-buttons-container .btn {
+            min-width: 120px;
+        }
+        
+        .view-buttons-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: flex-end;
+            margin-top: 0.5rem;
+        }
+        
+        .view-buttons-group .btn {
+            min-width: 120px;
+        }
+        
+        .btn-outline-success {
+            border: 1px solid #28a745;
+            color: #28a745;
+            background: transparent;
+            transition: all 0.3s;
+        }
+        
+        .btn-outline-success:hover {
+            background: #28a745;
+            color: white;
+            transform: translateY(-1px);
+        }
+        .stats-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .stats-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .clan-logo {
+            height: 24px;
+            margin-right: 8px;
+        }
+        .publishing-log {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            max-height: 200px;
+            overflow-y: auto;
+            border-left: 4px solid #667eea;
+        }
+        .error-details {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .success-message {
+            background: #f0fff4;
+            border: 1px solid #9ae6b4;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-top: 0.5rem;
+            color: #22543d;
+        }
+        .update-button-container {
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Clan.com API Content Accordion Styles */
+        .clan-api-accordion {
+            margin-top: 1rem;
+        }
+        
+        .clan-api-accordion .accordion-button {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            border: 1px solid #4a5568;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .clan-api-accordion .accordion-button:not(.collapsed) {
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+            border-color: #667eea;
+            color: white;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .clan-api-accordion .accordion-button:focus {
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            border-color: #667eea;
+        }
+        
+        .clan-api-accordion .accordion-body {
+            background: #1a202c;
+            border: 1px solid #4a5568;
+        }
+        
+        .clan-content-display {
+            background: #2d3748;
+            border: 1px solid #4a5568;
+            border-radius: 6px;
+            padding: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+        
+        .clan-content-display::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .clan-content-display::-webkit-scrollbar-track {
+            background: #4a5568;
+            border-radius: 4px;
+        }
+        
+        .clan-content-display::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+        
+        .clan-content-display::-webkit-scrollbar-thumb:hover {
+            background: #5a67d8;
+        }
+    </style>
+</head>
+<body class="bg-dark">
+    <!-- Header -->
+    <header class="bg-dark shadow-lg border-bottom py-3">
+        <nav class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <!-- Logo and Title -->
+                    <a href="http://localhost:5000/" class="d-flex align-items-center text-white text-decoration-none me-4">
+                        <img src="http://localhost:5000/static/images/site/brand-logo.png" alt="BlogForge Logo" class="rounded-circle shadow me-2" style="background:#23273a; width: 40px; height: 40px;" />
+                        <span class="fw-bold text-white fs-3">BlogForge</span>
+                    </a>
+                </div>
+                <div class="d-flex align-items-center">
+                    <!-- Modules Dropdown -->
+                    <div class="dropdown me-3">
+                        <button class="btn btn-outline-light dropdown-toggle" type="button" id="modulesDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-cubes me-1"></i> Modules
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="modulesDropdown">
+                            <li><a class="dropdown-item" href="http://localhost:5000/db/"><i class="fas fa-database text-purple me-2"></i>Database</a></li>
+                            <li><a class="dropdown-item" href="http://localhost:5000/llm/"><i class="fas fa-brain text-pink me-2"></i>AI</a></li>
+                            <li><a class="dropdown-item" href="http://localhost:5000/llm/images"><i class="fas fa-image text-info me-2"></i>Images</a></li>
+                            <li><a class="dropdown-item" href="http://localhost:5000/servers/"><i class="fas fa-server text-success me-2"></i>Servers</a></li>
+                            <li><a class="dropdown-item" href="http://localhost:5001/"><i class="fas fa-rocket text-warning me-2"></i>Launchpad</a></li>
+                        </ul>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <a href="http://localhost:5000/posts" class="btn btn-link text-white text-decoration-none me-3">Posts</a>
+                        <a href="http://localhost:5000/workflow/" class="btn btn-link text-white text-decoration-none">Workflow</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-rocket me-2"></i>Blog Launchpad
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Dashboard</a>
+                <a class="nav-link" href="/cross-promotion">Cross Promotion</a>
+                <a class="nav-link active" href="/publishing">Publishing</a>
+                <a class="nav-link" href="/test-api">API Test</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Publishing Header -->
+    <div class="publishing-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-12">
+                    <h1 class="mb-2">
+                        <i class="fas fa-share-alt me-3"></i>Publishing Management
+                    </h1>
+                    <p class="mb-0 opacity-75">Manage and monitor blog post publishing to Clan.com</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container text-white">
+        <!-- Publishing Statistics -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number" id="total-posts">12</div>
+                    <div class="text-muted">Total Posts</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number text-success" id="published-posts">8</div>
+                    <div class="text-muted">Published</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number text-warning" id="pending-posts">3</div>
+                    <div class="text-muted">Not Published</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number text-danger" id="error-posts">1</div>
+                    <div class="text-muted">Errors</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Posts List -->
+        <div class="row">
+            <div class="col-12">
+                <h3 class="mb-3">
+                    <i class="fas fa-list me-2"></i>Posts
+                    <button class="btn btn-outline-primary btn-sm ms-3" onclick="refreshPosts()">
+                        <i class="fas fa-refresh me-1"></i>Refresh
+                    </button>
+                </h3>
+                <div class="alert alert-info mb-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>New Feature:</strong> Each post now has an accordion that shows the exact content sent to Clan.com. 
+                    This will help us integrate <strong>Open Graph (OG) tags</strong> for Facebook posting later.
+                </div>
+
+                <!-- Posts will be loaded dynamically here -->
+                <div id="posts-loading" class="text-center p-4">
+                    <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                    <p class="mt-2 text-muted">Loading posts from database...</p>
+                </div>
+                
+                <div id="posts-container" style="display: none;">
+                    <!-- Real posts will be rendered here by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-history me-2"></i>Recent Publishing Activity
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="publishing-log" style="max-height: 300px;">
+                            <div>[2025-01-20 15:45:21] <span class="text-primary">INFO</span> - Post #4 "Modern Celtic Fashion Trends" - Processing content...</div>
+                            <div>[2025-01-20 15:45:18] <span class="text-primary">INFO</span> - Post #4 "Modern Celtic Fashion Trends" - Uploading section images (2/3)...</div>
+                            <div>[2025-01-20 15:45:15] <span class="text-primary">INFO</span> - Post #4 "Modern Celtic Fashion Trends" - Uploading header image...</div>
+                            <div>[2025-01-20 15:45:12] <span class="text-primary">INFO</span> - Post #4 "Modern Celtic Fashion Trends" - Starting publish process...</div>
+                            <div>[2025-01-20 14:32:45] <span class="text-success">SUCCESS</span> - Post #2 "Clan Stewart's Highland Heritage" - Published successfully (Clan.com ID: 12847)</div>
+                            <div>[2025-01-20 14:32:42] <span class="text-primary">INFO</span> - Post #2 "Clan Stewart's Highland Heritage" - Calling Clan.com API...</div>
+                            <div>[2025-01-20 14:32:38] <span class="text-primary">INFO</span> - Post #2 "Clan Stewart's Highland Heritage" - All images uploaded successfully</div>
+                            <div>[2025-01-20 14:30:15] <span class="text-danger">ERROR</span> - Post #3 "Traditional Tartan Weaving Techniques" - Image upload failed: file not found</div>
+                            <div>[2025-01-20 14:30:10] <span class="text-primary">INFO</span> - Post #3 "Traditional Tartan Weaving Techniques" - Starting publish process...</div>
+                            <div>[2025-01-20 11:15:33] <span class="text-success">SUCCESS</span> - Post #1 "The Evolution of Scottish Kilts" - Published successfully (Clan.com ID: 12846)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Real data from database
+        let posts = [];
+        let publishingStats = {
+            total: 0,
+            published: 0,
+            pending: 0,
+            errors: 0
+        };
+
+        // Publishing functions
+        async function publishPost(postId) {
+            console.log('Publishing post:', postId);
+            showToast('Publishing post to Clan.com...', 'info');
+            updatePostStatus(postId, 'publishing');
+            
+            try {
+                const response = await fetch(`/api/publish/${postId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast(`Post published successfully! Clan.com ID: ${result.clan_post_id}`, 'success');
+                    updatePostStatus(postId, 'published');
+                    
+                    // Update the post in our local list
+                    const postIndex = posts.findIndex(p => p.id === postId);
+                    if (postIndex !== -1) {
+                        posts[postIndex].clan_post_id = result.clan_post_id;
+                        posts[postIndex].status = 'published';
+                        posts[postIndex].clan_uploaded_url = result.url;
+                        posts[postIndex].clan_error = null;
+                        updateStatistics();
+                        renderPosts();
+                    }
+                } else {
+                    throw new Error(result.error || 'Unknown error occurred');
+                }
+                
+            } catch (error) {
+                console.error('Publishing error:', error);
+                showToast(`Publishing failed: ${error.message}`, 'error');
+                updatePostStatus(postId, 'error');
+                
+                // Update the post in our local list
+                const postIndex = posts.findIndex(p => p.id === postId);
+                if (postIndex !== -1) {
+                    posts[postIndex].status = 'error';
+                    posts[postIndex].clan_error = error.message;
+                    updateStatistics();
+                    renderPosts();
+                }
+            }
+        }
+
+        function republishPost(postId) {
+            console.log('Republishing post:', postId);
+            showToast('Updating post on Clan.com...', 'info');
+            
+            // Use the same publish function - it will detect if it's an update
+            publishPost(postId);
+        }
+
+        function retryPublish(postId) {
+            console.log('Retrying publish for post:', postId);
+            showToast('Retrying publish to Clan.com...', 'info');
+            
+            // Use the real publish function instead of mock
+            publishPost(postId);
+        }
+
+        function previewPost(postId) {
+            console.log('Previewing post:', postId);
+            window.open(`/preview/${postId}`, '_blank');
+        }
+        
+        function viewClanPostHtml(postId) {
+            console.log('Viewing clan_post HTML for post:', postId);
+            window.open(`/clan-post-html/${postId}`, '_blank');
+        }
+
+        function updatePostStatus(postId, newStatus) {
+            // Update the status badge for the post
+            const postCard = document.querySelector(`[data-post-id="${postId}"]`);
+            if (postCard) {
+                const statusBadge = postCard.querySelector('.status-badge');
+                statusBadge.className = `status-badge status-${newStatus}`;
+                
+                if (newStatus === 'published') {
+                    statusBadge.innerHTML = '<i class="fas fa-check me-1"></i>Published';
+                } else if (newStatus === 'error') {
+                    statusBadge.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Error';
+                } else if (newStatus === 'publishing') {
+                    statusBadge.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Publishing...';
+                }
+            }
+        }
+
+        function refreshPosts() {
+            showToast('Refreshing posts...', 'info');
+            
+            // Show loading again
+            const loadingDiv = document.getElementById('posts-loading');
+            const container = document.getElementById('posts-container');
+            if (loadingDiv) loadingDiv.style.display = 'block';
+            if (container) container.style.display = 'none';
+            
+            // Reload posts
+            loadPosts();
+        }
+
+        // Toast notification system
+        function showToast(message, type = 'info') {
+            const toastContainer = getOrCreateToastContainer();
+            
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'primary'} border-0`;
+            toast.setAttribute('role', 'alert');
+            
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            // Remove toast element after it's hidden
+            toast.addEventListener('hidden.bs.toast', () => {
+                toast.remove();
+            });
+        }
+
+        function getOrCreateToastContainer() {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+                container.style.zIndex = '9999';
+                document.body.appendChild(container);
+            }
+            return container;
+        }
+
+        // Load real posts data
+        async function loadPosts() {
+            try {
+                showToast('Loading posts...', 'info');
+                const response = await fetch('/api/posts');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                posts = data.map(post => ({
+                    ...post,
+                    // Use unified status from database
+                    clan_last_attempt: post.clan_last_attempt ? new Date(post.clan_last_attempt) : null
+                }));
+                
+                updateStatistics();
+                renderPosts();
+                showToast('Posts loaded successfully', 'success');
+            } catch (error) {
+                console.error('Error loading posts:', error);
+                showToast('Error loading posts: ' + error.message, 'error');
+            }
+        }
+
+        function updateStatistics() {
+            publishingStats.total = posts.length;
+            publishingStats.published = posts.filter(p => p.status === 'published').length;
+            publishingStats.pending = posts.filter(p => p.status === 'draft' || p.status === 'in_process').length;
+            publishingStats.errors = posts.filter(p => p.status === 'error').length;
+            
+            document.getElementById('total-posts').textContent = publishingStats.total;
+            document.getElementById('published-posts').textContent = publishingStats.published;
+            document.getElementById('pending-posts').textContent = publishingStats.pending;
+            document.getElementById('error-posts').textContent = publishingStats.errors;
+        }
+
+        function renderPosts() {
+            const loadingDiv = document.getElementById('posts-loading');
+            const container = document.getElementById('posts-container');
+            
+            if (!container) return;
+            
+            // Hide loading, show container
+            if (loadingDiv) loadingDiv.style.display = 'none';
+            container.style.display = 'block';
+            
+            // Clear existing posts
+            container.innerHTML = '';
+            
+            // Render all posts or show empty state
+            if (posts.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center p-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No posts found</h4>
+                        <p class="text-muted">Create your first blog post to get started with publishing.</p>
+                        <a href="http://localhost:5000/blog/new" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Create New Post
+                        </a>
+                    </div>
+                `;
+            } else {
+                posts.forEach(post => {
+                    const postCard = createPostCard(post);
+                    container.appendChild(postCard);
+                });
+            }
+        }
+
+        function createPostCard(post) {
+            const div = document.createElement('div');
+                            div.className = `post-card ${post.status}`;
+            div.setAttribute('data-post-id', post.id);
+            
+            const statusInfo = getStatusInfo(post);
+            const formattedDate = new Date(post.created_at).toLocaleDateString('en-US', {
+                year: 'numeric', month: 'short', day: 'numeric'
+            });
+            const updatedDate = new Date(post.updated_at).toLocaleDateString('en-US', {
+                year: 'numeric', month: 'short', day: 'numeric'
+            });
+            
+            div.innerHTML = `
+                <div class="row align-items-center">
+                    <div class="col-md-5">
+                        <h5 class="mb-1">${post.title || post.provisional_title || post.idea_seed || 'Untitled Post'}</h5>
+                        <p class="text-muted mb-1">
+                            <small>
+                                <i class="fas fa-calendar me-1"></i>Created: ${formattedDate}
+                                <i class="fas fa-edit ms-3 me-1"></i>Updated: ${updatedDate}
+                            </small>
+                        </p>
+                        <div class="mb-2">
+                            ${post.status === 'published' ? '<span class="status-badge status-published"><i class="fas fa-check me-1"></i>Published</span>' : '<span class="badge bg-secondary me-1">' + (post.status || 'draft') + '</span>'}
+                            ${post.id ? '<span class="badge bg-secondary me-1">ID: ' + post.id + '</span>' : ''}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        ${post.status === 'published' ? 
+                            '<div class="update-button-container"><button class="btn publish-btn"><i class="fas fa-sync me-1"></i>Update</button></div>' : 
+                            '<span class="status-badge ' + statusInfo.class + '">' + statusInfo.icon + ' ' + statusInfo.text + '</span>'
+                        }
+                        ${statusInfo.message ? `<div class="${statusInfo.messageClass} mt-2">${statusInfo.message}</div>` : ''}
+                    </div>
+                    <div class="col-md-4 text-end">
+                        ${getActionButtons(post)}
+                    </div>
+                </div>
+                
+                <!-- Clan.com API Content Accordion -->
+                <div class="clan-api-accordion">
+                    <div class="accordion" id="clanApiAccordion${post.id}">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="clanApiHeader${post.id}">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#clanApiCollapse${post.id}" aria-expanded="false" aria-controls="clanApiCollapse${post.id}">
+                                    <i class="fas fa-code me-2"></i>View Clan.com API Content
+                                    <span class="text-info ms-2">(Raw HTML & API Data)</span>
+                                </button>
+                            </h2>
+                            <div id="clanApiCollapse${post.id}" class="accordion-collapse collapse" aria-labelledby="clanApiHeader${post.id}" data-bs-parent="#clanApiAccordion${post.id}">
+                                <div class="accordion-body text-white">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6 class="text-primary mb-2">
+                                                <i class="fas fa-html5 me-2"></i>HTML Content Sent to Clan.com
+                                            </h6>
+                                            <div class="mb-3">
+                                                <div class="btn-group" role="group">
+                                                    <button class="btn btn-outline-info btn-sm" onclick="loadClanPostHtml(${post.id}, 'local')">
+                                                        <i class="fas fa-download me-1"></i>Load Local HTML
+                                                    </button>
+                                                    <button class="btn btn-outline-success btn-sm" onclick="loadClanPostHtml(${post.id}, 'processed')">
+                                                        <i class="fas fa-cloud-upload-alt me-1"></i>Load Processed HTML
+                                                    </button>
+                                                </div>
+                                                <div class="mt-2">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-info-circle me-1"></i>
+                                                        <strong>Local:</strong> Raw HTML with local paths | 
+                                                        <strong>Processed:</strong> Final HTML sent to Clan.com
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div id="clanHtmlContent${post.id}" class="clan-content-display">
+                                                <div class="text-muted text-center py-3">
+                                                    <i class="fas fa-arrow-down fa-2x mb-2"></i>
+                                                    <p>Click "Load HTML Content" to see the exact HTML sent to Clan.com</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="text-success mb-2">
+                                                <i class="fas fa-database me-2"></i>API Request Data
+                                            </h6>
+                                            <div class="mb-3">
+                                                <button class="btn btn-outline-success btn-sm" onclick="loadClanApiData(${post.id})">
+                                                    <i class="fas fa-download me-1"></i>Load API Data
+                                                </button>
+                                            </div>
+                                            <div id="clanApiData${post.id}" class="clan-content-display">
+                                                <div class="text-muted text-center py-3">
+                                                    <p>Click "Load API Data" to see the JSON data sent to Clan.com</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add event listeners for buttons
+            const publishBtn = div.querySelector('.publish-btn, .retry-btn');
+            if (publishBtn && !publishBtn.disabled) {
+                publishBtn.addEventListener('click', () => {
+                                    if (post.status === 'error') {
+                    retryPublish(post.id);
+                } else if (post.status === 'published') {
+                    republishPost(post.id);
+                } else {
+                    publishPost(post.id);
+                }
+                });
+            }
+            
+            const previewBtn = div.querySelector('.view-btn');
+            if (previewBtn) {
+                previewBtn.addEventListener('click', () => previewPost(post.id));
+            }
+            
+            return div;
+        }
+
+        function getStatusInfo(post) {
+            switch (post.status) {
+                case 'published':
+                    return {
+                        class: 'status-published',
+                        icon: '<i class="fas fa-check me-1"></i>',
+                        text: 'Published',
+                        message: `<small><i class="fas fa-check-circle me-1"></i>Published successfully</small>`,
+                        messageClass: 'success-message'
+                    };
+                case 'error':
+                    return {
+                        class: 'status-error',
+                        icon: '<i class="fas fa-exclamation-triangle me-1"></i>',
+                        text: 'Error',
+                        message: `<small><strong>Error:</strong> ${post.clan_error || 'Unknown error'}</small>`,
+                        messageClass: 'error-details'
+                    };
+                case 'publishing':
+                    return {
+                        class: 'status-publishing',
+                        icon: '<i class="fas fa-spinner fa-spin me-1"></i>',
+                        text: 'Publishing...',
+                        message: `<div class="publishing-log mt-2" style="max-height: 150px;">
+                                    <div>Processing content...</div>
+                                    <div>Uploading images...</div>
+                                  </div>`,
+                        messageClass: ''
+                    };
+                default:
+                    return {
+                        class: 'status-not-published',
+                        icon: '<i class="fas fa-clock me-1"></i>',
+                        text: 'Not Published',
+                        message: null,
+                        messageClass: ''
+                    };
+            }
+        }
+
+        function getActionButtons(post) {
+            const viewLiveBtn = post.clan_post_id && post.clan_uploaded_url ? `
+                <a href="${post.clan_uploaded_url}" target="_blank" class="btn btn-outline-success btn-sm" title="View live post on Clan.com">
+                    <i class="fas fa-external-link-alt me-1"></i>View Live
+                </a>
+            ` : '';
+            
+            const clanPostHtmlBtn = `
+                <button class="btn btn-outline-info btn-sm" onclick="viewClanPostHtml(${post.id})" title="View HTML that will be uploaded to Clan.com">
+                    <i class="fas fa-code me-1"></i>Clan HTML
+                </button>
+            `;
+            
+            if (post.status === 'publishing') {
+                return `
+                    <div class="action-buttons-container">
+                        <button class="btn publish-btn" disabled>
+                            <i class="fas fa-spinner fa-spin me-1"></i>Publishing...
+                        </button>
+                        <div class="view-buttons-group">
+                            <button class="btn view-btn">
+                                <i class="fas fa-eye me-1"></i>Preview
+                            </button>
+                            ${clanPostHtmlBtn}
+                            ${viewLiveBtn}
+                        </div>
+                    </div>
+                `;
+            } else if (post.status === 'error') {
+                return `
+                    <div class="action-buttons-container">
+                        <button class="btn retry-btn">
+                            <i class="fas fa-redo me-1"></i>Retry
+                        </button>
+                        <div class="view-buttons-group">
+                            <button class="btn view-btn">
+                                <i class="fas fa-eye me-1"></i>Preview
+                            </button>
+                            ${clanPostHtmlBtn}
+                            ${viewLiveBtn}
+                        </div>
+                    </div>
+                `;
+            } else if (post.status === 'published') {
+                return `
+                    <div class="action-buttons-container">
+                        <div class="view-buttons-group">
+                            <button class="btn view-btn">
+                                <i class="fas fa-eye me-1"></i>Preview
+                            </button>
+                            ${clanPostHtmlBtn}
+                            ${viewLiveBtn}
+                        </div>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="action-buttons-container">
+                        <button class="btn publish-btn">
+                            <i class="fas fa-upload me-1"></i>Publish
+                        </button>
+                        <div class="view-buttons-group">
+                            <button class="btn view-btn">
+                                <i class="fas fa-eye me-1"></i>Preview
+                            </button>
+                            ${clanPostHtmlBtn}
+                            ${viewLiveBtn}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPosts();
+        });
+
+        // Load Clan.com HTML content for a specific post
+        async function loadClanPostHtml(postId, viewType = 'local') {
+            const contentDiv = document.getElementById(`clanHtmlContent${postId}`);
+            if (!contentDiv) {
+                console.error(`Content div not found for post ${postId}`);
+                return;
+            }
+            
+            try {
+                const loadingText = viewType === 'processed' ? 'Loading processed HTML (with CDN URLs)...' : 'Loading local HTML (with local paths)...';
+                contentDiv.innerHTML = `
+                    <div class="text-center py-2">
+                        <i class="fas fa-spinner fa-spin me-2"></i>${loadingText}
+                    </div>
+                `;
+                
+                const response = await fetch(`/clan-post-html/${postId}?view=${viewType}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const htmlContent = await response.text();
+                
+                if (!htmlContent || htmlContent.trim().length === 0) {
+                    throw new Error('No HTML content received');
+                }
+                
+                // Format the HTML content for display
+                const formattedContent = htmlContent
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/\n/g, '<br>')
+                    .replace(/\s{2,}/g, '&nbsp;&nbsp;');
+                
+                const viewLabel = viewType === 'processed' ? 'Processed HTML (CDN URLs)' : 'Local HTML (Local Paths)';
+                const iconClass = viewType === 'processed' ? 'fa-cloud-upload-alt' : 'fa-file-code';
+                
+                contentDiv.innerHTML = `
+                    <div class="text-success mb-2">
+                        <i class="fas fa-check me-2"></i>${viewLabel} Loaded Successfully
+                    </div>
+                    <div class="text-muted small mb-2">
+                        <i class="fas fa-info-circle me-1"></i>Content length: ${htmlContent.length} characters
+                    </div>
+                    <div class="border-top border-secondary pt-2">
+                        ${formattedContent}
+                    </div>
+                `;
+                
+                console.log(`${viewLabel} loaded for post ${postId}:`, htmlContent.length, 'characters');
+                
+            } catch (error) {
+                console.error('Error loading HTML content:', error);
+                contentDiv.innerHTML = `
+                    <div class="text-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Error loading HTML content
+                    </div>
+                    <div class="text-muted small mt-1">${error.message}</div>
+                    <div class="mt-2">
+                        <button class="btn btn-outline-warning btn-sm" onclick="loadClanPostHtml(${postId}, '${viewType}')">
+                            <i class="fas fa-redo me-1"></i>Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Load Clan.com API data for a specific post
+        async function loadClanApiData(postId) {
+            const contentDiv = document.getElementById(`clanApiData${postId}`);
+            if (!contentDiv) {
+                console.error(`API data div not found for post ${postId}`);
+                return;
+            }
+            
+            try {
+                contentDiv.innerHTML = `
+                    <div class="text-center py-2">
+                        <i class="fas fa-spinner fa-spin me-2"></i>Loading API data...
+                    </div>
+                `;
+                
+                // Fetch the actual API data from the backend
+                const response = await fetch(`/clan-api-data/${postId}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const apiData = await response.json();
+                
+                if (!apiData || Object.keys(apiData).length === 0) {
+                    throw new Error('No API data received');
+                }
+                
+                // Format the API data for display
+                const formattedData = JSON.stringify(apiData, null, 2)
+                    .replace(/\n/g, '<br>')
+                    .replace(/\s{2,}/g, '&nbsp;&nbsp;');
+                
+                contentDiv.innerHTML = `
+                    <div class="text-success mb-2">
+                        <i class="fas fa-check me-2"></i>API Data Loaded Successfully
+                    </div>
+                    <div class="text-muted small mb-2">
+                        <i class="fas fa-info-circle me-1"></i>Actual API request data sent to Clan.com
+                    </div>
+                    <div class="text-muted small mb-2">
+                        <i class="fas fa-code me-1"></i>This shows the exact JSON payload that was/will be sent to Clan.com
+                    </div>
+                    <div class="border-top border-secondary pt-2">
+                        <pre class="text-white">${formattedData}</pre>
+                    </div>
+                `;
+                
+                console.log(`API data loaded for post ${postId}:`, apiData);
+                
+            } catch (error) {
+                console.error('Error loading API data:', error);
+                contentDiv.innerHTML = `
+                    <div class="text-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Error loading API data
+                    </div>
+                    <div class="text-muted small mt-1">${error.message}</div>
+                    <div class="mt-2">
+                        <button class="btn btn-outline-warning btn-sm" onclick="loadClanApiData(${postId})">
+                            <i class="fas fa-redo me-1"></i>Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Helper function to generate URL key (similar to ClanPublisher)
+        function generateUrlKey(post) {
+            const title = post.title || post.provisional_title || post.idea_seed || 'Untitled Post';
+            const urlKey = title.toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .trim('-');
+            
+            const postId = post.id || 0;
+            const fixedTimestamp = 1755600000 + (postId * 1000);
+            
+            return urlKey ? `${urlKey}-${postId}-${fixedTimestamp}` : `post-${postId}-${fixedTimestamp}`;
+        }
+
+        // Helper function to generate meta tags (similar to ClanPublisher)
+        function generateMetaTags(post) {
+            const title = post.title || post.provisional_title || post.idea_seed || '';
+            const summary = post.summary || '';
+            
+            const words = [];
+            
+            // Extract meaningful words from title
+            if (title) {
+                const titleWords = title.toLowerCase().match(/\b[a-zA-Z]{3,}\b/g) || [];
+                words.push(...titleWords.slice(0, 3));
+            }
+            
+            // Extract meaningful words from summary
+            if (summary) {
+                const summaryWords = summary.toLowerCase().match(/\b[a-zA-Z]{3,}\b/g) || [];
+                words.push(...summaryWords.slice(0, 2));
+            }
+            
+            // Remove duplicates and join
+            const uniqueWords = [...new Set(words)];
+            return uniqueWords.join(',');
+        }
+    </script>
+</body>
+</html>

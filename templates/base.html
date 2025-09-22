@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BlogForge - Unified CMS{% endblock %}</title>
+    
+    <!-- Static Assets -->
+    {% from 'macros/static_assets.html' import css_assets, js_assets, image_url, favicon_assets, cdn_assets %}
+    
+    <!-- CDN Assets -->
+    {{ cdn_assets() }}
+    
+    <!-- CSS Assets -->
+    {% block css_assets %}
+        {{ css_assets(blueprint_name) }}
+    {% endblock %}
+    
+    <!-- Favicon -->
+    {{ favicon_assets() }}
+    
+    <!-- Additional Head Content -->
+    {% block head %}{% endblock %}
+    
+    <!-- Dark Theme Styles -->
+    <style>
+        body {
+            background-color: #0f1419;
+            color: #e0e0e0;
+        }
+        
+        .header-gradient {
+            background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
+        }
+        
+        .nav-dropdown {
+            background: #23273a;
+            border: 1px solid #31364a;
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+        }
+        
+        .nav-dropdown a {
+            color: #e0e0e0;
+        }
+        
+        .nav-dropdown a:hover {
+            background: #23273a;
+            color: #a5b4fc;
+        }
+        
+        .content-area {
+            min-height: 400px;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+            margin-top: 0;
+            box-shadow: none;
+        }
+        
+        .gradient-header {
+            background: linear-gradient(90deg, #23273a 0%, #181c2a 100%);
+            border: 1px solid #31364a;
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+        }
+        
+        .icon-circle {
+            background: #23273a;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 3rem;
+            height: 3rem;
+            box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25);
+        }
+        
+        .card-dark {
+            background: #181c2a;
+            border: 1px solid #31364a;
+            color: #e0e0e0;
+            box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25);
+        }
+        
+        .card-dark:hover {
+            background: #23273a;
+            border-color: #6366f1;
+        }
+        
+        .section-title {
+            color: #a5b4fc;
+            font-weight: 700;
+        }
+        
+        .input-dark {
+            background: #23273a;
+            color: #e0e0e0;
+            border: 1px solid #31364a;
+        }
+        
+        .input-dark:focus {
+            border-color: #6366f1;
+            outline: none;
+        }
+        
+        .text-dark-accent {
+            color: #9ca3af;
+        }
+        
+        .bg-dark-accent {
+            background-color: #6366f1;
+        }
+        
+        .border-dark-accent {
+            border-color: #6366f1;
+        }
+        
+        .hover\:bg-dark-bg:hover {
+            background-color: #181c2a;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    {% block navigation %}
+        {% include 'shared/header.html' %}
+    {% endblock %}
+    
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    {% block footer %}
+        {% include 'shared/footer.html' %}
+    {% endblock %}
+    
+    <!-- JavaScript Assets -->
+    {% block js_assets %}
+        {{ js_assets(blueprint_name) }}
+    {% endblock %}
+    
+    <!-- Additional Scripts -->
+    {% block scripts %}{% endblock %}
+</body>
+</html>

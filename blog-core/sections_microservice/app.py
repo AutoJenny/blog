@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 from db import get_db_conn
+from psycopg.rows import dict_row
 
 app = Flask(__name__)
 
@@ -12,7 +13,7 @@ def manage_sections(post_id):
     if request.method == 'GET':
         # Get all sections for a post
         with get_db_conn() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(row_factory=dict_row) as cur:
                 cur.execute("""
                     SELECT 
                         id, section_heading AS title, section_description AS description, section_order AS order_index,
@@ -27,7 +28,7 @@ def manage_sections(post_id):
     else:  # POST
         data = request.get_json()
         with get_db_conn() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(row_factory=dict_row) as cur:
                 cur.execute("""
                     INSERT INTO post_section (
                         post_id, section_heading, section_description, section_order
@@ -47,7 +48,7 @@ def manage_sections(post_id):
 def manage_section(post_id, section_id):
     if request.method == 'GET':
         with get_db_conn() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(row_factory=dict_row) as cur:
                 cur.execute("""
                     SELECT 
                         id, section_heading AS title, section_description AS description, section_order AS order_index,
@@ -63,7 +64,7 @@ def manage_section(post_id, section_id):
     elif request.method == 'PUT':
         data = request.get_json()
         with get_db_conn() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(row_factory=dict_row) as cur:
                 cur.execute("""
                     UPDATE post_section SET
                         section_heading = %s,
@@ -85,7 +86,7 @@ def manage_section(post_id, section_id):
         return jsonify(section)
     else:  # DELETE
         with get_db_conn() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(row_factory=dict_row) as cur:
                 cur.execute("DELETE FROM post_section WHERE id = %s AND post_id = %s RETURNING id", (section_id, post_id))
                 deleted = cur.fetchone()
                 conn.commit()

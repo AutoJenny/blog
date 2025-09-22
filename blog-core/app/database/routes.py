@@ -12,8 +12,8 @@ import subprocess
 import os
 import json
 from pathlib import Path
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import psycopg
+from psycopg.rows import dict_row
 from dotenv import load_dotenv, dotenv_values
 import logging
 import sys
@@ -31,7 +31,7 @@ def index():
     current_db_name = "unknown"
     try:
         with get_db_conn() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(row_factory=dict_row) as cur:
                 # Get current database name
                 cur.execute("SELECT current_database();")
                 result = cur.fetchone()
@@ -80,7 +80,7 @@ def stats():
     table_stats = []
     try:
         with get_db_conn() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(row_factory=dict_row) as cur:
                 cur.execute("""
                     SELECT 
                         schemaname, 
@@ -115,7 +115,7 @@ def migrations():
     migrations = []
     try:
         with get_db_conn() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(row_factory=dict_row) as cur:
                 cur.execute("""
                     SELECT 
                         version_num,
@@ -153,51 +153,63 @@ def replication():
 
 @bp.route("/tables")
 def list_tables():
-    """Database tables interface."""
-    logging.basicConfig(level=logging.DEBUG)
-    tables = []
-    groups = []
-    # Pagination for post table
-    post_page = int(request.args.get('post_page', 1))
-    post_page_size = 20
-    post_offset = (post_page - 1) * post_page_size
-    total_post_count = 0
+    """Simple database tables interface - fixed datetime serialization."""
+    from datetime import datetime, date, time
+    
+    def convert_datetime(obj):
+        if isinstance(obj, dict):
+            return {k: convert_datetime(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [convert_datetime(item) for item in obj]
+        elif isinstance(obj, (datetime, date, time)):
+            return obj.isoformat()
+        else:
+            return obj
+    
     try:
         with get_db_conn() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(row_factory=dict_row) as cur:
                 # Get table names
                 cur.execute("""
                     SELECT table_name FROM information_schema.tables
                     WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
+                    ORDER BY table_name
                 """)
-                table_names = [row['table_name'] for row in cur.fetchall()]
-                logging.debug(f"[DEBUG] table_names: {table_names}")
+                tables = cur.fetchall()
+                
+                # Get columns and sample data from each table
                 table_data = {}
-                for table in table_names:
-                    # Get columns
-                    cur.execute(f"""
-                        SELECT column_name, data_type
-                        FROM information_schema.columns
-                        WHERE table_name = %s
-                        ORDER BY ordinal_position
-                    """, (table,))
-                    columns = [{'name': r['column_name'], 'type': r['data_type']} for r in cur.fetchall()]
-                    if table == 'post':
-                        # Get total count for pagination
-                        cur.execute('SELECT COUNT(*) FROM post;')
-                        total_post_count = cur.fetchone()['count']
-                        # Get paginated, ordered rows
-                        cur.execute('SELECT * FROM post ORDER BY updated_at DESC NULLS LAST, id DESC LIMIT %s OFFSET %s;', (post_page_size, post_offset))
+                for table in tables:
+                    table_name = table['table_name']
+                    try:
+                        # Get columns
+                        cur.execute(f"""
+                            SELECT column_name, data_type
+                            FROM information_schema.columns
+                            WHERE table_name = %s
+                            ORDER BY ordinal_position
+                        """, (table_name,))
+                        columns = [{'name': r['column_name'], 'type': r['data_type']} for r in cur.fetchall()]
+                        
+                        # Get sample data
+                        cur.execute(f"SELECT * FROM {table_name} LIMIT 5")
                         rows = cur.fetchall()
-                        table_data[table] = {'name': table, 'columns': columns, 'rows': rows, 'total_count': total_post_count, 'page': post_page, 'page_size': post_page_size}
-                    else:
-                        cur.execute(f'SELECT * FROM {table} LIMIT 20;')
-                        rows = cur.fetchall()
-                        table_data[table] = {'name': table, 'columns': columns, 'rows': rows}
-                logging.debug(f"[DEBUG] table_data keys: {list(table_data.keys())}")
-                # Flat list for compatibility
-                tables = list(table_data.values())
+                        
+                        table_data[table_name] = {
+                            'name': table_name,
+                            'columns': columns,
+                            'rows': convert_datetime(rows)
+                        }
+                    except Exception as e:
+                        table_data[table_name] = {
+                            'name': table_name,
+                            'columns': [],
+                            'rows': [],
+                            'error': str(e)
+                        }
+                
                 # Grouping logic
+                groups = []
                 group_defs = [
                     ("Image Related", ["image", "image_format", "image_setting", "image_style", "image_prompt_example", "images", "image_processing_jobs", "image_processing_status", "image_processing_steps"]),
                     ("LLM Related", [
@@ -206,35 +218,33 @@ def list_tables():
                     ]),
                     ("Blog/Post Related", ["post", "post_section", "post_development", "category", "tag", "post_tags", "post_categories", "post_workflow_stage", "post_workflow_sub_stage", "post_images", "post_section_elements"]),
                     ("User/Workflow", ["user", "workflow", "workflow_stage_entity", "workflow_sub_stage_entity", "workflow_steps", "workflow_step_entity", "workflow_step_input", "workflow_step_prompt", "workflow_format_template", "workflow_post_format", "workflow_field_mapping", "workflow_field_mappings", "workflow_table_preferences", "substage_action_default"]),
-                    ("Social Media", ["social_media_platforms", "social_media_platform_specs", "social_media_content_processes", "social_media_process_configs", "social_media_process_executions"]),
+                    ("Social Media", ["platforms", "content_processes", "channel_types", "channel_requirements", "platform_capabilities", "platform_channel_support", "platform_credentials"]),
                     ("Credentials & Services", ["credentials", "credential_services", "credential_channels", "credential_usage_history"]),
                     ("Clan System", ["clan_cache_metadata", "clan_categories", "clan_products"]),
                 ]
-                logging.debug(f"[DEBUG] group_defs: {group_defs}")
-                logging.debug(f"[DEBUG] table_data keys: {list(table_data.keys())}")
+                
                 grouped_tables = set()
                 for group_name, table_list in group_defs:
                     group_tables = [table_data[t] for t in table_list if t in table_data]
                     if group_tables:
                         groups.append({"group": group_name, "tables": group_tables})
                         grouped_tables.update([t["name"] for t in group_tables])
+                
                 # Add any remaining tables to 'Other'
                 other_tables = [table_data[t] for t in table_data if t not in grouped_tables]
                 if other_tables:
                     groups.append({"group": "Other", "tables": other_tables})
+                
                 # Sort groups alphabetically by group name
                 groups.sort(key=lambda g: g["group"].lower())
+                
+                # Flat list for compatibility
+                tables_list = list(table_data.values())
+        
+        return jsonify({"tables": tables_list, "groups": groups, "total_tables": len(tables)})
+        
     except Exception as e:
-        logging.error(f"Exception in /db/tables: {e}")
-        flash(f"Error fetching tables: {str(e)}", "error")
-        tables = []
-        groups = []
-    # Always return both for compatibility
-    logging.debug(f"/db/tables response: tables={len(tables)}, groups={len(groups)}")
-    if groups:
-        return jsonify({"tables": tables, "groups": groups})
-    else:
-        return jsonify({"tables": tables})
+        return jsonify({"error": str(e), "tables": []})
 
 @bp.route("/search")
 def db_search():
@@ -246,7 +256,7 @@ def db_search():
     results = []
     try:
         with get_db_conn() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(row_factory=dict_row) as cur:
                 # Get all tables
                 cur.execute("""
                     SELECT table_name FROM information_schema.tables
@@ -308,7 +318,7 @@ def db_debug():
     debug_info = {}
     try:
         with get_db_conn() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(row_factory=dict_row) as cur:
                 cur.execute("""
                     SELECT table_name FROM information_schema.tables
                     WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
@@ -355,7 +365,7 @@ def update_cell():
         
         # Validate table name to prevent SQL injection
         with get_db_conn() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(row_factory=dict_row) as cur:
                 # Check if table exists
                 cur.execute("""
                     SELECT table_name FROM information_schema.tables

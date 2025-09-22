@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Post Info - Database Viewer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #1e40af 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        .header {
+            background: rgba(30, 58, 138, 0.9);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            margin-bottom: 2rem;
+            text-align: center;
+            border: 2px solid #60a5fa;
+        }
+        
+        .header h1 {
+            color: #fbbf24;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .header p {
+            color: #cbd5e1;
+            font-size: 1.1rem;
+        }
+        
+        .post-selector {
+            background: rgba(30, 58, 138, 0.9);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            margin-bottom: 2rem;
+            border: 2px solid #60a5fa;
+        }
+        
+        .post-selector label {
+            display: block;
+            color: #fbbf24;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .post-selector select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #60a5fa;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: rgba(15, 23, 42, 0.9);
+            color: #e2e8f0;
+            cursor: pointer;
+        }
+        
+        .post-selector select:focus {
+            outline: none;
+            border-color: #fbbf24;
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.3);
+        }
+        
+        .tabs {
+            background: rgba(30, 58, 138, 0.9);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            border: 2px solid #60a5fa;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            background: rgba(15, 23, 42, 0.9);
+            border-bottom: 2px solid #60a5fa;
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 1rem 2rem;
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button.active {
+            background: rgba(30, 58, 138, 0.9);
+            color: #fbbf24;
+            border-bottom: 3px solid #fbbf24;
+        }
+        
+        .tab-button:hover:not(.active) {
+            background: rgba(51, 65, 85, 0.9);
+            color: #cbd5e1;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 2rem;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .field-group {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #475569;
+        }
+        
+        .field-group h3 {
+            color: #fbbf24;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #60a5fa;
+            padding-bottom: 0.5rem;
+        }
+        
+        .field-item {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: rgba(30, 58, 138, 0.5);
+            border-radius: 6px;
+            border-left: 4px solid #60a5fa;
+        }
+        
+        .field-label {
+            color: #fbbf24;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+        
+        .field-value {
+            color: #e2e8f0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            word-wrap: break-word;
+            line-height: 1.4;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 0.5rem;
+            border-radius: 4px;
+            border: 1px solid #475569;
+        }
+        
+        .null-value {
+            color: #94a3b8;
+            font-style: italic;
+        }
+        
+        .error-message {
+            background: rgba(220, 38, 38, 0.2);
+            color: #fca5a5;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #f87171;
+            margin-bottom: 1rem;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #cbd5e1;
+        }
+        
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #fbbf24;
+        }
+        
+        /* Custom scrollbar */
+        .tab-content::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        .tab-content::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 6px;
+        }
+        
+        .tab-content::-webkit-scrollbar-thumb {
+            background: #60a5fa;
+            border-radius: 6px;
+        }
+        
+        .tab-content::-webkit-scrollbar-thumb:hover {
+            background: #fbbf24;
+        }
+        
+        /* Editable field styles */
+        .editable-field {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #60a5fa;
+            border-radius: 6px;
+            background: rgba(15, 23, 42, 0.9);
+            color: #e2e8f0;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .editable-field:focus {
+            outline: none;
+            border-color: #fbbf24;
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.3);
+            background: rgba(15, 23, 42, 1);
+        }
+        
+        .editable-field:hover {
+            border-color: #93c5fd;
+        }
+        
+        .editable-field:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
+        .json-field {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+        
+        .readonly-field {
+            color: #9ca3af;
+            font-style: italic;
+            padding: 8px 12px;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 6px;
+            border: 1px solid #374151;
+        }
+        
+        /* Saving state indicators */
+        .editable-field.saving {
+            background-color: #fef3c7 !important;
+            border-color: #f59e0b !important;
+        }
+        
+        .editable-field.saved {
+            background-color: #d1fae5 !important;
+            border-color: #10b981 !important;
+        }
+        
+        .editable-field.error {
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+        }
+        
+        /* Save status indicator */
+        .save-status {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .save-status.saving {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            border: 1px solid #f59e0b;
+        }
+        
+        .save-status.saved {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid #059669;
+        }
+        
+        .save-status.error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid #dc2626;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-database"></i> Blog Post Database Viewer</h1>
+            <p>View and manage post and post_development table contents</p>
+            <div id="save-status" class="save-status" style="display: none;">
+                <i class="fas fa-save"></i> <span id="save-message"></span>
+            </div>
+        </div>
+        
+        {% if error %}
+        <div class="error-message">
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+        
+        <div class="post-selector">
+            <label for="post-select">Select Post:</label>
+            <select id="post-select" onchange="loadPostData(this.value)">
+                {% for post in posts %}
+                <option value="{{ post.id }}" {% if post.id == selected_post_id %}selected{% endif %}>
+                    ID {{ post.id }}: {{ post.title or 'Untitled' }} ({{ post.status }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="showTab('post')">
+                    <i class="fas fa-file-alt"></i> Post Table
+                </button>
+                <button class="tab-button" onclick="showTab('post_development')">
+                    <i class="fas fa-code-branch"></i> Post Development Table
+                </button>
+            </div>
+            
+            <div id="post-tab" class="tab-content active">
+                <div class="loading" id="post-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading post data...</p>
+                </div>
+                <div id="post-content" style="display: none;"></div>
+            </div>
+            
+            <div id="post_development-tab" class="tab-content">
+                <div class="loading" id="post_development-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading post development data...</p>
+                </div>
+                <div id="post_development-content" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            // Load data for the selected tab
+            loadTabData(tabName);
+        }
+        
+        function loadPostData(postId) {
+            // Load data for both tabs
+            loadTabData('post', postId);
+            loadTabData('post_development', postId);
+        }
+        
+        function loadTabData(tabName, postId = null) {
+            if (!postId) {
+                postId = document.getElementById('post-select').value;
+            }
+            
+            const loadingEl = document.getElementById(tabName + '-loading');
+            const contentEl = document.getElementById(tabName + '-content');
+            
+            loadingEl.style.display = 'block';
+            contentEl.style.display = 'none';
+            
+            fetch(`/api/${tabName}/${postId}`)
+                .then(response => response.json())
+                .then(data => {
+                    loadingEl.style.display = 'none';
+                    contentEl.style.display = 'block';
+                    contentEl.innerHTML = createGroupedHTML(data, tabName);
+                })
+                .catch(error => {
+                    loadingEl.style.display = 'none';
+                    contentEl.style.display = 'block';
+                    contentEl.innerHTML = `<div class="error-message">Error loading ${tabName} data: ${error.message}</div>`;
+                });
+        }
+        
+        function createGroupedHTML(data, tableName) {
+            if (!data || Object.keys(data).length === 0) {
+                return `<div class="error-message">No data found for ${tableName}</div>`;
+            }
+            
+            const groups = groupFields(data, tableName);
+            let html = '';
+            
+            Object.keys(groups).forEach(groupName => {
+                html += `<div class="field-group">
+                    <h3><i class="fas ${getGroupIcon(groupName)}"></i> ${groupName}</h3>`;
+                
+                groups[groupName].forEach(field => {
+                    const value = data[field];
+                    html += `<div class="field-item">
+                        <div class="field-label">${field}</div>
+                        <div class="field-value ${value === null || value === undefined ? 'null-value' : ''}">`;
+                    
+                    if (value === null || value === undefined) {
+                        html += `<input type="text" class="editable-field" data-field="${field}" data-table="${tableName}" value="" placeholder="NULL" onchange="saveField('${field}', this.value, '${tableName}')">`;
+                    } else if (typeof value === 'object') {
+                        html += `<textarea class="editable-field json-field" data-field="${field}" data-table="${tableName}" onchange="saveField('${field}', this.value, '${tableName}')" rows="4">${JSON.stringify(value, null, 2)}</textarea>`;
+                    } else if (field === 'created_at' || field === 'updated_at' || field.includes('_at')) {
+                        // Read-only for timestamp fields
+                        html += `<span class="readonly-field">${String(value)}</span>`;
+                    } else if (field === 'id' || field === 'post_id') {
+                        // Read-only for ID fields
+                        html += `<span class="readonly-field">${String(value)}</span>`;
+                    } else if (typeof value === 'string' && value.length > 100) {
+                        // Textarea for long text fields
+                        html += `<textarea class="editable-field" data-field="${field}" data-table="${tableName}" onchange="saveField('${field}', this.value, '${tableName}')" rows="3">${String(value)}</textarea>`;
+                    } else {
+                        // Regular input for short text fields
+                        html += `<input type="text" class="editable-field" data-field="${field}" data-table="${tableName}" value="${String(value)}" onchange="saveField('${field}', this.value, '${tableName}')">`;
+                    }
+                    
+                    html += `</div></div>`;
+                });
+                
+                html += '</div>';
+            });
+            
+            return html;
+        }
+        
+        function groupFields(data, tableName) {
+            const groups = {
+                'Basic Information': [],
+                'Content & Metadata': [],
+                'Timestamps': [],
+                'Status & Configuration': [],
+                'Development Data': []
+            };
+            
+            const fieldMappings = {
+                'post': {
+                    'Basic Information': ['id', 'title', 'subtitle', 'slug'],
+                    'Content & Metadata': ['summary', 'title_choices'],
+                    'Timestamps': ['created_at', 'updated_at'],
+                    'Status & Configuration': ['status', 'substage_id', 'header_image_id']
+                },
+                'post_development': {
+                    'Basic Information': ['post_id', 'main_title', 'subtitle'],
+                    'Content & Metadata': ['intro_blurb', 'basic_idea', 'expanded_idea', 'basic_metadata'],
+                    'Development Data': ['allocated_facts', 'categories', 'tags', 'seo_optimization']
+                }
+            };
+            
+            const mappings = fieldMappings[tableName] || {};
+            
+            Object.keys(data).forEach(field => {
+                let assigned = false;
+                Object.keys(mappings).forEach(groupName => {
+                    if (mappings[groupName].includes(field)) {
+                        groups[groupName].push(field);
+                        assigned = true;
+                    }
+                });
+                
+                if (!assigned) {
+                    // Default grouping
+                    if (field.includes('_at') || field.includes('date') || field.includes('time')) {
+                        groups['Timestamps'].push(field);
+                    } else if (field.includes('status') || field.includes('id') || field.includes('config')) {
+                        groups['Status & Configuration'].push(field);
+                    } else if (field.includes('content') || field.includes('text') || field.includes('data')) {
+                        groups['Content & Metadata'].push(field);
+                    } else {
+                        groups['Basic Information'].push(field);
+                    }
+                }
+            });
+            
+            // Remove empty groups
+            Object.keys(groups).forEach(groupName => {
+                if (groups[groupName].length === 0) {
+                    delete groups[groupName];
+                }
+            });
+            
+            return groups;
+        }
+        
+        function getGroupIcon(groupName) {
+            const icons = {
+                'Basic Information': 'fa-info-circle',
+                'Content & Metadata': 'fa-file-text',
+                'Timestamps': 'fa-clock',
+                'Status & Configuration': 'fa-cog',
+                'Development Data': 'fa-code-branch'
+            };
+            return icons[groupName] || 'fa-tag';
+        }
+        
+        function saveField(field, value, tableName) {
+            const postId = document.getElementById('post-select').value;
+            
+            // Show saving indicator
+            const fieldElement = event.target;
+            const originalValue = fieldElement.value;
+            const saveStatus = document.getElementById('save-status');
+            const saveMessage = document.getElementById('save-message');
+            
+            // Show field saving indicator
+            fieldElement.style.backgroundColor = '#fef3c7';
+            fieldElement.disabled = true;
+            
+            // Show header saving indicator
+            saveStatus.style.display = 'flex';
+            saveStatus.className = 'save-status saving';
+            saveMessage.textContent = `Saving ${field}...`;
+            
+            // Validate JSON for JSON fields
+            if (fieldElement.classList.contains('json-field')) {
+                try {
+                    JSON.parse(value);
+                } catch (e) {
+                    // Show error indicators
+                    fieldElement.style.backgroundColor = '#fee2e2';
+                    fieldElement.value = originalValue;
+                    fieldElement.disabled = false;
+                    saveStatus.className = 'save-status error';
+                    saveMessage.textContent = `Invalid JSON in ${field}`;
+                    setTimeout(() => {
+                        fieldElement.style.backgroundColor = '';
+                        saveStatus.style.display = 'none';
+                    }, 3000);
+                    console.error('Invalid JSON:', e);
+                    return;
+                }
+            }
+            
+            // Prepare the data to send
+            const updateData = {};
+            updateData[field] = value;
+            
+            fetch(`/api/${tableName}/${postId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updateData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success indicators
+                    fieldElement.style.backgroundColor = '#d1fae5';
+                    saveStatus.className = 'save-status saved';
+                    saveMessage.textContent = `${field} saved successfully!`;
+                    
+                    setTimeout(() => {
+                        fieldElement.style.backgroundColor = '';
+                        fieldElement.disabled = false;
+                        saveStatus.style.display = 'none';
+                    }, 2000);
+                } else {
+                    throw new Error(data.error || 'Unknown error');
+                }
+            })
+            .catch(error => {
+                // Show error indicators
+                fieldElement.style.backgroundColor = '#fee2e2';
+                fieldElement.value = originalValue;
+                fieldElement.disabled = false;
+                saveStatus.className = 'save-status error';
+                saveMessage.textContent = `Error saving ${field}: ${error.message}`;
+                
+                setTimeout(() => {
+                    fieldElement.style.backgroundColor = '';
+                    saveStatus.style.display = 'none';
+                }, 3000);
+                console.error('Error saving field:', error);
+            });
+        }
+        
+        // Load initial data
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTabData('post');
+            loadTabData('post_development');
+        });
+    </script>
+</body>
+</html> 

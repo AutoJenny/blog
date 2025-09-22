@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Generation - BlogForge</title>
+    <link href="/static/css/dist/main.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        .header-gradient {
+            background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
+        }
+        .nav-dropdown {
+            background: #23273a;
+            border: 1px solid #31364a;
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+        }
+        .nav-dropdown a {
+            color: #e0e0e0;
+        }
+        .nav-dropdown a:hover {
+            background: #23273a;
+            color: #a5b4fc;
+        }
+        .workflow-content-container {
+            min-height: 400px;
+        }
+        
+        /* Iframe styling for blog-images service */
+        #workflow-images {
+            background-color: #450a0a;
+            border-radius: 8px;
+            border: 1px solid #7f1d1d;
+            overflow: visible;
+        }
+        
+        #images-iframe {
+            width: 100%;
+            height: 800px;
+            border: none;
+            border-radius: 8px;
+            background: #450a0a;
+        }
+        
+        /* Iframe styling for sections panel */
+        #workflow-sections {
+            background-color: #013828;
+            border-radius: 8px;
+            border: 1px solid #065f46;
+            overflow: visible;
+        }
+        
+        #sections-iframe {
+            width: 100%;
+            height: 4000px;
+            border: none;
+            border-radius: 8px;
+            background: #013828;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-dark-bg text-dark-text flex flex-col">
+    {% include 'shared/header.html' %}
+
+    <!-- Workflow Navigation -->
+    <div id="workflow-nav">
+        {% include 'nav/nav.html' %}
+    </div>
+
+    <!-- Step Navigation -->
+    <div class="bg-dark-bg border-b border-dark-border py-4">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex items-center justify-center gap-4">
+                <span class="text-sm text-gray-400 font-medium">Steps:</span>
+                {% if stages and current_stage in stages and current_substage in stages[current_stage] %}
+                    {% for step in stages[current_stage][current_substage] %}
+                        {% set step_url = step|lower|replace(' ', '_') %}
+                        {% set is_active = current_step == step_url %}
+                        <a href="/workflow/posts/{{ current_post_id }}/{{ current_stage }}/{{ current_substage }}/{{ step_url }}"
+                           class="px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 {% if is_active %}bg-indigo-600 text-white{% else %}bg-dark-hover text-dark-text hover:bg-indigo-600 hover:text-white{% endif %}">
+                            {{ step }}
+                        </a>
+                    {% endfor %}
+                {% else %}
+                    <span class="text-sm text-gray-500">No steps available</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Area -->
+    <main class="flex-grow">
+        <div class="max-w-6xl mx-auto py-10 px-4">
+            <div class="workflow-content-container">
+                
+                {% if current_step == 'section_illustrations' %}
+                    <!-- Section Illustrations: Three Column Layout -->
+                    <div class="flex gap-6">
+                        
+                        <!-- Left: Maroon Image Generation Panel -->
+                        <div id="workflow-images" style="flex: 1;">
+                            <iframe 
+                                id="images-iframe"
+                                src="http://localhost:5005/upload?post_id={{ current_post_id }}"
+                                title="Image Generation Panel"
+                            ></iframe>
+                        </div>
+                        
+                        <!-- Right: Two Stacked Panels -->
+                        <div style="flex: 1; display: flex; flex-direction: column; gap: 4;">
+                            <!-- Top: Dark Blue Headers Panel -->
+                            <div id="workflow-headers" style="background-color: #1e3a8a; min-height: 200px; border-radius: 8px; padding: 0; border: 1px solid #3b82f6; overflow: visible;">
+                                <iframe 
+                                    id="headers-iframe"
+                                    src="http://localhost:5004/titles-editor?post_id={{ current_post_id }}"
+                                    style="width: 100%; height: 200px; border: none; border-radius: 8px; background: #1e3a8a;"
+                                    title="Headers Panel"
+                                ></iframe>
+                            </div>
+                            
+                            <!-- Bottom: Green Sections Panel -->
+                            <div id="workflow-sections" style="background-color: #013828; flex: 1; min-height: 4000px; border-radius: 8px; padding: 0; border: 1px solid #065f46; overflow: visible;">
+                                <iframe 
+                                    id="sections-iframe"
+                                    src="http://localhost:5003/sections?stage={{ current_stage }}&substage={{ current_substage }}&step={{ current_step }}&post_id={{ current_post_id }}"
+                                    title="Sections Panel"
+                                ></iframe>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <!-- Other Image Steps: Two Column Layout -->
+                    <div class="flex gap-6">
+                        
+                        <!-- Left: Maroon Image Generation Panel -->
+                        <div id="workflow-images" style="flex: 1;">
+                            <iframe 
+                                id="images-iframe"
+                                src="http://localhost:5005/?post_id={{ current_post_id }}"
+                                title="Image Generation Panel"
+                            ></iframe>
+                        </div>
+                        
+                        <!-- Right: Green Sections Panel -->
+                        <div id="workflow-sections" style="flex: 1; min-height: 4000px;">
+                            <iframe 
+                                id="sections-iframe"
+                                src="http://localhost:5003/sections?stage={{ current_stage }}&substage={{ current_substage }}&step={{ current_step }}&post_id={{ current_post_id }}"
+                                title="Sections Panel"
+                            ></iframe>
+                        </div>
+                    </div>
+                {% endif %}
+                
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-indigo-950 border-t border-dark-border py-6 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-dark-text">
+                &copy; 2025 BlogForge. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Handle iframe resize messages from both services
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'resize') {
+                if (event.data.source === 'blog-images') {
+                    const iframe = document.getElementById('images-iframe');
+                    if (iframe) {
+                        iframe.style.height = event.data.height + 'px';
+                    }
+                } else if (event.data.source === 'blog-sections') {
+                    const iframe = document.getElementById('sections-iframe');
+                    if (iframe) {
+                        iframe.style.height = event.data.height + 'px';
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

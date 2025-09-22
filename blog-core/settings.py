@@ -2,8 +2,8 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for,
 import os
 import json
 from db import get_db_conn
-import psycopg2.extras
-from psycopg2.extras import RealDictCursor
+import psycopg.rows
+from psycopg.rows import dict_row
 
 bp = Blueprint('settings', __name__, url_prefix='/settings')
 
@@ -16,7 +16,7 @@ def index():
 def workflow_prompts():
     """View and edit workflow prompts."""
     with get_db_conn() as conn:
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
             if request.method == 'POST':
                 # Handle step assignment update FIRST
                 if 'update_step' in request.form:
@@ -257,7 +257,7 @@ def workflow_field_mapping():
     """View and edit workflow field mappings from step configurations."""
     with get_db_conn() as conn:
         # Use DictCursor to get results as dictionaries
-        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         
         # Get stages ordered by stage_order
         cur.execute("""
@@ -348,7 +348,7 @@ def update_field_mapping():
         return jsonify({'error': 'Missing required fields'}), 400
     
     with get_db_conn() as conn:
-        cur = conn.cursor()
+        cur = conn.cursor(row_factory=dict_row)
         cur.execute("""
             UPDATE workflow_field_mapping
             SET order_index = %s
@@ -367,7 +367,7 @@ def update_field_mapping():
 def format_templates():
     """Format templates management page"""
     with get_db_conn() as conn:
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
             cur.execute("""
                 SELECT id, name, description, fields, llm_instructions, created_at, updated_at 
                 FROM workflow_format_template 
@@ -435,7 +435,7 @@ def format_templates():
 def workflow_step_formats():
     """Workflow step format configuration page"""
     with get_db_conn() as conn:
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
             # Get stages ordered by stage_order
             cur.execute("""
                 SELECT id, name, description 
@@ -504,7 +504,7 @@ def save_step_order():
     
     try:
         with get_db_conn() as conn:
-            cur = conn.cursor()
+            cur = conn.cursor(row_factory=dict_row)
             
             # Update step order for each step
             for step_data in steps:
@@ -532,7 +532,7 @@ def save_step():
         data = request.get_json()
         
         with get_db_conn() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 # Parse config JSON if provided
                 config = {}
                 if data.get('config'):
@@ -567,7 +567,7 @@ def create_step():
             return jsonify({'success': False, 'message': 'Missing required fields: name and substage_id'})
         
         with get_db_conn() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 # Parse config JSON if provided
                 config = {}
                 if data.get('config'):
@@ -643,7 +643,7 @@ def delete_step(step_id):
     """Delete a workflow step."""
     try:
         with get_db_conn() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 # First, check if the step exists and get its details
                 cur.execute("""
                     SELECT id, name, sub_stage_id 
@@ -725,7 +725,7 @@ def force_delete_step(step_id):
     """Force delete a workflow step by removing all dependencies first."""
     try:
         with get_db_conn() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 # First, check if the step exists and get its details
                 cur.execute("""
                     SELECT id, name, sub_stage_id 
@@ -818,7 +818,7 @@ def get_substages():
     
     try:
         with get_db_conn() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
             cur.execute("""
                 SELECT id, name, description
@@ -842,7 +842,7 @@ def update_stage_llm_tables(stage_id):
     if not isinstance(tables, list):
         return jsonify({'success': False, 'message': 'Invalid tables list'}), 400
     with get_db_conn() as conn:
-        cur = conn.cursor()
+        cur = conn.cursor(row_factory=dict_row)
         cur.execute("SELECT config FROM workflow_stage_entity WHERE id = %s", (stage_id,))
         row = cur.fetchone()
         config = row[0] if row and row[0] else {}
@@ -861,7 +861,7 @@ def update_substage_llm_tables(substage_id):
     if not isinstance(tables, list):
         return jsonify({'success': False, 'message': 'Invalid tables list'}), 400
     with get_db_conn() as conn:
-        cur = conn.cursor()
+        cur = conn.cursor(row_factory=dict_row)
         cur.execute("SELECT config FROM workflow_sub_stage_entity WHERE id = %s", (substage_id,))
         row = cur.fetchone()
         config = row[0] if row and row[0] else {}
@@ -880,7 +880,7 @@ def update_step_llm_tables(step_id):
     if not isinstance(tables, list):
         return jsonify({'success': False, 'message': 'Invalid tables list'}), 400
     with get_db_conn() as conn:
-        cur = conn.cursor()
+        cur = conn.cursor(row_factory=dict_row)
         cur.execute("SELECT config FROM workflow_step_entity WHERE id = %s", (step_id,))
         row = cur.fetchone()
         config = row[0] if row and row[0] else {}
@@ -895,7 +895,7 @@ def update_step_llm_tables(step_id):
 @bp.route('/api/stage/<int:stage_id>/llm_tables', methods=['GET'])
 def get_stage_llm_tables(stage_id):
     with get_db_conn() as conn:
-        cur = conn.cursor()
+        cur = conn.cursor(row_factory=dict_row)
         cur.execute("SELECT config FROM workflow_stage_entity WHERE id = %s", (stage_id,))
         row = cur.fetchone()
         config = row[0] if row and row[0] else {}
@@ -908,7 +908,7 @@ def get_stage_llm_tables(stage_id):
 @bp.route('/api/substage/<int:substage_id>/llm_tables', methods=['GET'])
 def get_substage_llm_tables(substage_id):
     with get_db_conn() as conn:
-        cur = conn.cursor()
+        cur = conn.cursor(row_factory=dict_row)
         cur.execute("SELECT config FROM workflow_sub_stage_entity WHERE id = %s", (substage_id,))
         row = cur.fetchone()
         config = row[0] if row and row[0] else {}
@@ -921,7 +921,7 @@ def get_substage_llm_tables(substage_id):
 @bp.route('/api/step/<int:step_id>/llm_tables', methods=['GET'])
 def get_step_llm_tables(step_id):
     with get_db_conn() as conn:
-        cur = conn.cursor()
+        cur = conn.cursor(row_factory=dict_row)
         cur.execute("SELECT config FROM workflow_step_entity WHERE id = %s", (step_id,))
         row = cur.fetchone()
         config = row[0] if row and row[0] else {}
@@ -934,7 +934,7 @@ def get_step_llm_tables(step_id):
 @bp.route('/api/step/<int:step_id>/llm-settings', methods=['GET'])
 def get_step_llm_settings(step_id):
     with get_db_conn() as conn:
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         cur.execute("SELECT config FROM workflow_step_entity WHERE id = %s", (step_id,))
         row = cur.fetchone()
         config = row['config'] if row and row['config'] else {}
@@ -967,7 +967,7 @@ def update_step_llm_settings(step_id):
         llm_settings = data.get('llm_settings', {})
         
         with get_db_conn() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             cur.execute("SELECT config FROM workflow_step_entity WHERE id = %s", (step_id,))
             row = cur.fetchone()
             config = row['config'] if row and row['config'] else {}
@@ -986,7 +986,7 @@ def update_step_llm_settings(step_id):
 @bp.route('/api/llm/providers', methods=['GET'])
 def get_llm_providers():
     with get_db_conn() as conn:
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         cur.execute("SELECT id, name, description, api_url FROM llm_provider ORDER BY name")
         providers = cur.fetchall()
     return jsonify({'providers': providers})
@@ -995,7 +995,7 @@ def get_llm_providers():
 @bp.route('/api/llm/models', methods=['GET'])
 def get_llm_models():
     with get_db_conn() as conn:
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         cur.execute("""
             SELECT m.id, m.name, m.description, p.name as provider_name, p.id as provider_id
             FROM llm_model m

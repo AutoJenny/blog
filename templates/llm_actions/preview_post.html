@@ -1,0 +1,574 @@
+{% extends 'preview_base.html' %}
+{% block title %}{{ post.title }} | Preview{% endblock %}
+
+{% block styles %}
+<style>
+    /* Professional CLAN-style blog design */
+    :root {
+        --primary-color: #070f25;
+        --secondary-color: #6c757d;
+        --accent-color: #0066cc;
+        --background-light: #f8f9fa;
+        --border-color: #e9ecef;
+        --text-primary: #1a1a1a;
+        --text-secondary: #666;
+        --success-color: #28a745;
+        --warning-color: #ffc107;
+        --danger-color: #dc3545;
+        --info-color: #17a2b8;
+    }
+
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        line-height: 1.6;
+        color: var(--text-primary);
+        margin: 0;
+        padding: 0;
+        background-color: #fff;
+    }
+
+    /* Meta toggle styling */
+    .meta-toggle-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 8px;
+    }
+
+    .meta-toggle-btn {
+        background: var(--accent-color);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: background-color 0.2s;
+    }
+
+    .meta-toggle-btn:hover {
+        background: #0056b3;
+    }
+
+    .meta-toggle-btn.active {
+        background: var(--success-color);
+    }
+
+    /* Hide meta content by default */
+    .meta-content {
+        display: none;
+    }
+
+    .meta-content.show {
+        display: block;
+    }
+
+    /* Professional blog layout */
+    .blog-outer-container {
+        background-color: #fff;
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+
+    .blog-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+        background-color: #f8f6f2;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .blog-post__header {
+        text-align: center;
+        margin: 3rem 0 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .blog-post__header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0 0 1rem;
+        line-height: 1.2;
+        font-family: Georgia, serif;
+    }
+
+    .blog-post__subtitle {
+        font-size: 1.25rem;
+        color: var(--text-secondary);
+        margin: 0 0 1.5rem;
+        font-weight: 400;
+        font-family: Georgia, serif;
+    }
+
+    .post-meta {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+    }
+
+    .post-meta span {
+        margin: 0 0.5rem;
+    }
+
+    .post-meta__separator {
+        color: var(--border-color);
+    }
+
+    .blog-post__summary {
+        font-size: 1.1rem;
+        color: var(--text-primary);
+        margin: 2rem 0;
+        padding: 1.5rem;
+        background: var(--background-light);
+        border-left: 4px solid var(--accent-color);
+        border-radius: 0 8px 8px 0;
+        line-height: 1.7;
+    }
+
+    /* Header image */
+    .header-image {
+        margin: 2rem 0;
+        text-align: center;
+    }
+
+    .header-image img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-image-caption {
+        margin-top: 0.5rem;
+        font-style: italic;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    /* Blog sections - matching clan.com exactly */
+    .blog-section {
+        margin: 3rem 0;
+        padding: 0;
+    }
+
+    .blog-section h2 {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0 0 1.5rem;
+        line-height: 1.3;
+        font-family: Georgia, serif;
+    }
+
+    .section-text {
+        font-size: 1.1rem;
+        color: var(--text-primary);
+        line-height: 1.7;
+        margin-bottom: 2rem;
+    }
+
+    .section-text p {
+        margin-bottom: 1rem;
+    }
+
+    .section-text strong {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .section-text em {
+        font-style: italic;
+        color: var(--text-secondary);
+    }
+
+    /* Section images */
+    .section-image {
+        margin: 2rem 0;
+        text-align: center;
+    }
+
+    .section-image img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-image-caption {
+        margin-top: 0.75rem;
+        font-style: italic;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    /* Content priority indicators (meta only) */
+    .content-priority {
+        margin: 1rem 0;
+        padding: 1rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        border-left: 4px solid;
+    }
+
+    .content-polished {
+        background-color: #d4edda;
+        border-left-color: var(--success-color);
+    }
+
+    .content-draft {
+        background-color: #f8d7da;
+        border-left-color: var(--danger-color);
+    }
+
+    .content-placeholder {
+        background-color: var(--background-light);
+        border-left-color: var(--secondary-color);
+    }
+
+    /* Placeholder styling (meta only) */
+    .placeholder-content {
+        padding: 1.5rem;
+        border: 2px dashed var(--border-color);
+        border-radius: 6px;
+        background: repeating-linear-gradient(45deg,
+                var(--background-light),
+                var(--background-light) 10px,
+                #e9ecef 10px,
+                #e9ecef 20px);
+        margin: 1rem 0;
+        text-align: center;
+        color: var(--text-secondary);
+    }
+
+    .placeholder-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stage-badge {
+        background-color: var(--secondary-color);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .field-indicator {
+        background-color: #e9ecef;
+        color: var(--text-primary);
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 0.875rem;
+    }
+
+    /* Section metadata (meta only) */
+    .section-meta {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: var(--background-light);
+        border-radius: 6px;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        border: 1px solid var(--border-color);
+    }
+
+    .section-meta span {
+        margin-right: 1rem;
+        display: inline-block;
+    }
+
+    .section-meta .section-order {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .section-meta .missing-stages {
+        color: var(--danger-color);
+    }
+
+    /* Image metadata (meta only) */
+    .image-meta {
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        background: var(--background-light);
+        border-radius: 4px;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        border: 1px solid var(--border-color);
+    }
+
+    .image-meta strong {
+        color: var(--text-primary);
+    }
+
+    /* Conclusion */
+    .blog-conclusion {
+        margin: 3rem 0;
+        padding: 2rem;
+        background: var(--background-light);
+        border-radius: 8px;
+        border-left: 4px solid var(--accent-color);
+    }
+
+    .blog-conclusion h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0 0 1rem;
+    }
+
+    .blog-conclusion p {
+        font-size: 1.1rem;
+        line-height: 1.7;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+    }
+
+    /* Tags */
+    .blog-tags {
+        margin: 3rem 0;
+        padding-top: 2rem;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .blog-tags ul {
+        list-style: none;
+        padding: 0;
+        margin: 0.5rem 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .blog-tags li {
+        padding: 0.25rem 0.75rem;
+        background-color: var(--background-light);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+    }
+
+    /* Content separator */
+    .content-separator {
+        height: 3px;
+        background: linear-gradient(90deg, #dc3545 0%, #dc3545 50%, #ff6b6b 50%, #ff6b6b 100%);
+        margin: 3rem 0;
+        border-radius: 2px;
+        box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .blog-container {
+            padding: 0 15px;
+        }
+
+        .blog-title {
+            font-size: 2rem;
+        }
+
+        .blog-subtitle {
+            font-size: 1.1rem;
+        }
+
+        .section-heading {
+            font-size: 1.5rem;
+        }
+
+        .meta-toggle-container {
+            top: 10px;
+            right: 10px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Meta toggle button -->
+<div class="meta-toggle-container">
+    <button class="meta-toggle-btn" onclick="toggleMeta()">Show Meta</button>
+</div>
+
+<div class="blog-outer-container">
+    <div class="blog-container">
+        <!-- Blog Header -->
+        <header class="blog-post__header">
+            <h1>{{ post.title }}</h1>
+            {% if post.subtitle %}
+            <p class="blog-post__subtitle">{{ post.subtitle }}</p>
+            {% endif %}
+            <div class="post-meta">
+                <span class="post-meta__date">Published on {{ post.created_at.strftime('%B %d, %Y') if post.created_at
+                    else 'Unknown date' }}</span>
+                <span class="post-meta__separator"> | </span>
+                <span class="post-meta__author">By {{ post.author or 'Unknown Author' }}</span>
+                {% if post.status %}
+                <span class="post-meta__separator"> | </span>
+                <span>{{ post.status.value }}</span>
+                {% endif %}
+            </div>
+            {% if post.summary %}
+            <div class="blog-post__summary">
+                {{ post.summary | safe }}
+            </div>
+            {% endif %}
+        </header>
+
+        <!-- Header Image -->
+        {% if post.header_image %}
+        <div class="header-image">
+            <img src="{{ post.header_image.path }}" alt="{{ post.header_image.alt_text or 'Header image' }}"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <div class="image-error"
+                style="display: none; padding: 1rem; background: var(--background-light); border: 1px dashed var(--border-color); border-radius: 6px; text-align: center; color: var(--text-secondary);">
+                <small><strong>Image not found:</strong> {{ post.header_image.path }}</small>
+            </div>
+            {% if post.header_image.caption %}
+            <div class="header-image-caption">{{ post.header_image.caption }}</div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Content Separator -->
+        <div class="content-separator"></div>
+
+        <!-- Blog Sections -->
+        <div class="blog-sections">
+            {% if sections %}
+            {% for section in sections %}
+            <section class="blog-section" id="section-{{ loop.index }}">
+                <h2>{{ section.section_heading }}</h2>
+
+                <!-- Main content -->
+                <div class="section-text">
+                    {% if is_placeholder(section) %}
+                    <div class="placeholder-content meta-content">
+                        <div class="placeholder-header">
+                            <span class="stage-badge">{{ get_missing_stage(section) }}</span>
+                            <span class="field-indicator">content</span>
+                        </div>
+                        <div class="placeholder-body">
+                            <p>Content for this section will be generated during the <strong>{{
+                                    get_missing_stage(section)
+                                    }}</strong> stage.</p>
+                            <p>Field: <code>content</code></p>
+                        </div>
+                    </div>
+                    {% else %}
+                    {{ get_best_content(section) | safe }}
+                    {% endif %}
+                </div>
+
+                <!-- Content priority indicator (meta only) -->
+                <div class="content-priority {{ get_content_class(section) }} meta-content">
+                    <strong>Content from:</strong> {{ section.content_priority.stage }} stage ({{
+                    section.content_priority.quality }} quality)
+                    {% if section.missing_stages %}
+                    <br><strong>Missing:</strong> {{ section.missing_stages | join(', ') }}
+                    {% endif %}
+                </div>
+
+                <!-- Section image -->
+                {% if section.image %}
+                <div class="section-image">
+                    <img src="{{ section.image.path }}" alt="{{ section.image.alt_text or 'Section image' }}"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="image-error"
+                        style="display: none; padding: 1rem; background: var(--background-light); border: 1px dashed var(--border-color); border-radius: 6px; text-align: center; color: var(--text-secondary);">
+                        <small><strong>Image not found:</strong> {{ section.image.path }}</small>
+                    </div>
+                    {% if section.image_captions %}
+                    <div class="section-image-caption">{{ section.image_captions }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Image metadata (meta only) -->
+                <div class="image-meta meta-content">
+                    {% if section.image_prompts %}
+                    <div><strong>Prompt:</strong> {{ section.image_prompts }}</div>
+                    {% endif %}
+                    {% if section.image_meta_descriptions %}
+                    <div><strong>Notes:</strong> {{ section.image_meta_descriptions }}</div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Section metadata (meta only) -->
+                <div class="section-meta meta-content">
+                    <span class="section-order">Section {{ section.section_order }}</span>
+                    {% if section.status %}
+                    <span class="section-status">{{ section.status }}</span>
+                    {% endif %}
+                    {% if section.missing_stages %}
+                    <span class="missing-stages">Missing: {{ section.missing_stages | join(', ') }}</span>
+                    {% endif %}
+                </div>
+            </section>
+            {% endfor %}
+            {% else %}
+            <p>No sections found for this post.</p>
+            {% endif %}
+        </div>
+
+        <!-- Conclusion Section -->
+        {% if post.conclusion %}
+        <section class="blog-section blog-section--conclusion" id="section-conclusion">
+            <h2>Conclusion: The Enduring Power of the Quaich</h2>
+            <div class="section-text">
+                {{ post.conclusion | safe }}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Tags -->
+        <footer class="post-footer">
+            <div class="post-tags">
+                <strong>Tags:</strong>
+                <ul>
+                    <li>tradition</li>
+                    <li>scotland</li>
+                    <li>products</li>
+                    <li>pewter</li>
+                    <li>weddings</li>
+                    <li>celtic</li>
+                    <li>quaich</li>
+                </ul>
+            </div>
+        </footer>
+    </div>
+</div>
+
+<script>
+    function toggleMeta() {
+        const btn = document.querySelector('.meta-toggle-btn');
+        const metaElements = document.querySelectorAll('.meta-content');
+        const isVisible = metaElements[0].classList.contains('show');
+
+        if (isVisible) {
+            metaElements.forEach(el => el.classList.remove('show'));
+            btn.textContent = 'Show Meta';
+            btn.classList.remove('active');
+        } else {
+            metaElements.forEach(el => el.classList.add('show'));
+            btn.textContent = 'Hide Meta';
+            btn.classList.add('active');
+        }
+    }
+</script>
+{% endblock %}

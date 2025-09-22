@@ -6,7 +6,7 @@ Simple script that logs when the Run LLM button is clicked.
 
 import logging
 import os
-import psycopg2
+import psycopg
 import requests
 from datetime import datetime
 from typing import Dict, Any
@@ -187,7 +187,7 @@ def execute_llm_action(step_config: Dict[str, Any], post_id: int, context: Dict[
     # Fetch and log full prompt content from database
     try:
         # Database connection
-        conn = psycopg2.connect(
+        conn = psycopg.connect(
             dbname="blog",
             user="postgres",
             password="postgres",
@@ -248,7 +248,7 @@ def execute_llm_action(step_config: Dict[str, Any], post_id: int, context: Dict[
     
     # Fetch LLM configuration from database
     try:
-        conn = psycopg2.connect(
+        conn = psycopg.connect(
             dbname="blog",
             user="postgres",
             password="postgres",
@@ -365,7 +365,7 @@ def execute_llm_action(step_config: Dict[str, Any], post_id: int, context: Dict[
             logger.info(f"Calling LLM for section {section_id}...")
             
             # Get LLM configuration
-            conn = psycopg2.connect(
+            conn = psycopg.connect(
                 dbname="blog",
                 user="postgres",
                 password="postgres",

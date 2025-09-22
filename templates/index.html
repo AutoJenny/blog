@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}BlogForge - Unified CMS{% endblock %}
+
+{% block head %}
+    <!-- Additional styles specific to homepage can go here -->
+{% endblock %}
+
+{% block content %}
+
+    <!-- Main Content -->
+    <div class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="content-area">
+            <div class="max-w-7xl mx-auto">
+                <!-- Workflow (now at the top) -->
+                <section class="mb-12">
+                    <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-sitemap"></i> Workflow
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Planning -->
+                        <div class="card-dark rounded-xl p-6">
+                            <div class="flex flex-col items-center gap-2 mb-4">
+                                <span class="icon-circle"><i class="fa-solid fa-lightbulb text-yellow-400 text-xl"></i></span>
+                                <span class="text-lg font-semibold text-white">Planning</span>
+                                <p class="text-dark-accent text-sm text-center">Outline your post structure and key points</p>
+                            </div>
+                            <div class="flex flex-col gap-2 mt-4">
+                                <a href="/workflow/posts/{{ first_post_id }}/planning/idea"
+                                    class="text-dark-accent hover:text-white text-sm text-center transition">Idea</a>
+                                <a href="/workflow/posts/{{ first_post_id }}/planning/research"
+                                    class="text-dark-accent hover:text-white text-sm text-center transition">Research</a>
+                                <a href="/workflow/posts/{{ first_post_id }}/planning/structure"
+                                    class="text-dark-accent hover:text-white text-sm text-center transition">Structure</a>
+                            </div>
+                        </div>
+                        <!-- Authoring -->
+                        <div class="card-dark rounded-xl p-6">
+                            <div class="flex flex-col items-center gap-2 mb-4">
+                                <span class="icon-circle"><i class="fa-solid fa-pen-nib text-green-400 text-xl"></i></span>
+                                <span class="text-lg font-semibold text-white">Authoring</span>
+                                <p class="text-dark-accent text-sm text-center">Write and enhance your content with AI</p>
+                            </div>
+                            <div class="flex flex-col gap-2 mt-4">
+                                <a href="/workflow/posts/{{ first_post_id }}/writing/content"
+                                    class="text-dark-accent hover:text-white text-sm text-center transition">Sections</a>
+                                <a href="/workflow/posts/{{ first_post_id }}/writing/post_info"
+                                    class="text-dark-accent hover:text-white text-sm text-center transition">Post Info</a>
+                                <a href="/workflow/posts/{{ first_post_id }}/writing/images"
+                                    class="text-dark-accent hover:text-white text-sm text-center transition">Images</a>
+                            </div>
+                        </div>
+                        <!-- Publishing -->
+                        <div class="card-dark rounded-xl p-6">
+                            <div class="flex flex-col items-center gap-2 mb-4">
+                                <span class="icon-circle"><i class="fa-solid fa-paper-plane text-blue-400 text-xl"></i></span>
+                                <span class="text-lg font-semibold text-white">Publishing</span>
+                                <p class="text-dark-accent text-sm text-center">Prepare and publish your post</p>
+                            </div>
+                            <div class="flex flex-col gap-2 mt-4">
+                                <a href="/workflow/posts/{{ first_post_id }}/publishing/preflight"
+                                    class="text-dark-accent hover:text-white text-sm text-center transition">Preflight</a>
+                                <a href="/workflow/posts/{{ first_post_id }}/publishing/launch"
+                                    class="text-dark-accent hover:text-white text-sm text-center transition">Launch</a>
+                                <a href="/workflow/posts/{{ first_post_id }}/publishing/syndication"
+                                    class="text-dark-accent hover:text-white text-sm text-center transition">Syndication</a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- Technical Modules -->
+                <section class="mb-12">
+                    <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-cubes"></i> Technical
+                        Modules</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <a href="/db/" class="block group">
+                            <div
+                                class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                                <span class="icon-circle"><i class="fa-solid fa-database text-purple-400 text-xl"></i></span>
+                                <span class="text-lg font-semibold text-white">Database</span>
+                                <p class="text-dark-accent text-sm text-center">Manage schemas, data, and migrations</p>
+                            </div>
+                        </a>
+                        <a href="/llm/" class="block group">
+                            <div
+                                class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                                <span class="icon-circle"><i class="fa-solid fa-brain text-pink-400 text-xl"></i></span>
+                                <span class="text-lg font-semibold text-white">AI</span>
+                                <p class="text-dark-accent text-sm text-center">Configure models, prompts, and assistance</p>
+                            </div>
+                        </a>
+                        <a href="/llm/images/" class="block group">
+                            <div
+                                class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                                <span class="icon-circle"><i class="fa-solid fa-image text-dark-accent text-xl"></i></span>
+                                <span class="text-lg font-semibold text-white">Images</span>
+                                <p class="text-dark-accent text-sm text-center">Generate and manage blog images</p>
+                            </div>
+                        </a>
+                    </div>
+                </section>
+                <!-- Documentation -->
+                <section class="mb-12">
+                    <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-book"></i>
+                        Documentation</h2>
+                    <div class="card-dark rounded-xl p-8 flex flex-col md:flex-row items-center justify-between">
+                        <div class="flex items-center gap-3 mb-4 md:mb-0">
+                            <span class="icon-circle"><i class="fa-solid fa-book-open text-dark-accent text-xl"></i></span>
+                            <span class="text-lg font-semibold text-white">Project Documentation</span>
+                        </div>
+                        <a href="/docs/"
+                            class="bg-dark-accent hover:bg-dark-bg text-white font-semibold px-5 py-2 rounded-lg border border-dark-accent transition">View
+                            Docs</a>
+                    </div>
+                </section>
+                <!-- Recent Posts -->
+                <section>
+                    <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-clock"></i> Recent
+                        Posts</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="text-dark-accent text-center text-lg col-span-3">No posts yet</div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        async function loadPosts() {
+            try {
+                const response = await fetch('/posts');
+                if (response.ok) {
+                    const content = await response.text();
+                    document.querySelector('.content-area').innerHTML = content;
+                } else {
+                    alert('Posts service unavailable');
+                }
+            } catch (error) {
+                alert('Error loading posts: ' + error.message);
+            }
+        }
+
+        async function loadDocs() {
+            try {
+                const response = await fetch('/docs/');
+                if (response.ok) {
+                    const content = await response.text();
+                    document.querySelector('.content-area').innerHTML = content;
+                } else {
+                    alert('Docs service unavailable');
+                }
+            } catch (error) {
+                alert('Error loading docs: ' + error.message);
+            }
+        }
+    </script>
+{% endblock %}

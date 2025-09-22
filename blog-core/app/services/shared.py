@@ -4,11 +4,12 @@ This is the ONE place that should handle core data access patterns used by multi
 """
 
 from db import get_db_conn
+from psycopg.rows import dict_row
 
 def get_all_posts_from_db():
     """Get all non-deleted posts from the database."""
     with get_db_conn() as conn:
-        with conn.cursor() as cur:
+        with conn.cursor(row_factory=dict_row) as cur:
             cur.execute("""
                 SELECT id, title 
                 FROM post 
@@ -21,7 +22,7 @@ def get_workflow_stages_from_db():
     """Get all workflow stages and their substages from the database."""
     try:
         with get_db_conn() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(row_factory=dict_row) as cur:
                 # Query workflow steps using the normalized schema with a single JOIN
                 cur.execute("""
                     SELECT 
@@ -74,7 +75,7 @@ def get_workflow_stages_fallback():
 def get_post_and_idea_seed(post_id):
     """Get a post and its idea seed."""
     with get_db_conn() as conn:
-        with conn.cursor() as cur:
+        with conn.cursor(row_factory=dict_row) as cur:
             cur.execute("""
                 SELECT p.*, pd.idea_seed
                 FROM post p
@@ -89,7 +90,7 @@ def get_post_and_idea_seed(post_id):
 def get_all_posts():
     """Get all posts."""
     with get_db_conn() as conn:
-        with conn.cursor() as cur:
+        with conn.cursor(row_factory=dict_row) as cur:
             cur.execute("""
                 SELECT p.*, pd.idea_seed
                 FROM post p
@@ -103,7 +104,7 @@ def get_workflow_field_mappings(stage_name=None, substage_name=None, step_name=N
     """Get field mappings for the current workflow stage/substage/step."""
     try:
         with get_db_conn() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(row_factory=dict_row) as cur:
                 # Build the query based on provided parameters
                 query = """
                     SELECT 

@@ -1,0 +1,618 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Workflow Prompts{% endblock %}
+
+{% block styles %}
+<style>
+    /* Force dark backgrounds on form fields only */
+    textarea[name="prompt_text"] {
+        background-color: #0a0c12 !important;
+        color: #ffffff !important;
+    }
+
+    .prompt-field {
+        background-color: #0a0c12 !important;
+    }
+
+    /* Fix white background on name input fields */
+    input[name="name"] {
+        background-color: #0a0c12 !important;
+        color: #ffffff !important;
+        border: 1px solid #374151 !important;
+    }
+
+    /* Fix any other input fields that might have white backgrounds */
+    input[type="text"], input[type="text"]:focus {
+        background-color: #0a0c12 !important;
+        color: #ffffff !important;
+        border: 1px solid #374151 !important;
+    }
+
+    /* Force dark backgrounds on accordion headers */
+    .bg-\[#23273a\] {
+        background-color: #23273a !important;
+    }
+
+    /* Ensure accordion header text is white */
+    .bg-\[#23273a\] h3,
+    .bg-\[#23273a\] h5 {
+        color: #ffffff !important;
+        background-color: transparent !important;
+    }
+
+    /* Force dark background on accordion header divs */
+    .bg-\[#23273a\] > div:first-child {
+        background-color: #23273a !important;
+    }
+
+    /* Ensure hover states maintain dark background */
+    .hover\:bg-\[#2a2f45\]:hover {
+        background-color: #2a2f45 !important;
+    }
+
+    /* Additional specificity for accordion headers */
+    div[onclick*="togglePrompt"] {
+        background-color: #23273a !important;
+    }
+
+    div[onclick*="togglePrompt"]:hover {
+        background-color: #2a2f45 !important;
+    }
+
+    /* Ensure all text in accordion headers is white */
+    div[onclick*="togglePrompt"] h3,
+    div[onclick*="togglePrompt"] h5 {
+        color: #ffffff !important;
+        background-color: transparent !important;
+    }
+
+    /* Force dark background on cursor-pointer divs (accordion headers) */
+    .cursor-pointer {
+        background-color: #23273a !important;
+    }
+
+    .cursor-pointer:hover {
+        background-color: #2a2f45 !important;
+    }
+
+    /* Fix dropdown styling */
+    select {
+        background-color: #0a0c12 !important;
+        color: #ffffff !important;
+        border: 1px solid #374151 !important;
+    }
+
+    select option {
+        background-color: #0a0c12 !important;
+        color: #ffffff !important;
+    }
+
+    select optgroup {
+        background-color: #1a1d2d !important;
+        color: #e5e7eb !important;
+        font-weight: bold;
+    }
+
+    select optgroup option {
+        background-color: #0a0c12 !important;
+        color: #ffffff !important;
+        padding-left: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto mt-8 bg-[#1a1d2d] border border-dark-border rounded-xl shadow-lg p-8">
+    <h1 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+        <i class="fa-solid fa-gear text-indigo-400"></i> Settings: Workflow Prompts
+    </h1>
+    <p class="text-dark-text mb-4">
+        View and edit workflow prompt templates. Changes are saved directly to the database.
+    </p>
+    
+    <!-- Database Indicator -->
+    <div class="bg-[#2a2f45] border border-dark-border rounded-lg p-3 mb-6">
+        <div class="flex items-center gap-2 text-sm">
+            <i class="fa-solid fa-database text-yellow-400"></i>
+            <span class="text-yellow-200 font-medium">Database:</span>
+            <span class="text-white">blog_test</span>
+            <span class="text-gray-400">|</span>
+            <span class="text-yellow-200 font-medium">Table:</span>
+            <span class="text-white">llm_prompt</span>
+        </div>
+    </div>
+
+    <!-- System Prompts Section -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-semibold text-white flex items-center gap-2">
+                <i class="fa-solid fa-cog text-blue-400"></i>
+                System Prompts
+            </h3>
+            <button onclick="createPrompt('system')"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i>
+                New System Prompt
+            </button>
+        </div>
+        <div class="space-y-4">
+            {% for prompt in system_prompts %}
+            <div class="bg-[#23273a] rounded-lg border border-dark-border">
+                <div class="flex items-center justify-between p-4 cursor-pointer hover:bg-[#2a2f45]"
+                    onclick="togglePrompt('{{ prompt.id }}')">
+                    <h5 class="text-lg font-semibold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-cog text-blue-400"></i>
+                        {{ prompt.name }}
+                    </h5>
+                    <div class="flex items-center gap-2">
+                        <button onclick="event.stopPropagation(); deletePrompt('{{ prompt.id }}')"
+                            class="text-red-400 hover:text-red-300 transition">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                        <i class="fa-solid fa-chevron-down text-blue-400" id="prompt-icon-{{ prompt.id }}"></i>
+                    </div>
+                </div>
+                <div id="prompt-content-{{ prompt.id }}" class="hidden p-4 border-t border-dark-border bg-[#1e2235]">
+                    <form method="POST" class="space-y-4 prompt-editor" onsubmit="return submitForm(event, this)">
+                        <input type="hidden" name="prompt_id" value="{{ prompt.id }}">
+
+                        <div class="space-y-2">
+                            <label class="block text-blue-200 font-medium">Name</label>
+                            <input type="text" name="name" value="{{ prompt.name }}"
+                                class="w-full bg-[#0a0c12] !bg-[#0a0c12] text-white border border-dark-border rounded-lg p-3 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                                style="background-color: #0a0c12 !important;">
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-blue-200 font-medium">System Prompt</label>
+                            <textarea name="system_prompt" rows="1"
+                                oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"
+                                class="prompt-field w-full min-h-[8rem] bg-[#0a0c12] text-white border border-dark-border rounded-lg p-3 focus:ring-2 focus:ring-blue-400 focus:outline-none resize-none overflow-hidden"
+                                style="background-color: #0a0c12 !important;">{{ prompt.system_prompt }}</textarea>
+                        </div>
+
+                        <div class="flex justify-end">
+                            <button type="submit"
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2">
+                                <i class="fa-solid fa-save"></i>
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Task Prompts Section -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-semibold text-white flex items-center gap-2">
+                <i class="fa-solid fa-tasks text-indigo-400"></i>
+                Task Prompts
+            </h3>
+            <button onclick="showNewTaskPromptModal()"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg transition flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i>
+                New Task Prompt
+            </button>
+        </div>
+
+    <!-- Organized Task Prompts by Stage/Substage/Step -->
+    {% for stage_id, stage_data in tasks_by_stage.items() %}
+    <div class="mb-8">
+        <h3 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-layer-group text-indigo-400"></i>
+            {{ stage_data.name|title }} Stage
+        </h3>
+
+        {% for substage_id, substage_data in stage_data.substages.items() %}
+        <div class="mb-6 ml-4">
+            <h4 class="text-lg font-medium text-indigo-200 mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-folder text-indigo-400"></i>
+                {{ substage_data.name|title }}
+            </h4>
+
+            {% for step_id, step_data in substage_data.steps.items() %}
+            <div class="mb-4 ml-4">
+                <h5 class="text-md font-medium text-indigo-300 mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-file-alt text-indigo-400"></i>
+                    {{ step_data.name }}
+                </h5>
+                <div class="space-y-4">
+                    {% for prompt in step_data.prompts %}
+                    <div class="bg-[#23273a] rounded-lg border border-dark-border">
+                        <div class="flex items-center justify-between p-4 cursor-pointer hover:bg-[#2a2f45]"
+                            onclick="togglePrompt('{{ prompt.id }}')">
+                            <h5 class="text-lg font-semibold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-file-code text-indigo-400"></i>
+                                {{ prompt.name }}
+                                <span class="text-sm text-gray-400">({{ prompt.step_name }})</span>
+                            </h5>
+                            <div class="flex items-center gap-2">
+                                <select onchange="updatePromptStep('{{ prompt.id }}', this.value); event.stopPropagation();" 
+                                    class="bg-[#0a0c12] text-white border border-dark-border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+                                    <option value="unassigned">Unassign</option>
+                                    {% for stage in stages %}
+                                    <optgroup label="{{ stage.name|title }} Stage">
+                                        {% for substage in substages %}
+                                            {% if substage.stage_id == stage.id %}
+                                            <optgroup label="  {{ substage.name|title }}">
+                                                {% for step in steps %}
+                                                    {% if step.sub_stage_id == substage.id %}
+                                                    <option value="{{ step.id }}" {% if step.id == prompt.step_id %}selected{% endif %} style="padding-left: 20px;">{{ step.name }}</option>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </optgroup>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </optgroup>
+                                    {% endfor %}
+                                </select>
+                                <button onclick="event.stopPropagation(); deletePrompt('{{ prompt.id }}')"
+                                    class="text-red-400 hover:text-red-300 transition">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                                <i class="fa-solid fa-chevron-down text-indigo-400"
+                                    id="prompt-icon-{{ prompt.id }}"></i>
+                            </div>
+                        </div>
+                        <div id="prompt-content-{{ prompt.id }}"
+                            class="hidden p-4 border-t border-dark-border bg-[#1e2235]">
+                            <form method="POST" class="space-y-4 prompt-editor"
+                                onsubmit="return submitForm(event, this)">
+                                <input type="hidden" name="prompt_id" value="{{ prompt.id }}">
+
+                                <div class="space-y-2">
+                                    <label class="block text-indigo-200 font-medium">Name</label>
+                                    <input type="text" name="name" value="{{ prompt.name }}"
+                                        class="w-full bg-[#0a0c12] text-white border border-dark-border rounded-lg p-3 focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+                                </div>
+
+                                <div class="space-y-2">
+                                    <label class="block text-indigo-200 font-medium">Prompt Text</label>
+                                    <textarea name="prompt_text" rows="1"
+                                        oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"
+                                        class="prompt-field w-full min-h-[8rem] bg-[#0a0c12] text-white border border-dark-border rounded-lg p-3 focus:ring-2 focus:ring-indigo-400 focus:outline-none resize-none overflow-hidden"
+                                        style="background-color: #0a0c12 !important;">{{ prompt.prompt_text }}</textarea>
+                                </div>
+
+                                <div class="flex justify-end">
+                                    <button type="submit"
+                                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2">
+                                        <i class="fa-solid fa-save"></i>
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Unassigned Prompts Section -->
+    {% if unassigned_prompts %}
+    <div class="mb-8">
+        <h3 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-question-circle text-yellow-400"></i>
+            Unassigned Prompts
+        </h3>
+        <div class="space-y-4">
+            {% for prompt in unassigned_prompts %}
+            <div class="bg-[#23273a] rounded-lg border border-dark-border">
+                <div class="flex items-center justify-between p-4 cursor-pointer hover:bg-[#2a2f45]"
+                    onclick="togglePrompt('{{ prompt.id }}')">
+                    <h5 class="text-lg font-semibold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-file-code text-indigo-400"></i>
+                        {{ prompt.name }}
+                        <span class="text-sm text-yellow-400">(Unassigned)</span>
+                    </h5>
+                    <div class="flex items-center gap-2">
+                        <select onchange="updatePromptStep('{{ prompt.id }}', this.value); event.stopPropagation();" 
+                            class="bg-[#0a0c12] text-white border border-dark-border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+                            <option value="unassigned">Assign to Step...</option>
+                            {% for stage in stages %}
+                            <optgroup label="{{ stage.name|title }} Stage">
+                                {% for substage in substages %}
+                                    {% if substage.stage_id == stage.id %}
+                                    <optgroup label="  {{ substage.name|title }}">
+                                        {% for step in steps %}
+                                            {% if step.sub_stage_id == substage.id %}
+                                            <option value="{{ step.id }}" style="padding-left: 20px;">{{ step.name }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </optgroup>
+                                    {% endif %}
+                                {% endfor %}
+                            </optgroup>
+                            {% endfor %}
+                        </select>
+                        <button onclick="event.stopPropagation(); deletePrompt('{{ prompt.id }}')"
+                            class="text-red-400 hover:text-red-300 transition">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                        <i class="fa-solid fa-chevron-down text-indigo-400"
+                            id="prompt-icon-{{ prompt.id }}"></i>
+                    </div>
+                </div>
+                <div id="prompt-content-{{ prompt.id }}"
+                    class="hidden p-4 border-t border-dark-border bg-[#1e2235]">
+                    <form method="POST" class="space-y-4 prompt-editor"
+                        onsubmit="return submitForm(event, this)">
+                        <input type="hidden" name="prompt_id" value="{{ prompt.id }}">
+
+                        <div class="space-y-2">
+                            <label class="block text-indigo-200 font-medium">Name</label>
+                            <input type="text" name="name" value="{{ prompt.name }}"
+                                class="w-full bg-[#0a0c12] text-white border border-dark-border rounded-lg p-3 focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-indigo-200 font-medium">Prompt Text</label>
+                            <textarea name="prompt_text" rows="1"
+                                oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"
+                                class="prompt-field w-full min-h-[8rem] bg-[#0a0c12] text-white border border-dark-border rounded-lg p-3 focus:ring-2 focus:ring-indigo-400 focus:outline-none resize-none overflow-hidden"
+                                style="background-color: #0a0c12 !important;">{{ prompt.prompt_text }}</textarea>
+                        </div>
+
+                        <div class="flex justify-end">
+                            <button type="submit"
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2">
+                                <i class="fa-solid fa-save"></i>
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+
+<!-- New System Prompt Modal -->
+<div id="newSystemPromptModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div class="bg-[#23273a] rounded-lg border border-dark-border p-6 max-w-lg w-full">
+        <h3 class="text-xl font-bold text-white mb-4">New System Prompt</h3>
+        <form id="newSystemPromptForm" class="space-y-4 prompt-editor">
+            <div class="space-y-2">
+                <label class="block text-blue-200 font-medium">Name</label>
+                <input type="text" name="name" placeholder="Enter prompt name"
+                    class="w-full bg-[#0a0c12] text-white border border-dark-border rounded-lg p-3 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                    required>
+            </div>
+            <div class="space-y-2">
+                <label class="block text-blue-200 font-medium">System Prompt</label>
+                <textarea name="system_prompt" rows="6" placeholder="Enter the system prompt content..."
+                    class="w-full bg-[#0a0c12] text-white border border-dark-border rounded-lg p-3 focus:ring-2 focus:ring-blue-400 focus:outline-none resize-none"
+                    required></textarea>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button type="button" onclick="hideNewSystemPromptModal()"
+                    class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition">
+                    Cancel
+                </button>
+                <button type="submit"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2">
+                    <i class="fa-solid fa-save"></i>
+                    Create System Prompt
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- New Task Prompt Modal -->
+<div id="newTaskPromptModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div class="bg-[#23273a] rounded-lg border border-dark-border p-6 max-w-lg w-full">
+        <h3 class="text-xl font-bold text-white mb-4">New Task Prompt</h3>
+        <form id="newTaskPromptForm" class="space-y-4 prompt-editor">
+            <div class="space-y-2">
+                <label class="block text-indigo-200 font-medium">Stage</label>
+                <select name="stage"
+                    class="w-full bg-[#0a0c12] text-white border border-dark-border rounded-lg p-3 focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+                    {% for stage in stages %}
+                    <option value="{{ stage.name }}" data-stage-id="{{ stage.id }}">{{ stage.name|title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="space-y-2">
+                <label class="block text-indigo-200 font-medium">Substage</label>
+                <select name="substage"
+                    class="w-full bg-[#0a0c12] text-white border border-dark-border rounded-lg p-3 focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+                    {% for substage in substages %}
+                    <option value="{{ substage.name }}" data-stage="{{ substage.stage_id }}">{{ substage.name|title }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+                <button type="button" onclick="hideNewTaskPromptModal()"
+                    class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition">
+                    Cancel
+                </button>
+                <button type="submit"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition">
+                    Create
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function togglePrompt(promptId) {
+        const content = document.getElementById(`prompt-content-${promptId}`);
+        const icon = document.getElementById(`prompt-icon-${promptId}`);
+        if (content && icon) {
+            content.classList.toggle('hidden');
+            icon.classList.toggle('fa-chevron-down');
+            icon.classList.toggle('fa-chevron-up');
+
+            // Adjust textarea height when showing content
+            if (!content.classList.contains('hidden')) {
+                const textarea = content.querySelector('textarea');
+                if (textarea) {
+                    textarea.style.height = '';
+                    textarea.style.height = textarea.scrollHeight + 'px';
+                }
+            }
+        }
+    }
+
+    function submitForm(event, form) {
+        event.preventDefault();
+        const formData = new FormData(form);
+        fetch('/settings/workflow_prompts', {
+            method: 'POST',
+            body: formData
+        }).then(() => {
+            window.location.reload();
+        });
+        return false;
+    }
+
+    function deletePrompt(promptId) {
+        if (confirm('Are you sure you want to delete this prompt?')) {
+            const formData = new FormData();
+            formData.append('prompt_id', promptId);
+            formData.append('delete', 'true');
+            fetch('/settings/workflow_prompts', {
+                method: 'POST',
+                body: formData
+            }).then(() => {
+                window.location.reload();
+            });
+        }
+    }
+
+    function createPrompt(type) {
+        if (type === 'system') {
+            showNewSystemPromptModal();
+        } else {
+            showNewTaskPromptModal();
+        }
+    }
+    
+    function showNewSystemPromptModal() {
+        document.getElementById('newSystemPromptModal').classList.remove('hidden');
+    }
+    
+    function hideNewSystemPromptModal() {
+        document.getElementById('newSystemPromptModal').classList.add('hidden');
+    }
+
+    function showNewTaskPromptModal() {
+        document.getElementById('newTaskPromptModal').classList.remove('hidden');
+        updateSubstageOptions();
+    }
+
+    function hideNewTaskPromptModal() {
+        document.getElementById('newTaskPromptModal').classList.add('hidden');
+    }
+
+    function updateSubstageOptions() {
+        const stageSelect = document.querySelector('select[name="stage"]');
+        const substageSelect = document.querySelector('select[name="substage"]');
+        const selectedStage = stageSelect.value;
+
+        // Get the stage ID for the selected stage
+        const stageOptions = Array.from(stageSelect.options);
+        const selectedStageOption = stageOptions.find(option => option.value === selectedStage);
+        const selectedStageId = selectedStageOption ? selectedStageOption.dataset.stageId : null;
+
+        Array.from(substageSelect.options).forEach(option => {
+            const optionStageId = option.dataset.stage;
+            option.style.display = optionStageId === selectedStageId ? '' : 'none';
+        });
+
+        // Select first visible option
+        const firstVisibleOption = Array.from(substageSelect.options).find(option =>
+            option.style.display !== 'none'
+        );
+        if (firstVisibleOption) {
+            firstVisibleOption.selected = true;
+        }
+    }
+
+    document.querySelector('select[name="stage"]').addEventListener('change', updateSubstageOptions);
+
+    function updatePromptStep(promptId, stepId) {
+        const formData = new FormData();
+        formData.append('prompt_id', promptId);
+        formData.append('step_id', stepId);
+        formData.append('update_step', 'true');
+        
+        fetch('/settings/workflow_prompts', {
+            method: 'POST',
+            body: formData
+        }).then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Network response was not ok');
+            }
+        }).then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Failed to update prompt step assignment: ' + (data.error || 'Unknown error'));
+            }
+        }).catch(error => {
+            console.error('Error updating prompt step:', error);
+            alert('Error updating prompt step assignment: ' + error.message);
+        });
+    }
+
+    document.getElementById('newSystemPromptForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        formData.append('prompt_type', 'system');
+        formData.append('new', 'true');
+        fetch('/settings/workflow_prompts', {
+            method: 'POST',
+            body: formData
+        }).then(() => {
+            window.location.reload();
+        });
+    });
+
+    document.getElementById('newTaskPromptForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        formData.append('prompt_type', 'task');
+        formData.append('new', 'true');
+        fetch('/settings/workflow_prompts', {
+            method: 'POST',
+            body: formData
+        }).then(() => {
+            window.location.reload();
+        });
+    });
+
+    // Initialize all textareas to auto-adjust height
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('textarea').forEach(textarea => {
+            textarea.style.height = '';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        });
+    });
+
+    // Show flash messages
+    {% with messages = get_flashed_messages(with_categories = true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    alert('{{ message }}');
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+</script>
+{% endblock %}

@@ -25,12 +25,12 @@ def get_step_config(step_id: int) -> Dict[str, Any]:
         Step configuration dictionary
     """
     from db import get_db_conn
-    import psycopg2.extras
+    import psycopg.rows
     import logging
     
     try:
         with get_db_conn() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+            with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 cur.execute("""
                     SELECT config, name
                     FROM workflow_step_entity

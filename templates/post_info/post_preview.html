@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ post.title or post.main_title or 'Untitled Post' }} | Preview</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/clan_blog.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <!-- Clan.com Header -->
+    <div class="site-header">
+        <img src="{{ url_for('static', filename='site/header.jpg') }}" alt="Clan.com Header">
+    </div>
+    
+    <!-- Edit Button - Top Right -->
+    <div class="edit-button-container">
+        <a href="http://localhost:5000/workflow/posts/{{ post.id }}/planning/idea/initial_concept" class="edit-button" target="_blank">
+            <i class="fas fa-edit"></i> Edit Post
+        </a>
+    </div>
+    
+    <div class="preview-container">
+        <a href="/" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+        
+        <header class="preview-header">
+            <h1>{{ post.title or post.main_title or 'Untitled Post' }}</h1>
+            <div class="post-meta">
+                <span class="post-meta__date">
+                    Created: {{ post.created_at.strftime('%B %d, %Y') if post.created_at else 'Unknown date' }}
+                </span>
+                <span class="post-meta__separator"> | </span>
+                <span class="post-meta__date">
+                    Updated: {{ post.updated_at.strftime('%B %d, %Y') if post.updated_at else 'Unknown date' }}
+                </span>
+                {% if post.status %}
+                <span class="post-meta__separator"> | </span>
+                <span class="status-badge {{ post.status }}">{{ post.status }}</span>
+                {% endif %}
+            </div>
+            {% if post.subtitle %}
+            <h2 style="color: #888; font-size: 1.25rem; font-weight: 400; margin-top: 1rem;">{{ post.subtitle }}</h2>
+            {% endif %}
+        </header>
+        
+        {% if post.idea_seed %}
+        <div class="idea-seed">
+            <strong>Idea Seed:</strong>
+            {{ post.idea_seed }}
+        </div>
+        {% endif %}
+        
+        {% if post.intro_blurb %}
+        <div class="preview-content">
+            <strong>Introduction:</strong>
+            {{ post.intro_blurb }}
+        </div>
+        {% endif %}
+        
+        {% if sections %}
+        <div class="sections">
+            <h2>Post Sections</h2>
+            {% for section in sections %}
+            <div class="section">
+                <h3>{{ section.section_heading or 'Untitled Section' }}</h3>
+                {% if section.section_description %}
+                <div class="section-description">
+                    {{ section.section_description }}
+                </div>
+                {% endif %}
+                <div class="section-content">
+                    {% if section.generated_image_url %}
+                    <img src="{{ section.generated_image_url }}" alt="Section Image" class="section-image">
+                    {% endif %}
+                    
+                    {% if section.polished %}
+                        {{ section.polished|safe }}
+                    {% elif section.draft %}
+                        {{ section.draft|safe }}
+                    {% else %}
+                        <em>No content available for this section.</em>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% if not post.idea_seed and not post.intro_blurb and not sections %}
+        <div class="no-content">
+            <i class="fas fa-file-alt"></i>
+            <h3>No content available</h3>
+            <p>This post doesn't have any content yet. Use the workflow to add content and sections.</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Clan.com Footer -->
+    <div class="site-footer">
+        <img src="{{ url_for('static', filename='site/footer.jpg') }}" alt="Clan.com Footer">
+    </div>
+</body>
+</html> 

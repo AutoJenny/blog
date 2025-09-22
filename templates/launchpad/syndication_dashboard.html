@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Syndication Dashboard - Blog Launchpad</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/launchpad.css') }}">
+    <style>
+        /* Dashboard-specific styles */
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+            background-color: #0f1419;
+        }
+        
+        .platform-sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1a1d29 0%, #23273a 100%);
+            border-right: 1px solid #495057;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        
+        .platform-tab {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            border: 1px solid #4a5568;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+            color: #e0e0e0;
+        }
+        
+        .platform-tab:hover {
+            background: linear-gradient(135deg, #4a5568 0%, #718096 100%);
+            border-color: #667eea;
+            transform: translateX(4px);
+        }
+        
+        .platform-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #a5b4fc;
+            box-shadow: 0 0 0 3px rgba(165, 180, 252, 0.25);
+        }
+        
+        .platform-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+        }
+        
+        .platform-info {
+            flex: 1;
+        }
+        
+        .platform-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .platform-status {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+        
+        .priority-score {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        /* Accordion Styles */
+        .accordion-item.platform-wide-card {
+            background: #1a1f2e;
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        
+        .accordion-button {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            border: none;
+            color: #e0e0e0;
+            padding: 1.25rem;
+            font-weight: 600;
+            box-shadow: none;
+        }
+        
+        .accordion-button:not(.collapsed) {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: none;
+        }
+        
+        .accordion-button:focus {
+            box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+            border-color: #667eea;
+        }
+        
+        .accordion-button::after {
+            display: none;
+        }
+        
+        .capability-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .capability-indicator .badge {
+            font-size: 0.8rem;
+            padding: 0.5rem 0.75rem;
+        }
+        
+        .capability-indicator .fa-chevron-down {
+            transition: transform 0.3s ease;
+        }
+        
+        .accordion-collapse {
+            background: #1a1f2e;
+        }
+        
+        .accordion-body {
+            padding: 1.5rem;
+            border-top: 1px solid #2d3748;
+        }
+        
+        .capability-details .capability-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #2d3748;
+        }
+        
+        .capability-details .capability-item:last-child {
+            border-bottom: none;
+        }
+        
+        .capability-details .capability-name {
+            color: #a0aec0;
+            min-width: 120px;
+        }
+        
+        .capability-details .capability-value {
+            color: #e0e0e0;
+            text-align: right;
+            flex: 1;
+        }
+        
+        /* Single Accordion Capabilities Grid */
+        .capabilities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .capability-card {
+            background: #2d3748;
+            border: 1px solid #4a5568;
+            border-radius: 8px;
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .capability-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+        
+        .capability-header h6 {
+            color: #e0e0e0;
+            margin-bottom: 0.75rem;
+        }
+        
+        .capability-value-display {
+            margin-bottom: 0.75rem;
+        }
+        
+        .value-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .capability-description {
+            color: #a0aec0;
+            line-height: 1.4;
+        }
+        
+        .content-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #1a1f2e 0%, #2d3748 100%);
+            border: 1px solid #4a5568;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: #667eea;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #a0aec0;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .disambiguation-section {
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            color: #e0e0e0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .platform-wide-card {
+            border-left: 6px solid #8b5cf6;
+            background: linear-gradient(135deg, #1a1f2e 0%, #2d3748 100%);
+            border: 1px solid #4a5568;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+        
+        .channel-specific-card {
+            border-left: 6px solid #06b6d4;
+            background: linear-gradient(135deg, #1a1f2e 0%, #2d3748 100%);
+            border: 1px solid #4a5568;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+        
+        .card-header {
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid #4a5568;
+            padding: 1rem 1.5rem;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .capability-item, .requirement-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #4a5568;
+        }
+        
+        .capability-item:last-child, .requirement-item:last-child {
+            border-bottom: none;
+        }
+        
+        .capability-name, .requirement-name {
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+        
+        .capability-value, .requirement-value {
+            color: #a0aec0;
+            font-family: monospace;
+        }
+        
+        .disambiguation-legend {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #4a5568;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+        
+        .legend-color.platform-wide {
+            background-color: #8b5cf6;
+        }
+        
+        .legend-color.channel-specific {
+            background-color: #06b6d4;
+        }
+        
+        .clickable-channel:hover {
+            transform: translateY(-4px);
+            border-color: #06b6d4;
+            box-shadow: 0 8px 25px rgba(6, 182, 212, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Left Platform Sidebar -->
+        <div class="platform-sidebar">
+            <h4 class="text-white mb-4">
+                <i class="fas fa-globe me-2"></i>Platforms
+            </h4>
+            
+            <div class="platform-tabs">
+                <div class="platform-tab active" data-platform="facebook">
+                    <div class="platform-icon" style="background: #1877f2;">
+                        <i class="fab fa-facebook-f"></i>
+                    </div>
+                    <div class="platform-info">
+                        <div class="platform-name">Facebook</div>
+                        <div class="platform-status">Developed</div>
+                    </div>
+                                            <div class="priority-score">{{ "%.2f"|format(priority_data.priority_score) if priority_data and priority_data.priority_score else "N/A" }}</div>
+                </div>
+                
+                <div class="platform-tab" data-platform="instagram">
+                    <div class="platform-icon" style="background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);">
+                        <i class="fab fa-instagram"></i>
+                    </div>
+                    <div class="platform-info">
+                        <div class="platform-name">Instagram</div>
+                        <div class="platform-status">Planned</div>
+                    </div>
+                                            <div class="priority-score">{{ "%.2f"|format(priority_data.priority_score) if priority_data and priority_data.priority_score else "N/A" }}</div>
+                </div>
+                
+                <div class="platform-tab" data-platform="twitter">
+                    <div class="platform-icon" style="background: #1da1f2;">
+                        <i class="fab fa-twitter"></i>
+                    </div>
+                    <div class="platform-info">
+                        <div class="platform-name">Twitter</div>
+                        <div class="platform-status">Draft</div>
+                    </div>
+                                            <div class="priority-score">{{ "%.2f"|format(priority_data.priority_score) if priority_data and priority_data.priority_score else "N/A" }}</div>
+                </div>
+                
+                <div class="platform-tab" data-platform="linkedin">
+                    <div class="platform-icon" style="background: #0077b5;">
+                        <i class="fab fa-linkedin-in"></i>
+                    </div>
+                    <div class="platform-info">
+                        <div class="platform-name">LinkedIn</div>
+                        <div class="platform-status">Planned</div>
+                    </div>
+                    <div class="priority-score">0.58</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Facebook Platform Header -->
+            <div class="content-header">
+                <h1 class="mb-3">
+                    <i class="fab fa-facebook me-3"></i>Facebook Platform Management
+                </h1>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-2"><strong>Status:</strong> <span class="badge bg-success">Developed</span></p>
+                        <p class="mb-2"><strong>Priority Score:</strong> <span class="badge bg-primary">{{ "%.2f"|format(priority_data.priority_score) if priority_data and priority_data.priority_score else "N/A" }}</span></p>
+                        <p class="mb-0"><strong>Last Activity:</strong> {{ platform.last_activity_at.strftime('%Y-%m-%d %H:%M') if platform.last_activity_at else "No activity" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-2"><strong>Success Rate:</strong> <span class="badge bg-success">{{ "%.1f%%"|format(platform.success_rate_percentage) if platform.success_rate_percentage else "N/A" }}</span></p>
+                        <p class="mb-2"><strong>Total Posts:</strong> <span class="badge bg-info">{{ platform.total_posts_count or 0 }}</span></p>
+                        <p class="mb-0"><strong>Development:</strong> <span class="badge bg-success">{{ platform.development_status|title }}</span></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{ active_channels }}</div>
+                    <div class="stat-label">Active Channels</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ configs_count }}</div>
+                    <div class="stat-label">Configurations</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ "%.1f%%"|format(platform.success_rate_percentage) if platform.success_rate_percentage else "N/A" }}</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ "%.1fs"|format(platform.average_response_time_ms/1000) if platform.average_response_time_ms else "N/A" }}</div>
+                    <div class="stat-label">Avg Processing</div>
+                </div>
+            </div>
+            
+            <!-- Disambiguation Legend -->
+            <div class="disambiguation-legend">
+                <h6 class="text-white mb-3">
+                    <i class="fas fa-info-circle me-2"></i>Disambiguation Principle
+                </h6>
+                <div class="legend-item">
+                    <div class="legend-color platform-wide"></div>
+                    <span class="text-white">Platform-Wide Capabilities</span>
+                    <span class="text-muted ms-2">- General Facebook settings that apply to all channels</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color channel-specific"></div>
+                    <span class="text-white">Channel-Specific Requirements</span>
+                    <span class="text-muted ms-2">- Settings specific to individual content channels</span>
+                </div>
+            </div>
+            
+            <!-- Platform-Wide Capabilities -->
+            <div class="disambiguation-section">
+                <h3 class="section-title">
+                    <i class="fas fa-globe text-purple"></i>
+                    Platform-Wide Capabilities ({{ capabilities_count }} total)
+                </h3>
+                
+                {% if capabilities %}
+                    <div class="accordion" id="capabilitiesAccordion">
+                        <div class="accordion-item platform-wide-card">
+                            <h2 class="accordion-header" id="headingCapabilities">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                        data-bs-target="#collapseCapabilities" aria-expanded="false" 
+                                        aria-controls="collapseCapabilities">
+                                    <div class="d-flex align-items-center w-100">
+                                        <i class="fas fa-globe me-3 text-purple"></i>
+                                        <span class="flex-grow-1">Facebook Platform Capabilities</span>
+                                        <div class="capability-indicator">
+                                            <span class="badge bg-primary me-2">{{ capabilities_count }} Capabilities</span>
+                                            <i class="fas fa-chevron-down text-muted"></i>
+                                        </div>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapseCapabilities" class="accordion-collapse collapse" 
+                                 aria-labelledby="headingCapabilities" 
+                                 data-bs-parent="#capabilitiesAccordion">
+                                <div class="accordion-body">
+                                    <div class="capabilities-grid">
+                                        {% for capability in capabilities %}
+                                        <div class="capability-card">
+                                            <div class="capability-header">
+                                                <h6 class="text-white mb-2">
+                                                    <i class="fas fa-cogs me-2"></i>{{ capability.capability_name|replace('_', ' ')|title }}
+                                                </h6>
+                                            </div>
+                                            <div class="capability-content">
+                                                <div class="capability-value-display">
+                                                    <span class="value-badge">{{ capability.capability_value }}{% if capability.unit %} {{ capability.unit }}{% endif %}</span>
+                                                </div>
+                                                {% if capability.description %}
+                                                <div class="capability-description">
+                                                    <small class="text-muted">{{ capability.description }}</small>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="platform-wide-card">
+                        <div class="card-body">
+                            <p class="text-muted mb-0">No platform capabilities found.</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Channel Support Matrix -->
+            <div class="disambiguation-section">
+                <div class="alert alert-info mb-3" style="background: rgba(59, 130, 246, 0.1); border-color: #3b82f6;">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Development Status:</strong> Currently only <strong>Feed Posts</strong> are fully implemented. Other channels are planned for future development.
+                </div>
+                
+                <h3 class="section-title">
+                    <i class="fas fa-layer-group text-info"></i>
+                    Channel Support Matrix
+                </h3>
+                
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="/syndication/facebook/feed-post" class="text-decoration-none">
+                            <div class="card channel-specific-card clickable-channel" style="cursor: pointer; transition: all 0.3s ease;">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-newspaper fa-2x text-info mb-3"></i>
+                                    <h6 class="text-white">Feed Posts</h6>
+                                    <div class="badge bg-success mb-2">Active</div>
+                                    <div class="text-muted small">{{ processes[0].configurations_count if processes and processes[0].configurations_count else "N/A" }} Configurations</div>
+                                    <div class="priority-score mt-2">{{ "%.2f"|format(priority_data.priority_score) if priority_data and priority_data.priority_score else "N/A" }}</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="card channel-specific-card" style="opacity: 0.4; filter: grayscale(100%);">
+                            <div class="card-body text-center">
+                                <i class="fas fa-mobile-alt fa-2x text-muted mb-3"></i>
+                                <h6 class="text-muted">Stories</h6>
+                                <div class="badge bg-secondary mb-2">Coming Soon</div>
+                                <div class="text-muted small">0 Configurations</div>
+                                <div class="priority-score mt-2" style="opacity: 0.6;">{{ "%.2f"|format(priority_data.priority_score) if priority_data and priority_data.priority_score else "N/A" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="card channel-specific-card" style="opacity: 0.4; filter: grayscale(100%);">
+                            <div class="card-body text-center">
+                                <i class="fas fa-video fa-2x text-muted mb-3"></i>
+                                <h6 class="text-muted">Reels</h6>
+                                <div class="badge bg-secondary mb-2">Coming Soon</div>
+                                <div class="text-muted small">0 Configurations</div>
+                                <div class="priority-score mt-2" style="opacity: 0.6;">{{ "%.2f"|format(priority_data.priority_score) if priority_data and priority_data.priority_score else "N/A" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="card channel-specific-card" style="opacity: 0.4; filter: grayscale(100%);">
+                            <div class="card-body text-center">
+                                <i class="fas fa-users fa-2x text-muted mb-3"></i>
+                                <h6 class="text-white">Groups</h6>
+                                <div class="badge bg-secondary mb-2">Coming Soon</div>
+                                <div class="text-muted small">0 Configurations</div>
+                                <div class="priority-score mt-2" style="opacity: 0.6;">{{ "%.2f"|format(priority_data.priority_score) if priority_data and priority_data.priority_score else "N/A" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Platform selection functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const platformTabs = document.querySelectorAll('.platform-tab');
+            
+            platformTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    platformTabs.forEach(t => t.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Get platform name
+                    const platform = this.getAttribute('data-platform');
+                    
+                    // For now, only Facebook is implemented
+                    if (platform === 'facebook') {
+                        // Already showing Facebook content
+                        console.log('Facebook platform selected');
+                    } else {
+                        // Show coming soon message for other platforms
+                        alert(`${platform.charAt(0).toUpperCase() + platform.slice(1)} platform is coming soon!`);
+                        // Reset to Facebook
+                        document.querySelector('[data-platform="facebook"]').classList.add('active');
+                        this.classList.remove('active');
+                    }
+                });
+            });
+            
+            // Accordion functionality enhancement
+            const accordionButtons = document.querySelectorAll('.accordion-button');
+            
+            accordionButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const chevron = this.querySelector('.fa-chevron-down');
+                    if (chevron) {
+                        // Toggle chevron rotation
+                        if (this.classList.contains('collapsed')) {
+                            chevron.style.transform = 'rotate(0deg)';
+                        } else {
+                            chevron.style.transform = 'rotate(180deg)';
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
