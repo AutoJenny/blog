@@ -2298,3 +2298,98 @@ LINE 2: ...               SELECT id, name, parent_id, level, breadcrumb...
 2025-09-22 18:23:53,097 - config.database - INFO - Database connection established
 2025-09-22 18:23:53,100 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:23:53] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
 2025-09-22 18:23:55,560 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:23:55] "GET /launchpad/api/syndication/products HTTP/1.1" 200 -
+2025-09-22 18:24:05,740 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:24:05] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:24:36,746 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:24:36] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:25:07,745 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:25:07] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:25:38,747 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:25:38] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:26:09,740 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:26:09] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:26:40,746 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:26:40] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:27:11,744 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:27:11] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:27:42,745 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:27:42] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:28:13,744 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:28:13] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:28:44,745 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:28:44] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:29:15,748 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:15] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:29:24,919 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:24] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-22 18:29:24,986 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:24] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-22 18:29:24,987 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:24] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 18:29:24,987 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:24] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-22 18:29:25,009 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:25] "GET /static/js/item-selection.js HTTP/1.1" 200 -
+2025-09-22 18:29:25,011 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:25] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-22 18:29:25,011 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:25] "[36mGET /static/js/ai-content-generation.js HTTP/1.1[0m" 304 -
+2025-09-22 18:29:25,011 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:25] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-22 18:29:25,023 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:25] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-22 18:29:25,027 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:25] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-22 18:29:25,031 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:25] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-22 18:29:25,032 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:25] "GET /launchpad/api/syndication/schedules HTTP/1.1" 200 -
+2025-09-22 18:29:25,038 - blueprints.launchpad - ERROR - Error in get_last_updated: column "created_at" does not exist
+LINE 2:                 SELECT MAX(created_at) as last_updated
+                                   ^
+2025-09-22 18:29:25,038 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:25] "[35m[1mGET /launchpad/api/syndication/last-updated HTTP/1.1[0m" 500 -
+2025-09-22 18:29:29,008 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:29] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-22 18:29:29,029 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:29] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-22 18:29:29,030 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:29] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-22 18:29:29,030 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:29] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 18:29:29,074 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:29] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-22 18:29:29,074 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:29] "[36mGET /static/js/item-selection.js HTTP/1.1[0m" 304 -
+2025-09-22 18:29:29,074 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:29] "[36mGET /static/js/ai-content-generation.js HTTP/1.1[0m" 304 -
+2025-09-22 18:29:29,076 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:29] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-22 18:29:29,086 - blueprints.launchpad - ERROR - Error in get_categories: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 18:29:29,087 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:29] "[35m[1mGET /launchpad/api/syndication/categories HTTP/1.1[0m" 500 -
+2025-09-22 18:29:29,087 - blueprints.launchpad - ERROR - Error in get_queue: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 18:29:29,087 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:29] "[35m[1mGET /launchpad/api/queue HTTP/1.1[0m" 500 -
+2025-09-22 18:29:29,091 - blueprints.launchpad - ERROR - Error in get_today_status: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 18:29:29,092 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:29] "[35m[1mGET /launchpad/api/syndication/today-status HTTP/1.1[0m" 500 -
+2025-09-22 18:29:29,092 - blueprints.launchpad - ERROR - Error in get_schedules: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 18:29:29,093 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:29] "[35m[1mGET /launchpad/api/syndication/schedules HTTP/1.1[0m" 500 -
+2025-09-22 18:29:29,097 - blueprints.launchpad - ERROR - Error in get_last_updated: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 18:29:29,097 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:29] "[35m[1mGET /launchpad/api/syndication/last-updated HTTP/1.1[0m" 500 -
+2025-09-22 18:29:45,740 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:29:45] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:30:15,743 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:30:15] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:30:19,356 - blueprints.launchpad - ERROR - Error in get_products: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 18:30:19,357 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:30:19] "[35m[1mGET /launchpad/api/syndication/products HTTP/1.1[0m" 500 -
+2025-09-22 18:30:42,364 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 18:30:45,744 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:30:45] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:30:50,988 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 18:30:50,999 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-22 18:30:50,999 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-22 18:30:50,999 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 18:30:51,867 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 18:30:51,874 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 18:30:51,885 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 18:30:53,679 - config.database - INFO - Database connection established
+2025-09-22 18:30:53,700 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:30:53] "GET /launchpad/api/syndication/products HTTP/1.1" 200 -
+2025-09-22 18:30:56,451 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:30:56] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-22 18:30:59,053 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:30:59] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-22 18:31:04,571 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:31:04] "GET /static/js/item-selection.js HTTP/1.1" 200 -
+2025-09-22 18:31:16,294 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:31:16] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-22 18:31:16,743 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:31:16] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:31:18,788 - blueprints.launchpad - ERROR - Error in get_last_updated: column "created_at" does not exist
+LINE 2:                 SELECT MAX(created_at) as last_updated
+                                   ^
+2025-09-22 18:31:18,788 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:31:18] "[35m[1mGET /launchpad/api/syndication/last-updated HTTP/1.1[0m" 500 -
+2025-09-22 18:31:21,818 - blueprints.launchpad - ERROR - Error in get_products: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 18:31:21,818 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:31:21] "[35m[1mGET /launchpad/api/syndication/products HTTP/1.1[0m" 500 -
+2025-09-22 18:31:21,827 - blueprints.launchpad - ERROR - Error in get_products: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 18:31:21,828 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:31:21] "[35m[1mGET /launchpad/api/syndication/products HTTP/1.1[0m" 500 -
+2025-09-22 18:31:27,042 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 18:31:27,050 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-22 18:31:27,050 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-22 18:31:27,051 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 18:31:27,915 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 18:31:27,921 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 18:31:27,931 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 18:31:29,533 - config.database - INFO - Database connection established
+2025-09-22 18:31:29,548 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:31:29] "GET /db/ HTTP/1.1" 200 -
+2025-09-22 18:31:31,856 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:31:31] "GET /db/ HTTP/1.1" 200 -
+2025-09-22 18:31:46,199 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 18:31:46,408 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 18:31:47,257 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 18:31:47,263 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 18:31:47,273 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 18:31:47,744 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:31:47] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:31:48,951 - config.database - INFO - Database connection established
+2025-09-22 18:31:48,953 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:31:48] "GET /launchpad/api/syndication/last-updated HTTP/1.1" 200 -
+2025-09-22 18:31:51,766 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:31:51] "GET /launchpad/api/syndication/products HTTP/1.1" 200 -
+2025-09-22 18:31:54,419 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:31:54] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -

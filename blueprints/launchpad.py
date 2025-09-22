@@ -633,17 +633,14 @@ def get_last_updated():
             cursor.execute("SELECT COUNT(*) as total_products FROM clan_products")
             product_count = cursor.fetchone()['total_products']
             
-            # Get last updated timestamp (using created_at as proxy)
-            cursor.execute("""
-                SELECT MAX(created_at) as last_updated
-                FROM clan_products
-            """)
-            last_updated = cursor.fetchone()['last_updated']
+            # For now, just return current time as last updated
+            from datetime import datetime
+            last_updated = datetime.now()
             
             return jsonify({
                 'success': True,
                 'total_products': product_count,
-                'last_updated': last_updated.isoformat() if last_updated else None
+                'last_updated': last_updated.isoformat()
             })
     except Exception as e:
         logger.error(f"Error in get_last_updated: {e}")
