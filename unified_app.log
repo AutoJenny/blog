@@ -1585,3 +1585,19 @@ HINT:  Perhaps you meant to reference the column "cp.channel_type_id".
 2025-09-22 16:12:44,746 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:12:44] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
 2025-09-22 16:12:45,184 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:12:45] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
 2025-09-22 16:12:48,136 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:12:48] "GET /launchpad/syndication/facebook/blog_post HTTP/1.1" 200 -
+2025-09-22 16:13:15,750 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:13:15] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 16:13:46,750 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:13:46] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 16:14:17,744 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:14:17] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 16:14:48,744 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:14:48] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 16:15:19,745 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:15:19] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 16:15:50,744 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:15:50] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 16:16:21,743 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:16:21] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 16:16:34,967 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:16:34] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-22 16:16:49,862 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 16:16:50,034 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 16:16:50,947 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 16:16:50,954 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 16:16:50,965 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 16:16:51,686 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:16:51] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-22 16:16:52,744 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:16:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 16:16:55,226 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 16:16:55] "GET /launchpad/syndication/facebook/blog_post HTTP/1.1" 200 -

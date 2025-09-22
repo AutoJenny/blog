@@ -143,11 +143,32 @@ def syndication_platform_channel(platform_name, channel_type):
             'development_status': 'active'
         }
         
+        # Define channel type configurations with proper icons and display names
+        channel_configs = {
+            'product_post': {
+                'display_name': 'Product Posts',
+                'icon': 'shopping-bag',
+                'description': 'Automated daily Facebook posts featuring Clan.com products'
+            },
+            'blog_post': {
+                'display_name': 'Blog Posts',
+                'icon': 'newspaper',
+                'description': 'Automated Facebook posts featuring blog content and articles'
+            }
+        }
+        
+        channel_config = channel_configs.get(channel_type, {
+            'display_name': channel_type.replace('_', ' ').title(),
+            'icon': 'cog',
+            'description': f'{channel_type.replace("_", " ").title()} channel configuration'
+        })
+        
         channel_type_info = {
             'id': 1,
             'name': channel_type,
-            'display_name': channel_type.replace('_', ' ').title(),
-            'description': f'{channel_type.replace("_", " ").title()} channel configuration'
+            'display_name': channel_config['display_name'],
+            'icon': channel_config['icon'],
+            'description': channel_config['description']
         }
         
         content_process = {
