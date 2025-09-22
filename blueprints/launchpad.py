@@ -273,8 +273,11 @@ def get_queue():
                 SELECT pq.id, pq.platform, pq.channel_type, pq.content_type,
                        pq.generated_content, pq.status,
                        pq.platform_post_id, pq.error_message,
-                       pq.created_at, pq.updated_at
+                       pq.product_id, pq.created_at, pq.updated_at,
+                       cp.name as product_name, cp.sku, cp.image_url as product_image,
+                       cp.price
                 FROM posting_queue pq
+                LEFT JOIN clan_products cp ON pq.product_id = cp.id
                 WHERE pq.status IN ('pending', 'ready', 'published', 'failed')
                 ORDER BY pq.created_at ASC
                 LIMIT 50
@@ -293,6 +296,11 @@ def get_queue():
                     'status': item['status'],
                     'platform_post_id': item['platform_post_id'],
                     'error_message': item['error_message'],
+                    'product_id': item['product_id'],
+                    'product_name': item['product_name'],
+                    'product_sku': item['sku'],
+                    'product_image': item['product_image'],
+                    'product_price': item['price'],
                     'created_at': item['created_at'].isoformat() if item['created_at'] else None,
                     'updated_at': item['updated_at'].isoformat() if item['updated_at'] else None
                 })
