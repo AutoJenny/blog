@@ -23,11 +23,17 @@
             <p>Automated daily Facebook posts featuring Clan.com products</p>
         </div>
         
+        <!-- Posting Control Section -->
+        {% include 'launchpad/includes/posting_control.html' %}
+        
         <!-- Posting Queue Section -->
         {% include 'launchpad/includes/posting_queue.html' %}
     </div>
 
     <!-- Queue Manager JavaScript -->
     <script src="{{ url_for('static', filename='js/queue-manager.js') }}"></script>
+    
+    <!-- Posting Control JavaScript -->
+    <script src="{{ url_for('static', filename='js/posting-control.js') }}"></script>
 </body>
 </html>

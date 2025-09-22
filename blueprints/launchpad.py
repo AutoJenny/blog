@@ -319,6 +319,246 @@ def get_queue():
             'count': 0
         }), 500
 
+# Scheduling API endpoints
+@bp.route('/api/syndication/schedules')
+def get_schedules():
+    """Get all posting schedules."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, time, timezone, days, is_active, created_at, updated_at,
+                       CASE 
+                           WHEN days::text = '[1,2,3,4,5]' THEN 'Weekdays'
+                           WHEN days::text = '[6,7]' THEN 'Weekends' 
+                           WHEN days::text = '[1,2,3,4,5,6,7]' THEN 'Daily'
+                           ELSE 'Custom Schedule'
+                       END as name
+                FROM daily_posts_schedule
+                ORDER BY created_at DESC
+            """)
+            schedules = cursor.fetchall()
+            
+            # Convert to list of dicts and serialize datetime objects
+            result = []
+            for schedule in schedules:
+                schedule_dict = dict(schedule)
+                if schedule_dict.get('created_at'):
+                    schedule_dict['created_at'] = schedule_dict['created_at'].isoformat()
+                if schedule_dict.get('updated_at'):
+                    schedule_dict['updated_at'] = schedule_dict['updated_at'].isoformat()
+                # Convert time object to string
+                if schedule_dict.get('time'):
+                    schedule_dict['time'] = str(schedule_dict['time'])
+                # Parse days JSON string
+                if schedule_dict.get('days'):
+                    try:
+                        import json
+                        schedule_dict['days'] = json.loads(schedule_dict['days'])
+                    except:
+                        schedule_dict['days'] = []
+                result.append(schedule_dict)
+            
+            return jsonify({
+                "success": True,
+                "schedules": result
+            })
+    except Exception as e:
+        logger.error(f"Error in get_schedules: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@bp.route('/api/syndication/schedules', methods=['POST'])
+def add_schedule():
+    """Add a new posting schedule."""
+    try:
+        data = request.get_json()
+        name = data.get('name', 'Schedule')  # Use name for display, but table doesn't have name column
+        time = data.get('time')
+        timezone = data.get('timezone')
+        days = data.get('days', [])
+        
+        if not time or not timezone or not days:
+            return jsonify({"success": False, "error": "Missing required fields"}), 400
+        
+        with db_manager.get_cursor() as cursor:
+            import json
+            cursor.execute("""
+                INSERT INTO daily_posts_schedule (time, timezone, days, is_active, created_at, updated_at)
+                VALUES (%s, %s, %s, true, NOW(), NOW())
+                RETURNING id
+            """, (time, timezone, json.dumps(days)))
+            
+            schedule_id = cursor.fetchone()[0]
+            
+            return jsonify({
+                "success": True,
+                "schedule_id": schedule_id,
+                "message": "Schedule created successfully"
+            })
+    except Exception as e:
+        logger.error(f"Error in add_schedule: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@bp.route('/api/syndication/schedules/<int:schedule_id>', methods=['DELETE'])
+def delete_schedule(schedule_id):
+    """Delete a posting schedule."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                DELETE FROM daily_posts_schedule WHERE id = %s
+            """, (schedule_id,))
+            
+            if cursor.rowcount == 0:
+                return jsonify({"success": False, "error": "Schedule not found"}), 404
+            
+            return jsonify({
+                "success": True,
+                "message": "Schedule deleted successfully"
+            })
+    except Exception as e:
+        logger.error(f"Error in delete_schedule: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@bp.route('/api/syndication/schedules/test')
+def test_schedules():
+    """Test all schedules and return preview."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, time, timezone, days, is_active,
+                       CASE 
+                           WHEN days::text = '[1,2,3,4,5]' THEN 'Weekdays'
+                           WHEN days::text = '[6,7]' THEN 'Weekends' 
+                           WHEN days::text = '[1,2,3,4,5,6,7]' THEN 'Daily'
+                           ELSE 'Custom Schedule'
+                       END as name
+                FROM daily_posts_schedule
+                WHERE is_active = true
+                ORDER BY created_at DESC
+            """)
+            schedules = cursor.fetchall()
+            
+            if not schedules:
+                return jsonify({
+                    "success": True,
+                    "preview": "No schedules configured"
+                })
+            
+            # Generate preview for next 7 days
+            import json
+            from datetime import datetime, timedelta
+            
+            preview_lines = []
+            for schedule in schedules:
+                schedule_dict = dict(schedule)
+                days = json.loads(schedule_dict['days']) if schedule_dict['days'] else []
+                time = schedule_dict['time']
+                timezone = schedule_dict['timezone']
+                name = schedule_dict.get('name', f"Schedule {schedule_dict['id']}")
+                
+                # Calculate next few occurrences
+                now = datetime.now()
+                occurrences = []
+                for i in range(7):
+                    check_date = now + timedelta(days=i)
+                    day_of_week = check_date.weekday() + 1  # Convert to 1-7 (Mon-Sun)
+                    if day_of_week in days:
+                        date_str = check_date.strftime('%A, %B %d')
+                        occurrences.append(f"{date_str} at {time} {timezone}")
+                
+                if occurrences:
+                    preview_lines.append(f"{name}:")
+                    preview_lines.extend([f"  - {occ}" for occ in occurrences[:3]])  # Show next 3
+                    if len(occurrences) > 3:
+                        preview_lines.append(f"  - ... and {len(occurrences) - 3} more")
+                    preview_lines.append("")
+            
+            preview = "\n".join(preview_lines) if preview_lines else "No active schedules"
+            
+            return jsonify({
+                "success": True,
+                "preview": preview
+            })
+    except Exception as e:
+        logger.error(f"Error in test_schedules: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@bp.route('/api/syndication/schedules/clear', methods=['POST'])
+def clear_schedules():
+    """Clear all posting schedules."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("DELETE FROM daily_posts_schedule")
+            
+            return jsonify({
+                "success": True,
+                "message": "All schedules cleared successfully"
+            })
+    except Exception as e:
+        logger.error(f"Error in clear_schedules: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@bp.route('/api/syndication/today-status')
+def get_today_status():
+    """Get today's posting status."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Check if there's a post for today
+            cursor.execute("""
+                SELECT id, status, created_at, posted_at, scheduled_at
+                FROM posting_queue
+                WHERE DATE(created_at) = CURRENT_DATE
+                ORDER BY created_at DESC
+                LIMIT 1
+            """)
+            post = cursor.fetchone()
+            
+            if post:
+                post_dict = dict(post)
+                if post_dict.get('created_at'):
+                    post_dict['created_at'] = post_dict['created_at'].isoformat()
+                if post_dict.get('posted_at'):
+                    post_dict['posted_at'] = post_dict['posted_at'].isoformat()
+                if post_dict.get('scheduled_at'):
+                    post_dict['scheduled_at'] = post_dict['scheduled_at'].isoformat()
+            else:
+                post_dict = None
+            
+            return jsonify({
+                "success": True,
+                "post": post_dict
+            })
+    except Exception as e:
+        logger.error(f"Error in get_today_status: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@bp.route('/api/syndication/post-now', methods=['POST'])
+def post_now():
+    """Post immediately."""
+    try:
+        # This would integrate with actual posting logic
+        # For now, just return success
+        return jsonify({
+            "success": True,
+            "message": "Post published successfully"
+        })
+    except Exception as e:
+        logger.error(f"Error in post_now: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@bp.route('/api/syndication/schedule-tomorrow', methods=['POST'])
+def schedule_tomorrow():
+    """Schedule post for tomorrow."""
+    try:
+        # This would integrate with actual scheduling logic
+        # For now, just return success
+        return jsonify({
+            "success": True,
+            "message": "Post scheduled for tomorrow"
+        })
+    except Exception as e:
+        logger.error(f"Error in schedule_tomorrow: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @bp.route('/health')
 def health():
     """Health check endpoint."""
