@@ -670,3 +670,13 @@ ERROR:__main__:Error loading index page: connection to server at "localhost" (::
 INFO:werkzeug:127.0.0.1 - - [22/Sep/2025 09:03:03] "GET / HTTP/1.1" 200 -
 INFO:werkzeug:127.0.0.1 - - [22/Sep/2025 09:03:04] "[33mGET /api/post/ HTTP/1.1[0m" 404 -
 INFO:werkzeug:127.0.0.1 - - [22/Sep/2025 09:03:04] "[33mGET /api/post_development/ HTTP/1.1[0m" 404 -
+ERROR:__main__:Database connection error: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+ERROR:__main__:Error loading titles editor: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+INFO:werkzeug:127.0.0.1 - - [22/Sep/2025 15:05:54] "[35m[1mGET /titles-editor?post_id=53 HTTP/1.1[0m" 500 -
+ERROR:__main__:Database connection error: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+ERROR:__main__:Error loading titles editor: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "nickfiddes" does not exist
+
+INFO:werkzeug:127.0.0.1 - - [22/Sep/2025 15:05:55] "[35m[1mGET /titles-editor?post_id=53 HTTP/1.1[0m" 500 -

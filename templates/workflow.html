@@ -106,7 +106,7 @@
                     <div id="workflow-llm-actions" style="width: 100%; border-radius: 8px; overflow: visible;">
                         <iframe 
                             id="llm-actions-iframe"
-                            src="http://localhost:5002/?stage={{ stage }}&substage={{ substage }}&step={{ step }}&post_id={{ post_id }}&step_id={{ step_id }}&v={{ range(1000000, 9999999) | random }}"
+                            src="/llm-actions/?stage={{ stage }}&substage={{ substage }}&step={{ step }}&post_id={{ post_id }}&step_id={{ step_id }}&v={{ range(1000000, 9999999) | random }}"
                             style="width: 100%; height: 4000px; border: none; border-radius: 8px;"
                             title="LLM Actions"
                         ></iframe>
@@ -121,7 +121,7 @@
                             <div id="workflow-llm-actions" style="flex: 1; border-radius: 8px; overflow: visible;">
                                 <iframe 
                                     id="llm-actions-iframe-writing"
-                                    src="http://localhost:5002/?stage={{ stage }}&substage={{ substage }}&step={{ step }}&post_id={{ post_id }}&step_id={{ step_id }}"
+                                    src="/llm-actions/?stage={{ stage }}&substage={{ substage }}&step={{ step }}&post_id={{ post_id }}&step_id={{ step_id }}"
                                     style="width: 100%; height: 4000px; border: none; border-radius: 8px;"
                                     title="LLM Actions"
                                 ></iframe>
@@ -143,7 +143,7 @@
                                 <div id="workflow-sections-summary" style="background-color: #013828; min-height: 150px; border-radius: 8px; padding: 0; border: 1px solid #065f46; overflow: visible;">
                                     <iframe 
                                         id="sections-summary-iframe"
-                                        src="http://localhost:5003/sections-summary?post_id={{ post_id }}"
+                                        src="/post-sections/sections_panel-summary?post_id={{ post_id }}"
                                         style="width: 100%; height: 200px; border: none; border-radius: 8px; background: #013828;"
                                         title="Sections Summary Panel"
                                     ></iframe>
@@ -198,7 +198,7 @@
                             <div id="workflow-sections" style="background-color: #013828; flex: 1; min-height: 4000px; border-radius: 8px; padding: 0; border: 1px solid #065f46; overflow: visible;">
                                 <iframe 
                                     id="sections-iframe-writing"
-                                    src="http://localhost:5003/sections?stage={{ stage }}&substage={{ substage }}&step={{ step }}&post_id={{ post_id }}&v={{ range(1, 10000) | random }}"
+                                    src="/post-sections/sections_panel?stage={{ stage }}&substage={{ substage }}&step={{ step }}&post_id={{ post_id }}&v={{ range(1, 10000) | random }}"
                                     style="width: 100%; height: 4000px; border: none; border-radius: 8px; background: #013828;"
                                     title="Sections Panel"
                                 ></iframe>
@@ -211,7 +211,7 @@
                             <div id="workflow-llm-actions" style="flex: 1; border-radius: 8px; overflow: visible;">
                                 <iframe 
                                     id="llm-actions-iframe-writing"
-                                    src="http://localhost:5002/?stage={{ stage }}&substage={{ substage }}&step={{ step }}&post_id={{ post_id }}&step_id={{ step_id }}&v={{ range(1, 10000) | random }}"
+                                    src="/llm-actions/?stage={{ stage }}&substage={{ substage }}&step={{ step }}&post_id={{ post_id }}&step_id={{ step_id }}&v={{ range(1, 10000) | random }}"
                                     style="width: 100%; height: 4000px; border: none; border-radius: 8px;"
                                     title="LLM Actions"
                                 ></iframe>
@@ -233,7 +233,7 @@
                                 <div id="workflow-sections" style="background-color: #013828; flex: 1; min-height: 4000px; border-radius: 8px; padding: 0; border: 1px solid #065f46; overflow: visible;">
                                     <iframe 
                                         id="sections-iframe-writing"
-                                        src="http://localhost:5003/sections?stage={{ stage }}&substage={{ substage }}&step={{ step }}&post_id={{ post_id }}&v={{ range(1, 10000) | random }}"
+                                        src="/post-sections/sections_panel?stage={{ stage }}&substage={{ substage }}&step={{ step }}&post_id={{ post_id }}&v={{ range(1, 10000) | random }}"
                                         style="width: 100%; height: 4000px; border: none; border-radius: 8px; background: #013828;"
                                         title="Sections Panel"
                                     ></iframe>
@@ -246,7 +246,7 @@
                             <div id="workflow-llm-actions" style="flex: 1; border-radius: 8px; overflow: visible;">
                                 <iframe 
                                     id="llm-actions-iframe-writing"
-                                    src="http://localhost:5002/?stage={{ stage }}&substage={{ substage }}&step={{ step }}&post_id={{ post_id }}{% if step == 'image_concepts' %}&step_id=53{% endif %}&v={{ range(1, 10000) | random }}"
+                                    src="/llm-actions/?stage={{ stage }}&substage={{ substage }}&step={{ step }}&post_id={{ post_id }}{% if step == 'image_concepts' %}&step_id=53{% endif %}&v={{ range(1, 10000) | random }}"
                                     style="width: 100%; height: 4000px; border: none; border-radius: 8px;"
                                     title="LLM Actions"
                                 ></iframe>
@@ -254,7 +254,7 @@
                             <div id="workflow-sections" style="background-color: #013828; flex: 1; min-height: 4000px; border-radius: 8px; padding: 0; border: 1px solid #065f46; overflow: visible;">
                                 <iframe 
                                     id="sections-iframe-writing"
-                                    src="http://localhost:5003/sections?stage={{ stage }}&substage={{ substage }}&step={{ step }}&post_id={{ post_id }}&v={{ range(1, 10000) | random }}"
+                                    src="/post-sections/sections_panel?stage={{ stage }}&substage={{ substage }}&step={{ step }}&post_id={{ post_id }}&v={{ range(1, 10000) | random }}"
                                     style="width: 100%; height: 4000px; border: none; border-radius: 8px; background: #013828;"
                                     title="Sections Panel"
                                 ></iframe>
@@ -313,7 +313,7 @@
             const postId = '{{ post_id }}';
             
             // Update iframe src with current context
-            const newSrc = `http://localhost:5002/?stage=${stage}&substage=${substage}&step=${step}&post_id=${postId}&v=${Date.now()}`;
+            const newSrc = `/llm-actions/?stage=${stage}&substage=${substage}&step=${step}&post_id=${postId}&v=${Date.now()}`;
             
             // Handle both planning and writing stage iframes
             const planningIframe = document.getElementById('llm-actions-iframe');
@@ -358,8 +358,8 @@
         function setupRealTimeUpdates() {
             // Listen for messages from LLM-actions panel
             window.addEventListener('message', function(event) {
-                // Allow messages from localhost:5002 (LLM Actions service)
-                if (event.origin !== 'http://localhost:5002' && event.origin !== window.location.origin) return;
+                // Allow messages from same origin (unified LLM Actions service)
+                if (event.origin !== window.location.origin) return;
                 
                 const { type, data } = event.data;
                 

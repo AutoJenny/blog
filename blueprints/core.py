@@ -22,12 +22,28 @@ def index():
             """)
             result = cursor.fetchone()
             first_post_id = result['id'] if result else 1
+            
+            # Get stats for the dashboard
+            cursor.execute("""
+                SELECT 
+                    (SELECT COUNT(*) FROM post WHERE status != 'deleted') as post_count,
+                    (SELECT COUNT(*) FROM image) as image_count,
+                    (SELECT COUNT(*) FROM workflow) as workflow_count,
+                    (SELECT COUNT(*) FROM llm_interaction) as llm_count
+            """)
+            stats = cursor.fetchone()
+            
     except Exception as e:
-        logger.warning(f"Could not fetch latest post: {e}")
+        logger.warning(f"Could not fetch data: {e}")
         first_post_id = 1
+        stats = {'post_count': 0, 'image_count': 0, 'workflow_count': 0, 'llm_count': 0}
     
     return render_template('index.html', 
                          first_post_id=first_post_id,
+                         post_count=stats['post_count'],
+                         image_count=stats['image_count'],
+                         workflow_count=stats['workflow_count'],
+                         llm_count=stats['llm_count'],
                          blueprint_name='core')
 
 @bp.route('/workflow/')
@@ -205,6 +221,49 @@ def workflow_main(post_id=None, stage=None, substage=None, step=None):
         logger.warning(f"Error getting posts: {e}")
         all_posts = []
     
+    # Get workflow structure for navigation
+    stages = {}
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get all stages, substages, and steps
+            cursor.execute("""
+                SELECT 
+                    wst.name as stage_name,
+                    wsse.name as substage_name,
+                    wse.name as step_name,
+                    wse.step_order
+                FROM workflow_stage_entity wst
+                JOIN workflow_sub_stage_entity wsse ON wsse.stage_id = wst.id
+                JOIN workflow_step_entity wse ON wse.sub_stage_id = wsse.id
+                ORDER BY wst.name, wsse.name, wse.step_order
+            """)
+            workflow_data = cursor.fetchall()
+            
+            # Build the stages structure
+            for row in workflow_data:
+                stage_name = row['stage_name'].lower()
+                substage_name = row['substage_name'].lower()
+                step_name = row['step_name']
+                
+                if stage_name not in stages:
+                    stages[stage_name] = {}
+                if substage_name not in stages[stage_name]:
+                    stages[stage_name][substage_name] = []
+                
+                stages[stage_name][substage_name].append(step_name)
+                
+    except Exception as e:
+        logger.warning(f"Error getting workflow structure: {e}")
+        # Provide fallback structure
+        stages = {
+            'planning': {
+                'idea': ['Initial Concept', 'Research', 'Structure']
+            },
+            'writing': {
+                'content': ['Sections', 'Post Info', 'Images']
+            }
+        }
+    
     # Render the workflow template
     return render_template('workflow.html', 
                          post_id=post_id,
@@ -215,7 +274,8 @@ def workflow_main(post_id=None, stage=None, substage=None, step=None):
                          step_name=step_name,
                          step_description=step_description,
                          step_config=step_config,
-                         all_posts=all_posts)
+                         all_posts=all_posts,
+                         stages=stages)
 
 @bp.route('/health')
 def health():
