@@ -504,7 +504,7 @@ def get_today_status():
         with db_manager.get_cursor() as cursor:
             # Check if there's a post for today
             cursor.execute("""
-                SELECT id, status, created_at, posted_at, scheduled_at
+                SELECT id, status, created_at, scheduled_date
                 FROM posting_queue
                 WHERE DATE(created_at) = CURRENT_DATE
                 ORDER BY created_at DESC
@@ -516,10 +516,8 @@ def get_today_status():
                 post_dict = dict(post)
                 if post_dict.get('created_at'):
                     post_dict['created_at'] = post_dict['created_at'].isoformat()
-                if post_dict.get('posted_at'):
-                    post_dict['posted_at'] = post_dict['posted_at'].isoformat()
-                if post_dict.get('scheduled_at'):
-                    post_dict['scheduled_at'] = post_dict['scheduled_at'].isoformat()
+                if post_dict.get('scheduled_date'):
+                    post_dict['scheduled_date'] = post_dict['scheduled_date'].isoformat()
             else:
                 post_dict = None
             
