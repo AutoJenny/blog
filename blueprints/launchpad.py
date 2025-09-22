@@ -558,6 +558,162 @@ def schedule_tomorrow():
         logger.error(f"Error in schedule_tomorrow: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
+@bp.route('/api/syndication/categories')
+def get_categories():
+    """Get product categories."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, name, parent_id, level
+                FROM clan_categories
+                ORDER BY level, name
+            """)
+            
+            categories = cursor.fetchall()
+            
+            category_list = []
+            for category in categories:
+                category_dict = dict(category)
+                category_list.append(category_dict)
+            
+            return jsonify({
+                'success': True,
+                'categories': category_list
+            })
+    except Exception as e:
+        logger.error(f"Error in get_categories: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@bp.route('/api/syndication/products')
+def get_products():
+    """Get all products for browsing."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, name, sku, price, description, image_url, url, printable_design_type,
+                       category_ids
+                FROM clan_products
+                ORDER BY name
+                LIMIT 1000
+            """)
+            
+            products = cursor.fetchall()
+            
+            product_list = []
+            for product in products:
+                product_dict = dict(product)
+                # Parse category_ids if it's a JSON string
+                if product_dict.get('category_ids') and isinstance(product_dict['category_ids'], str):
+                    try:
+                        product_dict['category_ids'] = json.loads(product_dict['category_ids'])
+                    except:
+                        product_dict['category_ids'] = []
+                product_list.append(product_dict)
+            
+            return jsonify({
+                'success': True,
+                'products': product_list
+            })
+    except Exception as e:
+        logger.error(f"Error in get_products: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@bp.route('/api/syndication/last-updated')
+def get_last_updated():
+    """Get last updated timestamp and product count."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get product count
+            cursor.execute("SELECT COUNT(*) as total_products FROM clan_products")
+            product_count = cursor.fetchone()['total_products']
+            
+            # Get last updated timestamp (using created_at as proxy)
+            cursor.execute("""
+                SELECT MAX(created_at) as last_updated
+                FROM clan_products
+            """)
+            last_updated = cursor.fetchone()['last_updated']
+            
+            return jsonify({
+                'success': True,
+                'total_products': product_count,
+                'last_updated': last_updated.isoformat() if last_updated else None
+            })
+    except Exception as e:
+        logger.error(f"Error in get_last_updated: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@bp.route('/api/syndication/select-product', methods=['POST'])
+def select_random_product():
+    """Select a random product for posting."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get a random product
+            cursor.execute("""
+                SELECT id, name, sku, price, description, image_url, url, printable_design_type,
+                       category_ids
+                FROM clan_products
+                ORDER BY RANDOM()
+                LIMIT 1
+            """)
+            
+            product = cursor.fetchone()
+            
+            if product:
+                product_dict = dict(product)
+                # Parse category_ids if it's a JSON string
+                if product_dict.get('category_ids') and isinstance(product_dict['category_ids'], str):
+                    try:
+                        product_dict['category_ids'] = json.loads(product_dict['category_ids'])
+                    except:
+                        product_dict['category_ids'] = []
+                
+                return jsonify({
+                    'success': True,
+                    'product': product_dict
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'No products found'
+                })
+    except Exception as e:
+        logger.error(f"Error in select_random_product: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@bp.route('/api/syndication/update-products', methods=['POST'])
+def update_products():
+    """Update products from external source (placeholder)."""
+    try:
+        # This is a placeholder - in a real implementation, this would sync with external APIs
+        # For now, just return success with mock data
+        return jsonify({
+            'success': True,
+            'message': 'Products are up to date',
+            'stats': {
+                'updated': 0,
+                'categories_updated': False
+            }
+        })
+    except Exception as e:
+        logger.error(f"Error in update_products: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @bp.route('/health')
 def health():
     """Health check endpoint."""
