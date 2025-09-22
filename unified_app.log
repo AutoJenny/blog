@@ -2267,3 +2267,34 @@ HINT:  Perhaps you meant to reference the column "posting_queue.scheduled_date".
 2025-09-22 18:18:25,584 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:18:25] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
 2025-09-22 18:18:25,586 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:18:25] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
 2025-09-22 18:18:26,754 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:18:26] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:18:56,746 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:18:56] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:19:26,745 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:19:26] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:19:57,742 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:19:57] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:20:28,740 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:20:28] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:20:59,740 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:20:59] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:21:30,740 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:21:30] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:22:01,740 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:22:01] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:22:32,739 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:22:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:23:03,739 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:23:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:23:32,611 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 18:23:32,811 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 18:23:33,691 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 18:23:33,697 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 18:23:33,708 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 18:23:34,740 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:23:34] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 18:23:39,445 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:23:39] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-22 18:23:42,230 - config.database - INFO - Database connection established
+2025-09-22 18:23:42,231 - blueprints.launchpad - ERROR - Error in get_categories: column "breadcrumb" does not exist
+LINE 2: ...               SELECT id, name, parent_id, level, breadcrumb...
+                                                             ^
+2025-09-22 18:23:42,231 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:23:42] "[35m[1mGET /launchpad/api/syndication/categories HTTP/1.1[0m" 500 -
+2025-09-22 18:23:45,034 - blueprints.database - ERROR - Database error: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 18:23:45,038 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:23:45] "GET /db/ HTTP/1.1" 200 -
+2025-09-22 18:23:49,943 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 18:23:50,143 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 18:23:51,041 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 18:23:51,047 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 18:23:51,058 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 18:23:53,097 - config.database - INFO - Database connection established
+2025-09-22 18:23:53,100 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:23:53] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-22 18:23:55,560 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 18:23:55] "GET /launchpad/api/syndication/products HTTP/1.1" 200 -

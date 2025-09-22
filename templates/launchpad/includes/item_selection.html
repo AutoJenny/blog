@@ -1,0 +1,125 @@
+<!-- Item Selection Section -->
+<div class="section-card">
+    <div class="section-title" onclick="toggleAccordion('item-selection')">
+        <div class="section-title-left">
+            <i class="fas fa-chevron-right accordion-chevron" id="item-selection-chevron"></i>
+            <i class="fas fa-shopping-bag"></i>
+            Item Selection
+        </div>
+    </div>
+    <div class="section-content" id="item-selection-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div id="last-updated-display" style="color: #94a3b8; font-size: 0.9rem;">
+                <i class="fas fa-clock"></i>
+                <span id="last-updated-text">Loading...</span>
+            </div>
+            <button id="update-products-btn" class="btn btn-secondary">
+                <i class="fas fa-sync-alt"></i>
+                Check for Updates
+            </button>
+        </div>
+    
+        <!-- Available Categories Accordion -->
+        <div style="background: #23273a; border: 1px solid #475569; border-radius: 8px; margin-bottom: 20px;">
+            <div id="category-accordion-header" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; cursor: pointer; user-select: none;" onclick="toggleCategoryAccordion()">
+                <h3 style="color: #f1f5f9; font-size: 1.1rem; margin: 0; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-chevron-right" id="category-chevron" style="transition: transform 0.2s ease;"></i>
+                    Available Categories
+                </h3>
+                <span id="category-count" style="color: #10b981; font-weight: 600;">Loading...</span>
+            </div>
+            <div id="category-accordion-content" style="display: none; padding: 0 15px 15px 15px;">
+                <div id="category-list" style="color: #94a3b8; font-size: 0.8rem; max-height: 300px; overflow-y: auto;">
+                    Loading categories...
+                </div>
+            </div>
+        </div>
+        
+        <!-- Products Browser Accordion -->
+        <div style="background: #23273a; border: 1px solid #475569; border-radius: 8px; margin-bottom: 20px;">
+            <div id="products-browser-accordion-header" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; cursor: pointer; user-select: none;" onclick="toggleProductsBrowserAccordion()">
+                <h3 style="color: #f1f5f9; font-size: 1.1rem; margin: 0; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-chevron-right" id="products-browser-chevron" style="transition: transform 0.2s ease;"></i>
+                    Products Browser
+                </h3>
+                <span id="products-browser-count" style="color: #10b981; font-weight: 600;">Loading...</span>
+            </div>
+            <div id="products-browser-accordion-content" style="display: none; padding: 0 15px 15px 15px;">
+                <!-- Filter Box -->
+                <div style="margin-bottom: 15px;">
+                    <input type="text" id="product-filter" placeholder="Filter products by name..." 
+                           style="width: 100%; padding: 8px 12px; background: #1e293b; border: 1px solid #475569; border-radius: 6px; color: #f1f5f9; font-size: 0.9rem;">
+                </div>
+                
+                <!-- Product Display -->
+                <div id="product-browser-display" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 20px; margin-bottom: 15px;">
+                    <div style="text-align: center; color: #94a3b8; font-style: italic;">
+                        Loading products...
+                    </div>
+                </div>
+                
+                <!-- Navigation Controls -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <button id="prev-product-btn" class="btn btn-secondary" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                        Previous
+                    </button>
+                    <span id="product-counter" style="color: #94a3b8; font-size: 0.9rem;">Product 0 of 0</span>
+                    <button id="next-product-btn" class="btn btn-secondary" disabled>
+                        Next
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                
+                <!-- Product Selection Buttons -->
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button id="select-this-product-btn" class="btn btn-success" style="padding: 12px 24px; font-size: 1rem; font-weight: 600;" disabled>
+                        <i class="fas fa-check-circle"></i>
+                        Select This Product
+                    </button>
+                    <button id="select-random-product-btn" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.9rem;" disabled>
+                        <i class="fas fa-random"></i>
+                        Random
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="product-display" class="product-display" style="display: none;">
+            <div style="display: flex; align-items: flex-start;">
+                <img id="product-image" class="product-image" src="" alt="Product Image" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid #334155; margin-right: 20px;">
+                <div class="product-info">
+                    <div id="product-name" class="product-name" style="color: #f1f5f9; font-size: 1.2rem; font-weight: 600; margin-bottom: 8px;"></div>
+                    <div id="product-price" class="product-price" style="color: #10b981; font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;"></div>
+                    <div id="product-categories" class="product-categories" style="color: #10b981; font-size: 0.9rem; margin: 5px 0; display: none;"></div>
+                    <div id="product-description" class="product-description" style="color: #e2e8f0; line-height: 1.5; margin-bottom: 10px;"></div>
+                    <div style="margin-top: 10px;">
+                        <a id="product-url" href="#" target="_blank" class="btn btn-secondary">
+                            <i class="fas fa-external-link-alt"></i>
+                            View on Clan.com
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="no-product" style="text-align: center; padding: 40px; color: #94a3b8;">
+            <i class="fas fa-shopping-bag fa-3x" style="margin-bottom: 20px; opacity: 0.5;"></i>
+            <p>No product selected for today</p>
+        </div>
+        
+        <!-- Update Status Display -->
+        <div id="update-status" style="display: none; margin-top: 15px; padding: 15px; background: #1e293b; border: 1px solid #334155; border-radius: 8px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div id="update-spinner" class="spinner" style="display: none;"></div>
+                <div id="update-message" style="color: #f1f5f9; font-size: 0.9rem;"></div>
+            </div>
+            <div id="update-progress" style="margin-top: 10px; display: none;">
+                <div style="background: #334155; border-radius: 4px; height: 6px; overflow: hidden;">
+                    <div id="update-progress-bar" style="background: #10b981; height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                </div>
+                <div id="update-progress-text" style="color: #94a3b8; font-size: 0.8rem; margin-top: 5px; text-align: center;"></div>
+            </div>
+        </div>
+    </div>
+</div>
