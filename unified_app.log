@@ -1368,3 +1368,38 @@ HINT:  Perhaps you meant to reference the column "cp.channel_type_id".
 2025-09-22 15:30:13,540 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:30:13] "[35m[1mHEAD /launchpad/syndication/facebook/blog_post HTTP/1.1[0m" 500 -
 2025-09-22 15:30:24,703 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:30:24] "HEAD /launchpad/syndication/facebook/blog_post HTTP/1.1" 200 -
 2025-09-22 15:30:26,612 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:30:26] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:30:34,761 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:30:34] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:30:47,918 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 15:30:48,094 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 15:30:48,934 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 15:30:48,941 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 15:30:48,951 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 15:30:49,243 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:30:49] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-22 15:30:49,268 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:30:49] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 15:30:49,364 - config.database - INFO - Database connection established
+2025-09-22 15:30:49,371 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:30:49] "GET /api/posts HTTP/1.1" 200 -
+2025-09-22 15:30:51,037 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:30:51] "[33mGET /syndication/facebook/blog_post HTTP/1.1[0m" 404 -
+2025-09-22 15:30:54,895 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:30:54] "[33mGET /syndication/facebook/product_post HTTP/1.1[0m" 404 -
+2025-09-22 15:31:00,720 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:31:00] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-22 15:31:01,087 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:31:01] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-22 15:31:01,088 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:31:01] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 15:31:04,764 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:31:04] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:31:34,763 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:31:34] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:32:04,764 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:32:04] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:32:06,677 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:32:06] "HEAD /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-22 15:32:09,825 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:32:09] "HEAD /launchpad/syndication/facebook/blog_post HTTP/1.1" 200 -
+2025-09-22 15:32:12,089 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:32:12] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-22 15:32:12,119 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:32:12] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 15:32:12,194 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:32:12] "GET /api/posts HTTP/1.1" 200 -
+2025-09-22 15:32:13,611 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:32:13] "[33mHEAD /launchpad/syndication/dashboard HTTP/1.1[0m" 404 -
+2025-09-22 15:32:13,939 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:32:13] "[33mGET /syndication/facebook/blog_post HTTP/1.1[0m" 404 -
+2025-09-22 15:32:19,057 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:32:19] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-22 15:32:19,058 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:32:19] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-22 15:32:19,059 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:32:19] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-22 15:32:34,308 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 15:32:34,498 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 15:32:35,389 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 15:32:35,396 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 15:32:35,407 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 15:32:35,418 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:32:35] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:32:36,918 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:32:36] "[32mHEAD /launchpad/syndication/dashboard HTTP/1.1[0m" 302 -

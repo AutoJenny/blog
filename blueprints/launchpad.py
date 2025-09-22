@@ -92,6 +92,11 @@ def publishing():
     """Publishing management page."""
     return render_template('launchpad/publishing.html')
 
+@bp.route('/syndication/dashboard')
+def syndication_dashboard():
+    """Redirect to main syndication page."""
+    return redirect('/launchpad/syndication')
+
 @bp.route('/syndication')
 def syndication():
     """Main syndication dashboard."""
