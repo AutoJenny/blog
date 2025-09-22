@@ -1187,3 +1187,35 @@ LINE 2:                 SELECT ps.id, ps.title, ps.content, ps.secti...
 2025-09-22 15:15:12,980 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:15:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
 2025-09-22 15:15:16,155 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:15:16] "GET /llm-actions/?stage=planning&substage=idea&step=initial_concept&post_id=53 HTTP/1.1" 200 -
 2025-09-22 15:15:19,076 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:15:19] "GET /llm-actions/api/step-config/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-22 15:15:37,632 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/core.py', reloading
+2025-09-22 15:15:37,804 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 15:15:38,582 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 15:15:38,587 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 15:15:38,596 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 15:15:46,613 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:15:46] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:16:29,795 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:16:29] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:18:20,473 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:18:20] "[33mHEAD /social-media-command-center HTTP/1.1[0m" 404 -
+2025-09-22 15:18:23,419 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:18:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:18:42,949 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 15:18:43,141 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 15:18:44,017 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 15:18:44,023 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 15:18:44,033 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 15:18:49,624 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:18:49] "[35m[1mHEAD /launchpad/social-media-command-center HTTP/1.1[0m" 500 -
+2025-09-22 15:19:33,802 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 15:19:34,001 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 15:19:34,878 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 15:19:34,884 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 15:19:34,895 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 15:19:39,998 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:19:39] "[35m[1mHEAD /launchpad/social-media-command-center HTTP/1.1[0m" 500 -
+2025-09-22 15:19:43,568 - config.database - INFO - Database connection established
+2025-09-22 15:19:43,573 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:19:43] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-22 15:20:12,982 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:20:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:21:41,142 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:21:41] "[35m[1mGET /launchpad/social-media-command-center HTTP/1.1[0m" 500 -
+2025-09-22 15:21:46,868 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 15:21:47,050 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 15:21:47,922 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 15:21:47,928 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 15:21:47,938 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 15:21:49,087 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:21:49] "HEAD /launchpad/social-media-command-center HTTP/1.1" 200 -
+2025-09-22 15:21:51,804 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:21:51] "GET /launchpad/social-media-command-center HTTP/1.1" 200 -

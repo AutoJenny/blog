@@ -243,6 +243,66 @@ def get_content_processes():
         logger.error(f"Error in get_content_processes: {e}")
         return jsonify({"error": str(e)}), 500
 
+@bp.route('/social-media-command-center')
+def social_media_command_center():
+    """Main Social Media Command Center dashboard."""
+    return render_template('launchpad/social_media_command_center.html')
+
+@bp.route('/api/queue')
+def get_queue():
+    """Get unified queue data for the command center."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT pq.id, pq.platform, pq.channel_type, pq.content_type,
+                       pq.scheduled_timestamp, pq.generated_content, pq.status,
+                       pq.platform_post_id, pq.error_message,
+                       cp.name as product_name, cp.sku, cp.image_url as product_image,
+                       cp.price, pq.created_at, pq.updated_at
+                FROM posting_queue pq
+                LEFT JOIN clan_products cp ON pq.product_id = cp.id
+                WHERE pq.status IN ('pending', 'ready', 'published', 'failed')
+                ORDER BY pq.scheduled_timestamp ASC, pq.created_at ASC
+                LIMIT 50
+            """)
+            
+            items = cursor.fetchall()
+            
+            timeline_items = []
+            for item in items:
+                timeline_items.append({
+                    'id': item['id'],
+                    'platform': item['platform'],
+                    'channel_type': item['channel_type'],
+                    'content_type': item['content_type'],
+                    'scheduled_timestamp': item['scheduled_timestamp'].isoformat() if item['scheduled_timestamp'] else None,
+                    'generated_content': item['generated_content'],
+                    'status': item['status'],
+                    'platform_post_id': item['platform_post_id'],
+                    'error_message': item['error_message'],
+                    'product_name': item['product_name'],
+                    'product_sku': item['sku'],
+                    'product_image': item['product_image'],
+                    'product_price': item['price'],
+                    'created_at': item['created_at'].isoformat() if item['created_at'] else None,
+                    'updated_at': item['updated_at'].isoformat() if item['updated_at'] else None
+                })
+            
+            return jsonify({
+                'success': True,
+                'items': timeline_items,
+                'count': len(timeline_items)
+            })
+            
+    except Exception as e:
+        logger.error(f"Error in get_queue: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'items': [],
+            'count': 0
+        }), 500
+
 @bp.route('/health')
 def health():
     """Health check endpoint."""
