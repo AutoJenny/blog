@@ -384,7 +384,7 @@ class LLMOrchestrator {
             this.logger.debug('orchestrator', `Fetching sections from main blog API for post ${postId}...`);
             
             // Call the main blog service on port 5000
-            const response = await fetch(`http://localhost:5000/api/sections/${postId}`);
+            const response = await fetch(`/post-sections/api/sections/${postId}`);
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
@@ -486,7 +486,7 @@ class LLMOrchestrator {
         try {
             this.logger.debug('orchestrator', `Resolving step_id for: ${stage}/${substage}/${step}`);
             
-            const response = await fetch(`/api/step-config/${stage}/${substage}/${step}`);
+            const response = await fetch(`/llm-actions/api/step-config/${stage}/${substage}/${step}`);
             
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -722,7 +722,7 @@ class LLMOrchestrator {
             this.logger.debug('orchestrator', 'Sending LLM request with payload:', payload);
             
             // Make the API call to the LLM service
-            const response = await fetch('http://localhost:5002/api/run-llm', {
+            const response = await fetch('/llm-actions/api/run-llm', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -912,7 +912,7 @@ window.startOllama = async function() {
     try {
         console.log('[StartOllama] Attempting to start Ollama...');
         
-        const response = await fetch('http://localhost:5000/api/ollama/start', {
+        const response = await fetch('/llm-actions/api/ollama/start', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1038,7 +1038,7 @@ async function runImageGeneration() {
         console.log('[ImageGeneration] Selected sections:', selectedSectionIds);
         
         // Call the image generation API
-        const response = await fetch('http://localhost:5000/api/generate-images', {
+        const response = await fetch('/images/api/generate-images', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1075,7 +1075,7 @@ async function runImageConcepts() {
         }
         
         // Call the image concepts API
-        const response = await fetch('http://localhost:5000/api/workflow/execute-step', {
+        const response = await fetch('/llm-actions/api/workflow/execute-step', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
