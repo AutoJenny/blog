@@ -2040,3 +2040,58 @@ HINT:  Perhaps you meant to reference the column "posting_queue.scheduled_date".
 2025-09-22 17:19:29,544 - config.database - INFO - Database connection established
 2025-09-22 17:19:29,547 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:19:29] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
 2025-09-22 17:19:31,646 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:19:31] "GET /launchpad/api/syndication/schedules HTTP/1.1" 200 -
+2025-09-22 17:19:38,982 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:19:38] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-22 17:19:44,750 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:19:44] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:19:47,382 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:19:47] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-22 17:19:58,903 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:19:58] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-22 17:20:15,750 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:20:15] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:20:23,254 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:20:23] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-22 17:20:27,106 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:20:27] "GET /static/js/queue-manager.js HTTP/1.1" 200 -
+2025-09-22 17:20:37,451 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:20:37] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-22 17:20:46,751 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:20:46] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:21:17,751 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:21:17] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:21:48,751 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:21:48] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:22:19,757 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:22:19] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:22:50,754 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:22:50] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:23:21,756 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:23:21] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:23:52,755 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:23:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:24:23,756 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:24:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:24:54,756 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:24:54] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:25:25,755 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:25:25] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:25:56,752 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:25:56] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:26:27,757 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:26:27] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:26:58,758 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:26:58] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:27:29,755 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:27:29] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:28:00,756 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:28:00] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:28:31,755 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:28:31] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:29:02,751 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:29:02] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:29:33,755 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:29:33] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:30:03,753 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:30:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:30:33,757 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:30:33] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:30:59,315 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:30:59] "[33mGET /db/api/tables HTTP/1.1[0m" 404 -
+2025-09-22 17:31:03,753 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:31:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:31:15,625 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 17:31:15,803 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 17:31:16,700 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 17:31:16,707 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 17:31:16,718 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 17:31:25,858 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 17:31:26,058 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 17:31:26,911 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 17:31:26,917 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 17:31:26,927 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 17:31:30,730 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 17:31:30,742 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-22 17:31:30,742 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-22 17:31:30,742 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 17:31:31,608 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 17:31:31,615 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 17:31:31,627 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 17:31:31,766 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 17:31:34,753 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:31:34] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 17:31:39,425 - config.database - INFO - Database connection established
+2025-09-22 17:31:39,430 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:31:39] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-22 17:31:41,689 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:31:41] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-22 17:31:43,827 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:31:43] "GET /launchpad/api/syndication/schedules HTTP/1.1" 200 -
+2025-09-22 17:31:46,339 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 17:31:46] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
