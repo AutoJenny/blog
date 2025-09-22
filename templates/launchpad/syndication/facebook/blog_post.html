@@ -23,6 +23,9 @@
             <p>Automated Facebook posts featuring blog content and articles</p>
         </div>
         
+        <!-- AI Content Generation Section -->
+        {% include 'launchpad/includes/ai_content_generation.html' %}
+        
         <!-- Posting Control Section -->
         {% include 'launchpad/includes/posting_control.html' %}
         
@@ -35,5 +38,8 @@
     
     <!-- Posting Control JavaScript -->
     <script src="{{ url_for('static', filename='js/posting-control.js') }}"></script>
+    
+    <!-- AI Content Generation JavaScript -->
+    <script src="{{ url_for('static', filename='js/ai-content-generation.js') }}"></script>
 </body>
 </html>

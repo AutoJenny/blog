@@ -1,0 +1,44 @@
+<!-- AI Content Generation Section -->
+<div class="section-card">
+    <div class="section-title" onclick="toggleAccordion('ai-content-generation')">
+        <i class="fas fa-chevron-right accordion-chevron" id="ai-content-generation-chevron"></i>
+        <i class="fas fa-robot"></i>
+        AI Content Generation
+    </div>
+    <div class="section-content" id="ai-content-generation-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div></div>
+            <button id="start-ollama-btn" class="btn btn-secondary">
+                <i class="fas fa-play"></i>
+                Start Ollama
+            </button>
+        </div>
+    
+        <div class="content-type-buttons">
+            <button class="content-type-btn active" data-type="feature">Feature Focus</button>
+            <button class="content-type-btn" data-type="benefit">Benefit Focus</button>
+            <button class="content-type-btn" data-type="story">Story Focus</button>
+        </div>
+        
+        <div class="content-preview">
+            <div id="content-text" class="content-text">
+                Select a product and click "Generate Post" to create AI-powered content.
+            </div>
+        </div>
+        
+        <div style="text-align: center;">
+            <button id="generate-content-btn" class="btn btn-primary" disabled>
+                <i class="fas fa-magic"></i>
+                Generate Post
+            </button>
+            <button id="edit-content-btn" class="btn btn-secondary" disabled>
+                <i class="fas fa-edit"></i>
+                Edit Content
+            </button>
+            <button id="add-to-queue-btn" class="btn btn-success" disabled style="display: none;">
+                <i class="fas fa-plus"></i>
+                Add to Queue
+            </button>
+        </div>
+    </div>
+</div>
