@@ -12,11 +12,20 @@
     <div class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="content-area">
             <div class="max-w-7xl mx-auto">
-                <!-- Workflow (now at the top) -->
+                <!-- Hero Section -->
+                <section class="hero-section mb-12">
+                    <div class="text-center">
+                        <h1 class="text-4xl font-bold text-white mb-4">BlogForge CMS</h1>
+                        <p class="text-xl text-dark-accent mb-8">Unified Content Management & AI-Powered Publishing</p>
+                    </div>
+                </section>
+
+                <!-- Content Creation Workflow -->
                 <section class="mb-12">
-                    <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-sitemap"></i> Workflow
+                    <h2 class="text-2xl section-title mb-6 flex items-center gap-2">
+                        <i class="fa-solid fa-sitemap"></i> Content Creation Workflow
                     </h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Planning -->
                         <div class="card-dark rounded-xl p-6">
                             <div class="flex flex-col items-center gap-2 mb-4">
@@ -33,6 +42,7 @@
                                     class="text-dark-accent hover:text-white text-sm text-center transition">Structure</a>
                             </div>
                         </div>
+                        
                         <!-- Authoring -->
                         <div class="card-dark rounded-xl p-6">
                             <div class="flex flex-col items-center gap-2 mb-4">
@@ -49,75 +59,118 @@
                                     class="text-dark-accent hover:text-white text-sm text-center transition">Images</a>
                             </div>
                         </div>
-                        <!-- Publishing -->
-                        <div class="card-dark rounded-xl p-6">
-                            <div class="flex flex-col items-center gap-2 mb-4">
-                                <span class="icon-circle"><i class="fa-solid fa-paper-plane text-blue-400 text-xl"></i></span>
-                                <span class="text-lg font-semibold text-white">Publishing</span>
-                                <p class="text-dark-accent text-sm text-center">Prepare and publish your post</p>
-                            </div>
-                            <div class="flex flex-col gap-2 mt-4">
-                                <a href="/workflow/posts/{{ first_post_id }}/publishing/preflight"
-                                    class="text-dark-accent hover:text-white text-sm text-center transition">Preflight</a>
-                                <a href="/workflow/posts/{{ first_post_id }}/publishing/launch"
-                                    class="text-dark-accent hover:text-white text-sm text-center transition">Launch</a>
-                                <a href="/workflow/posts/{{ first_post_id }}/publishing/syndication"
-                                    class="text-dark-accent hover:text-white text-sm text-center transition">Syndication</a>
-                            </div>
-                        </div>
                     </div>
                 </section>
-                <!-- Technical Modules -->
+
+                <!-- Publication & Distribution -->
                 <section class="mb-12">
-                    <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-cubes"></i> Technical
-                        Modules</h2>
+                    <h2 class="text-2xl section-title mb-6 flex items-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> Publication & Distribution
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Launchpad Syndication -->
+                        <a href="/launchpad/" class="block group">
+                            <div class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                                <span class="icon-circle"><i class="fa-solid fa-share-nodes text-blue-400 text-xl"></i></span>
+                                <span class="text-lg font-semibold text-white">Launchpad</span>
+                                <p class="text-dark-accent text-sm text-center">Multi-platform content syndication and publishing</p>
+                            </div>
+                        </a>
+                        
+                        <!-- Content Management -->
+                        <a href="/post-sections/" class="block group">
+                            <div class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                                <span class="icon-circle"><i class="fa-solid fa-file-lines text-green-400 text-xl"></i></span>
+                                <span class="text-lg font-semibold text-white">Content Manager</span>
+                                <p class="text-dark-accent text-sm text-center">Manage posts, sections, and metadata</p>
+                            </div>
+                        </a>
+                    </div>
+                </section>
+
+                <!-- AI & Automation -->
+                <section class="mb-12">
+                    <h2 class="text-2xl section-title mb-6 flex items-center gap-2">
+                        <i class="fa-solid fa-robot"></i> AI & Automation
+                    </h2>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- LLM Actions -->
+                        <a href="/llm-actions/" class="block group">
+                            <div class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                                <span class="icon-circle"><i class="fa-solid fa-brain text-pink-400 text-xl"></i></span>
+                                <span class="text-lg font-semibold text-white">LLM Actions</span>
+                                <p class="text-dark-accent text-sm text-center">AI-powered content generation and processing</p>
+                            </div>
+                        </a>
+                        
+                        <!-- Image Generation -->
+                        <a href="/images/" class="block group">
+                            <div class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                                <span class="icon-circle"><i class="fa-solid fa-image text-purple-400 text-xl"></i></span>
+                                <span class="text-lg font-semibold text-white">Image Studio</span>
+                                <p class="text-dark-accent text-sm text-center">AI image generation and management</p>
+                            </div>
+                        </a>
+                        
+                        <!-- Clan API -->
+                        <a href="/clan-api/" class="block group">
+                            <div class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                                <span class="icon-circle"><i class="fa-solid fa-shopping-cart text-orange-400 text-xl"></i></span>
+                                <span class="text-lg font-semibold text-white">Product Integration</span>
+                                <p class="text-dark-accent text-sm text-center">External product data and e-commerce</p>
+                            </div>
+                        </a>
+                    </div>
+                </section>
+
+                <!-- System Management -->
+                <section class="mb-12">
+                    <h2 class="text-2xl section-title mb-6 flex items-center gap-2">
+                        <i class="fa-solid fa-cogs"></i> System Management
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Database -->
                         <a href="/db/" class="block group">
-                            <div
-                                class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
-                                <span class="icon-circle"><i class="fa-solid fa-database text-purple-400 text-xl"></i></span>
+                            <div class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                                <span class="icon-circle"><i class="fa-solid fa-database text-cyan-400 text-xl"></i></span>
                                 <span class="text-lg font-semibold text-white">Database</span>
                                 <p class="text-dark-accent text-sm text-center">Manage schemas, data, and migrations</p>
                             </div>
                         </a>
-                        <a href="/llm/" class="block group">
-                            <div
-                                class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
-                                <span class="icon-circle"><i class="fa-solid fa-brain text-pink-400 text-xl"></i></span>
-                                <span class="text-lg font-semibold text-white">AI</span>
-                                <p class="text-dark-accent text-sm text-center">Configure models, prompts, and assistance</p>
-                            </div>
-                        </a>
-                        <a href="/llm/images/" class="block group">
-                            <div
-                                class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
-                                <span class="icon-circle"><i class="fa-solid fa-image text-dark-accent text-xl"></i></span>
-                                <span class="text-lg font-semibold text-white">Images</span>
-                                <p class="text-dark-accent text-sm text-center">Generate and manage blog images</p>
+                        
+                        <!-- Documentation -->
+                        <a href="/docs/" class="block group">
+                            <div class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                                <span class="icon-circle"><i class="fa-solid fa-book text-indigo-400 text-xl"></i></span>
+                                <span class="text-lg font-semibold text-white">Documentation</span>
+                                <p class="text-dark-accent text-sm text-center">System documentation and guides</p>
                             </div>
                         </a>
                     </div>
                 </section>
-                <!-- Documentation -->
+
+                <!-- Quick Stats Dashboard -->
                 <section class="mb-12">
-                    <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-book"></i>
-                        Documentation</h2>
-                    <div class="card-dark rounded-xl p-8 flex flex-col md:flex-row items-center justify-between">
-                        <div class="flex items-center gap-3 mb-4 md:mb-0">
-                            <span class="icon-circle"><i class="fa-solid fa-book-open text-dark-accent text-xl"></i></span>
-                            <span class="text-lg font-semibold text-white">Project Documentation</span>
+                    <h2 class="text-2xl section-title mb-6 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line"></i> Quick Stats
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div class="card-dark rounded-xl p-6 text-center">
+                            <div class="text-3xl font-bold text-white mb-2">{{ post_count or 0 }}</div>
+                            <div class="text-dark-accent text-sm">Total Posts</div>
                         </div>
-                        <a href="/docs/"
-                            class="bg-dark-accent hover:bg-dark-bg text-white font-semibold px-5 py-2 rounded-lg border border-dark-accent transition">View
-                            Docs</a>
-                    </div>
-                </section>
-                <!-- Recent Posts -->
-                <section>
-                    <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-clock"></i> Recent
-                        Posts</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="text-dark-accent text-center text-lg col-span-3">No posts yet</div>
+                        <div class="card-dark rounded-xl p-6 text-center">
+                            <div class="text-3xl font-bold text-white mb-2">{{ image_count or 0 }}</div>
+                            <div class="text-dark-accent text-sm">Images</div>
+                        </div>
+                        <div class="card-dark rounded-xl p-6 text-center">
+                            <div class="text-3xl font-bold text-white mb-2">{{ workflow_count or 0 }}</div>
+                            <div class="text-dark-accent text-sm">Workflows</div>
+                        </div>
+                        <div class="card-dark rounded-xl p-6 text-center">
+                            <div class="text-3xl font-bold text-white mb-2">{{ llm_count or 0 }}</div>
+                            <div class="text-dark-accent text-sm">AI Interactions</div>
+                        </div>
                     </div>
                 </section>
             </div>
