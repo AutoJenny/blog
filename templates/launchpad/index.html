@@ -425,11 +425,11 @@
                     </div>
                 </div>
                 <div class="module-actions">
-                    <a href="/syndication/facebook/product_post" class="btn btn-primary">
+                    <a href="/launchpad/syndication/facebook/product_post" class="btn btn-primary">
                         <i class="fas fa-cog"></i>
                         Manage Daily Posts
                     </a>
-                    <a href="/syndication/facebook/product_post" class="btn btn-secondary">
+                    <a href="/launchpad/syndication/facebook/product_post" class="btn btn-secondary">
                         <i class="fas fa-random"></i>
                         Select Product
                     </a>
@@ -460,7 +460,7 @@
                     </div>
                 </div>
                 <div class="module-actions">
-                    <a href="/syndication/facebook/blog_post" class="btn btn-primary">
+                    <a href="/launchpad/syndication/facebook/blog_post" class="btn btn-primary">
                         <i class="fas fa-cog"></i>
                         Manage Blog Posts
                     </a>
@@ -524,7 +524,7 @@
                     </div>
                 </div>
                 <div class="module-actions">
-                    <a href="/syndication/facebook" class="btn btn-primary">
+                    <a href="/launchpad/syndication/facebook" class="btn btn-primary">
                         <i class="fas fa-cog"></i>
                         Facebook Hub
                     </a>
@@ -681,7 +681,7 @@
                     </div>
                 </div>
                 <div class="module-actions">
-                    <a href="/syndication/facebook/blog-posts-backup" class="btn btn-secondary" style="background: #6b7280; border-color: #6b7280;">
+                    <a href="/launchpad/syndication/facebook/blog-posts-backup" class="btn btn-secondary" style="background: #6b7280; border-color: #6b7280;">
                         <i class="fas fa-eye"></i>
                         View Backup
                     </a>
@@ -798,7 +798,7 @@
                 
                 // Load Facebook credentials status
                 try {
-                    const credentialsResponse = await fetch('/api/syndication/facebook/credentials');
+                    const credentialsResponse = await fetch('/launchpad/api/syndication/facebook/credentials');
                     const credentialsData = await credentialsResponse.json();
                     const hasCredentials = credentialsData.success && credentialsData.credentials && 
                         credentialsData.credentials.app_id && credentialsData.credentials.page_access_token;
