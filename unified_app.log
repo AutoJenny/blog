@@ -1219,3 +1219,51 @@ LINE 2:                 SELECT ps.id, ps.title, ps.content, ps.secti...
 2025-09-22 15:21:47,938 - werkzeug - INFO -  * Debugger PIN: 830-133-383
 2025-09-22 15:21:49,087 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:21:49] "HEAD /launchpad/social-media-command-center HTTP/1.1" 200 -
 2025-09-22 15:21:51,804 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:21:51] "GET /launchpad/social-media-command-center HTTP/1.1" 200 -
+2025-09-22 15:22:08,196 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 15:22:08,355 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 15:22:09,152 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 15:22:09,158 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 15:22:09,167 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 15:22:28,907 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:22:28] "[33mGET /social-media-command-center HTTP/1.1[0m" 404 -
+2025-09-22 15:22:29,793 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:22:29] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:22:33,127 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:22:33] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-22 15:22:33,129 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:22:33] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-22 15:22:33,130 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:22:33] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-22 15:22:33,871 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:22:33] "[33mGET /social-media-command-center HTTP/1.1[0m" 404 -
+2025-09-22 15:22:43,320 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:22:43] "GET /launchpad/social-media-command-center HTTP/1.1" 200 -
+2025-09-22 15:22:43,754 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:22:43] "[33mGET /api/queue HTTP/1.1[0m" 404 -
+2025-09-22 15:23:01,482 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:23:01] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:23:28,166 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:23:28] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:23:31,484 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:23:31] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:23:36,516 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:23:36] "[33mGET /social-media-command-center HTTP/1.1[0m" 404 -
+2025-09-22 15:23:51,571 - config.database - INFO - Database connection established
+2025-09-22 15:23:51,598 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:23:51] "GET / HTTP/1.1" 200 -
+2025-09-22 15:23:51,611 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:23:51] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-22 15:23:51,612 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:23:51] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 15:23:51,612 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:23:51] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-22 15:23:51,613 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:23:51] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-22 15:23:51,613 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:23:51] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 15:23:51,940 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:23:51] "GET / HTTP/1.1" 200 -
+2025-09-22 15:23:51,955 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:23:51] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-22 15:23:51,957 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:23:51] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 15:23:51,958 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:23:51] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-22 15:23:51,958 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:23:51] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-22 15:23:51,958 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:23:51] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-22 15:23:58,267 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:23:58] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:24:01,491 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:24:01] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:24:02,684 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:24:02] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-22 15:24:02,689 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:24:02] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 15:24:02,813 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:24:02] "GET /api/posts HTTP/1.1" 200 -
+2025-09-22 15:24:13,691 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:24:13] "[33mGET /social-media-command-center HTTP/1.1[0m" 404 -
+2025-09-22 15:24:22,848 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:24:22] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-22 15:24:22,849 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:24:22] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-22 15:24:22,850 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:24:22] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-22 15:24:27,124 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:24:27] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-22 15:24:27,139 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:24:27] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 15:24:27,197 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:24:27] "GET /api/posts HTTP/1.1" 200 -
+2025-09-22 15:24:31,491 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:24:31] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:24:31,555 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:24:31] "[33mGET /social-media-command-center HTTP/1.1[0m" 404 -
+2025-09-22 15:24:50,989 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:24:50] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:25:01,489 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:25:01] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:25:16,835 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:25:16] "HEAD /launchpad/social-media-command-center HTTP/1.1" 200 -
+2025-09-22 15:25:19,919 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:25:19] "HEAD /launchpad/api/queue HTTP/1.1" 200 -
