@@ -1267,3 +1267,104 @@ LINE 2:                 SELECT ps.id, ps.title, ps.content, ps.secti...
 2025-09-22 15:25:01,489 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:25:01] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
 2025-09-22 15:25:16,835 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:25:16] "HEAD /launchpad/social-media-command-center HTTP/1.1" 200 -
 2025-09-22 15:25:19,919 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:25:19] "HEAD /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-22 15:25:31,491 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:25:31] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:25:33,227 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:25:33] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-22 15:25:33,241 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:25:33] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-22 15:25:33,306 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:25:33] "GET /api/posts HTTP/1.1" 200 -
+2025-09-22 15:25:34,622 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:25:34] "GET /launchpad/social-media-command-center HTTP/1.1" 200 -
+2025-09-22 15:25:34,671 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:25:34] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-22 15:25:51,602 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:25:51] "[33mGET /syndication/facebook/product_post HTTP/1.1[0m" 404 -
+2025-09-22 15:25:55,644 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:25:55] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-22 15:25:55,645 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:25:55] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-22 15:25:55,646 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:25:55] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-22 15:26:01,489 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:26:01] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:26:15,186 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:26:15] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:26:18,559 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:26:18] "[33mGET /syndication/facebook/blog_post HTTP/1.1[0m" 404 -
+2025-09-22 15:26:22,922 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:26:22] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-22 15:26:22,924 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:26:22] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-22 15:26:22,926 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:26:22] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-22 15:26:23,312 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:26:23] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-22 15:26:23,313 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:26:23] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-22 15:26:23,314 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:26:23] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-22 15:26:31,489 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:26:31] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:26:39,428 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:26:39] "GET /launchpad/social-media-command-center HTTP/1.1" 200 -
+2025-09-22 15:26:39,488 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:26:39] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-22 15:27:01,490 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:27:01] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:27:06,613 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:27:06] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:27:30,951 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 15:27:31,146 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 15:27:32,031 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 15:27:32,038 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 15:27:32,048 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 15:27:32,059 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:27:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:27:33,418 - config.database - INFO - Database connection established
+2025-09-22 15:27:33,422 - blueprints.launchpad - ERROR - Error in syndication_platform_channel: column cp.channel_type does not exist
+LINE 5:                 JOIN channel_types ct ON cp.channel_type = c...
+                                                 ^
+HINT:  Perhaps you meant to reference the column "cp.channel_type_id".
+2025-09-22 15:27:33,423 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:27:33] "[35m[1mHEAD /launchpad/syndication/facebook/product_post HTTP/1.1[0m" 500 -
+2025-09-22 15:27:37,381 - blueprints.launchpad - ERROR - Error in syndication_platform_channel: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 15:27:37,381 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:27:37] "[35m[1mGET /launchpad/syndication/facebook/product_post HTTP/1.1[0m" 500 -
+2025-09-22 15:27:43,423 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 15:27:48,385 - blueprints.launchpad - ERROR - Error in syndication_platform_channel: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 15:27:48,385 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:27:48] "[35m[1mHEAD /launchpad/syndication/facebook/product_post HTTP/1.1[0m" 500 -
+2025-09-22 15:27:50,741 - blueprints.launchpad - ERROR - Error in syndication_platform_channel: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 15:27:50,741 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:27:50] "[35m[1mGET /launchpad/syndication/facebook/product_post HTTP/1.1[0m" 500 -
+2025-09-22 15:27:54,932 - blueprints.database - ERROR - Error listing tables: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 15:27:54,932 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:27:54] "[35m[1mGET /db/tables HTTP/1.1[0m" 500 -
+2025-09-22 15:28:01,488 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:28:01] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:28:05,468 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 15:28:05,686 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 15:28:06,610 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 15:28:06,616 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 15:28:06,627 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 15:28:12,706 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 15:28:12,902 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 15:28:13,799 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 15:28:13,805 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 15:28:13,815 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 15:28:15,837 - config.database - INFO - Database connection established
+2025-09-22 15:28:15,842 - blueprints.launchpad - WARNING - Content processes table not found, using fallback: column cp.channel_type does not exist
+LINE 5:                     JOIN channel_types ct ON cp.channel_type...
+                                                     ^
+HINT:  Perhaps you meant to reference the column "cp.channel_type_id".
+2025-09-22 15:28:15,843 - blueprints.launchpad - ERROR - Error in syndication_platform_channel: syndication/facebook/product_post.html
+2025-09-22 15:28:15,843 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:28:15] "[35m[1mHEAD /launchpad/syndication/facebook/product_post HTTP/1.1[0m" 500 -
+2025-09-22 15:28:18,496 - blueprints.launchpad - ERROR - Error in syndication_platform_channel: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 15:28:18,496 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:28:18] "[35m[1mGET /launchpad/syndication/facebook/product_post HTTP/1.1[0m" 500 -
+2025-09-22 15:28:31,410 - blueprints.core - WARNING - Could not fetch data: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 15:28:31,435 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:28:31] "HEAD / HTTP/1.1" 200 -
+2025-09-22 15:28:31,488 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:28:31] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:28:34,509 - blueprints.launchpad - ERROR - Error in syndication_platform_channel: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 15:28:34,509 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:28:34] "[35m[1mHEAD /launchpad/syndication/facebook/product_post HTTP/1.1[0m" 500 -
+2025-09-22 15:28:36,810 - blueprints.launchpad - ERROR - Error in syndication_platform_channel: current transaction is aborted, commands ignored until end of transaction block
+2025-09-22 15:28:36,810 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:28:36] "[35m[1mGET /launchpad/syndication/facebook/product_post HTTP/1.1[0m" 500 -
+2025-09-22 15:28:40,043 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:28:40] "[35m[1mGET /db/test HTTP/1.1[0m" 500 -
+2025-09-22 15:28:46,611 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:28:46] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:28:59,662 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:28:59] "[35m[1mGET /db/test HTTP/1.1[0m" 500 -
+2025-09-22 15:29:01,761 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:29:01] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:29:17,609 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 15:29:17,791 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 15:29:18,715 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 15:29:18,722 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 15:29:18,733 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 15:29:23,176 - blueprints.launchpad - ERROR - Error in syndication_platform_channel: syndication/facebook/product_post.html
+2025-09-22 15:29:23,177 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:29:23] "[35m[1mHEAD /launchpad/syndication/facebook/product_post HTTP/1.1[0m" 500 -
+2025-09-22 15:29:30,824 - blueprints.launchpad - ERROR - Error in syndication_platform_channel: syndication/facebook/product_post.html
+2025-09-22 15:29:30,824 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:29:30] "[35m[1mGET /launchpad/syndication/facebook/product_post HTTP/1.1[0m" 500 -
+2025-09-22 15:29:32,761 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:29:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:29:46,063 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-22 15:29:46,268 - werkzeug - INFO -  * Restarting with stat
+2025-09-22 15:29:47,178 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-22 15:29:47,185 - werkzeug - WARNING -  * Debugger is active!
+2025-09-22 15:29:47,196 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-22 15:29:48,173 - blueprints.launchpad - ERROR - Error in syndication_platform_channel: includes/posting_queue.html
+2025-09-22 15:29:48,174 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:29:48] "[35m[1mHEAD /launchpad/syndication/facebook/product_post HTTP/1.1[0m" 500 -
+2025-09-22 15:29:51,124 - blueprints.launchpad - ERROR - Error in syndication_platform_channel: includes/posting_queue.html
+2025-09-22 15:29:51,124 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:29:51] "[35m[1mGET /launchpad/syndication/facebook/product_post HTTP/1.1[0m" 500 -
+2025-09-22 15:30:03,760 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:30:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-22 15:30:07,898 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:30:07] "HEAD /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-22 15:30:13,540 - blueprints.launchpad - ERROR - Error in syndication_platform_channel: includes/posting_queue.html
+2025-09-22 15:30:13,540 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:30:13] "[35m[1mHEAD /launchpad/syndication/facebook/blog_post HTTP/1.1[0m" 500 -
+2025-09-22 15:30:24,703 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:30:24] "HEAD /launchpad/syndication/facebook/blog_post HTTP/1.1" 200 -
+2025-09-22 15:30:26,612 - werkzeug - INFO - 127.0.0.1 - - [22/Sep/2025 15:30:26] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
