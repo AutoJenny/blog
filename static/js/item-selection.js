@@ -669,6 +669,22 @@ class ItemSelectionManager {
     }
 }
 
+// Global accordion toggle function (for HTML onclick handlers)
+function toggleAccordion(sectionId) {
+    const content = document.getElementById(`${sectionId}-content`);
+    const chevron = document.getElementById(`${sectionId}-chevron`);
+    
+    if (content && chevron) {
+        if (content.style.display === 'none' || content.style.display === '') {
+            content.style.display = 'block';
+            chevron.style.transform = 'rotate(90deg)';
+        } else {
+            content.style.display = 'none';
+            chevron.style.transform = 'rotate(0deg)';
+        }
+    }
+}
+
 // Auto-initialize when the DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     window.itemSelectionManager = new ItemSelectionManager();
