@@ -110,10 +110,11 @@ def get_generated_content(product_id, content_type):
         with db_manager.get_connection() as conn:
             cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
+            # Query for generated content
             cur.execute("""
                 SELECT generated_content as content, created_at, updated_at 
                 FROM posting_queue 
-                WHERE product_id = %s AND content_type = %s AND status IN ('draft', 'ready')
+                WHERE product_id = %s AND content_type = %s AND status IN ('draft', 'ready', 'pending')
             """, (product_id, content_type))
             
             result = cur.fetchone()
