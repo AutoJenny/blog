@@ -65,11 +65,12 @@ Object.assign(AIContentGenerationManager.prototype, {
         });
     },
     
-    handleDataPackage(dataPackage) {
+    handleDataPackage(eventDetail) {
+        const dataPackage = eventDetail.dataPackage;
         this.currentDataPackage = dataPackage;
         
         if (dataPackage.data_type === 'product') {
-            this.setSelectedProduct(dataPackage.data);
+            this.setSelectedProduct(dataPackage.source_data);
             this.updateInputDataDisplay(dataPackage);
             this.updateLLMConfiguration(dataPackage);
         }
@@ -83,7 +84,7 @@ Object.assign(AIContentGenerationManager.prototype, {
             inputDataStatus.textContent = `${dataPackage.data_type} selected`;
             
             // Display key product information
-            const product = dataPackage.data;
+            const product = dataPackage.source_data;
             let displayText = `<strong>${product.name}</strong><br>`;
             
             // Add other relevant fields
