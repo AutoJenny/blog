@@ -171,7 +171,7 @@ def update_queue_status():
             else:
                 return jsonify({
                     'success': False,
-                    'error': 'No draft content found for this product and product focus'
+                    'error': 'No draft content found for this product and content type'
                 }), 404
                 
     except Exception as e:
