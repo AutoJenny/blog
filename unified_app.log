@@ -5804,3 +5804,77 @@ LINE 3: ...  WHERE product_id = $1 AND content_type = $2 AND product_fo...
 2025-09-23 17:47:31,914 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:47:31] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
 2025-09-23 17:48:03,716 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:48:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
 2025-09-23 17:48:33,720 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:48:33] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:49:03,724 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:49:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:49:33,720 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:49:33] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:50:03,725 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:50:08,338 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-23 17:50:08,369 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-23 17:50:08,371 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-23 17:50:08,374 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "[36mGET /static/js/item-selection-data.js HTTP/1.1[0m" 304 -
+2025-09-23 17:50:08,374 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "[36mGET /static/js/item-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-23 17:50:08,374 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "[36mGET /static/js/item-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-23 17:50:08,375 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "[36mGET /static/js/item-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-23 17:50:08,375 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "[36mGET /static/js/item-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-23 17:50:08,375 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "[36mGET /static/js/item-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 17:50:08,376 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-23 17:50:08,377 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-23 17:50:08,379 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-23 17:50:08,380 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "[36mGET /static/js/ai-content-generation-core.js HTTP/1.1[0m" 304 -
+2025-09-23 17:50:08,381 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "GET /static/js/ai-content-generation-events.js HTTP/1.1" 200 -
+2025-09-23 17:50:08,382 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "[36mGET /static/js/ai-content-generation-data.js HTTP/1.1[0m" 304 -
+2025-09-23 17:50:08,383 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "[36mGET /static/js/ai-content-generation-content.js HTTP/1.1[0m" 304 -
+2025-09-23 17:50:08,384 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "GET /static/js/ai-content-generation-prompts.js HTTP/1.1" 200 -
+2025-09-23 17:50:08,384 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "[36mGET /static/js/ai-content-generation-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 17:50:08,458 - config.database - INFO - Database connection established
+2025-09-23 17:50:08,458 - config.database - INFO - Database connection established
+2025-09-23 17:50:08,459 - config.database - INFO - Database connection established
+2025-09-23 17:50:08,459 - config.database - INFO - Database connection established
+2025-09-23 17:50:08,461 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-23 17:50:08,461 - config.database - INFO - Database connection established
+2025-09-23 17:50:08,462 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "GET /launchpad/api/syndication/last-updated HTTP/1.1" 200 -
+2025-09-23 17:50:08,462 - config.database - INFO - Database connection established
+2025-09-23 17:50:08,464 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 17:50:08,464 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "GET /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 17:50:08,465 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-09-23 17:50:08,466 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-23 17:50:08,468 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-23 17:50:08,481 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:08] "GET /launchpad/api/syndication/get-generated-content/152565/feature HTTP/1.1" 200 -
+2025-09-23 17:50:33,724 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:33] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:50:59,643 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:50:59] "[33mPOST /launchpad/api/llm/actions/1/execute HTTP/1.1[0m" 404 -
+2025-09-23 17:51:03,723 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:51:23,238 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-23 17:51:23,276 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-23 17:51:23,278 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-23 17:51:23,281 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "[36mGET /static/js/item-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-23 17:51:23,281 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "[36mGET /static/js/item-selection-data.js HTTP/1.1[0m" 304 -
+2025-09-23 17:51:23,283 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "[36mGET /static/js/item-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-23 17:51:23,284 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "[36mGET /static/js/item-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-23 17:51:23,284 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-23 17:51:23,285 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "[36mGET /static/js/item-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 17:51:23,285 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "[36mGET /static/js/item-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-23 17:51:23,287 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-23 17:51:23,287 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "[36mGET /static/js/ai-content-generation-core.js HTTP/1.1[0m" 304 -
+2025-09-23 17:51:23,289 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "[36mGET /static/js/ai-content-generation-events.js HTTP/1.1[0m" 304 -
+2025-09-23 17:51:23,290 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "[36mGET /static/js/ai-content-generation-content.js HTTP/1.1[0m" 304 -
+2025-09-23 17:51:23,290 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-23 17:51:23,292 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "[36mGET /static/js/ai-content-generation-data.js HTTP/1.1[0m" 304 -
+2025-09-23 17:51:23,294 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "[36mGET /static/js/ai-content-generation-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 17:51:23,294 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "[36mGET /static/js/ai-content-generation-prompts.js HTTP/1.1[0m" 304 -
+2025-09-23 17:51:23,374 - config.database - INFO - Database connection established
+2025-09-23 17:51:23,376 - config.database - INFO - Database connection established
+2025-09-23 17:51:23,376 - config.database - INFO - Database connection established
+2025-09-23 17:51:23,376 - config.database - INFO - Database connection established
+2025-09-23 17:51:23,378 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-23 17:51:23,378 - config.database - INFO - Database connection established
+2025-09-23 17:51:23,378 - config.database - INFO - Database connection established
+2025-09-23 17:51:23,378 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "GET /launchpad/api/syndication/last-updated HTTP/1.1" 200 -
+2025-09-23 17:51:23,380 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "GET /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 17:51:23,381 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-09-23 17:51:23,382 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-23 17:51:23,383 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-23 17:51:23,384 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 17:51:23,393 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:23] "GET /launchpad/api/syndication/get-generated-content/152565/feature HTTP/1.1" 200 -
+2025-09-23 17:51:33,720 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:33] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:51:44,749 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:51:44] "[33mPOST /launchpad/api/syndication/save-prompt-template HTTP/1.1[0m" 404 -
+2025-09-23 17:52:03,816 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:52:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:52:35,163 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:52:35] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -

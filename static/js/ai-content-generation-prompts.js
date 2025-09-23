@@ -8,8 +8,11 @@ Object.assign(AIContentGenerationManager.prototype, {
     
     // Generate prompt for product
     generatePromptForProduct(product, contentType) {
+        console.log('generatePromptForProduct called with:', { product: product.name, contentType, databasePrompts: this.databasePrompts });
+        
         if (this.databasePrompts && this.databasePrompts.user_prompt_template) {
             let prompt = this.databasePrompts.user_prompt_template.value;
+            console.log('Using database template:', prompt);
             
             // Replace placeholders with actual product data
             prompt = prompt.replace(/\{product_name\}/g, product.name || 'Unknown Product');
@@ -18,9 +21,11 @@ Object.assign(AIContentGenerationManager.prototype, {
             prompt = prompt.replace(/\{product_category\}/g, product.category || 'Uncategorized');
             prompt = prompt.replace(/\{content_type\}/g, this.getContentTypeDisplayName(contentType));
             
+            console.log('Final prompt after replacements:', prompt);
             return prompt;
         }
         
+        console.log('Using fallback prompt');
         return `Generate ${this.getContentTypeDisplayName(contentType)} content for ${product.name}`;
     },
     
