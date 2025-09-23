@@ -8,9 +8,11 @@ class AIContentGenerationManager {
         this.generatedContent = '';
         this.selectedProduct = null;
         this.currentDataPackage = null;
+        this.databasePrompts = null; // Store prompts from database
         
         this.init();
         this.setupLLMControls();
+        this.loadDatabasePrompts(); // Load prompts from database
     }
     
     init() {
@@ -322,7 +324,8 @@ class AIContentGenerationManager {
         const llmDataChevron = document.getElementById('llm-data-chevron');
         
         if (llmDataStatus) {
-            llmDataStatus.textContent = `Configured for ${dataPackage.data_type}`;
+            const promptSource = this.databasePrompts ? 'Database prompts' : 'Default prompts';
+            llmDataStatus.textContent = `${promptSource} - ${dataPackage.data_type}`;
         }
         
         if (generationPrompt && dataPackage.data_type === 'product') {
@@ -332,15 +335,57 @@ class AIContentGenerationManager {
         }
     }
 
-    // Generate prompt based on product and content type
+    // Load LLM prompts from database
+    async loadDatabasePrompts() {
+        try {
+            // Get process_id from page data (Facebook Product Post = 1)
+            const processId = 1; // TODO: Make this dynamic based on platform/channel
+            
+            const response = await fetch(`/launchpad/api/syndication/llm-prompts/${processId}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                this.databasePrompts = data.prompts;
+                console.log('Loaded database prompts:', this.databasePrompts);
+                
+                // Update system prompt in UI if available
+                const systemPromptElement = document.getElementById('llm-system-prompt');
+                if (systemPromptElement && this.databasePrompts.system_prompt) {
+                    systemPromptElement.value = this.databasePrompts.system_prompt.value;
+                }
+            } else {
+                console.warn('Failed to load database prompts:', data.error);
+            }
+        } catch (error) {
+            console.error('Error loading database prompts:', error);
+        }
+    }
+
+    // Generate prompt based on product and content type using database template
     generatePromptForProduct(product, contentType) {
-        const prompts = {
+        // Use database template if available
+        if (this.databasePrompts && this.databasePrompts.user_prompt_template) {
+            const template = this.databasePrompts.user_prompt_template.value;
+            
+            // Replace placeholders in template
+            let prompt = template
+                .replace(/{product_name}/g, product.name || 'Unknown Product')
+                .replace(/{product_sku}/g, product.sku || 'N/A')
+                .replace(/{product_price}/g, product.price || 'N/A')
+                .replace(/{product_description}/g, product.description || 'No description available')
+                .replace(/{content_type}/g, contentType);
+            
+            return prompt;
+        }
+        
+        // Fallback to hard-coded prompts if database template not available
+        const fallbackPrompts = {
             feature: `Create a Facebook post highlighting the key features of "${product.name}" (${product.sku}). Price: ${product.price}. Focus on what makes this product unique and appealing. Include relevant hashtags.`,
             benefit: `Create a Facebook post emphasizing the benefits of "${product.name}" (${product.sku}). Price: ${product.price}. Focus on how this product improves the customer's life. Include relevant hashtags.`,
             story: `Create a Facebook post telling a story about "${product.name}" (${product.sku}). Price: ${product.price}. Make it engaging and relatable. Include relevant hashtags.`
         };
         
-        return prompts[contentType] || prompts.feature;
+        return fallbackPrompts[contentType] || fallbackPrompts.feature;
     }
 
     // Setup LLM controls
