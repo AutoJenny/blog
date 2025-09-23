@@ -156,11 +156,11 @@ def update_queue_status():
             }), 400
         
         with db_manager.get_cursor() as cursor:
-            # Update the status from 'draft' to 'ready' (idempotent - also works if already 'ready')
+            # Update the status from 'draft' or 'pending' to 'ready' (idempotent - also works if already 'ready')
             cursor.execute("""
                 UPDATE posting_queue 
                 SET status = %s, updated_at = NOW()
-                WHERE product_id = %s AND content_type = %s AND status IN ('draft', 'ready')
+                WHERE product_id = %s AND content_type = %s AND status IN ('draft', 'pending', 'ready')
             """, (status, product_id, content_type))
             
             if cursor.rowcount > 0:
