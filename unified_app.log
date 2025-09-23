@@ -3687,3 +3687,18 @@ LINE 2:                 SELECT MAX(created_at) as last_updated
 2025-09-23 11:04:19,685 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:04:19] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
 2025-09-23 11:04:49,690 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:04:49] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
 2025-09-23 11:05:19,687 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:05:19] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 11:05:31,138 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:05:31] "GET /launchpad/api/syndication/schedules HTTP/1.1" 200 -
+2025-09-23 11:05:49,689 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:05:49] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 11:05:53,286 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 11:05:54,406 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 11:05:54,413 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 11:05:54,422 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 11:05:57,293 - config.database - INFO - Database connection established
+2025-09-23 11:05:57,295 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:05:57] "GET /launchpad/api/syndication/schedules HTTP/1.1" 200 -
+2025-09-23 11:06:20,683 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:06:20] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 11:06:21,846 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 11:06:22,917 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 11:06:22,923 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 11:06:22,932 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 11:06:26,000 - config.database - INFO - Database connection established
+2025-09-23 11:06:26,003 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:06:26] "GET /launchpad/api/syndication/schedules HTTP/1.1" 200 -
