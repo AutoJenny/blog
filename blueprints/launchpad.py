@@ -977,6 +977,47 @@ def set_current_product():
         logger.error(f"Error setting selected product: {e}")
         return jsonify({'error': str(e)}), 500
 
+@bp.route('/api/syndication/generate-social-content', methods=['POST'])
+def generate_social_content():
+    """Generate social media content using direct LLM call."""
+    try:
+        from blueprints.llm_actions import LLMService
+        
+        data = request.get_json()
+        prompt = data.get('prompt')
+        provider = data.get('provider', 'ollama')
+        model = data.get('model', 'llama3.2:latest')
+        
+        if not prompt:
+            return jsonify({
+                'success': False,
+                'error': 'Prompt is required'
+            }), 400
+        
+        # Create LLM service and execute request
+        llm_service = LLMService()
+        messages = [
+            {
+                'role': 'system',
+                'content': 'You are a social media content creator specializing in product marketing. Create engaging, authentic posts that highlight product features and benefits.'
+            },
+            {
+                'role': 'user',
+                'content': prompt
+            }
+        ]
+        
+        result = llm_service.execute_llm_request(provider, model, messages)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Error generating social content: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @bp.route('/health')
 def health():
     """Health check endpoint."""
