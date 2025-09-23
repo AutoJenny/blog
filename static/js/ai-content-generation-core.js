@@ -27,8 +27,8 @@ class AIContentGenerationManager {
         this.selectedProduct = product;
         this.updateGenerateButton();
         this.updateContentText();
-        this.loadExistingContent(); // Load any existing generated content
-        this.updateAIStatusHeader();
+        this.loadExistingContent(); // Load any existing generated content (async)
+        // updateAIStatusHeader() will be called by loadExistingContent() after content is loaded
     }
     
     // Update the generate button state

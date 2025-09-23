@@ -75,6 +75,8 @@ Object.assign(AIContentGenerationManager.prototype, {
                 this.updateAIStatusHeader(); // Update the accordion header
                 console.log('Loaded existing content and updated header');
             } else {
+                this.generatedContent = ''; // Clear any existing content
+                this.updateAIStatusHeader(); // Update header to show "Needs generation"
                 console.log('No existing content found');
             }
         } catch (error) {
