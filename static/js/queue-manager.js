@@ -29,6 +29,7 @@ class QueueManager {
     init() {
         console.log(`Initializing queue manager for page type: ${this.pageType}`);
         this.setupAccordion();
+        this.setupEventListeners();
         this.loadQueueData();
     }
 
@@ -43,6 +44,17 @@ class QueueManager {
         if (postingQueueContent && postingQueueChevron) {
             postingQueueContent.classList.add('active');
             postingQueueChevron.classList.add('rotated');
+        }
+    }
+
+    /**
+     * Setup event listeners
+     */
+    setupEventListeners() {
+        // Add 10 Items button
+        const add10ItemsBtn = document.getElementById('add-10-items-btn');
+        if (add10ItemsBtn) {
+            add10ItemsBtn.addEventListener('click', () => this.add10Items());
         }
     }
 
@@ -341,6 +353,77 @@ class QueueManager {
                 notification.parentNode.removeChild(notification);
             }
         }, 3000);
+    }
+
+    /**
+     * Add 10 items to the queue by running the sequence 10 times:
+     * 1) Generate random product selection
+     * 2) Generate AI content for that product
+     * 3) Add to queue
+     */
+    async add10Items() {
+        const button = document.getElementById('add-10-items-btn');
+        const originalText = button.innerHTML;
+        
+        try {
+            // Disable button and show progress
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding Items...';
+            
+            let successCount = 0;
+            let errorCount = 0;
+            
+            for (let i = 1; i <= 10; i++) {
+                try {
+                    // Update progress
+                    button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Adding Item ${i}/10...`;
+                    
+                    // Step 1: Generate random product selection
+                    if (window.itemSelectionManager) {
+                        await window.itemSelectionManager.selectRandomProduct();
+                        // Wait a moment for the selection to process
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                    
+                    // Step 2: Generate AI content
+                    if (window.aiContentGenerationManager) {
+                        await window.aiContentGenerationManager.generateContent();
+                        // Wait a moment for content generation
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                    
+                    // Step 3: Add to queue (silent mode)
+                    if (window.aiContentGenerationManager) {
+                        const queueResult = await window.aiContentGenerationManager.addToQueue(true);
+                        if (!queueResult) {
+                            throw new Error('Failed to add to queue');
+                        }
+                        // Wait a moment for queue addition
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                    
+                    successCount++;
+                    
+                } catch (error) {
+                    console.error(`Error adding item ${i}:`, error);
+                    errorCount++;
+                }
+            }
+            
+            // Reload queue data to show new items
+            await this.loadQueueData();
+            
+            // Show completion message
+            this.showNotification(`Added ${successCount} items to queue${errorCount > 0 ? ` (${errorCount} errors)` : ''}`, 'success');
+            
+        } catch (error) {
+            console.error('Error in add10Items:', error);
+            this.showNotification('Error adding items to queue: ' + error.message, 'error');
+        } finally {
+            // Re-enable button
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
     }
 }
 
