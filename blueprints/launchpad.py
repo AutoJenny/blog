@@ -8,6 +8,7 @@ from datetime import datetime
 import pytz
 from humanize import naturaltime
 from config.database import db_manager
+import psycopg
 
 bp = Blueprint('launchpad', __name__)
 logger = logging.getLogger(__name__)
@@ -47,6 +48,96 @@ bp.add_app_template_filter(strip_html_doc, 'strip_html_doc')
 def index():
     """Main launchpad page."""
     return render_template('launchpad/index.html')
+
+@bp.route('/api/syndication/save-generated-content', methods=['POST'])
+def save_generated_content():
+    """Save generated content for a product."""
+    try:
+        data = request.get_json()
+        product_id = data.get('product_id')
+        content_type = data.get('content_type', 'feature')
+        generated_content = data.get('generated_content')
+        
+        if not product_id or not generated_content:
+            return jsonify({
+                'success': False,
+                'error': 'Product ID and generated content are required'
+            }), 400
+        
+        with db_manager.get_connection() as conn:
+            cur = conn.cursor()
+            
+            # Check if content already exists for this product and content type
+            cur.execute("""
+                SELECT id FROM posting_queue 
+                WHERE product_id = %s AND content_type = %s AND status = 'draft'
+            """, (product_id, content_type))
+            
+            existing = cur.fetchone()
+            
+            if existing:
+                # Update existing content
+                cur.execute("""
+                    UPDATE posting_queue 
+                    SET generated_content = %s, updated_at = NOW()
+                    WHERE product_id = %s AND content_type = %s AND status = 'draft'
+                """, (generated_content, product_id, content_type))
+            else:
+                # Insert new content as draft
+                cur.execute("""
+                    INSERT INTO posting_queue (product_id, content_type, generated_content, status, created_at, updated_at)
+                    VALUES (%s, %s, %s, 'draft', NOW(), NOW())
+                """, (product_id, content_type, generated_content))
+            
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Content saved successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error saving generated content: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@bp.route('/api/syndication/get-generated-content/<int:product_id>/<content_type>')
+def get_generated_content(product_id, content_type):
+    """Get generated content for a product and content type."""
+    try:
+        with db_manager.get_connection() as conn:
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
+            
+            cur.execute("""
+                SELECT generated_content as content, created_at, updated_at 
+                FROM posting_queue 
+                WHERE product_id = %s AND content_type = %s AND status = 'draft'
+            """, (product_id, content_type))
+            
+            result = cur.fetchone()
+            
+            if result:
+                return jsonify({
+                    'success': True,
+                    'content': result['content'],
+                    'created_at': result['created_at'].isoformat() if result['created_at'] else None,
+                    'updated_at': result['updated_at'].isoformat() if result['updated_at'] else None
+                })
+            else:
+                return jsonify({
+                    'success': True,
+                    'content': None,
+                    'message': 'No content found'
+                })
+                
+    except Exception as e:
+        logger.error(f"Error getting generated content: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 @bp.route('/cross-promotion')
 def cross_promotion():
@@ -780,100 +871,68 @@ def update_products():
             'error': str(e)
         }), 500
 
-@bp.route('/api/syndication/save-selected-product', methods=['POST'])
-def save_selected_product():
-    """Save the selected product to ui_session_state table."""
+# NEW SIMPLE ENDPOINTS - NO MORE BROKEN CODE
+
+@bp.route('/api/selected-product', methods=['GET'])
+def get_current_product():
+    """Get the currently selected product - SIMPLE VERSION."""
+    try:
+        with db_manager.get_connection() as conn:
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
+            
+            # Get the most recent selected product
+            cur.execute("""
+                SELECT state_value FROM ui_session_state 
+                WHERE state_key = 'selected_product_id' 
+                ORDER BY updated_at DESC 
+                LIMIT 1
+            """)
+            
+            result = cur.fetchone()
+            if not result:
+                return jsonify({'product': None})
+            
+            # Get product details
+            cur.execute("""
+                SELECT id, name, sku, price, description, image_url, url
+                FROM clan_products WHERE id = %s
+            """, (result['state_value'],))
+            
+            product = cur.fetchone()
+            return jsonify({'product': product})
+            
+    except Exception as e:
+        logger.error(f"Error getting selected product: {e}")
+        return jsonify({'product': None}), 500
+
+@bp.route('/api/selected-product', methods=['POST'])
+def set_current_product():
+    """Set the currently selected product - SIMPLE VERSION."""
     try:
         data = request.get_json()
         product_id = data.get('product_id')
         
         if not product_id:
-            return jsonify({
-                'success': False,
-                'message': 'Product ID is required'
-            }), 400
+            return jsonify({'error': 'product_id required'}), 400
         
-        with db_manager.get_cursor() as cursor:
-            # Delete any existing selected product entry
-            cursor.execute("""
-                DELETE FROM ui_session_state 
-                WHERE state_key = 'selected_product_id'
-            """)
+        with db_manager.get_connection() as conn:
+            cur = conn.cursor()
             
-            # Insert new selected product
-            cursor.execute("""
-                INSERT INTO ui_session_state (session_id, state_key, state_value, state_type, expires_at)
-                VALUES ('global', 'selected_product_id', %s, 'integer', NULL)
-            """, (product_id,))
-        
-        return jsonify({
-            'success': True,
-            'message': 'Selected product saved successfully'
-        })
-        
-    except Exception as e:
-        logger.error(f"Error in save_selected_product: {e}")
-        return jsonify({
-            'success': False,
-            'message': 'Failed to save selected product'
-        }), 500
-
-@bp.route('/api/syndication/get-selected-product')
-def get_selected_product():
-    """Get the currently selected product from ui_session_state table."""
-    try:
-        with db_manager.get_cursor() as cursor:
-            # Get selected product ID
-            cursor.execute("""
-                SELECT state_value FROM ui_session_state 
-                WHERE state_key = 'selected_product_id'
-            """)
+            # Delete old selection
+            cur.execute("DELETE FROM ui_session_state WHERE state_key = 'selected_product_id'")
             
-            result = cursor.fetchone()
-            
-            if not result:
-                return jsonify({
-                    'success': True,
-                    'product': None
-                })
-            
-            product_id = result['state_value']
-            
-            # Get product details
-            cursor.execute("""
-                SELECT id, name, sku, price, description, image_url
-                FROM clan_products 
-                WHERE id = %s
+            # Insert new selection
+            cur.execute("""
+                INSERT INTO ui_session_state (session_id, state_key, state_value, state_type, updated_at)
+                VALUES ('global', 'selected_product_id', %s, 'integer', NOW())
             """, (product_id,))
             
-            product_result = cursor.fetchone()
-        
-        if product_result:
-            product = {
-                'id': product_result['id'],
-                'name': product_result['name'],
-                'sku': product_result['sku'],
-                'price': product_result['price'],
-                'description': product_result['description'],
-                'image_url': product_result['image_url']
-            }
-            
-            return jsonify({
-                'success': True,
-                'product': product
-            })
-        else:
-            return jsonify({
-                'success': True,
-                'product': None
-            })
+            conn.commit()
+            return jsonify({'success': True})
             
     except Exception as e:
-        logger.error(f"Error in get_selected_product: {e}")
-        return jsonify({
-            'success': False,
-            'message': 'Failed to get selected product'
-        }), 500
+        logger.error(f"Error setting selected product: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @bp.route('/health')
 def health():

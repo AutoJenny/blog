@@ -44,8 +44,13 @@
         {% include 'launchpad/includes/posting_queue.html' %}
     </div>
 
-    <!-- Item Selection JavaScript -->
-    <script src="{{ url_for('static', filename='js/item-selection.js') }}"></script>
+    <!-- Item Selection JavaScript Modules -->
+    <script src="{{ url_for('static', filename='js/item-selection-utils.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/item-selection-data.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/item-selection-browser.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/item-selection-selection.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/item-selection-accordions.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/item-selection-core.js') }}"></script>
     
     <!-- Queue Manager JavaScript -->
     <script src="{{ url_for('static', filename='js/queue-manager.js') }}"></script>
