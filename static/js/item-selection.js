@@ -691,8 +691,10 @@ class ItemSelectionManager {
     // Load selected product from database on page load
     async loadSelectedProduct() {
         try {
+            console.log('Loading selected product from database...');
             const response = await fetch('/launchpad/api/syndication/get-selected-product');
             const data = await response.json();
+            console.log('Load selected product response:', data);
             
             if (data.success && data.product) {
                 this.selectedProduct = data.product;
@@ -700,6 +702,9 @@ class ItemSelectionManager {
                 
                 // Notify other components that a product has been selected
                 this.notifyProductSelected(data.product);
+                console.log('Selected product loaded and displayed:', data.product.name);
+            } else {
+                console.log('No selected product found in database');
             }
         } catch (error) {
             console.error('Error loading selected product:', error);
@@ -709,6 +714,7 @@ class ItemSelectionManager {
     // Save selected product to database
     async saveSelectedProduct(product) {
         try {
+            console.log('Saving selected product to database:', product.id, product.name);
             const response = await fetch('/launchpad/api/syndication/save-selected-product', {
                 method: 'POST',
                 headers: {
@@ -720,8 +726,11 @@ class ItemSelectionManager {
             });
             
             const data = await response.json();
+            console.log('Save selected product response:', data);
             if (!data.success) {
                 console.error('Failed to save selected product:', data.message);
+            } else {
+                console.log('Product saved successfully to database');
             }
         } catch (error) {
             console.error('Error saving selected product:', error);
