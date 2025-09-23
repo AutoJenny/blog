@@ -58,10 +58,8 @@ class AIContentGenerationManager {
                 // Update selected content type
                 this.selectedContentType = button.dataset.type;
                 
-                // Update generation prompt if we have a data package
-                if (this.currentDataPackage && this.currentDataPackage.data_type === 'product') {
-                    this.updateLLMConfiguration(this.currentDataPackage);
-                }
+                // Update generation prompt display when content type changes
+                this.updateGenerationPromptDisplay();
             });
         });
     }
@@ -319,7 +317,6 @@ class AIContentGenerationManager {
     // Update LLM configuration based on data package
     updateLLMConfiguration(dataPackage) {
         const llmDataStatus = document.getElementById('llm-data-status');
-        const generationPrompt = document.getElementById('llm-generation-prompt');
         const llmDataContent = document.getElementById('llm-data-content');
         const llmDataChevron = document.getElementById('llm-data-chevron');
         
@@ -328,11 +325,8 @@ class AIContentGenerationManager {
             llmDataStatus.textContent = `${promptSource} - ${dataPackage.data_type}`;
         }
         
-        if (generationPrompt && dataPackage.data_type === 'product') {
-            const product = dataPackage.source_data;
-            const prompt = this.generatePromptForProduct(product, this.selectedContentType);
-            generationPrompt.value = prompt;
-        }
+        // Update generation prompt display
+        this.updateGenerationPromptDisplay();
     }
 
     // Load LLM prompts from database
@@ -353,11 +347,18 @@ class AIContentGenerationManager {
                 if (systemPromptElement && this.databasePrompts.system_prompt) {
                     systemPromptElement.value = this.databasePrompts.system_prompt.value;
                 }
+                
+                // Update generation prompt display after prompts are loaded
+                this.updateGenerationPromptDisplay();
             } else {
                 console.warn('Failed to load database prompts:', data.error);
+                // Update generation prompt display even if database prompts failed
+                this.updateGenerationPromptDisplay();
             }
         } catch (error) {
             console.error('Error loading database prompts:', error);
+            // Update generation prompt display even if there was an error
+            this.updateGenerationPromptDisplay();
         }
     }
 
@@ -386,6 +387,25 @@ class AIContentGenerationManager {
         };
         
         return fallbackPrompts[contentType] || fallbackPrompts.feature;
+    }
+
+    // Update generation prompt display based on current state
+    updateGenerationPromptDisplay() {
+        const generationPrompt = document.getElementById('llm-generation-prompt');
+        if (!generationPrompt) return;
+
+        // If we have a selected product, show the actual prompt
+        if (this.selectedProduct) {
+            const prompt = this.generatePromptForProduct(this.selectedProduct, this.selectedContentType);
+            generationPrompt.value = prompt;
+        } else {
+            // No product selected - show informative message
+            if (this.databasePrompts) {
+                generationPrompt.value = 'Select a product from Item Selection to see the generation prompt with your specific product data.';
+            } else {
+                generationPrompt.value = 'Select a product from Item Selection to see the generation prompt. Database prompts not available - using fallback prompts.';
+            }
+        }
     }
 
     // Setup LLM controls
