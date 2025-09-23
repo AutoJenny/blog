@@ -368,13 +368,20 @@ class AIContentGenerationManager {
         if (this.databasePrompts && this.databasePrompts.user_prompt_template) {
             const template = this.databasePrompts.user_prompt_template.value;
             
+            // Map content types to descriptive text
+            const contentTypeDescriptions = {
+                'feature': 'Feature Focus: Highlight key features and what makes this product unique',
+                'benefit': 'Benefit Focus: Emphasize how this product improves the customer\'s life',
+                'story': 'Story Focus: Tell an engaging, relatable story about the product'
+            };
+            
             // Replace placeholders in template
             let prompt = template
                 .replace(/{product_name}/g, product.name || 'Unknown Product')
                 .replace(/{product_sku}/g, product.sku || 'N/A')
                 .replace(/{product_price}/g, product.price || 'N/A')
                 .replace(/{product_description}/g, product.description || 'No description available')
-                .replace(/{content_type}/g, contentType);
+                .replace(/{content_type}/g, contentTypeDescriptions[contentType] || contentTypeDescriptions['feature']);
             
             return prompt;
         }
