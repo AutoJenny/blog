@@ -37,7 +37,8 @@ Object.assign(AIContentGenerationManager.prototype, {
                 },
                 body: JSON.stringify({
                     product_id: this.selectedProduct.id,
-                    content_type: contentType, // Store AI type (feature, benefit, story) here
+                    content_type: 'product', // Always 'product' for AI-generated content
+                    product_focus: contentType, // Store AI type (feature, benefit, story) here
                     content: content
                 })
             });
