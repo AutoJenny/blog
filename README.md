@@ -47,6 +47,7 @@ The application will be available at `http://localhost:5000`
 - **Workflow System:** `http://localhost:5000/workflow/posts/53/planning/idea/initial_concept`
 - **LLM Actions:** `http://localhost:5000/llm-actions/`
 - **Launchpad:** `http://localhost:5000/launchpad/`
+- **Auto-Replenish System:** `http://localhost:5000/launchpad/api/auto-replenish-all`
 
 ## 🏗️ Architecture
 
@@ -79,6 +80,7 @@ blog/
 - **AI Integration:** LLM-powered content generation and processing
 - **Workflow System:** Structured content creation pipeline
 - **Multi-Platform Syndication:** Social media and content distribution
+- **Auto-Replenish System:** Automated queue management with daily replenishment
 
 ## 🛠️ Development
 
@@ -111,6 +113,34 @@ The system uses PostgreSQL with 82+ tables organized into logical groups:
 - **Credentials & Security** (API keys, user management)
 - **Clan API Integration** (external product data)
 - **UI & Configuration** (interface settings, preferences)
+
+## 🔄 Auto-Replenish System
+
+The auto-replenish system automatically maintains queue levels by adding content when queues fall below configured thresholds.
+
+### Features
+- **Daily Automation:** Runs every day at 9:00 AM via cron job
+- **Multi-Queue Support:** Manages multiple queue types (product, blog, etc.)
+- **Configurable Thresholds:** Set different thresholds per queue type
+- **JSON Configuration:** Easy-to-edit configuration file
+- **Comprehensive Logging:** All actions logged to `logs/auto-replenish.log`
+
+### Configuration
+Edit `config/queue_auto_replenish.json` to configure queue types, thresholds, and enable/disable individual queues.
+
+### Manual Testing
+```bash
+# Test the system
+./test-auto-replenish.sh
+
+# Or call the endpoint directly
+curl -X POST http://localhost:5000/launchpad/api/auto-replenish-all
+```
+
+### Documentation
+- **[System Overview](docs/system-overview.md)** - Complete system architecture and features
+- **[Quick Reference Guide](docs/quick-reference.md)** - Quick start and troubleshooting
+- **[Auto-Replenish System Guide](docs/auto-replenish-system.md)** - Detailed auto-replenish documentation
 
 ## 🔧 Troubleshooting
 
