@@ -327,13 +327,7 @@ def get_schedules():
     try:
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
-                SELECT id, time, timezone, days, is_active, created_at, updated_at,
-                       CASE 
-                           WHEN days::text = '[1,2,3,4,5]' THEN 'Weekdays'
-                           WHEN days::text = '[6,7]' THEN 'Weekends' 
-                           WHEN days::text = '[1,2,3,4,5,6,7]' THEN 'Daily'
-                           ELSE 'Custom Schedule'
-                       END as name
+                SELECT id, time, timezone, days, is_active, created_at, updated_at, name
                 FROM daily_posts_schedule
                 ORDER BY created_at DESC
             """)
@@ -350,13 +344,10 @@ def get_schedules():
                 # Convert time object to string
                 if schedule_dict.get('time'):
                     schedule_dict['time'] = str(schedule_dict['time'])
-                # Parse days JSON string
-                if schedule_dict.get('days'):
-                    try:
-                        import json
-                        schedule_dict['days'] = json.loads(schedule_dict['days'])
-                    except:
-                        schedule_dict['days'] = []
+                # Handle days array - it's already a list from the database
+                if schedule_dict.get('days') is not None:
+                    # days is already a list, no need to parse
+                    pass
                 result.append(schedule_dict)
             
             return jsonify({
