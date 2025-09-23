@@ -56,9 +56,9 @@ Object.assign(AIContentGenerationManager.prototype, {
                     provider: 'ollama',
                     model: 'llama3.2:latest',
                     input_data: {
-                        section_heading: `${this.getContentTypeDisplayName(this.selectedContentType)} Post`,
-                        section_description: `Create engaging social media content for ${this.selectedProduct.name}`,
-                        ideas_to_include: prompt
+                        'section_heading': `${this.getContentTypeDisplayName(this.selectedContentType)} Post`,
+                        'section_description': `Create engaging social media content for ${this.selectedProduct.name}`,
+                        'ideas_to_include': prompt
                     }
                 })
             });
