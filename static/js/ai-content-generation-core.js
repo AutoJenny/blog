@@ -73,3 +73,8 @@ class AIContentGenerationManager {
         this.updateAIStatusHeader();
     }
 }
+
+// Initialize AI Content Generation Manager when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    window.aiContentGenerationManager = new AIContentGenerationManager();
+});
