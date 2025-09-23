@@ -47,7 +47,7 @@ Object.assign(AIContentGenerationManager.prototype, {
         const prompt = this.generatePromptForProduct(this.selectedProduct, this.selectedContentType);
         
         try {
-            const response = await fetch('/llm-actions/api/llm/actions/1/execute', {
+            const response = await fetch('/llm-actions/api/llm/actions/16/execute', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -55,16 +55,11 @@ Object.assign(AIContentGenerationManager.prototype, {
                 body: JSON.stringify({
                     provider: 'ollama',
                     model: 'llama3.2',
-                    messages: [
-                        {
-                            role: 'system',
-                            content: 'You are a social media content creator specializing in product marketing.'
-                        },
-                        {
-                            role: 'user',
-                            content: prompt
-                        }
-                    ]
+                    input_data: {
+                        section_heading: `${this.getContentTypeDisplayName(this.selectedContentType)} Post`,
+                        section_description: `Create engaging social media content for ${this.selectedProduct.name}`,
+                        ideas_to_include: prompt
+                    }
                 })
             });
             
