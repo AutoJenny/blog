@@ -138,7 +138,7 @@ Object.assign(AIContentGenerationManager.prototype, {
                 },
                 body: JSON.stringify({
                     product_id: this.selectedProduct.id,
-                    content_type: this.selectedContentType,
+                    content_type: 'product',
                     status: 'ready'
                 })
             });

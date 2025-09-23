@@ -466,7 +466,7 @@ def get_schedules():
             cursor.execute("""
                 SELECT id, time, timezone, days, is_active, created_at, updated_at, name
                 FROM daily_posts_schedule
-                WHERE platform = %s AND content_type = %s
+                WHERE platform = %s AND content_type = %s AND is_active = true
                 ORDER BY created_at DESC
             """, (platform, content_type))
             schedules = cursor.fetchall()
