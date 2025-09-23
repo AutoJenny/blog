@@ -3702,3 +3702,43 @@ LINE 2:                 SELECT MAX(created_at) as last_updated
 2025-09-23 11:06:22,932 - werkzeug - INFO -  * Debugger PIN: 830-133-383
 2025-09-23 11:06:26,000 - config.database - INFO - Database connection established
 2025-09-23 11:06:26,003 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:06:26] "GET /launchpad/api/syndication/schedules HTTP/1.1" 200 -
+2025-09-23 11:06:51,690 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:06:51] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 11:07:22,689 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:07:22] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 11:07:43,340 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:07:43] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-23 11:07:43,362 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:07:43] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-23 11:07:43,362 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:07:43] "[36mGET /static/js/item-selection.js HTTP/1.1[0m" 304 -
+2025-09-23 11:07:43,362 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:07:43] "[36mGET /static/js/ai-content-generation.js HTTP/1.1[0m" 304 -
+2025-09-23 11:07:43,363 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:07:43] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-23 11:07:43,363 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:07:43] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-23 11:07:43,363 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:07:43] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-23 11:07:43,366 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:07:43] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-23 11:07:43,433 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:07:43] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-23 11:07:43,435 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:07:43] "GET /launchpad/api/syndication/get-selected-product HTTP/1.1" 200 -
+2025-09-23 11:07:43,439 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:07:43] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 11:07:43,440 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:07:43] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-23 11:07:43,440 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:07:43] "GET /launchpad/api/syndication/schedules HTTP/1.1" 200 -
+2025-09-23 11:07:43,442 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:07:43] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-23 11:07:43,443 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:07:43] "GET /launchpad/api/syndication/last-updated HTTP/1.1" 200 -
+2025-09-23 11:07:52,687 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:07:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 11:08:11,875 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:08:11] "DELETE /launchpad/api/syndication/schedules/1 HTTP/1.1" 200 -
+2025-09-23 11:08:11,881 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:08:11] "GET /launchpad/api/syndication/schedules HTTP/1.1" 200 -
+2025-09-23 11:08:22,687 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:08:22] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 11:08:32,477 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:08:32] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-23 11:08:32,479 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:08:32] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-23 11:08:32,480 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:08:32] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-23 11:08:52,686 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:08:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 11:09:02,742 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:09:02] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-23 11:09:02,744 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:09:02] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-23 11:09:02,746 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:09:02] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-23 11:09:22,692 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:09:22] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 11:09:52,692 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:09:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 11:10:22,689 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:10:22] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 11:10:52,688 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:10:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 11:11:04,834 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 11:11:05,894 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 11:11:05,900 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 11:11:05,911 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 11:11:23,684 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:11:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 11:11:35,207 - config.database - INFO - Database connection established
+2025-09-23 11:11:35,210 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:11:35] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-09-23 11:11:39,055 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 11:11:39] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
