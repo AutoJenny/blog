@@ -9,6 +9,7 @@ class AIContentGenerationManager {
         this.selectedProduct = null;
         this.currentDataPackage = null;
         this.databasePrompts = null; // Store prompts from database
+        this.isPromptEditMode = false; // Track if prompt is in edit mode
         
         this.init();
         this.setupLLMControls();
@@ -44,6 +45,12 @@ class AIContentGenerationManager {
         const addToQueueBtn = document.getElementById('add-to-queue-btn');
         if (addToQueueBtn) {
             addToQueueBtn.addEventListener('click', () => this.addToQueue());
+        }
+        
+        // Edit generation prompt button
+        const editPromptBtn = document.getElementById('edit-generation-prompt-btn');
+        if (editPromptBtn) {
+            editPromptBtn.addEventListener('click', () => this.togglePromptEdit());
         }
     }
     
@@ -401,6 +408,9 @@ class AIContentGenerationManager {
         const generationPrompt = document.getElementById('llm-generation-prompt');
         if (!generationPrompt) return;
 
+        // Don't update if in edit mode
+        if (this.isPromptEditMode) return;
+
         // If we have a selected product, show the actual prompt
         if (this.selectedProduct) {
             const prompt = this.generatePromptForProduct(this.selectedProduct, this.selectedContentType);
@@ -412,6 +422,68 @@ class AIContentGenerationManager {
             } else {
                 generationPrompt.value = 'Select a product from Item Selection to see the generation prompt. Database prompts not available - using fallback prompts.';
             }
+        }
+    }
+
+    // Toggle prompt edit mode
+    togglePromptEdit() {
+        const generationPrompt = document.getElementById('llm-generation-prompt');
+        const editBtn = document.getElementById('edit-generation-prompt-btn');
+        
+        if (!generationPrompt || !editBtn) return;
+
+        this.isPromptEditMode = !this.isPromptEditMode;
+
+        if (this.isPromptEditMode) {
+            // Enter edit mode
+            generationPrompt.readOnly = false;
+            generationPrompt.style.border = '1px solid #f59e0b';
+            editBtn.innerHTML = '<i class="fas fa-save"></i> Save';
+            editBtn.classList.remove('btn-secondary');
+            editBtn.classList.add('btn-primary');
+        } else {
+            // Exit edit mode and save
+            generationPrompt.readOnly = true;
+            generationPrompt.style.border = '1px solid #334155';
+            editBtn.innerHTML = '<i class="fas fa-edit"></i> Edit';
+            editBtn.classList.remove('btn-primary');
+            editBtn.classList.add('btn-secondary');
+            
+            // Save the edited prompt to database
+            this.saveEditedPrompt(generationPrompt.value);
+        }
+    }
+
+    // Save edited prompt to database
+    async saveEditedPrompt(promptText) {
+        try {
+            const processId = 1; // TODO: Make this dynamic based on platform/channel
+            
+            const response = await fetch(`/launchpad/api/syndication/llm-prompts/${processId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    config_key: 'user_prompt_template',
+                    config_value: promptText
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                console.log('Prompt saved successfully');
+                // Update local database prompts
+                if (this.databasePrompts) {
+                    this.databasePrompts.user_prompt_template.value = promptText;
+                }
+            } else {
+                console.error('Failed to save prompt:', data.error);
+                alert('Failed to save prompt: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error saving prompt:', error);
+            alert('Error saving prompt: ' + error.message);
         }
     }
 

@@ -436,6 +436,43 @@ def get_llm_prompts(process_id):
         logger.error(f"Error in get_llm_prompts: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
+@bp.route('/api/syndication/llm-prompts/<int:process_id>', methods=['PUT'])
+def update_llm_prompt(process_id):
+    """Update a specific LLM prompt in process_configurations table."""
+    try:
+        data = request.get_json()
+        config_key = data.get('config_key')
+        config_value = data.get('config_value')
+        
+        if not config_key or not config_value:
+            return jsonify({
+                "success": False,
+                "error": "config_key and config_value are required"
+            }), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Update the prompt in the database
+            cursor.execute("""
+                UPDATE process_configurations 
+                SET config_value = %s, updated_at = CURRENT_TIMESTAMP
+                WHERE process_id = %s AND config_category = 'llm_prompt' AND config_key = %s
+            """, (config_value, process_id, config_key))
+            
+            if cursor.rowcount == 0:
+                return jsonify({
+                    "success": False,
+                    "error": "Prompt not found"
+                }), 404
+            
+            return jsonify({
+                "success": True,
+                "message": "Prompt updated successfully"
+            })
+            
+    except Exception as e:
+        logger.error(f"Error in update_llm_prompt: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @bp.route('/api/syndication/schedules/<int:schedule_id>', methods=['DELETE'])
 def delete_schedule(schedule_id):
     """Delete a posting schedule."""
