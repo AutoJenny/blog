@@ -7567,3 +7567,744 @@ LINE 3: ...  WHERE product_id = $1 AND content_type = $2 AND product_fo...
 2025-09-23 20:00:17,473 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:00:17] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
 2025-09-23 20:00:17,487 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:00:17] "GET /launchpad/api/syndication/get-generated-content/152588/product HTTP/1.1" 200 -
 2025-09-23 20:00:25,513 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:00:25] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:00:55,612 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:00:55] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:01:27,497 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:01:27] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:01:59,761 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:01:59] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:02:33,271 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:02:33] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:03:29,741 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:29] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:03:31,248 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-23 20:03:31,288 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-23 20:03:31,290 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-23 20:03:31,293 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "[36mGET /static/js/item-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 20:03:31,293 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "[36mGET /static/js/item-selection-data.js HTTP/1.1[0m" 304 -
+2025-09-23 20:03:31,294 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "[36mGET /static/js/item-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-23 20:03:31,294 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "[36mGET /static/js/item-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-23 20:03:31,295 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "[36mGET /static/js/item-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-23 20:03:31,295 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "[36mGET /static/js/item-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-23 20:03:31,296 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "GET /static/js/queue-manager.js HTTP/1.1" 200 -
+2025-09-23 20:03:31,297 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "[36mGET /static/js/ai-content-generation-core.js HTTP/1.1[0m" 304 -
+2025-09-23 20:03:31,299 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-23 20:03:31,301 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-23 20:03:31,303 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "[36mGET /static/js/ai-content-generation-prompts.js HTTP/1.1[0m" 304 -
+2025-09-23 20:03:31,303 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "[36mGET /static/js/ai-content-generation-events.js HTTP/1.1[0m" 304 -
+2025-09-23 20:03:31,303 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "[36mGET /static/js/ai-content-generation-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 20:03:31,303 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "[36mGET /static/js/ai-content-generation-content.js HTTP/1.1[0m" 304 -
+2025-09-23 20:03:31,304 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "[36mGET /static/js/ai-content-generation-data.js HTTP/1.1[0m" 304 -
+2025-09-23 20:03:31,380 - config.database - INFO - Database connection established
+2025-09-23 20:03:31,380 - config.database - INFO - Database connection established
+2025-09-23 20:03:31,383 - config.database - INFO - Database connection established
+2025-09-23 20:03:31,383 - config.database - INFO - Database connection established
+2025-09-23 20:03:31,383 - config.database - INFO - Database connection established
+2025-09-23 20:03:31,385 - config.database - INFO - Database connection established
+2025-09-23 20:03:31,386 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "GET /launchpad/api/syndication/last-updated HTTP/1.1" 200 -
+2025-09-23 20:03:31,387 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-23 20:03:31,388 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-09-23 20:03:31,389 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "GET /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:03:31,389 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-23 20:03:31,389 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-23 20:03:31,391 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 20:03:31,402 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:31] "GET /launchpad/api/syndication/get-generated-content/152588/product HTTP/1.1" 200 -
+2025-09-23 20:03:33,902 - config.database - INFO - Database connection established
+2025-09-23 20:03:33,909 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:33] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:03:33,927 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:33] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:03:33,937 - config.database - INFO - Database connection established
+2025-09-23 20:03:33,941 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:33] "GET /launchpad/api/syndication/get-generated-content/7614/product HTTP/1.1" 200 -
+2025-09-23 20:03:34,401 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:03:36,435 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 653
+2025-09-23 20:03:36,435 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:36] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:03:36,449 - config.database - INFO - Database connection established
+2025-09-23 20:03:36,455 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:36] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:03:37,478 - config.database - INFO - Database connection established
+2025-09-23 20:03:37,486 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:37] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:03:45,347 - config.database - INFO - Database connection established
+2025-09-23 20:03:45,353 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:45] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:03:45,368 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:45] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:03:45,383 - config.database - INFO - Database connection established
+2025-09-23 20:03:45,390 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:45] "GET /launchpad/api/syndication/get-generated-content/109409/product HTTP/1.1" 200 -
+2025-09-23 20:03:45,841 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:03:48,478 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 733
+2025-09-23 20:03:48,478 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:48] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:03:48,493 - config.database - INFO - Database connection established
+2025-09-23 20:03:48,497 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:48] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:03:49,517 - config.database - INFO - Database connection established
+2025-09-23 20:03:49,522 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:49] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:03:59,848 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:03:59] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:04:32,259 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:04:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:04:59,695 - config.database - INFO - Database connection established
+2025-09-23 20:04:59,701 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:04:59] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:04:59,712 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:04:59] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:04:59,729 - config.database - INFO - Database connection established
+2025-09-23 20:04:59,735 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:04:59] "GET /launchpad/api/syndication/get-generated-content/775/product HTTP/1.1" 200 -
+2025-09-23 20:05:00,188 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:05:01,944 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 705
+2025-09-23 20:05:01,944 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:01] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:05:01,958 - config.database - INFO - Database connection established
+2025-09-23 20:05:01,963 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:01] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:05:02,259 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:02] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:05:02,982 - config.database - INFO - Database connection established
+2025-09-23 20:05:02,988 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:02] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:05:05,740 - config.database - INFO - Database connection established
+2025-09-23 20:05:05,745 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:05] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:05:05,754 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:05] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:05:05,767 - config.database - INFO - Database connection established
+2025-09-23 20:05:05,770 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:05] "GET /launchpad/api/syndication/get-generated-content/1454/product HTTP/1.1" 200 -
+2025-09-23 20:05:06,240 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:05:08,451 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 747
+2025-09-23 20:05:08,451 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:08] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:05:08,469 - config.database - INFO - Database connection established
+2025-09-23 20:05:08,475 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:08] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:05:09,500 - config.database - INFO - Database connection established
+2025-09-23 20:05:09,510 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:09] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:05:11,710 - config.database - INFO - Database connection established
+2025-09-23 20:05:11,716 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:11] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:05:11,729 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:11] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:05:11,744 - config.database - INFO - Database connection established
+2025-09-23 20:05:11,749 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:11] "GET /launchpad/api/syndication/get-generated-content/8/product HTTP/1.1" 200 -
+2025-09-23 20:05:12,203 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:05:14,144 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 665
+2025-09-23 20:05:14,145 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:14] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:05:14,161 - config.database - INFO - Database connection established
+2025-09-23 20:05:14,167 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:14] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:05:15,187 - config.database - INFO - Database connection established
+2025-09-23 20:05:15,194 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:15] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:05:17,123 - config.database - INFO - Database connection established
+2025-09-23 20:05:17,127 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:17] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:05:17,138 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:17] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:05:17,153 - config.database - INFO - Database connection established
+2025-09-23 20:05:17,157 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:17] "GET /launchpad/api/syndication/get-generated-content/4/product HTTP/1.1" 200 -
+2025-09-23 20:05:17,619 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:05:19,704 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 740
+2025-09-23 20:05:19,705 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:19] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:05:19,723 - config.database - INFO - Database connection established
+2025-09-23 20:05:19,727 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:19] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:05:20,749 - config.database - INFO - Database connection established
+2025-09-23 20:05:20,755 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:20] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:05:22,916 - config.database - INFO - Database connection established
+2025-09-23 20:05:22,922 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:22] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:05:22,935 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:22] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:05:22,950 - config.database - INFO - Database connection established
+2025-09-23 20:05:22,956 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:22] "GET /launchpad/api/syndication/get-generated-content/7629/product HTTP/1.1" 200 -
+2025-09-23 20:05:23,409 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:05:26,279 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 754
+2025-09-23 20:05:26,279 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:26] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:05:26,298 - config.database - INFO - Database connection established
+2025-09-23 20:05:26,306 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:26] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:05:27,330 - config.database - INFO - Database connection established
+2025-09-23 20:05:27,338 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:27] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:05:29,209 - config.database - INFO - Database connection established
+2025-09-23 20:05:29,215 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:29] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:05:29,227 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:29] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:05:29,240 - config.database - INFO - Database connection established
+2025-09-23 20:05:29,247 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:29] "GET /launchpad/api/syndication/get-generated-content/124941/product HTTP/1.1" 200 -
+2025-09-23 20:05:29,708 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:05:32,081 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 838
+2025-09-23 20:05:32,081 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:32] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:05:32,101 - config.database - INFO - Database connection established
+2025-09-23 20:05:32,108 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:32] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:05:32,262 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:05:33,131 - config.database - INFO - Database connection established
+2025-09-23 20:05:33,138 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:33] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:05:35,176 - config.database - INFO - Database connection established
+2025-09-23 20:05:35,181 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:35] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:05:35,194 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:35] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:05:35,210 - config.database - INFO - Database connection established
+2025-09-23 20:05:35,215 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:35] "GET /launchpad/api/syndication/get-generated-content/700/product HTTP/1.1" 200 -
+2025-09-23 20:05:35,673 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:05:37,812 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 644
+2025-09-23 20:05:37,812 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:37] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:05:37,833 - config.database - INFO - Database connection established
+2025-09-23 20:05:37,840 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:37] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:05:38,862 - config.database - INFO - Database connection established
+2025-09-23 20:05:38,869 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:38] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:05:40,428 - config.database - INFO - Database connection established
+2025-09-23 20:05:40,433 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:40] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:05:40,447 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:40] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:05:40,460 - config.database - INFO - Database connection established
+2025-09-23 20:05:40,463 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:40] "GET /launchpad/api/syndication/get-generated-content/126040/product HTTP/1.1" 200 -
+2025-09-23 20:05:40,928 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:05:43,269 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 743
+2025-09-23 20:05:43,270 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:43] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:05:43,283 - config.database - INFO - Database connection established
+2025-09-23 20:05:43,288 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:43] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:05:44,312 - config.database - INFO - Database connection established
+2025-09-23 20:05:44,319 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:44] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:05:46,228 - config.database - INFO - Database connection established
+2025-09-23 20:05:46,235 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:05:46] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 20:06:02,267 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:02] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:06:32,286 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:06:37,064 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-23 20:06:37,098 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-23 20:06:37,101 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-23 20:06:37,103 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "[36mGET /static/js/item-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-23 20:06:37,103 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "[36mGET /static/js/item-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-23 20:06:37,103 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "[36mGET /static/js/item-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 20:06:37,104 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "[36mGET /static/js/item-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-23 20:06:37,104 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "[36mGET /static/js/item-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-23 20:06:37,104 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "[36mGET /static/js/item-selection-data.js HTTP/1.1[0m" 304 -
+2025-09-23 20:06:37,107 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "GET /static/js/queue-manager.js HTTP/1.1" 200 -
+2025-09-23 20:06:37,109 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "GET /static/js/ai-content-generation-content.js HTTP/1.1" 200 -
+2025-09-23 20:06:37,109 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-23 20:06:37,110 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "[36mGET /static/js/ai-content-generation-core.js HTTP/1.1[0m" 304 -
+2025-09-23 20:06:37,110 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "[36mGET /static/js/ai-content-generation-events.js HTTP/1.1[0m" 304 -
+2025-09-23 20:06:37,111 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "[36mGET /static/js/ai-content-generation-data.js HTTP/1.1[0m" 304 -
+2025-09-23 20:06:37,112 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "[36mGET /static/js/ai-content-generation-prompts.js HTTP/1.1[0m" 304 -
+2025-09-23 20:06:37,113 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-23 20:06:37,114 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "[36mGET /static/js/ai-content-generation-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 20:06:37,184 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-23 20:06:37,187 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 20:06:37,188 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "GET /launchpad/api/syndication/last-updated HTTP/1.1" 200 -
+2025-09-23 20:06:37,189 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "GET /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:06:37,196 - config.database - INFO - Database connection established
+2025-09-23 20:06:37,196 - config.database - INFO - Database connection established
+2025-09-23 20:06:37,197 - config.database - INFO - Database connection established
+2025-09-23 20:06:37,199 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-23 20:06:37,201 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-09-23 20:06:37,201 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-23 20:06:37,209 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:37] "GET /launchpad/api/syndication/get-generated-content/126040/product HTTP/1.1" 200 -
+2025-09-23 20:06:39,693 - config.database - INFO - Database connection established
+2025-09-23 20:06:39,698 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:39] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:06:39,724 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:39] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:06:39,735 - config.database - INFO - Database connection established
+2025-09-23 20:06:39,738 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:39] "GET /launchpad/api/syndication/get-generated-content/858/product HTTP/1.1" 200 -
+2025-09-23 20:06:40,187 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:06:42,187 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 693
+2025-09-23 20:06:42,188 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:42] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:06:42,197 - config.database - INFO - Database connection established
+2025-09-23 20:06:42,201 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:42] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:06:43,222 - config.database - INFO - Database connection established
+2025-09-23 20:06:43,231 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:43] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:06:43,749 - config.database - INFO - Database connection established
+2025-09-23 20:06:43,753 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:43] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:06:43,763 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:43] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:06:43,776 - config.database - INFO - Database connection established
+2025-09-23 20:06:43,781 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:43] "GET /launchpad/api/syndication/get-generated-content/803/product HTTP/1.1" 200 -
+2025-09-23 20:06:44,245 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:06:46,493 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 685
+2025-09-23 20:06:46,493 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:46] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:06:46,507 - config.database - INFO - Database connection established
+2025-09-23 20:06:46,513 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:46] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:06:47,533 - config.database - INFO - Database connection established
+2025-09-23 20:06:47,539 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:47] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:06:48,060 - config.database - INFO - Database connection established
+2025-09-23 20:06:48,066 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:48] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:06:48,077 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:48] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:06:48,089 - config.database - INFO - Database connection established
+2025-09-23 20:06:48,095 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:48] "GET /launchpad/api/syndication/get-generated-content/133053/product HTTP/1.1" 200 -
+2025-09-23 20:06:48,555 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:06:51,220 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 860
+2025-09-23 20:06:51,220 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:51] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:06:51,233 - config.database - INFO - Database connection established
+2025-09-23 20:06:51,237 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:51] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:06:52,258 - config.database - INFO - Database connection established
+2025-09-23 20:06:52,265 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:52] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:06:52,783 - config.database - INFO - Database connection established
+2025-09-23 20:06:52,788 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:52] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:06:52,799 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:52] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:06:52,812 - config.database - INFO - Database connection established
+2025-09-23 20:06:52,815 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:52] "GET /launchpad/api/syndication/get-generated-content/8/product HTTP/1.1" 200 -
+2025-09-23 20:06:53,283 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:06:55,685 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 759
+2025-09-23 20:06:55,685 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:55] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:06:55,700 - config.database - INFO - Database connection established
+2025-09-23 20:06:55,704 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:55] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:06:56,726 - config.database - INFO - Database connection established
+2025-09-23 20:06:56,733 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:56] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:06:57,254 - config.database - INFO - Database connection established
+2025-09-23 20:06:57,259 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:57] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:06:57,272 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:57] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:06:57,283 - config.database - INFO - Database connection established
+2025-09-23 20:06:57,288 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:57] "GET /launchpad/api/syndication/get-generated-content/972/product HTTP/1.1" 200 -
+2025-09-23 20:06:57,750 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:06:59,819 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 708
+2025-09-23 20:06:59,819 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:59] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:06:59,831 - config.database - INFO - Database connection established
+2025-09-23 20:06:59,836 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:06:59] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:07:00,856 - config.database - INFO - Database connection established
+2025-09-23 20:07:00,864 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:00] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:07:01,384 - config.database - INFO - Database connection established
+2025-09-23 20:07:01,388 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:01] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:07:01,398 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:01] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:07:01,410 - config.database - INFO - Database connection established
+2025-09-23 20:07:01,416 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:01] "GET /launchpad/api/syndication/get-generated-content/4136/product HTTP/1.1" 200 -
+2025-09-23 20:07:01,882 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:07:02,281 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:02] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:07:03,930 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 697
+2025-09-23 20:07:03,931 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:03] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:07:03,946 - config.database - INFO - Database connection established
+2025-09-23 20:07:03,950 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:03] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:07:04,966 - config.database - INFO - Database connection established
+2025-09-23 20:07:04,971 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:04] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:07:05,491 - config.database - INFO - Database connection established
+2025-09-23 20:07:05,499 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:05] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:07:05,512 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:05] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:07:05,526 - config.database - INFO - Database connection established
+2025-09-23 20:07:05,530 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:05] "GET /launchpad/api/syndication/get-generated-content/1011/product HTTP/1.1" 200 -
+2025-09-23 20:07:05,987 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:07:09,261 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 951
+2025-09-23 20:07:09,262 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:09] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:07:09,285 - config.database - INFO - Database connection established
+2025-09-23 20:07:09,292 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:09] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:07:10,310 - config.database - INFO - Database connection established
+2025-09-23 20:07:10,320 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:10] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:07:10,842 - config.database - INFO - Database connection established
+2025-09-23 20:07:10,848 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:10] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:07:10,860 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:10] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:07:10,873 - config.database - INFO - Database connection established
+2025-09-23 20:07:10,876 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:10] "GET /launchpad/api/syndication/get-generated-content/3425/product HTTP/1.1" 200 -
+2025-09-23 20:07:11,341 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:07:13,699 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 769
+2025-09-23 20:07:13,700 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:13] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:07:13,721 - config.database - INFO - Database connection established
+2025-09-23 20:07:13,728 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:13] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:07:14,749 - config.database - INFO - Database connection established
+2025-09-23 20:07:14,755 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:14] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:07:15,276 - config.database - INFO - Database connection established
+2025-09-23 20:07:15,281 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:15] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:07:15,295 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:15] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:07:15,307 - config.database - INFO - Database connection established
+2025-09-23 20:07:15,310 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:15] "GET /launchpad/api/syndication/get-generated-content/124603/product HTTP/1.1" 200 -
+2025-09-23 20:07:15,774 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:07:17,810 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 717
+2025-09-23 20:07:17,811 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:17] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:07:17,821 - config.database - INFO - Database connection established
+2025-09-23 20:07:17,829 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:17] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:07:18,842 - config.database - INFO - Database connection established
+2025-09-23 20:07:18,847 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:18] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:07:19,362 - config.database - INFO - Database connection established
+2025-09-23 20:07:19,368 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:19] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:07:19,379 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:19] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:07:19,392 - config.database - INFO - Database connection established
+2025-09-23 20:07:19,396 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:19] "GET /launchpad/api/syndication/get-generated-content/152559/product HTTP/1.1" 200 -
+2025-09-23 20:07:19,859 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:07:21,836 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 682
+2025-09-23 20:07:21,837 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:21] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:07:21,855 - config.database - INFO - Database connection established
+2025-09-23 20:07:21,861 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:21] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:07:22,883 - config.database - INFO - Database connection established
+2025-09-23 20:07:22,888 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:22] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:07:23,407 - config.database - INFO - Database connection established
+2025-09-23 20:07:23,418 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:23] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 20:07:32,383 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:07:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:08:08,539 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:08:08] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:08:38,635 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:08:38] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:09:13,286 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:09:13] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:10:00,685 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:10:00] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:10:10,595 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 20:10:13,250 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 20:10:13,275 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 20:10:13,286 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 20:10:41,695 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 20:10:42,735 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 20:10:42,741 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 20:10:42,751 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 20:10:46,521 - config.database - INFO - Database connection established
+2025-09-23 20:10:46,525 - blueprints.launchpad - ERROR - Error calculating next posting slot: cannot access local variable 'date' where it is not associated with a value
+2025-09-23 20:10:46,526 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:10:46] "[31m[1mPOST /launchpad/api/syndication/update-queue-status HTTP/1.1[0m" 400 -
+2025-09-23 20:10:54,897 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 20:10:55,921 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 20:10:55,926 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 20:10:55,936 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 20:10:58,985 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 20:11:00,047 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 20:11:00,052 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 20:11:00,062 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 20:11:01,419 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:11:01] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:11:05,142 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 20:11:06,212 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 20:11:06,219 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 20:11:06,229 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 20:11:11,130 - config.database - INFO - Database connection established
+2025-09-23 20:11:11,134 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:11:11] "POST /launchpad/api/queue/clear HTTP/1.1" 200 -
+2025-09-23 20:11:11,308 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 20:11:12,413 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 20:11:12,419 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 20:11:12,430 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 20:11:19,728 - config.database - INFO - Database connection established
+2025-09-23 20:11:19,734 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:11:19] "[33mPOST /launchpad/api/syndication/update-queue-status HTTP/1.1[0m" 404 -
+2025-09-23 20:11:31,519 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:11:31] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:11:41,446 - config.database - INFO - Database connection established
+2025-09-23 20:11:41,454 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:11:41] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:11:51,969 - config.database - INFO - Database connection established
+2025-09-23 20:11:51,977 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:11:51] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:11:59,159 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 20:12:00,212 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 20:12:00,218 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 20:12:00,230 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 20:12:01,519 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:12:01,758 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-23 20:12:01,810 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-23 20:12:01,812 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "[36mGET /static/js/item-selection-data.js HTTP/1.1[0m" 304 -
+2025-09-23 20:12:01,814 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "[36mGET /static/js/item-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-23 20:12:01,815 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "[36mGET /static/js/item-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-23 20:12:01,815 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "[36mGET /static/js/item-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 20:12:01,815 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-23 20:12:01,815 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "[36mGET /static/js/item-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-23 20:12:01,817 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "[36mGET /static/js/item-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-23 20:12:01,818 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-23 20:12:01,819 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "[36mGET /static/js/ai-content-generation-core.js HTTP/1.1[0m" 304 -
+2025-09-23 20:12:01,819 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-23 20:12:01,820 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "[36mGET /static/js/ai-content-generation-events.js HTTP/1.1[0m" 304 -
+2025-09-23 20:12:01,822 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "[36mGET /static/js/ai-content-generation-content.js HTTP/1.1[0m" 304 -
+2025-09-23 20:12:01,822 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-23 20:12:01,823 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "[36mGET /static/js/ai-content-generation-data.js HTTP/1.1[0m" 304 -
+2025-09-23 20:12:01,823 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "[36mGET /static/js/ai-content-generation-prompts.js HTTP/1.1[0m" 304 -
+2025-09-23 20:12:01,824 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "[36mGET /static/js/ai-content-generation-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 20:12:01,917 - config.database - INFO - Database connection established
+2025-09-23 20:12:01,917 - config.database - INFO - Database connection established
+2025-09-23 20:12:01,918 - config.database - INFO - Database connection established
+2025-09-23 20:12:01,918 - config.database - INFO - Database connection established
+2025-09-23 20:12:01,918 - config.database - INFO - Database connection established
+2025-09-23 20:12:01,920 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-23 20:12:01,921 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "GET /launchpad/api/syndication/last-updated HTTP/1.1" 200 -
+2025-09-23 20:12:01,921 - config.database - INFO - Database connection established
+2025-09-23 20:12:01,921 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-09-23 20:12:01,925 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-23 20:12:01,925 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "GET /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:12:01,927 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 20:12:01,928 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-23 20:12:01,930 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:01] "GET /launchpad/api/syndication/get-generated-content/152559/product HTTP/1.1" 200 -
+2025-09-23 20:12:12,641 - config.database - INFO - Database connection established
+2025-09-23 20:12:12,647 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:12] "DELETE /launchpad/api/queue/230 HTTP/1.1" 200 -
+2025-09-23 20:12:15,871 - config.database - INFO - Database connection established
+2025-09-23 20:12:15,877 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:15] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:12:15,890 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:15] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:12:15,902 - config.database - INFO - Database connection established
+2025-09-23 20:12:15,906 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:15] "GET /launchpad/api/syndication/get-generated-content/121650/product HTTP/1.1" 200 -
+2025-09-23 20:12:16,364 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:12:18,513 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 715
+2025-09-23 20:12:18,514 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:18] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:12:18,527 - config.database - INFO - Database connection established
+2025-09-23 20:12:18,533 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:18] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:12:19,558 - config.database - INFO - Database connection established
+2025-09-23 20:12:19,573 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:19] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:12:20,090 - config.database - INFO - Database connection established
+2025-09-23 20:12:20,093 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:20] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:12:20,101 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:20] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:12:20,111 - config.database - INFO - Database connection established
+2025-09-23 20:12:20,114 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:20] "GET /launchpad/api/syndication/get-generated-content/3280/product HTTP/1.1" 200 -
+2025-09-23 20:12:20,589 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:12:22,655 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 695
+2025-09-23 20:12:22,655 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:22] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:12:22,670 - config.database - INFO - Database connection established
+2025-09-23 20:12:22,675 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:22] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:12:23,696 - config.database - INFO - Database connection established
+2025-09-23 20:12:23,704 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:23] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:12:24,227 - config.database - INFO - Database connection established
+2025-09-23 20:12:24,231 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:24] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:12:24,245 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:24] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:12:24,260 - config.database - INFO - Database connection established
+2025-09-23 20:12:24,266 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:24] "GET /launchpad/api/syndication/get-generated-content/811/product HTTP/1.1" 200 -
+2025-09-23 20:12:24,721 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:12:26,909 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 733
+2025-09-23 20:12:26,909 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:26] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:12:26,929 - config.database - INFO - Database connection established
+2025-09-23 20:12:26,937 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:26] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:12:27,959 - config.database - INFO - Database connection established
+2025-09-23 20:12:27,970 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:27] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:12:28,485 - config.database - INFO - Database connection established
+2025-09-23 20:12:28,489 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:28] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:12:28,501 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:28] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:12:28,514 - config.database - INFO - Database connection established
+2025-09-23 20:12:28,519 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:28] "GET /launchpad/api/syndication/get-generated-content/985/product HTTP/1.1" 200 -
+2025-09-23 20:12:28,983 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:12:31,345 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 768
+2025-09-23 20:12:31,345 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:31] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:12:31,361 - config.database - INFO - Database connection established
+2025-09-23 20:12:31,368 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:31] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:12:31,518 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:31] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:12:32,389 - config.database - INFO - Database connection established
+2025-09-23 20:12:32,401 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:32] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:12:32,922 - config.database - INFO - Database connection established
+2025-09-23 20:12:32,928 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:32] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:12:32,940 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:32] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:12:32,954 - config.database - INFO - Database connection established
+2025-09-23 20:12:32,959 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:32] "GET /launchpad/api/syndication/get-generated-content/8050/product HTTP/1.1" 200 -
+2025-09-23 20:12:33,463 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:12:35,111 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 641
+2025-09-23 20:12:35,112 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:35] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:12:35,126 - config.database - INFO - Database connection established
+2025-09-23 20:12:35,130 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:35] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:12:36,150 - config.database - INFO - Database connection established
+2025-09-23 20:12:36,165 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:36] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:12:36,683 - config.database - INFO - Database connection established
+2025-09-23 20:12:36,689 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:36] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:12:36,699 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:36] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:12:36,711 - config.database - INFO - Database connection established
+2025-09-23 20:12:36,715 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:36] "GET /launchpad/api/syndication/get-generated-content/846/product HTTP/1.1" 200 -
+2025-09-23 20:12:37,183 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:12:38,937 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 632
+2025-09-23 20:12:38,937 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:38] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:12:38,952 - config.database - INFO - Database connection established
+2025-09-23 20:12:38,957 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:38] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:12:39,981 - config.database - INFO - Database connection established
+2025-09-23 20:12:39,990 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:39] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:12:40,510 - config.database - INFO - Database connection established
+2025-09-23 20:12:40,515 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:40] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:12:40,529 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:40] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:12:40,543 - config.database - INFO - Database connection established
+2025-09-23 20:12:40,551 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:40] "GET /launchpad/api/syndication/get-generated-content/4196/product HTTP/1.1" 200 -
+2025-09-23 20:12:41,009 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:12:43,252 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 757
+2025-09-23 20:12:43,253 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:43] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:12:43,267 - config.database - INFO - Database connection established
+2025-09-23 20:12:43,271 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:43] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:12:44,292 - config.database - INFO - Database connection established
+2025-09-23 20:12:44,300 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:44] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:12:44,820 - config.database - INFO - Database connection established
+2025-09-23 20:12:44,826 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:44] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:12:44,839 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:44] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:12:44,851 - config.database - INFO - Database connection established
+2025-09-23 20:12:44,857 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:44] "GET /launchpad/api/syndication/get-generated-content/1166/product HTTP/1.1" 200 -
+2025-09-23 20:12:45,319 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:12:47,419 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 698
+2025-09-23 20:12:47,419 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:47] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:12:47,434 - config.database - INFO - Database connection established
+2025-09-23 20:12:47,440 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:47] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:12:48,463 - config.database - INFO - Database connection established
+2025-09-23 20:12:48,476 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:48] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:12:48,998 - config.database - INFO - Database connection established
+2025-09-23 20:12:49,004 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:49] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:12:49,015 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:49] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:12:49,032 - config.database - INFO - Database connection established
+2025-09-23 20:12:49,037 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:49] "GET /launchpad/api/syndication/get-generated-content/7537/product HTTP/1.1" 200 -
+2025-09-23 20:12:49,494 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:12:51,806 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 690
+2025-09-23 20:12:51,806 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:51] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:12:51,824 - config.database - INFO - Database connection established
+2025-09-23 20:12:51,830 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:51] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:12:52,851 - config.database - INFO - Database connection established
+2025-09-23 20:12:52,862 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:52] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:12:53,382 - config.database - INFO - Database connection established
+2025-09-23 20:12:53,389 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:53] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:12:53,401 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:53] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:12:53,415 - config.database - INFO - Database connection established
+2025-09-23 20:12:53,420 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:53] "GET /launchpad/api/syndication/get-generated-content/6153/product HTTP/1.1" 200 -
+2025-09-23 20:12:53,882 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:12:56,252 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 745
+2025-09-23 20:12:56,252 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:56] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:12:56,268 - config.database - INFO - Database connection established
+2025-09-23 20:12:56,273 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:56] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:12:57,294 - config.database - INFO - Database connection established
+2025-09-23 20:12:57,307 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:57] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:12:57,831 - config.database - INFO - Database connection established
+2025-09-23 20:12:57,841 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:12:57] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 20:13:01,523 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:13:01] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:13:31,616 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:13:31] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:13:39,817 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 20:13:40,880 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 20:13:40,886 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 20:13:40,897 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 20:13:45,602 - config.database - INFO - Database connection established
+2025-09-23 20:13:45,612 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:13:45] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:13:45,620 - config.database - INFO - Database connection established
+2025-09-23 20:13:45,627 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:13:45] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:13:45,634 - config.database - INFO - Database connection established
+2025-09-23 20:13:45,639 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:13:45] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:13:57,137 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 20:13:58,122 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 20:13:58,127 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 20:13:58,137 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 20:14:02,852 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:14:02] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:14:10,365 - config.database - INFO - Database connection established
+2025-09-23 20:14:10,374 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:14:10] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:14:10,381 - config.database - INFO - Database connection established
+2025-09-23 20:14:10,389 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:14:10] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:14:10,395 - config.database - INFO - Database connection established
+2025-09-23 20:14:10,401 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:14:10] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:14:19,455 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 20:14:20,469 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 20:14:20,474 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 20:14:20,484 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 20:15:03,535 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:15:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:15:37,319 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:15:37] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:15:38,702 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 20:15:39,778 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 20:15:39,783 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 20:15:39,794 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 20:15:46,297 - config.database - INFO - Database connection established
+2025-09-23 20:15:46,307 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:15:46] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:15:46,317 - config.database - INFO - Database connection established
+2025-09-23 20:15:46,325 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:15:46] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:15:46,332 - config.database - INFO - Database connection established
+2025-09-23 20:15:46,340 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:15:46] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:15:58,068 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 20:15:59,023 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 20:15:59,028 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 20:15:59,038 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 20:16:05,573 - config.database - INFO - Database connection established
+2025-09-23 20:16:05,579 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:05] "POST /launchpad/api/queue/clear HTTP/1.1" 200 -
+2025-09-23 20:16:07,322 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:07] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:16:07,901 - config.database - INFO - Database connection established
+2025-09-23 20:16:07,907 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:07] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:16:07,919 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:07] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:16:07,933 - config.database - INFO - Database connection established
+2025-09-23 20:16:07,938 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:07] "GET /launchpad/api/syndication/get-generated-content/960/product HTTP/1.1" 200 -
+2025-09-23 20:16:08,400 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:16:10,493 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 653
+2025-09-23 20:16:10,494 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:10] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:16:10,510 - config.database - INFO - Database connection established
+2025-09-23 20:16:10,515 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:10] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:16:11,538 - config.database - INFO - Database connection established
+2025-09-23 20:16:11,552 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:11] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:16:12,072 - config.database - INFO - Database connection established
+2025-09-23 20:16:12,078 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:12] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:16:12,090 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:12] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:16:12,104 - config.database - INFO - Database connection established
+2025-09-23 20:16:12,109 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:12] "GET /launchpad/api/syndication/get-generated-content/124332/product HTTP/1.1" 200 -
+2025-09-23 20:16:12,572 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:16:14,771 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 717
+2025-09-23 20:16:14,772 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:14] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:16:14,785 - config.database - INFO - Database connection established
+2025-09-23 20:16:14,790 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:14] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:16:15,806 - config.database - INFO - Database connection established
+2025-09-23 20:16:15,813 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:15] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:16:16,333 - config.database - INFO - Database connection established
+2025-09-23 20:16:16,338 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:16] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:16:16,349 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:16] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:16:16,362 - config.database - INFO - Database connection established
+2025-09-23 20:16:16,368 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:16] "GET /launchpad/api/syndication/get-generated-content/6019/product HTTP/1.1" 200 -
+2025-09-23 20:16:16,828 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:16:19,735 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 752
+2025-09-23 20:16:19,735 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:19] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:16:19,751 - config.database - INFO - Database connection established
+2025-09-23 20:16:19,759 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:19] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:16:20,779 - config.database - INFO - Database connection established
+2025-09-23 20:16:20,792 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:20] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:16:21,312 - config.database - INFO - Database connection established
+2025-09-23 20:16:21,316 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:21] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:16:21,328 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:21] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:16:21,343 - config.database - INFO - Database connection established
+2025-09-23 20:16:21,347 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:21] "GET /launchpad/api/syndication/get-generated-content/4492/product HTTP/1.1" 200 -
+2025-09-23 20:16:21,810 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:16:23,431 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 593
+2025-09-23 20:16:23,431 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:23] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:16:23,450 - config.database - INFO - Database connection established
+2025-09-23 20:16:23,456 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:23] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:16:24,473 - config.database - INFO - Database connection established
+2025-09-23 20:16:24,485 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:24] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:16:25,005 - config.database - INFO - Database connection established
+2025-09-23 20:16:25,010 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:25] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:16:25,021 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:25] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:16:25,034 - config.database - INFO - Database connection established
+2025-09-23 20:16:25,040 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:25] "GET /launchpad/api/syndication/get-generated-content/923/product HTTP/1.1" 200 -
+2025-09-23 20:16:25,503 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:16:27,975 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 739
+2025-09-23 20:16:27,975 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:27] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:16:27,991 - config.database - INFO - Database connection established
+2025-09-23 20:16:27,999 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:27] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:16:29,021 - config.database - INFO - Database connection established
+2025-09-23 20:16:29,033 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:29] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:16:29,555 - config.database - INFO - Database connection established
+2025-09-23 20:16:29,562 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:29] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:16:29,572 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:29] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:16:29,583 - config.database - INFO - Database connection established
+2025-09-23 20:16:29,586 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:29] "GET /launchpad/api/syndication/get-generated-content/129399/product HTTP/1.1" 200 -
+2025-09-23 20:16:30,053 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:16:32,230 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 635
+2025-09-23 20:16:32,230 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:32] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:16:32,245 - config.database - INFO - Database connection established
+2025-09-23 20:16:32,251 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:32] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:16:33,276 - config.database - INFO - Database connection established
+2025-09-23 20:16:33,290 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:33] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:16:33,810 - config.database - INFO - Database connection established
+2025-09-23 20:16:33,816 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:33] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:16:33,827 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:33] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:16:33,843 - config.database - INFO - Database connection established
+2025-09-23 20:16:33,850 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:33] "GET /launchpad/api/syndication/get-generated-content/129402/product HTTP/1.1" 200 -
+2025-09-23 20:16:34,310 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:16:36,556 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 755
+2025-09-23 20:16:36,556 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:36] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:16:36,573 - config.database - INFO - Database connection established
+2025-09-23 20:16:36,582 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:36] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:16:37,324 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:37] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:16:37,606 - config.database - INFO - Database connection established
+2025-09-23 20:16:37,618 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:37] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:16:38,139 - config.database - INFO - Database connection established
+2025-09-23 20:16:38,144 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:38] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:16:38,155 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:38] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:16:38,170 - config.database - INFO - Database connection established
+2025-09-23 20:16:38,176 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:38] "GET /launchpad/api/syndication/get-generated-content/4/product HTTP/1.1" 200 -
+2025-09-23 20:16:38,637 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:16:40,420 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 701
+2025-09-23 20:16:40,421 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:40] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:16:40,437 - config.database - INFO - Database connection established
+2025-09-23 20:16:40,443 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:40] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:16:41,466 - config.database - INFO - Database connection established
+2025-09-23 20:16:41,478 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:41] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:16:42,000 - config.database - INFO - Database connection established
+2025-09-23 20:16:42,006 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:42] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:16:42,016 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:42] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:16:42,030 - config.database - INFO - Database connection established
+2025-09-23 20:16:42,035 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:42] "GET /launchpad/api/syndication/get-generated-content/152535/product HTTP/1.1" 200 -
+2025-09-23 20:16:42,497 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:16:44,312 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 588
+2025-09-23 20:16:44,313 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:44] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:16:44,328 - config.database - INFO - Database connection established
+2025-09-23 20:16:44,334 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:44] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:16:45,356 - config.database - INFO - Database connection established
+2025-09-23 20:16:45,367 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:45] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:16:45,887 - config.database - INFO - Database connection established
+2025-09-23 20:16:45,892 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:45] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 20:16:45,906 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:45] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:16:45,921 - config.database - INFO - Database connection established
+2025-09-23 20:16:45,928 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:45] "GET /launchpad/api/syndication/get-generated-content/16574/product HTTP/1.1" 200 -
+2025-09-23 20:16:46,387 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 20:16:48,780 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 742
+2025-09-23 20:16:48,780 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:48] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 20:16:48,799 - config.database - INFO - Database connection established
+2025-09-23 20:16:48,807 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:48] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 20:16:49,829 - config.database - INFO - Database connection established
+2025-09-23 20:16:49,843 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:49] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 20:16:50,366 - config.database - INFO - Database connection established
+2025-09-23 20:16:50,376 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:16:50] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 20:17:07,420 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:17:07] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:17:39,261 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:17:39] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:17:46,538 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:17:46] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 20:17:55,844 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 20:17:56,917 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 20:17:56,922 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 20:17:56,932 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 20:18:03,012 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 20:18:04,035 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 20:18:04,040 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 20:18:04,052 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 20:18:05,428 - config.database - INFO - Database connection established
+2025-09-23 20:18:05,434 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:05] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 20:18:10,162 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 20:18:11,131 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 20:18:11,136 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 20:18:11,145 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 20:18:12,454 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 20:18:13,011 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-23 20:18:13,043 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-23 20:18:13,046 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "[36mGET /static/js/item-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 20:18:13,046 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-23 20:18:13,046 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "[36mGET /static/js/item-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-23 20:18:13,047 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "[36mGET /static/js/item-selection-data.js HTTP/1.1[0m" 304 -
+2025-09-23 20:18:13,048 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "[36mGET /static/js/item-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-23 20:18:13,049 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "[36mGET /static/js/item-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-23 20:18:13,050 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "[36mGET /static/js/item-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-23 20:18:13,051 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-23 20:18:13,052 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-23 20:18:13,053 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-23 20:18:13,054 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "[36mGET /static/js/ai-content-generation-core.js HTTP/1.1[0m" 304 -
+2025-09-23 20:18:13,054 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "[36mGET /static/js/ai-content-generation-events.js HTTP/1.1[0m" 304 -
+2025-09-23 20:18:13,056 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "[36mGET /static/js/ai-content-generation-content.js HTTP/1.1[0m" 304 -
+2025-09-23 20:18:13,057 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "[36mGET /static/js/ai-content-generation-prompts.js HTTP/1.1[0m" 304 -
+2025-09-23 20:18:13,057 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "[36mGET /static/js/ai-content-generation-data.js HTTP/1.1[0m" 304 -
+2025-09-23 20:18:13,059 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "[36mGET /static/js/ai-content-generation-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 20:18:13,236 - config.database - INFO - Database connection established
+2025-09-23 20:18:13,237 - config.database - INFO - Database connection established
+2025-09-23 20:18:13,237 - config.database - INFO - Database connection established
+2025-09-23 20:18:13,239 - config.database - INFO - Database connection established
+2025-09-23 20:18:13,239 - config.database - INFO - Database connection established
+2025-09-23 20:18:13,241 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-23 20:18:13,241 - config.database - INFO - Database connection established
+2025-09-23 20:18:13,243 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "GET /launchpad/api/syndication/last-updated HTTP/1.1" 200 -
+2025-09-23 20:18:13,244 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 20:18:13,245 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-23 20:18:13,245 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "GET /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 20:18:13,245 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-09-23 20:18:13,248 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-23 20:18:13,259 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:13] "GET /launchpad/api/syndication/get-generated-content/16574/product HTTP/1.1" 200 -
+2025-09-23 20:18:42,555 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 20:18:42] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -

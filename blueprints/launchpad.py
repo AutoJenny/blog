@@ -4,7 +4,7 @@ import logging
 import json
 import os
 import requests
-from datetime import datetime
+from datetime import datetime, date, time, timedelta
 import pytz
 from humanize import naturaltime
 from config.database import db_manager
@@ -12,6 +12,105 @@ import psycopg
 
 bp = Blueprint('launchpad', __name__)
 logger = logging.getLogger(__name__)
+
+def get_next_posting_slot(cursor, platform='facebook', content_type='product'):
+    """Calculate the next available posting slot based on schedules and existing queue."""
+    try:
+        # Get active schedules for the specific platform and content type
+        cursor.execute("""
+            SELECT id, time, timezone, days, is_active
+            FROM daily_posts_schedule
+            WHERE is_active = true AND platform = %s AND content_type = %s
+            ORDER BY time ASC
+        """, (platform, content_type))
+        schedules = cursor.fetchall()
+        
+        if not schedules:
+            return None
+        
+        # Get the latest scheduled post to know where to start
+        cursor.execute("""
+            SELECT scheduled_timestamp, scheduled_date, scheduled_time
+            FROM posting_queue
+            WHERE scheduled_timestamp IS NOT NULL
+            ORDER BY scheduled_timestamp DESC
+            LIMIT 1
+        """)
+        latest_scheduled = cursor.fetchone()
+        
+        # Start from current time or latest scheduled time + 1 day
+        if latest_scheduled and latest_scheduled['scheduled_timestamp']:
+            start_date = latest_scheduled['scheduled_date'] + timedelta(days=1)
+        else:
+            start_date = date.today()
+        
+        # First, try to fill existing scheduled days
+        cursor.execute("""
+            SELECT scheduled_date, scheduled_time, COUNT(*) as count
+            FROM posting_queue
+            WHERE scheduled_timestamp IS NOT NULL
+            GROUP BY scheduled_date, scheduled_time
+            ORDER BY scheduled_date, scheduled_time
+        """)
+        existing_slots = cursor.fetchall()
+        
+        # Check existing slots first to fill them up
+        for slot in existing_slots:
+            slot_date = slot['scheduled_date']
+            slot_time = slot['scheduled_time']
+            existing_count = slot['count']
+            
+            # Allow only 1 post per time slot
+            max_posts_per_slot = 1
+            
+            if existing_count < max_posts_per_slot:
+                # Found an available slot in existing day
+                slot_timestamp = datetime.combine(slot_date, slot_time)
+                return {
+                    'date': slot_date,
+                    'time': slot_time,
+                    'timestamp': slot_timestamp,
+                    'schedule_name': f'Existing Slot',
+                    'timezone': 'GMT'
+                }
+        
+        # If no existing slots available, find the next new slot
+        for days_ahead in range(30):  # Look up to 30 days ahead
+            check_date = start_date + timedelta(days=days_ahead)
+            day_of_week = check_date.isoweekday()  # 1=Monday, 7=Sunday
+            
+            for schedule in schedules:
+                schedule_days = schedule['days'] if isinstance(schedule['days'], list) else json.loads(schedule['days'])
+                
+                if day_of_week in schedule_days:
+                    # This schedule applies to this day
+                    schedule_time = schedule['time']
+                    schedule_timestamp = datetime.combine(check_date, schedule_time)
+                    
+                    # Check if this slot already exists
+                    cursor.execute("""
+                        SELECT COUNT(*) as count
+                        FROM posting_queue
+                        WHERE scheduled_date = %s AND scheduled_time = %s
+                    """, (check_date, schedule_time))
+                    
+                    existing_count = cursor.fetchone()['count']
+                    
+                    if existing_count == 0:
+                        # Found a new available slot
+                        return {
+                            'date': check_date,
+                            'time': schedule_time,
+                            'timestamp': schedule_timestamp,
+                            'schedule_name': f'Schedule {schedule["id"]}',
+                            'timezone': schedule['timezone']
+                        }
+        
+        return None
+        
+    except Exception as e:
+        logger.error(f"Error calculating next posting slot: {e}")
+        return None
 
 # Custom Jinja2 filter to strip HTML document structure
 def strip_html_doc(content):
@@ -142,7 +241,7 @@ def get_generated_content(product_id, content_type):
 
 @bp.route('/api/syndication/update-queue-status', methods=['POST'])
 def update_queue_status():
-    """Update the status of a queue item from 'draft' to 'pending'."""
+    """Update the status of a queue item from 'draft' to 'ready' and schedule it."""
     try:
         data = request.get_json()
         product_id = data.get('product_id')
@@ -157,18 +256,37 @@ def update_queue_status():
         
         with db_manager.get_connection() as conn:
             with conn.cursor() as cursor:
-                # Update the status from 'draft' or 'pending' to 'ready' (idempotent - also works if already 'ready')
+                # Get the next available posting slot for this platform and content type
+                next_slot = get_next_posting_slot(cursor, platform='facebook', content_type=content_type)
+                
+                if not next_slot:
+                    return jsonify({
+                        'success': False,
+                        'error': 'No available posting slots found'
+                    }), 400
+                
+                # Update the status and schedule the post
                 cursor.execute("""
                     UPDATE posting_queue 
-                    SET status = %s, updated_at = NOW()
+                    SET status = %s, 
+                        scheduled_date = %s,
+                        scheduled_time = %s,
+                        scheduled_timestamp = %s,
+                        schedule_name = %s,
+                        timezone = %s,
+                        updated_at = NOW()
                     WHERE product_id = %s AND content_type = %s AND status IN ('draft', 'pending', 'ready')
-                """, (status, product_id, content_type))
+                """, (status, next_slot['date'], next_slot['time'], next_slot['timestamp'], 
+                      next_slot['schedule_name'], next_slot['timezone'], product_id, content_type))
                 
                 if cursor.rowcount > 0:
                     conn.commit()
                     return jsonify({
                         'success': True,
-                        'message': f'Queue status updated to {status}'
+                        'message': f'Queue item scheduled for {next_slot["date"]} at {next_slot["time"]} {next_slot["timezone"]}',
+                        'scheduled_date': next_slot['date'].isoformat(),
+                        'scheduled_time': str(next_slot['time']),
+                        'scheduled_timestamp': next_slot['timestamp'].isoformat()
                     })
                 else:
                     return jsonify({
@@ -409,12 +527,14 @@ def get_queue():
                        pq.generated_content, pq.status,
                        pq.platform_post_id, pq.error_message,
                        pq.product_id, pq.created_at, pq.updated_at,
+                       pq.scheduled_date, pq.scheduled_time, pq.scheduled_timestamp,
+                       pq.schedule_name, pq.timezone,
                        cp.name as product_name, cp.sku, cp.image_url as product_image,
                        cp.price
                 FROM posting_queue pq
                 LEFT JOIN clan_products cp ON pq.product_id = cp.id
                 WHERE pq.status IN ('pending', 'ready', 'published', 'failed')
-                ORDER BY pq.created_at ASC
+                ORDER BY pq.scheduled_timestamp ASC NULLS LAST, pq.created_at ASC
                 LIMIT 50
             """)
             
@@ -437,7 +557,12 @@ def get_queue():
                     'product_image': item['product_image'],
                     'product_price': item['price'],
                     'created_at': item['created_at'].isoformat() if item['created_at'] else None,
-                    'updated_at': item['updated_at'].isoformat() if item['updated_at'] else None
+                    'updated_at': item['updated_at'].isoformat() if item['updated_at'] else None,
+                    'scheduled_date': item['scheduled_date'].isoformat() if item['scheduled_date'] else None,
+                    'scheduled_time': str(item['scheduled_time']) if item['scheduled_time'] else None,
+                    'scheduled_timestamp': item['scheduled_timestamp'].isoformat() if item['scheduled_timestamp'] else None,
+                    'schedule_name': item['schedule_name'],
+                    'timezone': item['timezone']
                 })
             
             return jsonify({

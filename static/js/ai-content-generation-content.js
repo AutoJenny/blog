@@ -118,15 +118,15 @@ Object.assign(AIContentGenerationManager.prototype, {
     },
     
     // Add content to posting queue
-    async addToQueue() {
+    async addToQueue(silent = false) {
         if (!this.generatedContent) {
-            alert('No content to add to queue');
-            return;
+            if (!silent) alert('No content to add to queue');
+            return false;
         }
         
         if (!this.selectedProduct) {
-            alert('No product selected');
-            return;
+            if (!silent) alert('No product selected');
+            return false;
         }
         
         try {
@@ -156,13 +156,22 @@ Object.assign(AIContentGenerationManager.prototype, {
                 });
                 document.dispatchEvent(event);
                 
-                this.showNotification('Content added to posting queue', 'success');
+                if (!silent) {
+                    this.showNotification('Content added to posting queue', 'success');
+                }
+                return true;
             } else {
-                this.showNotification('Failed to add content to queue: ' + data.error, 'error');
+                if (!silent) {
+                    this.showNotification('Failed to add content to queue: ' + data.error, 'error');
+                }
+                return false;
             }
         } catch (error) {
             console.error('Error adding to queue:', error);
-            this.showNotification('Error adding content to queue: ' + error.message, 'error');
+            if (!silent) {
+                this.showNotification('Error adding content to queue: ' + error.message, 'error');
+            }
+            return false;
         }
     },
     
