@@ -66,11 +66,13 @@ Object.assign(AIContentGenerationManager.prototype, {
         const editBtn = document.getElementById('edit-content-btn');
         if (editBtn) {
             editBtn.style.display = 'inline-block';
+            editBtn.disabled = false;
         }
         
         const addToQueueBtn = document.getElementById('add-to-queue-btn');
         if (addToQueueBtn) {
             addToQueueBtn.style.display = 'inline-block';
+            addToQueueBtn.disabled = false;
         }
     },
     

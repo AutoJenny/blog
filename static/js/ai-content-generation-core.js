@@ -54,19 +54,21 @@ class AIContentGenerationManager {
     // Reset form to initial state
     resetForm() {
         this.generatedContent = '';
-        const contentText = document.getElementById('generated-content-text');
+        const contentText = document.getElementById('content-text');
         if (contentText) {
-            contentText.value = '';
+            contentText.textContent = 'Select a product and click "Generate Post" to create AI-powered content.';
         }
         
         const editBtn = document.getElementById('edit-content-btn');
         if (editBtn) {
             editBtn.style.display = 'none';
+            editBtn.disabled = true;
         }
         
         const addToQueueBtn = document.getElementById('add-to-queue-btn');
         if (addToQueueBtn) {
             addToQueueBtn.style.display = 'none';
+            addToQueueBtn.disabled = true;
         }
         
         this.updateAIStatusHeader();
