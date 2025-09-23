@@ -67,6 +67,13 @@ function toggleAccordion(sectionId) {
     }
 }
 
+// Global function for HTML onclick
+function toggleProductsBrowserAccordion() {
+    if (window.itemSelectionAccordions) {
+        window.itemSelectionAccordions.toggleProductsBrowserAccordion();
+    }
+}
+
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     window.itemSelectionAccordions = new ItemSelectionAccordions();
