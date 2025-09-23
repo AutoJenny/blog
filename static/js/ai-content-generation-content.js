@@ -53,8 +53,8 @@ Object.assign(AIContentGenerationManager.prototype, {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    provider: 'openai',
-                    model: 'gpt-3.5-turbo',
+                    provider: 'ollama',
+                    model: 'mistral',
                     input_data: {
                         section_heading: `${this.getContentTypeDisplayName(this.selectedContentType)} Post`,
                         section_description: `Create engaging social media content for ${this.selectedProduct.name}`,

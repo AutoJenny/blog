@@ -6051,3 +6051,39 @@ LINE 3: ...  WHERE product_id = $1 AND content_type = $2 AND product_fo...
 2025-09-23 18:31:41,014 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
 2025-09-23 18:31:41,015 - urllib3.connectionpool - DEBUG - http://localhost:11434 "GET /api/tags HTTP/1.1" 200 13
 2025-09-23 18:31:41,015 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:31:41] "GET /llm-actions/api/llm/providers HTTP/1.1" 200 -
+2025-09-23 18:31:58,018 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:31:58] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 18:32:04,603 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-23 18:32:04,640 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-23 18:32:04,643 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-23 18:32:04,644 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "[36mGET /static/js/item-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-23 18:32:04,644 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "[36mGET /static/js/item-selection-data.js HTTP/1.1[0m" 304 -
+2025-09-23 18:32:04,644 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "[36mGET /static/js/item-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-23 18:32:04,645 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "[36mGET /static/js/item-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-23 18:32:04,645 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "[36mGET /static/js/item-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 18:32:04,647 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "[36mGET /static/js/item-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-23 18:32:04,648 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-23 18:32:04,650 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "[36mGET /static/js/ai-content-generation-core.js HTTP/1.1[0m" 304 -
+2025-09-23 18:32:04,651 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "[36mGET /static/js/ai-content-generation-events.js HTTP/1.1[0m" 304 -
+2025-09-23 18:32:04,652 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-23 18:32:04,652 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "GET /static/js/ai-content-generation-content.js HTTP/1.1" 200 -
+2025-09-23 18:32:04,654 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "[36mGET /static/js/ai-content-generation-data.js HTTP/1.1[0m" 304 -
+2025-09-23 18:32:04,654 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-23 18:32:04,654 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "[36mGET /static/js/ai-content-generation-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 18:32:04,655 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "[36mGET /static/js/ai-content-generation-prompts.js HTTP/1.1[0m" 304 -
+2025-09-23 18:32:04,723 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-23 18:32:04,730 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 18:32:04,731 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "GET /launchpad/api/syndication/last-updated HTTP/1.1" 200 -
+2025-09-23 18:32:04,731 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "GET /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 18:32:04,731 - blueprints.launchpad - ERROR - Error in get_today_status: the connection is closed
+2025-09-23 18:32:04,732 - blueprints.launchpad - ERROR - Error in get_schedules: the connection is closed
+2025-09-23 18:32:04,732 - blueprints.launchpad - ERROR - Error in get_llm_prompts: the connection is closed
+2025-09-23 18:32:04,732 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "[35m[1mGET /launchpad/api/syndication/today-status HTTP/1.1[0m" 500 -
+2025-09-23 18:32:04,732 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "[35m[1mGET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1[0m" 500 -
+2025-09-23 18:32:04,733 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "[35m[1mGET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1[0m" 500 -
+2025-09-23 18:32:04,762 - config.database - INFO - Database connection established
+2025-09-23 18:32:04,766 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:04] "GET /launchpad/api/syndication/get-generated-content/152565/feature HTTP/1.1" 200 -
+2025-09-23 18:32:10,127 - config.database - INFO - Database connection established
+2025-09-23 18:32:10,245 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.openai.com:443
+2025-09-23 18:32:10,768 - urllib3.connectionpool - DEBUG - https://api.openai.com:443 "POST /v1/chat/completions HTTP/1.1" 401 254
+2025-09-23 18:32:10,770 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:10] "POST /llm-actions/api/llm/actions/16/execute HTTP/1.1" 200 -
+2025-09-23 18:32:28,108 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:28] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
