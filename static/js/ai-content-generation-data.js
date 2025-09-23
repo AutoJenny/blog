@@ -39,7 +39,7 @@ Object.assign(AIContentGenerationManager.prototype, {
                 },
                 body: JSON.stringify({
                     product_id: this.selectedProduct.id,
-                    content_type: contentType, // Store AI type (feature, benefit, story) here
+                    content_type: 'product',
                     content: content
                 })
             });
@@ -65,7 +65,7 @@ Object.assign(AIContentGenerationManager.prototype, {
         console.log('Loading existing content for product:', this.selectedProduct.name, 'type:', this.selectedContentType);
         
         try {
-            const response = await fetch(`/launchpad/api/syndication/get-generated-content/${this.selectedProduct.id}/${this.selectedContentType}`);
+            const response = await fetch(`/launchpad/api/syndication/get-generated-content/${this.selectedProduct.id}/product`);
             const data = await response.json();
             
             console.log('Load existing content response:', data);
