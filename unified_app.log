@@ -5407,3 +5407,293 @@ LINE 4:                 WHERE product_id = $1 AND product_focus = $2...
 2025-09-23 17:13:20,871 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:13:20] "[33mGET /launchpad/api/syndication/queue-data/product HTTP/1.1[0m" 404 -
 2025-09-23 17:13:22,304 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:13:22] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
 2025-09-23 17:13:28,859 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:13:28] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 17:14:08,025 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:14:08,668 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-23 17:14:08,715 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-23 17:14:08,720 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "[36mGET /static/js/item-selection-data.js HTTP/1.1[0m" 304 -
+2025-09-23 17:14:08,720 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "[36mGET /static/js/item-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 17:14:08,721 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "[36mGET /static/js/item-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-23 17:14:08,721 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-23 17:14:08,721 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "[36mGET /static/js/item-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-23 17:14:08,721 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "[36mGET /static/js/item-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-23 17:14:08,723 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "[36mGET /static/js/item-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-23 17:14:08,757 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-23 17:14:08,758 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-23 17:14:08,759 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "GET /static/js/queue-manager.js HTTP/1.1" 200 -
+2025-09-23 17:14:08,760 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "[36mGET /static/js/ai-content-generation-events.js HTTP/1.1[0m" 304 -
+2025-09-23 17:14:08,760 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "[36mGET /static/js/ai-content-generation-core.js HTTP/1.1[0m" 304 -
+2025-09-23 17:14:08,761 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "[36mGET /static/js/ai-content-generation-content.js HTTP/1.1[0m" 304 -
+2025-09-23 17:14:08,762 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "[36mGET /static/js/ai-content-generation-data.js HTTP/1.1[0m" 304 -
+2025-09-23 17:14:08,763 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "[36mGET /static/js/ai-content-generation-prompts.js HTTP/1.1[0m" 304 -
+2025-09-23 17:14:08,763 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "[36mGET /static/js/ai-content-generation-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 17:14:08,827 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-23 17:14:08,830 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 17:14:08,830 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "GET /launchpad/api/syndication/last-updated HTTP/1.1" 200 -
+2025-09-23 17:14:08,831 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "GET /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 17:14:08,839 - config.database - INFO - Database connection established
+2025-09-23 17:14:08,840 - config.database - INFO - Database connection established
+2025-09-23 17:14:08,841 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-23 17:14:08,842 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-09-23 17:14:08,850 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:08] "GET /launchpad/api/syndication/get-generated-content/7553/feature HTTP/1.1" 200 -
+2025-09-23 17:14:38,129 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:14:38] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:15:08,333 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:15:08] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:15:46,768 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:15:46] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:17:25,913 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:17:25] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:18:29,780 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:18:29] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:20:29,781 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:20:29] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:20:33,690 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 17:20:34,757 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 17:20:34,765 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 17:20:34,776 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 17:20:36,819 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 17:20:37,933 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 17:20:37,939 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 17:20:37,951 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 17:20:41,005 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 17:20:42,077 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 17:20:42,083 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 17:20:42,094 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 17:20:43,122 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 17:20:44,207 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 17:20:44,213 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 17:20:44,224 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 17:20:50,317 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 17:20:51,382 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 17:20:51,388 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 17:20:51,398 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 17:20:54,455 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 17:20:55,523 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 17:20:55,529 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 17:20:55,540 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 17:20:57,582 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 17:20:58,667 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 17:20:58,674 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 17:20:58,684 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 17:21:04,780 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 17:21:05,833 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 17:21:05,839 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 17:21:05,853 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 17:21:08,906 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 17:21:09,961 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 17:21:09,968 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 17:21:09,979 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 17:21:18,114 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 17:21:19,116 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 17:21:19,122 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 17:21:19,132 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 17:22:09,895 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:09] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:22:11,939 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:11] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-23 17:22:11,997 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:11] "[36mGET /static/js/item-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-23 17:22:11,997 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:11] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-23 17:22:11,999 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:11] "[36mGET /static/js/item-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-23 17:22:12,001 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:12] "[36mGET /static/js/item-selection-data.js HTTP/1.1[0m" 304 -
+2025-09-23 17:22:12,002 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:12] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-23 17:22:12,002 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:12] "[36mGET /static/js/item-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 17:22:12,003 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:12] "[36mGET /static/js/item-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-23 17:22:12,005 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:12] "GET /static/js/queue-manager.js HTTP/1.1" 200 -
+2025-09-23 17:22:12,006 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:12] "[36mGET /static/js/item-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-23 17:22:12,007 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:12] "[36mGET /static/js/ai-content-generation-core.js HTTP/1.1[0m" 304 -
+2025-09-23 17:22:12,008 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:12] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-23 17:22:12,009 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:12] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-23 17:22:12,009 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:12] "[36mGET /static/js/ai-content-generation-events.js HTTP/1.1[0m" 304 -
+2025-09-23 17:22:12,011 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:12] "[36mGET /static/js/ai-content-generation-prompts.js HTTP/1.1[0m" 304 -
+2025-09-23 17:22:12,012 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:12] "[36mGET /static/js/ai-content-generation-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 17:22:12,012 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:12] "GET /static/js/ai-content-generation-content.js HTTP/1.1" 200 -
+2025-09-23 17:22:12,013 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:12] "GET /static/js/ai-content-generation-data.js HTTP/1.1" 200 -
+2025-09-23 17:22:12,101 - config.database - INFO - Database connection established
+2025-09-23 17:22:12,104 - config.database - INFO - Database connection established
+2025-09-23 17:22:12,104 - config.database - INFO - Database connection established
+2025-09-23 17:22:12,105 - config.database - INFO - Database connection established
+2025-09-23 17:22:12,105 - config.database - INFO - Database connection established
+2025-09-23 17:22:12,107 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:12] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-23 17:22:12,107 - config.database - INFO - Database connection established
+2025-09-23 17:22:12,108 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:12] "GET /launchpad/api/syndication/last-updated HTTP/1.1" 200 -
+2025-09-23 17:22:12,108 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:12] "GET /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 17:22:12,109 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:12] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-23 17:22:12,110 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:12] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-09-23 17:22:12,111 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:12] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 17:22:12,116 - blueprints.launchpad - ERROR - Error getting generated content: column "product_focus" does not exist
+LINE 4: ... product_id = $1 AND content_type = 'product' AND product_fo...
+                                                             ^
+2025-09-23 17:22:12,116 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:12] "[35m[1mGET /launchpad/api/syndication/get-generated-content/7553/feature HTTP/1.1[0m" 500 -
+2025-09-23 17:22:39,996 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:39] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:22:52,435 - config.database - INFO - Database connection established
+2025-09-23 17:22:52,437 - blueprints.launchpad - ERROR - Error getting generated content: column "product_focus" does not exist
+LINE 4: ... product_id = $1 AND content_type = 'product' AND product_fo...
+                                                             ^
+2025-09-23 17:22:52,437 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:22:52] "[35m[1mGET /launchpad/api/syndication/get-generated-content/7553/feature HTTP/1.1[0m" 500 -
+2025-09-23 17:23:00,013 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 17:23:01,160 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 17:23:01,166 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 17:23:01,176 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 17:23:01,968 - config.database - INFO - Database connection established
+2025-09-23 17:23:01,974 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:23:01] "GET /launchpad/api/syndication/get-generated-content/7553/feature HTTP/1.1" 200 -
+2025-09-23 17:23:06,275 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 17:23:07,328 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 17:23:07,335 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 17:23:07,345 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 17:23:10,003 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:23:10] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:23:40,000 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:23:40] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:24:09,998 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:24:09] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:24:40,000 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:24:40] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:25:10,003 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:25:10] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:25:40,658 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:25:40] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:26:10,836 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:26:10] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:26:50,809 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:26:50] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:27:35,707 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:27:35] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:28:20,854 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:28:20] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:28:50,862 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:28:50] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:29:20,863 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:29:20] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:29:51,657 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:29:51] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:30:21,661 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:30:21] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:30:51,660 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:30:51] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:31:21,663 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:31:21] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:31:51,662 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:31:51] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:32:21,662 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:32:21] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:32:51,665 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:32:51] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:33:21,666 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:33:21] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:33:52,658 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:33:52] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:34:23,659 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:34:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:34:53,660 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:34:53] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:35:12,824 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-23 17:35:12,866 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-23 17:35:12,867 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "[36mGET /static/js/item-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 17:35:12,868 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "[36mGET /static/js/item-selection-data.js HTTP/1.1[0m" 304 -
+2025-09-23 17:35:12,869 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "[36mGET /static/js/item-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-23 17:35:12,870 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "[36mGET /static/js/item-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-23 17:35:12,872 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "[36mGET /static/js/item-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-23 17:35:12,872 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-23 17:35:12,872 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "[36mGET /static/js/item-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-23 17:35:12,873 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-23 17:35:12,874 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "[36mGET /static/js/ai-content-generation-core.js HTTP/1.1[0m" 304 -
+2025-09-23 17:35:12,875 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "[36mGET /static/js/ai-content-generation-events.js HTTP/1.1[0m" 304 -
+2025-09-23 17:35:12,876 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "[36mGET /static/js/ai-content-generation-content.js HTTP/1.1[0m" 304 -
+2025-09-23 17:35:12,877 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "[36mGET /static/js/ai-content-generation-prompts.js HTTP/1.1[0m" 304 -
+2025-09-23 17:35:12,878 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "[36mGET /static/js/ai-content-generation-data.js HTTP/1.1[0m" 304 -
+2025-09-23 17:35:12,879 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "[36mGET /static/js/ai-content-generation-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 17:35:12,880 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-23 17:35:12,881 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-23 17:35:12,974 - config.database - INFO - Database connection established
+2025-09-23 17:35:12,975 - config.database - INFO - Database connection established
+2025-09-23 17:35:12,975 - config.database - INFO - Database connection established
+2025-09-23 17:35:12,975 - config.database - INFO - Database connection established
+2025-09-23 17:35:12,976 - config.database - INFO - Database connection established
+2025-09-23 17:35:12,977 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "GET /launchpad/api/syndication/last-updated HTTP/1.1" 200 -
+2025-09-23 17:35:12,978 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-23 17:35:12,979 - config.database - INFO - Database connection established
+2025-09-23 17:35:12,980 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-23 17:35:12,981 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "GET /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 17:35:12,982 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 17:35:12,983 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-09-23 17:35:12,989 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:12] "GET /launchpad/api/syndication/get-generated-content/7553/feature HTTP/1.1" 200 -
+2025-09-23 17:35:23,431 - config.database - INFO - Database connection established
+2025-09-23 17:35:23,434 - blueprints.launchpad - ERROR - Error updating queue status: column "product_focus" does not exist
+LINE 4: ...  WHERE product_id = $2 AND content_type = $3 AND product_fo...
+                                                             ^
+2025-09-23 17:35:23,435 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:23] "[35m[1mPOST /launchpad/api/syndication/update-queue-status HTTP/1.1[0m" 500 -
+2025-09-23 17:35:23,659 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:35:49,389 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 17:35:50,510 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 17:35:50,517 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 17:35:50,528 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 17:35:52,566 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 17:35:53,602 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 17:35:53,609 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 17:35:53,619 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 17:35:53,756 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:35:53] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:35:57,682 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 17:35:58,730 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 17:35:58,736 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 17:35:58,747 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 17:36:01,793 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 17:36:02,842 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 17:36:02,849 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 17:36:02,859 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 17:36:06,732 - config.database - INFO - Database connection established
+2025-09-23 17:36:06,736 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:06] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 17:36:10,969 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 17:36:11,953 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 17:36:11,958 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 17:36:11,968 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 17:36:21,264 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-23 17:36:21,311 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-23 17:36:21,313 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "[36mGET /static/js/item-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:21,313 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-23 17:36:21,314 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "[36mGET /static/js/item-selection-data.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:21,316 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "[36mGET /static/js/item-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:21,316 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "[36mGET /static/js/item-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:21,317 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "[36mGET /static/js/item-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:21,319 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "[36mGET /static/js/item-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:21,320 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:21,321 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "[36mGET /static/js/ai-content-generation-core.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:21,322 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-23 17:36:21,322 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:21,322 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "[36mGET /static/js/ai-content-generation-events.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:21,323 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "GET /static/js/ai-content-generation-content.js HTTP/1.1" 200 -
+2025-09-23 17:36:21,325 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "[36mGET /static/js/ai-content-generation-data.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:21,326 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "[36mGET /static/js/ai-content-generation-prompts.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:21,327 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "[36mGET /static/js/ai-content-generation-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:21,417 - config.database - INFO - Database connection established
+2025-09-23 17:36:21,417 - config.database - INFO - Database connection established
+2025-09-23 17:36:21,418 - config.database - INFO - Database connection established
+2025-09-23 17:36:21,419 - config.database - INFO - Database connection established
+2025-09-23 17:36:21,421 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-23 17:36:21,422 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "GET /launchpad/api/syndication/last-updated HTTP/1.1" 200 -
+2025-09-23 17:36:21,422 - config.database - INFO - Database connection established
+2025-09-23 17:36:21,422 - config.database - INFO - Database connection established
+2025-09-23 17:36:21,424 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "GET /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 17:36:21,425 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-09-23 17:36:21,427 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 17:36:21,428 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-23 17:36:21,434 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:21] "GET /launchpad/api/syndication/get-generated-content/7553/feature HTTP/1.1" 200 -
+2025-09-23 17:36:23,753 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:36:25,437 - config.database - INFO - Database connection established
+2025-09-23 17:36:25,443 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:25] "POST /launchpad/api/syndication/update-queue-status HTTP/1.1" 200 -
+2025-09-23 17:36:33,982 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:33] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-23 17:36:34,037 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-23 17:36:34,040 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-23 17:36:34,041 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "[36mGET /static/js/item-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:34,043 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "[36mGET /static/js/item-selection-data.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:34,043 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "[36mGET /static/js/item-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:34,046 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "[36mGET /static/js/item-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:34,047 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "[36mGET /static/js/item-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:34,048 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "[36mGET /static/js/item-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:34,049 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:34,050 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:34,051 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "[36mGET /static/js/ai-content-generation-core.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:34,051 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-23 17:36:34,052 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "[36mGET /static/js/ai-content-generation-events.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:34,053 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "[36mGET /static/js/ai-content-generation-prompts.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:34,054 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "[36mGET /static/js/ai-content-generation-data.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:34,054 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "[36mGET /static/js/ai-content-generation-content.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:34,054 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "[36mGET /static/js/ai-content-generation-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 17:36:34,118 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-23 17:36:34,122 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 17:36:34,123 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "GET /launchpad/api/syndication/last-updated HTTP/1.1" 200 -
+2025-09-23 17:36:34,123 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-23 17:36:34,124 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-09-23 17:36:34,125 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "GET /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 17:36:34,157 - config.database - INFO - Database connection established
+2025-09-23 17:36:34,161 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:34] "GET /launchpad/api/syndication/get-generated-content/7553/feature HTTP/1.1" 200 -
+2025-09-23 17:36:49,879 - config.database - INFO - Database connection established
+2025-09-23 17:36:49,926 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:49] "GET /launchpad/api/syndication/products HTTP/1.1" 200 -
+2025-09-23 17:36:52,729 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:52] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 17:36:52,768 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:52] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 17:36:52,779 - config.database - INFO - Database connection established
+2025-09-23 17:36:52,785 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:52] "GET /launchpad/api/syndication/get-generated-content/152565/feature HTTP/1.1" 200 -
+2025-09-23 17:36:53,757 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:36:53] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:37:10,999 - config.database - INFO - Database connection established
+2025-09-23 17:37:11,005 - blueprints.launchpad - ERROR - Error saving generated content: column "product_focus" does not exist
+LINE 3: ...  WHERE product_id = $1 AND content_type = $2 AND product_fo...
+                                                             ^
+2025-09-23 17:37:11,006 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:37:11] "[35m[1mPOST /launchpad/api/syndication/save-generated-content HTTP/1.1[0m" 500 -
+2025-09-23 17:37:23,759 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:37:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:37:24,118 - config.database - INFO - Database connection established
+2025-09-23 17:37:24,120 - blueprints.launchpad - ERROR - Error saving generated content: column "product_focus" does not exist
+LINE 3: ...  WHERE product_id = $1 AND content_type = $2 AND product_fo...
+                                                             ^
+2025-09-23 17:37:24,121 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:37:24] "[35m[1mPOST /launchpad/api/syndication/save-generated-content HTTP/1.1[0m" 500 -
+2025-09-23 17:37:53,760 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:37:53] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:38:23,856 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:38:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:38:53,952 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:38:53] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 17:39:25,857 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 17:39:25] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -

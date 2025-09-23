@@ -79,14 +79,8 @@ class QueueManager {
     filterQueueData(items) {
         if (this.pageType === 'all') {
             return items;
-        } else if (this.pageType === 'product') {
-            // For product posts, show all AI-generated content types (feature, benefit, story, etc.)
-            return items.filter(item => ['feature', 'benefit', 'story', 'product'].includes(item.content_type));
-        } else if (this.pageType === 'blog_post') {
-            // For blog posts, show only blog post content
-            return items.filter(item => item.content_type === 'blog_post');
         }
-        return items;
+        return items.filter(item => item.content_type === this.pageType);
     }
 
     /**
