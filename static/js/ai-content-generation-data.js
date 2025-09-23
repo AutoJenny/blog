@@ -9,18 +9,18 @@ Object.assign(AIContentGenerationManager.prototype, {
     // Load prompts from database
     async loadDatabasePrompts() {
         try {
-            const response = await fetch('/launchpad/api/syndication/get-prompts');
+            const response = await fetch('/launchpad/api/syndication/llm-prompts/1');
             const data = await response.json();
             
             if (data.success) {
                 this.databasePrompts = data.prompts;
                 console.log('Loaded database prompts:', this.databasePrompts);
             } else {
-                console.log('No prompts endpoint available, using defaults');
+                console.log('No prompts found, using defaults');
                 this.databasePrompts = null;
             }
         } catch (error) {
-            console.log('Prompts endpoint not available, using defaults');
+            console.log('Error loading prompts:', error);
             this.databasePrompts = null;
         }
     },
