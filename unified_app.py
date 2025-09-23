@@ -34,20 +34,8 @@ def create_app(config_name=None):
     app.register_blueprint(core_bp)
     
     # Register modular launchpad blueprints
-    from blueprints.launchpad_core import bp as launchpad_core_bp
-    app.register_blueprint(launchpad_core_bp, url_prefix='/launchpad')
-    
-    from blueprints.launchpad_queue import bp as launchpad_queue_bp
-    app.register_blueprint(launchpad_queue_bp, url_prefix='/launchpad')
-    
-    from blueprints.launchpad_scheduling import bp as launchpad_scheduling_bp
-    app.register_blueprint(launchpad_scheduling_bp, url_prefix='/launchpad')
-    
-    from blueprints.launchpad_content import bp as launchpad_content_bp
-    app.register_blueprint(launchpad_content_bp, url_prefix='/launchpad')
-    
-    from blueprints.launchpad_syndication import bp as launchpad_syndication_bp
-    app.register_blueprint(launchpad_syndication_bp, url_prefix='/launchpad')
+    from blueprints.launchpad import bp as launchpad_bp
+    app.register_blueprint(launchpad_bp, url_prefix='/launchpad')
     
     from blueprints.llm_actions import bp as llm_actions_bp
     app.register_blueprint(llm_actions_bp, url_prefix='/llm-actions')
