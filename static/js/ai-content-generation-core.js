@@ -13,7 +13,6 @@ class AIContentGenerationManager {
         
         this.init();
         this.setupLLMControls();
-        this.loadDatabasePrompts(); // Load prompts from database
     }
     
     init() {
@@ -25,7 +24,6 @@ class AIContentGenerationManager {
     
     // Set the selected product and update UI
     setSelectedProduct(product) {
-        console.log('AI Content Generation: Setting selected product:', product);
         this.selectedProduct = product;
         this.updateGenerateButton();
         this.updateContentText();
