@@ -55,17 +55,27 @@ Object.assign(AIContentGenerationManager.prototype, {
     
     // Load existing generated content for the selected product
     async loadExistingContent() {
-        if (!this.selectedProduct) return;
+        if (!this.selectedProduct) {
+            console.log('No selected product, skipping content load');
+            return;
+        }
+        
+        console.log('Loading existing content for product:', this.selectedProduct.name, 'type:', this.selectedContentType);
         
         try {
             const response = await fetch(`/launchpad/api/syndication/get-generated-content/${this.selectedProduct.id}/${this.selectedContentType}`);
             const data = await response.json();
+            
+            console.log('Load existing content response:', data);
             
             if (data.success && data.content) {
                 this.generatedContent = data.content;
                 this.displayGeneratedContent();
                 this.enableContentActions();
                 this.updateAIStatusHeader(); // Update the accordion header
+                console.log('Loaded existing content and updated header');
+            } else {
+                console.log('No existing content found');
             }
         } catch (error) {
             console.error('Error loading existing content:', error);

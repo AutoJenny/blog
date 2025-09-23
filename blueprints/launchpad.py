@@ -113,7 +113,7 @@ def get_generated_content(product_id, content_type):
             cur.execute("""
                 SELECT generated_content as content, created_at, updated_at 
                 FROM posting_queue 
-                WHERE product_id = %s AND content_type = %s AND status = 'draft'
+                WHERE product_id = %s AND content_type = %s AND status IN ('draft', 'pending')
             """, (product_id, content_type))
             
             result = cur.fetchone()
