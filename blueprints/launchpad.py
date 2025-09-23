@@ -985,7 +985,7 @@ def generate_social_content():
         data = request.get_json()
         prompt = data.get('prompt')
         provider = data.get('provider', 'ollama')
-        model = data.get('model', 'llama3.2:latest')
+        model = data.get('model', 'mistral')
         
         if not prompt:
             return jsonify({

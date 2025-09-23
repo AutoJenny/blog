@@ -54,7 +54,7 @@ Object.assign(AIContentGenerationManager.prototype, {
                 },
                 body: JSON.stringify({
                     provider: 'ollama',
-                    model: 'llama3.2:latest',
+                    model: 'mistral',
                     prompt: prompt
                 })
             });
