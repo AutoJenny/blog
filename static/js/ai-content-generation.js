@@ -435,12 +435,19 @@ class AIContentGenerationManager {
         this.isPromptEditMode = !this.isPromptEditMode;
 
         if (this.isPromptEditMode) {
-            // Enter edit mode
+            // Enter edit mode - show the template, not the populated prompt
             generationPrompt.readOnly = false;
             generationPrompt.style.border = '1px solid #f59e0b';
             editBtn.innerHTML = '<i class="fas fa-save"></i> Save';
             editBtn.classList.remove('btn-secondary');
             editBtn.classList.add('btn-primary');
+            
+            // Show the template for editing
+            if (this.databasePrompts && this.databasePrompts.user_prompt_template) {
+                generationPrompt.value = this.databasePrompts.user_prompt_template.value;
+            } else {
+                generationPrompt.value = 'Database prompt template not available';
+            }
         } else {
             // Exit edit mode and save
             generationPrompt.readOnly = true;
@@ -449,8 +456,11 @@ class AIContentGenerationManager {
             editBtn.classList.remove('btn-primary');
             editBtn.classList.add('btn-secondary');
             
-            // Save the edited prompt to database
+            // Save the edited template to database
             this.saveEditedPrompt(generationPrompt.value);
+            
+            // Refresh the display with the new template
+            this.updateGenerationPromptDisplay();
         }
     }
 
@@ -472,11 +482,13 @@ class AIContentGenerationManager {
             
             const data = await response.json();
             if (data.success) {
-                console.log('Prompt saved successfully');
+                console.log('Prompt template saved successfully');
                 // Update local database prompts
                 if (this.databasePrompts) {
                     this.databasePrompts.user_prompt_template.value = promptText;
                 }
+                // Show success message
+                this.showNotification('Prompt template updated successfully', 'success');
             } else {
                 console.error('Failed to save prompt:', data.error);
                 alert('Failed to save prompt: ' + data.error);
@@ -484,6 +496,17 @@ class AIContentGenerationManager {
         } catch (error) {
             console.error('Error saving prompt:', error);
             alert('Error saving prompt: ' + error.message);
+        }
+    }
+
+    // Show notification message
+    showNotification(message, type = 'info') {
+        // Simple notification - you can enhance this with a proper notification system
+        console.log(`[${type.toUpperCase()}] ${message}`);
+        
+        // If there's a notification system available, use it
+        if (typeof showNotification === 'function') {
+            showNotification(message, type);
         }
     }
 
