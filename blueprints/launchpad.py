@@ -155,24 +155,26 @@ def update_queue_status():
                 'error': 'product_id and content_type are required'
             }), 400
         
-        with db_manager.get_cursor() as cursor:
-            # Update the status from 'draft' or 'pending' to 'ready' (idempotent - also works if already 'ready')
-            cursor.execute("""
-                UPDATE posting_queue 
-                SET status = %s, updated_at = NOW()
-                WHERE product_id = %s AND content_type = %s AND status IN ('draft', 'pending', 'ready')
-            """, (status, product_id, content_type))
-            
-            if cursor.rowcount > 0:
-                return jsonify({
-                    'success': True,
-                    'message': f'Queue status updated to {status}'
-                })
-            else:
-                return jsonify({
-                    'success': False,
-                    'error': 'No draft content found for this product and content type'
-                }), 404
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cursor:
+                # Update the status from 'draft' or 'pending' to 'ready' (idempotent - also works if already 'ready')
+                cursor.execute("""
+                    UPDATE posting_queue 
+                    SET status = %s, updated_at = NOW()
+                    WHERE product_id = %s AND content_type = %s AND status IN ('draft', 'pending', 'ready')
+                """, (status, product_id, content_type))
+                
+                if cursor.rowcount > 0:
+                    conn.commit()
+                    return jsonify({
+                        'success': True,
+                        'message': f'Queue status updated to {status}'
+                    })
+                else:
+                    return jsonify({
+                        'success': False,
+                        'error': 'No draft content found for this product and content type'
+                    }), 404
                 
     except Exception as e:
         logger.error(f"Error updating queue status: {e}")
