@@ -453,6 +453,63 @@ def get_queue():
             'count': 0
         }), 500
 
+@bp.route('/api/queue/<int:item_id>', methods=['DELETE'])
+def delete_queue_item(item_id):
+    """Delete a single queue item."""
+    try:
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cursor:
+                # Check if item exists
+                cursor.execute("SELECT id FROM posting_queue WHERE id = %s", (item_id,))
+                if not cursor.fetchone():
+                    return jsonify({
+                        'success': False,
+                        'error': 'Queue item not found'
+                    }), 404
+                
+                # Delete the item
+                cursor.execute("DELETE FROM posting_queue WHERE id = %s", (item_id,))
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Queue item deleted successfully'
+                })
+            
+    except Exception as e:
+        logger.error(f"Error deleting queue item: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@bp.route('/api/queue/clear', methods=['POST'])
+def clear_queue():
+    """Clear all items from the queue."""
+    try:
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cursor:
+                # Get count before deletion
+                cursor.execute("SELECT COUNT(*) FROM posting_queue")
+                count = cursor.fetchone()['count']
+                
+                # Delete all items
+                cursor.execute("DELETE FROM posting_queue")
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'All queue items deleted successfully',
+                    'deleted_count': count
+                })
+            
+    except Exception as e:
+        logger.error(f"Error clearing queue: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 # Scheduling API endpoints
 @bp.route('/api/syndication/schedules')
 def get_schedules():

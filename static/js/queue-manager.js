@@ -146,16 +146,23 @@ class QueueManager {
                     </div>
                 </td>
                 <td style="padding: 15px; vertical-align: top;">
-                    <div style="max-width: 400px;">
-                        <div style="font-weight: 600; color: #f1f5f9; margin-bottom: 8px; font-size: 1.1rem;">
-                            ${item.product_name || 'Unknown Product'}
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="max-width: 400px; flex: 1;">
+                            <div style="font-weight: 600; color: #f1f5f9; margin-bottom: 8px; font-size: 1.1rem;">
+                                ${item.product_name || 'Unknown Product'}
+                            </div>
+                            <div style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">
+                                SKU: ${item.product_sku || 'N/A'} | Price: $${item.product_price || '0.00'}
+                            </div>
+                            <div style="color: #e0e0e0; font-size: 0.95rem; line-height: 1.4;">
+                                ${item.generated_content ? item.generated_content.substring(0, 200) + (item.generated_content.length > 200 ? '...' : '') : 'No content'}
+                            </div>
                         </div>
-                        <div style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">
-                            SKU: ${item.product_sku || 'N/A'} | Price: $${item.product_price || '0.00'}
-                        </div>
-                        <div style="color: #e0e0e0; font-size: 0.95rem; line-height: 1.4;">
-                            ${item.generated_content ? item.generated_content.substring(0, 200) + (item.generated_content.length > 200 ? '...' : '') : 'No content'}
-                        </div>
+                        <button onclick="queueManager.deleteQueueItem(${item.id})" 
+                                style="background: #ef4444; border: none; border-radius: 4px; padding: 8px 12px; color: white; cursor: pointer; font-size: 0.8rem; margin-left: 15px; flex-shrink: 0;"
+                                title="Delete this item">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                 </td>
             </tr>
@@ -186,16 +193,23 @@ class QueueManager {
                     </div>
                 </td>
                 <td style="padding: 15px; vertical-align: top;">
-                    <div style="max-width: 400px;">
-                        <div style="font-weight: 600; color: #f1f5f9; margin-bottom: 8px; font-size: 1.1rem;">
-                            ${item.post_title || 'Blog Post'}
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="max-width: 400px; flex: 1;">
+                            <div style="font-weight: 600; color: #f1f5f9; margin-bottom: 8px; font-size: 1.1rem;">
+                                ${item.post_title || 'Blog Post'}
+                            </div>
+                            <div style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">
+                                Section: ${item.section_title || 'N/A'} | Post ID: ${item.post_id || 'N/A'}
+                            </div>
+                            <div style="color: #e0e0e0; font-size: 0.95rem; line-height: 1.4;">
+                                ${item.generated_content ? item.generated_content.substring(0, 200) + (item.generated_content.length > 200 ? '...' : '') : 'No content'}
+                            </div>
                         </div>
-                        <div style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">
-                            Section: ${item.section_title || 'N/A'} | Post ID: ${item.post_id || 'N/A'}
-                        </div>
-                        <div style="color: #e0e0e0; font-size: 0.95rem; line-height: 1.4;">
-                            ${item.generated_content ? item.generated_content.substring(0, 200) + (item.generated_content.length > 200 ? '...' : '') : 'No content'}
-                        </div>
+                        <button onclick="queueManager.deleteQueueItem(${item.id})" 
+                                style="background: #ef4444; border: none; border-radius: 4px; padding: 8px 12px; color: white; cursor: pointer; font-size: 0.8rem; margin-left: 15px; flex-shrink: 0;"
+                                title="Delete this item">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                 </td>
             </tr>
@@ -221,6 +235,112 @@ class QueueManager {
         if (queueCount) {
             queueCount.textContent = this.queueData.length;
         }
+    }
+
+    /**
+     * Delete a single queue item
+     */
+    async deleteQueueItem(itemId) {
+        if (!confirm('Are you sure you want to delete this queue item?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/launchpad/api/queue/${itemId}`, {
+                method: 'DELETE'
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Remove item from local data
+                this.queueData = this.queueData.filter(item => item.id !== itemId);
+                this.renderQueue();
+                this.updateQueueCount();
+                
+                // Show success message
+                this.showNotification('Queue item deleted successfully', 'success');
+            } else {
+                this.showNotification('Error deleting queue item: ' + data.error, 'error');
+            }
+        } catch (error) {
+            console.error('Error deleting queue item:', error);
+            this.showNotification('Error deleting queue item: ' + error.message, 'error');
+        }
+    }
+
+    /**
+     * Delete all queue items
+     */
+    async deleteAllQueueItems() {
+        if (!confirm('Are you sure you want to delete ALL queue items? This cannot be undone.')) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/launchpad/api/queue/clear', {
+                method: 'POST'
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Clear local data
+                this.queueData = [];
+                this.renderQueue();
+                this.updateQueueCount();
+                
+                // Show success message
+                this.showNotification('All queue items deleted successfully', 'success');
+            } else {
+                this.showNotification('Error clearing queue: ' + data.error, 'error');
+            }
+        } catch (error) {
+            console.error('Error clearing queue:', error);
+            this.showNotification('Error clearing queue: ' + error.message, 'error');
+        }
+    }
+
+    /**
+     * Show notification message
+     */
+    showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 6px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            max-width: 400px;
+            word-wrap: break-word;
+        `;
+        
+        // Set background color based on type
+        switch (type) {
+            case 'success':
+                notification.style.backgroundColor = '#10b981';
+                break;
+            case 'error':
+                notification.style.backgroundColor = '#ef4444';
+                break;
+            default:
+                notification.style.backgroundColor = '#3b82f6';
+        }
+        
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        // Remove notification after 3 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 3000);
     }
 }
 
