@@ -597,7 +597,6 @@ def get_products():
                        category_ids
                 FROM clan_products
                 ORDER BY name
-                LIMIT 1000
             """)
             
             products = cursor.fetchall()
@@ -709,6 +708,101 @@ def update_products():
         return jsonify({
             'success': False,
             'error': str(e)
+        }), 500
+
+@bp.route('/api/syndication/save-selected-product', methods=['POST'])
+def save_selected_product():
+    """Save the selected product to ui_session_state table."""
+    try:
+        data = request.get_json()
+        product_id = data.get('product_id')
+        
+        if not product_id:
+            return jsonify({
+                'success': False,
+                'message': 'Product ID is required'
+            }), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Delete any existing selected product entry
+            cursor.execute("""
+                DELETE FROM ui_session_state 
+                WHERE state_key = 'selected_product_id'
+            """)
+            
+            # Insert new selected product
+            cursor.execute("""
+                INSERT INTO ui_session_state (session_id, state_key, state_value, state_type, expires_at)
+                VALUES ('global', 'selected_product_id', %s, 'integer', NULL)
+            """, (product_id,))
+        
+        return jsonify({
+            'success': True,
+            'message': 'Selected product saved successfully'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in save_selected_product: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Failed to save selected product'
+        }), 500
+
+@bp.route('/api/syndication/get-selected-product')
+def get_selected_product():
+    """Get the currently selected product from ui_session_state table."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get selected product ID
+            cursor.execute("""
+                SELECT state_value FROM ui_session_state 
+                WHERE state_key = 'selected_product_id'
+            """)
+            
+            result = cursor.fetchone()
+            
+            if not result:
+                return jsonify({
+                    'success': True,
+                    'product': None
+                })
+            
+            product_id = result['state_value']
+            
+            # Get product details
+            cursor.execute("""
+                SELECT id, name, sku, price, description, image_url
+                FROM clan_products 
+                WHERE id = %s
+            """, (product_id,))
+            
+            product_result = cursor.fetchone()
+        
+        if product_result:
+            product = {
+                'id': product_result['id'],
+                'name': product_result['name'],
+                'sku': product_result['sku'],
+                'price': product_result['price'],
+                'description': product_result['description'],
+                'image_url': product_result['image_url']
+            }
+            
+            return jsonify({
+                'success': True,
+                'product': product
+            })
+        else:
+            return jsonify({
+                'success': True,
+                'product': None
+            })
+            
+    except Exception as e:
+        logger.error(f"Error in get_selected_product: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Failed to get selected product'
         }), 500
 
 @bp.route('/health')
