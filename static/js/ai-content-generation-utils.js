@@ -20,9 +20,16 @@ Object.assign(AIContentGenerationManager.prototype, {
             const truncatedContent = this.generatedContent.length > 50 
                 ? this.generatedContent.substring(0, 50) + '...'
                 : this.generatedContent;
-            aiStatusElement.textContent = truncatedContent;
+            aiStatusElement.innerHTML = `<span>${truncatedContent}</span>`;
         } else {
-            aiStatusElement.textContent = 'Needs generation';
+            aiStatusElement.innerHTML = `
+                <span>Needs generation</span>
+                <button onclick="event.stopPropagation(); aiContentGenerationManager.generateContent();" 
+                        class="btn btn-sm btn-primary" 
+                        style="margin-left: 10px; padding: 2px 8px; font-size: 0.8rem;">
+                    Generate Post
+                </button>
+            `;
         }
     },
     
