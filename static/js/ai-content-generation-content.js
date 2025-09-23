@@ -54,7 +54,7 @@ Object.assign(AIContentGenerationManager.prototype, {
                 },
                 body: JSON.stringify({
                     provider: 'ollama',
-                    model: 'llama3.2',
+                    model: 'mistral',
                     input_data: {
                         section_heading: `${this.getContentTypeDisplayName(this.selectedContentType)} Post`,
                         section_description: `Create engaging social media content for ${this.selectedProduct.name}`,
