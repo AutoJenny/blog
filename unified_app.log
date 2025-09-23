@@ -9360,3 +9360,5 @@ DETAIL:  Failing row contains (144, default, null, selected_product_id, 124941, 
 2025-09-23 21:41:20,534 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 21:41:20] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
 2025-09-23 21:41:57,523 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 21:41:57] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
 2025-09-23 21:42:27,618 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 21:42:27] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 21:42:57,718 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 21:42:57] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 21:43:27,919 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 21:43:27] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
