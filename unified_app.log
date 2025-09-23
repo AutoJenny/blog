@@ -6481,3 +6481,54 @@ LINE 3: ...  WHERE product_id = $1 AND content_type = $2 AND product_fo...
 2025-09-23 18:47:50,767 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:50] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
 2025-09-23 18:47:50,775 - config.database - INFO - Database connection established
 2025-09-23 18:47:50,781 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:50] "GET /launchpad/api/syndication/get-generated-content/205/feature HTTP/1.1" 200 -
+2025-09-23 18:47:51,704 - config.database - INFO - Database connection established
+2025-09-23 18:47:51,708 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:51] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 18:47:51,716 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:51] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 18:47:51,725 - config.database - INFO - Database connection established
+2025-09-23 18:47:51,728 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:51] "GET /launchpad/api/syndication/get-generated-content/36885/feature HTTP/1.1" 200 -
+2025-09-23 18:47:53,021 - config.database - INFO - Database connection established
+2025-09-23 18:47:53,024 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:53] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 18:47:53,033 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:53] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 18:47:53,045 - config.database - INFO - Database connection established
+2025-09-23 18:47:53,050 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:53] "GET /launchpad/api/syndication/get-generated-content/761/feature HTTP/1.1" 200 -
+2025-09-23 18:47:53,238 - config.database - INFO - Database connection established
+2025-09-23 18:47:53,241 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:53] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 18:47:53,248 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:53] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 18:47:53,257 - config.database - INFO - Database connection established
+2025-09-23 18:47:53,260 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:53] "GET /launchpad/api/syndication/get-generated-content/3122/feature HTTP/1.1" 200 -
+2025-09-23 18:47:54,040 - config.database - INFO - Database connection established
+2025-09-23 18:47:54,043 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:54] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 18:47:54,049 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:54] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 18:47:54,058 - config.database - INFO - Database connection established
+2025-09-23 18:47:54,061 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:54] "GET /launchpad/api/syndication/get-generated-content/975/feature HTTP/1.1" 200 -
+2025-09-23 18:47:55,074 - config.database - INFO - Database connection established
+2025-09-23 18:47:55,079 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:55] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 18:47:55,090 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:55] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 18:47:55,104 - config.database - INFO - Database connection established
+2025-09-23 18:47:55,110 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:55] "GET /launchpad/api/syndication/get-generated-content/4032/feature HTTP/1.1" 200 -
+2025-09-23 18:47:56,008 - config.database - INFO - Database connection established
+2025-09-23 18:47:56,011 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:56] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 18:47:56,021 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:56] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 18:47:56,031 - config.database - INFO - Database connection established
+2025-09-23 18:47:56,034 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:56] "GET /launchpad/api/syndication/get-generated-content/562/feature HTTP/1.1" 200 -
+2025-09-23 18:47:56,185 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 18:47:57,241 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 18:47:57,247 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 18:47:57,257 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 18:47:58,053 - config.database - INFO - Database connection established
+2025-09-23 18:47:58,057 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:58] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 18:47:58,070 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:58] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 18:47:58,082 - config.database - INFO - Database connection established
+2025-09-23 18:47:58,087 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:58] "GET /launchpad/api/syndication/get-generated-content/6206/feature HTTP/1.1" 200 -
+2025-09-23 18:47:59,053 - config.database - INFO - Database connection established
+2025-09-23 18:47:59,059 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:59] "POST /launchpad/api/syndication/select-product HTTP/1.1" 200 -
+2025-09-23 18:47:59,068 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:59] "POST /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 18:47:59,080 - config.database - INFO - Database connection established
+2025-09-23 18:47:59,084 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:47:59] "GET /launchpad/api/syndication/get-generated-content/152586/feature HTTP/1.1" 200 -
+2025-09-23 18:48:05,759 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 18:48:07,922 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 769
+2025-09-23 18:48:07,923 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:48:07] "POST /launchpad/api/syndication/generate-social-content HTTP/1.1" 200 -
+2025-09-23 18:48:07,936 - config.database - INFO - Database connection established
+2025-09-23 18:48:07,940 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:48:07] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 18:48:10,530 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:48:10] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 18:48:40,625 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:48:40] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
