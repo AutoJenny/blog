@@ -20,8 +20,8 @@ Object.assign(AIContentGenerationManager.prototype, {
         }
         
         try {
-            // Simulate content generation (replace with actual AI call)
-            await this.simulateContentGeneration();
+            // Generate content using real AI
+            await this.generateAIContent();
             
             // Save generated content
             await this.saveGeneratedContent(this.generatedContent, this.selectedContentType);
@@ -42,15 +42,43 @@ Object.assign(AIContentGenerationManager.prototype, {
         }
     },
     
-    // Simulate content generation (replace with actual AI call)
-    async simulateContentGeneration() {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                const prompt = this.generatePromptForProduct(this.selectedProduct, this.selectedContentType);
-                this.generatedContent = `Generated ${this.selectedContentType} content for ${this.selectedProduct.name}:\n\n${prompt}\n\nThis is simulated content. Replace with actual AI generation.`;
-                resolve();
-            }, 2000);
-        });
+    // Generate content using real AI
+    async generateAIContent() {
+        const prompt = this.generatePromptForProduct(this.selectedProduct, this.selectedContentType);
+        
+        try {
+            const response = await fetch('/launchpad/api/llm/actions/1/execute', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    provider: 'ollama',
+                    model: 'llama3.2',
+                    messages: [
+                        {
+                            role: 'system',
+                            content: 'You are a social media content creator specializing in product marketing.'
+                        },
+                        {
+                            role: 'user',
+                            content: prompt
+                        }
+                    ]
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success && data.result) {
+                this.generatedContent = data.result;
+            } else {
+                throw new Error(data.error || 'Failed to generate content');
+            }
+        } catch (error) {
+            console.error('AI generation error:', error);
+            throw error;
+        }
     },
     
     // Display generated content in the text area
