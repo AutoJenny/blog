@@ -4343,3 +4343,126 @@ LINE 2:                 SELECT product_id FROM ui_session_state
 2025-09-23 15:55:43,579 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:55:43] "GET /launchpad/api/queue HTTP/1.1" 200 -
 2025-09-23 15:55:43,580 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:55:43] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
 2025-09-23 15:56:05,333 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:56:05] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 15:56:35,429 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:56:35] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 15:57:05,433 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:57:05] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 15:57:35,524 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:57:35] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 15:58:08,192 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:58:08] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 15:58:10,664 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:58:10] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-23 15:58:10,692 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:58:10] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-23 15:58:10,694 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:58:10] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-23 15:58:10,696 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:58:10] "[36mGET /static/js/item-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 15:58:10,696 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:58:10] "[36mGET /static/js/item-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-23 15:58:10,696 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:58:10] "[36mGET /static/js/item-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-23 15:58:10,696 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:58:10] "[36mGET /static/js/item-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-23 15:58:10,697 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:58:10] "[36mGET /static/js/item-selection-data.js HTTP/1.1[0m" 304 -
+2025-09-23 15:58:10,698 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:58:10] "[36mGET /static/js/item-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-23 15:58:10,699 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:58:10] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-23 15:58:10,699 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:58:10] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-23 15:58:10,700 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:58:10] "GET /static/js/ai-content-generation.js HTTP/1.1" 200 -
+2025-09-23 15:58:10,701 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:58:10] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-23 15:58:10,776 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:58:10] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-23 15:58:10,778 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:58:10] "GET /launchpad/api/syndication/last-updated HTTP/1.1" 200 -
+2025-09-23 15:58:10,779 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:58:10] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 15:58:10,781 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:58:10] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-23 15:58:10,782 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:58:10] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-09-23 15:58:10,782 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:58:10] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-23 15:58:10,783 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:58:10] "GET /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 15:58:10,800 - config.database - INFO - Database connection established
+2025-09-23 15:58:10,803 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:58:10] "GET /launchpad/api/syndication/get-generated-content/7553/feature HTTP/1.1" 200 -
+2025-09-23 15:58:38,292 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:58:38] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 15:59:12,178 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:59:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 15:59:42,278 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 15:59:42] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 16:00:14,224 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:00:14] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 16:01:01,786 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:01:01] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 16:01:33,244 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:01:33] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 16:02:40,338 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:02:40] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 16:03:02,656 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:02] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-23 16:03:02,694 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:02] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-23 16:03:02,697 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:02] "[36mGET /static/js/item-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-23 16:03:02,698 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:02] "[36mGET /static/js/item-selection-data.js HTTP/1.1[0m" 304 -
+2025-09-23 16:03:02,698 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:02] "[36mGET /static/js/item-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-23 16:03:02,698 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:02] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-23 16:03:02,698 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:02] "[36mGET /static/js/item-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 16:03:02,699 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:02] "[36mGET /static/js/item-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-23 16:03:02,700 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:02] "[36mGET /static/js/item-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-23 16:03:02,702 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:02] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-23 16:03:02,704 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:02] "GET /static/js/ai-content-generation.js HTTP/1.1" 200 -
+2025-09-23 16:03:02,704 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:02] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-23 16:03:02,704 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:02] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-23 16:03:02,793 - config.database - INFO - Database connection established
+2025-09-23 16:03:02,794 - config.database - INFO - Database connection established
+2025-09-23 16:03:02,794 - config.database - INFO - Database connection established
+2025-09-23 16:03:02,795 - config.database - INFO - Database connection established
+2025-09-23 16:03:02,796 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:02] "GET /launchpad/api/syndication/last-updated HTTP/1.1" 200 -
+2025-09-23 16:03:02,797 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:02] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-23 16:03:02,798 - config.database - INFO - Database connection established
+2025-09-23 16:03:02,798 - config.database - INFO - Database connection established
+2025-09-23 16:03:02,799 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:02] "GET /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 16:03:02,801 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:02] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 16:03:02,801 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:02] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-09-23 16:03:02,802 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:02] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-23 16:03:02,803 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:02] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-23 16:03:02,807 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:02] "GET /launchpad/api/syndication/get-generated-content/7553/feature HTTP/1.1" 200 -
+2025-09-23 16:03:10,341 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:10] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 16:03:14,066 - config.database - INFO - Database connection established
+2025-09-23 16:03:14,073 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:14] "POST /launchpad/api/syndication/save-generated-content HTTP/1.1" 200 -
+2025-09-23 16:03:18,416 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:18] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-23 16:03:18,438 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:18] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-23 16:03:18,442 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:18] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-23 16:03:18,444 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:18] "[36mGET /static/js/item-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-23 16:03:18,444 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:18] "[36mGET /static/js/item-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 16:03:18,444 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:18] "[36mGET /static/js/item-selection-data.js HTTP/1.1[0m" 304 -
+2025-09-23 16:03:18,445 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:18] "[36mGET /static/js/item-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-23 16:03:18,448 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:18] "[36mGET /static/js/item-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-23 16:03:18,448 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:18] "[36mGET /static/js/item-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-23 16:03:18,449 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:18] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-23 16:03:18,451 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:18] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-23 16:03:18,451 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:18] "[36mGET /static/js/ai-content-generation.js HTTP/1.1[0m" 304 -
+2025-09-23 16:03:18,452 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:18] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-23 16:03:18,524 - config.database - INFO - Database connection established
+2025-09-23 16:03:18,524 - config.database - INFO - Database connection established
+2025-09-23 16:03:18,526 - config.database - INFO - Database connection established
+2025-09-23 16:03:18,526 - config.database - INFO - Database connection established
+2025-09-23 16:03:18,527 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:18] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-23 16:03:18,528 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:18] "GET /launchpad/api/syndication/last-updated HTTP/1.1" 200 -
+2025-09-23 16:03:18,528 - config.database - INFO - Database connection established
+2025-09-23 16:03:18,528 - config.database - INFO - Database connection established
+2025-09-23 16:03:18,529 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:18] "GET /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 16:03:18,531 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:18] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-09-23 16:03:18,532 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:18] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 16:03:18,534 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:18] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-23 16:03:18,535 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:18] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-23 16:03:18,536 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:18] "GET /launchpad/api/syndication/get-generated-content/7553/feature HTTP/1.1" 200 -
+2025-09-23 16:03:40,337 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:03:40] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 16:04:10,436 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:04:10] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 16:04:41,242 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:04:41] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 16:05:17,077 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:05:17] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 16:05:17,967 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:05:17] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-23 16:05:18,004 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:05:18] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-23 16:05:18,006 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:05:18] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-23 16:05:18,007 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:05:18] "[36mGET /static/js/item-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-23 16:05:18,008 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:05:18] "[36mGET /static/js/item-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 16:05:18,008 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:05:18] "[36mGET /static/js/item-selection-data.js HTTP/1.1[0m" 304 -
+2025-09-23 16:05:18,009 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:05:18] "[36mGET /static/js/item-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-23 16:05:18,009 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:05:18] "[36mGET /static/js/item-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-23 16:05:18,010 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:05:18] "[36mGET /static/js/item-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-23 16:05:18,011 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:05:18] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-23 16:05:18,013 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:05:18] "GET /static/js/ai-content-generation.js HTTP/1.1" 200 -
+2025-09-23 16:05:18,013 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:05:18] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-23 16:05:18,014 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:05:18] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-23 16:05:18,102 - config.database - INFO - Database connection established
+2025-09-23 16:05:18,102 - config.database - INFO - Database connection established
+2025-09-23 16:05:18,104 - config.database - INFO - Database connection established
+2025-09-23 16:05:18,104 - config.database - INFO - Database connection established
+2025-09-23 16:05:18,105 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:05:18] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-23 16:05:18,106 - config.database - INFO - Database connection established
+2025-09-23 16:05:18,108 - config.database - INFO - Database connection established
+2025-09-23 16:05:18,108 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:05:18] "GET /launchpad/api/syndication/last-updated HTTP/1.1" 200 -
+2025-09-23 16:05:18,109 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:05:18] "GET /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 16:05:18,109 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:05:18] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-23 16:05:18,110 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:05:18] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-09-23 16:05:18,111 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:05:18] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 16:05:18,111 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:05:18] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-23 16:05:18,119 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:05:18] "GET /launchpad/api/syndication/get-generated-content/7553/feature HTTP/1.1" 200 -
+2025-09-23 16:05:47,177 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:05:47] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 16:06:30,353 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:06:30] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
