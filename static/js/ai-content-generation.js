@@ -67,6 +67,9 @@ class AIContentGenerationManager {
                 
                 // Update generation prompt display when content type changes
                 this.updateGenerationPromptDisplay();
+                
+                // Load existing content for the new content type
+                this.loadExistingContent();
             });
         });
     }
@@ -137,6 +140,9 @@ class AIContentGenerationManager {
             // Show generated content
             this.displayGeneratedContent();
             
+            // Update header status to show generated content
+            this.updateAIStatusHeader();
+            
             // Enable edit and add to queue buttons
             this.enableContentActions();
             
@@ -173,6 +179,9 @@ class AIContentGenerationManager {
         }
         
         this.generatedContent = content;
+        
+        // Save generated content to database
+        await this.saveGeneratedContent(content, contentType);
     }
     
     displayGeneratedContent() {
@@ -263,29 +272,20 @@ class AIContentGenerationManager {
         this.updateGenerateButton();
     }
 
-    // Setup listener for dataSelected events
+    // Setup listener for productSelected events
     setupDataListener() {
-        document.addEventListener('dataSelected', (event) => {
-            this.handleDataPackage(event.detail.dataPackage);
+        document.addEventListener('productSelected', (event) => {
+            this.handleProductSelected(event.detail.product);
         });
     }
 
-    // Handle incoming data package
-    handleDataPackage(dataPackage) {
-        this.currentDataPackage = dataPackage;
-        
-        // Update input data display
-        this.updateInputDataDisplay(dataPackage);
-        
-        // Update LLM configuration based on data type
-        this.updateLLMConfiguration(dataPackage);
-        
-        // Extract product data for backward compatibility
-        if (dataPackage.data_type === 'product') {
-            this.selectedProduct = dataPackage.source_data;
-            this.updateGenerateButton();
-            this.updateContentText();
-        }
+    // Handle product selected event
+    handleProductSelected(product) {
+        this.selectedProduct = product;
+        this.updateGenerateButton();
+        this.updateContentText();
+        this.updateAIStatusHeader();
+        this.loadExistingContent();
     }
 
     // Update input data accordion display
@@ -496,6 +496,76 @@ class AIContentGenerationManager {
         } catch (error) {
             console.error('Error saving prompt:', error);
             alert('Error saving prompt: ' + error.message);
+        }
+    }
+
+    // Save generated content to database
+    async saveGeneratedContent(content, contentType) {
+        if (!this.selectedProduct) return;
+        
+        try {
+            const response = await fetch('/launchpad/api/syndication/save-generated-content', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    product_id: this.selectedProduct.id,
+                    content_type: contentType,
+                    generated_content: content
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                console.log('Generated content saved successfully');
+            } else {
+                console.error('Failed to save generated content:', data.error);
+            }
+        } catch (error) {
+            console.error('Error saving generated content:', error);
+        }
+    }
+
+    // Load existing generated content for the selected product
+    async loadExistingContent() {
+        if (!this.selectedProduct) return;
+        
+        try {
+            const response = await fetch(`/launchpad/api/syndication/get-generated-content/${this.selectedProduct.id}/${this.selectedContentType}`);
+            const data = await response.json();
+            
+            if (data.success && data.content) {
+                this.generatedContent = data.content;
+                this.displayGeneratedContent();
+                this.enableContentActions();
+                console.log('Loaded existing content for', this.selectedProduct.name);
+            }
+        } catch (error) {
+            console.error('Error loading existing content:', error);
+        }
+    }
+
+    // Update AI Content Generation header status
+    updateAIStatusHeader() {
+        const aiStatusElement = document.getElementById('ai-content-status');
+        if (!aiStatusElement) return;
+        
+        if (!this.selectedProduct) {
+            aiStatusElement.textContent = 'No item selected';
+            return;
+        }
+        
+        // Check if we have generated content for this product
+        if (this.generatedContent && this.generatedContent.trim() !== '') {
+            // Show first part of generated content (truncated)
+            const truncatedContent = this.generatedContent.length > 50 
+                ? this.generatedContent.substring(0, 50) + '...'
+                : this.generatedContent;
+            aiStatusElement.textContent = truncatedContent;
+        } else {
+            // No generated content yet
+            aiStatusElement.textContent = 'Needs generation';
         }
     }
 
