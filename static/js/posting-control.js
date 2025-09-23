@@ -320,7 +320,11 @@ class PostingControlManager {
 
     async loadAllSchedules() {
         try {
-            const response = await fetch('/launchpad/api/syndication/schedules');
+            // Get platform and content_type from page data
+            const platform = window.pageData?.platform?.name || 'facebook';
+            const contentType = window.pageData?.channel_type?.name === 'product_post' ? 'product' : 'blog_post';
+            
+            const response = await fetch(`/launchpad/api/syndication/schedules?platform=${platform}&content_type=${contentType}`);
             const data = await response.json();
             
             if (data.success) {

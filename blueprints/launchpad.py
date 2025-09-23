@@ -323,14 +323,19 @@ def get_queue():
 # Scheduling API endpoints
 @bp.route('/api/syndication/schedules')
 def get_schedules():
-    """Get all posting schedules."""
+    """Get posting schedules filtered by platform and content type."""
     try:
+        # Get filter parameters from query string
+        platform = request.args.get('platform', 'facebook')
+        content_type = request.args.get('content_type', 'product')
+        
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 SELECT id, time, timezone, days, is_active, created_at, updated_at, name
                 FROM daily_posts_schedule
+                WHERE platform = %s AND content_type = %s
                 ORDER BY created_at DESC
-            """)
+            """, (platform, content_type))
             schedules = cursor.fetchall()
             
             # Convert to list of dicts and serialize datetime objects
