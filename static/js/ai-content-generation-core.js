@@ -20,6 +20,7 @@ class AIContentGenerationManager {
         this.setupContentTypeButtons();
         this.setupDataListener();
         this.checkOllamaStatus();
+        this.loadDatabasePrompts(); // Load prompts from database
     }
     
     // Set the selected product and update UI
