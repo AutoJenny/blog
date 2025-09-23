@@ -6087,3 +6087,44 @@ LINE 3: ...  WHERE product_id = $1 AND content_type = $2 AND product_fo...
 2025-09-23 18:32:10,768 - urllib3.connectionpool - DEBUG - https://api.openai.com:443 "POST /v1/chat/completions HTTP/1.1" 401 254
 2025-09-23 18:32:10,770 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:10] "POST /llm-actions/api/llm/actions/16/execute HTTP/1.1" 200 -
 2025-09-23 18:32:28,108 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:28] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 18:32:58,114 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:32:58] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 18:33:28,112 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:33:28] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 18:33:58,115 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:33:58] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 18:34:28,677 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:34:28] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 18:34:59,677 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:34:59] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 18:35:30,678 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:35:30] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 18:36:01,677 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:36:01] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 18:36:32,677 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:36:32] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 18:37:03,678 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 18:37:33,670 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:33] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 18:37:34,193 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-23 18:37:34,232 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-23 18:37:34,234 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-23 18:37:34,236 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "[36mGET /static/js/item-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 18:37:34,236 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "[36mGET /static/js/item-selection-data.js HTTP/1.1[0m" 304 -
+2025-09-23 18:37:34,237 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "[36mGET /static/js/item-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-23 18:37:34,237 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "[36mGET /static/js/item-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-23 18:37:34,238 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "[36mGET /static/js/item-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-23 18:37:34,239 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "[36mGET /static/js/item-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-23 18:37:34,240 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-23 18:37:34,242 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-23 18:37:34,243 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "[36mGET /static/js/ai-content-generation-core.js HTTP/1.1[0m" 304 -
+2025-09-23 18:37:34,244 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-23 18:37:34,244 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "[36mGET /static/js/ai-content-generation-events.js HTTP/1.1[0m" 304 -
+2025-09-23 18:37:34,246 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "[36mGET /static/js/ai-content-generation-data.js HTTP/1.1[0m" 304 -
+2025-09-23 18:37:34,246 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "GET /static/js/ai-content-generation-content.js HTTP/1.1" 200 -
+2025-09-23 18:37:34,247 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "[36mGET /static/js/ai-content-generation-prompts.js HTTP/1.1[0m" 304 -
+2025-09-23 18:37:34,248 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "[36mGET /static/js/ai-content-generation-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 18:37:34,314 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-23 18:37:34,318 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "GET /launchpad/api/syndication/last-updated HTTP/1.1" 200 -
+2025-09-23 18:37:34,321 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 18:37:34,323 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-23 18:37:34,324 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-09-23 18:37:34,325 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-23 18:37:34,325 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "GET /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 18:37:34,361 - config.database - INFO - Database connection established
+2025-09-23 18:37:34,364 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:34] "GET /launchpad/api/syndication/get-generated-content/152565/feature HTTP/1.1" 200 -
+2025-09-23 18:37:36,248 - config.database - INFO - Database connection established
+2025-09-23 18:37:36,253 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 18:37:36,257 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 404 61
+2025-09-23 18:37:36,258 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:37:36] "POST /llm-actions/api/llm/actions/16/execute HTTP/1.1" 200 -
