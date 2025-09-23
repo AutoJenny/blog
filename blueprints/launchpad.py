@@ -399,6 +399,43 @@ def add_schedule():
         logger.error(f"Error in add_schedule: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
+@bp.route('/api/syndication/llm-prompts/<int:process_id>')
+def get_llm_prompts(process_id):
+    """Get LLM prompts for a specific process from process_configurations table."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT config_key, config_value, description
+                FROM process_configurations 
+                WHERE process_id = %s AND config_category = 'llm_prompt'
+                ORDER BY display_order
+            """, (process_id,))
+            
+            prompts = cursor.fetchall()
+            
+            if not prompts:
+                return jsonify({
+                    "success": False,
+                    "error": "No LLM prompts found for this process"
+                }), 404
+            
+            # Convert to dictionary format
+            prompt_data = {}
+            for prompt in prompts:
+                prompt_data[prompt['config_key']] = {
+                    'value': prompt['config_value'],
+                    'description': prompt['description']
+                }
+            
+            return jsonify({
+                "success": True,
+                "prompts": prompt_data
+            })
+            
+    except Exception as e:
+        logger.error(f"Error in get_llm_prompts: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @bp.route('/api/syndication/schedules/<int:schedule_id>', methods=['DELETE'])
 def delete_schedule(schedule_id):
     """Delete a posting schedule."""
