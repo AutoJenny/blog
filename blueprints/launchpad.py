@@ -55,8 +55,7 @@ def save_generated_content():
     try:
         data = request.get_json()
         product_id = data.get('product_id')
-        content_type = data.get('content_type', 'product')  # Default to 'product'
-        product_focus = data.get('product_focus')  # AI content type (feature, benefit, story)
+        content_type = data.get('content_type', 'feature')  # Keep current structure for now
         generated_content = data.get('content') or data.get('generated_content')
         
         if not product_id or not generated_content:
@@ -68,11 +67,11 @@ def save_generated_content():
         with db_manager.get_connection() as conn:
             cur = conn.cursor()
             
-            # Check if content already exists for this product and product_focus
+            # Check if content already exists for this product and content type
             cur.execute("""
                 SELECT id FROM posting_queue 
-                WHERE product_id = %s AND product_focus = %s AND status = 'draft'
-            """, (product_id, product_focus))
+                WHERE product_id = %s AND content_type = %s AND status = 'draft'
+            """, (product_id, content_type))
             
             existing = cur.fetchone()
             
@@ -81,14 +80,14 @@ def save_generated_content():
                 cur.execute("""
                     UPDATE posting_queue 
                     SET generated_content = %s, updated_at = NOW()
-                    WHERE product_id = %s AND product_focus = %s AND status = 'draft'
-                """, (generated_content, product_id, product_focus))
+                    WHERE product_id = %s AND content_type = %s AND status = 'draft'
+                """, (generated_content, product_id, content_type))
             else:
                 # Insert new content as draft
                 cur.execute("""
-                    INSERT INTO posting_queue (product_id, content_type, product_focus, generated_content, status, created_at, updated_at)
-                    VALUES (%s, %s, %s, %s, 'draft', NOW(), NOW())
-                """, (product_id, content_type, product_focus, generated_content))
+                    INSERT INTO posting_queue (product_id, content_type, generated_content, status, created_at, updated_at)
+                    VALUES (%s, %s, %s, 'draft', NOW(), NOW())
+                """, (product_id, content_type, generated_content))
             
             conn.commit()
             
@@ -114,7 +113,7 @@ def get_generated_content(product_id, content_type):
             cur.execute("""
                 SELECT generated_content as content, created_at, updated_at 
                 FROM posting_queue 
-                WHERE product_id = %s AND product_focus = %s AND status IN ('draft', 'ready')
+                WHERE product_id = %s AND content_type = %s AND status IN ('draft', 'ready')
             """, (product_id, content_type))
             
             result = cur.fetchone()
@@ -146,13 +145,13 @@ def update_queue_status():
     try:
         data = request.get_json()
         product_id = data.get('product_id')
-        product_focus = data.get('product_focus') or data.get('content_type')  # Support both for backward compatibility
+        content_type = data.get('content_type') or data.get('product_focus')  # Support both for backward compatibility
         status = data.get('status', 'ready')
         
-        if not product_id or not product_focus:
+        if not product_id or not content_type:
             return jsonify({
                 'success': False,
-                'error': 'product_id and product_focus are required'
+                'error': 'product_id and content_type are required'
             }), 400
         
         with db_manager.get_cursor() as cursor:
@@ -160,8 +159,8 @@ def update_queue_status():
             cursor.execute("""
                 UPDATE posting_queue 
                 SET status = %s, updated_at = NOW()
-                WHERE product_id = %s AND product_focus = %s AND status IN ('draft', 'ready')
-            """, (status, product_id, product_focus))
+                WHERE product_id = %s AND content_type = %s AND status IN ('draft', 'ready')
+            """, (status, product_id, content_type))
             
             if cursor.rowcount > 0:
                 return jsonify({
@@ -171,7 +170,7 @@ def update_queue_status():
             else:
                 return jsonify({
                     'success': False,
-                    'error': 'No draft content found for this product and product focus'
+                    'error': 'No draft content found for this product and content type'
                 }), 404
                 
     except Exception as e:

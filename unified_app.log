@@ -4886,3 +4886,52 @@ LINE 2:                 SELECT product_id FROM ui_session_state
 2025-09-23 16:56:44,524 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
 2025-09-23 16:56:44,530 - werkzeug - WARNING -  * Debugger is active!
 2025-09-23 16:56:44,542 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 16:56:57,300 - config.database - INFO - Database connection established
+2025-09-23 16:56:57,302 - blueprints.launchpad - ERROR - Error getting generated content: column "product_focus" does not exist
+LINE 4:                 WHERE product_id = $1 AND product_focus = $2...
+                                                  ^
+2025-09-23 16:56:57,302 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:56:57] "[35m[1mGET /launchpad/api/syndication/get-generated-content/7553/feature HTTP/1.1[0m" 500 -
+2025-09-23 16:57:09,188 - config.database - INFO - Database connection established
+2025-09-23 16:57:09,189 - blueprints.launchpad - ERROR - Error getting generated content: column "product_focus" does not exist
+LINE 4:                 WHERE product_id = $1 AND product_focus = $2...
+                                                  ^
+2025-09-23 16:57:09,189 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:57:09] "[35m[1mGET /launchpad/api/syndication/get-generated-content/7553/feature HTTP/1.1[0m" 500 -
+2025-09-23 16:57:24,142 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 16:57:25,213 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 16:57:25,219 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 16:57:25,228 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 16:57:28,287 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 16:57:29,346 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 16:57:29,353 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 16:57:29,363 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 16:57:31,407 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 16:57:32,481 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 16:57:32,487 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 16:57:32,498 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 16:57:34,538 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 16:57:35,628 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 16:57:35,634 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 16:57:35,645 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 16:57:38,696 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 16:57:39,794 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 16:57:39,800 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 16:57:39,811 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 16:57:41,851 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 16:57:42,950 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 16:57:42,956 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 16:57:42,967 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 16:58:29,794 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:58:29] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 16:58:57,191 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 16:58:58,298 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 16:58:58,305 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 16:58:58,316 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 16:59:00,362 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 16:59:01,398 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 16:59:01,404 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 16:59:01,415 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 16:59:02,441 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-23 16:59:03,522 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 16:59:03,528 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 16:59:03,538 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-23 16:59:09,673 - config.database - INFO - Database connection established
+2025-09-23 16:59:09,678 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 16:59:09] "GET /launchpad/api/syndication/get-generated-content/7553/feature HTTP/1.1" 200 -
