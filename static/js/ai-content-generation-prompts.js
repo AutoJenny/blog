@@ -16,6 +16,7 @@ Object.assign(AIContentGenerationManager.prototype, {
             prompt = prompt.replace(/\{product_description\}/g, product.description || 'No description available');
             prompt = prompt.replace(/\{product_price\}/g, product.price || 'Price not available');
             prompt = prompt.replace(/\{product_category\}/g, product.category || 'Uncategorized');
+            prompt = prompt.replace(/\{product_sku\}/g, product.url || 'URL not available');
             prompt = prompt.replace(/\{content_type\}/g, this.getContentTypeDisplayName(contentType));
             
             return prompt;

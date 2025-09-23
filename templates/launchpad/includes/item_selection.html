@@ -40,14 +40,14 @@
         
         <!-- Products Browser Accordion -->
         <div style="background: #23273a; border: 1px solid #475569; border-radius: 8px; margin-bottom: 20px;">
-            <div id="products-browser-accordion-header" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; cursor: pointer; user-select: none;" onclick="toggleProductsBrowserAccordion()">
+            <div id="products-browser-accordion-header" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; cursor: pointer; user-select: none;" onclick="toggleAccordion('products-browser')">
                 <h3 style="color: #f1f5f9; font-size: 1.1rem; margin: 0; display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-chevron-right" id="products-browser-chevron" style="transition: transform 0.2s ease;"></i>
                     Products Browser
                 </h3>
                 <span id="products-browser-count" style="color: #10b981; font-weight: 600;">Loading...</span>
             </div>
-            <div id="products-browser-accordion-content" style="display: none; padding: 0 15px 15px 15px;">
+            <div id="products-browser-content" style="display: none; padding: 0 15px 15px 15px;">
                 <!-- Filter Box -->
                 <div style="margin-bottom: 15px;">
                     <input type="text" id="product-filter" placeholder="Filter products by name..." 

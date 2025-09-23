@@ -22,10 +22,10 @@ class ItemSelectionAccordions {
     }
     
     toggleProductsBrowserAccordion() {
-        const content = document.getElementById('products-browser-accordion-content');
+        const content = document.getElementById('products-browser-content');
         const chevron = document.getElementById('products-browser-chevron');
         
-        if (content.style.display === 'none') {
+        if (content.style.display === 'none' || content.style.display === '') {
             content.style.display = 'block';
             chevron.style.transform = 'rotate(90deg)';
             // Load products when accordion is opened
@@ -67,7 +67,8 @@ function toggleAccordion(sectionId) {
     }
 }
 
-// Global function for HTML onclick
+// Global function for Products Browser accordion (for HTML onclick) - DEPRECATED
+// Now using generic toggleAccordion('products-browser') instead
 function toggleProductsBrowserAccordion() {
     if (window.itemSelectionAccordions) {
         window.itemSelectionAccordions.toggleProductsBrowserAccordion();
