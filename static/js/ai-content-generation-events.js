@@ -32,7 +32,7 @@ Object.assign(AIContentGenerationManager.prototype, {
         }
         
         // Edit prompt button
-        const editPromptBtn = document.getElementById('edit-prompt-btn');
+        const editPromptBtn = document.getElementById('edit-generation-prompt-btn');
         if (editPromptBtn) {
             editPromptBtn.addEventListener('click', () => this.togglePromptEdit());
         }

@@ -26,7 +26,7 @@ Object.assign(AIContentGenerationManager.prototype, {
     
     // Update generation prompt display
     updateGenerationPromptDisplay() {
-        const promptDisplay = document.getElementById('generation-prompt-display');
+        const promptDisplay = document.getElementById('llm-generation-prompt');
         
         if (this.selectedProduct) {
             const prompt = this.generatePromptForProduct(this.selectedProduct, this.selectedContentType);
@@ -39,47 +39,41 @@ Object.assign(AIContentGenerationManager.prototype, {
             }
             
             if (promptDisplay) {
-                promptDisplay.textContent = prompt;
+                promptDisplay.value = prompt; // Use .value for textarea
             }
         } else {
             if (promptDisplay) {
-                promptDisplay.textContent = 'Select a product to see the generation prompt';
+                promptDisplay.value = 'Select a product to see the generation prompt';
             }
         }
     },
     
     // Toggle prompt edit mode
     togglePromptEdit() {
-        const promptDisplay = document.getElementById('generation-prompt-display');
-        const promptEdit = document.getElementById('generation-prompt-edit');
-        const editBtn = document.getElementById('edit-prompt-btn');
-        const saveBtn = document.getElementById('save-prompt-btn');
+        const promptTextarea = document.getElementById('llm-generation-prompt');
+        const editBtn = document.getElementById('edit-generation-prompt-btn');
         
         if (this.isPromptEditMode) {
             // Save mode - save the prompt
-            const promptText = promptEdit.value;
+            const promptText = promptTextarea.value;
             this.savePromptTemplate(promptText);
             
-            // Switch back to display mode
+            // Switch back to readonly mode
             this.isPromptEditMode = false;
-            promptDisplay.style.display = 'block';
-            promptEdit.style.display = 'none';
-            editBtn.textContent = 'Edit Prompt';
-            saveBtn.style.display = 'none';
+            promptTextarea.readOnly = true;
+            editBtn.innerHTML = '<i class="fas fa-edit"></i> Edit';
         } else {
-            // Edit mode - show edit textarea
+            // Edit mode - make textarea editable
             this.isPromptEditMode = true;
-            promptDisplay.style.display = 'none';
-            promptEdit.style.display = 'block';
-            editBtn.textContent = 'Save Prompt';
-            saveBtn.style.display = 'inline-block';
+            promptTextarea.readOnly = false;
+            editBtn.innerHTML = '<i class="fas fa-save"></i> Save';
             
-            // Populate edit textarea with current prompt
+            // Populate textarea with current prompt template
             if (this.databasePrompts && this.databasePrompts.user_prompt_template) {
-                promptEdit.value = this.databasePrompts.user_prompt_template.value;
+                promptTextarea.value = this.databasePrompts.user_prompt_template.value;
             }
             
-            promptEdit.focus();
+            promptTextarea.focus();
         }
     },
     
