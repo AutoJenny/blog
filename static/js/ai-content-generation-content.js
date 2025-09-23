@@ -55,12 +55,12 @@ Object.assign(AIContentGenerationManager.prototype, {
     
     // Display generated content in the text area
     displayGeneratedContent() {
-        const contentText = document.getElementById('generated-content-text');
+        const contentText = document.getElementById('content-text');
         console.log('Displaying generated content:', this.generatedContent);
         console.log('Content text element:', contentText);
         
         if (contentText) {
-            contentText.value = this.generatedContent;
+            contentText.textContent = this.generatedContent;
             console.log('Content set in text area');
         } else {
             console.error('Content text element not found!');
