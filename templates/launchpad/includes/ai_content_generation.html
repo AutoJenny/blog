@@ -15,6 +15,66 @@
                 Start Ollama
             </button>
         </div>
+
+        <!-- Input Data Accordion -->
+        <div class="section-card" style="margin-bottom: 20px;">
+            <div class="section-title with-right-content" onclick="toggleAccordion('input-data')">
+                <div class="section-title-left">
+                    <i class="fas fa-chevron-right accordion-chevron" id="input-data-chevron"></i>
+                    <i class="fas fa-database"></i>
+                    Input Data
+                </div>
+                <div class="section-title-right" id="input-data-status" style="font-size: 0.9rem; color: #94a3b8;">
+                    No data received
+                </div>
+            </div>
+            <div class="section-content" id="input-data-content">
+                <div id="input-data-display" style="background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 15px; font-family: monospace; font-size: 0.9rem; color: #e2e8f0;">
+                    <div style="color: #94a3b8; margin-bottom: 10px;">Waiting for data from Item Selection...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LLM Data Accordion -->
+        <div class="section-card" style="margin-bottom: 20px;">
+            <div class="section-title with-right-content" onclick="toggleAccordion('llm-data')">
+                <div class="section-title-left">
+                    <i class="fas fa-chevron-right accordion-chevron" id="llm-data-chevron"></i>
+                    <i class="fas fa-brain"></i>
+                    LLM Configuration
+                </div>
+                <div class="section-title-right" id="llm-data-status" style="font-size: 0.9rem; color: #94a3b8;">
+                    Default settings
+                </div>
+            </div>
+            <div class="section-content" id="llm-data-content">
+                <div style="background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 15px;">
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; color: #f1f5f9; font-weight: 600; margin-bottom: 8px;">Model</label>
+                        <select id="llm-model-select" style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 8px 12px; color: #f1f5f9; font-size: 0.9rem; width: 100%;">
+                            <option value="mistral">Mistral</option>
+                            <option value="llama3.1:70b">Llama 3.1 70B</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; color: #f1f5f9; font-weight: 600; margin-bottom: 8px;">Temperature</label>
+                        <input type="range" id="llm-temperature" min="0" max="1" step="0.1" value="0.7" 
+                               style="width: 100%; accent-color: #f59e0b;">
+                        <div style="color: #94a3b8; font-size: 0.8rem; margin-top: 5px;">Current: <span id="temperature-value">0.7</span></div>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; color: #f1f5f9; font-weight: 600; margin-bottom: 8px;">System Prompt</label>
+                        <textarea id="llm-system-prompt" rows="4" 
+                                  style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 8px 12px; color: #f1f5f9; font-size: 0.9rem; width: 100%; resize: vertical;">You are a social media content creator specializing in product marketing. Create engaging, platform-appropriate content that highlights product features and benefits while maintaining brand voice.</textarea>
+                    </div>
+                    <div>
+                        <label style="display: block; color: #f1f5f9; font-weight: 600; margin-bottom: 8px;">Generation Prompt</label>
+                        <textarea id="llm-generation-prompt" rows="3" readonly
+                                  style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 8px 12px; color: #f1f5f9; font-size: 0.9rem; width: 100%; resize: vertical;">This will be populated automatically based on the selected content type and product data.</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
     
         <div class="content-type-buttons">
             <button class="content-type-btn active" data-type="feature">Feature Focus</button>

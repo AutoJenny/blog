@@ -5,6 +5,10 @@ class ItemSelectionManager {
         this.filteredProducts = [];
         this.currentProductIndex = 0;
         
+        // Get platform and channel data from template
+        this.platform = window.pageData?.platform || { name: 'facebook', display_name: 'Facebook' };
+        this.channelType = window.pageData?.channel_type || { name: 'product_post', display_name: 'Product Posts' };
+        
         this.initEventListeners();
         this.loadInitialData();
         this.loadSelectedProduct();
@@ -647,9 +651,12 @@ class ItemSelectionManager {
     }
 
     notifyProductSelected(product) {
+        // Create standardized data package
+        const dataPackage = this.createDataPackage(product);
+        
         // Dispatch custom event for other components to listen to
-        const event = new CustomEvent('productSelected', {
-            detail: { product: product }
+        const event = new CustomEvent('dataSelected', {
+            detail: { dataPackage: dataPackage }
         });
         document.dispatchEvent(event);
     }
@@ -727,6 +734,23 @@ class ItemSelectionManager {
         if (selectedProductDisplay) {
             selectedProductDisplay.textContent = productName;
         }
+    }
+
+    // Create standardized data package for other modules
+    createDataPackage(sourceData) {
+        return {
+            data_type: 'product',
+            platform: this.platform,
+            channel_type: this.channelType,
+            source_data: sourceData,
+            generation_config: {
+                content_types: ['feature', 'benefit', 'story'],
+                max_length: 280,
+                include_hashtags: true,
+                include_price: true
+            },
+            timestamp: new Date().toISOString()
+        };
     }
 }
 

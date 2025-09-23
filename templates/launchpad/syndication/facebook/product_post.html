@@ -10,6 +10,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/launchpad.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/syndication.css') }}">
+    
+    <!-- Page Data for JavaScript -->
+    <script>
+        window.pageData = {
+            platform: {{ platform | tojson }},
+            channel_type: {{ channel_type | tojson }}
+        };
+    </script>
 </head>
 <body>
     {% include 'shared/header.html' %}
