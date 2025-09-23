@@ -6163,3 +6163,40 @@ LINE 3: ...  WHERE product_id = $1 AND content_type = $2 AND product_fo...
 2025-09-23 18:39:15,439 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 503
 2025-09-23 18:39:15,439 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:15] "POST /llm-actions/api/llm/actions/16/execute HTTP/1.1" 200 -
 2025-09-23 18:39:33,775 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:33] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 18:39:47,532 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-23 18:39:47,575 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-23 18:39:47,578 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-23 18:39:47,579 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "[36mGET /static/js/item-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 18:39:47,582 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "[36mGET /static/js/item-selection-data.js HTTP/1.1[0m" 304 -
+2025-09-23 18:39:47,583 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "[36mGET /static/js/item-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-23 18:39:47,584 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "[36mGET /static/js/item-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-23 18:39:47,585 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "[36mGET /static/js/item-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-23 18:39:47,586 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "[36mGET /static/js/item-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-23 18:39:47,586 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-23 18:39:47,587 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-23 18:39:47,588 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "[36mGET /static/js/ai-content-generation-core.js HTTP/1.1[0m" 304 -
+2025-09-23 18:39:47,589 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "[36mGET /static/js/ai-content-generation-events.js HTTP/1.1[0m" 304 -
+2025-09-23 18:39:47,589 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-23 18:39:47,591 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "[36mGET /static/js/ai-content-generation-data.js HTTP/1.1[0m" 304 -
+2025-09-23 18:39:47,592 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "GET /static/js/ai-content-generation-content.js HTTP/1.1" 200 -
+2025-09-23 18:39:47,592 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "[36mGET /static/js/ai-content-generation-prompts.js HTTP/1.1[0m" 304 -
+2025-09-23 18:39:47,593 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "[36mGET /static/js/ai-content-generation-utils.js HTTP/1.1[0m" 304 -
+2025-09-23 18:39:47,658 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-23 18:39:47,662 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "GET /launchpad/api/syndication/last-updated HTTP/1.1" 200 -
+2025-09-23 18:39:47,666 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-23 18:39:47,667 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-23 18:39:47,668 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-09-23 18:39:47,669 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-23 18:39:47,670 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "GET /launchpad/api/selected-product HTTP/1.1" 200 -
+2025-09-23 18:39:47,691 - config.database - INFO - Database connection established
+2025-09-23 18:39:47,695 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:47] "GET /launchpad/api/syndication/get-generated-content/152565/feature HTTP/1.1" 200 -
+2025-09-23 18:39:49,331 - config.database - INFO - Database connection established
+2025-09-23 18:39:49,339 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-23 18:39:49,605 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 379
+2025-09-23 18:39:49,605 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:39:49] "POST /llm-actions/api/llm/actions/16/execute HTTP/1.1" 200 -
+2025-09-23 18:40:03,874 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:40:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-23 18:40:16,314 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 18:40:16] "GET /llm-actions/api/llm/actions HTTP/1.1" 200 -
+2025-09-23 18:40:32,141 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/llm_actions.py', reloading
+2025-09-23 18:40:33,165 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-23 18:40:33,171 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 18:40:33,181 - werkzeug - INFO -  * Debugger PIN: 830-133-383

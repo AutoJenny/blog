@@ -245,7 +245,9 @@ def execute_action(action_id):
             # Process prompt template with input data
             prompt = action['prompt_text']
             for key, value in input_data.items():
+                # Handle both {key} and [key] formats
                 prompt = prompt.replace(f'{{{key}}}', str(value))
+                prompt = prompt.replace(f'[{key}]', str(value))
             
             messages.append({'role': 'user', 'content': prompt})
             
