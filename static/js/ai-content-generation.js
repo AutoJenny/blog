@@ -7,13 +7,16 @@ class AIContentGenerationManager {
         this.selectedContentType = 'feature';
         this.generatedContent = '';
         this.selectedProduct = null;
+        this.currentDataPackage = null;
         
         this.init();
+        this.setupLLMControls();
     }
     
     init() {
         this.setupEventListeners();
         this.setupContentTypeButtons();
+        this.setupDataListener();
     }
     
     setupEventListeners() {
@@ -52,6 +55,11 @@ class AIContentGenerationManager {
                 button.classList.add('active');
                 // Update selected content type
                 this.selectedContentType = button.dataset.type;
+                
+                // Update generation prompt if we have a data package
+                if (this.currentDataPackage && this.currentDataPackage.data_type === 'product') {
+                    this.updateLLMConfiguration(this.currentDataPackage);
+                }
             });
         });
     }
@@ -246,6 +254,105 @@ class AIContentGenerationManager {
         }
         
         this.updateGenerateButton();
+    }
+
+    // Setup listener for dataSelected events
+    setupDataListener() {
+        document.addEventListener('dataSelected', (event) => {
+            this.handleDataPackage(event.detail.dataPackage);
+        });
+    }
+
+    // Handle incoming data package
+    handleDataPackage(dataPackage) {
+        this.currentDataPackage = dataPackage;
+        
+        // Update input data display
+        this.updateInputDataDisplay(dataPackage);
+        
+        // Update LLM configuration based on data type
+        this.updateLLMConfiguration(dataPackage);
+        
+        // Extract product data for backward compatibility
+        if (dataPackage.data_type === 'product') {
+            this.selectedProduct = dataPackage.source_data;
+            this.updateGenerateButton();
+            this.updateContentText();
+        }
+    }
+
+    // Update input data accordion display
+    updateInputDataDisplay(dataPackage) {
+        const inputDataDisplay = document.getElementById('input-data-display');
+        const inputDataStatus = document.getElementById('input-data-status');
+        const inputDataContent = document.getElementById('input-data-content');
+        const inputDataChevron = document.getElementById('input-data-chevron');
+        
+        if (inputDataDisplay && inputDataStatus) {
+            const displayData = {
+                'Data Type': dataPackage.data_type,
+                'Platform': `${dataPackage.platform.display_name} (${dataPackage.platform.name})`,
+                'Channel': `${dataPackage.channel_type.display_name} (${dataPackage.channel_type.name})`,
+                'Source Data': dataPackage.source_data,
+                'Generation Config': dataPackage.generation_config,
+                'Timestamp': new Date(dataPackage.timestamp).toLocaleString()
+            };
+            
+            let html = '';
+            for (const [key, value] of Object.entries(displayData)) {
+                html += `<div style="margin-bottom: 8px;"><strong style="color: #f59e0b;">${key}:</strong> `;
+                if (typeof value === 'object') {
+                    html += `<pre style="display: inline; color: #e2e8f0;">${JSON.stringify(value, null, 2)}</pre>`;
+                } else {
+                    html += `<span style="color: #e2e8f0;">${value}</span>`;
+                }
+                html += `</div>`;
+            }
+            
+            inputDataDisplay.innerHTML = html;
+            inputDataStatus.textContent = `${dataPackage.data_type} from ${dataPackage.platform.display_name}`;
+        }
+    }
+
+    // Update LLM configuration based on data package
+    updateLLMConfiguration(dataPackage) {
+        const llmDataStatus = document.getElementById('llm-data-status');
+        const generationPrompt = document.getElementById('llm-generation-prompt');
+        const llmDataContent = document.getElementById('llm-data-content');
+        const llmDataChevron = document.getElementById('llm-data-chevron');
+        
+        if (llmDataStatus) {
+            llmDataStatus.textContent = `Configured for ${dataPackage.data_type}`;
+        }
+        
+        if (generationPrompt && dataPackage.data_type === 'product') {
+            const product = dataPackage.source_data;
+            const prompt = this.generatePromptForProduct(product, this.selectedContentType);
+            generationPrompt.value = prompt;
+        }
+    }
+
+    // Generate prompt based on product and content type
+    generatePromptForProduct(product, contentType) {
+        const prompts = {
+            feature: `Create a Facebook post highlighting the key features of "${product.name}" (${product.sku}). Price: ${product.price}. Focus on what makes this product unique and appealing. Include relevant hashtags.`,
+            benefit: `Create a Facebook post emphasizing the benefits of "${product.name}" (${product.sku}). Price: ${product.price}. Focus on how this product improves the customer's life. Include relevant hashtags.`,
+            story: `Create a Facebook post telling a story about "${product.name}" (${product.sku}). Price: ${product.price}. Make it engaging and relatable. Include relevant hashtags.`
+        };
+        
+        return prompts[contentType] || prompts.feature;
+    }
+
+    // Setup LLM controls
+    setupLLMControls() {
+        const temperatureSlider = document.getElementById('llm-temperature');
+        const temperatureValue = document.getElementById('temperature-value');
+        
+        if (temperatureSlider && temperatureValue) {
+            temperatureSlider.addEventListener('input', (e) => {
+                temperatureValue.textContent = e.target.value;
+            });
+        }
     }
 }
 
