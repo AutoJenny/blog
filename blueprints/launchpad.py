@@ -1201,6 +1201,143 @@ def generate_social_content():
             'error': str(e)
         }), 500
 
+@bp.route('/api/auto-replenish-all', methods=['POST'])
+def auto_replenish_all_queues():
+    """Auto-replenish all configured queue types when they fall below threshold."""
+    try:
+        # Load queue configurations from file
+        import json
+        import os
+        
+        config_file = os.path.join(os.path.dirname(__file__), '..', 'config', 'queue_auto_replenish.json')
+        
+        try:
+            with open(config_file, 'r') as f:
+                config = json.load(f)
+        except FileNotFoundError:
+            logger.error(f"Queue auto-replenish config file not found: {config_file}")
+            return jsonify({
+                'success': False,
+                'error': 'Configuration file not found'
+            }), 500
+        
+        if not config.get('enabled', False):
+            return jsonify({
+                'success': True,
+                'message': 'Auto-replenish is disabled in configuration',
+                'results': []
+            })
+        
+        queue_configs = [q for q in config.get('queues', []) if q.get('enabled', True)]
+        
+        results = []
+        
+        for config in queue_configs:
+            try:
+                result = replenish_queue(config)
+                results.append({
+                    'queue_type': config['type'],
+                    'platform': config['platform'],
+                    'success': True,
+                    'items_added': result.get('items_added', 0),
+                    'message': result.get('message', '')
+                })
+            except Exception as e:
+                logger.error(f"Failed to replenish {config['type']} queue: {e}")
+                results.append({
+                    'queue_type': config['type'],
+                    'platform': config['platform'],
+                    'success': False,
+                    'error': str(e)
+                })
+        
+        return jsonify({
+            'success': True,
+            'message': 'Auto-replenish completed',
+            'results': results
+        })
+        
+    except Exception as e:
+        logger.error(f"Auto-replenish-all failed: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+def replenish_queue(config):
+    """Replenish a specific queue type."""
+    queue_type = config['type']
+    platform = config['platform']
+    threshold = config['threshold']
+    add_count = config['add_count']
+    
+    with db_manager.get_cursor() as cursor:
+        # Check current queue count
+        cursor.execute("""
+            SELECT COUNT(*) as count
+            FROM posting_queue 
+            WHERE content_type = %s AND platform = %s AND status IN ('draft', 'ready', 'pending')
+        """, (queue_type, platform))
+        
+        result = cursor.fetchone()
+        current_count = result['count'] if result else 0
+        
+        if current_count >= threshold:
+            return {
+                'items_added': 0,
+                'message': f'Queue already has {current_count} items (threshold: {threshold})'
+            }
+        
+        # Calculate how many items to add
+        items_needed = max(0, threshold - current_count)
+        items_to_add = min(add_count, items_needed)
+        
+        if items_to_add == 0:
+            return {
+                'items_added': 0,
+                'message': f'No items needed (current: {current_count}, threshold: {threshold})'
+            }
+        
+        # Add items to queue (reuse the "Add 10 items" logic)
+        items_added = 0
+        errors = 0
+        
+        for i in range(items_to_add):
+            try:
+                # Step 1: Select random product
+                cursor.execute("""
+                    SELECT id, name, sku, price, description, image_url, url
+                    FROM clan_products
+                    ORDER BY RANDOM()
+                    LIMIT 1
+                """)
+                product = cursor.fetchone()
+                
+                if not product:
+                    logger.warning("No products found for auto-replenish")
+                    break
+                
+                # Step 2: Generate content (simplified - just create basic content)
+                generated_content = f"Auto-generated content for {product['name']} - {product['sku']}"
+                
+                # Step 3: Add to queue
+                cursor.execute("""
+                    INSERT INTO posting_queue (product_id, content_type, generated_content, status, platform, created_at, updated_at)
+                    VALUES (%s, %s, %s, 'draft', %s, NOW(), NOW())
+                """, (product['id'], queue_type, generated_content, platform))
+                
+                items_added += 1
+                
+            except Exception as e:
+                logger.error(f"Error adding item {i+1} to {queue_type} queue: {e}")
+                errors += 1
+        
+        return {
+            'items_added': items_added,
+            'errors': errors,
+            'message': f'Added {items_added} items to {queue_type} queue (errors: {errors})'
+        }
+
 @bp.route('/health')
 def health():
     """Health check endpoint."""
