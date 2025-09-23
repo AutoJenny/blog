@@ -64,10 +64,12 @@ Object.assign(AIContentGenerationManager.prototype, {
             });
             
             const data = await response.json();
+            console.log('LLM API response:', data);
             
             if (data.success && data.result) {
                 this.generatedContent = data.result;
             } else {
+                console.error('LLM API error:', data);
                 throw new Error(data.error || 'Failed to generate content');
             }
         } catch (error) {
