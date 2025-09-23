@@ -91,7 +91,7 @@ Object.assign(AIContentGenerationManager.prototype, {
     },
     
     // Add content to posting queue
-    addToQueue() {
+    async addToQueue() {
         if (!this.generatedContent) {
             alert('No content to add to queue');
             return;
@@ -102,17 +102,41 @@ Object.assign(AIContentGenerationManager.prototype, {
             return;
         }
         
-        // Dispatch event to notify other modules
-        const event = new CustomEvent('contentQueued', {
-            detail: {
-                product: this.selectedProduct,
-                content: this.generatedContent,
-                contentType: this.selectedContentType
+        try {
+            // Update the queue status from 'draft' to 'pending'
+            const response = await fetch('/launchpad/api/syndication/update-queue-status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    product_id: this.selectedProduct.id,
+                    content_type: this.selectedContentType,
+                    status: 'pending'
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Dispatch event to notify other modules
+                const event = new CustomEvent('contentQueued', {
+                    detail: {
+                        product: this.selectedProduct,
+                        content: this.generatedContent,
+                        contentType: this.selectedContentType
+                    }
+                });
+                document.dispatchEvent(event);
+                
+                this.showNotification('Content added to posting queue', 'success');
+            } else {
+                this.showNotification('Failed to add content to queue: ' + data.error, 'error');
             }
-        });
-        document.dispatchEvent(event);
-        
-        this.showNotification('Content added to posting queue', 'success');
+        } catch (error) {
+            console.error('Error adding to queue:', error);
+            this.showNotification('Error adding content to queue: ' + error.message, 'error');
+        }
     },
     
     // Get content type display name

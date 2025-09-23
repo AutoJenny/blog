@@ -139,6 +139,47 @@ def get_generated_content(product_id, content_type):
             'error': str(e)
         }), 500
 
+@bp.route('/api/syndication/update-queue-status', methods=['POST'])
+def update_queue_status():
+    """Update the status of a queue item from 'draft' to 'pending'."""
+    try:
+        data = request.get_json()
+        product_id = data.get('product_id')
+        content_type = data.get('content_type')
+        status = data.get('status', 'pending')
+        
+        if not product_id or not content_type:
+            return jsonify({
+                'success': False,
+                'error': 'product_id and content_type are required'
+            }), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Update the status from 'draft' to the new status
+            cursor.execute("""
+                UPDATE posting_queue 
+                SET status = %s, updated_at = NOW()
+                WHERE product_id = %s AND content_type = %s AND status = 'draft'
+            """, (status, product_id, content_type))
+            
+            if cursor.rowcount > 0:
+                return jsonify({
+                    'success': True,
+                    'message': f'Queue status updated to {status}'
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'No draft content found for this product and content type'
+                }), 404
+                
+    except Exception as e:
+        logger.error(f"Error updating queue status: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @bp.route('/cross-promotion')
 def cross_promotion():
     """Cross-promotion management page."""
