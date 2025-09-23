@@ -1,0 +1,26 @@
+{
+  "enabled": true,
+  "queues": [
+    {
+      "type": "product",
+      "platform": "facebook",
+      "threshold": 9,
+      "add_count": 10,
+      "enabled": true
+    },
+    {
+      "type": "blog",
+      "platform": "facebook", 
+      "threshold": 5,
+      "add_count": 8,
+      "enabled": true
+    },
+    {
+      "type": "product",
+      "platform": "instagram",
+      "threshold": 7,
+      "add_count": 10,
+      "enabled": false
+    }
+  ]
+}
