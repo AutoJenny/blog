@@ -20,6 +20,7 @@ class AIContentGenerationManager {
         this.setupEventListeners();
         this.setupContentTypeButtons();
         this.setupDataListener();
+        this.checkOllamaStatus();
     }
     
     setupEventListeners() {
@@ -74,22 +75,68 @@ class AIContentGenerationManager {
         });
     }
     
-    startOllama() {
+    async checkOllamaStatus() {
+        const btn = document.getElementById('start-ollama-btn');
+        if (!btn) return;
+        
+        try {
+            const response = await fetch('http://localhost:11434/api/tags', {
+                method: 'GET',
+                timeout: 3000
+            });
+            
+            if (response.ok) {
+                btn.innerHTML = '<i class="fas fa-check"></i> Ollama Ready';
+                btn.classList.remove('btn-secondary');
+                btn.classList.add('btn-success');
+                btn.disabled = true;
+                
+                // Enable generate button if product is selected
+                this.updateGenerateButton();
+            } else {
+                throw new Error('Ollama not responding');
+            }
+        } catch (error) {
+            console.log('Ollama not running, showing start button');
+            btn.innerHTML = '<i class="fas fa-play"></i> Start Ollama';
+            btn.classList.remove('btn-success', 'btn-warning');
+            btn.classList.add('btn-secondary');
+            btn.disabled = false;
+        }
+    }
+    
+    async startOllama() {
         const btn = document.getElementById('start-ollama-btn');
         const originalText = btn.innerHTML;
         
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
         
-        // Simulate Ollama startup
-        setTimeout(() => {
-            btn.innerHTML = '<i class="fas fa-check"></i> Ollama Ready';
-            btn.classList.remove('btn-secondary');
-            btn.classList.add('btn-success');
+        try {
+            // Check if Ollama is already running
+            const response = await fetch('http://localhost:11434/api/tags', {
+                method: 'GET',
+                timeout: 5000
+            });
             
-            // Enable generate button if product is selected
-            this.updateGenerateButton();
-        }, 2000);
+            if (response.ok) {
+                btn.innerHTML = '<i class="fas fa-check"></i> Ollama Ready';
+                btn.classList.remove('btn-secondary');
+                btn.classList.add('btn-success');
+                btn.disabled = true; // Keep disabled since it's running
+                
+                // Enable generate button if product is selected
+                this.updateGenerateButton();
+            } else {
+                throw new Error('Ollama not responding');
+            }
+        } catch (error) {
+            console.error('Ollama check failed:', error);
+            btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Ollama Not Running';
+            btn.classList.remove('btn-secondary');
+            btn.classList.add('btn-warning');
+            btn.disabled = false;
+        }
     }
     
     setSelectedProduct(product) {
@@ -272,20 +319,31 @@ class AIContentGenerationManager {
         this.updateGenerateButton();
     }
 
-    // Setup listener for productSelected events
+    // Setup listener for dataSelected events
     setupDataListener() {
-        document.addEventListener('productSelected', (event) => {
-            this.handleProductSelected(event.detail.product);
+        document.addEventListener('dataSelected', (event) => {
+            this.handleDataPackage(event.detail.dataPackage);
         });
     }
 
-    // Handle product selected event
-    handleProductSelected(product) {
-        this.selectedProduct = product;
-        this.updateGenerateButton();
-        this.updateContentText();
-        this.updateAIStatusHeader();
-        this.loadExistingContent();
+    // Handle incoming data package
+    handleDataPackage(dataPackage) {
+        this.currentDataPackage = dataPackage;
+        
+        // Update input data display
+        this.updateInputDataDisplay(dataPackage);
+        
+        // Update LLM configuration based on data type
+        this.updateLLMConfiguration(dataPackage);
+        
+        // Extract product data for backward compatibility
+        if (dataPackage.data_type === 'product') {
+            this.selectedProduct = dataPackage.source_data;
+            this.updateGenerateButton();
+            this.updateContentText();
+            this.updateAIStatusHeader();
+            this.loadExistingContent();
+        }
     }
 
     // Update input data accordion display
@@ -539,6 +597,7 @@ class AIContentGenerationManager {
                 this.generatedContent = data.content;
                 this.displayGeneratedContent();
                 this.enableContentActions();
+                this.updateAIStatusHeader(); // Update the accordion header
                 console.log('Loaded existing content for', this.selectedProduct.name);
             }
         } catch (error) {
