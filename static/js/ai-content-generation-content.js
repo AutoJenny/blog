@@ -62,7 +62,9 @@ Object.assign(AIContentGenerationManager.prototype, {
             const data = await response.json();
             console.log('LLM API response:', data);
             
-            if (data.success && data.result) {
+            if (data.success && data.content) {
+                this.generatedContent = data.content;
+            } else if (data.success && data.result) {
                 this.generatedContent = data.result;
             } else {
                 console.error('LLM API error:', data);
