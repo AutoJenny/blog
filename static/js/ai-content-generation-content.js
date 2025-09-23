@@ -47,7 +47,7 @@ Object.assign(AIContentGenerationManager.prototype, {
         const prompt = this.generatePromptForProduct(this.selectedProduct, this.selectedContentType);
         
         try {
-            const response = await fetch('/launchpad/api/llm/actions/1/execute', {
+            const response = await fetch('/llm-actions/api/llm/actions/1/execute', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

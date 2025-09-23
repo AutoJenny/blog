@@ -14,13 +14,11 @@ Object.assign(AIContentGenerationManager.prototype, {
             
             if (data.success) {
                 this.databasePrompts = data.prompts;
-                console.log('Loaded database prompts:', this.databasePrompts);
                 // Update the prompt display if a product is already selected
                 if (this.selectedProduct) {
                     this.updateGenerationPromptDisplay();
                 }
             } else {
-                console.log('No prompts found, using defaults');
                 this.databasePrompts = null;
             }
         } catch (error) {
