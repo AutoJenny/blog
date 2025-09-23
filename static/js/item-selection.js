@@ -618,16 +618,24 @@ class ItemSelectionManager {
     goToPreviousProduct() {
         if (this.currentProductIndex > 0) {
             this.currentProductIndex--;
+            const product = this.filteredProducts[this.currentProductIndex];
             this.displayCurrentProduct();
             this.updateNavigationButtons();
+            // Persist selection to database
+            this.saveSelectedProduct(product);
+            this.updateSelectedProductDisplay(product.name);
         }
     }
 
     goToNextProduct() {
         if (this.currentProductIndex < this.filteredProducts.length - 1) {
             this.currentProductIndex++;
+            const product = this.filteredProducts[this.currentProductIndex];
             this.displayCurrentProduct();
             this.updateNavigationButtons();
+            // Persist selection to database
+            this.saveSelectedProduct(product);
+            this.updateSelectedProductDisplay(product.name);
         }
     }
 
@@ -636,6 +644,7 @@ class ItemSelectionManager {
         if (!productFilter) return;
         
         const filterValue = productFilter.value.toLowerCase();
+        const currentProduct = this.filteredProducts[this.currentProductIndex];
         
         if (filterValue === '') {
             this.filteredProducts = [...this.allProducts];
@@ -645,7 +654,18 @@ class ItemSelectionManager {
             );
         }
         
-        this.currentProductIndex = 0;
+        // Try to preserve current product position if it still matches filter
+        if (currentProduct && this.filteredProducts.length > 0) {
+            const newIndex = this.filteredProducts.findIndex(p => p.id === currentProduct.id);
+            if (newIndex !== -1) {
+                this.currentProductIndex = newIndex;
+            } else {
+                this.currentProductIndex = 0;
+            }
+        } else {
+            this.currentProductIndex = 0;
+        }
+        
         this.displayCurrentProduct();
         this.updateNavigationButtons();
     }
