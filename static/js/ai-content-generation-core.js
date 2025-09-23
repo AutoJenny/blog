@@ -25,6 +25,7 @@ class AIContentGenerationManager {
     
     // Set the selected product and update UI
     setSelectedProduct(product) {
+        console.log('AI Content Generation: Setting selected product:', product);
         this.selectedProduct = product;
         this.updateGenerateButton();
         this.updateContentText();

@@ -16,10 +16,12 @@ Object.assign(AIContentGenerationManager.prototype, {
                 this.databasePrompts = data.prompts;
                 console.log('Loaded database prompts:', this.databasePrompts);
             } else {
-                console.error('Failed to load prompts:', data.error);
+                console.log('No prompts endpoint available, using defaults');
+                this.databasePrompts = null;
             }
         } catch (error) {
-            console.error('Error loading prompts:', error);
+            console.log('Prompts endpoint not available, using defaults');
+            this.databasePrompts = null;
         }
     },
     
@@ -53,11 +55,18 @@ Object.assign(AIContentGenerationManager.prototype, {
     
     // Load existing generated content for the selected product
     async loadExistingContent() {
-        if (!this.selectedProduct) return;
+        if (!this.selectedProduct) {
+            console.log('No selected product, skipping content load');
+            return;
+        }
+        
+        console.log('Loading existing content for product:', this.selectedProduct.name, 'type:', this.selectedContentType);
         
         try {
             const response = await fetch(`/launchpad/api/syndication/get-generated-content/${this.selectedProduct.id}/${this.selectedContentType}`);
             const data = await response.json();
+            
+            console.log('Load existing content response:', data);
             
             if (data.success && data.content) {
                 this.generatedContent = data.content;
@@ -65,6 +74,8 @@ Object.assign(AIContentGenerationManager.prototype, {
                 this.enableContentActions();
                 this.updateAIStatusHeader(); // Update the accordion header
                 console.log('Loaded existing content for', this.selectedProduct.name);
+            } else {
+                console.log('No existing content found for', this.selectedProduct.name);
             }
         } catch (error) {
             console.error('Error loading existing content:', error);
