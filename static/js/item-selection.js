@@ -7,6 +7,7 @@ class ItemSelectionManager {
         
         this.initEventListeners();
         this.loadInitialData();
+        this.loadSelectedProduct();
     }
 
     initEventListeners() {
@@ -112,6 +113,12 @@ class ItemSelectionManager {
         this.selectedProduct = currentProduct;
         this.displayProduct(this.selectedProduct);
         
+        // Save to database
+        await this.saveSelectedProduct(currentProduct);
+        
+        // Update accordion header
+        this.updateSelectedProductDisplay(currentProduct.name);
+        
         // Notify other components that a product has been selected
         this.notifyProductSelected(currentProduct);
         
@@ -134,6 +141,12 @@ class ItemSelectionManager {
             if (data.success) {
                 this.selectedProduct = data.product;
                 this.displayProduct(this.selectedProduct);
+                
+                // Save to database
+                await this.saveSelectedProduct(data.product);
+                
+                // Update accordion header
+                this.updateSelectedProductDisplay(data.product.name);
                 
                 // Notify other components that a product has been selected
                 this.notifyProductSelected(data.product);
@@ -666,6 +679,54 @@ class ItemSelectionManager {
     // Public method to get the currently selected product
     getSelectedProduct() {
         return this.selectedProduct;
+    }
+
+    // Load selected product from database on page load
+    async loadSelectedProduct() {
+        try {
+            const response = await fetch('/launchpad/api/syndication/get-selected-product');
+            const data = await response.json();
+            
+            if (data.success && data.product) {
+                this.selectedProduct = data.product;
+                this.updateSelectedProductDisplay(data.product.name);
+                
+                // Notify other components that a product has been selected
+                this.notifyProductSelected(data.product);
+            }
+        } catch (error) {
+            console.error('Error loading selected product:', error);
+        }
+    }
+
+    // Save selected product to database
+    async saveSelectedProduct(product) {
+        try {
+            const response = await fetch('/launchpad/api/syndication/save-selected-product', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    product_id: product.id
+                })
+            });
+            
+            const data = await response.json();
+            if (!data.success) {
+                console.error('Failed to save selected product:', data.message);
+            }
+        } catch (error) {
+            console.error('Error saving selected product:', error);
+        }
+    }
+
+    // Update the accordion header display
+    updateSelectedProductDisplay(productName) {
+        const selectedProductDisplay = document.getElementById('selected-product-display');
+        if (selectedProductDisplay) {
+            selectedProductDisplay.textContent = productName;
+        }
     }
 }
 

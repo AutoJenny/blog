@@ -128,6 +128,7 @@ class AIContentGenerationManager {
         } catch (error) {
             console.error('Error generating content:', error);
             alert('Error generating content. Please try again.');
+            this.updateStatusDisplay('Error generating content');
         } finally {
             generateBtn.disabled = false;
             generateBtn.innerHTML = originalText;
