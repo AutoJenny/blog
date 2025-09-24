@@ -1,0 +1,5 @@
+2025-09-24 21:27:38,608 - INFO - Starting posting executor
+2025-09-24 21:27:38,625 - INFO - Database connection established
+2025-09-24 21:27:38,632 - INFO - Found 0 pending posts ready for publishing
+2025-09-24 21:27:38,632 - INFO - No pending posts ready for publishing
+2025-09-24 21:27:38,632 - INFO - Posting executor complete: {'total_found': 0, 'successfully_published': 0, 'failed': 0, 'skipped': 0}
