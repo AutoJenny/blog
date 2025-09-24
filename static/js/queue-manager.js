@@ -31,6 +31,10 @@ class QueueManager {
         this.setupAccordion();
         this.setupEventListeners();
         this.loadQueueData();
+        // Delay button text update to ensure post section manager is ready
+        setTimeout(() => {
+            this.updateButtonText();
+        }, 500);
     }
 
     /**
@@ -55,6 +59,28 @@ class QueueManager {
         const add10ItemsBtn = document.getElementById('add-10-items-btn');
         if (add10ItemsBtn) {
             add10ItemsBtn.addEventListener('click', () => this.add10Items());
+        }
+        
+        // Listen for post selection events to update button text
+        document.addEventListener('postSelected', (event) => {
+            console.log('Post selected event received:', event.detail);
+            if (this.pageType === 'blog_post') {
+                this.updateButtonText();
+            }
+        });
+        
+        // Also listen for any changes to the post selector dropdown
+        const postSelector = document.getElementById('postSelector');
+        if (postSelector) {
+            postSelector.addEventListener('change', () => {
+                console.log('Post selector changed');
+                if (this.pageType === 'blog_post') {
+                    // Delay to allow post selection to complete
+                    setTimeout(() => {
+                        this.updateButtonText();
+                    }, 1000);
+                }
+            });
         }
     }
 
@@ -129,9 +155,62 @@ class QueueManager {
         
         if (item.content_type === 'product') {
             return this.renderProductItem(item, dateStr, timeStr);
+        } else if (item.content_type === 'blog_post') {
+            return this.renderBlogSectionItem(item, dateStr, timeStr);
         } else {
             return this.renderBlogItem(item, dateStr, timeStr);
         }
+    }
+
+    /**
+     * Render blog section item
+     */
+    renderBlogSectionItem(item, dateStr, timeStr) {
+        // Section thumbnail (reuse product_image field for section images)
+        let thumbnail = '';
+        if (item.product_image) {
+            thumbnail = `<img src="${item.product_image}" alt="Section thumbnail" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;" onerror="this.style.display='none'">`;
+        } else {
+            thumbnail = '<div style="width: 60px; height: 60px; background: #334155; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 0.8rem;">No img</div>';
+        }
+        
+        return `
+            <tr style="border-bottom: 1px solid #374151;">
+                <td style="padding: 15px; vertical-align: top;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        ${thumbnail}
+                        <div>
+                            <div style="font-weight: 600; color: #f1f5f9; margin-bottom: 5px;">${dateStr}</div>
+                            <div style="color: #94a3b8; font-size: 0.9rem;">${timeStr}</div>
+                        </div>
+                    </div>
+                </td>
+                <td style="padding: 15px; vertical-align: top;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="max-width: 400px; flex: 1;">
+                            <div style="font-weight: 600; color: #f1f5f9; margin-bottom: 8px; font-size: 1.1rem;">
+                                ${item.product_name || 'Blog Section'}
+                            </div>
+                            <div style="color: #cbd5e1; margin-bottom: 8px; line-height: 1.4;">
+                                ${item.generated_content ? item.generated_content.substring(0, 150) + '...' : 'No content'}
+                            </div>
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <span class="badge" style="background: #3b82f6; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">Blog Post</span>
+                                <span class="badge" style="background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">${item.status}</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-sm btn-outline-primary" onclick="queueManager.editQueueItem(${item.id})" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="queueManager.deleteQueueItem(${item.id})" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        `;
     }
 
     /**
@@ -356,10 +435,9 @@ class QueueManager {
     }
 
     /**
-     * Add 10 items to the queue by running the sequence 10 times:
-     * 1) Generate random product selection
-     * 2) Generate AI content for that product
-     * 3) Add to queue
+     * Add sections to the queue based on page type:
+     * For product pages: Add 10 random products (original behavior)
+     * For blog pages: Add all sections from currently selected post
      */
     async add10Items() {
         const button = document.getElementById('add-10-items-btn');
@@ -368,19 +446,82 @@ class QueueManager {
         try {
             // Disable button and show progress
             button.disabled = true;
-            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding Items...';
+            
+            if (this.pageType === 'blog_post') {
+                // First, try to update button text in case post selection wasn't detected
+                this.updateButtonText();
+                await this.addAllSections(button);
+            } else {
+                await this.addRandomProducts(button);
+            }
+            
+        } catch (error) {
+            console.error('Error in add10Items:', error);
+            this.showNotification('Error adding items to queue: ' + error.message, 'error');
+        } finally {
+            // Re-enable button and restore state
+            button.disabled = false;
+            const icon = button.querySelector('i');
+            icon.className = 'fas fa-plus-circle';
+            this.updateButtonText(); // Restore appropriate text
+        }
+    }
+
+    /**
+     * Add all sections from currently selected blog post
+     */
+    async addAllSections(button) {
+        try {
+            // Get currently selected post and its sections
+            const postSectionManager = window.postSectionSelectionManager || window.postSectionDataManager;
+            if (!postSectionManager) {
+                throw new Error('Post section manager not available');
+            }
+
+            const currentPost = postSectionManager.getCurrentPost();
+            const currentSections = postSectionManager.getCurrentSections() || [];
+            
+            console.log('Queue Manager Debug:', {
+                postSectionManager: !!postSectionManager,
+                currentPost: currentPost,
+                currentSections: currentSections,
+                sectionsLength: currentSections.length
+            });
+            
+            if (!currentPost || !currentSections.length) {
+                throw new Error('No post or sections selected');
+            }
+
+            const sectionCount = currentSections.length;
+            const textSpan = document.getElementById('add-items-text');
+            const icon = button.querySelector('i');
+            icon.className = 'fas fa-spinner fa-spin';
+            textSpan.textContent = `Adding ${sectionCount} Sections...`;
             
             let successCount = 0;
             let errorCount = 0;
             
-            for (let i = 1; i <= 10; i++) {
+            for (let i = 0; i < currentSections.length; i++) {
+                const section = currentSections[i];
                 try {
                     // Update progress
-                    button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Adding Item ${i}/10...`;
+                    textSpan.textContent = `Adding Section ${i + 1}/${sectionCount}...`;
                     
-                    // Step 1: Generate random product selection
-                    if (window.itemSelectionManager) {
-                        await window.itemSelectionManager.selectRandomProduct();
+                    // Step 1: Set the section as selected data
+                       if (window.aiContentGenerationManager) {
+                           // Create section data package
+                           const sectionData = {
+                               id: section.id,
+                               section_title: section.section_heading,
+                               section_content: section.polished,
+                               post_title: currentPost.title,
+                               post_url: this.constructPostUrl(currentPost.slug),
+                               post_id: currentPost.id,
+                               section_image_filename: section.image_filename,
+                               section_image_url: await this.constructSectionImageUrl(section, currentPost.id)
+                           };
+                        
+                        window.aiContentGenerationManager.setSelectedData(sectionData);
                         // Wait a moment for the selection to process
                         await new Promise(resolve => setTimeout(resolve, 500));
                     }
@@ -405,7 +546,7 @@ class QueueManager {
                     successCount++;
                     
                 } catch (error) {
-                    console.error(`Error adding item ${i}:`, error);
+                    console.error(`Error adding section ${i + 1}:`, error);
                     errorCount++;
                 }
             }
@@ -414,15 +555,164 @@ class QueueManager {
             await this.loadQueueData();
             
             // Show completion message
-            this.showNotification(`Added ${successCount} items to queue${errorCount > 0 ? ` (${errorCount} errors)` : ''}`, 'success');
+            this.showNotification(`Added ${successCount} sections to queue${errorCount > 0 ? ` (${errorCount} errors)` : ''}`, 'success');
             
         } catch (error) {
-            console.error('Error in add10Items:', error);
-            this.showNotification('Error adding items to queue: ' + error.message, 'error');
-        } finally {
-            // Re-enable button
-            button.disabled = false;
-            button.innerHTML = originalText;
+            console.error('Error in addAllSections:', error);
+            this.showNotification('Error adding sections to queue: ' + error.message, 'error');
+        }
+    }
+
+    /**
+     * Add 10 random products (original behavior for product pages)
+     */
+    async addRandomProducts(button) {
+        const textSpan = document.getElementById('add-items-text');
+        const icon = button.querySelector('i');
+        icon.className = 'fas fa-spinner fa-spin';
+        textSpan.textContent = 'Adding Items...';
+        
+        let successCount = 0;
+        let errorCount = 0;
+        
+        for (let i = 1; i <= 10; i++) {
+            try {
+                // Update progress
+                textSpan.textContent = `Adding Item ${i}/10...`;
+                
+                // Step 1: Generate random product selection
+                if (window.itemSelectionManager) {
+                    await window.itemSelectionManager.selectRandomProduct();
+                    // Wait a moment for the selection to process
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                
+                // Step 2: Generate AI content
+                if (window.aiContentGenerationManager) {
+                    await window.aiContentGenerationManager.generateContent();
+                    // Wait a moment for content generation
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                // Step 3: Add to queue (silent mode)
+                if (window.aiContentGenerationManager) {
+                    const queueResult = await window.aiContentGenerationManager.addToQueue(true);
+                    if (!queueResult) {
+                        throw new Error('Failed to add to queue');
+                    }
+                    // Wait a moment for queue addition
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                
+                successCount++;
+                
+            } catch (error) {
+                console.error(`Error adding item ${i}:`, error);
+                errorCount++;
+            }
+        }
+        
+        // Reload queue data to show new items
+        await this.loadQueueData();
+        
+        // Show completion message
+        this.showNotification(`Added ${successCount} items to queue${errorCount > 0 ? ` (${errorCount} errors)` : ''}`, 'success');
+    }
+
+    /**
+     * Construct post URL from slug
+     */
+    constructPostUrl(slug) {
+        return `https://clan.com/blog/${slug}`;
+    }
+
+    /**
+     * Construct section image URL using clan.com URLs from database
+     */
+    async constructSectionImageUrl(section, postId) {
+        if (!section.image_filename) {
+            return null;
+        }
+        
+        try {
+            // Try to get the clan.com URL from the section_image_mappings table
+            const response = await fetch(`/launchpad/api/syndication/section-image-url/${postId}/${section.id}`);
+            const data = await response.json();
+            
+            if (data.success && data.clan_url) {
+                return data.clan_url;
+            }
+        } catch (error) {
+            console.log('Could not fetch clan URL, falling back to local path');
+        }
+        
+        // Fallback to local path if clan URL not available
+        let filename = this.getProcessedImageFilename(section.image_filename, section.id);
+        return `/static/images/content/posts/${postId}/sections/${section.id}/optimized/${filename}`;
+    }
+
+    /**
+     * Get processed image filename (copied from PostSectionUtils)
+     */
+    getProcessedImageFilename(originalFilename, sectionId) {
+        if (!originalFilename || !sectionId) return '';
+        
+        // Try different naming patterns based on the original filename and section ID
+        if (originalFilename.includes('d59ac061-0b2a-4a06-a3a6-c15d13dc35e2')) {
+            // Section 710 uses the complex filename from database
+            return originalFilename.endsWith('_processed.png') ? 
+                originalFilename : 
+                originalFilename.replace('.png', '_processed.png');
+        } else if (sectionId === 711 && (originalFilename.includes('live_preview_content') || originalFilename.includes('generated_image'))) {
+            // Section 711 specifically uses generated_image pattern
+            return 'generated_image_20250727_145859_processed.png';
+        } else {
+            // Default pattern: section ID + _processed.png (for sections 712-716)
+            return `${sectionId}_processed.png`;
+        }
+    }
+
+    /**
+     * Update button text based on page type and available sections
+     */
+    updateButtonText() {
+        const textSpan = document.getElementById('add-items-text');
+        if (!textSpan) return;
+
+        if (this.pageType === 'blog_post') {
+            // For blog posts, show section count
+            this.updateBlogButtonText(textSpan);
+        } else {
+            // For product posts, keep original text
+            textSpan.textContent = 'Add 10 Items';
+        }
+    }
+
+    /**
+     * Update button text for blog posts based on section count
+     */
+    updateBlogButtonText(textSpan) {
+        try {
+            const postSectionManager = window.postSectionSelectionManager || window.postSectionDataManager;
+            if (!postSectionManager) {
+                textSpan.textContent = 'Add Sections';
+                return;
+            }
+
+            const currentPost = postSectionManager.getCurrentPost();
+            const currentSections = postSectionManager.getCurrentSections() || [];
+            
+            if (!currentPost || !currentSections.length) {
+                textSpan.textContent = 'Add Sections';
+                return;
+            }
+
+            const sectionCount = currentSections.length;
+            textSpan.textContent = `Add ${sectionCount} Sections`;
+            
+        } catch (error) {
+            console.error('Error updating blog button text:', error);
+            textSpan.textContent = 'Add Sections';
         }
     }
 }

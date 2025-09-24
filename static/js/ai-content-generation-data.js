@@ -32,33 +32,47 @@ Object.assign(AIContentGenerationManager.prototype, {
         }
     },
     
-    // Save generated content to database
-    async saveGeneratedContent(content, contentType) {
-        if (!this.selectedData) return;
-        
-        try {
-            const response = await fetch('/launchpad/api/syndication/save-generated-content', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    item_id: this.selectedData.id,
-                    content_type: this.processId === 6 ? 'product' : 'blog',
-                    content: content
-                })
-            });
-            
-            const data = await response.json();
-            if (data.success) {
-                console.log('Generated content saved successfully');
-            } else {
-                console.error('Failed to save generated content:', data.error);
-            }
-        } catch (error) {
-            console.error('Error saving generated content:', error);
-        }
-    },
+           // Save generated content to database
+           async saveGeneratedContent(content, contentType) {
+               if (!this.selectedData) return;
+               
+               try {
+                   const isProduct = this.processId === 6;
+                   const requestBody = {
+                       content_type: isProduct ? 'product' : 'blog_post',
+                       content: content
+                   };
+                   
+                   if (isProduct) {
+                       // For products, use product_id
+                       requestBody.product_id = this.selectedData.id;
+                   } else {
+                       // For blog sections, use section_id and include image data
+                       requestBody.section_id = this.selectedData.id;
+                       requestBody.section_image_filename = this.selectedData.section_image_filename;
+                       requestBody.section_image_url = this.selectedData.section_image_url;
+                       requestBody.section_title = this.selectedData.section_title;
+                       requestBody.post_title = this.selectedData.post_title;
+                   }
+                   
+                   const response = await fetch('/launchpad/api/syndication/save-generated-content', {
+                       method: 'POST',
+                       headers: {
+                           'Content-Type': 'application/json',
+                       },
+                       body: JSON.stringify(requestBody)
+                   });
+                   
+                   const data = await response.json();
+                   if (data.success) {
+                       console.log('Generated content saved successfully');
+                   } else {
+                       console.error('Failed to save generated content:', data.error);
+                   }
+               } catch (error) {
+                   console.error('Error saving generated content:', error);
+               }
+           },
     
     // Load existing generated content for the selected item
     async loadExistingContent() {
@@ -71,8 +85,9 @@ Object.assign(AIContentGenerationManager.prototype, {
         console.log('Loading existing content for item:', itemName, 'type:', this.selectedContentType);
         
         try {
-            const contentType = this.processId === 6 ? 'product' : 'blog';
-            const response = await fetch(`/launchpad/api/syndication/get-generated-content/${this.selectedData.id}/${contentType}`);
+            const contentType = this.processId === 6 ? 'product' : 'blog_post';
+            const itemId = this.selectedData.id;
+            const response = await fetch(`/launchpad/api/syndication/get-generated-content/${itemId}/${contentType}`);
             const data = await response.json();
             
             console.log('Load existing content response:', data);

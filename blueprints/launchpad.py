@@ -28,14 +28,14 @@ def get_next_posting_slot(cursor, platform='facebook', content_type='product'):
         if not schedules:
             return None
         
-        # Get the latest scheduled post to know where to start
+        # Get the latest scheduled post for THIS content type to know where to start
         cursor.execute("""
             SELECT scheduled_timestamp, scheduled_date, scheduled_time
             FROM posting_queue
-            WHERE scheduled_timestamp IS NOT NULL
+            WHERE scheduled_timestamp IS NOT NULL AND content_type = %s
             ORDER BY scheduled_timestamp DESC
             LIMIT 1
-        """)
+        """, (content_type,))
         latest_scheduled = cursor.fetchone()
         
         # Start from current time or latest scheduled time + 1 day
@@ -44,14 +44,14 @@ def get_next_posting_slot(cursor, platform='facebook', content_type='product'):
         else:
             start_date = date.today()
         
-        # First, try to fill existing scheduled days
+        # First, try to fill existing scheduled days for THIS content type
         cursor.execute("""
             SELECT scheduled_date, scheduled_time, COUNT(*) as count
             FROM posting_queue
-            WHERE scheduled_timestamp IS NOT NULL
+            WHERE scheduled_timestamp IS NOT NULL AND content_type = %s
             GROUP BY scheduled_date, scheduled_time
             ORDER BY scheduled_date, scheduled_time
-        """)
+        """, (content_type,))
         existing_slots = cursor.fetchall()
         
         # Check existing slots first to fill them up
@@ -87,12 +87,12 @@ def get_next_posting_slot(cursor, platform='facebook', content_type='product'):
                     schedule_time = schedule['time']
                     schedule_timestamp = datetime.combine(check_date, schedule_time)
                     
-                    # Check if this slot already exists
+                    # Check if this slot already exists for THIS content type
                     cursor.execute("""
                         SELECT COUNT(*) as count
                         FROM posting_queue
-                        WHERE scheduled_date = %s AND scheduled_time = %s
-                    """, (check_date, schedule_time))
+                        WHERE scheduled_date = %s AND scheduled_time = %s AND content_type = %s
+                    """, (check_date, schedule_time, content_type))
                     
                     existing_count = cursor.fetchone()['count']
                     
@@ -148,45 +148,100 @@ def index():
     """Main launchpad page."""
     return render_template('launchpad/index.html')
 
+@bp.route('/api/syndication/section-image-url/<int:post_id>/<int:section_id>')
+def get_section_image_url(post_id, section_id):
+    """Get the clan.com URL for a section image."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT clan_uploaded_url 
+                FROM section_image_mappings 
+                WHERE post_id = %s AND section_id = %s
+            """, (post_id, section_id))
+            
+            result = cursor.fetchone()
+            
+            if result and result['clan_uploaded_url']:
+                return jsonify({
+                    'success': True,
+                    'clan_url': result['clan_uploaded_url']
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'No clan URL found for this section'
+                })
+                
+    except Exception as e:
+        logger.error(f"Error fetching section image URL: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @bp.route('/api/syndication/save-generated-content', methods=['POST'])
 def save_generated_content():
-    """Save generated content for a product."""
+    """Save generated content for a product or blog section."""
     try:
         data = request.get_json()
         product_id = data.get('product_id')
+        section_id = data.get('section_id')
         content_type = data.get('content_type', 'product')
         generated_content = data.get('content') or data.get('generated_content')
         
-        if not product_id or not generated_content:
+        # Extract section image data for blog posts
+        section_image_filename = data.get('section_image_filename')
+        section_image_url = data.get('section_image_url')
+        section_title = data.get('section_title')
+        post_title = data.get('post_title')
+        
+        # Determine which ID to use
+        item_id = product_id if product_id else section_id
+        id_field = 'product_id' if product_id else 'section_id'
+        
+        if not item_id or not generated_content:
             return jsonify({
                 'success': False,
-                'error': 'Product ID and generated content are required'
+                'error': f'{id_field.replace("_", " ").title()} and generated content are required'
             }), 400
         
         with db_manager.get_connection() as conn:
             cur = conn.cursor()
             
-            # Check if content already exists for this product and content_type
-            cur.execute("""
+            # Check if content already exists for this item and content_type
+            cur.execute(f"""
                 SELECT id FROM posting_queue 
-                WHERE product_id = %s AND content_type = %s AND status = 'draft'
-            """, (product_id, content_type))
+                WHERE {id_field} = %s AND content_type = %s AND status = 'draft'
+            """, (item_id, content_type))
             
             existing = cur.fetchone()
             
             if existing:
                 # Update existing content
-                cur.execute("""
-                    UPDATE posting_queue 
-                    SET generated_content = %s, updated_at = NOW()
-                    WHERE product_id = %s AND content_type = %s AND status = 'draft'
-                """, (generated_content, product_id, content_type))
+                if content_type == 'blog_post' and section_image_url:
+                    cur.execute(f"""
+                        UPDATE posting_queue 
+                        SET generated_content = %s, product_image = %s, updated_at = NOW()
+                        WHERE {id_field} = %s AND content_type = %s AND status = 'draft'
+                    """, (generated_content, section_image_url, item_id, content_type))
+                else:
+                    cur.execute(f"""
+                        UPDATE posting_queue 
+                        SET generated_content = %s, updated_at = NOW()
+                        WHERE {id_field} = %s AND content_type = %s AND status = 'draft'
+                    """, (generated_content, item_id, content_type))
             else:
                 # Insert new content as draft
-                cur.execute("""
-                    INSERT INTO posting_queue (product_id, content_type, generated_content, status, created_at, updated_at)
-                    VALUES (%s, %s, %s, 'draft', NOW(), NOW())
-                """, (product_id, content_type, generated_content))
+                if content_type == 'blog_post' and section_image_url:
+                    cur.execute(f"""
+                        INSERT INTO posting_queue ({id_field}, content_type, generated_content, product_image, status, created_at, updated_at)
+                        VALUES (%s, %s, %s, %s, 'draft', NOW(), NOW())
+                    """, (item_id, content_type, generated_content, section_image_url))
+                else:
+                    cur.execute(f"""
+                        INSERT INTO posting_queue ({id_field}, content_type, generated_content, status, created_at, updated_at)
+                        VALUES (%s, %s, %s, 'draft', NOW(), NOW())
+                    """, (item_id, content_type, generated_content))
             
             conn.commit()
             
@@ -202,19 +257,25 @@ def save_generated_content():
             'error': str(e)
         }), 500
 
-@bp.route('/api/syndication/get-generated-content/<int:product_id>/<content_type>')
-def get_generated_content(product_id, content_type):
-    """Get generated content for a product and content type."""
+@bp.route('/api/syndication/get-generated-content/<int:item_id>/<content_type>')
+def get_generated_content(item_id, content_type):
+    """Get generated content for a product or blog section and content type."""
     try:
         with db_manager.get_connection() as conn:
             cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
+            # Determine which field to query based on content type
+            if content_type == 'product':
+                id_field = 'product_id'
+            else:
+                id_field = 'section_id'
+            
             # Query for generated content
-            cur.execute("""
+            cur.execute(f"""
                 SELECT generated_content as content, created_at, updated_at 
                 FROM posting_queue 
-                WHERE product_id = %s AND content_type = %s AND status IN ('draft', 'ready', 'pending')
-            """, (product_id, content_type))
+                WHERE {id_field} = %s AND content_type = %s AND status IN ('draft', 'ready', 'pending')
+            """, (item_id, content_type))
             
             result = cur.fetchone()
             
@@ -245,13 +306,18 @@ def update_queue_status():
     try:
         data = request.get_json()
         product_id = data.get('product_id')
+        section_id = data.get('section_id')
         content_type = data.get('content_type', 'product')
         status = data.get('status', 'ready')
         
-        if not product_id or not content_type:
+        # Determine which ID to use
+        item_id = product_id if product_id else section_id
+        id_field = 'product_id' if product_id else 'section_id'
+        
+        if not item_id or not content_type:
             return jsonify({
                 'success': False,
-                'error': 'product_id and content_type are required'
+                'error': f'{id_field.replace("_", " ").title()} and content_type are required'
             }), 400
         
         with db_manager.get_connection() as conn:
@@ -266,7 +332,7 @@ def update_queue_status():
                     }), 400
                 
                 # Update the status and schedule the post
-                cursor.execute("""
+                cursor.execute(f"""
                     UPDATE posting_queue 
                     SET status = %s, 
                         scheduled_date = %s,
@@ -275,9 +341,9 @@ def update_queue_status():
                         schedule_name = %s,
                         timezone = %s,
                         updated_at = NOW()
-                    WHERE product_id = %s AND content_type = %s AND status IN ('draft', 'pending', 'ready')
+                    WHERE {id_field} = %s AND content_type = %s AND status IN ('draft', 'pending', 'ready')
                 """, (status, next_slot['date'], next_slot['time'], next_slot['timestamp'], 
-                      next_slot['schedule_name'], next_slot['timezone'], product_id, content_type))
+                      next_slot['schedule_name'], next_slot['timezone'], item_id, content_type))
                 
                 if cursor.rowcount > 0:
                     conn.commit()
@@ -291,7 +357,7 @@ def update_queue_status():
                 else:
                     return jsonify({
                         'success': False,
-                        'error': 'No draft content found for this product and content type'
+                        'error': f'No draft content found for this {id_field.replace("_", " ")} and content type'
                     }), 404
                 
     except Exception as e:
@@ -588,13 +654,19 @@ def get_queue():
                 SELECT pq.id, pq.platform, pq.channel_type, pq.content_type,
                        pq.generated_content, pq.status,
                        pq.platform_post_id, pq.error_message,
-                       pq.product_id, pq.created_at, pq.updated_at,
+                       pq.product_id, pq.section_id, pq.created_at, pq.updated_at,
                        pq.scheduled_date, pq.scheduled_time, pq.scheduled_timestamp,
                        pq.schedule_name, pq.timezone,
-                       cp.name as product_name, cp.sku, cp.image_url as product_image,
-                       cp.price
+                       cp.name as product_name, cp.sku, 
+                       CASE 
+                           WHEN pq.content_type = 'product' THEN cp.image_url 
+                           ELSE pq.product_image 
+                       END as product_image,
+                       cp.price,
+                       ps.section_heading as section_title
                 FROM posting_queue pq
                 LEFT JOIN clan_products cp ON pq.product_id = cp.id
+                LEFT JOIN post_section ps ON pq.section_id = ps.id
                 WHERE pq.status IN ('pending', 'ready', 'published', 'failed')
                 ORDER BY pq.scheduled_timestamp ASC NULLS LAST, pq.created_at ASC
                 LIMIT 50
@@ -604,6 +676,9 @@ def get_queue():
             
             timeline_items = []
             for item in items:
+                # Use section title for blog posts, product name for products
+                display_name = item['section_title'] if item['content_type'] == 'blog_post' and item['section_title'] else item['product_name']
+                
                 timeline_items.append({
                     'id': item['id'],
                     'platform': item['platform'],
@@ -614,7 +689,8 @@ def get_queue():
                     'platform_post_id': item['platform_post_id'],
                     'error_message': item['error_message'],
                     'product_id': item['product_id'],
-                    'product_name': item['product_name'],
+                    'section_id': item['section_id'],
+                    'product_name': display_name,
                     'product_sku': item['sku'],
                     'product_image': item['product_image'],
                     'product_price': item['price'],
@@ -1527,12 +1603,26 @@ def generate_social_content():
                 'error': 'Prompt is required'
             }), 400
         
+        # Get the system prompt from database
+        process_id = data.get('process_id', 1)  # Default to blog posts (process_id 1)
+        
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT config_key, config_value 
+                FROM process_configurations 
+                WHERE process_id = %s AND config_key IN ('system_prompt', 'user_prompt_template')
+            """, (process_id,))
+            
+            configs = {row['config_key']: row['config_value'] for row in cursor.fetchall()}
+        
+        system_prompt = configs.get('system_prompt', 'You are a social media content creator.')
+        
         # Create LLM service and execute request
         llm_service = LLMService()
         messages = [
             {
                 'role': 'system',
-                'content': 'You are a social media content creator specializing in product marketing. Create engaging, authentic posts that highlight product features and benefits.'
+                'content': system_prompt
             },
             {
                 'role': 'user',
