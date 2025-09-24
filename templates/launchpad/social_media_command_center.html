@@ -347,6 +347,81 @@
             gap: 10px;
             margin-bottom: 20px;
             flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .platform-tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .status-filter {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .status-filter label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .status-select {
+            background: #334155;
+            color: #e0e0e0;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .status-select:hover {
+            background: #475569;
+            border-color: #64748b;
+        }
+        
+        .status-select:focus {
+            outline: none;
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+        }
+        
+        /* Breadcrumbs styling */
+        .breadcrumbs {
+            margin-bottom: 24px;
+        }
+        
+        .breadcrumbs ol {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
+        
+        .breadcrumbs a {
+            color: #94a3b8;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        .breadcrumbs a:hover {
+            color: #f1f5f9;
+        }
+        
+        .breadcrumbs .fas {
+            margin: 0 8px;
+            color: #64748b;
+            font-size: 0.75rem;
+        }
+        
+        .breadcrumbs span {
+            color: #f1f5f9;
         }
         
         .platform-tab {
@@ -404,7 +479,20 @@
     </style>
 </head>
 <body>
+    {% include 'shared/header.html' %}
+    
     <div class="container">
+        <!-- Breadcrumbs -->
+        <nav class="breadcrumbs mb-6">
+            <ol class="flex items-center space-x-2 text-sm text-gray-400">
+                <li><a href="/launchpad/" class="hover:text-white transition">Blog Launchpad</a></li>
+                <li class="flex items-center">
+                    <i class="fas fa-chevron-right mx-2 text-gray-500"></i>
+                    <span class="text-white">Social Media Command Center</span>
+                </li>
+            </ol>
+        </nav>
+        
         <!-- Header -->
         <div class="header">
             <h1>🚀 Social Media Command Center</h1>
@@ -463,6 +551,7 @@
                 
                 <!-- Platform Selector -->
                 <div class="platform-selector">
+                    <div class="platform-tabs">
                     <button class="platform-tab active" data-platform="all">
                         <i class="fas fa-globe"></i>
                         All Platforms
@@ -483,6 +572,17 @@
                         <i class="fab fa-linkedin"></i>
                         LinkedIn
                     </button>
+                    </div>
+                    
+                    <!-- Status Filter -->
+                    <div class="status-filter">
+                        <label for="status-filter">Status:</label>
+                        <select id="status-filter" class="status-select">
+                            <option value="ready" selected>Ready</option>
+                            <option value="published">Published</option>
+                            <option value="all">All Status</option>
+                        </select>
+                    </div>
                 </div>
                 
                 <!-- Timeline Table -->
@@ -565,6 +665,7 @@
     <script>
         // Global state
         let currentPlatform = 'all';
+        let currentStatus = 'ready'; // Default to showing Ready posts
         let timelineData = [];
         
         // Platform selector functionality
@@ -581,13 +682,20 @@
             });
         });
         
+        // Status filter functionality
+        document.getElementById('status-filter').addEventListener('change', (e) => {
+            currentStatus = e.target.value;
+            console.log('Filtering timeline for status:', currentStatus);
+            filterTimeline();
+        });
+        
         // ============================================================================
         // TIMELINE MANAGEMENT FUNCTIONS
         // ============================================================================
         
-        // Filter timeline based on selected platform
+        // Filter timeline based on selected platform and status
         function filterTimeline() {
-            console.log('Filtering timeline for platform:', currentPlatform);
+            console.log('Filtering timeline for platform:', currentPlatform, 'status:', currentStatus);
             renderTimeline(); // Re-render with current filter
         }
         
@@ -628,6 +736,11 @@
             timelineData.forEach(item => {
                 // Skip if platform filter is active and doesn't match
                 if (currentPlatform !== 'all' && item.platform !== currentPlatform) {
+                    return;
+                }
+                
+                // Skip if status filter is active and doesn't match
+                if (currentStatus !== 'all' && item.status !== currentStatus) {
                     return;
                 }
                 
