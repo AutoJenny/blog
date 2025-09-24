@@ -1,0 +1,5 @@
+2025-09-24 21:21:48,778 - INFO - Starting automated posting system
+2025-09-24 21:21:48,795 - INFO - Database connection established
+2025-09-24 21:21:48,800 - INFO - Found 0 posts due for publishing in next 30 minutes
+2025-09-24 21:21:48,801 - INFO - No posts due for publishing
+2025-09-24 21:21:48,801 - INFO - Automated posting complete: {'total_found': 0, 'successfully_scheduled': 0, 'failed': 0, 'skipped': 0}
