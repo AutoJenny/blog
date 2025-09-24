@@ -71,6 +71,8 @@ class PostSectionDataManager {
                 this.currentSections = data.sections;
                 
                 data.sections.forEach(section => {
+                    // Add post_id to section for image path construction
+                    section.post_id = postId;
                     const sectionElement = PostSectionUtils.createSectionElement(section);
                     sectionsContainer.appendChild(sectionElement);
                 });

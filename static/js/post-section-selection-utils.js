@@ -21,15 +21,45 @@ class PostSectionUtils {
 
     static createSectionElement(section) {
         const sectionDiv = document.createElement('div');
-        sectionDiv.className = 'section-item mb-2 p-3 bg-dark border border-secondary rounded';
+        sectionDiv.className = 'section-item mb-3 p-3 bg-dark border border-secondary rounded';
+        
+        // Create image thumbnail if available
+        const imageThumbnail = section.image_filename ? 
+            `<div class="col-md-3">
+                <a href="/static/images/content/posts/${section.post_id || 'unknown'}/sections/${section.id}/optimized/${this.getProcessedImageFilename(section.image_filename, section.id)}" 
+                   target="_blank" 
+                   class="d-block text-decoration-none">
+                    <img src="/static/images/content/posts/${section.post_id || 'unknown'}/sections/${section.id}/optimized/${this.getProcessedImageFilename(section.image_filename, section.id)}" 
+                         class="img-thumbnail" 
+                         style="width: 120px; height: 90px; object-fit: cover; cursor: pointer;"
+                         alt="Section illustration"
+                         onerror="this.style.display='none'"
+                         title="Click to view full size">
+                </a>
+            </div>` : '';
+        
+        // Create full content display (not truncated)
+        const contentDisplay = section.polished ? 
+            section.polished : 
+            'No polished content available';
+        
         sectionDiv.innerHTML = `
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <strong class="text-white">${section.section_heading || 'Untitled Section'}</strong>
-                    <small class="text-muted d-block">Order: ${section.section_order || 'N/A'}</small>
-                </div>
-                <div>
-                    <span class="badge bg-info">${section.id}</span>
+            <div class="row">
+                ${imageThumbnail}
+                <div class="${section.image_filename ? 'col-md-9' : 'col-12'}">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <strong class="text-white">${section.section_heading || 'Untitled Section'}</strong>
+                            <small class="text-muted d-block">Order: ${section.section_order || 'N/A'}</small>
+                        </div>
+                        <div>
+                            <span class="badge bg-info">${section.id}</span>
+                        </div>
+                    </div>
+                    <div class="text-light small">
+                        <strong>Content:</strong><br>
+                        <div class="text-muted" style="max-height: 200px; overflow-y: auto; white-space: pre-wrap;">${contentDisplay}</div>
+                    </div>
                 </div>
             </div>
         `;
@@ -115,6 +145,24 @@ class PostSectionUtils {
         } catch (error) {
             console.error('Error loading from localStorage:', error);
             return defaultValue;
+        }
+    }
+
+    static getProcessedImageFilename(originalFilename, sectionId) {
+        if (!originalFilename || !sectionId) return '';
+        
+        // Try different naming patterns based on the original filename and section ID
+        if (originalFilename.includes('d59ac061-0b2a-4a06-a3a6-c15d13dc35e2')) {
+            // Section 710 uses the complex filename from database
+            return originalFilename.endsWith('_processed.png') ? 
+                originalFilename : 
+                originalFilename.replace('.png', '_processed.png');
+        } else if (sectionId === 711 && (originalFilename.includes('live_preview_content') || originalFilename.includes('generated_image'))) {
+            // Section 711 specifically uses generated_image pattern
+            return 'generated_image_20250727_145859_processed.png';
+        } else {
+            // Default pattern: section ID + _processed.png (for sections 712-716)
+            return `${sectionId}_processed.png`;
         }
     }
 }
