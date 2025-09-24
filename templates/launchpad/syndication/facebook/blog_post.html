@@ -27,7 +27,7 @@
         {% include 'launchpad/includes/post_section_selection.html' %}
         
         <!-- AI Content Generation Section -->
-        {% include 'launchpad/includes/ai_content_generation.html' %}
+        {% include 'launchpad/includes/blog_ai_content_generation.html' %}
         
         <!-- Posting Control Section -->
         {% include 'launchpad/includes/posting_control.html' %}
@@ -43,6 +43,9 @@
     <script src="{{ url_for('static', filename='js/post-section-selection-selection.js') }}"></script>
     <script src="{{ url_for('static', filename='js/post-section-selection-accordions.js') }}"></script>
     <script src="{{ url_for('static', filename='js/post-section-selection-core.js') }}"></script>
+    
+    <!-- Blog Input Data JavaScript -->
+    <script src="{{ url_for('static', filename='js/blog-input-data-core.js') }}"></script>
     
     <!-- Queue Manager JavaScript -->
     <script src="{{ url_for('static', filename='js/queue-manager.js') }}"></script>

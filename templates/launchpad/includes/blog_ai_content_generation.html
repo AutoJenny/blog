@@ -1,0 +1,181 @@
+<!-- AI Content Generation Section -->
+<div class="section-card" style="margin-bottom: 20px;">
+    <div class="section-title with-right-content" onclick="toggleAccordion('ai-content-generation')">
+        <div class="section-title-left">
+            <i class="fas fa-chevron-right accordion-chevron" id="ai-content-generation-chevron"></i>
+            <i class="fas fa-robot"></i>
+            AI Content Generation
+        </div>
+        <div class="section-title-right" id="ai-content-generation-status" style="font-size: 0.9rem; color: #94a3b8;">
+            Needs generation
+        </div>
+    </div>
+    <div class="section-content" id="ai-content-generation-content">
+        <!-- Ollama Status -->
+        <div class="ollama-status mb-4 p-3 bg-dark border border-secondary rounded">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-white mb-1">Ollama Status</h6>
+                    <small class="text-muted" id="ollama-status-text">Checking Ollama connection...</small>
+                </div>
+                <button id="start-ollama-btn" class="btn btn-sm btn-success">
+                    <i class="fas fa-play"></i>
+                    Start Ollama
+                </button>
+            </div>
+        </div>
+
+        <!-- Blog Input Data Accordion -->
+        <div class="section-card" style="margin-bottom: 20px;">
+            <div class="section-title with-right-content" onclick="toggleAccordion('input-data')">
+                <div class="section-title-left">
+                    <i class="fas fa-chevron-right accordion-chevron" id="input-data-chevron"></i>
+                    <i class="fas fa-database"></i>
+                    Input Data
+                </div>
+                <div class="section-title-right" id="input-data-status" style="font-size: 0.9rem; color: #94a3b8;">
+                    No data received
+                </div>
+            </div>
+            <div class="section-content" id="input-data-content">
+                <div id="input-data-display" style="background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 15px; font-family: monospace; font-size: 0.9rem; color: #e2e8f0;">
+                    <div style="color: #94a3b8; margin-bottom: 10px;">Waiting for data from Post Section Selection...</div>
+                </div>
+                
+                <!-- Blog Sections Display (hidden initially) -->
+                <div id="blog-sections-display" class="d-none mt-3">
+                    <!-- Blog Post Header -->
+                    <div class="blog-post-header mb-4 p-3 bg-dark border border-secondary rounded">
+                        <h5 class="text-white mb-2" id="blog-post-title">Blog Post Title</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    <strong>Post ID:</strong> <span id="blog-post-id">-</span><br>
+                                    <strong>URL:</strong> <span id="blog-post-url">-</span>
+                                </small>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    <strong>Sections:</strong> <span id="blog-sections-count">0</span><br>
+                                    <strong>Status:</strong> <span id="blog-post-status">-</span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Section Controls -->
+                    <div class="section-controls mb-3 d-flex justify-content-between align-items-center">
+                        <div>
+                            <button id="expand-all-sections" class="btn btn-sm btn-outline-primary me-2">
+                                <i class="fas fa-expand-arrows-alt me-1"></i>Expand All
+                            </button>
+                            <button id="collapse-all-sections" class="btn btn-sm btn-outline-secondary me-2">
+                                <i class="fas fa-compress-arrows-alt me-1"></i>Collapse All
+                            </button>
+                            <button id="generate-all-sections" class="btn btn-sm btn-success">
+                                <i class="fas fa-magic me-1"></i>Generate All Sections
+                            </button>
+                        </div>
+                        <div class="text-muted small">
+                            <span id="sections-summary">0 sections loaded</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Sections Container -->
+                    <div id="sections-container">
+                        <!-- Individual sections will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LLM Data Accordion -->
+        <div class="section-card" style="margin-bottom: 20px;">
+            <div class="section-title with-right-content" onclick="toggleAccordion('llm-data')">
+                <div class="section-title-left">
+                    <i class="fas fa-chevron-right accordion-chevron" id="llm-data-chevron"></i>
+                    <i class="fas fa-brain"></i>
+                    LLM Configuration
+                </div>
+                <div class="section-title-right" id="llm-data-status" style="font-size: 0.9rem; color: #94a3b8;">
+                    Not configured
+                </div>
+            </div>
+            <div class="section-content" id="llm-data-content">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="llm-model" class="form-label text-white">Model</label>
+                            <select class="form-select bg-dark text-white border-secondary" id="llm-model">
+                                <option value="mistral">Mistral</option>
+                                <option value="llama3.2">Llama 3.2</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="llm-temperature" class="form-label text-white">Temperature</label>
+                            <input type="range" class="form-range" id="llm-temperature" min="0" max="1" step="0.1" value="0.7">
+                            <small class="text-muted" id="temperature-value">0.7</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="llm-max-tokens" class="form-label text-white">Max Tokens</label>
+                            <input type="number" class="form-control bg-dark text-white border-secondary" id="llm-max-tokens" value="1000">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="content-type" class="form-label text-white">Content Type</label>
+                            <select class="form-select bg-dark text-white border-secondary" id="content-type">
+                                <option value="feature">Feature</option>
+                                <option value="benefit">Benefit</option>
+                                <option value="story">Story</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generation Prompt Accordion -->
+        <div class="section-card" style="margin-bottom: 20px;">
+            <div class="section-title with-right-content" onclick="toggleAccordion('generation-prompt')">
+                <div class="section-title-left">
+                    <i class="fas fa-chevron-right accordion-chevron" id="generation-prompt-chevron"></i>
+                    <i class="fas fa-edit"></i>
+                    Generation Prompt
+                </div>
+                <div class="section-title-right" id="generation-prompt-status" style="font-size: 0.9rem; color: #94a3b8;">
+                    Not generated
+                </div>
+            </div>
+            <div class="section-content" id="generation-prompt-content">
+                <div class="mb-3">
+                    <label for="prompt-text" class="form-label text-white">Prompt</label>
+                    <textarea class="form-control bg-dark text-white border-secondary" id="prompt-text" rows="6" readonly></textarea>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <button id="edit-prompt-btn" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-edit me-1"></i>Edit
+                    </button>
+                    <button id="save-prompt-btn" class="btn btn-sm btn-success d-none">
+                        <i class="fas fa-save me-1"></i>Save
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generate Content Section -->
+        <div class="generate-content-section">
+            <div class="d-grid gap-2">
+                <button id="generate-content-btn" class="btn btn-primary btn-lg" disabled>
+                    <i class="fas fa-magic me-2"></i>Generate Post
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
