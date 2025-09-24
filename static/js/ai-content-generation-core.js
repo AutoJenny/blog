@@ -4,6 +4,7 @@
  */
 class AIContentGenerationManager {
     constructor() {
+        console.log('AIContentGenerationManager constructor called');
         this.selectedContentType = 'feature';
         this.generatedContent = '';
         this.selectedData = null; // Can be product or blog section data
@@ -35,6 +36,7 @@ class AIContentGenerationManager {
         } else {
             this.processId = 1; // Default to blog posts
         }
+        console.log('Page type detected:', currentPath, 'Process ID:', this.processId);
     }
     
     // Set the selected data (product or blog section) and update UI
@@ -99,5 +101,11 @@ class AIContentGenerationManager {
 
 // Initialize AI Content Generation Manager when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    window.aiContentGenerationManager = new AIContentGenerationManager();
+    console.log('DOM loaded, initializing AIContentGenerationManager');
+    try {
+        window.aiContentGenerationManager = new AIContentGenerationManager();
+        console.log('AIContentGenerationManager initialized successfully');
+    } catch (error) {
+        console.error('Error initializing AIContentGenerationManager:', error);
+    }
 });
