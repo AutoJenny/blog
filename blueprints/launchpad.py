@@ -469,14 +469,76 @@ def get_syndication_posts():
                        pd.idea_seed, pd.intro_blurb, pd.main_title
                 FROM post p
                 LEFT JOIN post_development pd ON p.id = pd.post_id
-                WHERE p.status != 'deleted'
+                WHERE p.status = 'published'
                 ORDER BY p.updated_at DESC
             """)
             posts = cursor.fetchall()
-            return jsonify([dict(post) for post in posts])
+            return jsonify({
+                'success': True,
+                'posts': [dict(post) for post in posts]
+            })
     except Exception as e:
         logger.error(f"Error in get_syndication_posts: {e}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@bp.route('/api/syndication/posts/<int:post_id>')
+def get_syndication_post_details(post_id):
+    """Get details for a specific syndication post."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT p.id, p.title, p.subtitle, p.created_at, p.updated_at, p.status, p.slug,
+                       pd.idea_seed, pd.intro_blurb, pd.main_title
+                FROM post p
+                LEFT JOIN post_development pd ON p.id = pd.post_id
+                WHERE p.id = %s AND p.status = 'published'
+            """, (post_id,))
+            post = cursor.fetchone()
+            
+            if post:
+                return jsonify({
+                    'success': True,
+                    'post': dict(post)
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'Post not found'
+                }), 404
+    except Exception as e:
+        logger.error(f"Error in get_syndication_post_details: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@bp.route('/api/syndication/post-sections/<int:post_id>')
+def get_post_sections(post_id):
+    """Get sections for a specific post."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, section_heading, section_order, section_description, 
+                       polished, image_filename, image_generated_at
+                FROM post_section
+                WHERE post_id = %s
+                ORDER BY section_order ASC
+            """, (post_id,))
+            sections = cursor.fetchall()
+            
+            return jsonify({
+                'success': True,
+                'sections': [dict(section) for section in sections]
+            })
+    except Exception as e:
+        logger.error(f"Error in get_post_sections: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 @bp.route('/api/syndication/social-media-platforms')
 def get_social_media_platforms():
