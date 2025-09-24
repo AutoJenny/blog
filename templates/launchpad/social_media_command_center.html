@@ -247,6 +247,15 @@
             color: white;
         }
         
+        .content-preview-row {
+            background: #0f172a;
+        }
+        
+        .content-preview-row td {
+            border-top: none !important;
+            padding-top: 0 !important;
+        }
+        
         .status-badge {
             display: inline-flex;
             align-items: center;
@@ -594,7 +603,7 @@
                                 <th style="width: 120px;">Date/Time</th>
                                 <th style="width: 100px;">Platform</th>
                                 <th style="width: 100px;">Type</th>
-                                <th>Content Preview</th>
+                                <th>Title</th>
                                 <th style="width: 80px;">Status</th>
                                 <th style="width: 120px;">Actions</th>
                             </tr>
@@ -796,13 +805,8 @@
                             </span>
                         </td>
                         <td>
-                            <div style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;">
-                                <div style="font-weight: 600; margin-bottom: 5px;">
-                                    ${item.product_name || 'Untitled'}
-                                </div>
-                                <div style="color: #94a3b8; font-size: 0.9rem;">
-                                    ${item.generated_content ? item.generated_content.substring(0, 100) + (item.generated_content.length > 100 ? '...' : '') : 'No content'}
-                                </div>
+                            <div style="font-weight: 600; font-size: 1rem;">
+                                ${item.product_name || 'Untitled'}
                             </div>
                         </td>
                         <td>
@@ -823,6 +827,15 @@
                             <button class="action-btn danger" onclick="cancelPost(${item.id})">
                                 <i class="fas fa-times"></i>
                             </button>
+                        </td>
+                    </tr>
+                    <tr class="content-preview-row">
+                        <td colspan="7" style="padding: 0 15px 15px 15px; border-top: none;">
+                            <div style="background: #1e293b; border-radius: 6px; padding: 12px; margin-top: 8px;">
+                                <div style="color: #94a3b8; font-size: 0.9rem; line-height: 1.5;">
+                                    ${item.generated_content || 'No content available'}
+                                </div>
+                            </div>
                         </td>
                     </tr>
                 `;
