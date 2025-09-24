@@ -93,35 +93,37 @@ Object.assign(AIContentGenerationManager.prototype, {
         }
     },
     
-    // Save prompt template to database
-    async savePromptTemplate(promptText) {
-        try {
-            const response = await fetch('/launchpad/api/syndication/save-prompt-template', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    prompt_template: promptText
-                })
-            });
-            
-            const data = await response.json();
-            if (data.success) {
-                console.log('Prompt template saved successfully');
-                // Update local database prompts
-                if (this.databasePrompts) {
-                    this.databasePrompts.user_prompt_template.value = promptText;
-                }
-                // Show success message
-                this.showNotification('Prompt template updated successfully', 'success');
-            } else {
-                console.error('Failed to save prompt:', data.error);
-                alert('Failed to save prompt: ' + data.error);
-            }
-        } catch (error) {
-            console.error('Error saving prompt:', error);
-            alert('Error saving prompt: ' + error.message);
-        }
-    }
+           // Save prompt template to database
+           async savePromptTemplate(promptText) {
+               try {
+                   const processId = this.processId || 1; // Default to blog posts
+                   const response = await fetch(`/launchpad/api/syndication/llm-prompts/${processId}`, {
+                       method: 'PUT',
+                       headers: {
+                           'Content-Type': 'application/json',
+                       },
+                       body: JSON.stringify({
+                           config_key: 'user_prompt_template',
+                           config_value: promptText
+                       })
+                   });
+                   
+                   const data = await response.json();
+                   if (data.success) {
+                       console.log('Prompt template saved successfully');
+                       // Update local database prompts
+                       if (this.databasePrompts) {
+                           this.databasePrompts.user_prompt_template.value = promptText;
+                       }
+                       // Show success message
+                       this.showNotification('Prompt template updated successfully', 'success');
+                   } else {
+                       console.error('Failed to save prompt:', data.error);
+                       alert('Failed to save prompt: ' + data.error);
+                   }
+               } catch (error) {
+                   console.error('Error saving prompt:', error);
+                   alert('Error saving prompt: ' + error.message);
+               }
+           }
 });
