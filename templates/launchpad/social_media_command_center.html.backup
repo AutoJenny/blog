@@ -581,10 +581,6 @@
             });
         });
         
-        // ============================================================================
-        // TIMELINE MANAGEMENT FUNCTIONS
-        // ============================================================================
-        
         // Filter timeline based on selected platform
         function filterTimeline() {
             console.log('Filtering timeline for platform:', currentPlatform);
@@ -724,99 +720,391 @@
             }
         }
         
-        // ============================================================================
-        // URL MAPPING FUNCTIONS
-        // ============================================================================
+        // Action functions - database-driven routing with accordion expansion and highlighting
         
-        /**
-         * Get the appropriate delete URL for a platform and content type
-         * @param {string} platform - The social media platform (facebook, instagram, etc.)
-         * @param {string} content_type - The type of content (product, blog, tartan, event)
-         * @returns {string|null} The delete URL or null if not supported
-         */
-        function getDeleteUrl(platform, content_type) {
+        function reschedulePost(id) {
+            const item = timelineData.find(item => item.id === id);
+            if (!item) {
+                console.error('Post not found:', id);
+                return;
+            }
+            
+            const moduleUrl = getModuleUrl(item.platform, item.content_type, 'reschedule');
+            if (moduleUrl) {
+                // Add URL parameters to expand queue and highlight item
+                const urlWithParams = addQueueParams(moduleUrl, id, 'reschedule');
+                window.open(urlWithParams, '_blank');
+            } else {
+                alert(`Reschedule functionality not available for ${item.platform} ${item.content_type} posts`);
+            }
+        }
+        
+        function postNow(id) {
+            const item = timelineData.find(item => item.id === id);
+            if (!item) {
+                console.error('Post not found:', id);
+                return;
+            }
+            
+            // Check if item is ready to post
+            if (item.status !== 'ready') {
+                alert(`This post is not ready to publish. Current status: ${item.status}`);
+                return;
+            }
+            
+            if (confirm(`⚠️ WARNING: This will post LIVE to your Facebook page!\n\nAre you sure you want to publish this ${item.platform} ${item.content_type} post now?\n\n"${item.content.substring(0, 100)}..."`)) {
+                postNowConfirmed(id);
+            }
+        }
+        
+        function postNowConfirmed(id) {
+            const item = timelineData.find(item => item.id === id);
+            if (!item) {
+                console.error('Post not found:', id);
+                return;
+            }
+            
+            // Disable all action buttons for this row
+            const buttons = document.querySelectorAll(`button[onclick*="${id}"]`);
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            });
+            
+            // Route to appropriate module's post API
+            const postUrl = getPostUrl(item.platform, item.content_type);
+            if (postUrl) {
+                fetch(postUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        item_id: id,
+                        platform: item.platform,
+                        content_type: item.content_type
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update item status to published
+                        const timelineItem = timelineData.find(item => item.id === id);
+                        if (timelineItem) {
+                            timelineItem.status = 'published';
+                            timelineItem.platform_post_id = data.platform_post_id || null;
+                            timelineItem.updated_at = new Date().toISOString();
+                        }
+                        
+                        // Refresh timeline display
+                        renderTimeline();
+                        updateKPIs(timelineData);
+                        
+                        // Show success notification
+                        showPostNotification('Post published successfully!', 'success');
+                        console.log('Post published successfully');
+                    } else {
+                        // Update item status to failed
+                        const timelineItem = timelineData.find(item => item.id === id);
+                        if (timelineItem) {
+                            timelineItem.status = 'failed';
+                            timelineItem.error_message = data.error || 'Unknown error';
+                            timelineItem.updated_at = new Date().toISOString();
+                        }
+                        
+                        // Refresh timeline display
+                        renderTimeline();
+                        updateKPIs(timelineData);
+                        
+                        alert('Failed to publish post: ' + (data.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error publishing post:', error);
+                    
+                    // Update item status to failed
+                    const timelineItem = timelineData.find(item => item.id === id);
+                    if (timelineItem) {
+                        timelineItem.status = 'failed';
+                        timelineItem.error_message = error.message;
+                        timelineItem.updated_at = new Date().toISOString();
+                    }
+                    
+                    // Refresh timeline display
+                    renderTimeline();
+                    updateKPIs(timelineData);
+                    
+                    alert('Error publishing post: ' + error.message);
+                })
+                .finally(() => {
+                    // Re-enable buttons
+                    buttons.forEach(btn => {
+                        btn.disabled = false;
+                        // Restore original icons
+                        if (btn.onclick.toString().includes('editPost')) {
+                            btn.innerHTML = '<i class="fas fa-edit"></i>';
+                        } else if (btn.onclick.toString().includes('reschedulePost')) {
+                            btn.innerHTML = '<i class="fas fa-clock"></i>';
+                        } else if (btn.onclick.toString().includes('postNow')) {
+                            btn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                        } else if (btn.onclick.toString().includes('cancelPost')) {
+                            btn.innerHTML = '<i class="fas fa-times"></i>';
+                        }
+                    });
+                });
+            } else {
+                alert(`Post functionality not available for ${item.platform} ${item.content_type} posts`);
+                // Re-enable buttons
+                buttons.forEach(btn => {
+                    btn.disabled = false;
+                    btn.innerHTML = btn.innerHTML.replace('fa-spinner fa-spin', 'fa-paper-plane');
+                });
+            }
+        }
+        
+        function cancelPost(id) {
+            const item = timelineData.find(item => item.id === id);
+            if (!item) {
+                console.error('Post not found:', id);
+                return;
+            }
+            
+            if (confirm(`Are you sure you want to cancel this ${item.platform} ${item.content_type} post?\n\n"${item.content.substring(0, 100)}..."`)) {
+                cancelPostConfirmed(id);
+            }
+        }
+        
+        function cancelPostConfirmed(id) {
+            const item = timelineData.find(item => item.id === id);
+            if (!item) {
+                console.error('Post not found:', id);
+                return;
+            }
+            
+            // Disable all action buttons for this row
+            const buttons = document.querySelectorAll(`button[onclick*="${id}"]`);
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            });
+            
+            // Route to appropriate module's delete API
+            const deleteUrl = getDeleteUrl(item.platform, item.content_type);
+            if (deleteUrl) {
+                fetch(deleteUrl + id, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Remove from timeline and reload
+                        timelineData = timelineData.filter(item => item.id !== id);
+                        renderTimeline();
+                        updateKPIs(timelineData);
+                        console.log('Post cancelled successfully');
+                    } else {
+                        alert('Failed to cancel post: ' + (data.error || 'Unknown error'));
+                        // Re-enable buttons
+                        buttons.forEach(btn => {
+                            btn.disabled = false;
+                            btn.innerHTML = btn.innerHTML.replace('fa-spinner fa-spin', 'fa-times');
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error cancelling post:', error);
+                    alert('Error cancelling post: ' + error.message);
+                    // Re-enable buttons
+                    buttons.forEach(btn => {
+                        btn.disabled = false;
+                        btn.innerHTML = btn.innerHTML.replace('fa-spinner fa-spin', 'fa-times');
+                    });
+                });
+            } else {
+                alert(`Cancel functionality not available for ${item.platform} ${item.content_type} posts`);
+                // Re-enable buttons
+                buttons.forEach(btn => {
+                    btn.disabled = false;
+                    btn.innerHTML = btn.innerHTML.replace('fa-spinner fa-spin', 'fa-times');
+                });
+            }
+        }
+        
+        // Add URL parameters for queue expansion and item highlighting
+        function addQueueParams(baseUrl, itemId, action) {
+            const url = new URL(baseUrl, window.location.origin);
+            url.searchParams.set('expand', 'posting-queue');
+            url.searchParams.set('highlight', itemId);
+            url.searchParams.set('action', action);
+            return url.toString();
+        }
+        
+        // Database-driven module URL mapping
+        function getModuleUrl(platform, contentType, action) {
+            const moduleMap = {
+                'facebook': {
+                    'Feature Focus': {
+                        'edit': '/syndication/facebook/product_post',
+                        'reschedule': '/syndication/facebook/product_post'
+                    },
+                    'Benefit Focus': {
+                        'edit': '/syndication/facebook/product_post',
+                        'reschedule': '/syndication/facebook/product_post'
+                    },
+                    'Story Focus': {
+                        'edit': '/syndication/facebook/product_post',
+                        'reschedule': '/syndication/facebook/product_post'
+                    },
+                    'product': {
+                        'edit': '/syndication/facebook/product_post',
+                        'reschedule': '/syndication/facebook/product_post'
+                    },
+                    'blog': {
+                        'edit': '/syndication/facebook/blog_post',
+                        'reschedule': '/syndication/facebook/blog_post'
+                    },
+                    'tartan': {
+                        'edit': '/syndication/facebook/blog_post',
+                        'reschedule': '/syndication/facebook/blog_post'
+                    },
+                    'event': {
+                        'edit': '/syndication/facebook/blog_post',
+                        'reschedule': '/syndication/facebook/blog_post'
+                    }
+                },
+                'instagram': {
+                    'product': {
+                        'edit': '/syndication/instagram/feed-post',
+                        'reschedule': '/syndication/instagram/feed-post'
+                    },
+                    'blog': {
+                        'edit': '/syndication/instagram/feed-post',
+                        'reschedule': '/syndication/instagram/feed-post'
+                    },
+                    'tartan': {
+                        'edit': '/syndication/instagram/feed-post',
+                        'reschedule': '/syndication/instagram/feed-post'
+                    },
+                    'event': {
+                        'edit': '/syndication/instagram/feed-post',
+                        'reschedule': '/syndication/instagram/feed-post'
+                    }
+                },
+                'twitter': {
+                    'product': {
+                        'edit': '/syndication/twitter/feed-post',
+                        'reschedule': '/syndication/twitter/feed-post'
+                    },
+                    'blog': {
+                        'edit': '/syndication/twitter/feed-post',
+                        'reschedule': '/syndication/twitter/feed-post'
+                    },
+                    'tartan': {
+                        'edit': '/syndication/twitter/feed-post',
+                        'reschedule': '/syndication/twitter/feed-post'
+                    },
+                    'event': {
+                        'edit': '/syndication/twitter/feed-post',
+                        'reschedule': '/syndication/twitter/feed-post'
+                    }
+                },
+                'linkedin': {
+                    'product': {
+                        'edit': '/syndication/linkedin/feed-post',
+                        'reschedule': '/syndication/linkedin/feed-post'
+                    },
+                    'blog': {
+                        'edit': '/syndication/linkedin/feed-post',
+                        'reschedule': '/syndication/linkedin/feed-post'
+                    },
+                    'tartan': {
+                        'edit': '/syndication/linkedin/feed-post',
+                        'reschedule': '/syndication/linkedin/feed-post'
+                    },
+                    'event': {
+                        'edit': '/syndication/linkedin/feed-post',
+                        'reschedule': '/syndication/linkedin/feed-post'
+                    }
+                }
+            };
+            
+            return moduleMap[platform]?.[contentType]?.[action] || null;
+        }
+        
+        // Database-driven delete URL mapping
+        function getDeleteUrl(platform, contentType) {
             const deleteMap = {
                 'facebook': {
-                    'Feature Focus': '/launchpad/api/queue/',
-                    'Benefit Focus': '/launchpad/api/queue/',
-                    'Story Focus': '/launchpad/api/queue/',
-                    'product': '/launchpad/api/queue/',
-                    'blog': '/launchpad/api/syndication/pieces/',
-                    'tartan': '/launchpad/api/syndication/pieces/',
-                    'event': '/launchpad/api/syndication/pieces/'
+                    'Feature Focus': '/api/queue/',
+                    'Benefit Focus': '/api/queue/',
+                    'Story Focus': '/api/queue/',
+                    'product': '/api/queue/',
+                    'blog': '/api/syndication/pieces/',
+                    'tartan': '/api/syndication/pieces/',
+                    'event': '/api/syndication/pieces/'
                 },
                 'instagram': {
-                    'product': '/launchpad/api/syndication/pieces/',
-                    'blog': '/launchpad/api/syndication/pieces/',
-                    'tartan': '/launchpad/api/syndication/pieces/',
-                    'event': '/launchpad/api/syndication/pieces/'
+                    'product': '/api/syndication/pieces/',
+                    'blog': '/api/syndication/pieces/',
+                    'tartan': '/api/syndication/pieces/',
+                    'event': '/api/syndication/pieces/'
                 },
                 'twitter': {
-                    'product': '/launchpad/api/syndication/pieces/',
-                    'blog': '/launchpad/api/syndication/pieces/',
-                    'tartan': '/launchpad/api/syndication/pieces/',
-                    'event': '/launchpad/api/syndication/pieces/'
+                    'product': '/api/syndication/pieces/',
+                    'blog': '/api/syndication/pieces/',
+                    'tartan': '/api/syndication/pieces/',
+                    'event': '/api/syndication/pieces/'
                 },
                 'linkedin': {
-                    'product': '/launchpad/api/syndication/pieces/',
-                    'blog': '/launchpad/api/syndication/pieces/',
-                    'tartan': '/launchpad/api/syndication/pieces/',
-                    'event': '/launchpad/api/syndication/pieces/'
+                    'product': '/api/syndication/pieces/',
+                    'blog': '/api/syndication/pieces/',
+                    'tartan': '/api/syndication/pieces/',
+                    'event': '/api/syndication/pieces/'
                 }
             };
             
-            return deleteMap[platform]?.[content_type] || null;
+            return deleteMap[platform]?.[contentType] || null;
         }
         
-        /**
-         * Get the appropriate post URL for a platform and content type
-         * @param {string} platform - The social media platform (facebook, instagram, etc.)
-         * @param {string} content_type - The type of content (product, blog, tartan, event)
-         * @returns {string|null} The post URL or null if not supported
-         */
-        function getPostUrl(platform, content_type) {
+        // Database-driven post URL mapping
+        function getPostUrl(platform, contentType) {
             const postMap = {
                 'facebook': {
-                    'Feature Focus': '/launchpad/api/syndication/post-now',
-                    'Benefit Focus': '/launchpad/api/syndication/post-now',
-                    'Story Focus': '/launchpad/api/syndication/post-now',
-                    'product': '/launchpad/api/syndication/post-now',
-                    'blog': '/launchpad/api/syndication/pieces/',
-                    'tartan': '/launchpad/api/syndication/pieces/',
-                    'event': '/launchpad/api/syndication/pieces/'
+                    'Feature Focus': '/api/syndication/post-now',
+                    'Benefit Focus': '/api/syndication/post-now',
+                    'Story Focus': '/api/syndication/post-now',
+                    'product': '/api/syndication/post-now',
+                    'blog': '/api/syndication/pieces/',
+                    'tartan': '/api/syndication/pieces/',
+                    'event': '/api/syndication/pieces/'
                 },
                 'instagram': {
-                    'product': '/launchpad/api/syndication/pieces/',
-                    'blog': '/launchpad/api/syndication/pieces/',
-                    'tartan': '/launchpad/api/syndication/pieces/',
-                    'event': '/launchpad/api/syndication/pieces/'
+                    'product': '/api/syndication/pieces/',
+                    'blog': '/api/syndication/pieces/',
+                    'tartan': '/api/syndication/pieces/',
+                    'event': '/api/syndication/pieces/'
                 },
                 'twitter': {
-                    'product': '/launchpad/api/syndication/pieces/',
-                    'blog': '/launchpad/api/syndication/pieces/',
-                    'tartan': '/launchpad/api/syndication/pieces/',
-                    'event': '/launchpad/api/syndication/pieces/'
+                    'product': '/api/syndication/pieces/',
+                    'blog': '/api/syndication/pieces/',
+                    'tartan': '/api/syndication/pieces/',
+                    'event': '/api/syndication/pieces/'
                 },
                 'linkedin': {
-                    'product': '/launchpad/api/syndication/pieces/',
-                    'blog': '/launchpad/api/syndication/pieces/',
-                    'tartan': '/launchpad/api/syndication/pieces/',
-                    'event': '/launchpad/api/syndication/pieces/'
+                    'product': '/api/syndication/pieces/',
+                    'blog': '/api/syndication/pieces/',
+                    'tartan': '/api/syndication/pieces/',
+                    'event': '/api/syndication/pieces/'
                 }
             };
             
-            return postMap[platform]?.[content_type] || null;
+            return postMap[platform]?.[contentType] || null;
         }
         
-        // ============================================================================
-        // HELPER FUNCTIONS
-        // ============================================================================
-        
-        /**
-         * Display a notification message to the user
-         * @param {string} message - The message to display
-         * @param {string} type - The type of notification ('success', 'error', 'warning')
-         */
+        // Show post notification
         function showPostNotification(message, type = 'success') {
             // Create notification element
             const notification = document.createElement('div');
@@ -851,29 +1139,17 @@
             }, 4000);
         }
         
-        /**
-         * Add URL parameters for queue expansion and item highlighting
-         * @param {string} base_url - The base URL to add parameters to
-         * @param {number} id - The item ID to highlight
-         * @param {string} action - The action being performed ('edit', 'reschedule')
-         * @returns {string} The URL with parameters added
-         */
-        function addQueueParams(base_url, id, action) {
-            const url = new URL(base_url, window.location.origin);
+        // Helper functions for URL management and module routing
+        function addQueueParams(baseUrl, itemId, action) {
+            const url = new URL(baseUrl, window.location.origin);
             url.searchParams.set('expand', 'posting-queue');
-            url.searchParams.set('highlight', id);
+            url.searchParams.set('highlight', itemId);
             url.searchParams.set('action', action);
             return url.toString();
         }
         
-        /**
-         * Get the appropriate module URL for editing/rescheduling based on platform and content type
-         * @param {string} platform - The social media platform (facebook, instagram, etc.)
-         * @param {string} content_type - The type of content (product, blog, tartan, event)
-         * @param {string} action - The action ('edit' or 'reschedule')
-         * @returns {string|null} The module URL or null if not supported
-         */
-        function getModuleUrl(platform, content_type, action) {
+        // Database-driven module URL mapping
+        function getModuleUrl(platform, contentType, action) {
             const moduleMap = {
                 'facebook': {
                     'Feature Focus': {
@@ -961,121 +1237,71 @@
                 }
             };
             
-            return moduleMap[platform]?.[content_type]?.[action] || null;
+            return moduleMap[platform]?.[contentType]?.[action] || null;
         }
-        
-        // ============================================================================
-        // ACTION BUTTON FUNCTIONS
-        // ============================================================================
-        
-        /**
-         * Open the edit page for a post in a new tab
-         * Validates that the post is not already published
-         * Shows content preview before opening edit page
-         * @param {number} id - The post ID to edit
-         */
-        function editPost(id) {
-            const item = timelineData.find(item => item.id === id);
+
+        // Action button functions
+        function editPost(itemId) {
+            const item = timelineData.find(item => item.id === itemId);
             if (!item) {
-                console.error('Post not found:', id);
-                return;
-            }
-            
-            // Check if item can be edited (not published)
-            if (item.status === 'published') {
-                alert(`This post has already been published and cannot be edited. Current status: ${item.status}`);
+                console.error('Post not found:', itemId);
                 return;
             }
             
             const moduleUrl = getModuleUrl(item.platform, item.content_type, 'edit');
             if (moduleUrl) {
-                // Show content preview before opening edit page
-                const contentPreview = item.generated_content ? item.generated_content.substring(0, 100) + '...' : 'No content available';
-                if (confirm(`Edit this ${item.platform} ${item.content_type} post?\n\n"${contentPreview}"\n\nThis will open the edit page in a new tab.`)) {
                 // Add URL parameters to expand queue and highlight item
-                const urlWithParams = addQueueParams(moduleUrl, id, 'edit');
+                const urlWithParams = addQueueParams(moduleUrl, itemId, 'edit');
                 window.open(urlWithParams, '_blank');
-                }
             } else {
-                alert(`Edit functionality not available for ${item.platform} ${item.content_type} posts.\n\nThis platform/content type combination is not supported for editing.`);
+                alert(`Edit functionality not available for ${item.platform} ${item.content_type} posts`);
             }
         }
         
-        /**
-         * Open the reschedule page for a post in a new tab
-         * Validates that the post is not already published
-         * Shows content preview before opening reschedule page
-         * @param {number} id - The post ID to reschedule
-         */
-        function reschedulePost(id) {
-            const item = timelineData.find(item => item.id === id);
+        function reschedulePost(itemId) {
+            const item = timelineData.find(item => item.id === itemId);
             if (!item) {
-                console.error('Post not found:', id);
-                return;
-            }
-            
-            // Check if item can be rescheduled (not published)
-            if (item.status === 'published') {
-                alert(`This post has already been published and cannot be rescheduled. Current status: ${item.status}`);
+                console.error('Post not found:', itemId);
                 return;
             }
             
             const moduleUrl = getModuleUrl(item.platform, item.content_type, 'reschedule');
             if (moduleUrl) {
-                // Show content preview before opening reschedule page
-                const contentPreview = item.generated_content ? item.generated_content.substring(0, 100) + '...' : 'No content available';
-                if (confirm(`Reschedule this ${item.platform} ${item.content_type} post?\n\n"${contentPreview}"\n\nThis will open the reschedule page in a new tab.`)) {
                 // Add URL parameters to expand queue and highlight item
-                const urlWithParams = addQueueParams(moduleUrl, id, 'reschedule');
+                const urlWithParams = addQueueParams(moduleUrl, itemId, 'reschedule');
                 window.open(urlWithParams, '_blank');
-                }
             } else {
-                alert(`Reschedule functionality not available for ${item.platform} ${item.content_type} posts.\n\nThis platform/content type combination is not supported for rescheduling.`);
+                alert(`Reschedule functionality not available for ${item.platform} ${item.content_type} posts`);
             }
         }
         
-        /**
-         * Post content to social media platform immediately
-         * Validates that the post is ready to publish
-         * Shows content preview and warning before posting
-         * @param {number} id - The post ID to publish
-         */
-        function postNow(id) {
-            const item = timelineData.find(item => item.id === id);
+        function postNow(itemId) {
+            const item = timelineData.find(item => item.id === itemId);
             if (!item) {
-                console.error('Post not found:', id);
+                console.error('Post not found:', itemId);
                 return;
             }
             
-            // Check if item can be posted (ready, pending, or failed for retry)
-            if (!['ready', 'pending', 'failed'].includes(item.status)) {
-                alert(`This post cannot be published. Current status: ${item.status}\n\nOnly scheduled posts (ready, pending, failed) can be published.`);
+            // Check if item is ready to post
+            if (item.status !== 'ready') {
+                alert(`This post is not ready to publish. Current status: ${item.status}`);
                 return;
             }
             
-            // Create appropriate warning message based on status
-            let warningMessage = `⚠️ WARNING: This will post LIVE to your ${item.platform} page!\n\n`;
-            if (item.status === 'failed') {
-                warningMessage += `This post previously failed and will be retried.\n\n`;
-            } else if (item.status === 'pending') {
-                warningMessage += `This post is scheduled but will be posted immediately.\n\n`;
-            }
-            warningMessage += `Are you sure you want to publish this ${item.platform} ${item.content_type} post now?\n\n"${item.generated_content ? item.generated_content.substring(0, 100) + '...' : 'No content available'}"`;
-            
-            if (confirm(warningMessage)) {
-                postNowConfirmed(id);
+            if (confirm(`⚠️ WARNING: This will post LIVE to your Facebook page!\n\nAre you sure you want to publish this ${item.platform} ${item.content_type} post now?\n\n"${item.generated_content ? item.generated_content.substring(0, 100) + '...' : 'No content available'}"`)) {
+                postNowConfirmed(itemId);
             }
         }
         
-        function postNowConfirmed(id) {
-            const item = timelineData.find(item => item.id === id);
+        function postNowConfirmed(itemId) {
+            const item = timelineData.find(item => item.id === itemId);
             if (!item) {
-                console.error('Post not found:', id);
+                console.error('Post not found:', itemId);
                 return;
             }
             
             // Disable all action buttons for this item
-            const buttons = document.querySelectorAll(`button[onclick*="${id}"]`);
+            const buttons = document.querySelectorAll(`button[onclick*="${itemId}"]`);
             buttons.forEach(btn => {
                 btn.disabled = true;
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
@@ -1090,7 +1316,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        item_id: id,
+                        item_id: itemId,
                         platform: item.platform,
                         content_type: item.content_type
                     })
@@ -1098,26 +1324,53 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Reload data from database to get accurate status
-                        loadTimelineData();
+                        // Update item status to published
+                        const timelineItem = timelineData.find(item => item.id === itemId);
+                        if (timelineItem) {
+                            timelineItem.status = 'published';
+                            timelineItem.platform_post_id = data.platform_post_id || null;
+                            timelineItem.updated_at = new Date().toISOString();
+                        }
+                        
+                        // Refresh timeline display
+                        renderTimeline();
+                        updateKPIs(timelineData);
                         
                         // Show success notification
                         showPostNotification('Post published successfully!', 'success');
                         console.log('Post published successfully');
                     } else {
-                        // Reload data from database to get accurate status
-                        loadTimelineData();
+                        // Update item status to failed
+                        const timelineItem = timelineData.find(item => item.id === itemId);
+                        if (timelineItem) {
+                            timelineItem.status = 'failed';
+                            timelineItem.error_message = data.error || 'Unknown error';
+                            timelineItem.updated_at = new Date().toISOString();
+                        }
                         
-                        alert(`Failed to publish ${item.platform} post: ${data.error || 'Unknown error'}\n\nPlease check your ${item.platform} credentials and try again.`);
+                        // Refresh timeline display
+                        renderTimeline();
+                        updateKPIs(timelineData);
+                        
+                        alert('Failed to publish post: ' + (data.error || 'Unknown error'));
                     }
                 })
                 .catch(error => {
                     console.error('Error publishing post:', error);
                     
-                    // Reload data from database to get accurate status
-                    loadTimelineData();
+                    // Update item status to failed
+                    const timelineItem = timelineData.find(item => item.id === itemId);
+                    if (timelineItem) {
+                        timelineItem.status = 'failed';
+                        timelineItem.error_message = error.message;
+                        timelineItem.updated_at = new Date().toISOString();
+                    }
                     
-                    alert(`Network error publishing ${item.platform} post: ${error.message}\n\nPlease check your internet connection and try again.`);
+                    // Refresh timeline display
+                    renderTimeline();
+                    updateKPIs(timelineData);
+                    
+                    alert('Error publishing post: ' + error.message);
                 })
                 .finally(() => {
                     // Re-enable buttons
@@ -1127,7 +1380,7 @@
                     });
                 });
             } else {
-                alert(`No posting endpoint configured for ${item.platform} ${item.content_type} posts.\n\nPlease contact support to enable posting for this platform.`);
+                alert('No posting endpoint configured for this platform/content type');
                 // Re-enable buttons
                 buttons.forEach(btn => {
                     btn.disabled = false;
@@ -1136,39 +1389,27 @@
             }
         }
         
-        /**
-         * Cancel a scheduled post
-         * Validates that the post is not already published
-         * Shows content preview before cancellation
-         * @param {number} id - The post ID to cancel
-         */
-        function cancelPost(id) {
-            const item = timelineData.find(item => item.id === id);
+        function cancelPost(itemId) {
+            const item = timelineData.find(item => item.id === itemId);
             if (!item) {
-                console.error('Post not found:', id);
-                return;
-            }
-            
-            // Check if item can be cancelled (not published)
-            if (item.status === 'published') {
-                alert(`This post has already been published and cannot be cancelled. Current status: ${item.status}`);
+                console.error('Post not found:', itemId);
                 return;
             }
             
             if (confirm(`Are you sure you want to cancel this ${item.platform} ${item.content_type} post?\n\n"${item.generated_content ? item.generated_content.substring(0, 100) + '...' : 'No content available'}"`)) {
-                cancelPostConfirmed(id);
+                cancelPostConfirmed(itemId);
             }
         }
         
-        function cancelPostConfirmed(id) {
-            const item = timelineData.find(item => item.id === id);
+        function cancelPostConfirmed(itemId) {
+            const item = timelineData.find(item => item.id === itemId);
             if (!item) {
-                console.error('Post not found:', id);
+                console.error('Post not found:', itemId);
                 return;
             }
             
             // Disable all action buttons for this item
-            const buttons = document.querySelectorAll(`button[onclick*="${id}"]`);
+            const buttons = document.querySelectorAll(`button[onclick*="${itemId}"]`);
             buttons.forEach(btn => {
                 btn.disabled = true;
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
@@ -1177,7 +1418,7 @@
             // Route to appropriate module's delete API
             const deleteUrl = getDeleteUrl(item.platform, item.content_type);
             if (deleteUrl) {
-                fetch(deleteUrl + id, {
+                fetch(deleteUrl + itemId, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1186,14 +1427,13 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Reload data from database to get accurate status
-                        loadTimelineData();
+                        // Remove from timeline and reload
+                        timelineData = timelineData.filter(item => item.id !== itemId);
+                        renderTimeline();
+                        updateKPIs(timelineData);
                         console.log('Post cancelled successfully');
                     } else {
-                        // Reload data from database to get accurate status
-                        loadTimelineData();
-                        
-                        alert(`Failed to cancel ${item.platform} post: ${data.error || 'Unknown error'}\n\nThe post may have already been processed. Please refresh the page to see the current status.`);
+                        alert('Failed to cancel post: ' + (data.error || 'Unknown error'));
                         // Re-enable buttons
                         buttons.forEach(btn => {
                             btn.disabled = false;
@@ -1203,11 +1443,7 @@
                 })
                 .catch(error => {
                     console.error('Error cancelling post:', error);
-                    
-                    // Reload data from database to get accurate status
-                    loadTimelineData();
-                    
-                    alert(`Network error cancelling ${item.platform} post: ${error.message}\n\nPlease check your internet connection and try again.`);
+                    alert('Error cancelling post: ' + error.message);
                     // Re-enable buttons
                     buttons.forEach(btn => {
                         btn.disabled = false;
@@ -1215,7 +1451,7 @@
                     });
                 });
             } else {
-                alert(`No delete endpoint configured for ${item.platform} ${item.content_type} posts.\n\nPlease contact support to enable cancellation for this platform.`);
+                alert('No delete endpoint configured for this platform/content type');
                 // Re-enable buttons
                 buttons.forEach(btn => {
                     btn.disabled = false;
@@ -1223,11 +1459,7 @@
                 });
             }
         }
-        
-        // ============================================================================
-        // STATUS LOADING FUNCTIONS
-        // ============================================================================
-        
+
         // Load queue status
         function loadQueueStatus() {
             console.log('Loading queue status...');
