@@ -750,21 +750,35 @@ def delete_queue_item(item_id):
 
 @bp.route('/api/queue/clear', methods=['POST'])
 def clear_queue():
-    """Clear all items from the queue."""
+    """Clear items from the queue, optionally filtered by content type."""
     try:
+        data = request.get_json() or {}
+        content_type = data.get('content_type')
+        
         with db_manager.get_connection() as conn:
             with conn.cursor() as cursor:
-                # Get count before deletion
-                cursor.execute("SELECT COUNT(*) FROM posting_queue")
-                count = cursor.fetchone()['count']
+                if content_type:
+                    # Get count before deletion for specific content type
+                    cursor.execute("SELECT COUNT(*) FROM posting_queue WHERE content_type = %s", (content_type,))
+                    count = cursor.fetchone()['count']
+                    
+                    # Delete items for specific content type
+                    cursor.execute("DELETE FROM posting_queue WHERE content_type = %s", (content_type,))
+                    message = f'All {content_type} queue items deleted successfully'
+                else:
+                    # Get count before deletion for all items
+                    cursor.execute("SELECT COUNT(*) FROM posting_queue")
+                    count = cursor.fetchone()['count']
+                    
+                    # Delete all items
+                    cursor.execute("DELETE FROM posting_queue")
+                    message = 'All queue items deleted successfully'
                 
-                # Delete all items
-                cursor.execute("DELETE FROM posting_queue")
                 conn.commit()
                 
                 return jsonify({
                     'success': True,
-                    'message': 'All queue items deleted successfully',
+                    'message': message,
                     'deleted_count': count
                 })
             

@@ -361,16 +361,27 @@ class QueueManager {
     }
 
     /**
-     * Delete all queue items
+     * Delete all queue items for the current content type
      */
     async deleteAllQueueItems() {
-        if (!confirm('Are you sure you want to delete ALL queue items? This cannot be undone.')) {
+        const contentType = this.pageType === 'all' ? null : this.pageType;
+        const confirmMessage = contentType 
+            ? `Are you sure you want to delete ALL ${contentType} queue items? This cannot be undone.`
+            : 'Are you sure you want to delete ALL queue items? This cannot be undone.';
+            
+        if (!confirm(confirmMessage)) {
             return;
         }
 
         try {
             const response = await fetch('/launchpad/api/queue/clear', {
-                method: 'POST'
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    content_type: contentType
+                })
             });
             
             const data = await response.json();
@@ -382,7 +393,7 @@ class QueueManager {
                 this.updateQueueCount();
                 
                 // Show success message
-                this.showNotification('All queue items deleted successfully', 'success');
+                this.showNotification(data.message, 'success');
             } else {
                 this.showNotification('Error clearing queue: ' + data.error, 'error');
             }
