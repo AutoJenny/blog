@@ -6,45 +6,59 @@
 // Add prompt-related methods to AIContentGenerationManager prototype
 Object.assign(AIContentGenerationManager.prototype, {
     
-    // Generate prompt for product
-    generatePromptForProduct(product, contentType) {
+    // Generate prompt for product or blog section
+    generatePrompt(data, contentType) {
         if (this.databasePrompts && this.databasePrompts.user_prompt_template) {
             let prompt = this.databasePrompts.user_prompt_template.value;
             
-            // Replace placeholders with actual product data
-            prompt = prompt.replace(/\{product_name\}/g, product.name || 'Unknown Product');
-            prompt = prompt.replace(/\{product_description\}/g, product.description || 'No description available');
-            prompt = prompt.replace(/\{product_price\}/g, product.price || 'Price not available');
-            prompt = prompt.replace(/\{product_category\}/g, product.category || 'Uncategorized');
-            prompt = prompt.replace(/\{product_sku\}/g, product.url || 'URL not available');
-            prompt = prompt.replace(/\{content_type\}/g, this.getContentTypeDisplayName(contentType));
+            // Check if this is a product or blog section based on available fields
+            if (data.name && data.description) {
+                // Product data
+                prompt = prompt.replace(/\{product_name\}/g, data.name || 'Unknown Product');
+                prompt = prompt.replace(/\{product_description\}/g, data.description || 'No description available');
+                prompt = prompt.replace(/\{product_sku\}/g, data.url || 'URL not available');
+                prompt = prompt.replace(/\{content_type\}/g, this.getContentTypeDisplayName(contentType));
+            } else if (data.section_title && data.section_content) {
+                // Blog section data
+                prompt = prompt.replace(/\{section_title\}/g, data.section_title || 'Untitled Section');
+                prompt = prompt.replace(/\{section_content\}/g, data.section_content || 'No content available');
+                prompt = prompt.replace(/\{post_title\}/g, data.post_title || 'Untitled Post');
+                prompt = prompt.replace(/\{post_url\}/g, data.post_url || 'URL not available');
+                prompt = prompt.replace(/\{content_type\}/g, this.getContentTypeDisplayName(contentType));
+            }
             
             return prompt;
         }
         
-        return `Generate ${this.getContentTypeDisplayName(contentType)} content for ${product.name}`;
+        // Fallback
+        if (data.name) {
+            return `Generate ${this.getContentTypeDisplayName(contentType)} content for ${data.name}`;
+        } else if (data.section_title) {
+            return `Generate ${this.getContentTypeDisplayName(contentType)} content for ${data.section_title}`;
+        }
+        
+        return 'Select an item to see the generation prompt';
     },
     
     // Update generation prompt display
     updateGenerationPromptDisplay() {
         const promptDisplay = document.getElementById('llm-generation-prompt');
+        const systemPromptElement = document.getElementById('llm-system-prompt');
         
-        if (this.selectedProduct) {
-            const prompt = this.generatePromptForProduct(this.selectedProduct, this.selectedContentType);
-            
-            if (this.databasePrompts) {
-                const systemPromptElement = document.getElementById('system-prompt-display');
-                if (systemPromptElement && this.databasePrompts.system_prompt) {
-                    systemPromptElement.textContent = this.databasePrompts.system_prompt.value;
-                }
-            }
-            
+        // Update system prompt from database
+        if (this.databasePrompts && this.databasePrompts.system_prompt && systemPromptElement) {
+            systemPromptElement.value = this.databasePrompts.system_prompt.value;
+        }
+        
+        // Update generation prompt
+        if (this.selectedData) {
+            const prompt = this.generatePrompt(this.selectedData, this.selectedContentType);
             if (promptDisplay) {
-                promptDisplay.value = prompt; // Use .value for textarea
+                promptDisplay.value = prompt;
             }
         } else {
             if (promptDisplay) {
-                promptDisplay.value = 'Select a product to see the generation prompt';
+                promptDisplay.value = 'Select an item to see the generation prompt';
             }
         }
     },

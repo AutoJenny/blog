@@ -11001,3 +11001,55 @@ LINE 2: ...       SELECT id, section_heading, section_order, section_co...
 2025-09-24 15:39:55,808 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:39:55] "[36mGET /static/images/content/posts/53/sections/715/optimized/715_processed.png HTTP/1.1[0m" 304 -
 2025-09-24 15:39:55,809 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:39:55] "[36mGET /static/images/content/posts/53/sections/716/optimized/716_processed.png HTTP/1.1[0m" 304 -
 2025-09-24 15:40:46,537 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:40:46] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-24 15:42:25,196 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:42:25] "GET /launchpad/syndication/facebook/blog_post HTTP/1.1" 200 -
+2025-09-24 15:42:28,054 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:42:28] "GET /launchpad/syndication/facebook/blog_post HTTP/1.1" 200 -
+2025-09-24 15:43:06,544 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:43:06] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-24 15:45:03,047 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:45:03] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-24 15:45:05,622 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:45:05] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-24 15:45:26,542 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:45:26] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-24 15:45:49,591 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:45:49] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-24 15:45:52,458 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:45:52] "GET /launchpad/syndication/facebook/blog_post HTTP/1.1" 200 -
+2025-09-24 15:47:46,546 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:47:46] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-24 15:50:06,540 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:50:06] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-24 15:52:26,539 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:52:26] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-24 15:52:35,615 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:52:35] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-24 15:52:38,104 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:52:38] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-24 15:52:40,828 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:52:40] "GET /launchpad/syndication/facebook/blog_post HTTP/1.1" 200 -
+2025-09-24 15:52:48,440 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:52:48] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-24 15:52:50,640 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:52:50] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-24 15:52:52,976 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:52:52] "GET /launchpad/syndication/facebook/blog_post HTTP/1.1" 200 -
+2025-09-24 15:54:46,546 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:54:46] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-24 15:57:06,536 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:57:06] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-24 15:58:50,753 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:58:50] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-24 15:58:52,730 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:58:52] "GET /launchpad/syndication/facebook/blog_post HTTP/1.1" 200 -
+2025-09-24 15:58:54,674 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:58:54] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-24 15:59:10,843 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:59:10] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-24 15:59:26,540 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:59:26] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-24 15:59:30,193 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 15:59:30] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-24 16:06:01,097 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-24 16:06:01,108 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-24 16:06:01,108 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-24 16:06:01,108 - werkzeug - INFO -  * Restarting with stat
+2025-09-24 16:06:01,931 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-24 16:06:01,937 - werkzeug - WARNING -  * Debugger is active!
+2025-09-24 16:06:01,947 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-24 16:06:11,764 - config.database - INFO - Database connection established
+2025-09-24 16:06:11,769 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 16:06:11] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-24 16:06:26,543 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 16:06:26] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-24 16:06:34,789 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 16:06:34] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-24 16:06:46,724 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-24 16:06:46,732 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-24 16:06:46,732 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-24 16:06:46,733 - werkzeug - INFO -  * Restarting with stat
+2025-09-24 16:06:47,515 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-24 16:06:47,521 - werkzeug - WARNING -  * Debugger is active!
+2025-09-24 16:06:47,532 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-24 16:06:55,291 - config.database - INFO - Database connection established
+2025-09-24 16:06:55,295 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 16:06:55] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-24 16:07:48,123 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 16:07:48] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-24 16:07:51,469 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 16:07:51] "[33mGET /launchpad/api/syndication/llm-prompts/7 HTTP/1.1[0m" 404 -
+2025-09-24 16:08:18,522 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 16:08:18] "GET /launchpad/api/syndication/llm-prompts/6 HTTP/1.1" 200 -
+2025-09-24 16:08:20,551 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 16:08:20] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-24 16:08:23,216 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 16:08:23] "GET /launchpad/syndication/facebook/blog_post HTTP/1.1" 200 -

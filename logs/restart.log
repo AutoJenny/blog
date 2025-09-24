@@ -63,3 +63,74 @@
 [2025-09-21 11:27:31] Blog Post Sections: http://localhost:5003
 [2025-09-21 11:27:31] Blog Post Info: http://localhost:5004
 [2025-09-21 11:27:31] Blog Images: http://localhost:5005
+[2025-09-24 15:59:32] === Starting project restart process ===
+[2025-09-24 15:59:32] Stopping existing processes...
+[2025-09-24 15:59:32] Stopping processes on port 5000...
+[2025-09-24 15:59:32] Found processes on port 5000: 25586
+93408
+[2025-09-24 15:59:34] Successfully stopped all processes on port 5000
+[2025-09-24 15:59:34] Stopping processes on port 5001...
+[2025-09-24 15:59:34] No processes found on port 5001
+[2025-09-24 15:59:34] Stopping processes on port 5002...
+[2025-09-24 15:59:34] No processes found on port 5002
+[2025-09-24 15:59:34] Stopping processes on port 5003...
+[2025-09-24 15:59:34] Found processes on port 5003: 15099
+15104
+[2025-09-24 15:59:36] Successfully stopped all processes on port 5003
+[2025-09-24 15:59:36] Stopping processes on port 5004...
+[2025-09-24 15:59:37] Found processes on port 5004: 15170
+15176
+[2025-09-24 15:59:39] Successfully stopped all processes on port 5004
+[2025-09-24 15:59:39] Stopping processes on port 5005...
+[2025-09-24 15:59:39] Found processes on port 5005: 15226
+15231
+[2025-09-24 15:59:41] Successfully stopped all processes on port 5005
+[2025-09-24 15:59:41] Stopping processes on port 5006...
+[2025-09-24 15:59:41] No processes found on port 5006
+[2025-09-24 15:59:41] Performing additional cleanup...
+[2025-09-24 15:59:43] Starting projects...
+[2025-09-24 15:59:43] Starting blog-core on port 5000...
+[2025-09-24 15:59:43] Running: PORT=5000 /usr/local/bin/python3 app.py
+[2025-09-24 15:59:43] blog-core started with PID 23936
+[2025-09-24 15:59:48] Testing blog-core at http://localhost:5000/...
+[2025-09-24 15:59:48] ✅ blog-core is running successfully on port 5000
+[2025-09-24 15:59:48] Starting blog-launchpad on port 5001...
+[2025-09-24 15:59:48] Running: PORT=5001 /usr/local/bin/python3 app.py
+[2025-09-24 15:59:48] blog-launchpad started with PID 23991
+[2025-09-24 15:59:53] Testing blog-launchpad at http://localhost:5001...
+[2025-09-24 15:59:53] ✅ blog-launchpad is running successfully on port 5001
+[2025-09-24 15:59:53] Starting blog-llm-actions on port 5002...
+[2025-09-24 15:59:53] Running: PORT=5002 /usr/local/bin/python3 app.py
+[2025-09-24 15:59:53] blog-llm-actions started with PID 24046
+[2025-09-24 15:59:58] Testing blog-llm-actions at http://localhost:5002...
+[2025-09-24 15:59:58] ✅ blog-llm-actions is running successfully on port 5002
+[2025-09-24 15:59:58] Starting blog-post-sections on port 5003...
+[2025-09-24 15:59:58] Running: /usr/local/bin/python3 app.py
+[2025-09-24 15:59:58] blog-post-sections started with PID 24103
+[2025-09-24 16:00:03] Testing blog-post-sections at http://localhost:5003...
+[2025-09-24 16:00:03] ✅ blog-post-sections is running successfully on port 5003
+[2025-09-24 16:00:03] Starting blog-post-info on port 5004...
+[2025-09-24 16:00:03] Running: PORT=5004 /usr/local/bin/python3 app.py
+[2025-09-24 16:00:03] blog-post-info started with PID 24163
+[2025-09-24 16:00:08] Testing blog-post-info at http://localhost:5004...
+[2025-09-24 16:00:08] ✅ blog-post-info is running successfully on port 5004
+[2025-09-24 16:00:08] Starting blog-images on port 5005...
+[2025-09-24 16:00:08] Running: PORT=5005 /usr/local/bin/python3 app.py
+[2025-09-24 16:00:08] blog-images started with PID 24220
+[2025-09-24 16:00:13] Testing blog-images at http://localhost:5005...
+[2025-09-24 16:00:13] ✅ blog-images is running successfully on port 5005
+[2025-09-24 16:00:13] === Final status check ===
+[2025-09-24 16:00:17] ✅ Port 5000 (blog-core) is responding
+[2025-09-24 16:00:17] ✅ Port 5001 (blog-launchpad) is responding
+[2025-09-24 16:00:17] ✅ Port 5002 (blog-llm-actions) is responding
+[2025-09-24 16:00:17] ✅ Port 5003 (blog-post-sections) is responding
+[2025-09-24 16:00:17] ✅ Port 5004 (blog-post-info) is responding
+[2025-09-24 16:00:17] ✅ Port 5005 (blog-images) is responding
+[2025-09-24 16:00:17] === Restart process complete ===
+[2025-09-24 16:00:17] Logs available in: /Users/autojenny/Documents/projects/blog/logs
+[2025-09-24 16:00:17] Blog core: http://localhost:5000
+[2025-09-24 16:00:17] Blog Launchpad: http://localhost:5001
+[2025-09-24 16:00:17] Blog LLM Actions: http://localhost:5002
+[2025-09-24 16:00:17] Blog Post Sections: http://localhost:5003
+[2025-09-24 16:00:17] Blog Post Info: http://localhost:5004
+[2025-09-24 16:00:17] Blog Images: http://localhost:5005
