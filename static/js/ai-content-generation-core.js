@@ -6,16 +6,18 @@ class AIContentGenerationManager {
     constructor() {
         this.selectedContentType = 'feature';
         this.generatedContent = '';
-        this.selectedProduct = null;
+        this.selectedData = null; // Can be product or blog section data
         this.currentDataPackage = null;
         this.databasePrompts = null; // Store prompts from database
         this.isPromptEditMode = false; // Track if prompt is in edit mode
+        this.processId = null; // Will be set based on page type
         
         this.init();
         this.setupLLMControls();
     }
     
     init() {
+        this.detectPageType(); // Determine if this is product or blog page
         this.setupEventListeners();
         this.setupContentTypeButtons();
         this.setupDataListener();
@@ -23,9 +25,21 @@ class AIContentGenerationManager {
         this.loadDatabasePrompts(); // Load prompts from database
     }
     
-    // Set the selected product and update UI
-    setSelectedProduct(product) {
-        this.selectedProduct = product;
+    // Detect page type and set appropriate process ID
+    detectPageType() {
+        const currentPath = window.location.pathname;
+        if (currentPath.includes('product_post')) {
+            this.processId = 6; // Product posts
+        } else if (currentPath.includes('blog_post')) {
+            this.processId = 1; // Blog posts
+        } else {
+            this.processId = 1; // Default to blog posts
+        }
+    }
+    
+    // Set the selected data (product or blog section) and update UI
+    setSelectedData(data) {
+        this.selectedData = data;
         this.updateGenerateButton();
         this.updateContentText();
         this.updateGenerationPromptDisplay(); // Update the generation prompt display
@@ -33,22 +47,28 @@ class AIContentGenerationManager {
         // updateAIStatusHeader() will be called by loadExistingContent() after content is loaded
     }
     
+    // Legacy method for backward compatibility
+    setSelectedProduct(product) {
+        this.setSelectedData(product);
+    }
+    
     // Update the generate button state
     updateGenerateButton() {
         const generateBtn = document.getElementById('generate-content-btn');
         if (generateBtn) {
-            generateBtn.disabled = !this.selectedProduct;
+            generateBtn.disabled = !this.selectedData;
         }
     }
     
     // Update content text area with placeholder
     updateContentText() {
-        const contentText = document.getElementById('generated-content-text');
+        const contentText = document.getElementById('content-text');
         if (contentText) {
-            if (this.selectedProduct) {
-                contentText.placeholder = `Generated content for ${this.selectedProduct.name} will appear here...`;
+            if (this.selectedData) {
+                const itemName = this.selectedData.name || this.selectedData.section_title || 'item';
+                contentText.textContent = `Select ${itemName} and click "Generate Post" to create AI-powered content.`;
             } else {
-                contentText.placeholder = 'Please select a product first...';
+                contentText.textContent = 'Select an item and click "Generate Post" to create AI-powered content.';
             }
         }
     }

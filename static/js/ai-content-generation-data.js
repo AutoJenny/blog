@@ -9,13 +9,14 @@ Object.assign(AIContentGenerationManager.prototype, {
     // Load prompts from database
     async loadDatabasePrompts() {
         try {
-            const response = await fetch('/launchpad/api/syndication/llm-prompts/1');
+            const processId = this.processId || 1; // Default to blog posts
+            const response = await fetch(`/launchpad/api/syndication/llm-prompts/${processId}`);
             const data = await response.json();
             
             if (data.success) {
                 this.databasePrompts = data.prompts;
-                // Update the prompt display if a product is already selected
-                if (this.selectedProduct) {
+                // Update the prompt display if data is already selected
+                if (this.selectedData) {
                     this.updateGenerationPromptDisplay();
                 }
             } else {
@@ -29,7 +30,7 @@ Object.assign(AIContentGenerationManager.prototype, {
     
     // Save generated content to database
     async saveGeneratedContent(content, contentType) {
-        if (!this.selectedProduct) return;
+        if (!this.selectedData) return;
         
         try {
             const response = await fetch('/launchpad/api/syndication/save-generated-content', {
@@ -38,8 +39,8 @@ Object.assign(AIContentGenerationManager.prototype, {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    product_id: this.selectedProduct.id,
-                    content_type: 'product',
+                    item_id: this.selectedData.id,
+                    content_type: this.processId === 6 ? 'product' : 'blog',
                     content: content
                 })
             });
@@ -55,17 +56,19 @@ Object.assign(AIContentGenerationManager.prototype, {
         }
     },
     
-    // Load existing generated content for the selected product
+    // Load existing generated content for the selected item
     async loadExistingContent() {
-        if (!this.selectedProduct) {
-            console.log('No selected product, skipping content load');
+        if (!this.selectedData) {
+            console.log('No selected data, skipping content load');
             return;
         }
         
-        console.log('Loading existing content for product:', this.selectedProduct.name, 'type:', this.selectedContentType);
+        const itemName = this.selectedData.name || this.selectedData.section_title || 'item';
+        console.log('Loading existing content for item:', itemName, 'type:', this.selectedContentType);
         
         try {
-            const response = await fetch(`/launchpad/api/syndication/get-generated-content/${this.selectedProduct.id}/product`);
+            const contentType = this.processId === 6 ? 'product' : 'blog';
+            const response = await fetch(`/launchpad/api/syndication/get-generated-content/${this.selectedData.id}/${contentType}`);
             const data = await response.json();
             
             console.log('Load existing content response:', data);
