@@ -917,19 +917,307 @@ def get_today_status():
         logger.error(f"Error in get_today_status: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
+def post_to_facebook_page(page_id, access_token, post_content, product_image, page_name=""):
+    """Helper function to post to a single Facebook page."""
+    import requests
+    
+    feed_url = f"https://graph.facebook.com/v18.0/{page_id}/feed"
+    feed_payload = {
+        'message': post_content,
+        'link': product_image,
+        'published': True,
+        'access_token': access_token
+    }
+    
+    logger.info(f"Posting to {page_name} (Page ID: {page_id})")
+    logger.info(f"Facebook API call - URL: {feed_url}")
+    logger.info(f"Product image URL: {product_image}")
+    logger.info(f"Access token being used: {access_token[:20]}...")
+    
+    response = requests.post(feed_url, data=feed_payload, timeout=30)
+    logger.info(f"Facebook API response - Status: {response.status_code}")
+    logger.info(f"Facebook API response - Content: {response.text}")
+    
+    if response.status_code == 200:
+        result = response.json()
+        return {
+            'success': True,
+            'post_id': result.get('id'),
+            'response': result
+        }
+    else:
+        error_data = response.json() if response.content else {}
+        error_msg = error_data.get('error', {}).get('message', 'Unknown Facebook API error')
+        return {
+            'success': False,
+            'error': f'Facebook API error: {response.status_code}',
+            'details': error_msg
+        }
+
 @bp.route('/api/syndication/post-now', methods=['POST'])
 def post_now():
-    """Post immediately."""
+    """Post content to Facebook with product image - posts to both pages."""
     try:
-        # This would integrate with actual posting logic
-        # For now, just return success
-        return jsonify({
-            "success": True,
-            "message": "Post published successfully"
-        })
+        data = request.get_json()
+        
+        # Handle both old format (from daily-product-posts page) and new format (from timeline)
+        item_id = data.get('item_id')
+        product_id = data.get('product_id')
+        content = data.get('content')
+        content_type = data.get('content_type')
+        platform = data.get('platform', 'facebook')
+        
+        with db_manager.get_cursor() as cursor:
+            if item_id:
+                # New format: posting from timeline
+                # Get the queue item details
+                cursor.execute("""
+                    SELECT pq.*, cp.name as product_name, cp.image_url as product_image
+                    FROM posting_queue pq
+                    LEFT JOIN clan_products cp ON pq.product_id = cp.id
+                    WHERE pq.id = %s
+                """, (item_id,))
+                
+                queue_item = cursor.fetchone()
+                if not queue_item:
+                    return jsonify({'success': False, 'error': 'Queue item not found'})
+                
+                # Get Facebook credentials for both pages
+                cursor.execute("""
+                    SELECT credential_key, credential_value
+                    FROM platform_credentials 
+                    WHERE platform_id = (SELECT id FROM platforms WHERE name = 'facebook')
+                    AND is_active = true
+                """)
+                credentials = cursor.fetchall()
+                
+                # Convert to dictionary
+                creds = {}
+                for cred in credentials:
+                    creds[cred['credential_key']] = cred['credential_value']
+                
+                # Prepare post content
+                post_content = queue_item['generated_content']
+                product_image = queue_item['product_image']
+                
+                # Define both pages to post to
+                pages_to_post = []
+                
+                # Page 1 (CLAN by Scotweb)
+                if creds.get('page_access_token') and creds.get('page_id'):
+                    pages_to_post.append({
+                        'page_id': creds['page_id'],
+                        'access_token': creds['page_access_token'],
+                        'name': 'CLAN by Scotweb'
+                    })
+                
+                # Page 2 (Scotweb CLAN) - only add if different from Page 1
+                if (creds.get('page_access_token_2') and creds.get('page_id_2') and 
+                    creds.get('page_id_2') != creds.get('page_id')):
+                    pages_to_post.append({
+                        'page_id': creds['page_id_2'],
+                        'access_token': creds['page_access_token_2'],
+                        'name': 'Scotweb CLAN'
+                    })
+                elif creds.get('page_id_2') == creds.get('page_id'):
+                    logger.warning("Both Facebook pages have the same page_id - skipping duplicate posting to prevent double posts")
+                
+                if not pages_to_post:
+                    return jsonify({'success': False, 'error': 'No Facebook pages configured'})
+                
+                # Post to both pages
+                results = []
+                successful_posts = []
+                failed_posts = []
+                
+                for page in pages_to_post:
+                    result = post_to_facebook_page(
+                        page['page_id'], 
+                        page['access_token'], 
+                        post_content, 
+                        product_image, 
+                        page['name']
+                    )
+                    results.append({
+                        'page_name': page['name'],
+                        'page_id': page['page_id'],
+                        'result': result
+                    })
+                    
+                    if result['success']:
+                        successful_posts.append(result['post_id'])
+                    else:
+                        failed_posts.append(f"{page['name']}: {result['error']}")
+                
+                # Update database based on results
+                if successful_posts:
+                    # Use the first successful post ID for the database
+                    primary_post_id = successful_posts[0]
+                    
+                    # Update the queue item status
+                    cursor.execute("""
+                        UPDATE posting_queue 
+                        SET status = 'published', platform_post_id = %s, updated_at = NOW()
+                        WHERE id = %s
+                    """, (primary_post_id, item_id))
+                    
+                    # Also update daily_posts if it exists
+                    cursor.execute("""
+                        UPDATE daily_posts 
+                        SET status = 'posted', posted_at = NOW()
+                        WHERE product_id = %s AND post_date = %s
+                    """, (queue_item['product_id'], datetime.now().date()))
+                    
+                    # Prepare response message
+                    success_message = f"Post published successfully to {len(successful_posts)} page(s)"
+                    if failed_posts:
+                        success_message += f" (Failed: {', '.join(failed_posts)})"
+                    
+                    return jsonify({
+                        'success': True,
+                        'message': success_message,
+                        'platform_post_id': primary_post_id,
+                        'all_results': results,
+                        'successful_posts': successful_posts,
+                        'failed_posts': failed_posts
+                    })
+                else:
+                    # All posts failed
+                    error_message = f"Failed to post to any page: {'; '.join(failed_posts)}"
+                    
+                    # Update queue item with error
+                    cursor.execute("""
+                        UPDATE posting_queue 
+                        SET status = 'failed', error_message = %s, updated_at = NOW()
+                        WHERE id = %s
+                    """, (error_message, item_id))
+                    
+                    return jsonify({
+                        'success': False,
+                        'error': error_message,
+                        'all_results': results
+                    })
+            else:
+                # Old format: posting from daily-product-posts page
+                if not product_id:
+                    return jsonify({'success': False, 'error': 'Product ID is required'})
+                
+                # Get product details including image
+                cursor.execute("""
+                    SELECT name, image_url, sku, price, description
+                    FROM clan_products WHERE id = %s
+                """, (product_id,))
+                product = cursor.fetchone()
+                
+                if not product:
+                    return jsonify({'success': False, 'error': 'Product not found'})
+                
+                # Get Facebook credentials for both pages
+                cursor.execute("""
+                    SELECT credential_key, credential_value
+                    FROM platform_credentials 
+                    WHERE platform_id = (SELECT id FROM platforms WHERE name = 'facebook')
+                    AND is_active = true
+                """)
+                credentials = cursor.fetchall()
+                
+                # Convert to dictionary
+                creds = {}
+                for cred in credentials:
+                    creds[cred['credential_key']] = cred['credential_value']
+                
+                # Prepare post content
+                post_content = content or f"Check out {product['name']} - £{product['price']}"
+                product_image = product['image_url']
+                
+                # Define both pages to post to
+                pages_to_post = []
+                
+                # Page 1 (CLAN by Scotweb)
+                if creds.get('page_access_token') and creds.get('page_id'):
+                    pages_to_post.append({
+                        'page_id': creds['page_id'],
+                        'access_token': creds['page_access_token'],
+                        'name': 'CLAN by Scotweb'
+                    })
+                
+                # Page 2 (Scotweb CLAN) - only add if different from Page 1
+                if (creds.get('page_access_token_2') and creds.get('page_id_2') and 
+                    creds.get('page_id_2') != creds.get('page_id')):
+                    pages_to_post.append({
+                        'page_id': creds['page_id_2'],
+                        'access_token': creds['page_access_token_2'],
+                        'name': 'Scotweb CLAN'
+                    })
+                elif creds.get('page_id_2') == creds.get('page_id'):
+                    logger.warning("Both Facebook pages have the same page_id - skipping duplicate posting to prevent double posts")
+                
+                if not pages_to_post:
+                    return jsonify({'success': False, 'error': 'No Facebook pages configured'})
+                
+                # Post to both pages
+                results = []
+                successful_posts = []
+                failed_posts = []
+                
+                for page in pages_to_post:
+                    result = post_to_facebook_page(
+                        page['page_id'], 
+                        page['access_token'], 
+                        post_content, 
+                        product_image, 
+                        page['name']
+                    )
+                    results.append({
+                        'page_name': page['name'],
+                        'page_id': page['page_id'],
+                        'result': result
+                    })
+                    
+                    if result['success']:
+                        successful_posts.append(result['post_id'])
+                    else:
+                        failed_posts.append(f"{page['name']}: {result['error']}")
+                
+                # Update database based on results
+                if successful_posts:
+                    # Use the first successful post ID for the database
+                    primary_post_id = successful_posts[0]
+                    
+                    # Update daily_posts with real Facebook post ID
+                    today = datetime.now().date()
+                    cursor.execute("""
+                        UPDATE daily_posts 
+                        SET status = 'posted', posted_at = NOW(), facebook_post_id = %s
+                        WHERE product_id = %s AND post_date = %s
+                    """, (primary_post_id, product_id, today))
+                    
+                    # Prepare response message
+                    success_message = f"Post published successfully to {len(successful_posts)} page(s)"
+                    if failed_posts:
+                        success_message += f" (Failed: {', '.join(failed_posts)})"
+                    
+                    return jsonify({
+                        'success': True,
+                        'message': success_message,
+                        'platform_post_id': primary_post_id,
+                        'all_results': results,
+                        'successful_posts': successful_posts,
+                        'failed_posts': failed_posts
+                    })
+                else:
+                    # All posts failed
+                    error_message = f"Failed to post to any page: {'; '.join(failed_posts)}"
+                    
+                    return jsonify({
+                        'success': False,
+                        'error': error_message,
+                        'all_results': results
+                    })
+            
     except Exception as e:
-        logger.error(f"Error in post_now: {e}")
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error(f"Error posting to Facebook: {e}")
+        return jsonify({'success': False, 'error': str(e)})
 
 @bp.route('/api/syndication/schedule-tomorrow', methods=['POST'])
 def schedule_tomorrow():
@@ -1200,6 +1488,62 @@ def generate_social_content():
             'success': False,
             'error': str(e)
         }), 500
+
+@bp.route('/api/syndication/facebook/credentials', methods=['GET', 'POST'])
+def facebook_credentials():
+    """Get or save Facebook API credentials."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            if request.method == 'GET':
+                # Get existing credentials
+                cursor.execute("""
+                    SELECT credential_type, credential_key, credential_value
+                    FROM platform_credentials 
+                    WHERE platform_id = (SELECT id FROM platforms WHERE name = 'facebook')
+                    AND is_active = true
+                """)
+                credentials = cursor.fetchall()
+                
+                # Convert to dictionary format
+                creds_dict = {}
+                for cred in credentials:
+                    creds_dict[cred['credential_key']] = cred['credential_value']
+                
+                return jsonify({
+                    'success': True,
+                    'credentials': creds_dict
+                })
+            
+            elif request.method == 'POST':
+                # Save new credentials
+                data = request.get_json()
+                
+                # Get Facebook platform ID
+                cursor.execute("SELECT id FROM platforms WHERE name = 'facebook'")
+                platform = cursor.fetchone()
+                if not platform:
+                    return jsonify({'success': False, 'error': 'Facebook platform not found'})
+                
+                platform_id = platform['id']
+                
+                # Save each credential
+                for key, value in data.items():
+                    if value:  # Only save non-empty values
+                        cursor.execute("""
+                            INSERT INTO platform_credentials (platform_id, credential_type, credential_key, credential_value, is_active)
+                            VALUES (%s, 'api_key', %s, %s, true)
+                            ON CONFLICT (platform_id, credential_type, credential_key)
+                            DO UPDATE SET credential_value = EXCLUDED.credential_value, updated_at = NOW()
+                        """, (platform_id, key, value))
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Credentials saved successfully'
+                })
+                
+    except Exception as e:
+        logger.error(f"Error in facebook_credentials: {e}")
+        return jsonify({'success': False, 'error': str(e)})
 
 @bp.route('/api/auto-replenish-all', methods=['POST'])
 def auto_replenish_all_queues():

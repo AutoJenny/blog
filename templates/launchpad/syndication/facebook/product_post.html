@@ -65,5 +65,93 @@
     <script src="{{ url_for('static', filename='js/ai-content-generation-data.js') }}"></script>
     <script src="{{ url_for('static', filename='js/ai-content-generation-prompts.js') }}"></script>
     <script src="{{ url_for('static', filename='js/ai-content-generation-utils.js') }}"></script>
+    
+    <!-- URL Parameter Handling for Edit Functionality -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check for URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const expand = urlParams.get('expand');
+            const highlight = urlParams.get('highlight');
+            const action = urlParams.get('action');
+            
+            if (expand === 'posting-queue' && highlight && action === 'edit') {
+                console.log('Edit mode activated for item:', highlight);
+                
+                // Wait for queue manager to be initialized
+                setTimeout(() => {
+                    // Expand the posting queue section
+                    const postingQueueAccordion = document.querySelector('[data-accordion="posting-queue"]');
+                    if (postingQueueAccordion) {
+                        const toggleBtn = postingQueueAccordion.querySelector('.accordion-toggle');
+                        if (toggleBtn && postingQueueAccordion.classList.contains('collapsed')) {
+                            toggleBtn.click();
+                        }
+                    }
+                    
+                    // Highlight the specific item
+                    setTimeout(() => {
+                        highlightQueueItem(parseInt(highlight));
+                    }, 500);
+                }, 1000);
+            }
+        });
+        
+        function highlightQueueItem(itemId) {
+            // Find the queue item row
+            const queueTableBody = document.getElementById('queue-table-body');
+            if (!queueTableBody) return;
+            
+            const rows = queueTableBody.querySelectorAll('tr');
+            let targetRow = null;
+            
+            // Look for the row containing the item
+            rows.forEach(row => {
+                const deleteBtn = row.querySelector(`button[onclick*="deleteQueueItem(${itemId})"]`);
+                if (deleteBtn) {
+                    targetRow = row;
+                }
+            });
+            
+            if (targetRow) {
+                // Add highlight styling
+                targetRow.style.backgroundColor = '#1e40af';
+                targetRow.style.border = '2px solid #3b82f6';
+                targetRow.style.borderRadius = '8px';
+                
+                // Scroll to the item
+                targetRow.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+                
+                // Add a pulsing effect
+                targetRow.style.animation = 'pulse 2s infinite';
+                
+                // Remove highlight after 5 seconds
+                setTimeout(() => {
+                    targetRow.style.backgroundColor = '';
+                    targetRow.style.border = '';
+                    targetRow.style.borderRadius = '';
+                    targetRow.style.animation = '';
+                }, 5000);
+                
+                console.log('Highlighted queue item:', itemId);
+            } else {
+                console.log('Queue item not found for highlighting:', itemId);
+            }
+        }
+        
+        // Add CSS for pulse animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+                70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
 </body>
 </html>
