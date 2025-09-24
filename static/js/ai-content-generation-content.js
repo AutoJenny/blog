@@ -8,8 +8,8 @@ Object.assign(AIContentGenerationManager.prototype, {
     
     // Generate content using AI
     async generateContent() {
-        if (!this.selectedProduct) {
-            alert('Please select a product first');
+        if (!this.selectedData) {
+            alert('Please select an item first');
             return;
         }
         
@@ -44,7 +44,7 @@ Object.assign(AIContentGenerationManager.prototype, {
     
     // Generate content using real AI
     async generateAIContent() {
-        const prompt = this.generatePromptForProduct(this.selectedProduct, this.selectedContentType);
+        const prompt = this.generatePrompt(this.selectedData, this.selectedContentType);
         
         try {
             const response = await fetch('/launchpad/api/syndication/generate-social-content', {
@@ -55,7 +55,8 @@ Object.assign(AIContentGenerationManager.prototype, {
                 body: JSON.stringify({
                     provider: 'ollama',
                     model: 'mistral',
-                    prompt: prompt
+                    prompt: prompt,
+                    process_id: this.processId
                 })
             });
             
@@ -124,23 +125,32 @@ Object.assign(AIContentGenerationManager.prototype, {
             return false;
         }
         
-        if (!this.selectedProduct) {
-            if (!silent) alert('No product selected');
+        if (!this.selectedData) {
+            if (!silent) alert('No item selected');
             return false;
         }
         
         try {
-            // Update the queue status from 'draft' to 'pending'
+            // Prepare request body based on content type
+            const isProduct = this.processId === 6;
+            const requestBody = {
+                content_type: isProduct ? 'product' : 'blog_post',
+                status: 'ready'
+            };
+            
+            if (isProduct) {
+                requestBody.product_id = this.selectedData.id;
+            } else {
+                requestBody.section_id = this.selectedData.id;
+            }
+            
+            // Update the queue status from 'draft' to 'ready'
             const response = await fetch('/launchpad/api/syndication/update-queue-status', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    product_id: this.selectedProduct.id,
-                    content_type: 'product',
-                    status: 'ready'
-                })
+                body: JSON.stringify(requestBody)
             });
             
             const data = await response.json();
@@ -149,7 +159,7 @@ Object.assign(AIContentGenerationManager.prototype, {
                 // Dispatch event to notify other modules
                 const event = new CustomEvent('contentQueued', {
                     detail: {
-                        product: this.selectedProduct,
+                        item: this.selectedData,
                         content: this.generatedContent,
                         contentType: this.selectedContentType
                     }
