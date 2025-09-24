@@ -15,11 +15,15 @@ Object.assign(AIContentGenerationManager.prototype, {
             
             if (data.success) {
                 this.databasePrompts = data.prompts;
-                // Update the prompt display if data is already selected
+                console.log('Prompts loaded successfully:', this.databasePrompts);
+                // Always update system prompt when loaded
+                this.updateSystemPromptDisplay();
+                // Update the generation prompt display if data is already selected
                 if (this.selectedData) {
                     this.updateGenerationPromptDisplay();
                 }
             } else {
+                console.log('Failed to load prompts:', data);
                 this.databasePrompts = null;
             }
         } catch (error) {

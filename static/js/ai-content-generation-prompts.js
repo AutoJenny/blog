@@ -45,7 +45,7 @@ Object.assign(AIContentGenerationManager.prototype, {
         const promptDisplay = document.getElementById('llm-generation-prompt');
         const systemPromptElement = document.getElementById('llm-system-prompt');
         
-        // Update system prompt from database
+        // Update system prompt from database (always do this if prompts are loaded)
         if (this.databasePrompts && this.databasePrompts.system_prompt && systemPromptElement) {
             systemPromptElement.value = this.databasePrompts.system_prompt.value;
         }
@@ -60,6 +60,25 @@ Object.assign(AIContentGenerationManager.prototype, {
             if (promptDisplay) {
                 promptDisplay.value = 'Select an item to see the generation prompt';
             }
+        }
+    },
+    
+    // Update system prompt display (called when prompts are loaded)
+    updateSystemPromptDisplay() {
+        const systemPromptElement = document.getElementById('llm-system-prompt');
+        console.log('Updating system prompt display:', {
+            databasePrompts: this.databasePrompts,
+            systemPromptElement: systemPromptElement
+        });
+        if (this.databasePrompts && this.databasePrompts.system_prompt && systemPromptElement) {
+            systemPromptElement.value = this.databasePrompts.system_prompt.value;
+            console.log('System prompt updated to:', this.databasePrompts.system_prompt.value);
+        } else {
+            console.log('Could not update system prompt:', {
+                hasPrompts: !!this.databasePrompts,
+                hasSystemPrompt: !!(this.databasePrompts && this.databasePrompts.system_prompt),
+                hasElement: !!systemPromptElement
+            });
         }
     },
     
