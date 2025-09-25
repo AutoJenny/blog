@@ -1124,7 +1124,11 @@ def post_now():
                 # New format: posting from timeline
                 # Get the queue item details
                 cursor.execute("""
-                    SELECT pq.*, cp.name as product_name, cp.image_url as product_image
+                    SELECT pq.*, cp.name as product_name, 
+                           CASE 
+                               WHEN pq.content_type = 'product' THEN cp.image_url 
+                               ELSE pq.product_image 
+                           END as product_image
                     FROM posting_queue pq
                     LEFT JOIN clan_products cp ON pq.product_id = cp.id
                     WHERE pq.id = %s
