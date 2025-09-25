@@ -14330,3 +14330,28 @@ LINE 2: ...       SELECT id, section_heading, section_order, section_co...
 2025-09-25 12:19:25,213 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
 2025-09-25 12:19:25,219 - werkzeug - WARNING -  * Debugger is active!
 2025-09-25 12:19:25,230 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 12:20:05,793 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:20:05] "GET /launchpad/social-media-command-center HTTP/1.1" 200 -
+2025-09-25 12:20:05,813 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:20:05] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 12:20:05,888 - config.database - INFO - Database connection established
+2025-09-25 12:20:05,894 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:20:05] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 12:20:11,466 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:20:11] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 12:20:21,278 - blueprints.launchpad - INFO - Posting to CLAN by Scotweb (Page ID: 196935752675)
+2025-09-25 12:20:21,279 - blueprints.launchpad - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/196935752675/photos
+2025-09-25 12:20:21,279 - blueprints.launchpad - INFO - Product image URL: https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/a/r/artpw-sr_artpw_pendant_ccp_1.jpg
+2025-09-25 12:20:21,279 - blueprints.launchpad - INFO - Access token being used: EAAUeqRZAekZBkBPZAbV...
+2025-09-25 12:20:21,322 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): graph.facebook.com:443
+2025-09-25 12:20:28,465 - urllib3.connectionpool - DEBUG - https://graph.facebook.com:443 "POST /v18.0/196935752675/photos HTTP/1.1" 200 67
+2025-09-25 12:20:28,465 - blueprints.launchpad - INFO - Facebook API response - Status: 200
+2025-09-25 12:20:28,466 - blueprints.launchpad - INFO - Facebook API response - Content: {"id":"1114579777480011","post_id":"196935752675_1114579814146674"}
+2025-09-25 12:20:28,468 - blueprints.launchpad - INFO - Posting to Scotweb CLAN (Page ID: 108385661622841)
+2025-09-25 12:20:28,468 - blueprints.launchpad - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/108385661622841/photos
+2025-09-25 12:20:28,468 - blueprints.launchpad - INFO - Product image URL: https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/a/r/artpw-sr_artpw_pendant_ccp_1.jpg
+2025-09-25 12:20:28,468 - blueprints.launchpad - INFO - Access token being used: EAAUeqRZAekZBkBPk2kY...
+2025-09-25 12:20:28,471 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): graph.facebook.com:443
+2025-09-25 12:20:28,586 - urllib3.connectionpool - DEBUG - https://graph.facebook.com:443 "POST /v18.0/108385661622841/photos HTTP/1.1" 400 260
+2025-09-25 12:20:28,586 - blueprints.launchpad - INFO - Facebook API response - Status: 400
+2025-09-25 12:20:28,586 - blueprints.launchpad - INFO - Facebook API response - Content: {"error":{"message":"Error validating access token: Session has expired on Wednesday, 24-Sep-25 07:00:00 PDT. The current time is Thursday, 25-Sep-25 04:20:28 PDT.","type":"OAuthException","code":190,"error_subcode":463,"fbtrace_id":"ALUkyvjjVU8ogNf7QBOr81K"}}
+2025-09-25 12:20:28,591 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:20:28] "POST /launchpad/api/syndication/post-now HTTP/1.1" 200 -
+2025-09-25 12:20:28,604 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:20:28] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 12:22:07,274 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:22:07] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 12:25:20,121 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:25:20] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
