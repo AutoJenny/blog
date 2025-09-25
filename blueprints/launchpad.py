@@ -1070,23 +1070,35 @@ def get_today_status():
         return jsonify({"success": False, "error": str(e)}), 500
 
 def post_to_facebook_page(page_id, access_token, post_content, product_image, page_name=""):
-    """Helper function to post to a single Facebook page."""
+    """Helper function to post to a single Facebook page using /feed endpoint for links."""
     import requests
     
-    photos_url = f"https://graph.facebook.com/v18.0/{page_id}/photos"
-    photos_payload = {
-        'url': product_image,
-        'caption': post_content,
-        'published': True,
-        'access_token': access_token
-    }
-    
     logger.info(f"Posting to {page_name} (Page ID: {page_id})")
-    logger.info(f"Facebook API call - URL: {photos_url}")
+    logger.info(f"Post content: {post_content[:100]}...")
     logger.info(f"Product image URL: {product_image}")
     logger.info(f"Access token being used: {access_token[:20]}...")
     
-    response = requests.post(photos_url, data=photos_payload, timeout=30)
+    # Use /feed endpoint for link sharing
+    feed_url = f"https://graph.facebook.com/v18.0/{page_id}/feed"
+    
+    if product_image:
+        # If we have a product URL, use it as a link
+        feed_payload = {
+            'message': post_content,
+            'link': product_image,  # This is the product page URL
+            'access_token': access_token
+        }
+        logger.info(f"Posting with product link: {product_image}")
+    else:
+        # If no product URL, post just the message
+        feed_payload = {
+            'message': post_content,
+            'access_token': access_token
+        }
+        logger.info("Posting text-only message")
+    
+    logger.info(f"Facebook API call - URL: {feed_url}")
+    response = requests.post(feed_url, data=feed_payload, timeout=30)
     logger.info(f"Facebook API response - Status: {response.status_code}")
     logger.info(f"Facebook API response - Content: {response.text}")
     
@@ -1657,6 +1669,109 @@ def generate_social_content():
         return jsonify({
             'success': False,
             'error': str(e)
+        }), 500
+
+@bp.route('/api/social-media/timeline', methods=['GET'])
+def get_social_media_timeline():
+    """Get social media timeline for stats display."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get timeline data from posting queue
+            cursor.execute("""
+                SELECT pq.id, pq.platform, pq.channel_type, pq.content_type,
+                       pq.status, pq.scheduled_timestamp, pq.created_at, pq.updated_at,
+                       cp.name as product_name, ps.section_heading as section_title,
+                       pq.generated_content, pq.product_image
+                FROM posting_queue pq
+                LEFT JOIN clan_products cp ON pq.product_id = cp.id
+                LEFT JOIN post_section ps ON pq.section_id = ps.id
+                ORDER BY pq.scheduled_timestamp ASC NULLS LAST, pq.created_at DESC
+                LIMIT 100
+            """)
+            
+            timeline = cursor.fetchall()
+            
+            # Format timeline for frontend
+            formatted_timeline = []
+            for item in timeline:
+                formatted_timeline.append({
+                    'id': item['id'],
+                    'platform': item['platform'],
+                    'channel_type': item['channel_type'],
+                    'content_type': item['content_type'],
+                    'status': item['status'],
+                    'scheduled_timestamp': item['scheduled_timestamp'].isoformat() if item['scheduled_timestamp'] else None,
+                    'created_at': item['created_at'].isoformat() if item['created_at'] else None,
+                    'updated_at': item['updated_at'].isoformat() if item['updated_at'] else None,
+                    'product_name': item['product_name'],
+                    'section_title': item['section_title'],
+                    'generated_content': item['generated_content'],
+                    'product_image': item['product_image']
+                })
+            
+            return jsonify({
+                'success': True,
+                'timeline': formatted_timeline,
+                'total': len(formatted_timeline)
+            })
+            
+    except Exception as e:
+        logger.error(f"Error in get_social_media_timeline: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'timeline': [],
+            'total': 0
+        }), 500
+
+@bp.route('/api/syndication/pieces', methods=['GET'])
+def get_syndication_pieces():
+    """Get syndication pieces for stats display."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get pieces from posting queue
+            cursor.execute("""
+                SELECT pq.id, pq.platform, pq.channel_type, pq.content_type,
+                       pq.status, pq.created_at, pq.updated_at,
+                       cp.name as product_name, ps.section_heading as section_title
+                FROM posting_queue pq
+                LEFT JOIN clan_products cp ON pq.product_id = cp.id
+                LEFT JOIN post_section ps ON pq.section_id = ps.id
+                ORDER BY pq.created_at DESC
+                LIMIT 100
+            """)
+            
+            pieces = cursor.fetchall()
+            
+            # Format pieces for frontend
+            formatted_pieces = []
+            for piece in pieces:
+                formatted_pieces.append({
+                    'id': piece['id'],
+                    'platform_name': piece['platform'].title() if piece['platform'] else 'Unknown',
+                    'channel_type_name': piece['channel_type'] if piece['channel_type'] else 'unknown',
+                    'content_type': piece['content_type'] if piece['content_type'] else 'unknown',
+                    'status': piece['status'],
+                    'product_name': piece['product_name'],
+                    'section_title': piece['section_title'],
+                    'created_at': piece['created_at'].isoformat() if piece['created_at'] else None,
+                    'updated_at': piece['updated_at'].isoformat() if piece['updated_at'] else None,
+                    'llm_provider': 'mistral'  # Default for now
+                })
+            
+            return jsonify({
+                'status': 'success',
+                'pieces': formatted_pieces,
+                'total': len(formatted_pieces)
+            })
+            
+    except Exception as e:
+        logger.error(f"Error in get_syndication_pieces: {e}")
+        return jsonify({
+            'status': 'error',
+            'error': str(e),
+            'pieces': [],
+            'total': 0
         }), 500
 
 @bp.route('/api/syndication/facebook/credentials', methods=['GET', 'POST'])

@@ -56,9 +56,8 @@ class AutomatedPostingSystem:
                     WHERE pq.status = 'ready'
                     AND pq.scheduled_timestamp IS NOT NULL
                     AND pq.scheduled_timestamp <= %s
-                    AND pq.scheduled_timestamp >= %s
                     ORDER BY pq.scheduled_timestamp ASC
-                """, (window_end, now))
+                """, (window_end,))
                 
                 posts = cursor.fetchall()
                 logger.info(f"Found {len(posts)} posts due for publishing in next {check_window_minutes} minutes")
@@ -133,26 +132,34 @@ class AutomatedPostingSystem:
             content_type = post['content_type']
             
             # Calculate staggered time
-            staggered_time = self.calculate_staggered_time(scheduled_time)
-            
-            # Check if the staggered time is optimal
-            if not self.is_optimal_posting_time(staggered_time, platform, content_type):
-                # If not optimal, try a different random time within the next 2 hours
-                for _ in range(3):  # Try up to 3 times
-                    staggered_time = self.calculate_staggered_time(scheduled_time, 1, 119)
-                    if self.is_optimal_posting_time(staggered_time, platform, content_type):
-                        break
+            now = datetime.now()
+            if scheduled_time <= now:
+                # If post is overdue, schedule for immediate posting (within 5 minutes)
+                staggered_time = now + timedelta(minutes=1)
+            else:
+                # If post is in the future, use normal staggering
+                staggered_time = self.calculate_staggered_time(scheduled_time)
+                
+                # Check if the staggered time is optimal
+                if not self.is_optimal_posting_time(staggered_time, platform, content_type):
+                    # If not optimal, try a different random time within the next 2 hours
+                    for _ in range(3):  # Try up to 3 times
+                        staggered_time = self.calculate_staggered_time(scheduled_time, 1, 119)
+                        if self.is_optimal_posting_time(staggered_time, platform, content_type):
+                            break
             
             # Update the post with staggered time
-            with self.db_manager.get_cursor() as cursor:
-                cursor.execute("""
-                    UPDATE posting_queue 
-                    SET scheduled_timestamp = %s, status = 'pending'
-                    WHERE id = %s
-                """, (staggered_time, post_id))
-                
-                logger.info(f"Scheduled post {post_id} for {staggered_time} (originally {scheduled_time})")
-                return True
+            with self.db_manager.get_connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute("""
+                        UPDATE posting_queue 
+                        SET scheduled_timestamp = %s, status = 'pending'
+                        WHERE id = %s
+                    """, (staggered_time, post_id))
+                    
+                    conn.commit()
+                    logger.info(f"Scheduled post {post_id} for {staggered_time} (originally {scheduled_time})")
+                    return True
                 
         except Exception as e:
             logger.error(f"Error scheduling post {post.get('id', 'unknown')}: {e}")

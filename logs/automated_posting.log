@@ -3,3 +3,60 @@
 2025-09-24 21:21:48,800 - INFO - Found 0 posts due for publishing in next 30 minutes
 2025-09-24 21:21:48,801 - INFO - No posts due for publishing
 2025-09-24 21:21:48,801 - INFO - Automated posting complete: {'total_found': 0, 'successfully_scheduled': 0, 'failed': 0, 'skipped': 0}
+2025-09-25 18:13:09,227 - INFO - Starting automated posting system
+2025-09-25 18:13:09,242 - INFO - Database connection established
+2025-09-25 18:13:09,250 - INFO - Found 0 posts due for publishing in next 30 minutes
+2025-09-25 18:13:09,250 - INFO - No posts due for publishing
+2025-09-25 18:13:09,250 - INFO - Automated posting complete: {'total_found': 0, 'successfully_scheduled': 0, 'failed': 0, 'skipped': 0}
+2025-09-25 18:13:36,034 - INFO - Starting automated posting system
+2025-09-25 18:13:36,051 - INFO - Database connection established
+2025-09-25 18:13:36,058 - INFO - Found 3 posts due for publishing in next 30 minutes
+2025-09-25 18:13:36,059 - INFO - Scheduled post 384 for 2025-09-24 18:51:00 (originally 2025-09-24 17:00:00)
+2025-09-25 18:13:36,059 - INFO - Scheduled post 401 for 2025-09-25 02:40:00 (originally 2025-09-25 01:01:00)
+2025-09-25 18:13:36,059 - INFO - Scheduled post 385 for 2025-09-25 17:08:00 (originally 2025-09-25 17:00:00)
+2025-09-25 18:13:36,059 - INFO - Processing complete: {'total_found': 3, 'successfully_scheduled': 3, 'failed': 0, 'skipped': 0}
+2025-09-25 18:13:36,059 - INFO - Automated posting complete: {'total_found': 3, 'successfully_scheduled': 3, 'failed': 0, 'skipped': 0}
+2025-09-25 18:13:58,073 - INFO - Starting automated posting system
+2025-09-25 18:13:58,089 - INFO - Database connection established
+2025-09-25 18:13:58,094 - INFO - Found 3 posts due for publishing in next 30 minutes
+2025-09-25 18:13:58,095 - INFO - Scheduled post 384 for 2025-09-24 18:51:00 (originally 2025-09-24 17:00:00)
+2025-09-25 18:13:58,101 - INFO - Database connection established
+2025-09-25 18:13:58,103 - INFO - Scheduled post 401 for 2025-09-25 01:35:00 (originally 2025-09-25 01:01:00)
+2025-09-25 18:13:58,107 - INFO - Database connection established
+2025-09-25 18:13:58,109 - INFO - Scheduled post 385 for 2025-09-25 18:39:00 (originally 2025-09-25 17:00:00)
+2025-09-25 18:13:58,110 - INFO - Processing complete: {'total_found': 3, 'successfully_scheduled': 3, 'failed': 0, 'skipped': 0}
+2025-09-25 18:13:58,110 - INFO - Automated posting complete: {'total_found': 3, 'successfully_scheduled': 3, 'failed': 0, 'skipped': 0}
+2025-09-25 18:14:14,149 - INFO - Starting automated posting system
+2025-09-25 18:14:14,165 - INFO - Database connection established
+2025-09-25 18:14:14,173 - INFO - Found 0 posts due for publishing in next 30 minutes
+2025-09-25 18:14:14,173 - INFO - No posts due for publishing
+2025-09-25 18:14:14,173 - INFO - Automated posting complete: {'total_found': 0, 'successfully_scheduled': 0, 'failed': 0, 'skipped': 0}
+2025-09-25 18:14:35,233 - INFO - Starting automated posting system
+2025-09-25 18:14:35,251 - INFO - Database connection established
+2025-09-25 18:14:35,257 - INFO - Found 1 posts due for publishing in next 30 minutes
+2025-09-25 18:14:35,259 - INFO - Scheduled post 409 for 2025-09-25 19:00:32.547597 (originally 2025-09-25 18:14:32.547597)
+2025-09-25 18:14:35,259 - INFO - Processing complete: {'total_found': 1, 'successfully_scheduled': 1, 'failed': 0, 'skipped': 0}
+2025-09-25 18:14:35,259 - INFO - Automated posting complete: {'total_found': 1, 'successfully_scheduled': 1, 'failed': 0, 'skipped': 0}
+2025-09-25 18:14:44,963 - INFO - Starting automated posting system
+2025-09-25 18:14:44,979 - INFO - Database connection established
+2025-09-25 18:14:44,988 - INFO - Found 1 posts due for publishing in next 30 minutes
+2025-09-25 18:14:44,990 - INFO - Scheduled post 410 for 2025-09-25 19:57:41.140041 (originally 2025-09-25 18:09:41.140041)
+2025-09-25 18:14:44,990 - INFO - Processing complete: {'total_found': 1, 'successfully_scheduled': 1, 'failed': 0, 'skipped': 0}
+2025-09-25 18:14:44,990 - INFO - Automated posting complete: {'total_found': 1, 'successfully_scheduled': 1, 'failed': 0, 'skipped': 0}
+2025-09-25 18:14:59,205 - INFO - Starting automated posting system
+2025-09-25 18:14:59,221 - INFO - Database connection established
+2025-09-25 18:14:59,229 - INFO - Found 0 posts due for publishing in next 30 minutes
+2025-09-25 18:14:59,229 - INFO - No posts due for publishing
+2025-09-25 18:14:59,229 - INFO - Automated posting complete: {'total_found': 0, 'successfully_scheduled': 0, 'failed': 0, 'skipped': 0}
+2025-09-25 18:16:23,381 - INFO - Starting automated posting system
+2025-09-25 18:16:23,396 - INFO - Database connection established
+2025-09-25 18:16:23,404 - INFO - Found 1 posts due for publishing in next 30 minutes
+2025-09-25 18:16:23,406 - INFO - Scheduled post 411 for 2025-09-25 18:17:23.404617 (originally 2025-09-25 18:15:20.558215)
+2025-09-25 18:16:23,406 - INFO - Processing complete: {'total_found': 1, 'successfully_scheduled': 1, 'failed': 0, 'skipped': 0}
+2025-09-25 18:16:23,406 - INFO - Automated posting complete: {'total_found': 1, 'successfully_scheduled': 1, 'failed': 0, 'skipped': 0}
+2025-09-25 19:46:32,003 - INFO - Starting automated posting system
+2025-09-25 19:46:32,019 - INFO - Database connection established
+2025-09-25 19:46:32,026 - INFO - Found 1 posts due for publishing in next 30 minutes
+2025-09-25 19:46:32,028 - INFO - Scheduled post 412 for 2025-09-25 19:47:32.026692 (originally 2025-09-25 19:45:28.732256)
+2025-09-25 19:46:32,028 - INFO - Processing complete: {'total_found': 1, 'successfully_scheduled': 1, 'failed': 0, 'skipped': 0}
+2025-09-25 19:46:32,028 - INFO - Automated posting complete: {'total_found': 1, 'successfully_scheduled': 1, 'failed': 0, 'skipped': 0}

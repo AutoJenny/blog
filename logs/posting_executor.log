@@ -3,3 +3,93 @@
 2025-09-24 21:27:38,632 - INFO - Found 0 pending posts ready for publishing
 2025-09-24 21:27:38,632 - INFO - No pending posts ready for publishing
 2025-09-24 21:27:38,632 - INFO - Posting executor complete: {'total_found': 0, 'successfully_published': 0, 'failed': 0, 'skipped': 0}
+2025-09-25 18:11:47,086 - INFO - Starting posting executor
+2025-09-25 18:11:47,106 - INFO - Database connection established
+2025-09-25 18:11:47,114 - INFO - Found 0 pending posts ready for publishing
+2025-09-25 18:11:47,114 - INFO - No pending posts ready for publishing
+2025-09-25 18:11:47,114 - INFO - Posting executor complete: {'total_found': 0, 'successfully_published': 0, 'failed': 0, 'skipped': 0}
+2025-09-25 18:13:09,367 - INFO - Starting posting executor
+2025-09-25 18:13:09,381 - INFO - Database connection established
+2025-09-25 18:13:09,388 - INFO - Found 0 pending posts ready for publishing
+2025-09-25 18:13:09,388 - INFO - No pending posts ready for publishing
+2025-09-25 18:13:09,388 - INFO - Posting executor complete: {'total_found': 0, 'successfully_published': 0, 'failed': 0, 'skipped': 0}
+2025-09-25 18:13:58,227 - INFO - Starting posting executor
+2025-09-25 18:13:58,244 - INFO - Database connection established
+2025-09-25 18:13:58,251 - INFO - Found 2 pending posts ready for publishing
+2025-09-25 18:13:58,251 - INFO - Executing post 384 to facebook
+2025-09-25 18:13:58,313 - ERROR - Error posting to Facebook: post_to_facebook_page() missing 3 required positional arguments: 'access_token', 'post_content', and 'product_image'
+2025-09-25 18:13:58,315 - ERROR - Post 384 marked as failed: post_to_facebook_page() missing 3 required positional arguments: 'access_token', 'post_content', and 'product_image'
+2025-09-25 18:13:58,315 - INFO - Executing post 401 to facebook
+2025-09-25 18:13:58,315 - ERROR - Error posting to Facebook: post_to_facebook_page() missing 3 required positional arguments: 'access_token', 'post_content', and 'product_image'
+2025-09-25 18:13:58,321 - INFO - Database connection established
+2025-09-25 18:13:58,323 - ERROR - Post 401 marked as failed: post_to_facebook_page() missing 3 required positional arguments: 'access_token', 'post_content', and 'product_image'
+2025-09-25 18:13:58,324 - INFO - Posting execution complete: {'total_found': 2, 'successfully_published': 0, 'failed': 2, 'skipped': 0}
+2025-09-25 18:13:58,324 - INFO - Posting executor complete: {'total_found': 2, 'successfully_published': 0, 'failed': 2, 'skipped': 0}
+2025-09-25 18:14:14,290 - INFO - Starting posting executor
+2025-09-25 18:14:14,306 - INFO - Database connection established
+2025-09-25 18:14:14,313 - INFO - Found 0 pending posts ready for publishing
+2025-09-25 18:14:14,313 - INFO - No pending posts ready for publishing
+2025-09-25 18:14:14,313 - INFO - Posting executor complete: {'total_found': 0, 'successfully_published': 0, 'failed': 0, 'skipped': 0}
+2025-09-25 18:14:35,375 - INFO - Starting posting executor
+2025-09-25 18:14:35,390 - INFO - Database connection established
+2025-09-25 18:14:35,398 - INFO - Found 0 pending posts ready for publishing
+2025-09-25 18:14:35,398 - INFO - No pending posts ready for publishing
+2025-09-25 18:14:35,398 - INFO - Posting executor complete: {'total_found': 0, 'successfully_published': 0, 'failed': 0, 'skipped': 0}
+2025-09-25 18:14:45,120 - INFO - Starting posting executor
+2025-09-25 18:14:45,136 - INFO - Database connection established
+2025-09-25 18:14:45,144 - INFO - Found 0 pending posts ready for publishing
+2025-09-25 18:14:45,144 - INFO - No pending posts ready for publishing
+2025-09-25 18:14:45,144 - INFO - Posting executor complete: {'total_found': 0, 'successfully_published': 0, 'failed': 0, 'skipped': 0}
+2025-09-25 18:14:59,346 - INFO - Starting posting executor
+2025-09-25 18:14:59,363 - INFO - Database connection established
+2025-09-25 18:14:59,371 - INFO - Found 0 pending posts ready for publishing
+2025-09-25 18:14:59,371 - INFO - No pending posts ready for publishing
+2025-09-25 18:14:59,371 - INFO - Posting executor complete: {'total_found': 0, 'successfully_published': 0, 'failed': 0, 'skipped': 0}
+2025-09-25 18:16:23,524 - INFO - Starting posting executor
+2025-09-25 18:16:23,541 - INFO - Database connection established
+2025-09-25 18:16:23,549 - INFO - Found 0 pending posts ready for publishing
+2025-09-25 18:16:23,549 - INFO - No pending posts ready for publishing
+2025-09-25 18:16:23,549 - INFO - Posting executor complete: {'total_found': 0, 'successfully_published': 0, 'failed': 0, 'skipped': 0}
+2025-09-25 18:17:38,713 - INFO - Starting posting executor
+2025-09-25 18:17:38,732 - INFO - Database connection established
+2025-09-25 18:17:38,740 - INFO - Found 1 pending posts ready for publishing
+2025-09-25 18:17:38,740 - INFO - Executing post 411 to facebook
+2025-09-25 18:17:38,808 - INFO - Posting to  (Page ID: 196935752675)
+2025-09-25 18:17:38,808 - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/196935752675/photos
+2025-09-25 18:17:38,808 - INFO - Product image URL: None
+2025-09-25 18:17:38,808 - INFO - Access token being used: EAAUeqRZAekZBkBPZAbV...
+2025-09-25 18:17:39,186 - INFO - Facebook API response - Status: 400
+2025-09-25 18:17:39,186 - INFO - Facebook API response - Content: {"error":{"message":"(#324) Requires upload file","type":"OAuthException","code":324,"fbtrace_id":"AoigT59IUhUUqsuG6unulGq"}}
+2025-09-25 18:17:39,197 - INFO - Database connection established
+2025-09-25 18:17:39,202 - ERROR - Post 411 marked as failed: Facebook API error: 400
+2025-09-25 18:17:39,203 - INFO - Posting execution complete: {'total_found': 1, 'successfully_published': 0, 'failed': 1, 'skipped': 0}
+2025-09-25 18:17:39,203 - INFO - Posting executor complete: {'total_found': 1, 'successfully_published': 0, 'failed': 1, 'skipped': 0}
+2025-09-25 19:46:32,172 - INFO - Starting posting executor
+2025-09-25 19:46:32,190 - INFO - Database connection established
+2025-09-25 19:46:32,195 - INFO - Found 2 pending posts ready for publishing
+2025-09-25 19:46:32,195 - INFO - Executing post 385 to facebook
+2025-09-25 19:46:32,276 - INFO - Database connection established
+2025-09-25 19:46:32,278 - INFO - Posting to  (Page ID: 196935752675)
+2025-09-25 19:46:32,278 - INFO - Post content:  🌺 Unleash your inner Celtic warrior with our Four Mary's Brooch! 💍 This stunning accessory not only...
+2025-09-25 19:46:32,278 - INFO - Product image URL: https://clan.com/four-marys-celtic-brooch
+2025-09-25 19:46:32,278 - INFO - Access token being used: EAAUeqRZAekZBkBPZAbV...
+2025-09-25 19:46:32,278 - INFO - Posting with product link: https://clan.com/four-marys-celtic-brooch
+2025-09-25 19:46:32,278 - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/196935752675/feed
+2025-09-25 19:46:37,008 - INFO - Facebook API response - Status: 200
+2025-09-25 19:46:37,008 - INFO - Facebook API response - Content: {"id":"196935752675_1114860084118647"}
+2025-09-25 19:46:37,018 - INFO - Database connection established
+2025-09-25 19:46:37,020 - INFO - Post 385 marked as published with platform ID: 196935752675_1114860084118647
+2025-09-25 19:46:37,021 - INFO - Executing post 409 to facebook
+2025-09-25 19:46:37,028 - INFO - Database connection established
+2025-09-25 19:46:37,031 - INFO - Posting to  (Page ID: 196935752675)
+2025-09-25 19:46:37,031 - INFO - Post content: Test post for automated system...
+2025-09-25 19:46:37,031 - INFO - Product image URL: None
+2025-09-25 19:46:37,031 - INFO - Access token being used: EAAUeqRZAekZBkBPZAbV...
+2025-09-25 19:46:37,031 - INFO - Posting text-only message
+2025-09-25 19:46:37,031 - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/196935752675/feed
+2025-09-25 19:46:42,741 - INFO - Facebook API response - Status: 200
+2025-09-25 19:46:42,742 - INFO - Facebook API response - Content: {"id":"196935752675_1114860134118642"}
+2025-09-25 19:46:42,751 - INFO - Database connection established
+2025-09-25 19:46:42,755 - INFO - Post 409 marked as published with platform ID: 196935752675_1114860134118642
+2025-09-25 19:46:42,755 - INFO - Posting execution complete: {'total_found': 2, 'successfully_published': 2, 'failed': 0, 'skipped': 0}
+2025-09-25 19:46:42,756 - INFO - Posting executor complete: {'total_found': 2, 'successfully_published': 2, 'failed': 0, 'skipped': 0}

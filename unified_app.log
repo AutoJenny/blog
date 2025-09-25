@@ -15305,3 +15305,179 @@ LINE 2: ...       SELECT id, section_heading, section_order, section_co...
 2025-09-25 17:11:58,085 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:11:58] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
 2025-09-25 17:11:58,088 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:11:58] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
 2025-09-25 17:11:58,090 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:11:58] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-25 17:13:03,273 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:13:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:15:43,278 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:15:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:18:23,279 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:18:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:21:03,281 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:21:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:23:43,380 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:23:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:26:23,374 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:26:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:27:22,328 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:27:22] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-25 17:27:22,329 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:27:22] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-25 17:27:22,331 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:27:22] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-25 17:29:03,280 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:29:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:31:23,093 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:31:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:31:53,294 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:31:53] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:32:26,711 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:32:26] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:33:10,416 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:33:10] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:34:31,950 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:34:31] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:36:31,691 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:36:31] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:37:03,286 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:37:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:39:43,289 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:39:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:42:23,288 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:42:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:45:03,287 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:45:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:47:43,287 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:47:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:50:23,319 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:50:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:53:03,332 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:53:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:55:43,330 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:55:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:58:23,347 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:58:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:01:03,328 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:01:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:03:43,282 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:03:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:06:23,325 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:06:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:09:03,324 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:09:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:09:33,319 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:09:33] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:10:03,642 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:10:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:10:49,056 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:10:49] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:11:19,615 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/posting_executor.py', reloading
+2025-09-25 18:11:19,796 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 18:11:20,713 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 18:11:20,721 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 18:11:20,733 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 18:11:24,797 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/posting_executor.py', reloading
+2025-09-25 18:11:24,995 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 18:11:25,877 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 18:11:25,884 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 18:11:25,895 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 18:11:29,960 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/posting_executor.py', reloading
+2025-09-25 18:11:30,133 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 18:11:31,023 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 18:11:31,029 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 18:11:31,040 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 18:11:44,213 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/posting_executor.py', reloading
+2025-09-25 18:11:44,379 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 18:11:45,279 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 18:11:45,285 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 18:11:45,296 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 18:11:56,735 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:11:56] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:12:03,529 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-25 18:12:03,683 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 18:12:04,508 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 18:12:04,514 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 18:12:04,524 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 18:12:16,718 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-25 18:12:16,876 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 18:12:17,659 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 18:12:17,665 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 18:12:17,674 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 18:12:26,088 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:12:26] "[33mGET /api/syndication/pieces HTTP/1.1[0m" 404 -
+2025-09-25 18:12:26,920 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:12:26] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:12:29,024 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:12:29] "[33mGET /api/syndication/pieces HTTP/1.1[0m" 404 -
+2025-09-25 18:12:55,060 - config.database - INFO - Database connection established
+2025-09-25 18:12:55,068 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:12:55] "GET /launchpad/api/syndication/pieces HTTP/1.1" 200 -
+2025-09-25 18:12:58,142 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:12:58] "GET /launchpad/api/social-media/timeline HTTP/1.1" 200 -
+2025-09-25 18:13:03,420 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:13:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:13:32,890 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/automated_posting.py', reloading
+2025-09-25 18:13:33,041 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 18:13:33,868 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 18:13:33,874 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 18:13:33,884 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 18:13:54,233 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/automated_posting.py', reloading
+2025-09-25 18:13:54,381 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 18:13:55,191 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 18:13:55,197 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 18:13:55,206 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 18:13:58,734 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:13:58] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:14:11,472 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/posting_executor.py', reloading
+2025-09-25 18:14:11,651 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 18:14:12,521 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 18:14:12,528 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 18:14:12,538 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 18:14:48,825 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:14:48] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:14:56,319 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/automated_posting.py', reloading
+2025-09-25 18:14:56,482 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 18:14:57,306 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 18:14:57,312 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 18:14:57,322 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 18:16:15,152 - config.database - INFO - Database connection established
+2025-09-25 18:16:15,157 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:16:15] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-25 18:17:36,427 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:17:36] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:17:58,697 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:17:58] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 18:18:15,234 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/automated_posting.py', reloading
+2025-09-25 18:18:15,402 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 18:18:16,209 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 18:18:16,214 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 18:18:16,224 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 18:19:43,349 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:19:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:22:23,377 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:22:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:25:03,330 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:25:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:27:43,350 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:27:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:30:23,331 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:30:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:33:03,381 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:33:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:35:43,351 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:35:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:38:23,380 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:38:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:41:03,397 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:41:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:43:43,336 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:43:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:46:23,341 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:46:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:49:03,412 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:49:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:51:43,412 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:51:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:54:23,342 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:54:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:57:03,345 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:57:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 18:59:43,344 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 18:59:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:02:23,346 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:02:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:05:03,347 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:05:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:07:43,390 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:07:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:10:23,337 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:10:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:13:03,336 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:13:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:15:43,337 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:15:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:18:23,350 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:18:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:21:03,337 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:21:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:23:43,377 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:23:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:26:23,410 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:26:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:29:03,342 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:29:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:31:43,340 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:31:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:33:45,863 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:33:45] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:34:15,968 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:34:15] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:35:01,410 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:35:01] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:36:04,376 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:36:04] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:38:18,272 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:38:18] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:39:43,312 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:39:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:42:23,284 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:42:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:45:03,282 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:45:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:45:40,294 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-25 19:45:40,478 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 19:45:41,391 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 19:45:41,398 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 19:45:41,409 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 19:46:11,836 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/posting_executor.py', reloading
+2025-09-25 19:46:12,011 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 19:46:12,912 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 19:46:12,919 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 19:46:12,931 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 19:46:22,052 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-25 19:46:22,221 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 19:46:23,115 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 19:46:23,121 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 19:46:23,132 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 19:46:52,602 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/posting_executor.py', reloading
+2025-09-25 19:46:52,775 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 19:46:53,582 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 19:46:53,588 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 19:46:53,598 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 19:47:43,287 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:47:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:50:23,280 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:50:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:53:03,382 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:53:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:55:43,381 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:55:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 19:56:10,464 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:56:10] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 19:56:10,496 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:56:10] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 19:56:10,590 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:56:10] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-25 19:56:10,590 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:56:10] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-25 19:56:10,591 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:56:10] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-25 19:56:10,592 - config.database - INFO - Database connection established
+2025-09-25 19:56:10,594 - config.database - INFO - Database connection established
+2025-09-25 19:56:10,596 - config.database - INFO - Database connection established
+2025-09-25 19:56:10,597 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:56:10] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 19:56:10,601 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:56:10] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 19:56:10,602 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:56:10] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 19:56:10,603 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:56:10] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-25 19:56:10,625 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:56:10] "GET /launchpad/api/syndication/pieces HTTP/1.1" 200 -
+2025-09-25 19:56:10,630 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:56:10] "GET /launchpad/api/social-media/timeline HTTP/1.1" 200 -
+2025-09-25 19:56:10,635 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 19:56:10] "GET /launchpad/api/syndication/facebook/credentials HTTP/1.1" 200 -
