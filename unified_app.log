@@ -15163,3 +15163,145 @@ LINE 2: ...       SELECT id, section_heading, section_order, section_co...
 2025-09-25 15:29:03,280 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:29:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
 2025-09-25 15:31:43,272 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:31:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
 2025-09-25 15:34:23,268 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:34:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 15:35:51,828 - config.database - INFO - Database connection established
+2025-09-25 15:35:51,835 - blueprints.launchpad - INFO - Posting to CLAN by Scotweb (Page ID: 196935752675)
+2025-09-25 15:35:51,835 - blueprints.launchpad - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/196935752675/photos
+2025-09-25 15:35:51,835 - blueprints.launchpad - INFO - Product image URL: https://static.clan.com/media/blog/section_53_2_1758033388.jpg
+2025-09-25 15:35:51,835 - blueprints.launchpad - INFO - Access token being used: EAAUeqRZAekZBkBPZAbV...
+2025-09-25 15:35:51,860 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): graph.facebook.com:443
+2025-09-25 15:36:00,827 - urllib3.connectionpool - DEBUG - https://graph.facebook.com:443 "POST /v18.0/196935752675/photos HTTP/1.1" 200 67
+2025-09-25 15:36:00,827 - blueprints.launchpad - INFO - Facebook API response - Status: 200
+2025-09-25 15:36:00,827 - blueprints.launchpad - INFO - Facebook API response - Content: {"id":"1114706374134018","post_id":"196935752675_1114706410800681"}
+2025-09-25 15:36:00,828 - blueprints.launchpad - INFO - Posting to Scotweb CLAN (Page ID: 108385661622841)
+2025-09-25 15:36:00,828 - blueprints.launchpad - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/108385661622841/photos
+2025-09-25 15:36:00,828 - blueprints.launchpad - INFO - Product image URL: https://static.clan.com/media/blog/section_53_2_1758033388.jpg
+2025-09-25 15:36:00,828 - blueprints.launchpad - INFO - Access token being used: EAAUeqRZAekZBkBPk2kY...
+2025-09-25 15:36:00,830 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): graph.facebook.com:443
+2025-09-25 15:36:00,936 - urllib3.connectionpool - DEBUG - https://graph.facebook.com:443 "POST /v18.0/108385661622841/photos HTTP/1.1" 400 260
+2025-09-25 15:36:00,937 - blueprints.launchpad - INFO - Facebook API response - Status: 400
+2025-09-25 15:36:00,937 - blueprints.launchpad - INFO - Facebook API response - Content: {"error":{"message":"Error validating access token: Session has expired on Wednesday, 24-Sep-25 07:00:00 PDT. The current time is Thursday, 25-Sep-25 07:36:00 PDT.","type":"OAuthException","code":190,"error_subcode":463,"fbtrace_id":"ATzMPWbY9hjakZXI1g719H4"}}
+2025-09-25 15:36:00,941 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:36:00] "POST /launchpad/api/syndication/post-now HTTP/1.1" 200 -
+2025-09-25 15:36:34,688 - blueprints.launchpad - INFO - Posting to CLAN by Scotweb (Page ID: 196935752675)
+2025-09-25 15:36:34,688 - blueprints.launchpad - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/196935752675/photos
+2025-09-25 15:36:34,688 - blueprints.launchpad - INFO - Product image URL: https://static.clan.com/media/blog/section_53_3_1758033390.jpg
+2025-09-25 15:36:34,688 - blueprints.launchpad - INFO - Access token being used: EAAUeqRZAekZBkBPZAbV...
+2025-09-25 15:36:34,690 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): graph.facebook.com:443
+2025-09-25 15:36:42,447 - urllib3.connectionpool - DEBUG - https://graph.facebook.com:443 "POST /v18.0/196935752675/photos HTTP/1.1" 200 67
+2025-09-25 15:36:42,448 - blueprints.launchpad - INFO - Facebook API response - Status: 200
+2025-09-25 15:36:42,448 - blueprints.launchpad - INFO - Facebook API response - Content: {"id":"1114706830800639","post_id":"196935752675_1114706884133967"}
+2025-09-25 15:36:42,449 - blueprints.launchpad - INFO - Posting to Scotweb CLAN (Page ID: 108385661622841)
+2025-09-25 15:36:42,450 - blueprints.launchpad - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/108385661622841/photos
+2025-09-25 15:36:42,450 - blueprints.launchpad - INFO - Product image URL: https://static.clan.com/media/blog/section_53_3_1758033390.jpg
+2025-09-25 15:36:42,450 - blueprints.launchpad - INFO - Access token being used: EAAUeqRZAekZBkBPZAbV...
+2025-09-25 15:36:42,453 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): graph.facebook.com:443
+2025-09-25 15:36:46,891 - urllib3.connectionpool - DEBUG - https://graph.facebook.com:443 "POST /v18.0/108385661622841/photos HTTP/1.1" 403 122
+2025-09-25 15:36:46,892 - blueprints.launchpad - INFO - Facebook API response - Status: 403
+2025-09-25 15:36:46,892 - blueprints.launchpad - INFO - Facebook API response - Content: {"error":{"message":"(#200) Permissions error","type":"OAuthException","code":200,"fbtrace_id":"AgV0WQ29d_o9RKRsbBF0fZS"}}
+2025-09-25 15:36:46,895 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:36:46] "POST /launchpad/api/syndication/post-now HTTP/1.1" 200 -
+2025-09-25 15:37:03,269 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:37:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 15:39:43,269 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:39:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 15:42:23,270 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:42:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 15:45:03,268 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:45:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 15:47:43,263 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:47:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 15:50:23,266 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:50:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 15:53:03,281 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:53:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 15:55:43,380 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:55:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 15:58:23,276 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:58:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:01:03,277 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:01:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:03:43,275 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:03:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:06:23,379 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:06:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:06:53,477 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:06:53] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:07:27,179 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:07:27] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:08:21,825 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:08:21] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:09:09,039 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:09:09] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:10:35,959 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:10:35] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:11:06,062 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:11:06] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:11:42,296 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:11:42] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:12:41,638 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:12:41] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:13:35,491 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:13:35] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:14:27,781 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:14:27] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:16:42,107 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:16:42] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:19:43,273 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:19:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:22:23,271 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:22:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:25:03,377 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:25:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:27:43,377 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:27:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:30:23,276 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:30:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:33:03,272 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:33:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:35:43,274 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:35:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:38:23,274 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:38:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:40:47,411 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:40:47] "GET /launchpad/api/syndication/facebook/credentials HTTP/1.1" 200 -
+2025-09-25 16:40:52,455 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/facebook_token_refresh.py', reloading
+2025-09-25 16:40:52,633 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 16:40:53,563 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 16:40:53,570 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 16:40:53,581 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 16:41:03,273 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:41:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:41:05,747 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/facebook_token_refresh.py', reloading
+2025-09-25 16:41:05,923 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 16:41:06,773 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 16:41:06,778 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 16:41:06,790 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 16:41:15,911 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/facebook_token_refresh.py', reloading
+2025-09-25 16:41:16,076 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 16:41:16,919 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 16:41:16,925 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 16:41:16,936 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 16:41:26,052 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/test_db_creds.py', reloading
+2025-09-25 16:41:26,242 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 16:41:27,108 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 16:41:27,113 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 16:41:27,124 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 16:41:38,285 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/test_db_creds.py', reloading
+2025-09-25 16:41:38,487 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 16:41:39,336 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 16:41:39,343 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 16:41:39,354 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 16:41:51,525 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/facebook_token_refresh.py', reloading
+2025-09-25 16:41:51,717 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 16:41:52,576 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 16:41:52,583 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 16:41:52,594 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 16:41:55,643 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/facebook_token_refresh.py', reloading
+2025-09-25 16:41:55,853 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 16:41:56,735 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 16:41:56,741 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 16:41:56,752 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 16:42:32,190 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/facebook_token_refresh.py', reloading
+2025-09-25 16:42:32,352 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 16:42:33,162 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 16:42:33,167 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 16:42:33,177 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 16:43:43,283 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:43:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:46:23,278 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:46:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:49:03,272 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:49:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:51:43,279 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:51:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:54:23,279 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:54:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:56:06,453 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/facebook_perpetual_tokens.py', reloading
+2025-09-25 16:56:06,621 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 16:56:07,483 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 16:56:07,490 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 16:56:07,500 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 16:57:03,288 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:57:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 16:59:43,283 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 16:59:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:02:23,279 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:02:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:05:03,379 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:05:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:07:43,380 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:07:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:10:23,379 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:10:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 17:11:41,883 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:11:41] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 17:11:41,904 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:11:41] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 17:11:42,077 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:11:42] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-25 17:11:42,081 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:11:42] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-25 17:11:42,082 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:11:42] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-25 17:11:42,084 - config.database - INFO - Database connection established
+2025-09-25 17:11:42,084 - config.database - INFO - Database connection established
+2025-09-25 17:11:42,085 - config.database - INFO - Database connection established
+2025-09-25 17:11:42,088 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:11:42] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 17:11:42,090 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:11:42] "[33mGET /api/daily-product-posts/today-status HTTP/1.1[0m" 404 -
+2025-09-25 17:11:42,091 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:11:42] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 17:11:42,092 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:11:42] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 17:11:42,095 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:11:42] "[33mGET /api/syndication/pieces HTTP/1.1[0m" 404 -
+2025-09-25 17:11:42,111 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:11:42] "[33mGET /api/social-media/timeline HTTP/1.1[0m" 404 -
+2025-09-25 17:11:42,116 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:11:42] "GET /launchpad/api/syndication/facebook/credentials HTTP/1.1" 200 -
+2025-09-25 17:11:58,085 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:11:58] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-25 17:11:58,088 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:11:58] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-25 17:11:58,090 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 17:11:58] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -

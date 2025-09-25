@@ -1,0 +1,26 @@
+2025-09-25 16:40:57,489 - INFO - Starting Facebook token refresh process
+2025-09-25 16:40:57,505 - INFO - Database connection established
+2025-09-25 16:40:57,509 - ERROR - Failed to get current user token: 0
+2025-09-25 16:40:57,509 - ERROR - Facebook token refresh failed: 0
+2025-09-25 16:40:57,509 - ERROR - Facebook token refresh failed
+2025-09-25 16:41:17,354 - INFO - Starting Facebook token refresh process
+2025-09-25 16:41:17,371 - INFO - Database connection established
+2025-09-25 16:41:17,374 - INFO - Found 7 Facebook credentials in database
+2025-09-25 16:41:17,374 - ERROR - Failed to get current user token: 0
+2025-09-25 16:41:17,374 - ERROR - Facebook token refresh failed: 0
+2025-09-25 16:41:17,374 - ERROR - Facebook token refresh failed
+2025-09-25 16:41:57,419 - INFO - Starting Facebook token refresh process
+2025-09-25 16:41:57,435 - INFO - Database connection established
+2025-09-25 16:41:57,439 - INFO - Found 7 Facebook credentials in database
+2025-09-25 16:41:57,439 - INFO -   app_id: 1441086457156585...
+2025-09-25 16:41:57,439 - INFO -   app_secret: 014f104b58439c559638...
+2025-09-25 16:41:57,439 - INFO -   page_access_token: EAAUeqRZAekZBkBPZAbV...
+2025-09-25 16:41:57,439 - INFO -   page_id: 196935752675...
+2025-09-25 16:41:57,439 - INFO -   page_id_2: 108385661622841...
+2025-09-25 16:41:57,439 - INFO -   user_access_token: EAAUeqRZAekZBkBPsw3Y...
+2025-09-25 16:41:57,439 - INFO -   page_access_token_2: EAAUeqRZAekZBkBPZAbV...
+2025-09-25 16:41:57,440 - INFO - Found user access token: EAAUeqRZAekZBkBPsw3Y...
+2025-09-25 16:41:57,440 - INFO - Retrieved current user token from database
+2025-09-25 16:41:57,541 - ERROR - Failed to get long-lived user token: 400 Client Error: Bad Request for url: https://graph.facebook.com/v21.0/oauth/access_token?grant_type=fb_exchange_token&client_id=1441086457156585&client_secret=014f104b58439c559638232df045bf8a&fb_exchange_token=EAAUeqRZAekZBkBPsw3YYjLZCk4ZAZBY7AwPfcTCGOES4heoo7IaeUvCmLqObdOa5EHzyZBMWI7KQQNQj3IZAg3swZBaZBRidIDZAN1bFK3e4mERDauK44UZCo1EA2SP9yQn5YMFtAHHqO4IjeJWDpdXCapE3PrMZAbyZAZCaxKctetRSKAP8FIivrMRpncgWn0dmAodyatdUNCFkG9jYcCLEBpBkJXHyypgSn45U1fqGKOcxz82dw0c4x6ZC7p9QR0PtZBnaKAZDZD
+2025-09-25 16:41:57,542 - ERROR - Facebook token refresh failed: 400 Client Error: Bad Request for url: https://graph.facebook.com/v21.0/oauth/access_token?grant_type=fb_exchange_token&client_id=1441086457156585&client_secret=014f104b58439c559638232df045bf8a&fb_exchange_token=EAAUeqRZAekZBkBPsw3YYjLZCk4ZAZBY7AwPfcTCGOES4heoo7IaeUvCmLqObdOa5EHzyZBMWI7KQQNQj3IZAg3swZBaZBRidIDZAN1bFK3e4mERDauK44UZCo1EA2SP9yQn5YMFtAHHqO4IjeJWDpdXCapE3PrMZAbyZAZCaxKctetRSKAP8FIivrMRpncgWn0dmAodyatdUNCFkG9jYcCLEBpBkJXHyypgSn45U1fqGKOcxz82dw0c4x6ZC7p9QR0PtZBnaKAZDZD
+2025-09-25 16:41:57,542 - ERROR - Facebook token refresh failed
