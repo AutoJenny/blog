@@ -142,53 +142,96 @@ class ItemSelectionData {
         }
     }
     
-    // FIXED PERSISTENCE CODE - NOW USES WORKING ENDPOINTS
+    // UPDATED PERSISTENCE CODE - NOW USES NEW STATE MANAGER
     async loadSelectedProduct() {
         try {
             console.log('Loading selected product from database...');
-            const response = await fetch('/launchpad/api/selected-product');
-            const data = await response.json();
-            console.log('Load selected product response:', data);
             
-            if (data.product) {
-                window.itemSelectionManager.selectedProduct = data.product;
-                if (window.itemSelectionUtils) {
-                    window.itemSelectionUtils.updateSelectedProductDisplay(data.product.name);
-                }
+            // Use the new state manager instead of direct API calls
+            if (window.stateManager) {
+                const selection = await window.stateManager.getSelection('product_post', 'product');
                 
-                // Notify other components that a product has been selected
-                if (window.itemSelectionSelection) {
-                    window.itemSelectionSelection.notifyProductSelected(data.product);
+                if (selection && selection.selected_data) {
+                    const product = selection.selected_data;
+                    window.itemSelectionManager.selectedProduct = product;
+                    if (window.itemSelectionUtils) {
+                        window.itemSelectionUtils.updateSelectedProductDisplay(product.name);
+                    }
+                    
+                    // Notify other components that a product has been selected
+                    if (window.itemSelectionSelection) {
+                        window.itemSelectionSelection.notifyProductSelected(product);
+                    }
+                    console.log('Selected product loaded and displayed via state manager:', product.name);
+                } else {
+                    console.log('No selected product found in database via state manager');
                 }
-                console.log('Selected product loaded and displayed:', data.product.name);
             } else {
-                console.log('No selected product found in database');
+                console.error('State manager not available, falling back to direct API call');
+                // Fallback to direct API call if state manager not available
+                const response = await fetch('/launchpad/api/selected-product');
+                const data = await response.json();
+                console.log('Load selected product response:', data);
+                
+                if (data.product) {
+                    window.itemSelectionManager.selectedProduct = data.product;
+                    if (window.itemSelectionUtils) {
+                        window.itemSelectionUtils.updateSelectedProductDisplay(data.product.name);
+                    }
+                    
+                    // Notify other components that a product has been selected
+                    if (window.itemSelectionSelection) {
+                        window.itemSelectionSelection.notifyProductSelected(data.product);
+                    }
+                    console.log('Selected product loaded and displayed:', data.product.name);
+                } else {
+                    console.log('No selected product found in database');
+                }
             }
         } catch (error) {
             console.error('Error loading selected product:', error);
         }
     }
     
-    // FIXED PERSISTENCE CODE - NOW USES WORKING ENDPOINTS
+    // UPDATED PERSISTENCE CODE - NOW USES NEW STATE MANAGER
     async saveSelectedProduct(product) {
         try {
             console.log('Saving selected product to database:', product.id, product.name);
-            const response = await fetch('/launchpad/api/selected-product', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    product_id: product.id
-                })
-            });
             
-            const data = await response.json();
-            console.log('Save selected product response:', data);
-            if (!data.success) {
-                console.error('Failed to save selected product:', data.error);
+            // Use the new state manager instead of direct API calls
+            if (window.stateManager) {
+                const success = await window.stateManager.setSelection(
+                    'product_post', 
+                    'product', 
+                    product.id, 
+                    product
+                );
+                
+                if (success) {
+                    console.log('Product saved successfully to database via state manager');
+                } else {
+                    console.error('Failed to save selected product via state manager');
+                }
             } else {
-                console.log('Product saved successfully to database');
+                console.error('State manager not available, falling back to direct API call');
+                // Fallback to direct API call if state manager not available
+                const response = await fetch('/launchpad/api/selected-product', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        product_id: product.id
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('Save selected product response:', data);
+                if (!data.success) {
+                    console.error('Failed to save selected product:', data.error);
+                } else {
+                    console.log('Product saved successfully to database');
+                }
             }
         } catch (error) {
             console.error('Error saving selected product:', error);

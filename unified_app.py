@@ -49,6 +49,9 @@ def create_app(config_name=None):
     from blueprints.images import bp as images_bp
     app.register_blueprint(images_bp, url_prefix='/images')
     
+    from blueprints.ui_state import ui_state_bp
+    app.register_blueprint(ui_state_bp)
+    
     from blueprints.clan_api import bp as clan_api_bp
     app.register_blueprint(clan_api_bp, url_prefix='/clan-api')
     
@@ -108,6 +111,11 @@ def create_app(config_name=None):
                 return jsonify({"tables": [t['table_name'] for t in tables], "count": len(tables)})
         except Exception as e:
             return jsonify({"error": str(e), "tables": []}), 500
+    
+    # Test route for state manager
+    @app.route('/test_state_manager.html')
+    def test_state_manager():
+        return app.send_static_file('test_state_manager.html')
     
     return app
 

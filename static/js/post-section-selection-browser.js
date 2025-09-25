@@ -34,8 +34,8 @@ class PostSectionBrowser {
 
     async selectPost(postId) {
         try {
-            // Save selection to localStorage
-            PostSectionUtils.saveToLocalStorage('selectedBlogPostId', postId);
+            // Save selection to state manager
+            await PostSectionUtils.saveToStateManager('blog_post', 'selectedBlogPostId', postId);
 
             // Load post details
             const post = await this.dataManager.loadPostDetails(postId);
@@ -99,8 +99,10 @@ class PostSectionBrowser {
     clearSelection() {
         this.dataManager.clearSelection();
 
-        // Clear localStorage
-        localStorage.removeItem('selectedBlogPostId');
+        // Clear state manager
+        if (window.stateManager) {
+            window.stateManager.setUIState('blog_post', 'selectedBlogPostId', null);
+        }
 
         // Hide sections and details
         PostSectionUtils.showElement('sectionsList', false);

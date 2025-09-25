@@ -130,7 +130,38 @@ class PostSectionUtils {
         document.dispatchEvent(event);
     }
 
+    static async saveToStateManager(pageType, stateKey, value) {
+        try {
+            if (window.stateManager) {
+                await window.stateManager.setUIState(pageType, stateKey, value);
+            } else {
+                console.warn('State manager not available, falling back to localStorage');
+                localStorage.setItem(stateKey, JSON.stringify(value));
+            }
+        } catch (error) {
+            console.error('Error saving to state manager:', error);
+        }
+    }
+
+    static async loadFromStateManager(pageType, stateKey, defaultValue = null) {
+        try {
+            if (window.stateManager) {
+                const state = await window.stateManager.getUIState(pageType, stateKey);
+                return state ? state.state_data : defaultValue;
+            } else {
+                console.warn('State manager not available, falling back to localStorage');
+                const item = localStorage.getItem(stateKey);
+                return item ? JSON.parse(item) : defaultValue;
+            }
+        } catch (error) {
+            console.error('Error loading from state manager:', error);
+            return defaultValue;
+        }
+    }
+
+    // Legacy methods for backward compatibility
     static saveToLocalStorage(key, value) {
+        console.warn('saveToLocalStorage is deprecated, use saveToStateManager instead');
         try {
             localStorage.setItem(key, JSON.stringify(value));
         } catch (error) {
@@ -139,6 +170,7 @@ class PostSectionUtils {
     }
 
     static loadFromLocalStorage(key, defaultValue = null) {
+        console.warn('loadFromLocalStorage is deprecated, use loadFromStateManager instead');
         try {
             const item = localStorage.getItem(key);
             return item ? JSON.parse(item) : defaultValue;

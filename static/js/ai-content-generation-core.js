@@ -24,6 +24,7 @@ class AIContentGenerationManager {
         this.setupDataListener();
         this.checkOllamaStatus();
         this.loadDatabasePrompts(); // Load prompts from database
+        this.loadPersistedSelection(); // Load any persisted selection
     }
     
     // Detect page type and set appropriate process ID
@@ -40,8 +41,23 @@ class AIContentGenerationManager {
     }
     
     // Set the selected data (product or blog section) and update UI
-    setSelectedData(data) {
+    async setSelectedData(data) {
         this.selectedData = data;
+        
+        // Persist the selection using state manager
+        if (window.stateManager && data) {
+            const pageType = this.processId === 6 ? 'product_post' : 'blog_post';
+            const selectionType = this.processId === 6 ? 'product' : 'section';
+            
+            await window.stateManager.setSelection(
+                pageType, 
+                selectionType, 
+                data.id, 
+                data
+            );
+            console.log('Selection persisted via state manager:', data.name || data.section_title);
+        }
+        
         this.updateGenerateButton();
         this.updateContentText();
         this.updateGenerationPromptDisplay(); // Update the generation prompt display
@@ -49,6 +65,34 @@ class AIContentGenerationManager {
         // updateAIStatusHeader() will be called by loadExistingContent() after content is loaded
     }
     
+    // Load persisted selection from state manager
+    async loadPersistedSelection() {
+        if (!window.stateManager) {
+            console.log('State manager not available, skipping persisted selection load');
+            return;
+        }
+        
+        try {
+            const pageType = this.processId === 6 ? 'product_post' : 'blog_post';
+            const selectionType = this.processId === 6 ? 'product' : 'section';
+            
+            const selection = await window.stateManager.getSelection(pageType, selectionType);
+            
+            if (selection && selection.selected_data) {
+                console.log('Loading persisted selection:', selection.selected_data.name || selection.selected_data.section_title);
+                this.selectedData = selection.selected_data;
+                this.updateGenerateButton();
+                this.updateContentText();
+                this.updateGenerationPromptDisplay();
+                this.loadExistingContent(); // This will also update the AI status header
+            } else {
+                console.log('No persisted selection found');
+            }
+        } catch (error) {
+            console.error('Error loading persisted selection:', error);
+        }
+    }
+
     // Legacy method for backward compatibility
     setSelectedProduct(product) {
         this.setSelectedData(product);
