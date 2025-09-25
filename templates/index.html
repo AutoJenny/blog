@@ -652,12 +652,10 @@
         
         async function loadTimelineData() {
             try {
-                console.log('Loading timeline data...');
                 const response = await fetch('/launchpad/api/queue');
                 if (response.ok) {
                     const data = await response.json();
-                    timelineData = data.timeline || []; // Use 'timeline' to match API
-                    console.log('Timeline data loaded:', timelineData.length, 'items');
+                    timelineData = data.timeline || [];
                     updateKPIs();
                     updateQueueCount();
                     updateNextItemPreview();
@@ -676,39 +674,15 @@
             const platforms = [...new Set(timelineData.map(item => item.platform))].length;
             const queueHealth = timelineData.length > 0 ? Math.min(100, (timelineData.length / 50) * 100) : 0;
             
-            console.log('Updating KPIs:', { scheduled, published, platforms, queueHealth });
-            
             const scheduledEl = document.getElementById('homepage-scheduled-count');
             const publishedEl = document.getElementById('homepage-published-count');
             const platformsEl = document.getElementById('homepage-platforms-count');
             const queueHealthEl = document.getElementById('homepage-queue-health');
             
-            console.log('KPI elements found:', { scheduledEl, publishedEl, platformsEl, queueHealthEl });
-            
-            if (scheduledEl) {
-                scheduledEl.textContent = scheduled;
-                console.log('Updated scheduled count to:', scheduled);
-            } else {
-                console.error('scheduledEl not found!');
-            }
-            if (publishedEl) {
-                publishedEl.textContent = published;
-                console.log('Updated published count to:', published);
-            } else {
-                console.error('publishedEl not found!');
-            }
-            if (platformsEl) {
-                platformsEl.textContent = platforms;
-                console.log('Updated platforms count to:', platforms);
-            } else {
-                console.error('platformsEl not found!');
-            }
-            if (queueHealthEl) {
-                queueHealthEl.textContent = Math.round(queueHealth) + '%';
-                console.log('Updated queue health to:', Math.round(queueHealth) + '%');
-            } else {
-                console.error('queueHealthEl not found!');
-            }
+            if (scheduledEl) scheduledEl.textContent = scheduled;
+            if (publishedEl) publishedEl.textContent = published;
+            if (platformsEl) platformsEl.textContent = platforms;
+            if (queueHealthEl) queueHealthEl.textContent = Math.round(queueHealth) + '%';
         }
 
         function updateQueueCount() {
@@ -910,26 +884,13 @@
         // INITIALIZATION
         // ============================================================================
         
-        // Use setTimeout to ensure DOM is ready and avoid conflicts
-        setTimeout(function() {
-            console.log('Initializing homepage social media features...');
-            
-            // Test if elements exist
-            const testEl = document.getElementById('homepage-scheduled-count');
-            console.log('Test element found:', testEl);
-            
-            // Add a visible indicator that JavaScript is running
-            const indicator = document.createElement('div');
-            indicator.id = 'js-indicator';
-            indicator.style.cssText = 'position: fixed; top: 10px; right: 10px; background: green; color: white; padding: 5px; z-index: 9999; font-size: 12px;';
-            indicator.textContent = 'JS Running';
-            document.body.appendChild(indicator);
-            
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
             loadTimelineData();
             setupEventListeners();
             
             // Refresh data every 30 seconds
             setInterval(loadTimelineData, 30000);
-        }, 100);
+        });
     </script>
 {% endblock %}
