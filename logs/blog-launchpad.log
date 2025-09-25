@@ -27,3 +27,7 @@ INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:04:07] "GET /api/syndication/faceboo
 INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:05:17] "[33mGET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1[0m" 404 -
 INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:05:24] "[33mGET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1[0m" 404 -
 INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:05:30] "[33mGET /launchpad/syndication/facebook/product_post HTTP/1.1[0m" 404 -
+INFO:werkzeug: * Detected change in '/Users/autojenny/Documents/projects/blog/blog-launchpad/app.py', reloading
+INFO:werkzeug: * Restarting with stat
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 830-133-383
