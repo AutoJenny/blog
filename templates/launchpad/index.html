@@ -1186,7 +1186,12 @@
                 
                 // Load daily product posts stats
                 try {
-                    const dailyResponse = await fetch('/api/daily-product-posts/today-status');
+                    const dailyResponse = await fetch('/launchpad/api/syndication/today-status');
+                    
+                    if (!dailyResponse.ok) {
+                        throw new Error(`HTTP ${dailyResponse.status}: ${dailyResponse.statusText}`);
+                    }
+                    
                     const dailyData = await dailyResponse.json();
                     
                     if (dailyData.success) {
@@ -1204,7 +1209,12 @@
                 
                 // Load Facebook blog posts stats
                 try {
-                    const syndicationResponse = await fetch('/api/syndication/pieces');
+                    const syndicationResponse = await fetch('/launchpad/api/syndication/pieces');
+                    
+                    if (!syndicationResponse.ok) {
+                        throw new Error(`HTTP ${syndicationResponse.status}: ${syndicationResponse.statusText}`);
+                    }
+                    
                     const syndicationData = await syndicationResponse.json();
                     
                     if (syndicationData.status === 'success') {
@@ -1228,7 +1238,12 @@
                 
                 // Load Social Media Command Center stats
                 try {
-                    const timelineResponse = await fetch('/api/social-media/timeline');
+                    const timelineResponse = await fetch('/launchpad/api/social-media/timeline');
+                    
+                    if (!timelineResponse.ok) {
+                        throw new Error(`HTTP ${timelineResponse.status}: ${timelineResponse.statusText}`);
+                    }
+                    
                     const timelineData = await timelineResponse.json();
                     
                     if (timelineData.success) {

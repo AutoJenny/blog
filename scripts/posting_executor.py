@@ -70,15 +70,43 @@ class PostingExecutor:
             # Import Facebook posting functionality
             from blueprints.launchpad import post_to_facebook_page
             
-            # Prepare post data
-            post_data = {
-                'content': post['generated_content'],
-                'image_url': post.get('product_image'),
-                'platform_post_id': None  # Will be set after successful post
-            }
+            # Get Facebook credentials
+            with self.db_manager.get_connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute("""
+                        SELECT credential_key, credential_value 
+                        FROM platform_credentials 
+                        WHERE credential_key IN ('page_access_token', 'page_id')
+                        AND platform_id = (SELECT id FROM platforms WHERE name = 'facebook')
+                        AND is_active = true
+                    """)
+                    
+                    creds = {row['credential_key']: row['credential_value'] for row in cursor.fetchall()}
             
-            # Post to Facebook
-            result = post_to_facebook_page(post_data)
+            page_access_token = creds.get('page_access_token')
+            page_id = creds.get('page_id')
+            
+            if not page_access_token or not page_id:
+                return {
+                    'success': False,
+                    'error': 'Facebook credentials not found'
+                }
+            
+            # Get product URL for link sharing
+            product_url = None
+            if post.get('product_id'):
+                with self.db_manager.get_connection() as conn:
+                    with conn.cursor() as cursor:
+                        cursor.execute("""
+                            SELECT url FROM clan_products WHERE id = %s
+                        """, (post['product_id'],))
+                        
+                        result = cursor.fetchone()
+                        if result:
+                            product_url = result['url']
+            
+            # Post to Facebook with product URL as link
+            result = post_to_facebook_page(page_id, page_access_token, post['generated_content'], product_url)
             
             if result.get('success'):
                 return {
@@ -166,32 +194,33 @@ class PostingExecutor:
         Update the database with posting result
         """
         try:
-            with self.db_manager.get_cursor() as cursor:
-                if result['success']:
-                    # Successful post
-                    cursor.execute("""
-                        UPDATE posting_queue 
-                        SET status = 'published', 
-                            platform_post_id = %s,
-                            updated_at = %s
-                        WHERE id = %s
-                    """, (result.get('platform_post_id'), datetime.now(), post_id))
+            with self.db_manager.get_connection() as conn:
+                with conn.cursor() as cursor:
+                    if result['success']:
+                        # Successful post
+                        cursor.execute("""
+                            UPDATE posting_queue 
+                            SET status = 'published', 
+                                platform_post_id = %s,
+                                updated_at = %s
+                            WHERE id = %s
+                        """, (result.get('platform_post_id'), datetime.now(), post_id))
+                        
+                        logger.info(f"Post {post_id} marked as published with platform ID: {result.get('platform_post_id')}")
+                    else:
+                        # Failed post
+                        cursor.execute("""
+                            UPDATE posting_queue 
+                            SET status = 'failed', 
+                                error_message = %s,
+                                updated_at = %s
+                            WHERE id = %s
+                        """, (result.get('error', 'Unknown error'), datetime.now(), post_id))
+                        
+                        logger.error(f"Post {post_id} marked as failed: {result.get('error')}")
                     
-                    logger.info(f"Post {post_id} marked as published with platform ID: {result.get('platform_post_id')}")
-                else:
-                    # Failed post
-                    cursor.execute("""
-                        UPDATE posting_queue 
-                        SET status = 'failed', 
-                            error_message = %s,
-                            updated_at = %s
-                        WHERE id = %s
-                    """, (result.get('error', 'Unknown error'), datetime.now(), post_id))
-                    
-                    logger.error(f"Post {post_id} marked as failed: {result.get('error')}")
-                
-                # Commit the transaction
-                self.db_manager.commit()
+                    # Commit the transaction
+                    conn.commit()
                 
         except Exception as e:
             logger.error(f"Error updating post result for {post_id}: {e}")
