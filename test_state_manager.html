@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>State Manager Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .result { background: #f0f0f0; padding: 10px; margin: 10px 0; }
+        button { margin: 5px; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>State Manager Test</h1>
+    
+    <div class="test-section">
+        <h2>Selection State Test</h2>
+        <button onclick="testSelection()">Test Selection State</button>
+        <button onclick="setTestSelection()">Set Test Selection</button>
+        <div id="selection-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>UI State Test</h2>
+        <button onclick="testUIState()">Test UI State</button>
+        <button onclick="setTestUIState()">Set Test UI State</button>
+        <div id="ui-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>All State Test</h2>
+        <button onclick="testAllState()">Test All State</button>
+        <div id="all-result" class="result"></div>
+    </div>
+
+    <script src="/static/js/state-manager.js"></script>
+    <script>
+        async function testSelection() {
+            const result = document.getElementById('selection-result');
+            try {
+                const selection = await window.stateManager.getSelection('product_post', 'product');
+                result.innerHTML = '<pre>' + JSON.stringify(selection, null, 2) + '</pre>';
+            } catch (error) {
+                result.innerHTML = 'Error: ' + error.message;
+            }
+        }
+
+        async function setTestSelection() {
+            const result = document.getElementById('selection-result');
+            try {
+                const success = await window.stateManager.setSelection('product_post', 'product', 123, {name: 'Test Product', id: 123});
+                result.innerHTML = 'Set selection: ' + (success ? 'Success' : 'Failed');
+            } catch (error) {
+                result.innerHTML = 'Error: ' + error.message;
+            }
+        }
+
+        async function testUIState() {
+            const result = document.getElementById('ui-result');
+            try {
+                const uiState = await window.stateManager.getUIState('product_post', 'accordion_state');
+                result.innerHTML = '<pre>' + JSON.stringify(uiState, null, 2) + '</pre>';
+            } catch (error) {
+                result.innerHTML = 'Error: ' + error.message;
+            }
+        }
+
+        async function setTestUIState() {
+            const result = document.getElementById('ui-result');
+            try {
+                const success = await window.stateManager.setUIState('product_post', 'test_state', {test: true, value: 42});
+                result.innerHTML = 'Set UI state: ' + (success ? 'Success' : 'Failed');
+            } catch (error) {
+                result.innerHTML = 'Error: ' + error.message;
+            }
+        }
+
+        async function testAllState() {
+            const result = document.getElementById('all-result');
+            try {
+                const allState = await window.stateManager.getAllState('product_post');
+                result.innerHTML = '<pre>' + JSON.stringify(allState, null, 2) + '</pre>';
+            } catch (error) {
+                result.innerHTML = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

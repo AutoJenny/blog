@@ -36,6 +36,9 @@
         {% include 'launchpad/includes/posting_queue.html' %}
     </div>
 
+    <!-- State Manager (must be loaded first) -->
+    <script src="{{ url_for('static', filename='js/state-manager.js') }}"></script>
+    
     <!-- Post Section Selection JavaScript Modules -->
     <script src="{{ url_for('static', filename='js/post-section-selection-utils.js') }}"></script>
     <script src="{{ url_for('static', filename='js/post-section-selection-data.js') }}"></script>

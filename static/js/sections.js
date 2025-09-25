@@ -191,7 +191,7 @@ async function loadSections(postId) {
         
         console.log('Sections data loaded:', data);
         console.log('About to render sections...');
-        renderSections(data);
+        await renderSections(data);
         console.log('Sections rendered');
         
     } catch (error) {
@@ -202,7 +202,7 @@ async function loadSections(postId) {
 }
 
 // Render sections in the panel
-function renderSections(data) {
+async function renderSections(data) {
     const panel = document.getElementById('sections-panel-content');
     
     if (!data.sections || data.sections.length === 0) {
@@ -252,9 +252,9 @@ function renderSections(data) {
     panel.innerHTML = sectionsHtml;
     
     // Initialize interactive elements
-    initAccordions();
+    await initAccordions();
     initReorderButtons();
-    initSectionSelection();
+    await initSectionSelection();
     
     // Initialize drag and drop if available
     if (window.sectionDragDrop && data.sections) {
@@ -412,12 +412,19 @@ function renderSection(section, index, totalSections) {
 }
 
 // Initialize accordion functionality
-function initAccordions() {
+async function initAccordions() {
     console.log('Initializing accordions...');
     
-    // Load saved accordion states from localStorage
+    // Load saved accordion states from state manager
     const storageKey = `sections_accordion_post_${currentPostId}`;
-    const savedAccordion = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    let savedAccordion = {};
+    
+    if (window.stateManager) {
+        const state = await window.stateManager.getUIState('blog_post', storageKey);
+        savedAccordion = state ? state.state_data : {};
+    } else {
+        savedAccordion = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    }
     
     // Section accordions
     document.querySelectorAll('.section-accordion-trigger').forEach(btn => {
@@ -445,21 +452,33 @@ function initAccordions() {
             // Save accordion state
             const currentAccordion = JSON.parse(localStorage.getItem(storageKey) || '{}');
             currentAccordion[accId] = !expanded;
-            localStorage.setItem(storageKey, JSON.stringify(currentAccordion));
+            
+            if (window.stateManager) {
+                await window.stateManager.setUIState('blog_post', storageKey, currentAccordion);
+            } else {
+                localStorage.setItem(storageKey, JSON.stringify(currentAccordion));
+            }
         });
     });
     
     // Initialize tab functionality
-    initTabs();
+    await initTabs();
 }
 
 // Initialize tab functionality
-function initTabs() {
+async function initTabs() {
     console.log('Initializing tabs...');
     
-    // Load saved tab states from localStorage
+    // Load saved tab states from state manager
     const storageKey = `sections_tabs_post_${currentPostId}`;
-    const savedTabs = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    let savedTabs = {};
+    
+    if (window.stateManager) {
+        const state = await window.stateManager.getUIState('blog_post', storageKey);
+        savedTabs = state ? state.state_data : {};
+    } else {
+        savedTabs = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    }
     
     // Use event delegation for better performance and to handle dynamically created elements
     document.addEventListener('click', function(e) {
@@ -475,7 +494,12 @@ function initTabs() {
             // Save tab state
             const currentTabs = JSON.parse(localStorage.getItem(storageKey) || '{}');
             currentTabs[accordionId] = tabName;
-            localStorage.setItem(storageKey, JSON.stringify(currentTabs));
+            
+            if (window.stateManager) {
+                window.stateManager.setUIState('blog_post', storageKey, currentTabs);
+            } else {
+                localStorage.setItem(storageKey, JSON.stringify(currentTabs));
+            }
         }
     });
     
@@ -560,14 +584,21 @@ function initReorderButtons() {
 }
 
 // Initialize section selection functionality
-function initSectionSelection() {
+async function initSectionSelection() {
     const selectAll = document.getElementById('select-all-sections');
     const checkboxes = Array.from(document.querySelectorAll('.section-select-checkbox'));
     const countSpan = document.getElementById('selected-section-count');
     
-    // Load saved checkbox states from localStorage
+    // Load saved checkbox states from state manager
     const storageKey = `sections_selection_post_${currentPostId}`;
-    const savedSelection = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    let savedSelection = {};
+    
+    if (window.stateManager) {
+        const state = await window.stateManager.getUIState('blog_post', storageKey);
+        savedSelection = state ? state.state_data : {};
+    } else {
+        savedSelection = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    }
     
     // Apply saved states to checkboxes
     checkboxes.forEach(cb => {
@@ -594,7 +625,11 @@ function initSectionSelection() {
             const sectionId = cb.getAttribute('data-section-id');
             selection[sectionId] = cb.checked;
         });
-        localStorage.setItem(storageKey, JSON.stringify(selection));
+        if (window.stateManager) {
+            await window.stateManager.setUIState('blog_post', storageKey, selection);
+        } else {
+            localStorage.setItem(storageKey, JSON.stringify(selection));
+        }
         
         // Notify parent window (LLM Actions) that section selection changed
         try {
