@@ -705,7 +705,8 @@ def get_queue():
             
             return jsonify({
                 'success': True,
-                'items': timeline_items,
+                'timeline': timeline_items,
+                'items': timeline_items,  # Keep both for compatibility
                 'count': len(timeline_items)
             })
             
@@ -1171,21 +1172,21 @@ def post_now():
                 # Define both pages to post to
                 pages_to_post = []
                 
-                # Page 1 (CLAN by Scotweb)
+                # Page 1 (Scotweb CLAN)
                 if creds.get('page_access_token') and creds.get('page_id'):
                     pages_to_post.append({
                         'page_id': creds['page_id'],
                         'access_token': creds['page_access_token'],
-                        'name': 'CLAN by Scotweb'
+                        'name': 'Scotweb CLAN'
                     })
                 
-                # Page 2 (Scotweb CLAN) - only add if different from Page 1
+                # Page 2 (CLAN by Scotweb) - only add if different from Page 1
                 if (creds.get('page_access_token_2') and creds.get('page_id_2') and 
                     creds.get('page_id_2') != creds.get('page_id')):
                     pages_to_post.append({
                         'page_id': creds['page_id_2'],
                         'access_token': creds['page_access_token_2'],
-                        'name': 'Scotweb CLAN'
+                        'name': 'CLAN by Scotweb'
                     })
                 elif creds.get('page_id_2') == creds.get('page_id'):
                     logger.warning("Both Facebook pages have the same page_id - skipping duplicate posting to prevent double posts")
@@ -1301,21 +1302,21 @@ def post_now():
                 # Define both pages to post to
                 pages_to_post = []
                 
-                # Page 1 (CLAN by Scotweb)
+                # Page 1 (Scotweb CLAN)
                 if creds.get('page_access_token') and creds.get('page_id'):
                     pages_to_post.append({
                         'page_id': creds['page_id'],
                         'access_token': creds['page_access_token'],
-                        'name': 'CLAN by Scotweb'
+                        'name': 'Scotweb CLAN'
                     })
                 
-                # Page 2 (Scotweb CLAN) - only add if different from Page 1
+                # Page 2 (CLAN by Scotweb) - only add if different from Page 1
                 if (creds.get('page_access_token_2') and creds.get('page_id_2') and 
                     creds.get('page_id_2') != creds.get('page_id')):
                     pages_to_post.append({
                         'page_id': creds['page_id_2'],
                         'access_token': creds['page_access_token_2'],
-                        'name': 'Scotweb CLAN'
+                        'name': 'CLAN by Scotweb'
                     })
                 elif creds.get('page_id_2') == creds.get('page_id'):
                     logger.warning("Both Facebook pages have the same page_id - skipping duplicate posting to prevent double posts")
