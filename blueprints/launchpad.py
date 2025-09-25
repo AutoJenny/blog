@@ -1073,20 +1073,20 @@ def post_to_facebook_page(page_id, access_token, post_content, product_image, pa
     """Helper function to post to a single Facebook page."""
     import requests
     
-    feed_url = f"https://graph.facebook.com/v18.0/{page_id}/feed"
-    feed_payload = {
-        'message': post_content,
-        'link': product_image,
+    photos_url = f"https://graph.facebook.com/v18.0/{page_id}/photos"
+    photos_payload = {
+        'url': product_image,
+        'caption': post_content,
         'published': True,
         'access_token': access_token
     }
     
     logger.info(f"Posting to {page_name} (Page ID: {page_id})")
-    logger.info(f"Facebook API call - URL: {feed_url}")
+    logger.info(f"Facebook API call - URL: {photos_url}")
     logger.info(f"Product image URL: {product_image}")
     logger.info(f"Access token being used: {access_token[:20]}...")
     
-    response = requests.post(feed_url, data=feed_payload, timeout=30)
+    response = requests.post(photos_url, data=photos_payload, timeout=30)
     logger.info(f"Facebook API response - Status: {response.status_code}")
     logger.info(f"Facebook API response - Content: {response.text}")
     
