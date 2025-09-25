@@ -656,7 +656,7 @@
                 const response = await fetch('/launchpad/api/queue');
                 if (response.ok) {
                     const data = await response.json();
-                    timelineData = data.items || []; // Use 'items' instead of 'timeline'
+                    timelineData = data.timeline || []; // Use 'timeline' to match API
                     console.log('Timeline data loaded:', timelineData.length, 'items');
                     updateKPIs();
                     updateQueueCount();
@@ -917,6 +917,13 @@
             // Test if elements exist
             const testEl = document.getElementById('homepage-scheduled-count');
             console.log('Test element found:', testEl);
+            
+            // Add a visible indicator that JavaScript is running
+            const indicator = document.createElement('div');
+            indicator.id = 'js-indicator';
+            indicator.style.cssText = 'position: fixed; top: 10px; right: 10px; background: green; color: white; padding: 5px; z-index: 9999; font-size: 12px;';
+            indicator.textContent = 'JS Running';
+            document.body.appendChild(indicator);
             
             loadTimelineData();
             setupEventListeners();
