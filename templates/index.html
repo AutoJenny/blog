@@ -3,7 +3,319 @@
 {% block title %}BlogForge - Unified CMS{% endblock %}
 
 {% block head %}
-    <!-- Additional styles specific to homepage can go here -->
+    <!-- Additional styles specific to homepage -->
+    <style>
+        /* KPI Panel Styles */
+        .kpi-panel {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #475569;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .kpi-card {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+        }
+        
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #10b981;
+            margin-bottom: 5px;
+        }
+        
+        .kpi-label {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Queue Accordion Styles */
+        .queue-accordion {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .accordion-header {
+            background: #334155;
+            padding: 20px 30px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s ease;
+            gap: 20px;
+        }
+        
+        .accordion-header:hover {
+            background: #475569;
+        }
+        
+        .accordion-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+        
+        .queue-count {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            font-weight: 400;
+        }
+        
+        .accordion-toggle {
+            color: #94a3b8;
+            font-size: 1.2rem;
+            transition: transform 0.2s ease;
+        }
+        
+        .next-item-preview {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            margin: 0 20px;
+        }
+        
+        .next-item-thumb {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        
+        .next-item-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .next-item-thumb .placeholder {
+            width: 100%;
+            height: 100%;
+            background: #475569;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .next-item-details {
+            flex: 1;
+        }
+        
+        .next-item-title {
+            color: #f1f5f9;
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+        
+        .next-item-meta {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .next-item-platform, .next-item-type, .next-item-time {
+            font-size: 0.8rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        
+        .next-item-platform.platform-facebook { background: #1877f2; color: white; }
+        .next-item-platform.platform-instagram { background: #e4405f; color: white; }
+        .next-item-platform.platform-twitter { background: #1da1f2; color: white; }
+        .next-item-platform.platform-linkedin { background: #0077b5; color: white; }
+        
+        .next-item-type.content-product { background: #f59e0b; color: #0f172a; }
+        .next-item-type.content-blog_post { background: #8b5cf6; color: white; }
+        
+        .next-item-time {
+            background: #475569;
+            color: #94a3b8;
+        }
+        
+        .accordion-content {
+            background: #0f172a;
+            padding: 0;
+        }
+        
+        /* Platform Selector Styles */
+        .platform-selector {
+            background: #1e293b;
+            padding: 20px 30px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .platform-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .platform-tab {
+            background: #334155;
+            color: #94a3b8;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .platform-tab:hover {
+            background: #475569;
+            color: #f1f5f9;
+        }
+        
+        .platform-tab.active {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .status-filter {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-filter label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .status-select {
+            background: #334155;
+            color: #f1f5f9;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+        }
+        
+        /* Timeline Styles */
+        .timeline-container {
+            padding: 20px 30px;
+        }
+        
+        .timeline-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #0f172a;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .timeline-table th {
+            background: #1e293b;
+            color: #94a3b8;
+            padding: 12px 8px;
+            text-align: left;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #334155;
+        }
+        
+        .timeline-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #1e293b;
+            color: #f1f5f9;
+            font-size: 0.9rem;
+        }
+        
+        .timeline-table tr:hover {
+            background: #1e293b;
+        }
+        
+        .timeline-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        .empty-state p {
+            margin: 8px 0;
+        }
+        
+        /* Launchpad Button */
+        .btn-launchpad {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px 32px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-launchpad:hover {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+            text-decoration: none;
+            color: white;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -93,38 +405,123 @@
                     <h2 class="text-2xl section-title mb-6 flex items-center gap-2">
                         <i class="fa-solid fa-rocket"></i> Social Media Operations
                     </h2>
-                    <div class="grid grid-cols-1 gap-6">
-                        <a href="/launchpad/" class="block group">
-                            <div class="card-dark rounded-xl p-8 transition flex flex-col items-center gap-4 group-hover:border-dark-accent bg-gradient-to-r from-blue-900/20 to-purple-900/20 border-2 border-blue-500/30">
-                                <div class="flex items-center gap-4">
-                                    <span class="icon-circle bg-gradient-to-r from-blue-500 to-purple-500"><i class="fa-solid fa-rocket text-white text-2xl"></i></span>
-                                    <div class="text-center">
-                                        <h3 class="text-2xl font-bold text-white mb-2">Social Media Launchpad</h3>
-                                        <p class="text-dark-accent text-lg">Centralized hub for all social media publishing and syndication</p>
+                    
+                    <!-- Real-time Indicators -->
+                    <div class="kpi-panel">
+                        <div class="kpi-grid">
+                            <div class="kpi-card">
+                                <div class="kpi-value" id="homepage-scheduled-count">0</div>
+                                <div class="kpi-label">Scheduled Posts</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value" id="homepage-published-count">0</div>
+                                <div class="kpi-label">Published Today</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value" id="homepage-platforms-count">0</div>
+                                <div class="kpi-label">Platforms Active</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value" id="homepage-queue-health">0</div>
+                                <div class="kpi-label">Queue Health</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Posting Queue Accordion -->
+                    <div class="queue-accordion">
+                        <div class="accordion-header" onclick="toggleQueueAccordion()">
+                            <div class="accordion-title">
+                                <i class="fas fa-list-alt"></i>
+                                Posting Queue
+                                <span class="queue-count" id="queue-count">(0 items)</span>
+                            </div>
+                            <div class="next-item-preview" id="next-item-preview" style="display: none;">
+                                <div class="next-item-thumb" id="next-item-thumb"></div>
+                                <div class="next-item-details">
+                                    <div class="next-item-title" id="next-item-title">No items in queue</div>
+                                    <div class="next-item-meta">
+                                        <span class="next-item-platform" id="next-item-platform"></span>
+                                        <span class="next-item-type" id="next-item-type"></span>
+                                        <span class="next-item-time" id="next-item-time"></span>
                                     </div>
-                                </div>
-                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full mt-4">
-                                    <div class="text-center">
-                                        <div class="text-2xl font-bold text-white" id="homepage-scheduled-count">-</div>
-                                        <div class="text-dark-accent text-sm">Scheduled Posts</div>
-                                    </div>
-                                    <div class="text-center">
-                                        <div class="text-2xl font-bold text-white" id="homepage-published-count">-</div>
-                                        <div class="text-dark-accent text-sm">Published Today</div>
-                                    </div>
-                                    <div class="text-center">
-                                        <div class="text-2xl font-bold text-white" id="homepage-platforms-count">-</div>
-                                        <div class="text-dark-accent text-sm">Active Platforms</div>
-                                    </div>
-                                    <div class="text-center">
-                                        <div class="text-2xl font-bold text-white" id="homepage-queue-health">-</div>
-                                        <div class="text-dark-accent text-sm">Queue Health</div>
-                                    </div>
-                                </div>
-                                <div class="mt-4 text-dark-accent text-sm">
-                                    <i class="fa-solid fa-arrow-right"></i> Manage Facebook posts, blog syndication, and publishing workflows
                                 </div>
                             </div>
+                            <div class="accordion-toggle">
+                                <i class="fas fa-chevron-down" id="queue-chevron"></i>
+                            </div>
+                        </div>
+                        <div class="accordion-content" id="queue-content" style="display: none;">
+                            <!-- Platform Selector -->
+                            <div class="platform-selector">
+                                <div class="platform-tabs">
+                                    <button class="platform-tab active" data-platform="all">
+                                        <i class="fas fa-globe"></i>
+                                        All Platforms
+                                    </button>
+                                    <button class="platform-tab" data-platform="facebook">
+                                        <i class="fab fa-facebook"></i>
+                                        Facebook
+                                    </button>
+                                    <button class="platform-tab" data-platform="instagram">
+                                        <i class="fab fa-instagram"></i>
+                                        Instagram
+                                    </button>
+                                    <button class="platform-tab" data-platform="twitter">
+                                        <i class="fab fa-twitter"></i>
+                                        Twitter
+                                    </button>
+                                    <button class="platform-tab" data-platform="linkedin">
+                                        <i class="fab fa-linkedin"></i>
+                                        LinkedIn
+                                    </button>
+                                </div>
+                                
+                                <!-- Status Filter -->
+                                <div class="status-filter">
+                                    <label for="status-filter">Status:</label>
+                                    <select id="status-filter" class="status-select">
+                                        <option value="ready" selected>Ready</option>
+                                        <option value="published">Published</option>
+                                        <option value="all">All Status</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Queue Table -->
+                            <div class="timeline-container">
+                                <table class="timeline-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 60px;">Thumb</th>
+                                            <th style="width: 120px;">Date/Time</th>
+                                            <th style="width: 100px;">Platform</th>
+                                            <th style="width: 100px;">Type</th>
+                                            <th>Title</th>
+                                            <th style="width: 80px;">Status</th>
+                                            <th style="width: 120px;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="timeline-body">
+                                        <!-- Timeline rows will be populated here -->
+                                    </tbody>
+                                </table>
+                                
+                                <!-- Empty State -->
+                                <div id="empty-timeline" class="empty-state" style="display: none;">
+                                    <i class="fas fa-inbox"></i>
+                                    <p>No scheduled posts found</p>
+                                    <p>Start by creating some content or check your posting schedules</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Launchpad Link -->
+                    <div class="text-center mt-6">
+                        <a href="/launchpad/" class="btn-launchpad">
+                            <i class="fa-solid fa-rocket"></i>
+                            Go to Social Media Launchpad
                         </a>
                     </div>
                 </section>
@@ -221,67 +618,278 @@
 
 {% block scripts %}
     <script>
-        async function loadPosts() {
-            try {
-                const response = await fetch('/posts');
-                if (response.ok) {
-                    const content = await response.text();
-                    document.querySelector('.content-area').innerHTML = content;
-                } else {
-                    alert('Posts service unavailable');
-                }
-            } catch (error) {
-                alert('Error loading posts: ' + error.message);
+        // Global state
+        let currentPlatform = 'all';
+        let currentStatus = 'ready';
+        let timelineData = [];
+        let isAccordionOpen = false;
+
+        // ============================================================================
+        // ACCORDION FUNCTIONS
+        // ============================================================================
+        
+        function toggleQueueAccordion() {
+            const content = document.getElementById('queue-content');
+            const chevron = document.getElementById('queue-chevron');
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                chevron.style.transform = 'rotate(180deg)';
+                isAccordionOpen = true;
+            } else {
+                content.style.display = 'none';
+                chevron.style.transform = 'rotate(0deg)';
+                isAccordionOpen = false;
             }
+            
+            // Re-render timeline to show/hide items based on accordion state
+            renderTimeline();
         }
 
-        async function loadDocs() {
-            try {
-                const response = await fetch('/docs/');
-                if (response.ok) {
-                    const content = await response.text();
-                    document.querySelector('.content-area').innerHTML = content;
-                } else {
-                    alert('Docs service unavailable');
-                }
-            } catch (error) {
-                alert('Error loading docs: ' + error.message);
-            }
-        }
-
-        // Load Social Media KPIs for homepage
-        async function loadSocialMediaKPIs() {
+        // ============================================================================
+        // TIMELINE MANAGEMENT FUNCTIONS
+        // ============================================================================
+        
+        async function loadTimelineData() {
             try {
                 const response = await fetch('/launchpad/api/queue');
                 if (response.ok) {
                     const data = await response.json();
-                    const timeline = data.timeline || [];
-                    
-                    // Calculate KPIs
-                    const scheduled = timeline.filter(item => item.status === 'pending' || item.status === 'ready').length;
-                    const published = timeline.filter(item => item.status === 'published').length;
-                    const platforms = [...new Set(timeline.map(item => item.platform))].length;
-                    const queueHealth = timeline.length > 0 ? Math.min(100, (timeline.length / 50) * 100) : 0;
-                    
-                    // Update homepage KPI elements
-                    const scheduledEl = document.getElementById('homepage-scheduled-count');
-                    const publishedEl = document.getElementById('homepage-published-count');
-                    const platformsEl = document.getElementById('homepage-platforms-count');
-                    const queueHealthEl = document.getElementById('homepage-queue-health');
-                    
-                    if (scheduledEl) scheduledEl.textContent = scheduled;
-                    if (publishedEl) publishedEl.textContent = published;
-                    if (platformsEl) platformsEl.textContent = platforms;
-                    if (queueHealthEl) queueHealthEl.textContent = Math.round(queueHealth) + '%';
+                    timelineData = data.timeline || [];
+                    updateKPIs();
+                    updateQueueCount();
+                    updateNextItemPreview();
+                    renderTimeline();
+                } else {
+                    console.error('Failed to load timeline data:', response.status);
                 }
             } catch (error) {
-                console.log('Error loading social media KPIs:', error);
+                console.error('Error loading timeline data:', error);
             }
         }
 
-        // Load KPIs when page loads
+        function updateKPIs() {
+            const scheduled = timelineData.filter(item => item.status === 'pending' || item.status === 'ready').length;
+            const published = timelineData.filter(item => item.status === 'published').length;
+            const platforms = [...new Set(timelineData.map(item => item.platform))].length;
+            const queueHealth = timelineData.length > 0 ? Math.min(100, (timelineData.length / 50) * 100) : 0;
+            
+            const scheduledEl = document.getElementById('homepage-scheduled-count');
+            const publishedEl = document.getElementById('homepage-published-count');
+            const platformsEl = document.getElementById('homepage-platforms-count');
+            const queueHealthEl = document.getElementById('homepage-queue-health');
+            
+            if (scheduledEl) scheduledEl.textContent = scheduled;
+            if (publishedEl) publishedEl.textContent = published;
+            if (platformsEl) platformsEl.textContent = platforms;
+            if (queueHealthEl) queueHealthEl.textContent = Math.round(queueHealth) + '%';
+        }
+
+        function updateQueueCount() {
+            const filteredItems = getFilteredItems();
+            const countEl = document.getElementById('queue-count');
+            if (countEl) {
+                countEl.textContent = `(${filteredItems.length} items)`;
+            }
+        }
+
+        function updateNextItemPreview() {
+            const preview = document.getElementById('next-item-preview');
+            const thumb = document.getElementById('next-item-thumb');
+            const title = document.getElementById('next-item-title');
+            const platform = document.getElementById('next-item-platform');
+            const type = document.getElementById('next-item-type');
+            const time = document.getElementById('next-item-time');
+            
+            const filteredItems = getFilteredItems();
+            
+            if (filteredItems.length === 0) {
+                preview.style.display = 'none';
+                return;
+            }
+            
+            const nextItem = filteredItems[0];
+            preview.style.display = 'flex';
+            
+            if (nextItem.content_type === 'product' && nextItem.product_image) {
+                thumb.innerHTML = `<img src="${nextItem.product_image}" alt="Product thumbnail" onerror="this.parentElement.innerHTML='<div class=\\"placeholder\\">P</div>'">`;
+            } else if (nextItem.content_type === 'blog_post' && nextItem.product_image) {
+                thumb.innerHTML = `<img src="${nextItem.product_image}" alt="Blog section thumbnail" onerror="this.parentElement.innerHTML='<div class=\\"placeholder\\">B</div>'">`;
+            } else if (nextItem.content_type === 'blog_post') {
+                thumb.innerHTML = '<div class="placeholder">B</div>';
+            } else {
+                thumb.innerHTML = '<div class="placeholder">P</div>';
+            }
+            
+            title.textContent = nextItem.product_name || 'Untitled';
+            
+            platform.textContent = nextItem.platform.charAt(0).toUpperCase() + nextItem.platform.slice(1);
+            platform.className = `next-item-platform platform-${nextItem.platform}`;
+            
+            type.textContent = nextItem.content_type === 'blog_post' ? 'Blog' : 'Product';
+            type.className = `next-item-type content-${nextItem.content_type}`;
+            
+            const scheduledDate = new Date(nextItem.scheduled_timestamp || nextItem.created_at);
+            const now = new Date();
+            const diffMs = scheduledDate - now;
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            
+            let timeText = '';
+            if (diffMs < 0) {
+                const absHours = Math.abs(diffHours);
+                const absMinutes = Math.abs(diffMinutes);
+                if (absHours > 0) { timeText = `${absHours}h ${absMinutes}m ago`; }
+                else { timeText = `${absMinutes}m ago`; }
+            } else if (diffHours > 24) {
+                const days = Math.floor(diffHours / 24);
+                const remainingHours = diffHours % 24;
+                if (remainingHours > 0) { timeText = `in ${days}d ${remainingHours}h`; }
+                else { timeText = `in ${days}d`; }
+            } else if (diffHours > 0) { timeText = `in ${diffHours}h ${diffMinutes}m`; }
+            else if (diffMinutes > 0) { timeText = `in ${diffMinutes}m`; }
+            else { timeText = 'now'; }
+            
+            time.textContent = timeText;
+        }
+
+        function getFilteredItems() {
+            return timelineData.filter(item => {
+                if (currentPlatform !== 'all' && item.platform !== currentPlatform) { return false; }
+                if (currentStatus !== 'all' && item.status !== currentStatus) { return false; }
+                return true;
+            });
+        }
+
+        function renderTimeline() {
+            const tbody = document.getElementById('timeline-body');
+            const emptyState = document.getElementById('empty-timeline');
+            
+            if (!tbody) return;
+            
+            const filteredItems = getFilteredItems();
+            
+            if (filteredItems.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            // If accordion is closed, only show first item
+            const itemsToShow = isAccordionOpen ? filteredItems : filteredItems.slice(0, 1);
+            
+            tbody.innerHTML = itemsToShow.map(item => {
+                const scheduledDate = new Date(item.scheduled_timestamp || item.created_at);
+                const formattedDate = scheduledDate.toLocaleDateString();
+                const formattedTime = scheduledDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
+                const statusClass = `status-${item.status}`;
+                const statusText = item.status.charAt(0).toUpperCase() + item.status.slice(1);
+                
+                const thumbContent = item.product_image ? 
+                    `<img src="${item.product_image}" alt="Thumbnail" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` :
+                    '';
+                
+                const thumbPlaceholder = `<div style="width: 40px; height: 40px; background: #475569; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-weight: 600; font-size: 0.8rem;">${item.content_type === 'blog_post' ? 'B' : 'P'}</div>`;
+                
+                return `
+                    <tr>
+                        <td>${thumbContent}${thumbPlaceholder}</td>
+                        <td>
+                            <div style="font-size: 0.85rem;">${formattedDate}</div>
+                            <div style="font-size: 0.75rem; color: #94a3b8;">${formattedTime}</div>
+                        </td>
+                        <td>
+                            <span class="platform-badge platform-${item.platform}">${item.platform.charAt(0).toUpperCase() + item.platform.slice(1)}</span>
+                        </td>
+                        <td>
+                            <span class="content-badge content-${item.content_type}">${item.content_type === 'blog_post' ? 'Blog' : 'Product'}</span>
+                        </td>
+                        <td style="font-weight: 500;">${item.product_name || 'Untitled'}</td>
+                        <td>
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                        </td>
+                        <td>
+                            ${item.status === 'ready' ? `<button class="btn-post" onclick="postNow(${item.id})" style="background: #10b981; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 0.8rem; cursor: pointer;">Post Now</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ============================================================================
+        // EVENT HANDLERS
+        // ============================================================================
+        
+        function setupEventListeners() {
+            // Platform tabs
+            document.querySelectorAll('.platform-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.platform-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentPlatform = tab.dataset.platform;
+                    updateQueueCount();
+                    updateNextItemPreview();
+                    renderTimeline();
+                });
+            });
+            
+            // Status filter
+            const statusFilter = document.getElementById('status-filter');
+            if (statusFilter) {
+                statusFilter.addEventListener('change', (e) => {
+                    currentStatus = e.target.value;
+                    updateQueueCount();
+                    updateNextItemPreview();
+                    renderTimeline();
+                });
+            }
+        }
+
+        // ============================================================================
+        // POSTING FUNCTIONS
+        // ============================================================================
+        
+        async function postNow(postId) {
+            if (!confirm('Are you sure you want to post this item now?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/launchpad/api/syndication/post-now`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ post_id: postId })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(`Posting successful! ${result.message || 'Post has been published.'}`);
+                    loadTimelineData(); // Reload data
+                } else {
+                    const error = await response.json();
+                    alert(`Posting failed: ${error.error || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Error posting:', error);
+                alert('Error posting: ' + error.message);
+            }
+        }
+
+        // ============================================================================
+        // INITIALIZATION
+        // ============================================================================
+        
         document.addEventListener('DOMContentLoaded', function() {
-            loadSocialMediaKPIs();
+            loadTimelineData();
+            setupEventListeners();
+            
+            // Refresh data every 30 seconds
+            setInterval(loadTimelineData, 30000);
         });
     </script>
 {% endblock %}
