@@ -30,3 +30,13 @@
 127.0.0.1 - - [24/Sep/2025 16:04:07] "[36mGET /static/js/sections.js HTTP/1.1[0m" 304 -
 127.0.0.1 - - [24/Sep/2025 16:04:07] "[36mGET /static/js/section_drag_drop.js HTTP/1.1[0m" 304 -
 127.0.0.1 - - [24/Sep/2025 16:04:07] "[35m[1mGET /api/sections/22 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [25/Sep/2025 15:05:03] "GET /sections HTTP/1.1" 200 -
+127.0.0.1 - - [25/Sep/2025 15:05:03] "[32mGET / HTTP/1.1[0m" 302 -
+127.0.0.1 - - [25/Sep/2025 15:05:03] "GET /sections HTTP/1.1" 200 -
+127.0.0.1 - - [25/Sep/2025 15:05:03] "[36mGET /static/css/sections.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [25/Sep/2025 15:05:03] "[36mGET /static/js/sections.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [25/Sep/2025 15:05:03] "[36mGET /static/js/section_drag_drop.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [25/Sep/2025 15:05:03] "[36mGET /static/css/sections.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [25/Sep/2025 15:05:03] "[36mGET /static/js/sections.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [25/Sep/2025 15:05:03] "[36mGET /static/js/section_drag_drop.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [25/Sep/2025 15:05:03] "[35m[1mGET /api/sections/22 HTTP/1.1[0m" 500 -

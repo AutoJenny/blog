@@ -50,3 +50,27 @@
 2025-09-24 16:05:12,336 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 16:05:12] "[33mGET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1[0m" 404 -
 2025-09-24 16:05:38,065 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 16:05:38] "[33mGET /launchpad/syndication/facebook/product_post HTTP/1.1[0m" 404 -
 2025-09-24 16:05:51,677 - werkzeug - INFO - 127.0.0.1 - - [24/Sep/2025 16:05:51] "[33mGET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1[0m" 404 -
+2025-09-25 15:04:54,993 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:04:54] "[33mPOST /launchpad/api/syndication/post-now HTTP/1.1[0m" 404 -
+2025-09-25 15:04:58,237 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:04:58] "[33mPOST /launchpad/api/syndication/post-now HTTP/1.1[0m" 404 -
+2025-09-25 15:05:01,500 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:05:01] "[33mGET /launchpad/api/queue HTTP/1.1[0m" 404 -
+2025-09-25 15:05:03,332 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:05:03] "GET / HTTP/1.1" 200 -
+2025-09-25 15:05:03,377 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:05:03] "GET /servers/api/status HTTP/1.1" 200 -
+2025-09-25 15:05:03,421 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:05:03] "GET / HTTP/1.1" 200 -
+2025-09-25 15:05:03,423 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:05:03] "[33mGET /static/js/workflow-nav.js HTTP/1.1[0m" 404 -
+2025-09-25 15:05:03,424 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:05:03] "[33mGET /static/js/main.js HTTP/1.1[0m" 404 -
+2025-09-25 15:05:03,424 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:05:03] "[33mGET /static/css/nav.dist.css HTTP/1.1[0m" 404 -
+2025-09-25 15:05:03,426 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:05:03] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 15:05:03,429 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:05:03] "GET /static/images/site/brand-logo.png HTTP/1.1" 200 -
+2025-09-25 15:05:03,466 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:05:03] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-25 15:05:03,472 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:05:03] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 15:05:03,946 - blog_debug - INFO - [DEBUG] posts_listing: fetching NON-DELETED posts only
+2025-09-25 15:05:03,948 - blog_debug - INFO - [DEBUG] posts_listing: fetched 6 posts, show_deleted=False
+2025-09-25 15:05:03,948 - blog_debug - INFO - [DEBUG] post 53: status='published', display_status='published'
+2025-09-25 15:05:03,948 - blog_debug - INFO - [DEBUG] post 21: status='draft', display_status='draft'
+2025-09-25 15:05:03,948 - blog_debug - INFO - [DEBUG] post 2: status='draft', display_status='draft'
+2025-09-25 15:05:03,948 - blog_debug - INFO - [DEBUG] post 5: status='draft', display_status='draft'
+2025-09-25 15:05:03,949 - blog_debug - INFO - [DEBUG] post 6: status='draft', display_status='draft'
+2025-09-25 15:05:03,949 - blog_debug - INFO - [DEBUG] post 4: status='draft', display_status='draft'
+2025-09-25 15:05:03,949 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:05:03] "GET /posts?debug=1 HTTP/1.1" 200 -
+2025-09-25 15:23:20,941 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:23:20] "[33mPOST /launchpad/api/syndication/post-now HTTP/1.1[0m" 404 -
+2025-09-25 15:23:24,959 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:23:24] "[33mPOST /launchpad/api/syndication/post-now HTTP/1.1[0m" 404 -

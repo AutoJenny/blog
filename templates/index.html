@@ -88,6 +88,7 @@
                     </div>
                 </section>
 
+
                 <!-- AI & Automation -->
                 <section class="mb-12">
                     <h2 class="text-2xl section-title mb-6 flex items-center gap-2">
@@ -207,5 +208,40 @@
                 alert('Error loading docs: ' + error.message);
             }
         }
+
+        // Load Social Media KPIs for homepage
+        async function loadSocialMediaKPIs() {
+            try {
+                const response = await fetch('/launchpad/api/queue');
+                if (response.ok) {
+                    const data = await response.json();
+                    const timeline = data.timeline || [];
+                    
+                    // Calculate KPIs
+                    const scheduled = timeline.filter(item => item.status === 'pending' || item.status === 'ready').length;
+                    const published = timeline.filter(item => item.status === 'published').length;
+                    const platforms = [...new Set(timeline.map(item => item.platform))].length;
+                    const queueHealth = timeline.length > 0 ? Math.min(100, (timeline.length / 50) * 100) : 0;
+                    
+                    // Update homepage KPI elements
+                    const scheduledEl = document.getElementById('homepage-scheduled-count');
+                    const publishedEl = document.getElementById('homepage-published-count');
+                    const platformsEl = document.getElementById('homepage-platforms-count');
+                    const queueHealthEl = document.getElementById('homepage-queue-health');
+                    
+                    if (scheduledEl) scheduledEl.textContent = scheduled;
+                    if (publishedEl) publishedEl.textContent = published;
+                    if (platformsEl) platformsEl.textContent = platforms;
+                    if (queueHealthEl) queueHealthEl.textContent = Math.round(queueHealth) + '%';
+                }
+            } catch (error) {
+                console.log('Error loading social media KPIs:', error);
+            }
+        }
+
+        // Load KPIs when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSocialMediaKPIs();
+        });
     </script>
 {% endblock %}

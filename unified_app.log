@@ -14355,3 +14355,811 @@ LINE 2: ...       SELECT id, section_heading, section_order, section_co...
 2025-09-25 12:20:28,604 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:20:28] "GET /launchpad/api/queue HTTP/1.1" 200 -
 2025-09-25 12:22:07,274 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:22:07] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
 2025-09-25 12:25:20,121 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:25:20] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 12:25:35,426 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:25:35] "GET / HTTP/1.1" 200 -
+2025-09-25 12:25:35,429 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:25:35] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-25 12:25:35,430 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:25:35] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-25 12:25:35,431 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:25:35] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-25 12:25:35,444 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:25:35] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-25 12:25:35,447 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:25:35] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-25 12:25:35,448 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:25:35] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-25 12:25:35,448 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:25:35] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-25 12:25:35,448 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:25:35] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 12:26:18,872 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:26:18] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-25 12:26:18,874 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:26:18] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-25 12:26:18,874 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:26:18] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-25 12:26:38,465 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:26:38] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 12:27:43,309 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:27:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 12:29:11,026 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:29:11] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 12:29:11,037 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:29:11] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 12:29:11,153 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:29:11] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 12:29:23,340 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:29:23] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-25 12:29:23,342 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:29:23] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-25 12:29:23,343 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:29:23] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-25 12:30:20,776 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:30:20] "GET / HTTP/1.1" 200 -
+2025-09-25 12:30:20,780 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:30:20] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-25 12:30:20,782 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:30:20] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-25 12:30:20,783 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:30:20] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-25 12:30:20,801 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:30:20] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-25 12:30:20,805 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:30:20] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-25 12:30:20,805 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:30:20] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-25 12:30:20,806 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:30:20] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 12:30:20,806 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:30:20] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-25 12:30:23,313 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:30:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 12:30:23,542 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:30:23] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-25 12:30:23,544 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:30:23] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-25 12:30:23,546 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:30:23] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-25 12:30:23,547 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:30:23] "[33mGET /static/images/site/favicon.ico HTTP/1.1[0m" 404 -
+2025-09-25 12:30:23,591 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:30:23] "[33mGET /static/images/site/apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-25 12:30:23,591 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:30:23] "[33mGET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1[0m" 404 -
+2025-09-25 12:33:03,316 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:33:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 12:35:43,317 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:35:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 12:38:23,318 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:38:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 12:41:03,319 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:41:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 12:43:43,320 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:43:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 12:44:30,904 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:44:30] "GET / HTTP/1.1" 200 -
+2025-09-25 12:44:30,922 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:44:30] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-25 12:44:30,923 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:44:30] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-25 12:44:30,924 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:44:30] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-25 12:44:30,925 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:44:30] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-25 12:44:30,925 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:44:30] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 12:44:35,788 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:44:35] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 12:44:35,809 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:44:35] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 12:44:35,879 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:44:35] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 12:46:23,317 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:46:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 12:48:32,137 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:48:32] "GET / HTTP/1.1" 200 -
+2025-09-25 12:48:36,035 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:48:36] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 12:48:38,831 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:48:38] "GET /launchpad/social-media-command-center HTTP/1.1" 200 -
+2025-09-25 12:48:42,490 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:48:42] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 12:49:03,315 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:49:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 12:51:43,404 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:51:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 12:53:25,076 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:53:25] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 12:53:55,278 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:53:55] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 12:54:25,275 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:25] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 12:54:25,288 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:25] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 12:54:25,354 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:25] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 12:54:25,357 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:25] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 12:54:25,366 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:25] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 12:54:28,978 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:28] "GET / HTTP/1.1" 200 -
+2025-09-25 12:54:28,981 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:28] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-25 12:54:28,982 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:28] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-25 12:54:28,982 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:28] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-25 12:54:29,000 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:29] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-25 12:54:29,001 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:29] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-25 12:54:29,004 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:29] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-25 12:54:29,004 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:29] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 12:54:29,004 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:29] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-25 12:54:29,010 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:29] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 12:54:29,019 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:29] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-25 12:54:29,020 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:29] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-25 12:54:29,021 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:29] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-25 12:54:29,021 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:29] "[33mGET /static/images/site/apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-25 12:54:29,022 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:29] "[33mGET /static/images/site/favicon.ico HTTP/1.1[0m" 404 -
+2025-09-25 12:54:29,022 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:29] "[33mGET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1[0m" 404 -
+2025-09-25 12:54:30,607 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:30] "GET / HTTP/1.1" 200 -
+2025-09-25 12:54:30,613 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:30] "GET /static/css/nav.dist.css HTTP/1.1" 200 -
+2025-09-25 12:54:30,614 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:30] "GET /static/js/workflow-nav.js HTTP/1.1" 200 -
+2025-09-25 12:54:30,614 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:30] "GET /static/js/main.js HTTP/1.1" 200 -
+2025-09-25 12:54:30,623 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:30] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-25 12:54:30,625 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:30] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-25 12:54:30,627 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:30] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-25 12:54:30,627 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:30] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-25 12:54:30,628 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:30] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 12:54:30,635 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:30] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 12:54:55,148 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:55] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 12:54:55,159 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:55] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 12:54:55,221 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:55] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 12:54:55,222 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:55] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 12:54:59,001 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:54:59] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 12:55:01,242 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:55:01] "GET /launchpad/social-media-command-center HTTP/1.1" 200 -
+2025-09-25 12:55:01,258 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:55:01] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 12:55:01,317 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:55:01] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 12:55:11,208 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:55:11] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-25 12:55:11,209 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:55:11] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-25 12:55:11,210 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:55:11] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-25 12:55:35,910 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:55:35] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 12:56:54,059 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:56:54] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 12:58:31,382 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 12:58:31] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:00:45,753 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:00:45] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:02:23,305 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:02:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:05:03,406 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:05:27,490 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:27] "GET /launchpad/social-media-command-center HTTP/1.1" 200 -
+2025-09-25 13:05:27,503 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:27] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 13:05:27,559 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:27] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 13:05:33,949 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:33] "GET / HTTP/1.1" 200 -
+2025-09-25 13:05:33,956 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:33] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-25 13:05:33,957 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:33] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-25 13:05:33,957 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:33] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-25 13:05:33,976 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:33] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-25 13:05:33,979 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:33] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-25 13:05:33,979 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:33] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-25 13:05:33,982 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:33] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 13:05:33,982 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:33] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-25 13:05:33,989 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:33] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 13:05:35,651 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:35] "GET / HTTP/1.1" 200 -
+2025-09-25 13:05:35,655 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:35] "GET /static/js/main.js HTTP/1.1" 200 -
+2025-09-25 13:05:35,655 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:35] "GET /static/css/nav.dist.css HTTP/1.1" 200 -
+2025-09-25 13:05:35,655 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:35] "GET /static/js/workflow-nav.js HTTP/1.1" 200 -
+2025-09-25 13:05:35,667 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:35] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-25 13:05:35,668 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:35] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-25 13:05:35,668 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:35] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-25 13:05:35,669 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:35] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-25 13:05:35,670 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:35] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 13:05:35,676 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:35] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 13:05:41,320 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:41] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 13:05:41,338 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:41] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 13:05:41,402 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:41] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 13:05:41,405 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:41] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 13:05:52,052 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:52] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-25 13:05:52,053 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:52] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-25 13:05:52,054 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:05:52] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-25 13:06:13,510 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:06:13] "GET /launchpad/social-media-command-center HTTP/1.1" 200 -
+2025-09-25 13:06:13,528 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:06:13] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 13:06:13,587 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:06:13] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 13:06:17,737 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:06:17] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-25 13:06:17,738 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:06:17] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-25 13:06:17,739 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:06:17] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-25 13:06:34,278 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:06:34] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 13:06:34,290 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:06:34] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 13:06:34,346 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:06:34] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 13:06:34,348 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:06:34] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 13:07:43,300 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:07:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:08:13,470 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:08:13] "GET / HTTP/1.1" 200 -
+2025-09-25 13:08:13,472 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:08:13] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-25 13:08:13,474 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:08:13] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-25 13:08:13,475 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:08:13] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-25 13:08:13,492 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:08:13] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-25 13:08:13,495 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:08:13] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-25 13:08:13,496 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:08:13] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 13:08:13,497 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:08:13] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-25 13:08:13,497 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:08:13] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-25 13:08:13,508 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:08:13] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 13:09:03,606 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:09:03] "GET / HTTP/1.1" 200 -
+2025-09-25 13:09:03,624 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:09:03] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-25 13:09:03,627 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:09:03] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-25 13:09:03,627 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:09:03] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-25 13:09:03,628 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:09:03] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-25 13:09:03,628 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:09:03] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 13:09:03,636 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:09:03] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 13:09:09,151 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:09:09] "GET / HTTP/1.1" 200 -
+2025-09-25 13:09:09,153 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:09:09] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-25 13:09:09,155 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:09:09] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-25 13:09:09,155 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:09:09] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-25 13:09:09,170 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:09:09] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-25 13:09:09,174 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:09:09] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-25 13:09:09,175 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:09:09] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-25 13:09:09,175 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:09:09] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-25 13:09:09,176 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:09:09] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 13:09:09,183 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:09:09] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 13:09:12,665 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:09:12] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 13:09:12,691 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:09:12] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 13:09:12,773 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:09:12] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 13:09:12,774 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:09:12] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 13:09:58,935 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:09:58] "GET / HTTP/1.1" 200 -
+2025-09-25 13:10:01,951 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:10:01] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 13:10:05,012 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:10:05] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 13:10:23,301 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:10:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:12:36,520 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:12:36] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 13:12:36,534 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:12:36] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 13:12:36,596 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:12:36] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 13:12:36,597 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:12:36] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-25 13:12:36,597 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:12:36] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 13:12:36,599 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:12:36] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 13:12:36,662 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:12:36] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-25 13:12:42,127 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:12:42] "GET / HTTP/1.1" 200 -
+2025-09-25 13:12:42,132 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:12:42] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-25 13:12:42,133 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:12:42] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-25 13:12:42,134 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:12:42] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-25 13:12:42,153 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:12:42] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-25 13:12:42,156 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:12:42] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-25 13:12:42,157 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:12:42] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 13:12:42,158 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:12:42] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-25 13:12:42,158 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:12:42] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-25 13:12:42,167 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:12:42] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 13:12:53,253 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:12:53] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 13:12:53,271 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:12:53] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 13:12:53,340 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:12:53] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 13:12:53,342 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:12:53] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 13:12:53,344 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:12:53] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 13:13:03,303 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:13:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:15:43,306 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:15:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:17:59,559 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:17:59] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 13:18:23,297 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:18:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:21:03,283 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:21:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:23:43,392 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:23:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:23:50,476 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:23:50] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 13:23:50,490 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:23:50] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 13:23:50,547 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:23:50] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 13:23:50,548 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:23:50] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 13:23:50,549 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:23:50] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 13:25:32,993 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:25:32] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 13:26:23,285 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:26:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:27:19,690 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:27:19] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 13:27:19,728 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:27:19] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 13:27:19,800 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:27:19] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 13:27:19,803 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:27:19] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 13:27:19,805 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:27:19] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 13:29:03,285 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:29:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:30:03,940 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:30:03] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 13:31:43,287 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:31:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:34:23,385 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:34:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:35:48,157 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:35:48] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:36:18,359 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:36:18] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:36:58,378 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:36:58] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:38:03,530 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:38:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:39:13,496 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:39:13] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:40:17,592 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:40:17] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:42:37,591 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:42:37] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:45:03,353 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:45:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:47:43,354 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:47:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:50:23,356 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:50:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:53:03,376 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:53:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:55:43,374 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:55:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 13:58:23,375 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 13:58:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:01:03,376 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:01:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:03:43,377 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:03:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:06:23,385 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:06:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:09:03,389 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:09:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:11:43,377 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:11:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:14:23,392 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:14:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:17:03,383 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:17:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:19:43,376 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:19:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:22:23,390 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:22:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:25:03,390 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:25:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:27:43,391 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:27:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:30:23,392 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:30:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:33:03,392 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:33:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:35:43,393 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:35:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:36:54,265 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:36:54] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:37:00,077 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:37:00] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 14:37:00,104 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:37:00] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 14:37:00,183 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:37:00] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 14:37:00,184 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:37:00] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:37:00,186 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:37:00] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:37:24,369 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:37:24] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:37:58,277 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:37:58] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 14:38:00,011 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:38:00] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:38:30,491 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:38:30] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:39:43,554 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:39:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:40:29,240 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:40:29] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:41:33,368 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:41:33] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 14:41:33,395 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:41:33] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 14:41:33,479 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:41:33] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 14:41:33,481 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:41:33] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:41:33,482 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:41:33] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:41:42,186 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:41:42] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 14:41:42,207 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:41:42] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 14:41:42,270 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:41:42] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 14:41:42,272 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:41:42] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:41:42,274 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:41:42] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:42:43,567 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:42:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:42:54,586 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:42:54] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 14:42:54,604 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:42:54] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 14:42:54,671 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:42:54] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 14:42:54,673 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:42:54] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:42:54,674 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:42:54] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:43:43,318 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:43:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:44:27,398 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:44:27] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 14:46:23,323 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:46:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:49:00,504 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:49:00] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 14:49:00,518 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:49:00] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 14:49:00,578 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:49:00] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 14:49:00,580 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:49:00] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:49:00,582 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:49:00] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:49:03,313 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:49:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:49:17,536 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:49:17] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 14:49:17,597 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:49:17] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 14:49:17,680 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:49:17] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 14:49:17,683 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:49:17] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:49:17,685 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:49:17] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:50:55,879 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-25 14:50:56,036 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 14:50:56,947 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 14:50:56,954 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 14:50:56,965 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 14:51:08,262 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:51:08] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 14:51:24,325 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-25 14:51:24,513 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 14:51:25,440 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 14:51:25,447 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 14:51:25,458 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 14:51:43,315 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:51:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:52:00,648 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:52:00] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 14:52:00,706 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:52:00] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 14:52:00,800 - config.database - INFO - Database connection established
+2025-09-25 14:52:00,801 - config.database - INFO - Database connection established
+2025-09-25 14:52:00,803 - config.database - INFO - Database connection established
+2025-09-25 14:52:00,806 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:52:00] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 14:52:00,808 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:52:00] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:52:00,809 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:52:00] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:52:47,227 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:52:47] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 14:52:47,257 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:52:47] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 14:52:47,342 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:52:47] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 14:52:47,344 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:52:47] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:52:47,347 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:52:47] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:53:54,843 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:53:54] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-25 14:53:54,845 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:53:54] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-25 14:53:54,845 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:53:54] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-25 14:54:23,223 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:54:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:55:41,096 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:41] "GET / HTTP/1.1" 200 -
+2025-09-25 14:55:41,099 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:41] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:41,099 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:41] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-25 14:55:41,100 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:41] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:41,114 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:41] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-25 14:55:41,116 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:41] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:41,117 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:41] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-25 14:55:41,117 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:41] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:41,118 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:41] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 14:55:41,127 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:41] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:55:41,135 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:41] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-25 14:55:41,136 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:41] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-25 14:55:41,137 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:41] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-25 14:55:41,137 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:41] "[33mGET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1[0m" 404 -
+2025-09-25 14:55:41,138 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:41] "[33mGET /static/images/site/favicon.ico HTTP/1.1[0m" 404 -
+2025-09-25 14:55:41,138 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:41] "[33mGET /static/images/site/apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-25 14:55:44,876 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:44] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 14:55:44,888 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:44] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 14:55:44,998 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:44] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 14:55:45,001 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:45] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:55:45,004 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:45] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:55:47,260 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-25 14:55:47,265 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,266 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/item-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,266 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "GET /static/js/item-selection-data.js HTTP/1.1" 200 -
+2025-09-25 14:55:47,266 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,267 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/item-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,271 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/item-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,274 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,274 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,275 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/item-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,276 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/ai-content-generation-core.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,276 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/item-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,276 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/ai-content-generation-events.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,280 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/ai-content-generation-content.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,281 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/ai-content-generation-utils.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,282 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/ai-content-generation-prompts.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,283 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/ai-content-generation-data.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,292 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/item-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,326 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,326 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,327 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/item-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,327 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "GET /static/js/item-selection-data.js HTTP/1.1" 200 -
+2025-09-25 14:55:47,327 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/state-manager.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,331 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/item-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,333 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "GET /static/js/ai-content-generation-core.js HTTP/1.1" 200 -
+2025-09-25 14:55:47,333 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/item-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,334 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/item-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,334 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,334 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "GET /static/js/queue-manager.js HTTP/1.1" 200 -
+2025-09-25 14:55:47,335 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/ai-content-generation-events.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,336 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/ai-content-generation-content.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,339 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/ai-content-generation-prompts.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,339 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/ai-content-generation-utils.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,340 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,340 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[36mGET /static/js/ai-content-generation-data.js HTTP/1.1[0m" 304 -
+2025-09-25 14:55:47,408 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-25 14:55:47,410 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "GET /api/ui/selection-state?page_type=product_post&selection_type=product HTTP/1.1" 200 -
+2025-09-25 14:55:47,411 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "GET /launchpad/api/syndication/last-updated HTTP/1.1" 200 -
+2025-09-25 14:55:47,412 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:55:47,413 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-25 14:55:47,414 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-09-25 14:55:47,417 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "GET /launchpad/api/syndication/llm-prompts/6 HTTP/1.1" 200 -
+2025-09-25 14:55:47,418 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "GET /api/ui/selection-state?page_type=product_post&selection_type=product HTTP/1.1" 200 -
+2025-09-25 14:55:47,427 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "POST /api/ui/selection-state HTTP/1.1" 200 -
+2025-09-25 14:55:47,436 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "GET /launchpad/api/syndication/get-generated-content/9999/product HTTP/1.1" 200 -
+2025-09-25 14:55:47,436 - blueprints.launchpad - ERROR - Error getting generated content: the connection is closed
+2025-09-25 14:55:47,436 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:47] "[35m[1mGET /launchpad/api/syndication/get-generated-content/9999/product HTTP/1.1[0m" 500 -
+2025-09-25 14:55:57,937 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:57] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-25 14:55:57,938 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:57] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-25 14:55:57,942 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:55:57] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-25 14:56:06,503 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:56:06] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:56:26,881 - config.database - INFO - Database connection established
+2025-09-25 14:56:26,889 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:56:26] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:56:50,011 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-25 14:56:50,195 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 14:56:51,074 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 14:56:51,079 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 14:56:51,089 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 14:57:03,315 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 14:57:04,968 - config.database - INFO - Database connection established
+2025-09-25 14:57:04,974 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:04] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:57:25,054 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:25] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:57:27,860 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:27] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 14:57:34,720 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-25 14:57:34,894 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 14:57:35,737 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 14:57:35,743 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 14:57:35,754 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 14:57:52,063 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-25 14:57:52,086 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-25 14:57:52,086 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "[36mGET /static/js/state-manager.js HTTP/1.1[0m" 304 -
+2025-09-25 14:57:52,089 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "[36mGET /static/js/item-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-25 14:57:52,090 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "[36mGET /static/js/item-selection-data.js HTTP/1.1[0m" 304 -
+2025-09-25 14:57:52,092 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-25 14:57:52,093 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "[36mGET /static/js/item-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-25 14:57:52,095 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "[36mGET /static/js/item-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-25 14:57:52,096 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "[36mGET /static/js/item-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-25 14:57:52,096 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "[36mGET /static/js/item-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-25 14:57:52,096 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-25 14:57:52,096 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 14:57:52,097 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-25 14:57:52,104 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "[36mGET /static/js/ai-content-generation-core.js HTTP/1.1[0m" 304 -
+2025-09-25 14:57:52,104 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "[36mGET /static/js/ai-content-generation-content.js HTTP/1.1[0m" 304 -
+2025-09-25 14:57:52,105 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "[36mGET /static/js/ai-content-generation-events.js HTTP/1.1[0m" 304 -
+2025-09-25 14:57:52,105 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "[36mGET /static/js/ai-content-generation-data.js HTTP/1.1[0m" 304 -
+2025-09-25 14:57:52,105 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "[36mGET /static/js/ai-content-generation-prompts.js HTTP/1.1[0m" 304 -
+2025-09-25 14:57:52,106 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "[36mGET /static/js/ai-content-generation-utils.js HTTP/1.1[0m" 304 -
+2025-09-25 14:57:52,187 - config.database - INFO - Database connection established
+2025-09-25 14:57:52,187 - config.database - INFO - Database connection established
+2025-09-25 14:57:52,188 - config.database - INFO - Database connection established
+2025-09-25 14:57:52,188 - config.database - INFO - Database connection established
+2025-09-25 14:57:52,188 - config.database - INFO - Database connection established
+2025-09-25 14:57:52,189 - config.database - INFO - Database connection established
+2025-09-25 14:57:52,190 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-09-25 14:57:52,191 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "GET /launchpad/api/syndication/last-updated HTTP/1.1" 200 -
+2025-09-25 14:57:52,191 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-25 14:57:52,192 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "GET /api/ui/selection-state?page_type=product_post&selection_type=product HTTP/1.1" 200 -
+2025-09-25 14:57:52,194 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:57:52,195 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-09-25 14:57:52,196 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "GET /launchpad/api/syndication/llm-prompts/6 HTTP/1.1" 200 -
+2025-09-25 14:57:52,197 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "GET /api/ui/selection-state?page_type=product_post&selection_type=product HTTP/1.1" 200 -
+2025-09-25 14:57:52,198 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "POST /api/ui/selection-state HTTP/1.1" 200 -
+2025-09-25 14:57:52,206 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "GET /launchpad/api/syndication/get-generated-content/9999/product HTTP/1.1" 200 -
+2025-09-25 14:57:52,206 - blueprints.launchpad - ERROR - Error getting generated content: the connection is closed
+2025-09-25 14:57:52,207 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:52] "[35m[1mGET /launchpad/api/syndication/get-generated-content/9999/product HTTP/1.1[0m" 500 -
+2025-09-25 14:57:54,918 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:54] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 14:57:54,938 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:54] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 14:57:55,026 - config.database - INFO - Database connection established
+2025-09-25 14:57:55,027 - config.database - INFO - Database connection established
+2025-09-25 14:57:55,028 - config.database - INFO - Database connection established
+2025-09-25 14:57:55,030 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:55] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 14:57:55,033 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:55] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:57:55,034 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:57:55] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:58:23,901 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:23] "GET / HTTP/1.1" 200 -
+2025-09-25 14:58:23,906 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:23] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-25 14:58:23,906 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:23] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-25 14:58:23,907 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:23] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-25 14:58:23,925 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:23] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-25 14:58:23,929 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:23] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-25 14:58:23,929 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:23] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-25 14:58:23,929 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:23] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-25 14:58:23,930 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:23] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 14:58:23,938 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:23] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:58:25,510 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:25] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 14:58:25,531 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:25] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 14:58:25,602 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:25] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 14:58:25,603 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:25] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:58:25,605 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:25] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:58:27,996 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:27] "GET /launchpad/syndication/facebook/blog_post HTTP/1.1" 200 -
+2025-09-25 14:58:27,999 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:27] "[36mGET /static/js/post-section-selection-data.js HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,001 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/js/post-section-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,001 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/js/post-section-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,001 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/js/post-section-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,001 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/js/post-section-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,005 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/js/post-section-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,007 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/images/content/posts/53/sections/710/optimized/d59ac061-0b2a-4a06-a3a6-c15d13dc35e2%20copy_processed.png HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,008 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/images/content/posts/53/sections/715/optimized/715_processed.png HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,009 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/images/content/posts/53/sections/713/optimized/713_processed.png HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,009 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/js/blog-input-data-core.js HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,009 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/images/content/posts/53/sections/714/optimized/714_processed.png HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,010 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/images/content/posts/53/sections/712/optimized/712_processed.png HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,011 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/images/content/posts/53/sections/711/optimized/generated_image_20250727_145859_processed.png HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,012 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/images/content/posts/53/sections/716/optimized/716_processed.png HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,018 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,020 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,020 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,061 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/js/state-manager.js HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,062 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/js/ai-content-generation-core.js HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,064 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/js/ai-content-generation-utils.js HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,064 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/js/ai-content-generation-prompts.js HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,064 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/js/ai-content-generation-content.js HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,065 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/js/ai-content-generation-data.js HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,065 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/js/ai-content-generation-events.js HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,066 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,067 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-25 14:58:28,075 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "GET /launchpad/api/syndication/posts HTTP/1.1" 200 -
+2025-09-25 14:58:28,076 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-25 14:58:28,077 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "GET /api/ui/selection-state?page_type=blog_post&selection_type=section HTTP/1.1" 200 -
+2025-09-25 14:58:28,079 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 14:58:28,080 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-09-25 14:58:28,080 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-25 14:58:28,096 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "GET /launchpad/api/syndication/get-generated-content/716/blog_post HTTP/1.1" 200 -
+2025-09-25 14:58:28,181 - config.database - INFO - Database connection established
+2025-09-25 14:58:28,183 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "POST /api/ui/ui-state HTTP/1.1" 200 -
+2025-09-25 14:58:28,188 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "GET /launchpad/api/syndication/posts/53 HTTP/1.1" 200 -
+2025-09-25 14:58:28,191 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:58:28] "GET /launchpad/api/syndication/post-sections/53 HTTP/1.1" 200 -
+2025-09-25 14:59:43,314 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 14:59:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 15:00:01,026 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-25 15:00:01,192 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 15:00:02,064 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 15:00:02,071 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 15:00:02,081 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 15:00:04,011 - config.database - INFO - Database connection established
+2025-09-25 15:00:04,016 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:04] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 15:00:15,070 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "GET /launchpad/syndication/facebook/blog_post HTTP/1.1" 200 -
+2025-09-25 15:00:15,087 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,089 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,090 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,126 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/js/post-section-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,129 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/js/state-manager.js HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,130 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/js/post-section-selection-data.js HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,131 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/js/post-section-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,131 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/js/post-section-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,131 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/js/post-section-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,131 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/js/post-section-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,133 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/js/blog-input-data-core.js HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,134 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/js/ai-content-generation-core.js HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,135 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/js/ai-content-generation-events.js HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,136 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/js/ai-content-generation-content.js HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,138 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/js/ai-content-generation-utils.js HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,139 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/js/ai-content-generation-prompts.js HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,139 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/js/ai-content-generation-data.js HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,140 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,140 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,149 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "GET /launchpad/api/syndication/posts HTTP/1.1" 200 -
+2025-09-25 15:00:15,151 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-25 15:00:15,152 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "GET /api/ui/selection-state?page_type=blog_post&selection_type=section HTTP/1.1" 200 -
+2025-09-25 15:00:15,153 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 15:00:15,154 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-25 15:00:15,155 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-09-25 15:00:15,173 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "GET /launchpad/api/syndication/get-generated-content/716/blog_post HTTP/1.1" 200 -
+2025-09-25 15:00:15,252 - config.database - INFO - Database connection established
+2025-09-25 15:00:15,254 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "POST /api/ui/ui-state HTTP/1.1" 200 -
+2025-09-25 15:00:15,260 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "GET /launchpad/api/syndication/posts/53 HTTP/1.1" 200 -
+2025-09-25 15:00:15,265 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "GET /launchpad/api/syndication/post-sections/53 HTTP/1.1" 200 -
+2025-09-25 15:00:15,271 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/images/content/posts/53/sections/710/optimized/d59ac061-0b2a-4a06-a3a6-c15d13dc35e2%20copy_processed.png HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,273 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/images/content/posts/53/sections/714/optimized/714_processed.png HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,275 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/images/content/posts/53/sections/712/optimized/712_processed.png HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,276 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/images/content/posts/53/sections/711/optimized/generated_image_20250727_145859_processed.png HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,276 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/images/content/posts/53/sections/713/optimized/713_processed.png HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,276 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/images/content/posts/53/sections/715/optimized/715_processed.png HTTP/1.1[0m" 304 -
+2025-09-25 15:00:15,277 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:15] "[36mGET /static/images/content/posts/53/sections/716/optimized/716_processed.png HTTP/1.1[0m" 304 -
+2025-09-25 15:00:16,289 - blueprints.launchpad - INFO - Posting to CLAN by Scotweb (Page ID: 196935752675)
+2025-09-25 15:00:16,289 - blueprints.launchpad - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/196935752675/photos
+2025-09-25 15:00:16,289 - blueprints.launchpad - INFO - Product image URL: None
+2025-09-25 15:00:16,289 - blueprints.launchpad - INFO - Access token being used: EAAUeqRZAekZBkBPZAbV...
+2025-09-25 15:00:16,319 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): graph.facebook.com:443
+2025-09-25 15:00:16,618 - urllib3.connectionpool - DEBUG - https://graph.facebook.com:443 "POST /v18.0/196935752675/photos HTTP/1.1" 400 125
+2025-09-25 15:00:16,618 - blueprints.launchpad - INFO - Facebook API response - Status: 400
+2025-09-25 15:00:16,618 - blueprints.launchpad - INFO - Facebook API response - Content: {"error":{"message":"(#324) Requires upload file","type":"OAuthException","code":324,"fbtrace_id":"AHIfV6J4nvtTIEjRQmLFBSs"}}
+2025-09-25 15:00:16,620 - blueprints.launchpad - INFO - Posting to Scotweb CLAN (Page ID: 108385661622841)
+2025-09-25 15:00:16,620 - blueprints.launchpad - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/108385661622841/photos
+2025-09-25 15:00:16,620 - blueprints.launchpad - INFO - Product image URL: None
+2025-09-25 15:00:16,620 - blueprints.launchpad - INFO - Access token being used: EAAUeqRZAekZBkBPk2kY...
+2025-09-25 15:00:16,624 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): graph.facebook.com:443
+2025-09-25 15:00:16,758 - urllib3.connectionpool - DEBUG - https://graph.facebook.com:443 "POST /v18.0/108385661622841/photos HTTP/1.1" 400 208
+2025-09-25 15:00:16,759 - blueprints.launchpad - INFO - Facebook API response - Status: 400
+2025-09-25 15:00:16,759 - blueprints.launchpad - INFO - Facebook API response - Content: {"error":{"message":"Error validating access token: Session has expired on Wednesday, 24-Sep-25 07:00:00 PDT. The current time is Thursday, 25-Sep-25 07:00:16 PDT.","type":"OAuthException","code":190,"error_subcode":463,"fbtrace_id":"AxdSqe5cn5Itqxux6cl02mF"}}
+2025-09-25 15:00:16,764 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:00:16] "POST /launchpad/api/syndication/post-now HTTP/1.1" 200 -
+2025-09-25 15:00:28,438 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-25 15:00:28,636 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 15:00:29,529 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 15:00:29,535 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 15:00:29,546 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 15:00:52,874 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-25 15:00:53,041 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 15:00:53,893 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 15:00:53,898 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 15:00:53,909 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 15:02:23,318 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:02:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 15:02:47,174 - config.database - INFO - Database connection established
+2025-09-25 15:02:47,183 - blueprints.launchpad - INFO - Posting to CLAN by Scotweb (Page ID: 196935752675)
+2025-09-25 15:02:47,183 - blueprints.launchpad - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/196935752675/photos
+2025-09-25 15:02:47,184 - blueprints.launchpad - INFO - Product image URL: https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/o/r/ortak-sr_ortak_B536_1.jpg
+2025-09-25 15:02:47,184 - blueprints.launchpad - INFO - Access token being used: EAAUeqRZAekZBkBPZAbV...
+2025-09-25 15:02:47,210 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): graph.facebook.com:443
+2025-09-25 15:02:53,597 - urllib3.connectionpool - DEBUG - https://graph.facebook.com:443 "POST /v18.0/196935752675/photos HTTP/1.1" 200 67
+2025-09-25 15:02:53,598 - blueprints.launchpad - INFO - Facebook API response - Status: 200
+2025-09-25 15:02:53,599 - blueprints.launchpad - INFO - Facebook API response - Content: {"id":"1114685304136125","post_id":"196935752675_1114685347469454"}
+2025-09-25 15:02:53,602 - blueprints.launchpad - INFO - Posting to Scotweb CLAN (Page ID: 108385661622841)
+2025-09-25 15:02:53,602 - blueprints.launchpad - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/108385661622841/photos
+2025-09-25 15:02:53,602 - blueprints.launchpad - INFO - Product image URL: https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/o/r/ortak-sr_ortak_B536_1.jpg
+2025-09-25 15:02:53,602 - blueprints.launchpad - INFO - Access token being used: EAAUeqRZAekZBkBPk2kY...
+2025-09-25 15:02:53,607 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): graph.facebook.com:443
+2025-09-25 15:02:53,700 - urllib3.connectionpool - DEBUG - https://graph.facebook.com:443 "POST /v18.0/108385661622841/photos HTTP/1.1" 400 260
+2025-09-25 15:02:53,700 - blueprints.launchpad - INFO - Facebook API response - Status: 400
+2025-09-25 15:02:53,700 - blueprints.launchpad - INFO - Facebook API response - Content: {"error":{"message":"Error validating access token: Session has expired on Wednesday, 24-Sep-25 07:00:00 PDT. The current time is Thursday, 25-Sep-25 07:02:53 PDT.","type":"OAuthException","code":190,"error_subcode":463,"fbtrace_id":"AFwSwl1BSP_YUKA7M659K_O"}}
+2025-09-25 15:02:53,706 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:02:53] "POST /launchpad/api/syndication/post-now HTTP/1.1" 200 -
+2025-09-25 15:03:17,098 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-25 15:03:17,332 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 15:03:18,200 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 15:03:18,206 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 15:03:18,216 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 15:03:20,089 - config.database - INFO - Database connection established
+2025-09-25 15:03:20,094 - blueprints.launchpad - INFO - Posting to CLAN by Scotweb (Page ID: 196935752675)
+2025-09-25 15:03:20,094 - blueprints.launchpad - INFO - Product image URL: None
+2025-09-25 15:03:20,094 - blueprints.launchpad - INFO - Access token being used: EAAUeqRZAekZBkBPZAbV...
+2025-09-25 15:03:20,094 - blueprints.launchpad - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/196935752675/feed
+2025-09-25 15:03:20,098 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): graph.facebook.com:443
+2025-09-25 15:03:22,968 - urllib3.connectionpool - DEBUG - https://graph.facebook.com:443 "POST /v18.0/196935752675/feed HTTP/1.1" 200 38
+2025-09-25 15:03:22,968 - blueprints.launchpad - INFO - Facebook API response - Status: 200
+2025-09-25 15:03:22,969 - blueprints.launchpad - INFO - Facebook API response - Content: {"id":"196935752675_1114685704136085"}
+2025-09-25 15:03:22,971 - blueprints.launchpad - INFO - Posting to Scotweb CLAN (Page ID: 108385661622841)
+2025-09-25 15:03:22,971 - blueprints.launchpad - INFO - Product image URL: None
+2025-09-25 15:03:22,971 - blueprints.launchpad - INFO - Access token being used: EAAUeqRZAekZBkBPk2kY...
+2025-09-25 15:03:22,971 - blueprints.launchpad - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/108385661622841/feed
+2025-09-25 15:03:22,975 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): graph.facebook.com:443
+2025-09-25 15:03:23,069 - urllib3.connectionpool - DEBUG - https://graph.facebook.com:443 "POST /v18.0/108385661622841/feed HTTP/1.1" 400 260
+2025-09-25 15:03:23,069 - blueprints.launchpad - INFO - Facebook API response - Status: 400
+2025-09-25 15:03:23,069 - blueprints.launchpad - INFO - Facebook API response - Content: {"error":{"message":"Error validating access token: Session has expired on Wednesday, 24-Sep-25 07:00:00 PDT. The current time is Thursday, 25-Sep-25 07:03:23 PDT.","type":"OAuthException","code":190,"error_subcode":463,"fbtrace_id":"AuXTb2X8VAIHZ59J5XI8Ysh"}}
+2025-09-25 15:03:23,075 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:03:23] "POST /launchpad/api/syndication/post-now HTTP/1.1" 200 -
+2025-09-25 15:03:47,600 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-25 15:03:47,792 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 15:03:48,662 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 15:03:48,668 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 15:03:48,677 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 15:03:51,423 - config.database - INFO - Database connection established
+2025-09-25 15:03:51,428 - blueprints.launchpad - INFO - Posting to CLAN by Scotweb (Page ID: 196935752675)
+2025-09-25 15:03:51,428 - blueprints.launchpad - INFO - Product image URL: None
+2025-09-25 15:03:51,428 - blueprints.launchpad - INFO - Access token being used: EAAUeqRZAekZBkBPZAbV...
+2025-09-25 15:03:51,428 - blueprints.launchpad - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/196935752675/feed
+2025-09-25 15:03:51,451 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): graph.facebook.com:443
+2025-09-25 15:03:55,092 - urllib3.connectionpool - DEBUG - https://graph.facebook.com:443 "POST /v18.0/196935752675/feed HTTP/1.1" 200 38
+2025-09-25 15:03:55,092 - blueprints.launchpad - INFO - Facebook API response - Status: 200
+2025-09-25 15:03:55,093 - blueprints.launchpad - INFO - Facebook API response - Content: {"id":"196935752675_1114686067469382"}
+2025-09-25 15:03:55,093 - blueprints.launchpad - INFO - Posting to Scotweb CLAN (Page ID: 108385661622841)
+2025-09-25 15:03:55,093 - blueprints.launchpad - INFO - Product image URL: None
+2025-09-25 15:03:55,094 - blueprints.launchpad - INFO - Access token being used: EAAUeqRZAekZBkBPk2kY...
+2025-09-25 15:03:55,094 - blueprints.launchpad - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/108385661622841/feed
+2025-09-25 15:03:55,097 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): graph.facebook.com:443
+2025-09-25 15:03:55,204 - urllib3.connectionpool - DEBUG - https://graph.facebook.com:443 "POST /v18.0/108385661622841/feed HTTP/1.1" 400 260
+2025-09-25 15:03:55,204 - blueprints.launchpad - INFO - Facebook API response - Status: 400
+2025-09-25 15:03:55,204 - blueprints.launchpad - INFO - Facebook API response - Content: {"error":{"message":"Error validating access token: Session has expired on Wednesday, 24-Sep-25 07:00:00 PDT. The current time is Thursday, 25-Sep-25 07:03:55 PDT.","type":"OAuthException","code":190,"error_subcode":463,"fbtrace_id":"A2M1RKWqCB1se5GDox5Shem"}}
+2025-09-25 15:03:55,208 - blueprints.launchpad - ERROR - Error posting to Facebook: name 'conn' is not defined
+2025-09-25 15:03:55,208 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:03:55] "POST /launchpad/api/syndication/post-now HTTP/1.1" 200 -
+2025-09-25 15:04:07,932 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-25 15:04:08,132 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 15:05:09,712 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 15:05:09,723 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-25 15:05:09,723 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-25 15:05:09,723 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 15:05:10,582 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 15:05:10,588 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 15:05:10,599 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 15:07:43,315 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:07:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 15:10:23,314 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:10:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 15:13:03,415 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:13:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 15:15:43,413 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:15:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 15:18:10,962 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-25 15:18:11,125 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 15:18:11,966 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 15:18:11,972 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 15:18:11,985 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 15:18:13,475 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "GET /launchpad/syndication/facebook/blog_post HTTP/1.1" 200 -
+2025-09-25 15:18:13,505 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,507 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,508 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,560 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/js/post-section-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,562 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/js/state-manager.js HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,564 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/js/post-section-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,565 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/js/post-section-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,565 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/js/post-section-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,565 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/js/post-section-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,566 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/js/post-section-selection-data.js HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,566 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/js/blog-input-data-core.js HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,569 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/js/ai-content-generation-core.js HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,569 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/js/ai-content-generation-events.js HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,571 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/js/ai-content-generation-data.js HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,572 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/js/ai-content-generation-content.js HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,572 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/js/ai-content-generation-prompts.js HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,573 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/js/ai-content-generation-utils.js HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,573 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,574 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,606 - config.database - INFO - Database connection established
+2025-09-25 15:18:13,606 - config.database - INFO - Database connection established
+2025-09-25 15:18:13,606 - config.database - INFO - Database connection established
+2025-09-25 15:18:13,607 - config.database - INFO - Database connection established
+2025-09-25 15:18:13,607 - config.database - INFO - Database connection established
+2025-09-25 15:18:13,607 - config.database - INFO - Database connection established
+2025-09-25 15:18:13,610 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "GET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1" 200 -
+2025-09-25 15:18:13,611 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "GET /launchpad/api/syndication/posts HTTP/1.1" 200 -
+2025-09-25 15:18:13,611 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "GET /api/ui/selection-state?page_type=blog_post&selection_type=section HTTP/1.1" 200 -
+2025-09-25 15:18:13,612 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-09-25 15:18:13,615 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 15:18:13,616 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-25 15:18:13,616 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "GET /launchpad/api/syndication/get-generated-content/716/blog_post HTTP/1.1" 200 -
+2025-09-25 15:18:13,689 - config.database - INFO - Database connection established
+2025-09-25 15:18:13,691 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "POST /api/ui/ui-state HTTP/1.1" 200 -
+2025-09-25 15:18:13,696 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "GET /launchpad/api/syndication/posts/53 HTTP/1.1" 200 -
+2025-09-25 15:18:13,700 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "GET /launchpad/api/syndication/post-sections/53 HTTP/1.1" 200 -
+2025-09-25 15:18:13,707 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/images/content/posts/53/sections/710/optimized/d59ac061-0b2a-4a06-a3a6-c15d13dc35e2%20copy_processed.png HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,709 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/images/content/posts/53/sections/712/optimized/712_processed.png HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,711 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/images/content/posts/53/sections/715/optimized/715_processed.png HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,711 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/images/content/posts/53/sections/714/optimized/714_processed.png HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,711 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/images/content/posts/53/sections/713/optimized/713_processed.png HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,712 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/images/content/posts/53/sections/711/optimized/generated_image_20250727_145859_processed.png HTTP/1.1[0m" 304 -
+2025-09-25 15:18:13,712 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:13] "[36mGET /static/images/content/posts/53/sections/716/optimized/716_processed.png HTTP/1.1[0m" 304 -
+2025-09-25 15:18:23,319 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 15:18:45,386 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:45] "GET / HTTP/1.1" 200 -
+2025-09-25 15:18:45,405 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:45] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-25 15:18:45,408 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:45] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-25 15:18:45,408 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:45] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-25 15:18:45,409 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:45] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-25 15:18:45,409 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:45] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 15:18:45,420 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:45] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 15:18:47,825 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:47] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 15:18:47,845 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:47] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 15:18:47,916 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:47] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 15:18:47,918 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:47] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 15:18:47,921 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:18:47] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 15:19:12,444 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:19:12] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-25 15:19:12,445 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:19:12] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-25 15:19:12,489 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:19:12] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-25 15:19:46,399 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:19:46] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 15:19:46,415 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:19:46] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 15:19:46,475 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:19:46] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 15:19:46,478 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:19:46] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 15:19:46,480 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:19:46] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 15:20:06,037 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:20:06] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 15:20:06,084 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:20:06] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-25 15:20:06,168 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:20:06] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 15:20:06,171 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:20:06] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 15:20:06,174 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:20:06] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-25 15:21:03,278 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:21:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 15:21:05,293 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:21:05] "GET /api/posts HTTP/1.1" 200 -
+2025-09-25 15:21:51,881 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:21:51] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 15:21:55,481 - blueprints.launchpad - INFO - Posting to CLAN by Scotweb (Page ID: 196935752675)
+2025-09-25 15:21:55,481 - blueprints.launchpad - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/196935752675/photos
+2025-09-25 15:21:55,481 - blueprints.launchpad - INFO - Product image URL: None
+2025-09-25 15:21:55,481 - blueprints.launchpad - INFO - Access token being used: EAAUeqRZAekZBkBPZAbV...
+2025-09-25 15:21:55,518 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): graph.facebook.com:443
+2025-09-25 15:21:55,788 - urllib3.connectionpool - DEBUG - https://graph.facebook.com:443 "POST /v18.0/196935752675/photos HTTP/1.1" 400 125
+2025-09-25 15:21:55,789 - blueprints.launchpad - INFO - Facebook API response - Status: 400
+2025-09-25 15:21:55,789 - blueprints.launchpad - INFO - Facebook API response - Content: {"error":{"message":"(#324) Requires upload file","type":"OAuthException","code":324,"fbtrace_id":"AXLleMdqfHxeRn5udk_AMbr"}}
+2025-09-25 15:21:55,790 - blueprints.launchpad - INFO - Posting to Scotweb CLAN (Page ID: 108385661622841)
+2025-09-25 15:21:55,790 - blueprints.launchpad - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/108385661622841/photos
+2025-09-25 15:21:55,790 - blueprints.launchpad - INFO - Product image URL: None
+2025-09-25 15:21:55,790 - blueprints.launchpad - INFO - Access token being used: EAAUeqRZAekZBkBPk2kY...
+2025-09-25 15:21:55,792 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): graph.facebook.com:443
+2025-09-25 15:21:55,875 - urllib3.connectionpool - DEBUG - https://graph.facebook.com:443 "POST /v18.0/108385661622841/photos HTTP/1.1" 400 210
+2025-09-25 15:21:55,875 - blueprints.launchpad - INFO - Facebook API response - Status: 400
+2025-09-25 15:21:55,875 - blueprints.launchpad - INFO - Facebook API response - Content: {"error":{"message":"Error validating access token: Session has expired on Wednesday, 24-Sep-25 07:00:00 PDT. The current time is Thursday, 25-Sep-25 07:21:55 PDT.","type":"OAuthException","code":190,"error_subcode":463,"fbtrace_id":"AmnnEBpIblffR_afDxJocud"}}
+2025-09-25 15:21:55,878 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:21:55] "POST /launchpad/api/syndication/post-now HTTP/1.1" 200 -
+2025-09-25 15:22:17,765 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-25 15:22:17,985 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 15:22:18,926 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 15:22:18,933 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 15:22:18,946 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 15:22:21,988 - config.database - INFO - Database connection established
+2025-09-25 15:22:21,994 - blueprints.launchpad - INFO - Posting to CLAN by Scotweb (Page ID: 196935752675)
+2025-09-25 15:22:21,994 - blueprints.launchpad - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/196935752675/photos
+2025-09-25 15:22:21,994 - blueprints.launchpad - INFO - Product image URL: https://static.clan.com/media/blog/section_53_1_1758033386.jpg
+2025-09-25 15:22:21,994 - blueprints.launchpad - INFO - Access token being used: EAAUeqRZAekZBkBPZAbV...
+2025-09-25 15:22:21,998 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): graph.facebook.com:443
+2025-09-25 15:22:31,588 - urllib3.connectionpool - DEBUG - https://graph.facebook.com:443 "POST /v18.0/196935752675/photos HTTP/1.1" 200 67
+2025-09-25 15:22:31,589 - blueprints.launchpad - INFO - Facebook API response - Status: 200
+2025-09-25 15:22:31,589 - blueprints.launchpad - INFO - Facebook API response - Content: {"id":"1114697634134892","post_id":"196935752675_1114697684134887"}
+2025-09-25 15:22:31,590 - blueprints.launchpad - INFO - Posting to Scotweb CLAN (Page ID: 108385661622841)
+2025-09-25 15:22:31,590 - blueprints.launchpad - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/108385661622841/photos
+2025-09-25 15:22:31,590 - blueprints.launchpad - INFO - Product image URL: https://static.clan.com/media/blog/section_53_1_1758033386.jpg
+2025-09-25 15:22:31,590 - blueprints.launchpad - INFO - Access token being used: EAAUeqRZAekZBkBPk2kY...
+2025-09-25 15:22:31,593 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): graph.facebook.com:443
+2025-09-25 15:22:31,687 - urllib3.connectionpool - DEBUG - https://graph.facebook.com:443 "POST /v18.0/108385661622841/photos HTTP/1.1" 400 260
+2025-09-25 15:22:31,687 - blueprints.launchpad - INFO - Facebook API response - Status: 400
+2025-09-25 15:22:31,687 - blueprints.launchpad - INFO - Facebook API response - Content: {"error":{"message":"Error validating access token: Session has expired on Wednesday, 24-Sep-25 07:00:00 PDT. The current time is Thursday, 25-Sep-25 07:22:31 PDT.","type":"OAuthException","code":190,"error_subcode":463,"fbtrace_id":"AXyXSRDp9RTQgE_1IPnmhSW"}}
+2025-09-25 15:22:31,690 - blueprints.launchpad - ERROR - Error posting to Facebook: name 'conn' is not defined
+2025-09-25 15:22:31,691 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:22:31] "POST /launchpad/api/syndication/post-now HTTP/1.1" 200 -
+2025-09-25 15:22:46,287 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-25 15:22:46,509 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 15:23:34,870 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 15:23:34,879 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-25 15:23:34,879 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-25 15:23:34,880 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 15:23:35,823 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 15:23:35,830 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 15:23:35,841 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 15:23:43,277 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:23:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 15:25:49,829 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-25 15:25:49,992 - werkzeug - INFO -  * Restarting with stat
+2025-09-25 15:25:50,828 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-09-25 15:25:50,833 - werkzeug - WARNING -  * Debugger is active!
+2025-09-25 15:25:50,842 - werkzeug - INFO -  * Debugger PIN: 830-133-383
+2025-09-25 15:26:23,285 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:26:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 15:26:59,249 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:26:59] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-25 15:26:59,251 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:26:59] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-25 15:26:59,253 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:26:59] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-25 15:26:59,262 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:26:59] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-25 15:29:03,280 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:29:03] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 15:31:43,272 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:31:43] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-25 15:34:23,268 - werkzeug - INFO - 127.0.0.1 - - [25/Sep/2025 15:34:23] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -

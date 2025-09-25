@@ -31,3 +31,10 @@ INFO:werkzeug: * Detected change in '/Users/autojenny/Documents/projects/blog/bl
 INFO:werkzeug: * Restarting with stat
 WARNING:werkzeug: * Debugger is active!
 INFO:werkzeug: * Debugger PIN: 830-133-383
+INFO:werkzeug:127.0.0.1 - - [25/Sep/2025 15:05:03] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [25/Sep/2025 15:05:03] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [25/Sep/2025 15:05:03] "GET /api/posts HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [25/Sep/2025 15:05:03] "GET /api/daily-product-posts/today-status HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [25/Sep/2025 15:05:03] "[31m[1mGET /api/syndication/pieces HTTP/1.1[0m" 400 -
+INFO:werkzeug:127.0.0.1 - - [25/Sep/2025 15:05:03] "GET /api/social-media/timeline HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [25/Sep/2025 15:05:04] "GET /api/syndication/facebook/credentials HTTP/1.1" 200 -
