@@ -685,10 +685,30 @@
             
             console.log('KPI elements found:', { scheduledEl, publishedEl, platformsEl, queueHealthEl });
             
-            if (scheduledEl) scheduledEl.textContent = scheduled;
-            if (publishedEl) publishedEl.textContent = published;
-            if (platformsEl) platformsEl.textContent = platforms;
-            if (queueHealthEl) queueHealthEl.textContent = Math.round(queueHealth) + '%';
+            if (scheduledEl) {
+                scheduledEl.textContent = scheduled;
+                console.log('Updated scheduled count to:', scheduled);
+            } else {
+                console.error('scheduledEl not found!');
+            }
+            if (publishedEl) {
+                publishedEl.textContent = published;
+                console.log('Updated published count to:', published);
+            } else {
+                console.error('publishedEl not found!');
+            }
+            if (platformsEl) {
+                platformsEl.textContent = platforms;
+                console.log('Updated platforms count to:', platforms);
+            } else {
+                console.error('platformsEl not found!');
+            }
+            if (queueHealthEl) {
+                queueHealthEl.textContent = Math.round(queueHealth) + '%';
+                console.log('Updated queue health to:', Math.round(queueHealth) + '%');
+            } else {
+                console.error('queueHealthEl not found!');
+            }
         }
 
         function updateQueueCount() {
@@ -890,12 +910,19 @@
         // INITIALIZATION
         // ============================================================================
         
-        document.addEventListener('DOMContentLoaded', function() {
+        // Use setTimeout to ensure DOM is ready and avoid conflicts
+        setTimeout(function() {
+            console.log('Initializing homepage social media features...');
+            
+            // Test if elements exist
+            const testEl = document.getElementById('homepage-scheduled-count');
+            console.log('Test element found:', testEl);
+            
             loadTimelineData();
             setupEventListeners();
             
             // Refresh data every 30 seconds
             setInterval(loadTimelineData, 30000);
-        });
+        }, 100);
     </script>
 {% endblock %}
