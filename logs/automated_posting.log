@@ -60,3 +60,13 @@
 2025-09-25 19:46:32,028 - INFO - Scheduled post 412 for 2025-09-25 19:47:32.026692 (originally 2025-09-25 19:45:28.732256)
 2025-09-25 19:46:32,028 - INFO - Processing complete: {'total_found': 1, 'successfully_scheduled': 1, 'failed': 0, 'skipped': 0}
 2025-09-25 19:46:32,028 - INFO - Automated posting complete: {'total_found': 1, 'successfully_scheduled': 1, 'failed': 0, 'skipped': 0}
+2025-09-26 07:43:58,516 - INFO - Starting automated posting system
+2025-09-26 07:43:58,532 - INFO - Database connection established
+2025-09-26 07:43:58,540 - INFO - Found 3 posts due for publishing in next 30 minutes
+2025-09-26 07:43:58,542 - INFO - Scheduled post 401 for 2025-09-26 07:44:58.540093 (originally 2025-09-25 01:35:00)
+2025-09-26 07:43:58,548 - INFO - Database connection established
+2025-09-26 07:43:58,551 - INFO - Scheduled post 413 for 2025-09-26 07:44:58.542744 (originally 2025-09-25 17:00:00)
+2025-09-26 07:43:58,556 - INFO - Database connection established
+2025-09-26 07:43:58,558 - INFO - Scheduled post 402 for 2025-09-26 07:44:58.551876 (originally 2025-09-26 01:01:00)
+2025-09-26 07:43:58,559 - INFO - Processing complete: {'total_found': 3, 'successfully_scheduled': 3, 'failed': 0, 'skipped': 0}
+2025-09-26 07:43:58,559 - INFO - Automated posting complete: {'total_found': 3, 'successfully_scheduled': 3, 'failed': 0, 'skipped': 0}

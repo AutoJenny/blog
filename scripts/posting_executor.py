@@ -64,102 +64,30 @@ class PostingExecutor:
     
     def post_to_facebook(self, post: Dict) -> Dict:
         """
-        Post content to Facebook
+        Post content to Facebook using the shared posting function
         """
         try:
-            # Import Facebook posting functionality
-            from blueprints.launchpad import post_to_facebook_page
+            # Import the shared posting function
+            from blueprints.launchpad import execute_facebook_post
             
-            # Get Facebook credentials
-            with self.db_manager.get_connection() as conn:
-                with conn.cursor() as cursor:
-                    cursor.execute("""
-                        SELECT credential_key, credential_value 
-                        FROM platform_credentials 
-                        WHERE credential_key IN ('page_access_token', 'page_id')
-                        AND platform_id = (SELECT id FROM platforms WHERE name = 'facebook')
-                        AND is_active = true
-                    """)
-                    
-                    creds = {row['credential_key']: row['credential_value'] for row in cursor.fetchall()}
+            # Use the shared function which handles both pages and proper image URLs
+            result = execute_facebook_post(post['id'])
             
-            page_access_token = creds.get('page_access_token')
-            page_id = creds.get('page_id')
-            
-            if not page_access_token or not page_id:
-                return {
-                    'success': False,
-                    'error': 'Facebook credentials not found'
-                }
-            
-            # Get product URL for link sharing
-            product_url = None
-            if post.get('product_id'):
-                with self.db_manager.get_connection() as conn:
-                    with conn.cursor() as cursor:
-                        cursor.execute("""
-                            SELECT url FROM clan_products WHERE id = %s
-                        """, (post['product_id'],))
-                        
-                        result = cursor.fetchone()
-                        if result:
-                            product_url = result['url']
-            
-            # Post to Facebook with product URL as link
-            result = post_to_facebook_page(page_id, page_access_token, post['generated_content'], product_url, "Facebook Page")
-            
-            if result.get('success'):
+            if result['success']:
                 return {
                     'success': True,
-                    'platform_post_id': result.get('post_id'),
-                    'message': 'Successfully posted to Facebook'
+                    'platform_post_id': result.get('platform_post_ids', [None])[0] if result.get('platform_post_ids') else None,
+                    'message': result['message']
                 }
             else:
                 return {
                     'success': False,
-                    'error': result.get('error', 'Unknown Facebook posting error')
+                    'error': result['message']
                 }
                 
         except Exception as e:
             logger.error(f"Error posting to Facebook: {e}")
-            return {
-                'success': False,
-                'error': str(e)
-            }
-    
-    def post_to_instagram(self, post: Dict) -> Dict:
-        """
-        Post content to Instagram (placeholder - implement Instagram API)
-        """
-        # TODO: Implement Instagram posting
-        logger.warning("Instagram posting not yet implemented")
-        return {
-            'success': False,
-            'error': 'Instagram posting not yet implemented'
-        }
-    
-    def post_to_twitter(self, post: Dict) -> Dict:
-        """
-        Post content to Twitter (placeholder - implement Twitter API)
-        """
-        # TODO: Implement Twitter posting
-        logger.warning("Twitter posting not yet implemented")
-        return {
-            'success': False,
-            'error': 'Twitter posting not yet implemented'
-        }
-    
-    def post_to_linkedin(self, post: Dict) -> Dict:
-        """
-        Post content to LinkedIn (placeholder - implement LinkedIn API)
-        """
-        # TODO: Implement LinkedIn posting
-        logger.warning("LinkedIn posting not yet implemented")
-        return {
-            'success': False,
-            'error': 'LinkedIn posting not yet implemented'
-        }
-    
+            return {'success': False, 'error': str(e)}
     def execute_post(self, post: Dict) -> Dict:
         """
         Execute a single post to the appropriate platform
@@ -184,47 +112,6 @@ class PostingExecutor:
                 'error': f'Unknown platform: {platform}'
             }
         
-        # Update database with result
-        self.update_post_result(post_id, result)
-        
-        return result
-    
-    def update_post_result(self, post_id: int, result: Dict):
-        """
-        Update the database with posting result
-        """
-        try:
-            with self.db_manager.get_connection() as conn:
-                with conn.cursor() as cursor:
-                    if result['success']:
-                        # Successful post
-                        cursor.execute("""
-                            UPDATE posting_queue 
-                            SET status = 'published', 
-                                platform_post_id = %s,
-                                updated_at = %s
-                            WHERE id = %s
-                        """, (result.get('platform_post_id'), datetime.now(), post_id))
-                        
-                        logger.info(f"Post {post_id} marked as published with platform ID: {result.get('platform_post_id')}")
-                    else:
-                        # Failed post
-                        cursor.execute("""
-                            UPDATE posting_queue 
-                            SET status = 'failed', 
-                                error_message = %s,
-                                updated_at = %s
-                            WHERE id = %s
-                        """, (result.get('error', 'Unknown error'), datetime.now(), post_id))
-                        
-                        logger.error(f"Post {post_id} marked as failed: {result.get('error')}")
-                    
-                    # Commit the transaction
-                    conn.commit()
-                
-        except Exception as e:
-            logger.error(f"Error updating post result for {post_id}: {e}")
-    
     def process_pending_posts(self) -> Dict[str, int]:
         """
         Process all pending posts that are due for publishing

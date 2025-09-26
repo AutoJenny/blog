@@ -6,3 +6,31 @@
 2025-09-25 16:48:36,598 - ERROR - Facebook API error details: {'error': {'message': 'Error validating access token: Session has expired on Wednesday, 24-Sep-25 07:00:00 PDT. The current time is Thursday, 25-Sep-25 08:48:36 PDT.', 'type': 'OAuthException', 'code': 190, 'error_subcode': 463, 'fbtrace_id': 'AmwAQqAS2sSLK08zQQm576y'}}
 2025-09-25 16:48:36,598 - ERROR - Facebook perpetual token refresh failed: 400 Client Error: Bad Request for url: https://graph.facebook.com/v21.0/oauth/access_token?grant_type=fb_exchange_token&client_id=1441086457156585&client_secret=014f104b58439c559638232df045bf8a&fb_exchange_token=EAAUeqRZAekZBkBPsw3YYjLZCk4ZAZBY7AwPfcTCGOES4heoo7IaeUvCmLqObdOa5EHzyZBMWI7KQQNQj3IZAg3swZBaZBRidIDZAN1bFK3e4mERDauK44UZCo1EA2SP9yQn5YMFtAHHqO4IjeJWDpdXCapE3PrMZAbyZAZCaxKctetRSKAP8FIivrMRpncgWn0dmAodyatdUNCFkG9jYcCLEBpBkJXHyypgSn45U1fqGKOcxz82dw0c4x6ZC7p9QR0PtZBnaKAZDZD
 2025-09-25 16:48:36,598 - ERROR - Facebook perpetual token system failed
+2025-09-25 22:19:51,977 - INFO - Starting Facebook perpetual token refresh process
+2025-09-25 22:19:51,993 - INFO - Database connection established
+2025-09-25 22:19:51,996 - INFO - Found user access token: EAAUeqRZAekZBkBPsw3Y...
+2025-09-25 22:19:51,996 - INFO - Retrieved current user token from database
+2025-09-25 22:19:52,153 - ERROR - Failed to get long-lived user token: 400 Client Error: Bad Request for url: https://graph.facebook.com/v21.0/oauth/access_token?grant_type=fb_exchange_token&client_id=1441086457156585&client_secret=014f104b58439c559638232df045bf8a&fb_exchange_token=EAAUeqRZAekZBkBPsw3YYjLZCk4ZAZBY7AwPfcTCGOES4heoo7IaeUvCmLqObdOa5EHzyZBMWI7KQQNQj3IZAg3swZBaZBRidIDZAN1bFK3e4mERDauK44UZCo1EA2SP9yQn5YMFtAHHqO4IjeJWDpdXCapE3PrMZAbyZAZCaxKctetRSKAP8FIivrMRpncgWn0dmAodyatdUNCFkG9jYcCLEBpBkJXHyypgSn45U1fqGKOcxz82dw0c4x6ZC7p9QR0PtZBnaKAZDZD
+2025-09-25 22:19:52,153 - ERROR - Facebook API error details: {'error': {'message': 'Error validating access token: Session has expired on Wednesday, 24-Sep-25 07:00:00 PDT. The current time is Thursday, 25-Sep-25 14:19:52 PDT.', 'type': 'OAuthException', 'code': 190, 'error_subcode': 463, 'fbtrace_id': 'A2f6Xx6T-9U-hX7Nvuhi61m'}}
+2025-09-25 22:19:52,153 - ERROR - Facebook perpetual token refresh failed: 400 Client Error: Bad Request for url: https://graph.facebook.com/v21.0/oauth/access_token?grant_type=fb_exchange_token&client_id=1441086457156585&client_secret=014f104b58439c559638232df045bf8a&fb_exchange_token=EAAUeqRZAekZBkBPsw3YYjLZCk4ZAZBY7AwPfcTCGOES4heoo7IaeUvCmLqObdOa5EHzyZBMWI7KQQNQj3IZAg3swZBaZBRidIDZAN1bFK3e4mERDauK44UZCo1EA2SP9yQn5YMFtAHHqO4IjeJWDpdXCapE3PrMZAbyZAZCaxKctetRSKAP8FIivrMRpncgWn0dmAodyatdUNCFkG9jYcCLEBpBkJXHyypgSn45U1fqGKOcxz82dw0c4x6ZC7p9QR0PtZBnaKAZDZD
+2025-09-25 22:19:52,153 - ERROR - Facebook perpetual token system failed
+2025-09-25 22:24:12,025 - INFO - Starting Facebook perpetual token refresh process
+2025-09-25 22:24:12,042 - INFO - Database connection established
+2025-09-25 22:24:12,045 - INFO - Found user access token: EAAUeqRZAekZBkBPqf0o...
+2025-09-25 22:24:12,045 - INFO - Retrieved current user token from database
+2025-09-25 22:24:12,623 - INFO - Successfully obtained long-lived user token (expires in ~60 days)
+2025-09-25 22:24:13,859 - INFO - Found page token for Scotweb CLAN (ID: 196935752675)
+2025-09-25 22:24:13,860 - INFO - Successfully obtained token for scotweb_clan (ID: 196935752675)
+2025-09-25 22:24:14,687 - INFO - Found page token for CLAN by Scotweb (ID: 108385661622841)
+2025-09-25 22:24:14,689 - INFO - Successfully obtained token for clan_by_scotweb (ID: 108385661622841)
+2025-09-25 22:24:14,697 - INFO - Database connection established
+2025-09-25 22:24:14,700 - INFO - Updated page_access_token in database
+2025-09-25 22:24:14,701 - INFO - Updated page_access_token_2 in database
+2025-09-25 22:24:14,702 - INFO - Database tokens updated successfully
+2025-09-25 22:24:14,702 - INFO - Facebook perpetual token refresh completed successfully
+2025-09-25 22:24:14,702 - INFO - Testing posting to both Facebook pages (SAFE MODE)
+2025-09-25 22:24:14,710 - INFO - Database connection established
+2025-09-25 22:24:14,935 - INFO - ✅ API access successful for scotweb_clan - Page: Scotweb CLAN
+2025-09-25 22:24:15,148 - INFO - ✅ API access successful for clan_by_scotweb - Page: CLAN by Scotweb
+2025-09-25 22:24:15,148 - INFO - API access test completed
+2025-09-25 22:24:15,149 - INFO - Facebook perpetual token system completed successfully
