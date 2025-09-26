@@ -1,6 +1,6 @@
 <div class="mp-content std fix-me">
     <header class="blog-post__header">
-        {% if post.header_image and post.header_image.path %}
+        {% if post.header_image and post.header_image.path and not post.exclude_header_image %}
         <figure class="header-image">
             <img src="{{ post.header_image.path }}" 
                  alt="{{ post.header_image.title or 'Header image' }}"
