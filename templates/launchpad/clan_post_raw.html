@@ -1,5 +1,16 @@
 <div class="mp-content std fix-me">
     <header class="blog-post__header">
+        {% if post.header_image and post.header_image.path %}
+        <figure class="header-image">
+            <img src="{{ post.header_image.path }}" 
+                 alt="{{ post.header_image.title or 'Header image' }}"
+                 title="{{ post.header_image.caption or post.header_image.title or 'Header image' }}">
+            {% if post.header_image.caption %}
+            <figcaption>{{ post.header_image.caption }}</figcaption>
+            {% endif %}
+        </figure>
+        {% endif %}
+        
         {% if post.subtitle %}
         <p class="blog-post__subtitle">{{ post.subtitle }}</p>
         {% endif %}

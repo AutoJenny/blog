@@ -522,7 +522,12 @@ class ClanPublisher:
                             section_id = section['id']
                             break
                     
-                    if section_id:
+                    # If no section_id found, check if it's a header image
+                    if not section_id and 'header' in local_path:
+                        section_id = None  # Header images have section_id = NULL
+                    
+                    # Save mapping for both section images and header images
+                    if section_id is not None or 'header' in local_path:
                         # Extract filename and get file info
                         filename = os.path.basename(local_path)
                         
@@ -552,7 +557,6 @@ class ClanPublisher:
                         
                         logger.info(f"✅ Saved image mapping: {local_path} -> {clan_url}")
                 
-                conn.commit()
                 logger.info(f"✅ Saved {len(uploaded_images)} image mappings to database")
                 
         except Exception as e:
@@ -608,6 +612,16 @@ class ClanPublisher:
                 else:
                     logger.warning(f"Unexpected uploaded URL format: {uploaded_url}")
                     logger.info("Using default placeholder thumbnails due to unexpected URL format")
+            elif list_thumbnail and list_thumbnail.startswith('/blog/header_'):
+                # Header image was uploaded for thumbnails but not included in uploaded_images
+                # Add it to uploaded_images for HTML replacement
+                header_image_path = full_post_data.get('header_image', {}).get('path')
+                if header_image_path:
+                    # Convert thumbnail path to full URL
+                    thumbnail_filename = list_thumbnail.split('/')[-1]  # e.g., "header_53_1758883937.jpg"
+                    clan_url = f"https://static.clan.com/media/blog/{thumbnail_filename}"
+                    uploaded_images[header_image_path] = clan_url
+                    logger.info(f"✅ Added header image to uploaded_images for HTML replacement: {header_image_path} -> {clan_url}")
             elif uploaded_images:
                 # Try to use any available image as thumbnail if no header image
                 first_image_url = list(uploaded_images.values())[0]
@@ -898,6 +912,28 @@ class ClanPublisher:
                 uploaded_images = self.process_images(full_post_data, sections_list)
                 logger.info(f"✅ Image processing completed. Uploaded {len(uploaded_images)} images.")
                 logger.info(f"uploaded_images dictionary: {uploaded_images}")
+                
+                # Fix: Ensure header image is included in uploaded_images for HTML replacement
+                header_image_path = full_post_data.get('header_image', {}).get('path')
+                if header_image_path and header_image_path not in uploaded_images:
+                    # Header image was processed but not added to uploaded_images
+                    # We need to upload it separately and add to uploaded_images
+                    logger.info(f"Header image not in uploaded_images, uploading separately: {header_image_path}")
+                    try:
+                        from config.paths import path_resolver
+                        fs_path = path_resolver.convert_web_path_to_filesystem(header_image_path)
+                        if os.path.exists(fs_path):
+                            filename = f"header_{full_post_data['id']}_{int(time.time())}.jpg"
+                            uploaded_url = self.upload_image(fs_path, filename)
+                            if uploaded_url:
+                                uploaded_images[header_image_path] = uploaded_url
+                                logger.info(f"✅ Header image uploaded and added to uploaded_images: {header_image_path} -> {uploaded_url}")
+                            else:
+                                logger.warning(f"❌ Header image upload failed: {header_image_path}")
+                        else:
+                            logger.warning(f"❌ Header image file not found: {fs_path}")
+                    except Exception as e:
+                        logger.error(f"❌ Error uploading header image: {str(e)}")
             except Exception as e:
                 logger.error(f"❌ Error during image processing: {str(e)}")
                 import traceback
