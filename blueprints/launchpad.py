@@ -2021,6 +2021,9 @@ def clan_post_html(post_id):
                 logger.warning(f"Could not load image mappings: {e}")
             
             # Get the exact same HTML that gets uploaded
+            # Ensure post has 'id' field for compatibility
+            if 'post_id' in post and 'id' not in post:
+                post['id'] = post['post_id']
             upload_html = publisher.get_preview_html_content(post, sections, uploaded_images)
             
             if upload_html:

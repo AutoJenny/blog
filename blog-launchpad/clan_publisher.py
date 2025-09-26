@@ -505,7 +505,8 @@ class ClanPublisher:
             import os
             from config.database import db_manager
             
-            with db_manager.get_cursor() as cursor:
+            conn = db_manager.get_connection()
+            with conn.cursor() as cursor:
                 
                 # Clear existing mappings for this post
                 cursor.execute("""
@@ -558,6 +559,10 @@ class ClanPublisher:
                         logger.info(f"✅ Saved image mapping: {local_path} -> {clan_url}")
                 
                 logger.info(f"✅ Saved {len(uploaded_images)} image mappings to database")
+            
+            # Commit the transaction
+            conn.commit()
+            logger.info("✅ Image mappings transaction committed")
                 
         except Exception as e:
             logger.error(f"❌ Error saving image mappings to database: {str(e)}")
@@ -1027,7 +1032,7 @@ class ClanPublisher:
             import os
             
             # Get the clan_post_raw.html template content
-            template_path = os.path.join(os.path.dirname(__file__), 'templates', 'clan_post_raw.html')
+            template_path = os.path.join(os.path.dirname(__file__), '..', 'templates', 'launchpad', 'clan_post_raw.html')
             with open(template_path, 'r', encoding='utf-8') as f:
                 template_content = f.read()
             

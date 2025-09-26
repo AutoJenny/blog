@@ -15,21 +15,36 @@ class DatabaseManager:
     
     def get_connection(self):
         """Get database connection with proper configuration."""
-        if self._connection is None or self._connection.closed:
-            try:
-                self._connection = psycopg.connect(
-                    self.config.DATABASE_URL,
-                    row_factory=dict_row
-                )
-                logger.info("Database connection established")
-            except Exception as e:
-                logger.error(f"Failed to connect to database: {e}")
-                raise
-        return self._connection
+        # Always create a new connection to avoid transaction state issues
+        try:
+            connection = psycopg.connect(
+                self.config.DATABASE_URL,
+                row_factory=dict_row
+            )
+            logger.info("Database connection established")
+            return connection
+        except Exception as e:
+            logger.error(f"Failed to connect to database: {e}")
+            raise
     
     def get_cursor(self):
-        """Get database cursor."""
+        """Get database cursor with proper context management."""
         return self.get_connection().cursor()
+    
+    def __enter__(self):
+        """Context manager entry."""
+        return self.get_cursor()
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit - ensure proper cleanup."""
+        if exc_type is not None:
+            # If there was an exception, rollback the transaction
+            try:
+                if hasattr(self, '_connection') and self._connection and not self._connection.closed:
+                    self._connection.rollback()
+                    logger.info("Transaction rolled back due to exception")
+            except Exception as e:
+                logger.error(f"Error during rollback: {e}")
     
     def close_connection(self):
         """Close database connection."""
