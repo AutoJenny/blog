@@ -1159,13 +1159,15 @@ def refresh_facebook_cache(url):
         logger.error(f"Error refreshing Facebook cache: {e}")
         return False
 
-def post_to_facebook_unified(page_id, access_token, message, link_url, page_name=""):
-    """Unified Facebook posting function - always uses /feed endpoint with link."""
+def post_to_facebook_unified(page_id, access_token, message, link_url, image_url=None, page_name=""):
+    """Unified Facebook posting function - uses /feed endpoint with link and optional picture."""
     import requests
     
     logger.info(f"Posting to {page_name} (Page ID: {page_id})")
     logger.info(f"Post content: {message[:100]}...")
     logger.info(f"Link URL: {link_url}")
+    if image_url:
+        logger.info(f"Image URL: {image_url}")
     logger.info(f"Access token being used: {access_token[:20]}...")
     
     # Try to refresh Facebook's cache for the link URL
@@ -1180,7 +1182,12 @@ def post_to_facebook_unified(page_id, access_token, message, link_url, page_name
         'access_token': access_token
     }
     
+    # Add picture parameter if image_url is provided
+    if image_url:
+        feed_payload['picture'] = image_url
+    
     logger.info(f"Facebook API call - URL: {feed_url}")
+    logger.info(f"Facebook API payload: {feed_payload}")
     response = requests.post(feed_url, data=feed_payload, timeout=30)
     logger.info(f"Facebook API response - Status: {response.status_code}")
     logger.info(f"Facebook API response - Content: {response.text}")
@@ -1280,6 +1287,7 @@ def execute_facebook_post(queue_item_id):
                     page['access_token'], 
                     post_data['message'],
                     post_data['link_url'],
+                    post_data.get('image_url'),  # Pass the image URL
                     page['name']
                 )
                 results.append({
