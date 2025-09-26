@@ -26337,3 +26337,156 @@ LINE 2:                 SELECT stage_id, sub_stage_id, status, updat...
 2025-09-26 19:29:39,433 - config.database - INFO - Database connection established
 2025-09-26 19:29:39,437 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:29:39] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
 2025-09-26 19:29:39,444 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:29:39] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 19:30:11,494 - config.database - INFO - Database connection established
+2025-09-26 19:30:11,502 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:30:11] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 19:30:11,562 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:30:11] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 19:30:49,371 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:30:49] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 19:31:13,842 - config.database - INFO - Database connection established
+2025-09-26 19:31:13,854 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:31:13] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 19:31:51,923 - config.database - INFO - Database connection established
+2025-09-26 19:31:51,932 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:31:51] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 19:32:04,865 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:32:04] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 19:32:45,164 - config.database - INFO - Database connection established
+2025-09-26 19:32:45,176 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:32:45] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 19:33:08,509 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:33:08] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 19:34:59,489 - config.database - INFO - Database connection established
+2025-09-26 19:34:59,495 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:34:59] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 19:35:22,947 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:35:22] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 19:37:43,444 - config.database - INFO - Database connection established
+2025-09-26 19:37:43,457 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:37:43] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 19:38:16,935 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:16] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 19:38:37,803 - config.database - INFO - Database connection established
+2025-09-26 19:38:37,811 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:37] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 19:38:41,021 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:41] "GET /planning/posts/53/idea HTTP/1.1" 200 -
+2025-09-26 19:38:41,047 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:41] "[33mGET /static/css/post-sections.css HTTP/1.1[0m" 404 -
+2025-09-26 19:38:41,051 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:41] "[33mGET /static/css/images.css HTTP/1.1[0m" 404 -
+2025-09-26 19:38:41,051 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:41] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-26 19:38:41,052 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:41] "[33mGET /static/css/clan-api.css HTTP/1.1[0m" 404 -
+2025-09-26 19:38:41,052 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:41] "[33mGET /static/css/post-info.css HTTP/1.1[0m" 404 -
+2025-09-26 19:38:41,053 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:41] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-26 19:38:41,053 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:41] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-26 19:38:41,054 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:41] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-26 19:38:41,055 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:41] "[33mGET /static/js/launchpad.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:41,056 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:41] "[33mGET /static/js/post-sections.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:41,057 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:41] "[33mGET /static/js/post-info.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:41,058 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:41] "[33mGET /static/js/images.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:41,059 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:41] "[33mGET /static/js/clan-api.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:41,062 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:41] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-26 19:38:41,062 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:41] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-26 19:38:41,063 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:41] "[36mGET /static/js/llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-26 19:38:41,063 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:41] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-26 19:38:44,417 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:44] "GET /planning/posts/53/idea HTTP/1.1" 200 -
+2025-09-26 19:38:44,420 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:44] "[33mGET /static/css/post-sections.css HTTP/1.1[0m" 404 -
+2025-09-26 19:38:44,422 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:44] "[33mGET /static/css/post-info.css HTTP/1.1[0m" 404 -
+2025-09-26 19:38:44,422 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:44] "[33mGET /static/css/clan-api.css HTTP/1.1[0m" 404 -
+2025-09-26 19:38:44,423 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:44] "[33mGET /static/js/launchpad.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:44,423 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:44] "[33mGET /static/css/images.css HTTP/1.1[0m" 404 -
+2025-09-26 19:38:44,428 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:44] "[33mGET /static/js/post-sections.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:44,429 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:44] "[33mGET /static/js/post-info.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:44,429 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:44] "[33mGET /static/js/images.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:44,430 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:44] "[33mGET /static/js/clan-api.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:44,447 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:44] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-26 19:38:44,450 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:44] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-26 19:38:44,451 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:44] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-26 19:38:44,452 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:44] "[36mGET /static/js/llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-26 19:38:44,452 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:44] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-26 19:38:44,453 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:44] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-26 19:38:44,453 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:44] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-26 19:38:44,454 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:44] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-26 19:38:46,931 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:46] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 19:38:50,293 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:50] "GET /planning/ HTTP/1.1" 200 -
+2025-09-26 19:38:50,318 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:50] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-26 19:38:50,324 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:50] "[33mGET /static/css/post-sections.css HTTP/1.1[0m" 404 -
+2025-09-26 19:38:50,327 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:50] "[33mGET /static/css/images.css HTTP/1.1[0m" 404 -
+2025-09-26 19:38:50,327 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:50] "[33mGET /static/css/post-info.css HTTP/1.1[0m" 404 -
+2025-09-26 19:38:50,328 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:50] "[33mGET /static/css/clan-api.css HTTP/1.1[0m" 404 -
+2025-09-26 19:38:50,329 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:50] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-26 19:38:50,332 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:50] "[33mGET /static/js/launchpad.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:50,332 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:50] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-26 19:38:50,333 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:50] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-26 19:38:50,334 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:50] "[33mGET /static/js/post-sections.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:50,335 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:50] "[33mGET /static/js/post-info.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:50,336 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:50] "[33mGET /static/js/images.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:50,338 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:50] "[33mGET /static/js/clan-api.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:50,339 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:50] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-26 19:38:50,339 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:50] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-26 19:38:50,340 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:50] "[36mGET /static/js/llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-26 19:38:50,341 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:50] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-26 19:38:50,350 - config.database - INFO - Database connection established
+2025-09-26 19:38:50,353 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:50] "GET /planning/api/posts HTTP/1.1" 200 -
+2025-09-26 19:38:51,677 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:51] "GET /planning/posts/53/idea HTTP/1.1" 200 -
+2025-09-26 19:38:51,682 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:51] "[33mGET /static/css/post-sections.css HTTP/1.1[0m" 404 -
+2025-09-26 19:38:51,683 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:51] "[33mGET /static/css/clan-api.css HTTP/1.1[0m" 404 -
+2025-09-26 19:38:51,684 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:51] "[33mGET /static/css/post-info.css HTTP/1.1[0m" 404 -
+2025-09-26 19:38:51,685 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:51] "[33mGET /static/js/launchpad.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:51,685 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:51] "[33mGET /static/css/images.css HTTP/1.1[0m" 404 -
+2025-09-26 19:38:51,689 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:51] "[33mGET /static/js/post-sections.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:51,691 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:51] "[33mGET /static/js/post-info.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:51,691 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:51] "[33mGET /static/js/images.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:51,692 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:51] "[33mGET /static/js/clan-api.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:51,709 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:51] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-26 19:38:51,711 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:51] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-26 19:38:51,715 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:51] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-26 19:38:51,716 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:51] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-26 19:38:51,716 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:51] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-26 19:38:51,717 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:51] "[36mGET /static/js/llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-26 19:38:51,717 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:51] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-26 19:38:51,718 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:51] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-26 19:38:52,650 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:52] "GET /planning/posts/53/research HTTP/1.1" 200 -
+2025-09-26 19:38:52,655 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:52] "[36mGET /planning/posts/53/research?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-09-26 19:38:52,656 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:52] "[36mGET /planning/posts/53/research?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-09-26 19:38:52,656 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:52] "[36mGET /planning/posts/53/research?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-09-26 19:38:52,656 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:52] "[36mGET /planning/posts/53/research?__debugger__=yes&cmd=resource&f=console.png&s=k77x5gqHyECVRloKl79H HTTP/1.1[0m" 304 -
+2025-09-26 19:38:52,681 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:52] "[33mGET /static/css/post-sections.css HTTP/1.1[0m" 404 -
+2025-09-26 19:38:52,684 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:52] "[33mGET /static/css/clan-api.css HTTP/1.1[0m" 404 -
+2025-09-26 19:38:52,685 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:52] "[33mGET /static/css/post-info.css HTTP/1.1[0m" 404 -
+2025-09-26 19:38:52,686 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:52] "[33mGET /static/css/images.css HTTP/1.1[0m" 404 -
+2025-09-26 19:38:52,686 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:52] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-26 19:38:52,686 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:52] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-26 19:38:52,687 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:52] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-26 19:38:52,690 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:52] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-26 19:38:52,691 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:52] "[33mGET /static/js/launchpad.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:52,692 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:52] "[33mGET /static/js/post-info.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:52,692 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:52] "[33mGET /static/js/post-sections.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:52,693 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:52] "[33mGET /static/js/images.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:52,694 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:52] "[33mGET /static/js/clan-api.js HTTP/1.1[0m" 404 -
+2025-09-26 19:38:52,697 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:52] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-26 19:38:52,697 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:52] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-26 19:38:52,699 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:52] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-26 19:38:52,699 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:38:52] "[36mGET /static/js/llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-26 19:39:07,801 - config.database - INFO - Database connection established
+2025-09-26 19:39:07,808 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:39:07] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 19:39:17,024 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:39:17] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 19:39:38,390 - config.database - INFO - Database connection established
+2025-09-26 19:39:38,400 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:39:38] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 19:39:49,626 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:39:49] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 19:39:51,267 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-26 19:39:51,301 - werkzeug - INFO -  * Restarting with stat
+2025-09-26 19:39:51,509 - werkzeug - WARNING -  * Debugger is active!
+2025-09-26 19:39:51,515 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-26 19:39:54,767 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-26 19:39:54,799 - werkzeug - INFO -  * Restarting with stat
+2025-09-26 19:39:55,007 - werkzeug - WARNING -  * Debugger is active!
+2025-09-26 19:39:55,013 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-26 19:40:01,433 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-26 19:40:01,464 - werkzeug - INFO -  * Restarting with stat
+2025-09-26 19:40:01,684 - werkzeug - WARNING -  * Debugger is active!
+2025-09-26 19:40:01,689 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-26 19:40:07,045 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/authoring.py', reloading
+2025-09-26 19:40:07,076 - werkzeug - INFO -  * Restarting with stat
+2025-09-26 19:40:07,280 - werkzeug - WARNING -  * Debugger is active!
+2025-09-26 19:40:07,286 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-26 19:40:11,589 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/authoring.py', reloading
+2025-09-26 19:40:11,617 - werkzeug - INFO -  * Restarting with stat
+2025-09-26 19:40:11,820 - werkzeug - WARNING -  * Debugger is active!
+2025-09-26 19:40:11,826 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-26 19:40:17,184 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/authoring.py', reloading
+2025-09-26 19:40:17,215 - werkzeug - INFO -  * Restarting with stat
+2025-09-26 19:40:17,423 - werkzeug - WARNING -  * Debugger is active!
+2025-09-26 19:40:17,428 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-26 19:40:18,898 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:40:18] "GET /planning/ HTTP/1.1" 200 -
+2025-09-26 19:40:21,110 - config.database - INFO - Database connection established
+2025-09-26 19:40:21,115 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:40:21] "GET /authoring/ HTTP/1.1" 200 -
+2025-09-26 19:40:21,119 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:40:21] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 19:40:23,161 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:40:23] "GET /planning/posts/53/idea HTTP/1.1" 200 -
+2025-09-26 19:40:27,073 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 19:40:27] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -

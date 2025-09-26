@@ -15,7 +15,7 @@ bp = Blueprint('planning', __name__, url_prefix='/planning')
 @bp.route('/')
 def planning_dashboard():
     """Main planning dashboard"""
-    return render_template('planning/dashboard.html')
+    return render_template('planning/dashboard.html', blueprint_name='planning')
 
 @bp.route('/posts/<int:post_id>')
 def planning_post_overview(post_id):
@@ -45,7 +45,7 @@ def planning_post_overview(post_id):
             progress = cursor.fetchall()
             
             return render_template('planning/post_overview.html', 
-                                 post=post, progress=progress)
+                                 post=post, progress=progress, blueprint_name='planning')
             
     except Exception as e:
         logger.error(f"Error in planning_post_overview: {e}")
@@ -54,17 +54,17 @@ def planning_post_overview(post_id):
 @bp.route('/posts/<int:post_id>/idea')
 def planning_idea(post_id):
     """Idea planning phase"""
-    return render_template('planning/idea.html', post_id=post_id)
+    return render_template('planning/idea.html', post_id=post_id, blueprint_name='planning')
 
 @bp.route('/posts/<int:post_id>/research')
 def planning_research(post_id):
     """Research planning phase"""
-    return render_template('planning/research.html', post_id=post_id)
+    return render_template('planning/research.html', post_id=post_id, blueprint_name='planning')
 
 @bp.route('/posts/<int:post_id>/structure')
 def planning_structure(post_id):
     """Structure planning phase"""
-    return render_template('planning/structure.html', post_id=post_id)
+    return render_template('planning/structure.html', post_id=post_id, blueprint_name='planning')
 
 @bp.route('/api/posts')
 def api_posts():

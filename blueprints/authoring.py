@@ -15,7 +15,7 @@ bp = Blueprint('authoring', __name__, url_prefix='/authoring')
 @bp.route('/')
 def authoring_dashboard():
     """Main authoring dashboard"""
-    return render_template('authoring/dashboard.html')
+    return render_template('authoring/dashboard.html', blueprint_name='authoring')
 
 @bp.route('/posts/<int:post_id>')
 def authoring_post_overview(post_id):
@@ -45,7 +45,7 @@ def authoring_post_overview(post_id):
             progress = cursor.fetchall()
             
             return render_template('authoring/post_overview.html', 
-                                 post=post, progress=progress)
+                                 post=post, progress=progress, blueprint_name='authoring')
             
     except Exception as e:
         logger.error(f"Error in authoring_post_overview: {e}")
@@ -54,17 +54,17 @@ def authoring_post_overview(post_id):
 @bp.route('/posts/<int:post_id>/sections')
 def authoring_sections(post_id):
     """Sections authoring phase"""
-    return render_template('authoring/sections.html', post_id=post_id)
+    return render_template('authoring/sections.html', post_id=post_id, blueprint_name='authoring')
 
 @bp.route('/posts/<int:post_id>/post-info')
 def authoring_post_info(post_id):
     """Post info authoring phase"""
-    return render_template('authoring/post_info.html', post_id=post_id)
+    return render_template('authoring/post_info.html', post_id=post_id, blueprint_name='authoring')
 
 @bp.route('/posts/<int:post_id>/images')
 def authoring_images(post_id):
     """Images authoring phase"""
-    return render_template('authoring/images.html', post_id=post_id)
+    return render_template('authoring/images.html', post_id=post_id, blueprint_name='authoring')
 
 @bp.route('/api/posts')
 def api_posts():
