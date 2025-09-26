@@ -414,23 +414,15 @@ class ClanPublisher:
             logger.info(f"✅ Found header image: {header_path}")
             
             # Check if file exists - convert web path to file system path
-            if header_path.startswith('/static/'):
-                # Convert /static/... to full file system path
-                fs_path = f"/Users/nickfiddes/Code/projects/blog/blog-images{header_path}"
-                if os.path.exists(fs_path):
-                    logger.info(f"✅ Header image file exists at: {fs_path}")
-                    logger.info(f"File size: {os.path.getsize(fs_path)} bytes")
-                else:
-                    logger.error(f"❌ Header image file NOT found at: {fs_path}")
-                    logger.error(f"Current working directory: {os.getcwd()}")
+            from config.paths import path_resolver
+            
+            fs_path = path_resolver.convert_web_path_to_filesystem(header_path)
+            if os.path.exists(fs_path):
+                logger.info(f"✅ Header image file exists at: {fs_path}")
+                logger.info(f"File size: {os.path.getsize(fs_path)} bytes")
             else:
-                # Already a file system path
-                if os.path.exists(header_path):
-                    logger.info(f"✅ Header image file exists at: {header_path}")
-                    logger.info(f"File size: {os.path.getsize(header_path)} bytes")
-                else:
-                    logger.error(f"❌ Header image file NOT found at: {header_path}")
-                    logger.error(f"Current working directory: {os.getcwd()}")
+                logger.error(f"❌ Header image file NOT found at: {fs_path}")
+                logger.error(f"Current working directory: {os.getcwd()}")
             
             # Generate unique filename with timestamp for cache busting
             filename = f"header_{post['id']}_{int(time.time())}.jpg"
@@ -438,11 +430,8 @@ class ClanPublisher:
             
             try:
                 # Convert web path to file system path for upload
-                if header_path.startswith('/static/'):
-                    fs_path = f"/Users/nickfiddes/Code/projects/blog/blog-images{header_path}"
-                    logger.info(f"Converting web path '{header_path}' to file system path '{fs_path}'")
-                else:
-                    fs_path = header_path
+                fs_path = path_resolver.convert_web_path_to_filesystem(header_path)
+                logger.info(f"Converting web path '{header_path}' to file system path '{fs_path}'")
                 
                 uploaded_url = self.upload_image(fs_path, filename)
                 logger.info(f"upload_image returned: {uploaded_url}")
@@ -471,23 +460,13 @@ class ClanPublisher:
                 logger.info(f"Processing section image: {section_path}")
                 
                 # Check if file exists - convert web path to file system path
-                if section_path.startswith('/static/'):
-                    # Convert /static/... to full file system path
-                    fs_path = f"/Users/nickfiddes/Code/projects/blog/blog-images{section_path}"
-                    if os.path.exists(fs_path):
-                        logger.info(f"✅ Section image file exists at: {fs_path}")
-                        logger.info(f"File size: {os.path.getsize(fs_path)} bytes")
-                    else:
-                        logger.error(f"❌ Section image file NOT found at: {fs_path}")
-                        logger.error(f"Current working directory: {os.getcwd()}")
+                fs_path = path_resolver.convert_web_path_to_filesystem(section_path)
+                if os.path.exists(fs_path):
+                    logger.info(f"✅ Section image file exists at: {fs_path}")
+                    logger.info(f"File size: {os.path.getsize(fs_path)} bytes")
                 else:
-                    # Already a file system path
-                    if os.path.exists(section_path):
-                        logger.info(f"✅ Section image file exists at: {section_path}")
-                        logger.info(f"File size: {os.path.getsize(section_path)} bytes")
-                    else:
-                        logger.error(f"❌ Section image file NOT found at: {section_path}")
-                        logger.error(f"Current working directory: {os.getcwd()}")
+                    logger.error(f"❌ Section image file NOT found at: {fs_path}")
+                    logger.error(f"Current working directory: {os.getcwd()}")
                 
                 # Generate unique filename
                 filename = f"section_{post['id']}_{i+1}_{int(time.time())}.jpg"
@@ -495,11 +474,8 @@ class ClanPublisher:
                 
                 try:
                     # Convert web path to file system path for upload
-                    if section_path.startswith('/static/'):
-                        fs_path = f"/Users/nickfiddes/Code/projects/blog/blog-images{section_path}"
-                        logger.info(f"Converting section web path '{section_path}' to file system path '{fs_path}'")
-                    else:
-                        fs_path = section_path
+                    fs_path = path_resolver.convert_web_path_to_filesystem(section_path)
+                    logger.info(f"Converting section web path '{section_path}' to file system path '{fs_path}'")
                     
                     uploaded_url = self.upload_image(fs_path, filename)
                     if uploaded_url:
@@ -554,18 +530,17 @@ class ClanPublisher:
                         dimensions = None
                         
                         # Convert web path to file system path for file info
-                        if local_path.startswith('http://localhost:5005'):
-                            # Extract the local file path
-                            fs_path = local_path.replace('http://localhost:5005', '/Users/nickfiddes/Code/projects/blog/blog-images')
-                            if os.path.exists(fs_path):
-                                file_size = os.path.getsize(fs_path)
-                                # Try to get dimensions using PIL
-                                try:
-                                    from PIL import Image
-                                    with Image.open(fs_path) as img:
-                                        dimensions = f"{img.width}x{img.height}"
-                                except:
-                                    dimensions = "Unknown"
+                        from config.paths import path_resolver
+                        fs_path = path_resolver.convert_web_path_to_filesystem(local_path)
+                        if os.path.exists(fs_path):
+                            file_size = os.path.getsize(fs_path)
+                            # Try to get dimensions using PIL
+                            try:
+                                from PIL import Image
+                                with Image.open(fs_path) as img:
+                                    dimensions = f"{img.width}x{img.height}"
+                            except:
+                                dimensions = "Unknown"
                         
                         # Insert the mapping
                         cursor.execute("""
