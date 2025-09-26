@@ -1694,6 +1694,11 @@
             time.textContent = timeText;
         }
         
+        // Load queue data (wrapper for loadTimelineData)
+        function loadQueue() {
+            loadTimelineData();
+        }
+        
         // Notification function - Cache busted: 2025-09-26 15:16
         function showNotification(message, type = 'info') {
             // Create notification element
