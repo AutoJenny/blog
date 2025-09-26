@@ -1349,6 +1349,7 @@ def post_now():
         logger.error(f"Error in post_now: {e}")
         return jsonify({'success': False, 'error': str(e)})
 
+@bp.route('/api/syndication/pieces')
 def get_syndication_pieces():
     """Get syndication pieces for stats display."""
     try:
@@ -1391,12 +1392,53 @@ def get_syndication_pieces():
             
     except Exception as e:
         logger.error(f"Error in get_syndication_pieces: {e}")
-        return jsonify({
-            'status': 'error',
-            'error': str(e),
-            'pieces': [],
-            'total': 0
-        }), 500
+        return jsonify({'status': 'error', 'error': str(e)}), 500
+
+@bp.route('/api/social-media/timeline')
+def get_social_media_timeline():
+    """Get social media timeline data for stats display."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get recent posts from posting queue with status information
+            cursor.execute("""
+                SELECT pq.id, pq.platform, pq.channel_type, pq.content_type,
+                       pq.status, pq.created_at, pq.updated_at,
+                       cp.name as product_name, ps.section_heading as section_title,
+                       pq.generated_content
+                FROM posting_queue pq
+                LEFT JOIN clan_products cp ON pq.product_id = cp.id
+                LEFT JOIN post_section ps ON pq.section_id = ps.id
+                ORDER BY pq.created_at DESC
+                LIMIT 50
+            """)
+            
+            timeline_items = cursor.fetchall()
+            
+            # Format timeline items for frontend
+            formatted_items = []
+            for item in timeline_items:
+                formatted_items.append({
+                    'id': item['id'],
+                    'platform': item['platform'] if item['platform'] else 'unknown',
+                    'channel_type': item['channel_type'] if item['channel_type'] else 'unknown',
+                    'content_type': item['content_type'] if item['content_type'] else 'unknown',
+                    'status': item['status'],
+                    'product_name': item['product_name'],
+                    'section_title': item['section_title'],
+                    'content_preview': item['generated_content'][:100] + '...' if item['generated_content'] and len(item['generated_content']) > 100 else item['generated_content'],
+                    'created_at': item['created_at'].isoformat() if item['created_at'] else None,
+                    'updated_at': item['updated_at'].isoformat() if item['updated_at'] else None
+                })
+            
+            return jsonify({
+                'status': 'success',
+                'timeline': formatted_items,
+                'total': len(formatted_items)
+            })
+            
+    except Exception as e:
+        logger.error(f"Error in get_social_media_timeline: {e}")
+        return jsonify({'status': 'error', 'error': str(e)}), 500
 
 @bp.route('/api/syndication/facebook/credentials', methods=['GET', 'POST'])
 def facebook_credentials():
