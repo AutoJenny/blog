@@ -1055,7 +1055,12 @@ class ClanPublisher:
             env.filters['strip_html_doc'] = strip_html_doc
             
             template = env.from_string(template_content)
-            html_content = template.render(post=post, sections=sections)
+            
+            # For Clan.com API, exclude header image from HTML content since it's provided as thumbnail
+            post_for_template = post.copy()
+            post_for_template['exclude_header_image'] = True
+            
+            html_content = template.render(post=post_for_template, sections=sections)
             
             # Translate local image/file paths to uploaded clan.com URLs
             if uploaded_images:
