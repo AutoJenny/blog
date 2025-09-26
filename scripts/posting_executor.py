@@ -106,7 +106,7 @@ class PostingExecutor:
                             product_url = result['url']
             
             # Post to Facebook with product URL as link
-            result = post_to_facebook_page(page_id, page_access_token, post['generated_content'], product_url)
+            result = post_to_facebook_page(page_id, page_access_token, post['generated_content'], product_url, "Facebook Page")
             
             if result.get('success'):
                 return {
