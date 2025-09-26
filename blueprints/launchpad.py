@@ -1070,33 +1070,56 @@ def get_today_status():
         logger.error(f"Error in get_today_status: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
-def post_to_facebook_page(page_id, access_token, post_content, product_image, page_name=""):
-    """Helper function to post to a single Facebook page using /feed endpoint for links."""
+def prepare_blog_post_data(queue_item):
+    """Prepare blog post data for Facebook posting."""
+    # For blog posts, we need to use the image URL directly
+    # since the blog post URLs are returning 520 errors
+    generated_content = queue_item['generated_content']
+    image_url = queue_item.get('product_image')
+    
+    return {
+        'message': generated_content,
+        'image_url': image_url,
+        'content_type': 'blog_post'
+    }
+
+def prepare_product_post_data(queue_item):
+    """Prepare product post data for Facebook posting."""
+    # Get product page URL from clan_products table
+    with db_manager.get_cursor() as cursor:
+        cursor.execute("""
+            SELECT url FROM clan_products WHERE id = %s
+        """, (queue_item['product_id'],))
+        result = cursor.fetchone()
+        
+        if result and result['url']:
+            link_url = result['url']
+        else:
+            # Fallback to generic product page
+            link_url = f"https://clan.com/products/{queue_item['product_id']}"
+    
+    return {
+        'message': queue_item['generated_content'],
+        'link_url': link_url
+    }
+
+def post_to_facebook_unified(page_id, access_token, message, link_url, page_name=""):
+    """Unified Facebook posting function - always uses /feed endpoint with link."""
     import requests
     
     logger.info(f"Posting to {page_name} (Page ID: {page_id})")
-    logger.info(f"Post content: {post_content[:100]}...")
-    logger.info(f"Product image URL: {product_image}")
+    logger.info(f"Post content: {message[:100]}...")
+    logger.info(f"Link URL: {link_url}")
     logger.info(f"Access token being used: {access_token[:20]}...")
     
-    # Use /feed endpoint for link sharing
+    # Always use /feed endpoint for link sharing
     feed_url = f"https://graph.facebook.com/v18.0/{page_id}/feed"
     
-    if product_image:
-        # If we have a product URL, use it as a link
-        feed_payload = {
-            'message': post_content,
-            'link': product_image,  # This is the product page URL
-            'access_token': access_token
-        }
-        logger.info(f"Posting with product link: {product_image}")
-    else:
-        # If no product URL, post just the message
-        feed_payload = {
-            'message': post_content,
-            'access_token': access_token
-        }
-        logger.info("Posting text-only message")
+    feed_payload = {
+        'message': message,
+        'link': link_url,
+        'access_token': access_token
+    }
     
     logger.info(f"Facebook API call - URL: {feed_url}")
     response = requests.post(feed_url, data=feed_payload, timeout=30)
@@ -1127,13 +1150,9 @@ def execute_facebook_post(queue_item_id):
     """
     try:
         with db_manager.get_cursor() as cursor:
-            # Get the queue item details with proper image handling
+            # Get the queue item details
             cursor.execute("""
-                SELECT pq.*, cp.name as product_name, 
-                       CASE 
-                           WHEN pq.content_type = 'product' THEN cp.image_url 
-                           ELSE pq.product_image 
-                       END as product_image
+                SELECT pq.*, cp.name as product_name
                 FROM posting_queue pq
                 LEFT JOIN clan_products cp ON pq.product_id = cp.id
                 WHERE pq.id = %s
@@ -1142,6 +1161,15 @@ def execute_facebook_post(queue_item_id):
             queue_item = cursor.fetchone()
             if not queue_item:
                 return {'success': False, 'message': 'Queue item not found'}
+            
+            # Prepare data based on content type
+            content_type = queue_item['content_type']
+            if content_type == 'blog_post':
+                post_data = prepare_blog_post_data(queue_item)
+            elif content_type == 'product':
+                post_data = prepare_product_post_data(queue_item)
+            else:
+                return {'success': False, 'message': f'Unsupported content type: {content_type}'}
             
             # Get Facebook credentials for both pages
             cursor.execute("""
@@ -1156,10 +1184,6 @@ def execute_facebook_post(queue_item_id):
             creds = {}
             for cred in credentials:
                 creds[cred['credential_key']] = cred['credential_value']
-            
-            # Prepare post content
-            post_content = queue_item['generated_content']
-            product_image = queue_item['product_image']
             
             # Define both pages to post to
             pages_to_post = []
@@ -1186,17 +1210,17 @@ def execute_facebook_post(queue_item_id):
             if not pages_to_post:
                 return {'success': False, 'message': 'No Facebook pages configured'}
             
-            # Post to both pages
+            # Post to both pages using unified function
             results = []
             successful_posts = []
             failed_posts = []
             
             for page in pages_to_post:
-                result = post_to_facebook_page(
+                result = post_to_facebook_unified(
                     page['page_id'], 
                     page['access_token'], 
-                    post_content, 
-                    product_image, 
+                    post_data['message'],
+                    post_data['link_url'],
                     page['name']
                 )
                 results.append({
@@ -1292,194 +1316,6 @@ def post_now():
         logger.error(f"Error in post_now: {e}")
         return jsonify({'success': False, 'error': str(e)})
 
-def post_to_facebook_page(page_id, access_token, post_content, product_image, page_name=""):
-    """Helper function to post to a single Facebook page using /feed endpoint for links."""
-    import requests
-    
-    logger.info(f"Posting to {page_name} (Page ID: {page_id})")
-    logger.info(f"Post content: {post_content[:100]}...")
-    logger.info(f"Product image URL: {product_image}")
-    logger.info(f"Access token being used: {access_token[:20]}...")
-    
-    # Use /feed endpoint for link sharing
-    feed_url = f"https://graph.facebook.com/v18.0/{page_id}/feed"
-    
-    if product_image:
-        # If we have a product URL, use it as a link
-        feed_payload = {
-            'message': post_content,
-            'link': product_image,  # This is the product page URL
-            'access_token': access_token
-        }
-        logger.info(f"Posting with product link: {product_image}")
-    else:
-        # If no product URL, post just the message
-        feed_payload = {
-            'message': post_content,
-            'access_token': access_token
-        }
-        logger.info("Posting text-only message")
-    
-    logger.info(f"Facebook API call - URL: {feed_url}")
-    response = requests.post(feed_url, data=feed_payload, timeout=30)
-    logger.info(f"Facebook API response - Status: {response.status_code}")
-    logger.info(f"Facebook API response - Content: {response.text}")
-    
-    if response.status_code == 200:
-        result = response.json()
-        return {
-            'success': True,
-            'post_id': result.get('id'),
-            'response': result
-        }
-    else:
-        error_data = response.json() if response.content else {}
-        error_msg = error_data.get('error', {}).get('message', 'Unknown Facebook API error')
-        return {
-            'success': False,
-            'error': f'Facebook API error: {response.status_code}',
-            'details': error_msg
-        }
-
-def execute_facebook_post(queue_item_id):
-    """
-    Shared function to post a queue item to Facebook (both pages).
-    Used by both manual posting and automated posting systems.
-    Returns: {'success': bool, 'message': str, 'platform_post_ids': list}
-    """
-    try:
-        with db_manager.get_cursor() as cursor:
-            # Get the queue item details with proper image handling
-            cursor.execute("""
-                SELECT pq.*, cp.name as product_name, 
-                       CASE 
-                           WHEN pq.content_type = 'product' THEN cp.image_url 
-                           ELSE pq.product_image 
-                       END as product_image
-                FROM posting_queue pq
-                LEFT JOIN clan_products cp ON pq.product_id = cp.id
-                WHERE pq.id = %s
-            """, (queue_item_id,))
-            
-            queue_item = cursor.fetchone()
-            if not queue_item:
-                return {'success': False, 'message': 'Queue item not found'}
-            
-            # Get Facebook credentials for both pages
-            cursor.execute("""
-                SELECT credential_key, credential_value
-                FROM platform_credentials 
-                WHERE platform_id = (SELECT id FROM platforms WHERE name = 'facebook')
-                AND is_active = true
-            """)
-            credentials = cursor.fetchall()
-            
-            # Convert to dictionary
-            creds = {}
-            for cred in credentials:
-                creds[cred['credential_key']] = cred['credential_value']
-            
-            # Prepare post content
-            post_content = queue_item['generated_content']
-            product_image = queue_item['product_image']
-            
-            # Define both pages to post to
-            pages_to_post = []
-            
-            # Page 1 (Scotweb CLAN)
-            if creds.get('page_access_token') and creds.get('page_id'):
-                pages_to_post.append({
-                    'page_id': creds['page_id'],
-                    'access_token': creds['page_access_token'],
-                    'name': 'Scotweb CLAN'
-                })
-            
-            # Page 2 (CLAN by Scotweb) - only add if different from Page 1
-            if (creds.get('page_access_token_2') and creds.get('page_id_2') and 
-                creds.get('page_id_2') != creds.get('page_id')):
-                pages_to_post.append({
-                    'page_id': creds['page_id_2'],
-                    'access_token': creds['page_access_token_2'],
-                    'name': 'CLAN by Scotweb'
-                })
-            elif creds.get('page_id_2') == creds.get('page_id'):
-                logger.warning("Both Facebook pages have the same page_id - skipping duplicate posting to prevent double posts")
-            
-            if not pages_to_post:
-                return {'success': False, 'message': 'No Facebook pages configured'}
-            
-            # Post to both pages
-            results = []
-            successful_posts = []
-            failed_posts = []
-            
-            for page in pages_to_post:
-                result = post_to_facebook_page(
-                    page['page_id'], 
-                    page['access_token'], 
-                    post_content, 
-                    product_image, 
-                    page['name']
-                )
-                results.append({
-                    'page_name': page['name'],
-                    'page_id': page['page_id'],
-                    'result': result
-                })
-                
-                if result['success']:
-                    successful_posts.append(result['post_id'])
-                else:
-                    failed_posts.append(f"{page['name']}: {result['error']}")
-            
-            # Update queue item status
-            if successful_posts:
-                cursor.execute("""
-                    UPDATE posting_queue 
-                    SET status = 'published', 
-                        platform_post_id = %s,
-                        updated_at = NOW()
-                    WHERE id = %s
-                """, (successful_posts[0], queue_item_id))  # Store first post ID as primary
-                
-                conn = cursor.connection
-                conn.commit()
-                
-                if len(failed_posts) == 0:
-                    return {
-                        'success': True, 
-                        'message': f'Successfully posted to {len(successful_posts)} page(s)',
-                        'platform_post_ids': successful_posts
-                    }
-                else:
-                    return {
-                        'success': True, 
-                        'message': f'Posted to {len(successful_posts)} page(s), failed on {len(failed_posts)}: {", ".join(failed_posts)}',
-                        'platform_post_ids': successful_posts
-                    }
-            else:
-                # All posts failed
-                cursor.execute("""
-                    UPDATE posting_queue 
-                    SET status = 'failed', 
-                        error_message = %s,
-                        updated_at = NOW()
-                    WHERE id = %s
-                """, (", ".join(failed_posts), queue_item_id))
-                
-                conn = cursor.connection
-                conn.commit()
-                
-                return {
-                    'success': False, 
-                    'message': f'Failed to post to all pages: {", ".join(failed_posts)}'
-                }
-                
-    except Exception as e:
-        logger.error(f"Error in execute_facebook_post: {e}")
-        return {'success': False, 'message': str(e)}
-
-@bp.route('/api/syndication/pieces', methods=['GET'])
 def get_syndication_pieces():
     """Get syndication pieces for stats display."""
     try:
@@ -1721,6 +1557,255 @@ def replenish_queue(config):
             'errors': errors,
             'message': f'Added {items_added} items to {queue_type} queue (errors: {errors})'
         }
+
+def get_post_with_development(post_id):
+    """Fetch post with development data."""
+    with db_manager.get_cursor() as cursor:
+        # Get post data, alias post.id as post_id
+        cursor.execute("""
+            SELECT p.id AS post_id, p.title, p.subtitle, p.created_at, p.updated_at, p.status, p.slug, p.summary, p.title_choices,
+                   p.clan_post_id, p.clan_uploaded_url,
+                   pd.idea_seed, pd.intro_blurb, pd.main_title,
+                   p.cross_promotion_category_id, p.cross_promotion_category_title,
+                   p.cross_promotion_product_id, p.cross_promotion_product_title,
+                   p.cross_promotion_category_position, p.cross_promotion_product_position,
+                   p.cross_promotion_category_widget_html, p.cross_promotion_product_widget_html
+            FROM post p
+            LEFT JOIN post_development pd ON pd.post_id = p.id
+            WHERE p.id = %s
+        """, (post_id,))
+        
+        post = cursor.fetchone()
+        if not post:
+            return None
+        
+        return dict(post)
+
+def get_post_sections_with_images(post_id):
+    """Fetch sections with complete image metadata."""
+    with db_manager.get_cursor() as cursor:
+        # Get all sections for the post
+        cursor.execute("""
+            SELECT 
+                id, post_id, section_order, 
+                section_heading,
+                section_description, ideas_to_include, facts_to_include,
+                draft, polished, highlighting, image_concepts,
+                image_prompts,
+                image_meta_descriptions, image_captions, status,
+                image_title, image_width, image_height
+            FROM post_section 
+            WHERE post_id = %s 
+            ORDER BY section_order
+        """, (post_id,))
+        
+        raw_sections = cursor.fetchall()
+        sections = []
+        
+        for section in raw_sections:
+            section_dict = dict(section)
+            
+            # Try to find image in the new directory structure first
+            image_path = find_section_image(post_id, section['id'])
+            
+            if image_path:
+                # Found image in new structure
+                section_dict['image_path'] = image_path
+                section_dict['image_url'] = f"/static/images/posts/{post_id}/sections/{section['id']}.jpg"
+            else:
+                # Try legacy structure
+                legacy_path = f"/Users/autojenny/Documents/projects/blog/blog-images/static/images/posts/{post_id}/sections/{section['id']}.jpg"
+                if os.path.exists(legacy_path):
+                    section_dict['image_path'] = legacy_path
+                    section_dict['image_url'] = f"/static/images/posts/{post_id}/sections/{section['id']}.jpg"
+                else:
+                    section_dict['image_path'] = None
+                    section_dict['image_url'] = None
+            
+            sections.append(section_dict)
+        
+        return sections
+
+def find_header_image(post_id):
+    """Find header image for a post."""
+    # Try new structure first
+    new_path = f"/Users/autojenny/Documents/projects/blog/blog-images/static/images/posts/{post_id}/header.jpg"
+    if os.path.exists(new_path):
+        return new_path
+    
+    # Try legacy structure
+    legacy_path = f"/Users/autojenny/Documents/projects/blog/blog-images/static/images/posts/{post_id}/header.jpg"
+    if os.path.exists(legacy_path):
+        return legacy_path
+    
+    return None
+
+def find_section_image(post_id, section_id):
+    """Find section image for a post."""
+    # Try new structure first
+    new_path = f"/Users/autojenny/Documents/projects/blog/blog-images/static/images/posts/{post_id}/sections/{section_id}.jpg"
+    if os.path.exists(new_path):
+        return new_path
+    
+    # Try legacy structure
+    legacy_path = f"/Users/autojenny/Documents/projects/blog/blog-images/static/images/posts/{post_id}/sections/{section_id}.jpg"
+    if os.path.exists(legacy_path):
+        return legacy_path
+    
+    return None
+
+@bp.route('/api/publish/<int:post_id>', methods=['POST'])
+def publish_post_to_clan(post_id):
+    """Publish a post to clan.com"""
+    try:
+        # Get post data
+        post = get_post_with_development(post_id)
+        if not post:
+            return jsonify({'success': False, 'error': 'Post not found'}), 404
+        
+        sections = get_post_sections_with_images(post_id)
+        
+        # Fix field mapping - ensure post has the fields our function expects
+        if post.get('post_id') and not post.get('id'):
+            post['id'] = post['post_id']
+        
+        # Ensure summary field exists and has content
+        if not post.get('summary'):
+            post['summary'] = post.get('intro_blurb')
+            if not post['summary']:
+                raise ValueError("Post must have either summary or intro_blurb")
+        
+        # Ensure created_at is handled properly - convert to datetime object for template
+        if post.get('created_at'):
+            logger.info(f"Original created_at: {post['created_at']} (type: {type(post['created_at'])})")
+            if isinstance(post['created_at'], str):
+                from datetime import datetime
+                try:
+                    post['created_at'] = datetime.fromisoformat(post['created_at'].replace('Z', '+00:00'))
+                    logger.info(f"Converted to datetime: {post['created_at']}")
+                except Exception as e:
+                    logger.error(f"Failed to parse date: {e}")
+                    # If parsing fails, try other formats
+                    try:
+                        post['created_at'] = datetime.strptime(post['created_at'], '%a, %d %b %Y %H:%M:%S %Z')
+                        logger.info(f"Converted with strptime: {post['created_at']}")
+                    except Exception as e2:
+                        logger.error(f"Failed to parse with strptime: {e2}")
+                        post['created_at'] = None
+            elif hasattr(post['created_at'], 'isoformat'):
+                # Already a datetime object, keep as is
+                logger.info(f"Already datetime object: {post['created_at']}")
+                pass
+            else:
+                logger.error(f"Unknown date type: {type(post['created_at'])}")
+                post['created_at'] = None
+        
+        # Add header image if exists
+        header_image_path = find_header_image(post_id)
+        if header_image_path:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
+                           cross_promotion_category_id, cross_promotion_category_title,
+                           cross_promotion_product_id, cross_promotion_product_title,
+                           cross_promotion_category_position, cross_promotion_product_position,
+                           cross_promotion_category_widget_html, cross_promotion_product_widget_html
+                    FROM post WHERE id = %s
+                """, (post_id,))
+                header_data = cursor.fetchone()
+                
+                post['header_image'] = {
+                    'path': header_image_path,
+                    'alt_text': f"Header image for {post.get('title', 'this post')}",
+                    'caption': header_data['header_image_caption'] if header_data else None,
+                    'title': header_data['header_image_title'] if header_data else None,
+                    'width': header_data['header_image_width'] if header_data else None,
+                    'height': header_data['header_image_height'] if header_data else None
+                }
+                
+                post['cross_promotion'] = {
+                    'category_id': header_data['cross_promotion_category_id'] if header_data else None,
+                    'category_title': header_data['cross_promotion_category_title'] if header_data else None,
+                    'product_id': header_data['cross_promotion_product_id'] if header_data else None,
+                    'product_title': header_data['cross_promotion_product_title'] if header_data else None,
+                    'category_position': header_data.get('cross_promotion_category_position'),
+                    'product_position': header_data.get('cross_promotion_product_position'),
+                    'category_widget_html': header_data.get('cross_promotion_category_widget_html'),
+                    'product_widget_html': header_data.get('cross_promotion_product_widget_html')
+                }
+        
+        # Import publishing class
+        import sys
+        sys.path.append('/Users/autojenny/Documents/projects/blog/blog-launchpad')
+        from clan_publisher import ClanPublisher
+        
+        # Debug: Log what we're about to send
+        logger.info(f"=== FLASK ENDPOINT DEBUG ===")
+        logger.info(f"Post data keys: {list(post.keys()) if post else 'NO POST'}")
+        logger.info(f"Post title: {post.get('title', 'NO TITLE') if post else 'NO POST'}")
+        logger.info(f"Number of sections: {len(sections) if sections else 0}")
+        if sections:
+            logger.info(f"Section IDs: {[s.get('id') for s in sections]}")
+        
+        # Create publisher instance and attempt to publish
+        publisher = ClanPublisher()
+        result = publisher.publish_to_clan(post, sections)
+        
+        # Debug: Log the result
+        logger.info(f"Publishing result: {result}")
+        
+        if result['success']:
+            # Update database with clan post details
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    UPDATE post SET 
+                        clan_post_id = %s,
+                        status = 'published',
+                        clan_last_attempt = CURRENT_TIMESTAMP,
+                        clan_error = NULL,
+                        clan_uploaded_url = %s
+                    WHERE id = %s
+                """, (result.get('clan_post_id'), result.get('url'), post_id))
+            
+            return jsonify({
+                'success': True, 
+                'message': 'Post published successfully to clan.com',
+                'clan_post_id': result.get('clan_post_id'),
+                'url': result.get('url')
+            })
+        else:
+            # Update database with error
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    UPDATE post SET 
+                        status = 'in_process',
+                        clan_last_attempt = CURRENT_TIMESTAMP,
+                        clan_error = %s
+                    WHERE id = %s
+                """, (result.get('error'), post_id))
+            
+            # Check if it's a network connectivity issue
+            error_msg = result.get('error', 'Unknown error occurred')
+            if 'timeout' in error_msg.lower() or 'connection' in error_msg.lower():
+                error_msg = f"Network Error: Cannot connect to clan.com. Please check your internet connection and try again. (Details: {error_msg})"
+            
+            return jsonify({
+                'success': False, 
+                'error': error_msg
+            }), 500
+            
+    except Exception as e:
+        # Update database with error
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                UPDATE post SET 
+                    status = 'in_process',
+                    clan_last_attempt = CURRENT_TIMESTAMP,
+                    clan_error = %s
+                WHERE id = %s
+            """, (str(e), post_id))
+        
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @bp.route('/health')
 def health():

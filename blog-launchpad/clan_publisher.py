@@ -134,24 +134,18 @@ class ClanPublisher:
                 logger.info(f"Using existing URL key from clan.com for update: {url_key}")
                 return url_key
         
-        # Generate from title for new posts
+        # Generate from title for new posts - clean text-based URLs only
         title = post.get('title')
         if not title:
             raise ValueError("Post title is required but not provided")
+        
         # Convert to lowercase, replace spaces with hyphens, remove special chars
         url_key = re.sub(r'[^a-z0-9\s-]', '', title.lower())
         url_key = re.sub(r'\s+', '-', url_key).strip('-')
         
-        # For consistency, use a fixed timestamp based on post ID instead of current time
-        # This ensures the same post always gets the same URL key
-        post_id = post.get('id', 0)
-        fixed_timestamp = 1755600000 + (post_id * 1000)  # Base timestamp + post ID offset
-        
-        # Ensure it's not empty and add post ID + fixed timestamp for consistency
+        # Ensure it's not empty - use clean text only, no IDs or timestamps
         if not url_key:
-            url_key = f'post-{post_id}-{fixed_timestamp}'
-        else:
-            url_key = f'{url_key}-{post_id}-{fixed_timestamp}'
+            url_key = 'untitled-post'
         
         return url_key
     
@@ -414,9 +408,8 @@ class ClanPublisher:
         logger.info(f"Post header_image: {post.get('header_image')}")
         logger.info(f"Post header_image_id: {post.get('header_image_id')}")
         
-        # Process header image - use find_header_image function to discover it
-        from app import find_header_image
-        header_path = find_header_image(post['id'])
+        # Process header image - use header image path from post data
+        header_path = post.get('header_image', {}).get('path')
         if header_path:
             logger.info(f"✅ Found header image: {header_path}")
             
@@ -532,14 +525,13 @@ class ClanPublisher:
     def _save_image_mappings_to_db(self, post, sections, uploaded_images):
         """Save section image mappings to database for future reference."""
         try:
-            from app import get_db_connection
             import os
+            from config.database import db_manager
             
-            with get_db_connection() as conn:
-                cur = conn.cursor()
+            with db_manager.get_cursor() as cursor:
                 
                 # Clear existing mappings for this post
-                cur.execute("""
+                cursor.execute("""
                     DELETE FROM section_image_mappings 
                     WHERE post_id = %s
                 """, (post['id'],))
@@ -576,7 +568,7 @@ class ClanPublisher:
                                     dimensions = "Unknown"
                         
                         # Insert the mapping
-                        cur.execute("""
+                        cursor.execute("""
                             INSERT INTO section_image_mappings 
                             (post_id, section_id, local_image_path, clan_uploaded_url, image_filename, image_size_bytes, image_dimensions)
                             VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -875,21 +867,23 @@ class ClanPublisher:
             logger.info(f"Post ID: {post.get('id')}")
             
             # Step 0: Get full post data from database to determine if this is an update
-            from app import get_db_connection
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            cursor.execute('SELECT * FROM post WHERE id = %s', (post['id'],))
-            post_row = cursor.fetchone()
+            from config.database import db_manager
+            with db_manager.get_cursor() as cursor:
+                cursor.execute('SELECT * FROM post WHERE id = %s', (post['id'],))
+                post_row = cursor.fetchone()
+                
+                if not post_row:
+                    return {
+                        'success': False,
+                        'error': f'Post {post["id"]} not found in database'
+                    }
+                
+                # Get column names and convert to dict
+                column_names = [desc[0] for desc in cursor.description]
+                full_post_data = dict(zip(column_names, post_row))
             
-            if not post_row:
-                return {
-                    'success': False,
-                    'error': f'Post {post["id"]} not found in database'
-                }
-            
-            # Get column names and convert to dict
-            column_names = [desc[0] for desc in cursor.description]
-            full_post_data = dict(zip(column_names, post_row))
+            # Merge the passed post data with the database data (passed data takes precedence)
+            full_post_data.update(post)
             
             # Check if this is an update (post already exists on clan.com)
             is_update = bool(full_post_data.get('clan_post_id'))
@@ -898,17 +892,15 @@ class ClanPublisher:
             logger.info(f"Post header_image_id: {full_post_data.get('header_image_id')}")
             logger.info(f"Post header_image: {full_post_data.get('header_image')}")
             
-            # Load sections from DB using the same function as the local route
-            from app import get_post_sections_with_images
-            sections_list = get_post_sections_with_images(post['id'])
-            logger.info(f"Loaded {len(sections_list)} sections from DB using get_post_sections_with_images")
+            # Use sections passed from the endpoint (already loaded with images)
+            sections_list = sections
+            logger.info(f"Using {len(sections_list)} sections passed from endpoint")
             
             # Step 0: Finding image paths from file system
             logger.info("Step 0: Finding image paths from file system...")
-            from app import find_header_image, find_section_image
             
             # Set header image path
-            header_image_path = find_header_image(full_post_data['id'])
+            header_image_path = post.get('header_image', {}).get('path') if post.get('header_image') else None
             logger.info(f"find_header_image returned: {header_image_path}")
             
             if header_image_path:
@@ -917,12 +909,12 @@ class ClanPublisher:
             else:
                 logger.warning("❌ No header image found")
             
-            # Attach section image paths
+            # Sections already have image paths from the endpoint
             for i, section in enumerate(sections_list):
-                section_image_path = find_section_image(full_post_data['id'], section['id'])
-                logger.info(f"Section {i+1} ({section.get('section_heading', 'No title')}): find_section_image returned: {section_image_path}")
-                if section_image_path:
-                    section['image'] = {'path': section_image_path}
+                image_path = section.get('image_path')
+                logger.info(f"Section {i+1} ({section.get('section_heading', 'No title')}): image_path = {image_path}")
+                if image_path:
+                    section['image'] = {'path': image_path}
                 
             # Step 1: Process and upload images (header + section images)
             logger.info("Step 1: Processing and uploading images...")
