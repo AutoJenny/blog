@@ -1280,7 +1280,6 @@ def execute_facebook_post(queue_item_id):
                     page['access_token'], 
                     post_data['message'],
                     post_data['link_url'],
-                    post_data.get('image_url'),  # Pass the image URL
                     page['name']
                 )
                 results.append({
