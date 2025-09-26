@@ -247,8 +247,9 @@ class ClanPublisher:
             
             # Check if it's a local path or URL
             if image_path.startswith('/static/'):
-                # Convert local static path to full local file path
-                local_path = f"/Users/nickfiddes/Code/projects/blog/blog-images{image_path}"
+                # Convert local static path to full local file path using path resolver
+                from config.paths import path_resolver
+                local_path = path_resolver.convert_web_path_to_filesystem(image_path)
                 if not os.path.exists(local_path):
                     logger.warning(f"Local image not found: {local_path}")
                     return None
