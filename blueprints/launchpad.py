@@ -1628,12 +1628,26 @@ def get_post_sections_with_images(post_id):
 
 def find_header_image(post_id):
     """Find header image for a post."""
-    # Try new structure first
-    new_path = f"/Users/autojenny/Documents/projects/blog/blog-images/static/images/posts/{post_id}/header.jpg"
-    if os.path.exists(new_path):
-        return new_path
+    import urllib.parse
+    from config.paths import path_resolver
     
-    # Try legacy structure
+    image_extensions = ('.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp')
+
+    # Priority order: watermarked -> optimized -> raw
+    image_types = ['watermarked', 'optimized', 'raw']
+    
+    for image_type in image_types:
+        header_path = path_resolver.get_header_image_path(post_id, image_type)
+        if os.path.exists(header_path):
+            image_files = [f for f in os.listdir(header_path)
+                          if f.lower().endswith(image_extensions) and not f.startswith('.')]
+            if image_files:
+                image_filename = image_files[0]
+                # URL-encode the filename to handle spaces and special characters
+                encoded_filename = urllib.parse.quote(image_filename)
+                return f"/static/content/posts/{post_id}/header/{image_type}/{encoded_filename}"
+    
+    # Fallback to legacy structure
     legacy_path = f"/Users/autojenny/Documents/projects/blog/blog-images/static/images/posts/{post_id}/header.jpg"
     if os.path.exists(legacy_path):
         return legacy_path
@@ -1642,12 +1656,26 @@ def find_header_image(post_id):
 
 def find_section_image(post_id, section_id):
     """Find section image for a post."""
-    # Try new structure first
-    new_path = f"/Users/autojenny/Documents/projects/blog/blog-images/static/images/posts/{post_id}/sections/{section_id}.jpg"
-    if os.path.exists(new_path):
-        return new_path
+    import urllib.parse
+    from config.paths import path_resolver
     
-    # Try legacy structure
+    image_extensions = ('.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp')
+
+    # Priority order: watermarked -> optimized -> raw
+    image_types = ['watermarked', 'optimized', 'raw']
+    
+    for image_type in image_types:
+        section_path = path_resolver.get_section_image_path(post_id, section_id, image_type)
+        if os.path.exists(section_path):
+            image_files = [f for f in os.listdir(section_path)
+                          if f.lower().endswith(image_extensions) and not f.startswith('.')]
+            if image_files:
+                image_filename = image_files[0]
+                # URL-encode the filename to handle spaces and special characters
+                encoded_filename = urllib.parse.quote(image_filename)
+                return f"/static/content/posts/{post_id}/sections/{section_id}/{image_type}/{encoded_filename}"
+    
+    # Fallback to legacy structure
     legacy_path = f"/Users/autojenny/Documents/projects/blog/blog-images/static/images/posts/{post_id}/sections/{section_id}.jpg"
     if os.path.exists(legacy_path):
         return legacy_path
