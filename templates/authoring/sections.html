@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Sections - Authoring{% endblock %}
+
+{% block head %}
+    <style>
+        .authoring-header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 16px;
+            margin-top: 2rem;
+        }
+        .authoring-nav {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        .authoring-nav a {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .authoring-nav a:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .authoring-nav a.active {
+            background: rgba(255, 255, 255, 0.4);
+        }
+        .content-area {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        .content-area h2 {
+            color: #f1f5f9;
+            margin-bottom: 1rem;
+        }
+        .content-area p {
+            color: #e2e8f0;
+            margin-bottom: 1rem;
+        }
+        .content-area ul {
+            color: #e2e8f0;
+            margin-bottom: 1rem;
+        }
+        .content-area li {
+            margin-bottom: 0.5rem;
+        }
+        .content-area em {
+            color: #94a3b8;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="authoring-header">
+        <div class="container">
+            <h1>Content Sections</h1>
+            <p>Create and manage your blog post sections</p>
+            <div class="authoring-nav">
+                <a href="/authoring/">Overview</a>
+                <a href="/authoring/posts/{{ post_id }}/sections" class="active">Sections</a>
+                <a href="/authoring/posts/{{ post_id }}/post-info">Post Info</a>
+                <a href="/authoring/posts/{{ post_id }}/images">Images</a>
+                <a href="/workflow/posts/{{ post_id }}/writing/content" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3);">Old Interface</a>
+            </div>
+        </div>
+    </div>
+
+<div class="container">
+    <div class="authoring-header">
+        <div class="container">
+            <h1>Content Sections</h1>
+            <p>Create and manage your blog post sections</p>
+            <div class="authoring-nav">
+                <a href="/authoring/">Overview</a>
+                <a href="/authoring/posts/{{ post_id }}/sections" class="active">Sections</a>
+                <a href="/authoring/posts/{{ post_id }}/post-info">Post Info</a>
+                <a href="/authoring/posts/{{ post_id }}/images">Images</a>
+                <a href="/workflow/posts/{{ post_id }}/writing/content" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3);">Old Interface</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-area">
+        <h2>Post ID: {{ post_id }}</h2>
+        <p>This is the dedicated Sections authoring workspace. Here you can:</p>
+        <ul>
+            <li>Create and edit content sections</li>
+            <li>Organize your post structure</li>
+            <li>Add rich content and formatting</li>
+            <li>Manage section-specific images</li>
+        </ul>
+        <p><em>This will be developed further with specific tools and interfaces.</em></p>
+    </div>
+</div>
+{% endblock %}
