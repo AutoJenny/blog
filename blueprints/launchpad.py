@@ -1072,14 +1072,47 @@ def get_today_status():
 
 def prepare_blog_post_data(queue_item):
     """Prepare blog post data for Facebook posting."""
-    # For blog posts, we need to use the image URL directly
-    # since the blog post URLs are returning 520 errors
     generated_content = queue_item['generated_content']
     image_url = queue_item.get('product_image')
+    
+    # Extract and fix the blog post URL from generated content
+    link_url = None
+    
+    # Try to get working URL from database first (if post_id is available)
+    if queue_item.get('post_id'):
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT clan_uploaded_url FROM post WHERE id = %s
+            """, (queue_item['post_id'],))
+            result = cursor.fetchone()
+            if result and result['clan_uploaded_url']:
+                link_url = result['clan_uploaded_url']
+    
+    # If no post_id or no URL found, extract URL from generated content and fix it
+    if not link_url:
+        import re
+        # Look for clan.com/blog URLs in the generated content
+        url_pattern = r'https://clan\.com/blog/[^\s]+'
+        urls = re.findall(url_pattern, generated_content)
+        
+        if urls:
+            # Replace broken URLs with working ones
+            broken_url = urls[0]  # Take the first URL found
+            # Map broken URLs to working URLs
+            url_mapping = {
+                'https://clan.com/blog/scottish-storytelling-oral-traditions': 
+                'https://clan.com/blog/the-art-of-scottish-storytelling-oral-traditions-and-modern-literature'
+            }
+            
+            link_url = url_mapping.get(broken_url, broken_url)
+            
+            # Update the generated content to use the working URL
+            generated_content = generated_content.replace(broken_url, link_url)
     
     return {
         'message': generated_content,
         'image_url': image_url,
+        'link_url': link_url,
         'content_type': 'blog_post'
     }
 
