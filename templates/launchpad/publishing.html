@@ -462,7 +462,7 @@
             updatePostStatus(postId, 'publishing');
             
             try {
-                const response = await fetch(`/api/publish/${postId}`, {
+                const response = await fetch(`/launchpad/api/publish/${postId}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

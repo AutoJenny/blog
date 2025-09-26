@@ -1807,6 +1807,193 @@ def publish_post_to_clan(post_id):
         
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@bp.route('/clan-api-data/<int:post_id>')
+def clan_api_data(post_id):
+    """View the actual API request data that was/will be sent to Clan.com."""
+    try:
+        # Get post data using our existing helper function
+        post = get_post_with_development(post_id)
+        if not post:
+            return jsonify({'error': 'Post not found'}), 404
+        
+        sections = get_post_sections_with_images(post_id)
+        
+        # Fix field mapping - ensure post has the fields our function expects
+        if post.get('post_id') and not post.get('id'):
+            post['id'] = post['post_id']
+        
+        # Ensure summary field exists and has content
+        if not post.get('summary'):
+            post['summary'] = post.get('intro_blurb')
+            if not post['summary']:
+                raise ValueError("Post must have either summary or intro_blurb")
+        
+        # Ensure created_at is handled properly - convert to datetime object for template
+        if post.get('created_at'):
+            if isinstance(post['created_at'], str):
+                from datetime import datetime
+                try:
+                    post['created_at'] = datetime.fromisoformat(post['created_at'].replace('Z', '+00:00'))
+                except Exception as e:
+                    try:
+                        post['created_at'] = datetime.strptime(post['created_at'], '%a, %d %b %Y %H:%M:%S %Z')
+                    except Exception as e2:
+                        post['created_at'] = None
+            elif hasattr(post['created_at'], 'isoformat'):
+                # Already a datetime object, keep as is
+                pass
+            else:
+                post['created_at'] = None
+        
+        # Add header image if exists
+        header_image_path = find_header_image(post_id)
+        if header_image_path:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
+                           cross_promotion_category_id, cross_promotion_category_title,
+                           cross_promotion_product_id, cross_promotion_product_title,
+                           cross_promotion_category_position, cross_promotion_product_position,
+                           cross_promotion_category_widget_html, cross_promotion_product_widget_html
+                    FROM post WHERE id = %s
+                """, (post_id,))
+                header_data = cursor.fetchone()
+                
+                if header_data:
+                    post['header_image'] = {
+                        'path': header_image_path,
+                        'alt_text': f"Header image for {post.get('title', 'this post')}",
+                        'caption': header_data['header_image_caption'],
+                        'title': header_data['header_image_title'],
+                        'width': header_data['header_image_width'],
+                        'height': header_data['header_image_height']
+                    }
+                    
+                    post['cross_promotion'] = {
+                        'category_id': header_data['cross_promotion_category_id'],
+                        'category_title': header_data['cross_promotion_category_title'],
+                        'product_id': header_data['cross_promotion_product_id'],
+                        'product_title': header_data['cross_promotion_product_title'],
+                        'category_position': header_data.get('cross_promotion_category_position'),
+                        'product_position': header_data.get('cross_promotion_product_position'),
+                        'category_widget_html': header_data.get('cross_promotion_category_widget_html'),
+                        'product_widget_html': header_data.get('cross_promotion_product_widget_html')
+                    }
+        
+        # Import publishing class to get the actual API data
+        import sys
+        import os
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'blog-launchpad'))
+        from clan_publisher import ClanPublisher
+        publisher = ClanPublisher()
+        
+        # Get the actual API request data that would be sent to Clan.com
+        try:
+            # This will generate the same data structure that gets sent to Clan.com
+            logger.info(f"Calling _prepare_api_data for post {post_id}")
+            logger.info(f"Post data keys: {list(post.keys()) if post else 'NO POST'}")
+            logger.info(f"Post summary: {post.get('summary')}")
+            logger.info(f"Post subtitle: {post.get('subtitle')}")
+            api_data = publisher._prepare_api_data(post, sections)
+            logger.info(f"API data returned: {api_data}")
+            return jsonify(api_data)
+        except Exception as e:
+            logger.error(f"Error preparing API data for post {post_id}: {e}")
+            return jsonify({'error': f'Failed to prepare API data: {str(e)}'}), 500
+            
+    except Exception as e:
+        logger.error(f"Error in clan_api_data for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/clan-post-html/<int:post_id>')
+def clan_post_html(post_id):
+    """View the clan_post HTML that will be uploaded to Clan.com."""
+    try:
+        # Get view type parameter (default to 'local')
+        view_type = request.args.get('view', 'local')
+        
+        # Get post data using our existing helper function
+        post = get_post_with_development(post_id)
+        if not post:
+            return "Post not found", 404
+        
+        sections = get_post_sections_with_images(post_id)
+        
+        # Find header image
+        header_image_path = find_header_image(post_id)
+        if header_image_path:
+            # Get header image caption from database
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT header_image_caption, header_image_title, header_image_width, header_image_height
+                    FROM post WHERE id = %s
+                """, (post_id,))
+                header_data = cursor.fetchone()
+                header_caption = header_data['header_image_caption'] if header_data and header_data['header_image_caption'] else None
+            
+            post['header_image'] = {
+                'path': header_image_path,
+                'alt_text': f"Header image for {post.get('title', 'this post')}",
+                'caption': header_caption,
+                'title': header_data['header_image_title'] if header_data and header_data['header_image_title'] else None,
+                'width': header_data['header_image_width'] if header_data and header_data['header_image_width'] else None,
+                'height': header_data['header_image_height'] if header_data and header_data['header_image_height'] else None
+            }
+        
+        if view_type == 'local':
+            # Return raw HTML with local paths (for development/debugging)
+            raw_html = render_template('launchpad/clan_post_raw.html', post=post, sections=sections)
+            return raw_html, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+        else:
+            # Return processed HTML with CDN URLs (what gets sent to Clan.com)
+            import sys
+            import os
+            sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'blog-launchpad'))
+            from clan_publisher import ClanPublisher
+            publisher = ClanPublisher()
+            
+            # Get uploaded images mapping from database
+            uploaded_images = {}
+            try:
+                with db_manager.get_cursor() as cursor:
+                    cursor.execute("""
+                        SELECT local_image_path, clan_uploaded_url 
+                        FROM section_image_mappings 
+                        WHERE post_id = %s
+                    """, (post_id,))
+                    
+                    for row in cursor.fetchall():
+                        uploaded_images[row['local_image_path']] = row['clan_uploaded_url']
+                        
+                    # Also get header image mapping if it exists
+                    cursor.execute("""
+                        SELECT local_image_path, clan_uploaded_url 
+                        FROM section_image_mappings 
+                        WHERE post_id = %s AND section_id IS NULL
+                    """, (post_id,))
+                    
+                    for row in cursor.fetchall():
+                        uploaded_images[row['local_image_path']] = row['clan_uploaded_url']
+                        
+            except Exception as e:
+                logger.warning(f"Could not load image mappings: {e}")
+            
+            # Get the exact same HTML that gets uploaded
+            upload_html = publisher.get_preview_html_content(post, sections, uploaded_images)
+            
+            if upload_html:
+                # Return the actual upload HTML as raw text - NO RENDERING
+                # Set content type to text/plain so browser shows source code
+                return upload_html, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+            else:
+                # Fallback to raw template if preview HTML fails
+                raw_html = render_template('launchpad/clan_post_raw.html', post=post, sections=sections)
+                return raw_html, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+                
+    except Exception as e:
+        logger.error(f"Error in clan_post_html for post {post_id}: {e}")
+        return f"Error: {str(e)}", 500
+
 @bp.route('/health')
 def health():
     """Health check endpoint."""
