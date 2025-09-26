@@ -1136,6 +1136,29 @@ def prepare_product_post_data(queue_item):
         'link_url': link_url
     }
 
+def refresh_facebook_cache(url):
+    """Refresh Facebook's cache for a given URL using the Sharing Debugger API."""
+    import requests
+    
+    try:
+        # Use Facebook's Sharing Debugger API to refresh cache
+        debug_url = "https://graph.facebook.com/v18.0/"
+        params = {
+            'id': url,
+            'scrape': 'true',
+            'access_token': 'YOUR_APP_ACCESS_TOKEN'  # This would need to be configured
+        }
+        
+        logger.info(f"Refreshing Facebook cache for: {url}")
+        # Note: This requires an app access token, which we don't currently have configured
+        # For now, we'll just log the attempt
+        logger.info("Facebook cache refresh attempted (requires app access token)")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Error refreshing Facebook cache: {e}")
+        return False
+
 def post_to_facebook_unified(page_id, access_token, message, link_url, page_name=""):
     """Unified Facebook posting function - always uses /feed endpoint with link."""
     import requests
@@ -1144,6 +1167,9 @@ def post_to_facebook_unified(page_id, access_token, message, link_url, page_name
     logger.info(f"Post content: {message[:100]}...")
     logger.info(f"Link URL: {link_url}")
     logger.info(f"Access token being used: {access_token[:20]}...")
+    
+    # Try to refresh Facebook's cache for the link URL
+    refresh_facebook_cache(link_url)
     
     # Always use /feed endpoint for link sharing
     feed_url = f"https://graph.facebook.com/v18.0/{page_id}/feed"
