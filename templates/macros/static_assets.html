@@ -13,31 +13,19 @@
         {% elif blueprint_name == 'llm_actions' %}
             <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/main.css') }}">
             <link rel="stylesheet" href="{{ url_for('static', filename='css/llm-actions.css') }}">
-        {% elif blueprint_name == 'post_sections' %}
+        {% elif blueprint_name == 'planning' %}
             <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/main.css') }}">
-            <link rel="stylesheet" href="{{ url_for('static', filename='css/post-sections.css') }}">
-        {% elif blueprint_name == 'post_info' %}
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/nav.dist.css') }}">
+        {% elif blueprint_name == 'authoring' %}
             <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/main.css') }}">
-            <link rel="stylesheet" href="{{ url_for('static', filename='css/post-info.css') }}">
-        {% elif blueprint_name == 'images' %}
-            <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/main.css') }}">
-            <link rel="stylesheet" href="{{ url_for('static', filename='css/images.css') }}">
-        {% elif blueprint_name == 'clan_api' %}
-            <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/main.css') }}">
-            <link rel="stylesheet" href="{{ url_for('static', filename='css/clan-api.css') }}">
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/nav.dist.css') }}">
         {% else %}
             <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/main.css') }}">
         {% endif %}
     {% else %}
-        <!-- All CSS assets -->
+        <!-- Default CSS assets -->
         <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/main.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/nav.dist.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/llm-actions.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/launchpad.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/post-sections.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/post-info.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/images.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/clan-api.css') }}">
     {% endif %}
 {% endmacro %}
 
@@ -53,31 +41,19 @@
         {% elif blueprint_name == 'llm_actions' %}
             <script src="{{ url_for('static', filename='js/main.js') }}"></script>
             <script src="{{ url_for('static', filename='js/llm-actions.js') }}"></script>
-        {% elif blueprint_name == 'post_sections' %}
+        {% elif blueprint_name == 'planning' %}
             <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-            <script src="{{ url_for('static', filename='js/post-sections.js') }}"></script>
-        {% elif blueprint_name == 'post_info' %}
+            <script src="{{ url_for('static', filename='js/workflow-nav.js') }}"></script>
+        {% elif blueprint_name == 'authoring' %}
             <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-            <script src="{{ url_for('static', filename='js/post-info.js') }}"></script>
-        {% elif blueprint_name == 'images' %}
-            <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-            <script src="{{ url_for('static', filename='js/images.js') }}"></script>
-        {% elif blueprint_name == 'clan_api' %}
-            <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-            <script src="{{ url_for('static', filename='js/clan-api.js') }}"></script>
+            <script src="{{ url_for('static', filename='js/workflow-nav.js') }}"></script>
         {% else %}
             <script src="{{ url_for('static', filename='js/main.js') }}"></script>
         {% endif %}
     {% else %}
-        <!-- All JavaScript assets -->
+        <!-- Default JavaScript assets -->
         <script src="{{ url_for('static', filename='js/main.js') }}"></script>
         <script src="{{ url_for('static', filename='js/workflow-nav.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/llm-actions.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/launchpad.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/post-sections.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/post-info.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/images.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/clan-api.js') }}"></script>
     {% endif %}
 {% endmacro %}
 
