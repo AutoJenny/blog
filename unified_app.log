@@ -25525,3 +25525,75 @@ Discover how monks in Scottish monasteries first penned down...
 2025-09-26 16:44:53,464 - config.database - INFO - Database connection established
 2025-09-26 16:44:53,475 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:44:53] "GET /launchpad/api/queue HTTP/1.1" 200 -
 2025-09-26 16:45:02,719 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:45:02] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 16:45:26,223 - config.database - INFO - Database connection established
+2025-09-26 16:45:26,232 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:45:26] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 16:45:40,592 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:45:40] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 16:45:56,221 - config.database - INFO - Database connection established
+2025-09-26 16:45:56,232 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:45:56] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 16:45:58,292 - config.database - INFO - Database connection established
+2025-09-26 16:45:58,334 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:45:58] "GET / HTTP/1.1" 200 -
+2025-09-26 16:45:58,344 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:45:58] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-26 16:45:58,345 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:45:58] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-26 16:45:58,345 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:45:58] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-26 16:45:58,345 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:45:58] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-26 16:45:58,360 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:45:58] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-26 16:45:58,443 - config.database - INFO - Database connection established
+2025-09-26 16:45:58,449 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:45:58] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 16:45:58,467 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:45:58] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-26 16:45:58,468 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:45:58] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-26 16:45:58,469 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:45:58] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-26 16:45:58,469 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:45:58] "[33mGET /static/images/site/apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-26 16:45:58,469 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:45:58] "[33mGET /static/images/site/favicon.ico HTTP/1.1[0m" 404 -
+2025-09-26 16:45:58,470 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:45:58] "[33mGET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1[0m" 404 -
+2025-09-26 16:46:08,741 - config.database - INFO - Database connection established
+2025-09-26 16:46:08,745 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "[32mGET /workflow/posts/53/planning/idea HTTP/1.1[0m" 302 -
+2025-09-26 16:46:08,757 - config.database - INFO - Database connection established
+2025-09-26 16:46:08,766 - config.database - INFO - Database connection established
+2025-09-26 16:46:08,777 - config.database - INFO - Database connection established
+2025-09-26 16:46:08,787 - config.database - INFO - Database connection established
+2025-09-26 16:46:08,825 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "GET /workflow/posts/53/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-26 16:46:08,840 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-26 16:46:08,841 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-26 16:46:08,842 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "GET /static/workflow_nav/css/nav.dist.css HTTP/1.1" 200 -
+2025-09-26 16:46:08,867 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "GET /llm-actions/?stage=planning&substage=idea&step=initial_concept&post_id=53&step_id=41&v=9565217 HTTP/1.1" 200 -
+2025-09-26 16:46:08,879 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "[36mGET /static/js/logger.js HTTP/1.1[0m" 304 -
+2025-09-26 16:46:08,881 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-26 16:46:08,883 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "[36mGET /static/js/llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-26 16:46:08,883 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "[36mGET /static/js/ui-config.js HTTP/1.1[0m" 304 -
+2025-09-26 16:46:08,883 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "[36mGET /static/js/message-manager-core.js HTTP/1.1[0m" 304 -
+2025-09-26 16:46:08,884 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "[36mGET /static/js/prompt-manager.js HTTP/1.1[0m" 304 -
+2025-09-26 16:46:08,884 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "[36mGET /static/js/config-manager.js HTTP/1.1[0m" 304 -
+2025-09-26 16:46:08,885 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "[36mGET /static/js/field-selector.js HTTP/1.1[0m" 304 -
+2025-09-26 16:46:08,886 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "[36mGET /static/js/message-manager-ui.js HTTP/1.1[0m" 304 -
+2025-09-26 16:46:08,888 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "[36mGET /static/js/message-manager-preview.js HTTP/1.1[0m" 304 -
+2025-09-26 16:46:08,889 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "[36mGET /static/js/message-manager-storage.js HTTP/1.1[0m" 304 -
+2025-09-26 16:46:08,889 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "[36mGET /static/js/message-manager-elements.js HTTP/1.1[0m" 304 -
+2025-09-26 16:46:08,891 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "[36mGET /static/js/llm-config-manager.js HTTP/1.1[0m" 304 -
+2025-09-26 16:46:08,891 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "[36mGET /static/js/accordion-manager.js HTTP/1.1[0m" 304 -
+2025-09-26 16:46:08,891 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "[36mGET /static/js/debug-modules.js HTTP/1.1[0m" 304 -
+2025-09-26 16:46:08,904 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-26 16:46:08,905 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-26 16:46:08,906 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:08] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-26 16:46:09,010 - config.database - INFO - Database connection established
+2025-09-26 16:46:09,013 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:09] "GET /llm-actions/api/step-config/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-09-26 16:46:09,020 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:09] "[33mGET /api/llm/actions HTTP/1.1[0m" 404 -
+2025-09-26 16:46:09,021 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:09] "[33mGET /api/llm/system-prompts HTTP/1.1[0m" 404 -
+2025-09-26 16:46:10,589 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:10] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 16:46:26,323 - config.database - INFO - Database connection established
+2025-09-26 16:46:26,334 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:26] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 16:46:40,685 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:40] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 16:46:56,855 - config.database - INFO - Database connection established
+2025-09-26 16:46:56,867 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:46:56] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 16:47:10,684 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:47:10] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 16:47:26,941 - config.database - INFO - Database connection established
+2025-09-26 16:47:26,947 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:47:26] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 16:47:40,783 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:47:40] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 16:48:02,471 - config.database - INFO - Database connection established
+2025-09-26 16:48:02,478 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:48:02] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 16:48:11,630 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:48:11] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 16:48:55,217 - config.database - INFO - Database connection established
+2025-09-26 16:48:55,229 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:48:55] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 16:49:01,443 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:49:01] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 16:50:21,514 - config.database - INFO - Database connection established
+2025-09-26 16:50:21,523 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:50:21] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 16:50:33,506 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 16:50:33] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
