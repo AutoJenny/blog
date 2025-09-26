@@ -1467,6 +1467,9 @@ def update_queue_item_status():
             if cursor.rowcount == 0:
                 return jsonify({'success': False, 'error': 'Queue item not found'}), 404
             
+            # Commit the transaction
+            cursor.connection.commit()
+            
             logger.info(f"Updated queue item {item_id} status to {new_status}")
             
             return jsonify({
