@@ -1060,9 +1060,9 @@ class ClanPublisher:
             
             template = env.from_string(template_content)
             
-            # For Clan.com API, include header image in HTML content
+            # For Clan.com API, exclude header image from HTML content since it's handled by thumbnails
             post_for_template = post.copy()
-            # Don't exclude header image - let Clan.com handle it
+            post_for_template['exclude_header_image'] = True
             
             html_content = template.render(post=post_for_template, sections=sections)
             
