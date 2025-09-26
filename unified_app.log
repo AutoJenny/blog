@@ -21745,3 +21745,614 @@ KeyError: 'id'
 2025-09-26 12:13:32,384 - config.database - INFO - Database connection established
 2025-09-26 12:13:32,392 - config.database - INFO - Database connection established
 2025-09-26 12:13:32,400 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:13:32] "GET /launchpad/clan-post-html/53 HTTP/1.1" 200 -
+2025-09-26 12:13:38,348 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:13:38] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 12:14:21,218 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:14:21] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 12:14:33,659 - config.database - INFO - Database connection established
+2025-09-26 12:14:33,667 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:14:33] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 12:16:17,678 - config.database - INFO - Database connection established
+2025-09-26 12:16:17,683 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:16:17] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 12:16:17,684 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:16:17] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 12:16:20,809 - config.database - INFO - Database connection established
+2025-09-26 12:16:20,825 - config.database - INFO - Database connection established
+2025-09-26 12:16:20,829 - blueprints.launchpad - INFO - Original created_at: 2025-07-17 14:11:27.027049 (type: <class 'datetime.datetime'>)
+2025-09-26 12:16:20,829 - blueprints.launchpad - INFO - Already datetime object: 2025-07-17 14:11:27.027049
+2025-09-26 12:16:20,837 - config.database - INFO - Database connection established
+2025-09-26 12:16:20,840 - blueprints.launchpad - INFO - === FLASK ENDPOINT DEBUG ===
+2025-09-26 12:16:20,840 - blueprints.launchpad - INFO - Post data keys: ['post_id', 'title', 'subtitle', 'created_at', 'updated_at', 'status', 'slug', 'summary', 'title_choices', 'clan_post_id', 'clan_uploaded_url', 'header_image_id', 'header_image_caption', 'header_image_title', 'header_image_width', 'header_image_height', 'idea_seed', 'intro_blurb', 'main_title', 'cross_promotion_category_id', 'cross_promotion_category_title', 'cross_promotion_product_id', 'cross_promotion_product_title', 'cross_promotion_category_position', 'cross_promotion_product_position', 'cross_promotion_category_widget_html', 'cross_promotion_product_widget_html', 'header_image', 'id', 'cross_promotion']
+2025-09-26 12:16:20,840 - blueprints.launchpad - INFO - Post title: The Art of Scottish Storytelling: Oral Traditions and Modern Literature
+2025-09-26 12:16:20,840 - blueprints.launchpad - INFO - Number of sections: 7
+2025-09-26 12:16:20,840 - blueprints.launchpad - INFO - Section IDs: [710, 711, 712, 714, 713, 715, 716]
+2025-09-26 12:16:20,841 - clan_publisher - INFO - === PUBLISH_TO_CLAN DEBUG START ===
+2025-09-26 12:16:20,841 - clan_publisher - INFO - Post ID: 53
+2025-09-26 12:16:20,847 - config.database - INFO - Database connection established
+2025-09-26 12:16:20,848 - clan_publisher - INFO - Is update: True (clan_post_id: 399)
+2025-09-26 12:16:20,848 - clan_publisher - INFO - Post header_image_id: None
+2025-09-26 12:16:20,848 - clan_publisher - INFO - Post header_image: {'path': '/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp', 'alt_text': 'Header image for The Art of Scottish Storytelling: Oral Traditions and Modern Literature', 'caption': 'Scottish storytelling: Oral traditions and modern literature', 'title': 'Header image for The Art of Scottish Storytelling: Oral Traditions and Modern Literature', 'width': 1200, 'height': 800}
+2025-09-26 12:16:20,848 - clan_publisher - INFO - Using 7 sections passed from endpoint
+2025-09-26 12:16:20,848 - clan_publisher - INFO - Step 0: Finding image paths from file system...
+2025-09-26 12:16:20,849 - clan_publisher - INFO - find_header_image returned: /static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp
+2025-09-26 12:16:20,849 - clan_publisher - INFO - ✅ Set full_post_data['header_image'] = {'path': '/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp'}
+2025-09-26 12:16:20,849 - clan_publisher - INFO - Section 1 (Ancient Celtic Story-telling): image_path = None
+2025-09-26 12:16:20,849 - clan_publisher - INFO - Section 2 (Medieval Period: Recording Stories): image_path = None
+2025-09-26 12:16:20,849 - clan_publisher - INFO - Section 3 (Scottish Literary Masters: Robertson, Barrie, Gaiman): image_path = None
+2025-09-26 12:16:20,849 - clan_publisher - INFO - Section 4 (Evolution of Scottish Story-telling: Modern Era): image_path = None
+2025-09-26 12:16:20,849 - clan_publisher - INFO - Section 5 (Preserving Cultural Traditions through Story-telling): image_path = None
+2025-09-26 12:16:20,849 - clan_publisher - INFO - Section 6 (Impact of Scottish Story-telling on Literature and Culture): image_path = None
+2025-09-26 12:16:20,849 - clan_publisher - INFO - Section 7 (Story-telling in Scotland Today): image_path = None
+2025-09-26 12:16:20,849 - clan_publisher - INFO - Step 1: Processing and uploading images...
+2025-09-26 12:16:20,849 - clan_publisher - INFO - === PROCESS_IMAGES DEBUG START ===
+2025-09-26 12:16:20,849 - clan_publisher - INFO - Post ID: 53
+2025-09-26 12:16:20,849 - clan_publisher - INFO - Post header_image: {'path': '/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp'}
+2025-09-26 12:16:20,849 - clan_publisher - INFO - Post header_image_id: None
+2025-09-26 12:16:20,849 - clan_publisher - INFO - ✅ Found header image: /static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp
+2025-09-26 12:16:20,849 - clan_publisher - INFO - ✅ Header image file exists at: /Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp
+2025-09-26 12:16:20,849 - clan_publisher - INFO - File size: 202908 bytes
+2025-09-26 12:16:20,849 - clan_publisher - INFO - Uploading header image with filename: header_53_1758885380.jpg
+2025-09-26 12:16:20,849 - clan_publisher - INFO - Converting web path '/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp' to file system path '/Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp'
+2025-09-26 12:16:20,850 - clan_publisher - ERROR - Failed to dump API call data: [Errno 13] Permission denied: '/Users/nickfiddes/Code/projects/blog/blog-launchpad/log/clan_api_diagnostic_image_upload.json'
+2025-09-26 12:16:20,850 - clan_publisher - INFO - Uploading image: header_53_1758885380.jpg to https://clan.com/clan/blog_api/uploadImage
+2025-09-26 12:16:20,850 - clan_publisher - INFO - MIME type: image/jpeg
+2025-09-26 12:16:20,850 - clan_publisher - INFO - API data: {'api_user': 'blog', 'api_key': 'AC%7ef2a5A!24bd*E844a83f9F$49a02', 'json_args': '[]'}
+2025-09-26 12:16:20,851 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): clan.com:443
+2025-09-26 12:16:21,089 - urllib3.connectionpool - DEBUG - https://clan.com:443 "POST /clan/blog_api/uploadImage HTTP/1.1" 200 None
+2025-09-26 12:16:21,090 - clan_publisher - INFO - Upload response status: 200
+2025-09-26 12:16:21,090 - clan_publisher - INFO - Upload response headers: {'Server': 'nginx/1.25.4', 'Date': 'Fri, 26 Sep 2025 11:16:21 GMT', 'Content-Type': 'text/html; charset=UTF-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Vary': 'Accept-Encoding', 'set-cookie': 'frontend=7784b73dff204b1e9bac0a030fa73aa1; expires=Fri, 24 Oct 2025 11:16:20 GMT; Max-Age=2419200; path=/; domain=clan.com; secure; HttpOnly', 'expires': 'Thu, 19 Nov 1981 08:52:00 GMT', 'cache-control': 'no-store, no-cache, must-revalidate', 'pragma': 'no-cache', 'x-frame-options': 'SAMEORIGIN', 'Content-Encoding': 'gzip'}
+2025-09-26 12:16:21,090 - clan_publisher - INFO - Upload response text: {"status":"success","message":"File uploaded successfully: https:\/\/static.clan.com\/media\/blog\/header_53_1758885380.jpg"}
+2025-09-26 12:16:21,090 - clan_publisher - INFO - Upload response JSON: {'status': 'success', 'message': 'File uploaded successfully: https://static.clan.com/media/blog/header_53_1758885380.jpg'}
+2025-09-26 12:16:21,090 - clan_publisher - INFO - Image uploaded successfully: https://static.clan.com/media/blog/header_53_1758885380.jpg
+2025-09-26 12:16:21,092 - clan_publisher - INFO - upload_image returned: https://static.clan.com/media/blog/header_53_1758885380.jpg
+2025-09-26 12:16:21,092 - clan_publisher - INFO - ✅ Header image uploaded successfully: /static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp -> https://static.clan.com/media/blog/header_53_1758885380.jpg
+2025-09-26 12:16:21,092 - clan_publisher - INFO - ✅ uploaded_images dictionary now contains: {'/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp': 'https://static.clan.com/media/blog/header_53_1758885380.jpg'}
+2025-09-26 12:16:21,092 - clan_publisher - INFO - Processing 7 sections for images...
+2025-09-26 12:16:21,092 - clan_publisher - INFO - Section 1: No title
+2025-09-26 12:16:21,092 - clan_publisher - INFO - Section image data: {'path': '/static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp', 'title': 'Image for Ancient Celtic Story-telling', 'width': 1200, 'height': 800, 'caption': 'Elder telling tales around ancient fire', 'placeholder': False}
+2025-09-26 12:16:21,092 - clan_publisher - INFO - Processing section image: /static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp
+2025-09-26 12:16:21,092 - clan_publisher - INFO - ✅ Section image file exists at: /Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp
+2025-09-26 12:16:21,092 - clan_publisher - INFO - File size: 231844 bytes
+2025-09-26 12:16:21,093 - clan_publisher - INFO - Uploading section image with filename: section_53_1_1758885381.jpg
+2025-09-26 12:16:21,093 - clan_publisher - INFO - Converting section web path '/static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp' to file system path '/Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp'
+2025-09-26 12:16:21,093 - clan_publisher - ERROR - Failed to dump API call data: [Errno 13] Permission denied: '/Users/nickfiddes/Code/projects/blog/blog-launchpad/log/clan_api_diagnostic_image_upload.json'
+2025-09-26 12:16:21,093 - clan_publisher - INFO - Uploading image: section_53_1_1758885381.jpg to https://clan.com/clan/blog_api/uploadImage
+2025-09-26 12:16:21,093 - clan_publisher - INFO - MIME type: image/jpeg
+2025-09-26 12:16:21,093 - clan_publisher - INFO - API data: {'api_user': 'blog', 'api_key': 'AC%7ef2a5A!24bd*E844a83f9F$49a02', 'json_args': '[]'}
+2025-09-26 12:16:21,094 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): clan.com:443
+2025-09-26 12:16:21,336 - urllib3.connectionpool - DEBUG - https://clan.com:443 "POST /clan/blog_api/uploadImage HTTP/1.1" 200 None
+2025-09-26 12:16:21,337 - clan_publisher - INFO - Upload response status: 200
+2025-09-26 12:16:21,338 - clan_publisher - INFO - Upload response headers: {'Server': 'nginx/1.25.4', 'Date': 'Fri, 26 Sep 2025 11:16:21 GMT', 'Content-Type': 'text/html; charset=UTF-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Vary': 'Accept-Encoding', 'set-cookie': 'frontend=02f8fac4129609842d8609522193749f; expires=Fri, 24 Oct 2025 11:16:21 GMT; Max-Age=2419200; path=/; domain=clan.com; secure; HttpOnly', 'expires': 'Thu, 19 Nov 1981 08:52:00 GMT', 'cache-control': 'no-store, no-cache, must-revalidate', 'pragma': 'no-cache', 'x-frame-options': 'SAMEORIGIN', 'Content-Encoding': 'gzip'}
+2025-09-26 12:16:21,338 - clan_publisher - INFO - Upload response text: {"status":"success","message":"File uploaded successfully: https:\/\/static.clan.com\/media\/blog\/section_53_1_1758885381.jpg"}
+2025-09-26 12:16:21,338 - clan_publisher - INFO - Upload response JSON: {'status': 'success', 'message': 'File uploaded successfully: https://static.clan.com/media/blog/section_53_1_1758885381.jpg'}
+2025-09-26 12:16:21,338 - clan_publisher - INFO - Image uploaded successfully: https://static.clan.com/media/blog/section_53_1_1758885381.jpg
+2025-09-26 12:16:21,340 - clan_publisher - INFO - ✅ Section image uploaded: /static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp -> https://static.clan.com/media/blog/section_53_1_1758885381.jpg
+2025-09-26 12:16:21,340 - clan_publisher - INFO - Section 2: No title
+2025-09-26 12:16:21,340 - clan_publisher - INFO - Section image data: {'path': '/static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp', 'title': 'Image for Medieval Period: Recording Stories', 'width': 1200, 'height': 685, 'caption': 'Monk recording tales in illuminated manuscript', 'placeholder': False}
+2025-09-26 12:16:21,340 - clan_publisher - INFO - Processing section image: /static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp
+2025-09-26 12:16:21,340 - clan_publisher - INFO - ✅ Section image file exists at: /Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp
+2025-09-26 12:16:21,340 - clan_publisher - INFO - File size: 254480 bytes
+2025-09-26 12:16:21,340 - clan_publisher - INFO - Uploading section image with filename: section_53_2_1758885381.jpg
+2025-09-26 12:16:21,340 - clan_publisher - INFO - Converting section web path '/static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp' to file system path '/Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp'
+2025-09-26 12:16:21,341 - clan_publisher - ERROR - Failed to dump API call data: [Errno 13] Permission denied: '/Users/nickfiddes/Code/projects/blog/blog-launchpad/log/clan_api_diagnostic_image_upload.json'
+2025-09-26 12:16:21,341 - clan_publisher - INFO - Uploading image: section_53_2_1758885381.jpg to https://clan.com/clan/blog_api/uploadImage
+2025-09-26 12:16:21,341 - clan_publisher - INFO - MIME type: image/jpeg
+2025-09-26 12:16:21,341 - clan_publisher - INFO - API data: {'api_user': 'blog', 'api_key': 'AC%7ef2a5A!24bd*E844a83f9F$49a02', 'json_args': '[]'}
+2025-09-26 12:16:21,343 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): clan.com:443
+2025-09-26 12:16:21,601 - urllib3.connectionpool - DEBUG - https://clan.com:443 "POST /clan/blog_api/uploadImage HTTP/1.1" 200 None
+2025-09-26 12:16:21,603 - clan_publisher - INFO - Upload response status: 200
+2025-09-26 12:16:21,603 - clan_publisher - INFO - Upload response headers: {'Server': 'nginx/1.25.4', 'Date': 'Fri, 26 Sep 2025 11:16:21 GMT', 'Content-Type': 'text/html; charset=UTF-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Vary': 'Accept-Encoding', 'set-cookie': 'frontend=10a203baa760d26c82e8e2b553e62d0e; expires=Fri, 24 Oct 2025 11:16:21 GMT; Max-Age=2419200; path=/; domain=clan.com; secure; HttpOnly', 'expires': 'Thu, 19 Nov 1981 08:52:00 GMT', 'cache-control': 'no-store, no-cache, must-revalidate', 'pragma': 'no-cache', 'x-frame-options': 'SAMEORIGIN', 'Content-Encoding': 'gzip'}
+2025-09-26 12:16:21,603 - clan_publisher - INFO - Upload response text: {"status":"success","message":"File uploaded successfully: https:\/\/static.clan.com\/media\/blog\/section_53_2_1758885381.jpg"}
+2025-09-26 12:16:21,604 - clan_publisher - INFO - Upload response JSON: {'status': 'success', 'message': 'File uploaded successfully: https://static.clan.com/media/blog/section_53_2_1758885381.jpg'}
+2025-09-26 12:16:21,604 - clan_publisher - INFO - Image uploaded successfully: https://static.clan.com/media/blog/section_53_2_1758885381.jpg
+2025-09-26 12:16:21,605 - clan_publisher - INFO - ✅ Section image uploaded: /static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp -> https://static.clan.com/media/blog/section_53_2_1758885381.jpg
+2025-09-26 12:16:21,605 - clan_publisher - INFO - Section 3: No title
+2025-09-26 12:16:21,605 - clan_publisher - INFO - Section image data: {'path': '/static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp', 'title': 'Image for Scottish Literary Masters: Robertson, Barrie, Gaiman', 'width': 1200, 'height': 800, 'caption': "Three authors: Robertson, Barrie, Gaiman - Scotland's literary gems", 'placeholder': False}
+2025-09-26 12:16:21,605 - clan_publisher - INFO - Processing section image: /static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp
+2025-09-26 12:16:21,605 - clan_publisher - INFO - ✅ Section image file exists at: /Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp
+2025-09-26 12:16:21,606 - clan_publisher - INFO - File size: 209644 bytes
+2025-09-26 12:16:21,606 - clan_publisher - INFO - Uploading section image with filename: section_53_3_1758885381.jpg
+2025-09-26 12:16:21,606 - clan_publisher - INFO - Converting section web path '/static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp' to file system path '/Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp'
+2025-09-26 12:16:21,606 - clan_publisher - ERROR - Failed to dump API call data: [Errno 13] Permission denied: '/Users/nickfiddes/Code/projects/blog/blog-launchpad/log/clan_api_diagnostic_image_upload.json'
+2025-09-26 12:16:21,606 - clan_publisher - INFO - Uploading image: section_53_3_1758885381.jpg to https://clan.com/clan/blog_api/uploadImage
+2025-09-26 12:16:21,606 - clan_publisher - INFO - MIME type: image/jpeg
+2025-09-26 12:16:21,606 - clan_publisher - INFO - API data: {'api_user': 'blog', 'api_key': 'AC%7ef2a5A!24bd*E844a83f9F$49a02', 'json_args': '[]'}
+2025-09-26 12:16:21,609 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): clan.com:443
+2025-09-26 12:16:21,859 - urllib3.connectionpool - DEBUG - https://clan.com:443 "POST /clan/blog_api/uploadImage HTTP/1.1" 200 None
+2025-09-26 12:16:21,860 - clan_publisher - INFO - Upload response status: 200
+2025-09-26 12:16:21,861 - clan_publisher - INFO - Upload response headers: {'Server': 'nginx/1.25.4', 'Date': 'Fri, 26 Sep 2025 11:16:21 GMT', 'Content-Type': 'text/html; charset=UTF-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Vary': 'Accept-Encoding', 'set-cookie': 'frontend=5eecadd353d073ae0fba3aaf427b2b9c; expires=Fri, 24 Oct 2025 11:16:21 GMT; Max-Age=2419200; path=/; domain=clan.com; secure; HttpOnly', 'expires': 'Thu, 19 Nov 1981 08:52:00 GMT', 'cache-control': 'no-store, no-cache, must-revalidate', 'pragma': 'no-cache', 'x-frame-options': 'SAMEORIGIN', 'Content-Encoding': 'gzip'}
+2025-09-26 12:16:21,861 - clan_publisher - INFO - Upload response text: {"status":"success","message":"File uploaded successfully: https:\/\/static.clan.com\/media\/blog\/section_53_3_1758885381.jpg"}
+2025-09-26 12:16:21,861 - clan_publisher - INFO - Upload response JSON: {'status': 'success', 'message': 'File uploaded successfully: https://static.clan.com/media/blog/section_53_3_1758885381.jpg'}
+2025-09-26 12:16:21,861 - clan_publisher - INFO - Image uploaded successfully: https://static.clan.com/media/blog/section_53_3_1758885381.jpg
+2025-09-26 12:16:21,863 - clan_publisher - INFO - ✅ Section image uploaded: /static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp -> https://static.clan.com/media/blog/section_53_3_1758885381.jpg
+2025-09-26 12:16:21,863 - clan_publisher - INFO - Section 4: No title
+2025-09-26 12:16:21,863 - clan_publisher - INFO - Section image data: {'path': '/static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp', 'title': 'Image for Evolution of Scottish Story-telling: Modern Era', 'width': 1200, 'height': 800, 'caption': 'Modern Scottish storytellers engaging audience', 'placeholder': False}
+2025-09-26 12:16:21,864 - clan_publisher - INFO - Processing section image: /static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp
+2025-09-26 12:16:21,864 - clan_publisher - INFO - ✅ Section image file exists at: /Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp
+2025-09-26 12:16:21,864 - clan_publisher - INFO - File size: 258070 bytes
+2025-09-26 12:16:21,864 - clan_publisher - INFO - Uploading section image with filename: section_53_4_1758885381.jpg
+2025-09-26 12:16:21,864 - clan_publisher - INFO - Converting section web path '/static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp' to file system path '/Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp'
+2025-09-26 12:16:21,864 - clan_publisher - ERROR - Failed to dump API call data: [Errno 13] Permission denied: '/Users/nickfiddes/Code/projects/blog/blog-launchpad/log/clan_api_diagnostic_image_upload.json'
+2025-09-26 12:16:21,864 - clan_publisher - INFO - Uploading image: section_53_4_1758885381.jpg to https://clan.com/clan/blog_api/uploadImage
+2025-09-26 12:16:21,864 - clan_publisher - INFO - MIME type: image/jpeg
+2025-09-26 12:16:21,864 - clan_publisher - INFO - API data: {'api_user': 'blog', 'api_key': 'AC%7ef2a5A!24bd*E844a83f9F$49a02', 'json_args': '[]'}
+2025-09-26 12:16:21,866 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): clan.com:443
+2025-09-26 12:16:22,139 - urllib3.connectionpool - DEBUG - https://clan.com:443 "POST /clan/blog_api/uploadImage HTTP/1.1" 200 None
+2025-09-26 12:16:22,140 - clan_publisher - INFO - Upload response status: 200
+2025-09-26 12:16:22,140 - clan_publisher - INFO - Upload response headers: {'Server': 'nginx/1.25.4', 'Date': 'Fri, 26 Sep 2025 11:16:22 GMT', 'Content-Type': 'text/html; charset=UTF-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Vary': 'Accept-Encoding', 'set-cookie': 'frontend=4c6299790ab4d4a267aa44537f2be920; expires=Fri, 24 Oct 2025 11:16:22 GMT; Max-Age=2419200; path=/; domain=clan.com; secure; HttpOnly', 'expires': 'Thu, 19 Nov 1981 08:52:00 GMT', 'cache-control': 'no-store, no-cache, must-revalidate', 'pragma': 'no-cache', 'x-frame-options': 'SAMEORIGIN', 'Content-Encoding': 'gzip'}
+2025-09-26 12:16:22,141 - clan_publisher - INFO - Upload response text: {"status":"success","message":"File uploaded successfully: https:\/\/static.clan.com\/media\/blog\/section_53_4_1758885381.jpg"}
+2025-09-26 12:16:22,141 - clan_publisher - INFO - Upload response JSON: {'status': 'success', 'message': 'File uploaded successfully: https://static.clan.com/media/blog/section_53_4_1758885381.jpg'}
+2025-09-26 12:16:22,141 - clan_publisher - INFO - Image uploaded successfully: https://static.clan.com/media/blog/section_53_4_1758885381.jpg
+2025-09-26 12:16:22,142 - clan_publisher - INFO - ✅ Section image uploaded: /static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp -> https://static.clan.com/media/blog/section_53_4_1758885381.jpg
+2025-09-26 12:16:22,142 - clan_publisher - INFO - Section 5: No title
+2025-09-26 12:16:22,142 - clan_publisher - INFO - Section image data: {'path': '/static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp', 'title': 'Image for Preserving Cultural Traditions through Story-telling', 'width': 1200, 'height': 800, 'caption': 'Elder sharing tales, preserving culture', 'placeholder': False}
+2025-09-26 12:16:22,142 - clan_publisher - INFO - Processing section image: /static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp
+2025-09-26 12:16:22,142 - clan_publisher - INFO - ✅ Section image file exists at: /Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp
+2025-09-26 12:16:22,143 - clan_publisher - INFO - File size: 245444 bytes
+2025-09-26 12:16:22,143 - clan_publisher - INFO - Uploading section image with filename: section_53_5_1758885382.jpg
+2025-09-26 12:16:22,143 - clan_publisher - INFO - Converting section web path '/static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp' to file system path '/Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp'
+2025-09-26 12:16:22,143 - clan_publisher - ERROR - Failed to dump API call data: [Errno 13] Permission denied: '/Users/nickfiddes/Code/projects/blog/blog-launchpad/log/clan_api_diagnostic_image_upload.json'
+2025-09-26 12:16:22,143 - clan_publisher - INFO - Uploading image: section_53_5_1758885382.jpg to https://clan.com/clan/blog_api/uploadImage
+2025-09-26 12:16:22,143 - clan_publisher - INFO - MIME type: image/jpeg
+2025-09-26 12:16:22,143 - clan_publisher - INFO - API data: {'api_user': 'blog', 'api_key': 'AC%7ef2a5A!24bd*E844a83f9F$49a02', 'json_args': '[]'}
+2025-09-26 12:16:22,145 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): clan.com:443
+2025-09-26 12:16:22,441 - urllib3.connectionpool - DEBUG - https://clan.com:443 "POST /clan/blog_api/uploadImage HTTP/1.1" 200 None
+2025-09-26 12:16:22,443 - clan_publisher - INFO - Upload response status: 200
+2025-09-26 12:16:22,443 - clan_publisher - INFO - Upload response headers: {'Server': 'nginx/1.25.4', 'Date': 'Fri, 26 Sep 2025 11:16:22 GMT', 'Content-Type': 'text/html; charset=UTF-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Vary': 'Accept-Encoding', 'set-cookie': 'frontend=ef025cef429ffba17c09deebe620c6db; expires=Fri, 24 Oct 2025 11:16:22 GMT; Max-Age=2419200; path=/; domain=clan.com; secure; HttpOnly', 'expires': 'Thu, 19 Nov 1981 08:52:00 GMT', 'cache-control': 'no-store, no-cache, must-revalidate', 'pragma': 'no-cache', 'x-frame-options': 'SAMEORIGIN', 'Content-Encoding': 'gzip'}
+2025-09-26 12:16:22,443 - clan_publisher - INFO - Upload response text: {"status":"success","message":"File uploaded successfully: https:\/\/static.clan.com\/media\/blog\/section_53_5_1758885382.jpg"}
+2025-09-26 12:16:22,444 - clan_publisher - INFO - Upload response JSON: {'status': 'success', 'message': 'File uploaded successfully: https://static.clan.com/media/blog/section_53_5_1758885382.jpg'}
+2025-09-26 12:16:22,444 - clan_publisher - INFO - Image uploaded successfully: https://static.clan.com/media/blog/section_53_5_1758885382.jpg
+2025-09-26 12:16:22,445 - clan_publisher - INFO - ✅ Section image uploaded: /static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp -> https://static.clan.com/media/blog/section_53_5_1758885382.jpg
+2025-09-26 12:16:22,445 - clan_publisher - INFO - Section 6: No title
+2025-09-26 12:16:22,445 - clan_publisher - INFO - Section image data: {'path': '/static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp', 'title': 'Image for Impact of Scottish Story-telling on Literature and Culture', 'width': 1200, 'height': 800, 'caption': 'Scottish tales shaping literature, culture', 'placeholder': False}
+2025-09-26 12:16:22,445 - clan_publisher - INFO - Processing section image: /static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp
+2025-09-26 12:16:22,445 - clan_publisher - INFO - ✅ Section image file exists at: /Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp
+2025-09-26 12:16:22,446 - clan_publisher - INFO - File size: 170880 bytes
+2025-09-26 12:16:22,446 - clan_publisher - INFO - Uploading section image with filename: section_53_6_1758885382.jpg
+2025-09-26 12:16:22,446 - clan_publisher - INFO - Converting section web path '/static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp' to file system path '/Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp'
+2025-09-26 12:16:22,446 - clan_publisher - ERROR - Failed to dump API call data: [Errno 13] Permission denied: '/Users/nickfiddes/Code/projects/blog/blog-launchpad/log/clan_api_diagnostic_image_upload.json'
+2025-09-26 12:16:22,446 - clan_publisher - INFO - Uploading image: section_53_6_1758885382.jpg to https://clan.com/clan/blog_api/uploadImage
+2025-09-26 12:16:22,446 - clan_publisher - INFO - MIME type: image/jpeg
+2025-09-26 12:16:22,446 - clan_publisher - INFO - API data: {'api_user': 'blog', 'api_key': 'AC%7ef2a5A!24bd*E844a83f9F$49a02', 'json_args': '[]'}
+2025-09-26 12:16:22,448 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): clan.com:443
+2025-09-26 12:16:22,716 - urllib3.connectionpool - DEBUG - https://clan.com:443 "POST /clan/blog_api/uploadImage HTTP/1.1" 200 None
+2025-09-26 12:16:22,717 - clan_publisher - INFO - Upload response status: 200
+2025-09-26 12:16:22,718 - clan_publisher - INFO - Upload response headers: {'Server': 'nginx/1.25.4', 'Date': 'Fri, 26 Sep 2025 11:16:22 GMT', 'Content-Type': 'text/html; charset=UTF-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Vary': 'Accept-Encoding', 'set-cookie': 'frontend=180e6be3319822346c31bcc35926633a; expires=Fri, 24 Oct 2025 11:16:22 GMT; Max-Age=2419200; path=/; domain=clan.com; secure; HttpOnly', 'expires': 'Thu, 19 Nov 1981 08:52:00 GMT', 'cache-control': 'no-store, no-cache, must-revalidate', 'pragma': 'no-cache', 'x-frame-options': 'SAMEORIGIN', 'Content-Encoding': 'gzip'}
+2025-09-26 12:16:22,718 - clan_publisher - INFO - Upload response text: {"status":"success","message":"File uploaded successfully: https:\/\/static.clan.com\/media\/blog\/section_53_6_1758885382.jpg"}
+2025-09-26 12:16:22,718 - clan_publisher - INFO - Upload response JSON: {'status': 'success', 'message': 'File uploaded successfully: https://static.clan.com/media/blog/section_53_6_1758885382.jpg'}
+2025-09-26 12:16:22,718 - clan_publisher - INFO - Image uploaded successfully: https://static.clan.com/media/blog/section_53_6_1758885382.jpg
+2025-09-26 12:16:22,720 - clan_publisher - INFO - ✅ Section image uploaded: /static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp -> https://static.clan.com/media/blog/section_53_6_1758885382.jpg
+2025-09-26 12:16:22,720 - clan_publisher - INFO - Section 7: No title
+2025-09-26 12:16:22,720 - clan_publisher - INFO - Section image data: {'path': '/static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp', 'title': 'Image for Story-telling in Scotland Today', 'width': 1200, 'height': 685, 'caption': 'Modern storytellers around Scottish fireplace', 'placeholder': False}
+2025-09-26 12:16:22,720 - clan_publisher - INFO - Processing section image: /static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp
+2025-09-26 12:16:22,720 - clan_publisher - INFO - ✅ Section image file exists at: /Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp
+2025-09-26 12:16:22,720 - clan_publisher - INFO - File size: 188978 bytes
+2025-09-26 12:16:22,720 - clan_publisher - INFO - Uploading section image with filename: section_53_7_1758885382.jpg
+2025-09-26 12:16:22,720 - clan_publisher - INFO - Converting section web path '/static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp' to file system path '/Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp'
+2025-09-26 12:16:22,720 - clan_publisher - ERROR - Failed to dump API call data: [Errno 13] Permission denied: '/Users/nickfiddes/Code/projects/blog/blog-launchpad/log/clan_api_diagnostic_image_upload.json'
+2025-09-26 12:16:22,721 - clan_publisher - INFO - Uploading image: section_53_7_1758885382.jpg to https://clan.com/clan/blog_api/uploadImage
+2025-09-26 12:16:22,721 - clan_publisher - INFO - MIME type: image/jpeg
+2025-09-26 12:16:22,721 - clan_publisher - INFO - API data: {'api_user': 'blog', 'api_key': 'AC%7ef2a5A!24bd*E844a83f9F$49a02', 'json_args': '[]'}
+2025-09-26 12:16:22,723 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): clan.com:443
+2025-09-26 12:16:22,976 - urllib3.connectionpool - DEBUG - https://clan.com:443 "POST /clan/blog_api/uploadImage HTTP/1.1" 200 None
+2025-09-26 12:16:22,978 - clan_publisher - INFO - Upload response status: 200
+2025-09-26 12:16:22,978 - clan_publisher - INFO - Upload response headers: {'Server': 'nginx/1.25.4', 'Date': 'Fri, 26 Sep 2025 11:16:22 GMT', 'Content-Type': 'text/html; charset=UTF-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Vary': 'Accept-Encoding', 'set-cookie': 'frontend=51005c542732d02b7c0ee3a3d7a5bfce; expires=Fri, 24 Oct 2025 11:16:22 GMT; Max-Age=2419200; path=/; domain=clan.com; secure; HttpOnly', 'expires': 'Thu, 19 Nov 1981 08:52:00 GMT', 'cache-control': 'no-store, no-cache, must-revalidate', 'pragma': 'no-cache', 'x-frame-options': 'SAMEORIGIN', 'Content-Encoding': 'gzip'}
+2025-09-26 12:16:22,978 - clan_publisher - INFO - Upload response text: {"status":"success","message":"File uploaded successfully: https:\/\/static.clan.com\/media\/blog\/section_53_7_1758885382.jpg"}
+2025-09-26 12:16:22,978 - clan_publisher - INFO - Upload response JSON: {'status': 'success', 'message': 'File uploaded successfully: https://static.clan.com/media/blog/section_53_7_1758885382.jpg'}
+2025-09-26 12:16:22,978 - clan_publisher - INFO - Image uploaded successfully: https://static.clan.com/media/blog/section_53_7_1758885382.jpg
+2025-09-26 12:16:22,981 - clan_publisher - INFO - ✅ Section image uploaded: /static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp -> https://static.clan.com/media/blog/section_53_7_1758885382.jpg
+2025-09-26 12:16:22,981 - clan_publisher - INFO - === PROCESS_IMAGES DEBUG END ===
+2025-09-26 12:16:22,981 - clan_publisher - INFO - Final uploaded_images dictionary: {'/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp': 'https://static.clan.com/media/blog/header_53_1758885380.jpg', '/static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp': 'https://static.clan.com/media/blog/section_53_1_1758885381.jpg', '/static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp': 'https://static.clan.com/media/blog/section_53_2_1758885381.jpg', '/static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp': 'https://static.clan.com/media/blog/section_53_3_1758885381.jpg', '/static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp': 'https://static.clan.com/media/blog/section_53_4_1758885381.jpg', '/static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp': 'https://static.clan.com/media/blog/section_53_5_1758885382.jpg', '/static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp': 'https://static.clan.com/media/blog/section_53_6_1758885382.jpg', '/static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp': 'https://static.clan.com/media/blog/section_53_7_1758885382.jpg'}
+2025-09-26 12:16:22,981 - clan_publisher - INFO - Final uploaded_images count: 8
+2025-09-26 12:16:22,991 - config.database - INFO - Database connection established
+2025-09-26 12:16:22,998 - clan_publisher - INFO - ✅ Saved image mapping: /static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp -> https://static.clan.com/media/blog/header_53_1758885380.jpg
+2025-09-26 12:16:22,999 - clan_publisher - INFO - ✅ Saved image mapping: /static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp -> https://static.clan.com/media/blog/section_53_1_1758885381.jpg
+2025-09-26 12:16:23,000 - clan_publisher - INFO - ✅ Saved image mapping: /static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp -> https://static.clan.com/media/blog/section_53_2_1758885381.jpg
+2025-09-26 12:16:23,001 - clan_publisher - INFO - ✅ Saved image mapping: /static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp -> https://static.clan.com/media/blog/section_53_3_1758885381.jpg
+2025-09-26 12:16:23,003 - clan_publisher - INFO - ✅ Saved image mapping: /static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp -> https://static.clan.com/media/blog/section_53_4_1758885381.jpg
+2025-09-26 12:16:23,004 - clan_publisher - INFO - ✅ Saved image mapping: /static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp -> https://static.clan.com/media/blog/section_53_5_1758885382.jpg
+2025-09-26 12:16:23,004 - clan_publisher - INFO - ✅ Saved image mapping: /static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp -> https://static.clan.com/media/blog/section_53_6_1758885382.jpg
+2025-09-26 12:16:23,005 - clan_publisher - INFO - ✅ Saved image mapping: /static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp -> https://static.clan.com/media/blog/section_53_7_1758885382.jpg
+2025-09-26 12:16:23,005 - clan_publisher - INFO - ✅ Saved 8 image mappings to database
+2025-09-26 12:16:23,007 - clan_publisher - INFO - ✅ Image mappings transaction committed
+2025-09-26 12:16:23,007 - clan_publisher - INFO - ✅ Image processing completed. Uploaded 8 images.
+2025-09-26 12:16:23,008 - clan_publisher - INFO - uploaded_images dictionary: {'/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp': 'https://static.clan.com/media/blog/header_53_1758885380.jpg', '/static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp': 'https://static.clan.com/media/blog/section_53_1_1758885381.jpg', '/static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp': 'https://static.clan.com/media/blog/section_53_2_1758885381.jpg', '/static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp': 'https://static.clan.com/media/blog/section_53_3_1758885381.jpg', '/static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp': 'https://static.clan.com/media/blog/section_53_4_1758885381.jpg', '/static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp': 'https://static.clan.com/media/blog/section_53_5_1758885382.jpg', '/static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp': 'https://static.clan.com/media/blog/section_53_6_1758885382.jpg', '/static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp': 'https://static.clan.com/media/blog/section_53_7_1758885382.jpg'}
+2025-09-26 12:16:23,008 - clan_publisher - INFO - Step 2: Mapping cross-promotion data...
+2025-09-26 12:16:23,008 - clan_publisher - INFO - ✅ Mapped cross-promotion data: category_id=39, title='Home Accessories'
+2025-09-26 12:16:23,008 - clan_publisher - INFO - ✅ Product widget: {{widget type="swcatalog/widget_crossSell_product" product_id="690" title="Related Products"}}
+2025-09-26 12:16:23,008 - clan_publisher - INFO - ✅ Category widget: {{widget type="swcatalog/widget_crossSell_category" category_id="39" title="Related Department"}}
+2025-09-26 12:16:23,008 - clan_publisher - INFO - Step 3: Rendering HTML content...
+2025-09-26 12:16:23,023 - clan_publisher - INFO - Translating image paths to clan.com URLs...
+2025-09-26 12:16:23,023 - clan_publisher - INFO - Uploaded images mapping: {'/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp': 'https://static.clan.com/media/blog/header_53_1758885380.jpg', '/static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp': 'https://static.clan.com/media/blog/section_53_1_1758885381.jpg', '/static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp': 'https://static.clan.com/media/blog/section_53_2_1758885381.jpg', '/static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp': 'https://static.clan.com/media/blog/section_53_3_1758885381.jpg', '/static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp': 'https://static.clan.com/media/blog/section_53_4_1758885381.jpg', '/static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp': 'https://static.clan.com/media/blog/section_53_5_1758885382.jpg', '/static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp': 'https://static.clan.com/media/blog/section_53_6_1758885382.jpg', '/static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp': 'https://static.clan.com/media/blog/section_53_7_1758885382.jpg'}
+2025-09-26 12:16:23,023 - clan_publisher - INFO - Added relative path mapping: /content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp -> https://static.clan.com/media/blog/header_53_1758885380.jpg
+2025-09-26 12:16:23,023 - clan_publisher - INFO - Added relative path mapping: /content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp -> https://static.clan.com/media/blog/section_53_1_1758885381.jpg
+2025-09-26 12:16:23,023 - clan_publisher - INFO - Added relative path mapping: /content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp -> https://static.clan.com/media/blog/section_53_2_1758885381.jpg
+2025-09-26 12:16:23,023 - clan_publisher - INFO - Added relative path mapping: /content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp -> https://static.clan.com/media/blog/section_53_3_1758885381.jpg
+2025-09-26 12:16:23,024 - clan_publisher - INFO - Added relative path mapping: /content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp -> https://static.clan.com/media/blog/section_53_4_1758885381.jpg
+2025-09-26 12:16:23,024 - clan_publisher - INFO - Added relative path mapping: /content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp -> https://static.clan.com/media/blog/section_53_5_1758885382.jpg
+2025-09-26 12:16:23,024 - clan_publisher - INFO - Added relative path mapping: /content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp -> https://static.clan.com/media/blog/section_53_6_1758885382.jpg
+2025-09-26 12:16:23,024 - clan_publisher - INFO - Added relative path mapping: /content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp -> https://static.clan.com/media/blog/section_53_7_1758885382.jpg
+2025-09-26 12:16:23,024 - clan_publisher - INFO - Final path mapping: {'/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp': 'https://static.clan.com/media/blog/header_53_1758885380.jpg', '/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp': 'https://static.clan.com/media/blog/header_53_1758885380.jpg', '/static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp': 'https://static.clan.com/media/blog/section_53_1_1758885381.jpg', '/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp': 'https://static.clan.com/media/blog/section_53_1_1758885381.jpg', '/static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp': 'https://static.clan.com/media/blog/section_53_2_1758885381.jpg', '/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp': 'https://static.clan.com/media/blog/section_53_2_1758885381.jpg', '/static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp': 'https://static.clan.com/media/blog/section_53_3_1758885381.jpg', '/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp': 'https://static.clan.com/media/blog/section_53_3_1758885381.jpg', '/static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp': 'https://static.clan.com/media/blog/section_53_4_1758885381.jpg', '/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp': 'https://static.clan.com/media/blog/section_53_4_1758885381.jpg', '/static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp': 'https://static.clan.com/media/blog/section_53_5_1758885382.jpg', '/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp': 'https://static.clan.com/media/blog/section_53_5_1758885382.jpg', '/static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp': 'https://static.clan.com/media/blog/section_53_6_1758885382.jpg', '/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp': 'https://static.clan.com/media/blog/section_53_6_1758885382.jpg', '/static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp': 'https://static.clan.com/media/blog/section_53_7_1758885382.jpg', '/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp': 'https://static.clan.com/media/blog/section_53_7_1758885382.jpg'}
+2025-09-26 12:16:23,024 - clan_publisher - INFO - Replaced /static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp -> https://static.clan.com/media/blog/header_53_1758885380.jpg
+2025-09-26 12:16:23,024 - clan_publisher - INFO - Replaced /content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp -> https://static.clan.com/media/blog/header_53_1758885380.jpg
+2025-09-26 12:16:23,024 - clan_publisher - INFO - Replaced /static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp -> https://static.clan.com/media/blog/section_53_1_1758885381.jpg
+2025-09-26 12:16:23,024 - clan_publisher - INFO - Replaced /content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp -> https://static.clan.com/media/blog/section_53_1_1758885381.jpg
+2025-09-26 12:16:23,024 - clan_publisher - INFO - Replaced /static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp -> https://static.clan.com/media/blog/section_53_2_1758885381.jpg
+2025-09-26 12:16:23,024 - clan_publisher - INFO - Replaced /content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp -> https://static.clan.com/media/blog/section_53_2_1758885381.jpg
+2025-09-26 12:16:23,024 - clan_publisher - INFO - Replaced /static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp -> https://static.clan.com/media/blog/section_53_3_1758885381.jpg
+2025-09-26 12:16:23,024 - clan_publisher - INFO - Replaced /content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp -> https://static.clan.com/media/blog/section_53_3_1758885381.jpg
+2025-09-26 12:16:23,024 - clan_publisher - INFO - Replaced /static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp -> https://static.clan.com/media/blog/section_53_4_1758885381.jpg
+2025-09-26 12:16:23,024 - clan_publisher - INFO - Replaced /content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp -> https://static.clan.com/media/blog/section_53_4_1758885381.jpg
+2025-09-26 12:16:23,024 - clan_publisher - INFO - Replaced /static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp -> https://static.clan.com/media/blog/section_53_5_1758885382.jpg
+2025-09-26 12:16:23,024 - clan_publisher - INFO - Replaced /content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp -> https://static.clan.com/media/blog/section_53_5_1758885382.jpg
+2025-09-26 12:16:23,024 - clan_publisher - INFO - Replaced /static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp -> https://static.clan.com/media/blog/section_53_6_1758885382.jpg
+2025-09-26 12:16:23,024 - clan_publisher - INFO - Replaced /content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp -> https://static.clan.com/media/blog/section_53_6_1758885382.jpg
+2025-09-26 12:16:23,024 - clan_publisher - INFO - Replaced /static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp -> https://static.clan.com/media/blog/section_53_7_1758885382.jpg
+2025-09-26 12:16:23,025 - clan_publisher - INFO - Replaced /content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp -> https://static.clan.com/media/blog/section_53_7_1758885382.jpg
+2025-09-26 12:16:23,025 - clan_publisher - INFO - Upload HTML saved to: /tmp/upload_html_post_53_1758885383.html
+2025-09-26 12:16:23,025 - clan_publisher - INFO - Final HTML content length: 12877
+2025-09-26 12:16:23,025 - clan_publisher - INFO - ✅ Preview HTML content retrieved. Content length: 12877
+2025-09-26 12:16:23,025 - clan_publisher - INFO - ✅ Header image data ready for clan.com API: {'path': '/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp'}
+2025-09-26 12:16:23,025 - clan_publisher - INFO - Step 4: Creating/updating post on clan.com...
+2025-09-26 12:16:23,025 - clan_publisher - INFO - Is update: True (clan_post_id: 399)
+2025-09-26 12:16:23,025 - clan_publisher - INFO - ✅ Using uploaded header image for thumbnails: /blog/header_53_1758885380.jpg
+2025-09-26 12:16:23,025 - clan_publisher - INFO - Meta data for post 53:
+2025-09-26 12:16:23,025 - clan_publisher - INFO -    meta_title: 'meta_title'
+2025-09-26 12:16:23,025 - clan_publisher - INFO -    meta_tags: 'meta_tags'
+2025-09-26 12:16:23,025 - clan_publisher - INFO -    meta_description: 'meta_description'
+2025-09-26 12:16:23,025 - clan_publisher - INFO - Meta title length: 10
+2025-09-26 12:16:23,025 - clan_publisher - INFO - Meta tags length: 9
+2025-09-26 12:16:23,025 - clan_publisher - INFO - Meta description length: 16
+2025-09-26 12:16:23,025 - clan_publisher - INFO - Using existing URL key from clan.com for update: the-art-of-scottish-storytelling-oral-traditions-and-modern-literature-53-1755653000
+2025-09-26 12:16:23,026 - clan_publisher - INFO - JSON serialization test successful, length: 538
+2025-09-26 12:16:23,026 - clan_publisher - INFO - Sending to https://clan.com/clan/blog_api/editPost
+2025-09-26 12:16:23,026 - clan_publisher - INFO - API data: {'api_user': 'blog', 'api_key': 'AC%7ef2a5A!24bd*E844a83f9F$49a02', 'json_args': '{"post_id": 399, "title": "The Art of Scottish Storytelling: Oral Traditions and Modern Literature", "url_key": "the-art-of-scottish-storytelling-oral-traditions-and-modern-literature-53-1755653000", "short_content": "Discover the captivating tales that have shaped Scotland\'s unique cultural heritage", "status": 2, "categories": [14, 15], "list_thumbnail": "/blog/header_53_1758885380.jpg", "post_thumbnail": "/blog/header_53_1758885380.jpg", "meta_title": "meta_title", "meta_tags": "meta_tags", "meta_description": "meta_description"}'}
+2025-09-26 12:16:23,026 - clan_publisher - INFO - JSON args: {'post_id': 399, 'title': 'The Art of Scottish Storytelling: Oral Traditions and Modern Literature', 'url_key': 'the-art-of-scottish-storytelling-oral-traditions-and-modern-literature-53-1755653000', 'short_content': "Discover the captivating tales that have shaped Scotland's unique cultural heritage", 'status': 2, 'categories': [14, 15], 'list_thumbnail': '/blog/header_53_1758885380.jpg', 'post_thumbnail': '/blog/header_53_1758885380.jpg', 'meta_title': 'meta_title', 'meta_tags': 'meta_tags', 'meta_description': 'meta_description'}
+2025-09-26 12:16:23,026 - clan_publisher - INFO - Field 'post_id': 399 (type: <class 'int'>)
+2025-09-26 12:16:23,026 - clan_publisher - INFO - Field 'title': The Art of Scottish Storytelling: Oral Traditions and Modern Literature (type: <class 'str'>)
+2025-09-26 12:16:23,026 - clan_publisher - INFO - Field 'url_key': the-art-of-scottish-storytelling-oral-traditions-and-modern-literature-53-1755653000 (type: <class 'str'>)
+2025-09-26 12:16:23,026 - clan_publisher - INFO - Field 'short_content': Discover the captivating tales that have shaped Scotland's unique cultural heritage (type: <class 'str'>)
+2025-09-26 12:16:23,026 - clan_publisher - INFO - Field 'status': 2 (type: <class 'int'>)
+2025-09-26 12:16:23,026 - clan_publisher - INFO - Field 'categories': [14, 15] (type: <class 'list'>)
+2025-09-26 12:16:23,026 - clan_publisher - INFO - Field 'list_thumbnail': /blog/header_53_1758885380.jpg (type: <class 'str'>)
+2025-09-26 12:16:23,026 - clan_publisher - INFO - Field 'post_thumbnail': /blog/header_53_1758885380.jpg (type: <class 'str'>)
+2025-09-26 12:16:23,026 - clan_publisher - INFO - Field 'meta_title': meta_title (type: <class 'str'>)
+2025-09-26 12:16:23,026 - clan_publisher - INFO - Field 'meta_tags': meta_tags (type: <class 'str'>)
+2025-09-26 12:16:23,026 - clan_publisher - INFO - Field 'meta_description': meta_description (type: <class 'str'>)
+2025-09-26 12:16:23,026 - clan_publisher - INFO - Updating post: The Art of Scottish Storytelling: Oral Traditions and Modern Literature
+2025-09-26 12:16:23,026 - clan_publisher - INFO - HTML content length: 12877 characters
+2025-09-26 12:16:23,026 - clan_publisher - INFO - HTML file created at: /Users/autojenny/Documents/projects/blog/post_53_1758885383.html
+2025-09-26 12:16:23,027 - clan_publisher - ERROR - Failed to dump API call data: [Errno 13] Permission denied: '/Users/nickfiddes/Code/projects/blog/blog-launchpad/log/clan_api_diagnostic_post_create_update.json'
+2025-09-26 12:16:23,028 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): clan.com:443
+2025-09-26 12:16:23,498 - urllib3.connectionpool - DEBUG - https://clan.com:443 "POST /clan/blog_api/editPost HTTP/1.1" 200 None
+2025-09-26 12:16:23,499 - clan_publisher - INFO - Cleaned up HTML file: /Users/autojenny/Documents/projects/blog/post_53_1758885383.html
+2025-09-26 12:16:23,499 - clan_publisher - INFO - Clan.com API response: {'status': 'success', 'message': 'Post updated: 399'}
+2025-09-26 12:16:23,499 - clan_publisher - INFO - Response status code: 200
+2025-09-26 12:16:23,499 - clan_publisher - INFO - Response headers: {'Server': 'nginx/1.25.4', 'Date': 'Fri, 26 Sep 2025 11:16:23 GMT', 'Content-Type': 'text/html; charset=UTF-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Vary': 'Accept-Encoding', 'set-cookie': 'frontend=f08bb6708950aa88fa5a536fceb74869; expires=Fri, 24 Oct 2025 11:16:23 GMT; Max-Age=2419200; path=/; domain=clan.com; secure; HttpOnly', 'expires': 'Thu, 19 Nov 1981 08:52:00 GMT', 'cache-control': 'no-store, no-cache, must-revalidate', 'pragma': 'no-cache', 'x-frame-options': 'SAMEORIGIN', 'Content-Encoding': 'gzip'}
+2025-09-26 12:16:23,500 - clan_publisher - INFO - Response text: {"status":"success","message":"Post updated: 399"}
+2025-09-26 12:16:23,500 - clan_publisher - INFO - Using existing URL key from clan.com for update: the-art-of-scottish-storytelling-oral-traditions-and-modern-literature-53-1755653000
+2025-09-26 12:16:23,500 - clan_publisher - INFO - Post updated successfully: https://clan.com/blog/the-art-of-scottish-storytelling-oral-traditions-and-modern-literature-53-1755653000
+2025-09-26 12:16:23,501 - clan_publisher - INFO - ✅ Successfully published post 53 to clan.com
+2025-09-26 12:16:23,501 - clan_publisher - INFO - === PUBLISH_TO_CLAN DEBUG END ===
+2025-09-26 12:16:23,501 - blueprints.launchpad - INFO - Publishing result: {'success': True, 'clan_post_id': 399, 'url': 'https://clan.com/blog/the-art-of-scottish-storytelling-oral-traditions-and-modern-literature-53-1755653000'}
+2025-09-26 12:16:23,509 - config.database - INFO - Database connection established
+2025-09-26 12:16:23,517 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:16:23] "POST /launchpad/api/publish/53 HTTP/1.1" 200 -
+2025-09-26 12:16:47,695 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:16:47] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 12:16:47,700 - config.database - INFO - Database connection established
+2025-09-26 12:16:47,711 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:16:47] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 12:17:17,839 - config.database - INFO - Database connection established
+2025-09-26 12:17:17,849 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:17:17] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 12:17:22,487 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:17:22] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 12:18:00,636 - config.database - INFO - Database connection established
+2025-09-26 12:18:00,644 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:18:00] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 12:18:07,049 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:18:07] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 12:18:42,374 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:18:42] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 12:18:57,474 - config.database - INFO - Database connection established
+2025-09-26 12:18:57,480 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:18:57] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 12:19:12,469 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:19:12] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 12:19:27,580 - config.database - INFO - Database connection established
+2025-09-26 12:19:27,591 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:19:27] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 12:19:44,414 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:19:44] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 12:19:57,581 - config.database - INFO - Database connection established
+2025-09-26 12:19:57,594 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:19:57] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 12:20:14,510 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:20:14] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 12:20:27,678 - config.database - INFO - Database connection established
+2025-09-26 12:20:27,687 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:20:27] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 12:20:47,420 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:20:47] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 12:21:14,092 - config.database - INFO - Database connection established
+2025-09-26 12:21:14,101 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:21:14] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 12:21:47,852 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:21:47] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 12:22:20,719 - config.database - INFO - Database connection established
+2025-09-26 12:22:20,731 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:22:20] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 12:22:30,786 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:22:30] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 12:22:54,055 - config.database - INFO - Database connection established
+2025-09-26 12:22:54,065 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:22:54] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 12:23:16,090 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:23:16] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 12:24:54,450 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-launchpad/clan_publisher.py', reloading
+2025-09-26 12:24:54,488 - werkzeug - INFO -  * Restarting with stat
+2025-09-26 12:24:54,701 - werkzeug - WARNING -  * Debugger is active!
+2025-09-26 12:24:54,707 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-26 12:24:56,575 - config.database - INFO - Database connection established
+2025-09-26 12:24:56,579 - config.paths - INFO - PathResolver initialized:
+2025-09-26 12:24:56,579 - config.paths - INFO -   Project root: /Users/autojenny/Documents/projects/blog
+2025-09-26 12:24:56,579 - config.paths - INFO -   Images base: /Users/autojenny/Documents/projects/blog/blog-images
+2025-09-26 12:24:56,579 - config.paths - INFO -   Images static: /Users/autojenny/Documents/projects/blog/blog-images/static
+2025-09-26 12:24:56,579 - config.paths - INFO -   Service URL: http://localhost:5005
+2025-09-26 12:24:56,579 - config.paths - INFO - All paths validated successfully
+2025-09-26 12:24:56,584 - config.database - INFO - Database connection established
+2025-09-26 12:24:56,587 - blueprints.launchpad - INFO - Original created_at: 2025-07-17 14:11:27.027049 (type: <class 'datetime.datetime'>)
+2025-09-26 12:24:56,587 - blueprints.launchpad - INFO - Already datetime object: 2025-07-17 14:11:27.027049
+2025-09-26 12:24:56,593 - config.database - INFO - Database connection established
+2025-09-26 12:24:56,602 - blueprints.launchpad - INFO - === FLASK ENDPOINT DEBUG ===
+2025-09-26 12:24:56,602 - blueprints.launchpad - INFO - Post data keys: ['post_id', 'title', 'subtitle', 'created_at', 'updated_at', 'status', 'slug', 'summary', 'title_choices', 'clan_post_id', 'clan_uploaded_url', 'header_image_id', 'header_image_caption', 'header_image_title', 'header_image_width', 'header_image_height', 'idea_seed', 'intro_blurb', 'main_title', 'cross_promotion_category_id', 'cross_promotion_category_title', 'cross_promotion_product_id', 'cross_promotion_product_title', 'cross_promotion_category_position', 'cross_promotion_product_position', 'cross_promotion_category_widget_html', 'cross_promotion_product_widget_html', 'header_image', 'id', 'cross_promotion']
+2025-09-26 12:24:56,602 - blueprints.launchpad - INFO - Post title: The Art of Scottish Storytelling: Oral Traditions and Modern Literature
+2025-09-26 12:24:56,602 - blueprints.launchpad - INFO - Number of sections: 7
+2025-09-26 12:24:56,602 - blueprints.launchpad - INFO - Section IDs: [710, 711, 712, 714, 713, 715, 716]
+2025-09-26 12:24:56,602 - clan_publisher - INFO - === PUBLISH_TO_CLAN DEBUG START ===
+2025-09-26 12:24:56,602 - clan_publisher - INFO - Post ID: 53
+2025-09-26 12:24:56,607 - config.database - INFO - Database connection established
+2025-09-26 12:24:56,609 - clan_publisher - INFO - Is update: True (clan_post_id: 399)
+2025-09-26 12:24:56,609 - clan_publisher - INFO - Post header_image_id: None
+2025-09-26 12:24:56,609 - clan_publisher - INFO - Post header_image: {'path': '/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp', 'alt_text': 'Header image for The Art of Scottish Storytelling: Oral Traditions and Modern Literature', 'caption': 'Scottish storytelling: Oral traditions and modern literature', 'title': 'Header image for The Art of Scottish Storytelling: Oral Traditions and Modern Literature', 'width': 1200, 'height': 800}
+2025-09-26 12:24:56,609 - clan_publisher - INFO - Using 7 sections passed from endpoint
+2025-09-26 12:24:56,609 - clan_publisher - INFO - Step 0: Finding image paths from file system...
+2025-09-26 12:24:56,609 - clan_publisher - INFO - find_header_image returned: /static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp
+2025-09-26 12:24:56,609 - clan_publisher - INFO - ✅ Set full_post_data['header_image'] = {'path': '/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp'}
+2025-09-26 12:24:56,610 - clan_publisher - INFO - Section 1 (Ancient Celtic Story-telling): image_path = None
+2025-09-26 12:24:56,610 - clan_publisher - INFO - Section 2 (Medieval Period: Recording Stories): image_path = None
+2025-09-26 12:24:56,610 - clan_publisher - INFO - Section 3 (Scottish Literary Masters: Robertson, Barrie, Gaiman): image_path = None
+2025-09-26 12:24:56,610 - clan_publisher - INFO - Section 4 (Evolution of Scottish Story-telling: Modern Era): image_path = None
+2025-09-26 12:24:56,610 - clan_publisher - INFO - Section 5 (Preserving Cultural Traditions through Story-telling): image_path = None
+2025-09-26 12:24:56,610 - clan_publisher - INFO - Section 6 (Impact of Scottish Story-telling on Literature and Culture): image_path = None
+2025-09-26 12:24:56,610 - clan_publisher - INFO - Section 7 (Story-telling in Scotland Today): image_path = None
+2025-09-26 12:24:56,610 - clan_publisher - INFO - Step 1: Processing and uploading images...
+2025-09-26 12:24:56,610 - clan_publisher - INFO - === PROCESS_IMAGES DEBUG START ===
+2025-09-26 12:24:56,610 - clan_publisher - INFO - Post ID: 53
+2025-09-26 12:24:56,610 - clan_publisher - INFO - Post header_image: {'path': '/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp'}
+2025-09-26 12:24:56,610 - clan_publisher - INFO - Post header_image_id: None
+2025-09-26 12:24:56,610 - clan_publisher - INFO - ✅ Found header image: /static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp
+2025-09-26 12:24:56,610 - clan_publisher - INFO - ✅ Header image file exists at: /Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp
+2025-09-26 12:24:56,610 - clan_publisher - INFO - File size: 202908 bytes
+2025-09-26 12:24:56,610 - clan_publisher - INFO - Uploading header image with filename: header_53_1758885896.jpg
+2025-09-26 12:24:56,610 - clan_publisher - INFO - Converting web path '/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp' to file system path '/Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp'
+2025-09-26 12:24:56,611 - clan_publisher - ERROR - Failed to dump API call data: [Errno 13] Permission denied: '/Users/nickfiddes/Code/projects/blog/blog-launchpad/log/clan_api_diagnostic_image_upload.json'
+2025-09-26 12:24:56,611 - clan_publisher - INFO - Uploading image: header_53_1758885896.jpg to https://clan.com/clan/blog_api/uploadImage
+2025-09-26 12:24:56,611 - clan_publisher - INFO - MIME type: image/jpeg
+2025-09-26 12:24:56,611 - clan_publisher - INFO - API data: {'api_user': 'blog', 'api_key': 'AC%7ef2a5A!24bd*E844a83f9F$49a02', 'json_args': '[]'}
+2025-09-26 12:24:56,613 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): clan.com:443
+2025-09-26 12:24:56,875 - urllib3.connectionpool - DEBUG - https://clan.com:443 "POST /clan/blog_api/uploadImage HTTP/1.1" 200 None
+2025-09-26 12:24:56,876 - clan_publisher - INFO - Upload response status: 200
+2025-09-26 12:24:56,876 - clan_publisher - INFO - Upload response headers: {'Server': 'nginx/1.25.4', 'Date': 'Fri, 26 Sep 2025 11:24:56 GMT', 'Content-Type': 'text/html; charset=UTF-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Vary': 'Accept-Encoding', 'set-cookie': 'frontend=3dbf7ffdf732497976a1e1816e4b0372; expires=Fri, 24 Oct 2025 11:24:56 GMT; Max-Age=2419200; path=/; domain=clan.com; secure; HttpOnly', 'expires': 'Thu, 19 Nov 1981 08:52:00 GMT', 'cache-control': 'no-store, no-cache, must-revalidate', 'pragma': 'no-cache', 'x-frame-options': 'SAMEORIGIN', 'Content-Encoding': 'gzip'}
+2025-09-26 12:24:56,876 - clan_publisher - INFO - Upload response text: {"status":"success","message":"File uploaded successfully: https:\/\/static.clan.com\/media\/blog\/header_53_1758885896.jpg"}
+2025-09-26 12:24:56,876 - clan_publisher - INFO - Upload response JSON: {'status': 'success', 'message': 'File uploaded successfully: https://static.clan.com/media/blog/header_53_1758885896.jpg'}
+2025-09-26 12:24:56,876 - clan_publisher - INFO - Image uploaded successfully: https://static.clan.com/media/blog/header_53_1758885896.jpg
+2025-09-26 12:24:56,877 - clan_publisher - INFO - upload_image returned: https://static.clan.com/media/blog/header_53_1758885896.jpg
+2025-09-26 12:24:56,877 - clan_publisher - INFO - ✅ Header image uploaded successfully: /static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp -> https://static.clan.com/media/blog/header_53_1758885896.jpg
+2025-09-26 12:24:56,877 - clan_publisher - INFO - ✅ uploaded_images dictionary now contains: {'/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp': 'https://static.clan.com/media/blog/header_53_1758885896.jpg'}
+2025-09-26 12:24:56,877 - clan_publisher - INFO - Processing 7 sections for images...
+2025-09-26 12:24:56,877 - clan_publisher - INFO - Section 1: No title
+2025-09-26 12:24:56,877 - clan_publisher - INFO - Section image data: {'path': '/static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp', 'title': 'Image for Ancient Celtic Story-telling', 'width': 1200, 'height': 800, 'caption': 'Elder telling tales around ancient fire', 'placeholder': False}
+2025-09-26 12:24:56,877 - clan_publisher - INFO - Processing section image: /static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp
+2025-09-26 12:24:56,877 - clan_publisher - INFO - ✅ Section image file exists at: /Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp
+2025-09-26 12:24:56,877 - clan_publisher - INFO - File size: 231844 bytes
+2025-09-26 12:24:56,877 - clan_publisher - INFO - Uploading section image with filename: section_53_1_1758885896.jpg
+2025-09-26 12:24:56,877 - clan_publisher - INFO - Converting section web path '/static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp' to file system path '/Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp'
+2025-09-26 12:24:56,877 - clan_publisher - ERROR - Failed to dump API call data: [Errno 13] Permission denied: '/Users/nickfiddes/Code/projects/blog/blog-launchpad/log/clan_api_diagnostic_image_upload.json'
+2025-09-26 12:24:56,877 - clan_publisher - INFO - Uploading image: section_53_1_1758885896.jpg to https://clan.com/clan/blog_api/uploadImage
+2025-09-26 12:24:56,877 - clan_publisher - INFO - MIME type: image/jpeg
+2025-09-26 12:24:56,877 - clan_publisher - INFO - API data: {'api_user': 'blog', 'api_key': 'AC%7ef2a5A!24bd*E844a83f9F$49a02', 'json_args': '[]'}
+2025-09-26 12:24:56,878 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): clan.com:443
+2025-09-26 12:24:57,174 - urllib3.connectionpool - DEBUG - https://clan.com:443 "POST /clan/blog_api/uploadImage HTTP/1.1" 200 None
+2025-09-26 12:24:57,175 - clan_publisher - INFO - Upload response status: 200
+2025-09-26 12:24:57,175 - clan_publisher - INFO - Upload response headers: {'Server': 'nginx/1.25.4', 'Date': 'Fri, 26 Sep 2025 11:24:57 GMT', 'Content-Type': 'text/html; charset=UTF-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Vary': 'Accept-Encoding', 'set-cookie': 'frontend=5659982f9f75ee955bb00981d521250a; expires=Fri, 24 Oct 2025 11:24:57 GMT; Max-Age=2419200; path=/; domain=clan.com; secure; HttpOnly', 'expires': 'Thu, 19 Nov 1981 08:52:00 GMT', 'cache-control': 'no-store, no-cache, must-revalidate', 'pragma': 'no-cache', 'x-frame-options': 'SAMEORIGIN', 'Content-Encoding': 'gzip'}
+2025-09-26 12:24:57,175 - clan_publisher - INFO - Upload response text: {"status":"success","message":"File uploaded successfully: https:\/\/static.clan.com\/media\/blog\/section_53_1_1758885896.jpg"}
+2025-09-26 12:24:57,175 - clan_publisher - INFO - Upload response JSON: {'status': 'success', 'message': 'File uploaded successfully: https://static.clan.com/media/blog/section_53_1_1758885896.jpg'}
+2025-09-26 12:24:57,175 - clan_publisher - INFO - Image uploaded successfully: https://static.clan.com/media/blog/section_53_1_1758885896.jpg
+2025-09-26 12:24:57,176 - clan_publisher - INFO - ✅ Section image uploaded: /static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp -> https://static.clan.com/media/blog/section_53_1_1758885896.jpg
+2025-09-26 12:24:57,176 - clan_publisher - INFO - Section 2: No title
+2025-09-26 12:24:57,176 - clan_publisher - INFO - Section image data: {'path': '/static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp', 'title': 'Image for Medieval Period: Recording Stories', 'width': 1200, 'height': 685, 'caption': 'Monk recording tales in illuminated manuscript', 'placeholder': False}
+2025-09-26 12:24:57,176 - clan_publisher - INFO - Processing section image: /static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp
+2025-09-26 12:24:57,176 - clan_publisher - INFO - ✅ Section image file exists at: /Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp
+2025-09-26 12:24:57,176 - clan_publisher - INFO - File size: 254480 bytes
+2025-09-26 12:24:57,176 - clan_publisher - INFO - Uploading section image with filename: section_53_2_1758885897.jpg
+2025-09-26 12:24:57,176 - clan_publisher - INFO - Converting section web path '/static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp' to file system path '/Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp'
+2025-09-26 12:24:57,176 - clan_publisher - ERROR - Failed to dump API call data: [Errno 13] Permission denied: '/Users/nickfiddes/Code/projects/blog/blog-launchpad/log/clan_api_diagnostic_image_upload.json'
+2025-09-26 12:24:57,176 - clan_publisher - INFO - Uploading image: section_53_2_1758885897.jpg to https://clan.com/clan/blog_api/uploadImage
+2025-09-26 12:24:57,176 - clan_publisher - INFO - MIME type: image/jpeg
+2025-09-26 12:24:57,176 - clan_publisher - INFO - API data: {'api_user': 'blog', 'api_key': 'AC%7ef2a5A!24bd*E844a83f9F$49a02', 'json_args': '[]'}
+2025-09-26 12:24:57,178 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): clan.com:443
+2025-09-26 12:24:57,452 - urllib3.connectionpool - DEBUG - https://clan.com:443 "POST /clan/blog_api/uploadImage HTTP/1.1" 200 None
+2025-09-26 12:24:57,453 - clan_publisher - INFO - Upload response status: 200
+2025-09-26 12:24:57,453 - clan_publisher - INFO - Upload response headers: {'Server': 'nginx/1.25.4', 'Date': 'Fri, 26 Sep 2025 11:24:57 GMT', 'Content-Type': 'text/html; charset=UTF-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Vary': 'Accept-Encoding', 'set-cookie': 'frontend=b501a195db4a06d61754e69fa863f27f; expires=Fri, 24 Oct 2025 11:24:57 GMT; Max-Age=2419200; path=/; domain=clan.com; secure; HttpOnly', 'expires': 'Thu, 19 Nov 1981 08:52:00 GMT', 'cache-control': 'no-store, no-cache, must-revalidate', 'pragma': 'no-cache', 'x-frame-options': 'SAMEORIGIN', 'Content-Encoding': 'gzip'}
+2025-09-26 12:24:57,453 - clan_publisher - INFO - Upload response text: {"status":"success","message":"File uploaded successfully: https:\/\/static.clan.com\/media\/blog\/section_53_2_1758885897.jpg"}
+2025-09-26 12:24:57,453 - clan_publisher - INFO - Upload response JSON: {'status': 'success', 'message': 'File uploaded successfully: https://static.clan.com/media/blog/section_53_2_1758885897.jpg'}
+2025-09-26 12:24:57,453 - clan_publisher - INFO - Image uploaded successfully: https://static.clan.com/media/blog/section_53_2_1758885897.jpg
+2025-09-26 12:24:57,454 - clan_publisher - INFO - ✅ Section image uploaded: /static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp -> https://static.clan.com/media/blog/section_53_2_1758885897.jpg
+2025-09-26 12:24:57,454 - clan_publisher - INFO - Section 3: No title
+2025-09-26 12:24:57,454 - clan_publisher - INFO - Section image data: {'path': '/static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp', 'title': 'Image for Scottish Literary Masters: Robertson, Barrie, Gaiman', 'width': 1200, 'height': 800, 'caption': "Three authors: Robertson, Barrie, Gaiman - Scotland's literary gems", 'placeholder': False}
+2025-09-26 12:24:57,454 - clan_publisher - INFO - Processing section image: /static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp
+2025-09-26 12:24:57,454 - clan_publisher - INFO - ✅ Section image file exists at: /Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp
+2025-09-26 12:24:57,454 - clan_publisher - INFO - File size: 209644 bytes
+2025-09-26 12:24:57,454 - clan_publisher - INFO - Uploading section image with filename: section_53_3_1758885897.jpg
+2025-09-26 12:24:57,454 - clan_publisher - INFO - Converting section web path '/static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp' to file system path '/Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp'
+2025-09-26 12:24:57,455 - clan_publisher - ERROR - Failed to dump API call data: [Errno 13] Permission denied: '/Users/nickfiddes/Code/projects/blog/blog-launchpad/log/clan_api_diagnostic_image_upload.json'
+2025-09-26 12:24:57,455 - clan_publisher - INFO - Uploading image: section_53_3_1758885897.jpg to https://clan.com/clan/blog_api/uploadImage
+2025-09-26 12:24:57,455 - clan_publisher - INFO - MIME type: image/jpeg
+2025-09-26 12:24:57,455 - clan_publisher - INFO - API data: {'api_user': 'blog', 'api_key': 'AC%7ef2a5A!24bd*E844a83f9F$49a02', 'json_args': '[]'}
+2025-09-26 12:24:57,456 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): clan.com:443
+2025-09-26 12:24:57,745 - urllib3.connectionpool - DEBUG - https://clan.com:443 "POST /clan/blog_api/uploadImage HTTP/1.1" 200 None
+2025-09-26 12:24:57,745 - clan_publisher - INFO - Upload response status: 200
+2025-09-26 12:24:57,745 - clan_publisher - INFO - Upload response headers: {'Server': 'nginx/1.25.4', 'Date': 'Fri, 26 Sep 2025 11:24:57 GMT', 'Content-Type': 'text/html; charset=UTF-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Vary': 'Accept-Encoding', 'set-cookie': 'frontend=fc14809ee477f5999d7594f5baa58e88; expires=Fri, 24 Oct 2025 11:24:57 GMT; Max-Age=2419200; path=/; domain=clan.com; secure; HttpOnly', 'expires': 'Thu, 19 Nov 1981 08:52:00 GMT', 'cache-control': 'no-store, no-cache, must-revalidate', 'pragma': 'no-cache', 'x-frame-options': 'SAMEORIGIN', 'Content-Encoding': 'gzip'}
+2025-09-26 12:24:57,745 - clan_publisher - INFO - Upload response text: {"status":"success","message":"File uploaded successfully: https:\/\/static.clan.com\/media\/blog\/section_53_3_1758885897.jpg"}
+2025-09-26 12:24:57,745 - clan_publisher - INFO - Upload response JSON: {'status': 'success', 'message': 'File uploaded successfully: https://static.clan.com/media/blog/section_53_3_1758885897.jpg'}
+2025-09-26 12:24:57,746 - clan_publisher - INFO - Image uploaded successfully: https://static.clan.com/media/blog/section_53_3_1758885897.jpg
+2025-09-26 12:24:57,747 - clan_publisher - INFO - ✅ Section image uploaded: /static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp -> https://static.clan.com/media/blog/section_53_3_1758885897.jpg
+2025-09-26 12:24:57,747 - clan_publisher - INFO - Section 4: No title
+2025-09-26 12:24:57,747 - clan_publisher - INFO - Section image data: {'path': '/static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp', 'title': 'Image for Evolution of Scottish Story-telling: Modern Era', 'width': 1200, 'height': 800, 'caption': 'Modern Scottish storytellers engaging audience', 'placeholder': False}
+2025-09-26 12:24:57,747 - clan_publisher - INFO - Processing section image: /static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp
+2025-09-26 12:24:57,747 - clan_publisher - INFO - ✅ Section image file exists at: /Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp
+2025-09-26 12:24:57,747 - clan_publisher - INFO - File size: 258070 bytes
+2025-09-26 12:24:57,747 - clan_publisher - INFO - Uploading section image with filename: section_53_4_1758885897.jpg
+2025-09-26 12:24:57,747 - clan_publisher - INFO - Converting section web path '/static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp' to file system path '/Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp'
+2025-09-26 12:24:57,747 - clan_publisher - ERROR - Failed to dump API call data: [Errno 13] Permission denied: '/Users/nickfiddes/Code/projects/blog/blog-launchpad/log/clan_api_diagnostic_image_upload.json'
+2025-09-26 12:24:57,748 - clan_publisher - INFO - Uploading image: section_53_4_1758885897.jpg to https://clan.com/clan/blog_api/uploadImage
+2025-09-26 12:24:57,748 - clan_publisher - INFO - MIME type: image/jpeg
+2025-09-26 12:24:57,748 - clan_publisher - INFO - API data: {'api_user': 'blog', 'api_key': 'AC%7ef2a5A!24bd*E844a83f9F$49a02', 'json_args': '[]'}
+2025-09-26 12:24:57,750 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): clan.com:443
+2025-09-26 12:24:58,038 - urllib3.connectionpool - DEBUG - https://clan.com:443 "POST /clan/blog_api/uploadImage HTTP/1.1" 200 None
+2025-09-26 12:24:58,038 - clan_publisher - INFO - Upload response status: 200
+2025-09-26 12:24:58,038 - clan_publisher - INFO - Upload response headers: {'Server': 'nginx/1.25.4', 'Date': 'Fri, 26 Sep 2025 11:24:58 GMT', 'Content-Type': 'text/html; charset=UTF-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Vary': 'Accept-Encoding', 'set-cookie': 'frontend=8acec1aaedea95e159a688e1b589fb7f; expires=Fri, 24 Oct 2025 11:24:57 GMT; Max-Age=2419200; path=/; domain=clan.com; secure; HttpOnly', 'expires': 'Thu, 19 Nov 1981 08:52:00 GMT', 'cache-control': 'no-store, no-cache, must-revalidate', 'pragma': 'no-cache', 'x-frame-options': 'SAMEORIGIN', 'Content-Encoding': 'gzip'}
+2025-09-26 12:24:58,038 - clan_publisher - INFO - Upload response text: {"status":"success","message":"File uploaded successfully: https:\/\/static.clan.com\/media\/blog\/section_53_4_1758885897.jpg"}
+2025-09-26 12:24:58,038 - clan_publisher - INFO - Upload response JSON: {'status': 'success', 'message': 'File uploaded successfully: https://static.clan.com/media/blog/section_53_4_1758885897.jpg'}
+2025-09-26 12:24:58,038 - clan_publisher - INFO - Image uploaded successfully: https://static.clan.com/media/blog/section_53_4_1758885897.jpg
+2025-09-26 12:24:58,039 - clan_publisher - INFO - ✅ Section image uploaded: /static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp -> https://static.clan.com/media/blog/section_53_4_1758885897.jpg
+2025-09-26 12:24:58,039 - clan_publisher - INFO - Section 5: No title
+2025-09-26 12:24:58,039 - clan_publisher - INFO - Section image data: {'path': '/static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp', 'title': 'Image for Preserving Cultural Traditions through Story-telling', 'width': 1200, 'height': 800, 'caption': 'Elder sharing tales, preserving culture', 'placeholder': False}
+2025-09-26 12:24:58,039 - clan_publisher - INFO - Processing section image: /static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp
+2025-09-26 12:24:58,039 - clan_publisher - INFO - ✅ Section image file exists at: /Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp
+2025-09-26 12:24:58,039 - clan_publisher - INFO - File size: 245444 bytes
+2025-09-26 12:24:58,039 - clan_publisher - INFO - Uploading section image with filename: section_53_5_1758885898.jpg
+2025-09-26 12:24:58,039 - clan_publisher - INFO - Converting section web path '/static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp' to file system path '/Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp'
+2025-09-26 12:24:58,040 - clan_publisher - ERROR - Failed to dump API call data: [Errno 13] Permission denied: '/Users/nickfiddes/Code/projects/blog/blog-launchpad/log/clan_api_diagnostic_image_upload.json'
+2025-09-26 12:24:58,040 - clan_publisher - INFO - Uploading image: section_53_5_1758885898.jpg to https://clan.com/clan/blog_api/uploadImage
+2025-09-26 12:24:58,040 - clan_publisher - INFO - MIME type: image/jpeg
+2025-09-26 12:24:58,040 - clan_publisher - INFO - API data: {'api_user': 'blog', 'api_key': 'AC%7ef2a5A!24bd*E844a83f9F$49a02', 'json_args': '[]'}
+2025-09-26 12:24:58,040 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): clan.com:443
+2025-09-26 12:24:58,338 - urllib3.connectionpool - DEBUG - https://clan.com:443 "POST /clan/blog_api/uploadImage HTTP/1.1" 200 None
+2025-09-26 12:24:58,338 - clan_publisher - INFO - Upload response status: 200
+2025-09-26 12:24:58,339 - clan_publisher - INFO - Upload response headers: {'Server': 'nginx/1.25.4', 'Date': 'Fri, 26 Sep 2025 11:24:58 GMT', 'Content-Type': 'text/html; charset=UTF-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Vary': 'Accept-Encoding', 'set-cookie': 'frontend=16afd8cc5fbf4c024d2813ddef44fc0d; expires=Fri, 24 Oct 2025 11:24:58 GMT; Max-Age=2419200; path=/; domain=clan.com; secure; HttpOnly', 'expires': 'Thu, 19 Nov 1981 08:52:00 GMT', 'cache-control': 'no-store, no-cache, must-revalidate', 'pragma': 'no-cache', 'x-frame-options': 'SAMEORIGIN', 'Content-Encoding': 'gzip'}
+2025-09-26 12:24:58,339 - clan_publisher - INFO - Upload response text: {"status":"success","message":"File uploaded successfully: https:\/\/static.clan.com\/media\/blog\/section_53_5_1758885898.jpg"}
+2025-09-26 12:24:58,339 - clan_publisher - INFO - Upload response JSON: {'status': 'success', 'message': 'File uploaded successfully: https://static.clan.com/media/blog/section_53_5_1758885898.jpg'}
+2025-09-26 12:24:58,339 - clan_publisher - INFO - Image uploaded successfully: https://static.clan.com/media/blog/section_53_5_1758885898.jpg
+2025-09-26 12:24:58,340 - clan_publisher - INFO - ✅ Section image uploaded: /static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp -> https://static.clan.com/media/blog/section_53_5_1758885898.jpg
+2025-09-26 12:24:58,340 - clan_publisher - INFO - Section 6: No title
+2025-09-26 12:24:58,340 - clan_publisher - INFO - Section image data: {'path': '/static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp', 'title': 'Image for Impact of Scottish Story-telling on Literature and Culture', 'width': 1200, 'height': 800, 'caption': 'Scottish tales shaping literature, culture', 'placeholder': False}
+2025-09-26 12:24:58,340 - clan_publisher - INFO - Processing section image: /static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp
+2025-09-26 12:24:58,340 - clan_publisher - INFO - ✅ Section image file exists at: /Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp
+2025-09-26 12:24:58,340 - clan_publisher - INFO - File size: 170880 bytes
+2025-09-26 12:24:58,340 - clan_publisher - INFO - Uploading section image with filename: section_53_6_1758885898.jpg
+2025-09-26 12:24:58,341 - clan_publisher - INFO - Converting section web path '/static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp' to file system path '/Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp'
+2025-09-26 12:24:58,341 - clan_publisher - ERROR - Failed to dump API call data: [Errno 13] Permission denied: '/Users/nickfiddes/Code/projects/blog/blog-launchpad/log/clan_api_diagnostic_image_upload.json'
+2025-09-26 12:24:58,341 - clan_publisher - INFO - Uploading image: section_53_6_1758885898.jpg to https://clan.com/clan/blog_api/uploadImage
+2025-09-26 12:24:58,341 - clan_publisher - INFO - MIME type: image/jpeg
+2025-09-26 12:24:58,341 - clan_publisher - INFO - API data: {'api_user': 'blog', 'api_key': 'AC%7ef2a5A!24bd*E844a83f9F$49a02', 'json_args': '[]'}
+2025-09-26 12:24:58,343 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): clan.com:443
+2025-09-26 12:24:58,657 - urllib3.connectionpool - DEBUG - https://clan.com:443 "POST /clan/blog_api/uploadImage HTTP/1.1" 200 None
+2025-09-26 12:24:58,658 - clan_publisher - INFO - Upload response status: 200
+2025-09-26 12:24:58,658 - clan_publisher - INFO - Upload response headers: {'Server': 'nginx/1.25.4', 'Date': 'Fri, 26 Sep 2025 11:24:58 GMT', 'Content-Type': 'text/html; charset=UTF-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Vary': 'Accept-Encoding', 'set-cookie': 'frontend=566883cc039cff22ceffa5c1e7b7fc83; expires=Fri, 24 Oct 2025 11:24:58 GMT; Max-Age=2419200; path=/; domain=clan.com; secure; HttpOnly', 'expires': 'Thu, 19 Nov 1981 08:52:00 GMT', 'cache-control': 'no-store, no-cache, must-revalidate', 'pragma': 'no-cache', 'x-frame-options': 'SAMEORIGIN', 'Content-Encoding': 'gzip'}
+2025-09-26 12:24:58,658 - clan_publisher - INFO - Upload response text: {"status":"success","message":"File uploaded successfully: https:\/\/static.clan.com\/media\/blog\/section_53_6_1758885898.jpg"}
+2025-09-26 12:24:58,658 - clan_publisher - INFO - Upload response JSON: {'status': 'success', 'message': 'File uploaded successfully: https://static.clan.com/media/blog/section_53_6_1758885898.jpg'}
+2025-09-26 12:24:58,658 - clan_publisher - INFO - Image uploaded successfully: https://static.clan.com/media/blog/section_53_6_1758885898.jpg
+2025-09-26 12:24:58,659 - clan_publisher - INFO - ✅ Section image uploaded: /static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp -> https://static.clan.com/media/blog/section_53_6_1758885898.jpg
+2025-09-26 12:24:58,659 - clan_publisher - INFO - Section 7: No title
+2025-09-26 12:24:58,659 - clan_publisher - INFO - Section image data: {'path': '/static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp', 'title': 'Image for Story-telling in Scotland Today', 'width': 1200, 'height': 685, 'caption': 'Modern storytellers around Scottish fireplace', 'placeholder': False}
+2025-09-26 12:24:58,659 - clan_publisher - INFO - Processing section image: /static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp
+2025-09-26 12:24:58,659 - clan_publisher - INFO - ✅ Section image file exists at: /Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp
+2025-09-26 12:24:58,659 - clan_publisher - INFO - File size: 188978 bytes
+2025-09-26 12:24:58,659 - clan_publisher - INFO - Uploading section image with filename: section_53_7_1758885898.jpg
+2025-09-26 12:24:58,659 - clan_publisher - INFO - Converting section web path '/static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp' to file system path '/Users/autojenny/Documents/projects/blog/blog-images/static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp'
+2025-09-26 12:24:58,660 - clan_publisher - ERROR - Failed to dump API call data: [Errno 13] Permission denied: '/Users/nickfiddes/Code/projects/blog/blog-launchpad/log/clan_api_diagnostic_image_upload.json'
+2025-09-26 12:24:58,660 - clan_publisher - INFO - Uploading image: section_53_7_1758885898.jpg to https://clan.com/clan/blog_api/uploadImage
+2025-09-26 12:24:58,660 - clan_publisher - INFO - MIME type: image/jpeg
+2025-09-26 12:24:58,660 - clan_publisher - INFO - API data: {'api_user': 'blog', 'api_key': 'AC%7ef2a5A!24bd*E844a83f9F$49a02', 'json_args': '[]'}
+2025-09-26 12:24:58,661 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): clan.com:443
+2025-09-26 12:24:58,947 - urllib3.connectionpool - DEBUG - https://clan.com:443 "POST /clan/blog_api/uploadImage HTTP/1.1" 200 None
+2025-09-26 12:24:58,948 - clan_publisher - INFO - Upload response status: 200
+2025-09-26 12:24:58,948 - clan_publisher - INFO - Upload response headers: {'Server': 'nginx/1.25.4', 'Date': 'Fri, 26 Sep 2025 11:24:58 GMT', 'Content-Type': 'text/html; charset=UTF-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Vary': 'Accept-Encoding', 'set-cookie': 'frontend=dcb64828c7ebd3e3fd3618c248c4c8d2; expires=Fri, 24 Oct 2025 11:24:58 GMT; Max-Age=2419200; path=/; domain=clan.com; secure; HttpOnly', 'expires': 'Thu, 19 Nov 1981 08:52:00 GMT', 'cache-control': 'no-store, no-cache, must-revalidate', 'pragma': 'no-cache', 'x-frame-options': 'SAMEORIGIN', 'Content-Encoding': 'gzip'}
+2025-09-26 12:24:58,948 - clan_publisher - INFO - Upload response text: {"status":"success","message":"File uploaded successfully: https:\/\/static.clan.com\/media\/blog\/section_53_7_1758885898.jpg"}
+2025-09-26 12:24:58,948 - clan_publisher - INFO - Upload response JSON: {'status': 'success', 'message': 'File uploaded successfully: https://static.clan.com/media/blog/section_53_7_1758885898.jpg'}
+2025-09-26 12:24:58,948 - clan_publisher - INFO - Image uploaded successfully: https://static.clan.com/media/blog/section_53_7_1758885898.jpg
+2025-09-26 12:24:58,949 - clan_publisher - INFO - ✅ Section image uploaded: /static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp -> https://static.clan.com/media/blog/section_53_7_1758885898.jpg
+2025-09-26 12:24:58,949 - clan_publisher - INFO - === PROCESS_IMAGES DEBUG END ===
+2025-09-26 12:24:58,949 - clan_publisher - INFO - Final uploaded_images dictionary: {'/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp': 'https://static.clan.com/media/blog/header_53_1758885896.jpg', '/static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp': 'https://static.clan.com/media/blog/section_53_1_1758885896.jpg', '/static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp': 'https://static.clan.com/media/blog/section_53_2_1758885897.jpg', '/static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp': 'https://static.clan.com/media/blog/section_53_3_1758885897.jpg', '/static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp': 'https://static.clan.com/media/blog/section_53_4_1758885897.jpg', '/static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp': 'https://static.clan.com/media/blog/section_53_5_1758885898.jpg', '/static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp': 'https://static.clan.com/media/blog/section_53_6_1758885898.jpg', '/static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp': 'https://static.clan.com/media/blog/section_53_7_1758885898.jpg'}
+2025-09-26 12:24:58,949 - clan_publisher - INFO - Final uploaded_images count: 8
+2025-09-26 12:24:58,956 - config.database - INFO - Database connection established
+2025-09-26 12:24:58,962 - clan_publisher - INFO - ✅ Saved image mapping: /static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp -> https://static.clan.com/media/blog/header_53_1758885896.jpg
+2025-09-26 12:24:58,964 - clan_publisher - INFO - ✅ Saved image mapping: /static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp -> https://static.clan.com/media/blog/section_53_1_1758885896.jpg
+2025-09-26 12:24:58,964 - clan_publisher - INFO - ✅ Saved image mapping: /static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp -> https://static.clan.com/media/blog/section_53_2_1758885897.jpg
+2025-09-26 12:24:58,965 - clan_publisher - INFO - ✅ Saved image mapping: /static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp -> https://static.clan.com/media/blog/section_53_3_1758885897.jpg
+2025-09-26 12:24:58,966 - clan_publisher - INFO - ✅ Saved image mapping: /static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp -> https://static.clan.com/media/blog/section_53_4_1758885897.jpg
+2025-09-26 12:24:58,966 - clan_publisher - INFO - ✅ Saved image mapping: /static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp -> https://static.clan.com/media/blog/section_53_5_1758885898.jpg
+2025-09-26 12:24:58,967 - clan_publisher - INFO - ✅ Saved image mapping: /static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp -> https://static.clan.com/media/blog/section_53_6_1758885898.jpg
+2025-09-26 12:24:58,967 - clan_publisher - INFO - ✅ Saved image mapping: /static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp -> https://static.clan.com/media/blog/section_53_7_1758885898.jpg
+2025-09-26 12:24:58,968 - clan_publisher - INFO - ✅ Saved 8 image mappings to database
+2025-09-26 12:24:58,969 - clan_publisher - INFO - ✅ Image mappings transaction committed
+2025-09-26 12:24:58,969 - clan_publisher - INFO - ✅ Image processing completed. Uploaded 8 images.
+2025-09-26 12:24:58,969 - clan_publisher - INFO - uploaded_images dictionary: {'/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp': 'https://static.clan.com/media/blog/header_53_1758885896.jpg', '/static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp': 'https://static.clan.com/media/blog/section_53_1_1758885896.jpg', '/static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp': 'https://static.clan.com/media/blog/section_53_2_1758885897.jpg', '/static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp': 'https://static.clan.com/media/blog/section_53_3_1758885897.jpg', '/static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp': 'https://static.clan.com/media/blog/section_53_4_1758885897.jpg', '/static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp': 'https://static.clan.com/media/blog/section_53_5_1758885898.jpg', '/static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp': 'https://static.clan.com/media/blog/section_53_6_1758885898.jpg', '/static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp': 'https://static.clan.com/media/blog/section_53_7_1758885898.jpg'}
+2025-09-26 12:24:58,969 - clan_publisher - INFO - Step 2: Mapping cross-promotion data...
+2025-09-26 12:24:58,969 - clan_publisher - INFO - ✅ Mapped cross-promotion data: category_id=39, title='Home Accessories'
+2025-09-26 12:24:58,969 - clan_publisher - INFO - ✅ Product widget: {{widget type="swcatalog/widget_crossSell_product" product_id="690" title="Related Products"}}
+2025-09-26 12:24:58,969 - clan_publisher - INFO - ✅ Category widget: {{widget type="swcatalog/widget_crossSell_category" category_id="39" title="Related Department"}}
+2025-09-26 12:24:58,969 - clan_publisher - INFO - Step 3: Rendering HTML content...
+2025-09-26 12:24:58,984 - clan_publisher - INFO - Translating image paths to clan.com URLs...
+2025-09-26 12:24:58,984 - clan_publisher - INFO - Uploaded images mapping: {'/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp': 'https://static.clan.com/media/blog/header_53_1758885896.jpg', '/static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp': 'https://static.clan.com/media/blog/section_53_1_1758885896.jpg', '/static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp': 'https://static.clan.com/media/blog/section_53_2_1758885897.jpg', '/static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp': 'https://static.clan.com/media/blog/section_53_3_1758885897.jpg', '/static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp': 'https://static.clan.com/media/blog/section_53_4_1758885897.jpg', '/static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp': 'https://static.clan.com/media/blog/section_53_5_1758885898.jpg', '/static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp': 'https://static.clan.com/media/blog/section_53_6_1758885898.jpg', '/static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp': 'https://static.clan.com/media/blog/section_53_7_1758885898.jpg'}
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Added relative path mapping: /content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp -> https://static.clan.com/media/blog/header_53_1758885896.jpg
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Added relative path mapping: /content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp -> https://static.clan.com/media/blog/section_53_1_1758885896.jpg
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Added relative path mapping: /content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp -> https://static.clan.com/media/blog/section_53_2_1758885897.jpg
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Added relative path mapping: /content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp -> https://static.clan.com/media/blog/section_53_3_1758885897.jpg
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Added relative path mapping: /content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp -> https://static.clan.com/media/blog/section_53_4_1758885897.jpg
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Added relative path mapping: /content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp -> https://static.clan.com/media/blog/section_53_5_1758885898.jpg
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Added relative path mapping: /content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp -> https://static.clan.com/media/blog/section_53_6_1758885898.jpg
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Added relative path mapping: /content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp -> https://static.clan.com/media/blog/section_53_7_1758885898.jpg
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Final path mapping: {'/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp': 'https://static.clan.com/media/blog/header_53_1758885896.jpg', '/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp': 'https://static.clan.com/media/blog/header_53_1758885896.jpg', '/static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp': 'https://static.clan.com/media/blog/section_53_1_1758885896.jpg', '/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp': 'https://static.clan.com/media/blog/section_53_1_1758885896.jpg', '/static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp': 'https://static.clan.com/media/blog/section_53_2_1758885897.jpg', '/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp': 'https://static.clan.com/media/blog/section_53_2_1758885897.jpg', '/static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp': 'https://static.clan.com/media/blog/section_53_3_1758885897.jpg', '/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp': 'https://static.clan.com/media/blog/section_53_3_1758885897.jpg', '/static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp': 'https://static.clan.com/media/blog/section_53_4_1758885897.jpg', '/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp': 'https://static.clan.com/media/blog/section_53_4_1758885897.jpg', '/static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp': 'https://static.clan.com/media/blog/section_53_5_1758885898.jpg', '/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp': 'https://static.clan.com/media/blog/section_53_5_1758885898.jpg', '/static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp': 'https://static.clan.com/media/blog/section_53_6_1758885898.jpg', '/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp': 'https://static.clan.com/media/blog/section_53_6_1758885898.jpg', '/static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp': 'https://static.clan.com/media/blog/section_53_7_1758885898.jpg', '/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp': 'https://static.clan.com/media/blog/section_53_7_1758885898.jpg'}
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Replaced /static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp -> https://static.clan.com/media/blog/header_53_1758885896.jpg
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Replaced /content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp -> https://static.clan.com/media/blog/header_53_1758885896.jpg
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Replaced /static/content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp -> https://static.clan.com/media/blog/section_53_1_1758885896.jpg
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Replaced /content/posts/53/sections/710/watermarked/ancient_celtic_story_telling.webp -> https://static.clan.com/media/blog/section_53_1_1758885896.jpg
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Replaced /static/content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp -> https://static.clan.com/media/blog/section_53_2_1758885897.jpg
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Replaced /content/posts/53/sections/711/watermarked/medieval_period_recording_stories.webp -> https://static.clan.com/media/blog/section_53_2_1758885897.jpg
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Replaced /static/content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp -> https://static.clan.com/media/blog/section_53_3_1758885897.jpg
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Replaced /content/posts/53/sections/712/watermarked/scottish_literary_masters_robertson_barrie_gaiman.webp -> https://static.clan.com/media/blog/section_53_3_1758885897.jpg
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Replaced /static/content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp -> https://static.clan.com/media/blog/section_53_4_1758885897.jpg
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Replaced /content/posts/53/sections/714/watermarked/evolution_of_scottish_story_telling_modern_era.webp -> https://static.clan.com/media/blog/section_53_4_1758885897.jpg
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Replaced /static/content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp -> https://static.clan.com/media/blog/section_53_5_1758885898.jpg
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Replaced /content/posts/53/sections/713/watermarked/preserving_cultural_traditions_through_story_telli.webp -> https://static.clan.com/media/blog/section_53_5_1758885898.jpg
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Replaced /static/content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp -> https://static.clan.com/media/blog/section_53_6_1758885898.jpg
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Replaced /content/posts/53/sections/715/watermarked/impact_of_scottish_story_telling_on_literature_and.webp -> https://static.clan.com/media/blog/section_53_6_1758885898.jpg
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Replaced /static/content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp -> https://static.clan.com/media/blog/section_53_7_1758885898.jpg
+2025-09-26 12:24:58,985 - clan_publisher - INFO - Replaced /content/posts/53/sections/716/watermarked/story_telling_in_scotland_today.webp -> https://static.clan.com/media/blog/section_53_7_1758885898.jpg
+2025-09-26 12:24:58,986 - clan_publisher - INFO - Upload HTML saved to: /tmp/upload_html_post_53_1758885898.html
+2025-09-26 12:24:58,986 - clan_publisher - INFO - Final HTML content length: 12877
+2025-09-26 12:24:58,986 - clan_publisher - INFO - ✅ Preview HTML content retrieved. Content length: 12877
+2025-09-26 12:24:58,986 - clan_publisher - INFO - ✅ Header image data ready for clan.com API: {'path': '/static/content/posts/53/header/watermarked/the_art_of_scottish_storytelling_oral_traditions_a.webp'}
+2025-09-26 12:24:58,986 - clan_publisher - INFO - Step 4: Creating/updating post on clan.com...
+2025-09-26 12:24:58,986 - clan_publisher - INFO - Is update: True (clan_post_id: 399)
+2025-09-26 12:24:58,986 - clan_publisher - INFO - ✅ Using uploaded header image for thumbnails: /blog/header_53_1758885896.jpg
+2025-09-26 12:24:58,986 - clan_publisher - INFO - Meta data for post 53:
+2025-09-26 12:24:58,986 - clan_publisher - INFO -    meta_title: 'meta_title'
+2025-09-26 12:24:58,986 - clan_publisher - INFO -    meta_tags: 'meta_tags'
+2025-09-26 12:24:58,986 - clan_publisher - INFO -    meta_description: 'meta_description'
+2025-09-26 12:24:58,986 - clan_publisher - INFO - Meta title length: 10
+2025-09-26 12:24:58,986 - clan_publisher - INFO - Meta tags length: 9
+2025-09-26 12:24:58,986 - clan_publisher - INFO - Meta description length: 16
+2025-09-26 12:24:58,986 - clan_publisher - INFO - Using existing URL key from clan.com for update: the-art-of-scottish-storytelling-oral-traditions-and-modern-literature-53-1755653000
+2025-09-26 12:24:58,986 - clan_publisher - INFO - JSON serialization test successful, length: 538
+2025-09-26 12:24:58,986 - clan_publisher - INFO - Sending to https://clan.com/clan/blog_api/editPost
+2025-09-26 12:24:58,986 - clan_publisher - INFO - API data: {'api_user': 'blog', 'api_key': 'AC%7ef2a5A!24bd*E844a83f9F$49a02', 'json_args': '{"post_id": 399, "title": "The Art of Scottish Storytelling: Oral Traditions and Modern Literature", "url_key": "the-art-of-scottish-storytelling-oral-traditions-and-modern-literature-53-1755653000", "short_content": "Discover the captivating tales that have shaped Scotland\'s unique cultural heritage", "status": 2, "categories": [14, 15], "list_thumbnail": "/blog/header_53_1758885896.jpg", "post_thumbnail": "/blog/header_53_1758885896.jpg", "meta_title": "meta_title", "meta_tags": "meta_tags", "meta_description": "meta_description"}'}
+2025-09-26 12:24:58,986 - clan_publisher - INFO - JSON args: {'post_id': 399, 'title': 'The Art of Scottish Storytelling: Oral Traditions and Modern Literature', 'url_key': 'the-art-of-scottish-storytelling-oral-traditions-and-modern-literature-53-1755653000', 'short_content': "Discover the captivating tales that have shaped Scotland's unique cultural heritage", 'status': 2, 'categories': [14, 15], 'list_thumbnail': '/blog/header_53_1758885896.jpg', 'post_thumbnail': '/blog/header_53_1758885896.jpg', 'meta_title': 'meta_title', 'meta_tags': 'meta_tags', 'meta_description': 'meta_description'}
+2025-09-26 12:24:58,986 - clan_publisher - INFO - Field 'post_id': 399 (type: <class 'int'>)
+2025-09-26 12:24:58,987 - clan_publisher - INFO - Field 'title': The Art of Scottish Storytelling: Oral Traditions and Modern Literature (type: <class 'str'>)
+2025-09-26 12:24:58,987 - clan_publisher - INFO - Field 'url_key': the-art-of-scottish-storytelling-oral-traditions-and-modern-literature-53-1755653000 (type: <class 'str'>)
+2025-09-26 12:24:58,987 - clan_publisher - INFO - Field 'short_content': Discover the captivating tales that have shaped Scotland's unique cultural heritage (type: <class 'str'>)
+2025-09-26 12:24:58,987 - clan_publisher - INFO - Field 'status': 2 (type: <class 'int'>)
+2025-09-26 12:24:58,987 - clan_publisher - INFO - Field 'categories': [14, 15] (type: <class 'list'>)
+2025-09-26 12:24:58,987 - clan_publisher - INFO - Field 'list_thumbnail': /blog/header_53_1758885896.jpg (type: <class 'str'>)
+2025-09-26 12:24:58,987 - clan_publisher - INFO - Field 'post_thumbnail': /blog/header_53_1758885896.jpg (type: <class 'str'>)
+2025-09-26 12:24:58,987 - clan_publisher - INFO - Field 'meta_title': meta_title (type: <class 'str'>)
+2025-09-26 12:24:58,987 - clan_publisher - INFO - Field 'meta_tags': meta_tags (type: <class 'str'>)
+2025-09-26 12:24:58,987 - clan_publisher - INFO - Field 'meta_description': meta_description (type: <class 'str'>)
+2025-09-26 12:24:58,987 - clan_publisher - INFO - Updating post: The Art of Scottish Storytelling: Oral Traditions and Modern Literature
+2025-09-26 12:24:58,987 - clan_publisher - INFO - HTML content length: 12877 characters
+2025-09-26 12:24:58,987 - clan_publisher - INFO - HTML file created at: /Users/autojenny/Documents/projects/blog/post_53_1758885898.html
+2025-09-26 12:24:58,987 - clan_publisher - INFO - Added header image file: the_art_of_scottish_storytelling_oral_traditions_a.webp
+2025-09-26 12:24:58,987 - clan_publisher - ERROR - Failed to dump API call data: [Errno 13] Permission denied: '/Users/nickfiddes/Code/projects/blog/blog-launchpad/log/clan_api_diagnostic_post_create_update.json'
+2025-09-26 12:24:58,988 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): clan.com:443
+2025-09-26 12:24:59,539 - urllib3.connectionpool - DEBUG - https://clan.com:443 "POST /clan/blog_api/editPost HTTP/1.1" 200 None
+2025-09-26 12:24:59,540 - clan_publisher - INFO - Cleaned up HTML file: /Users/autojenny/Documents/projects/blog/post_53_1758885898.html
+2025-09-26 12:24:59,540 - clan_publisher - INFO - Clan.com API response: {'status': 'success', 'message': 'Post updated: 399'}
+2025-09-26 12:24:59,540 - clan_publisher - INFO - Response status code: 200
+2025-09-26 12:24:59,540 - clan_publisher - INFO - Response headers: {'Server': 'nginx/1.25.4', 'Date': 'Fri, 26 Sep 2025 11:24:59 GMT', 'Content-Type': 'text/html; charset=UTF-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Vary': 'Accept-Encoding', 'set-cookie': 'frontend=846571ef727aefa97a98120da195ff85; expires=Fri, 24 Oct 2025 11:24:59 GMT; Max-Age=2419200; path=/; domain=clan.com; secure; HttpOnly', 'expires': 'Thu, 19 Nov 1981 08:52:00 GMT', 'cache-control': 'no-store, no-cache, must-revalidate', 'pragma': 'no-cache', 'x-frame-options': 'SAMEORIGIN', 'Content-Encoding': 'gzip'}
+2025-09-26 12:24:59,540 - clan_publisher - INFO - Response text: {"status":"success","message":"Post updated: 399"}
+2025-09-26 12:24:59,540 - clan_publisher - INFO - Using existing URL key from clan.com for update: the-art-of-scottish-storytelling-oral-traditions-and-modern-literature-53-1755653000
+2025-09-26 12:24:59,540 - clan_publisher - INFO - Post updated successfully: https://clan.com/blog/the-art-of-scottish-storytelling-oral-traditions-and-modern-literature-53-1755653000
+2025-09-26 12:24:59,541 - clan_publisher - INFO - ✅ Successfully published post 53 to clan.com
+2025-09-26 12:24:59,541 - clan_publisher - INFO - === PUBLISH_TO_CLAN DEBUG END ===
+2025-09-26 12:24:59,542 - blueprints.launchpad - INFO - Publishing result: {'success': True, 'clan_post_id': 399, 'url': 'https://clan.com/blog/the-art-of-scottish-storytelling-oral-traditions-and-modern-literature-53-1755653000'}
+2025-09-26 12:24:59,548 - config.database - INFO - Database connection established
+2025-09-26 12:24:59,556 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 12:24:59] "POST /launchpad/api/publish/53 HTTP/1.1" 200 -

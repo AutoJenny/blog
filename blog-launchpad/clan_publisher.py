@@ -763,14 +763,37 @@ class ClanPublisher:
                 logger.info(f"HTML content length: {len(html_content)} characters")
                 logger.info(f"HTML file created at: {html_filepath}")
                 
-                # Send the request with the actual HTML file content
-                with open(html_filepath, 'rb') as html_file:
-                    files = {'html_file': (html_filename, html_file, 'text/html')}
-                    
-                    # DIAGNOSTIC LOGGING: Dump exact API data being sent
-                    self._dump_api_call('post_create_update', endpoint, api_data, files, html_filename, json_args, html_content)
-                    
-                    response = requests.post(endpoint, data=api_data, files=files, timeout=15)
+                # Send the request with the actual HTML file content and header image
+                files = {'html_file': (html_filename, open(html_filepath, 'rb'), 'text/html')}
+                
+                # Add header image as file upload if available
+                header_image_path = None
+                if uploaded_images:
+                    # Find the header image in uploaded_images
+                    for local_path, clan_url in uploaded_images.items():
+                        if 'header' in local_path:
+                            # Convert clan URL back to local path for file upload
+                            header_image_path = local_path
+                            break
+                
+                if header_image_path:
+                    # Convert web path to filesystem path
+                    from config.paths import path_resolver
+                    fs_header_path = path_resolver.convert_web_path_to_filesystem(header_image_path)
+                    if os.path.exists(fs_header_path):
+                        header_filename = os.path.basename(fs_header_path)
+                        files['header_image'] = (header_filename, open(fs_header_path, 'rb'), 'image/jpeg')
+                        logger.info(f"Added header image file: {header_filename}")
+                
+                # DIAGNOSTIC LOGGING: Dump exact API data being sent
+                self._dump_api_call('post_create_update', endpoint, api_data, files, html_filename, json_args, html_content)
+                
+                response = requests.post(endpoint, data=api_data, files=files, timeout=15)
+                
+                # Close file handles
+                for file_tuple in files.values():
+                    if hasattr(file_tuple[1], 'close'):
+                        file_tuple[1].close()
                 
             finally:
                 # Clean up the HTML file
