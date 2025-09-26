@@ -1440,6 +1440,46 @@ def get_social_media_timeline():
         logger.error(f"Error in get_social_media_timeline: {e}")
         return jsonify({'status': 'error', 'error': str(e)}), 500
 
+@bp.route('/api/queue/update-status', methods=['POST'])
+def update_queue_item_status():
+    """Update the status of a queue item."""
+    try:
+        data = request.get_json()
+        item_id = data.get('item_id')
+        new_status = data.get('status')
+        
+        if not item_id or not new_status:
+            return jsonify({'success': False, 'error': 'Missing item_id or status'}), 400
+        
+        # Validate status
+        valid_statuses = ['ready', 'published', 'pending', 'cancelled']
+        if new_status not in valid_statuses:
+            return jsonify({'success': False, 'error': f'Invalid status. Must be one of: {valid_statuses}'}), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Update the status
+            cursor.execute("""
+                UPDATE posting_queue 
+                SET status = %s, updated_at = NOW()
+                WHERE id = %s
+            """, (new_status, item_id))
+            
+            if cursor.rowcount == 0:
+                return jsonify({'success': False, 'error': 'Queue item not found'}), 404
+            
+            logger.info(f"Updated queue item {item_id} status to {new_status}")
+            
+            return jsonify({
+                'success': True,
+                'message': f'Status updated to {new_status}',
+                'item_id': item_id,
+                'new_status': new_status
+            })
+            
+    except Exception as e:
+        logger.error(f"Error updating queue item status: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @bp.route('/api/syndication/facebook/credentials', methods=['GET', 'POST'])
 def facebook_credentials():
     """Get or save Facebook API credentials."""
