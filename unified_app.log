@@ -24428,3 +24428,91 @@ KeyError: 'id'
 2025-09-26 13:38:37,843 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:38:37] "GET /launchpad/api/queue HTTP/1.1" 200 -
 2025-09-26 13:38:38,225 - config.database - INFO - Database connection established
 2025-09-26 13:38:38,232 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:38:38] "GET /launchpad/api/social-media/timeline HTTP/1.1" 200 -
+2025-09-26 13:39:21,198 - config.database - INFO - Database connection established
+2025-09-26 13:39:21,208 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:39:21] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 13:39:25,591 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:39:25] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 13:40:03,960 - config.database - INFO - Database connection established
+2025-09-26 13:40:03,974 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:40:03] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 13:40:14,586 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:40:14] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 13:41:32,059 - config.database - INFO - Database connection established
+2025-09-26 13:41:32,070 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:41:32] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 13:41:54,288 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:41:54] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 13:43:46,491 - config.database - INFO - Database connection established
+2025-09-26 13:43:46,500 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:43:46] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 13:44:08,720 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:44:08] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 13:44:39,152 - config.database - INFO - Database connection established
+2025-09-26 13:44:39,154 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:44:39] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 13:44:39,160 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:44:39] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 13:44:40,444 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:44:40] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-26 13:44:40,559 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:44:40] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-26 13:44:40,629 - config.database - INFO - Database connection established
+2025-09-26 13:44:40,630 - config.database - INFO - Database connection established
+2025-09-26 13:44:40,632 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:44:40] "GET /api/posts HTTP/1.1" 200 -
+2025-09-26 13:44:40,632 - config.database - INFO - Database connection established
+2025-09-26 13:44:40,636 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:44:40] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 13:44:40,639 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:44:40] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 13:44:40,641 - config.database - INFO - Database connection established
+2025-09-26 13:44:40,644 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:44:40] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-26 13:44:40,661 - config.database - INFO - Database connection established
+2025-09-26 13:44:40,666 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:44:40] "GET /launchpad/api/syndication/pieces HTTP/1.1" 200 -
+2025-09-26 13:44:40,676 - config.database - INFO - Database connection established
+2025-09-26 13:44:40,682 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:44:40] "GET /launchpad/api/social-media/timeline HTTP/1.1" 200 -
+2025-09-26 13:44:40,691 - config.database - INFO - Database connection established
+2025-09-26 13:44:40,694 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:44:40] "GET /launchpad/api/syndication/facebook/credentials HTTP/1.1" 200 -
+2025-09-26 13:45:09,158 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:45:09] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 13:45:09,161 - config.database - INFO - Database connection established
+2025-09-26 13:45:09,169 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:45:09] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 13:45:39,159 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:45:39] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 13:45:39,163 - config.database - INFO - Database connection established
+2025-09-26 13:45:39,170 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:45:39] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 13:46:09,160 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:46:09] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 13:46:09,165 - config.database - INFO - Database connection established
+2025-09-26 13:46:09,173 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:46:09] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 13:46:39,161 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:46:39] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 13:46:39,166 - config.database - INFO - Database connection established
+2025-09-26 13:46:39,176 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:46:39] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 13:47:09,162 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:47:09] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 13:47:09,166 - config.database - INFO - Database connection established
+2025-09-26 13:47:09,174 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:47:09] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 13:47:39,162 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:47:39] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 13:47:39,167 - config.database - INFO - Database connection established
+2025-09-26 13:47:39,175 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:47:39] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 13:48:09,164 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:48:09] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 13:48:09,168 - config.database - INFO - Database connection established
+2025-09-26 13:48:09,177 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:48:09] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 13:48:13,541 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:48:13] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-26 13:48:13,542 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:48:13] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-26 13:48:13,543 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:48:13] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-26 13:48:39,262 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:48:39] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 13:48:39,265 - config.database - INFO - Database connection established
+2025-09-26 13:48:39,275 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:48:39] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 13:49:10,741 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:49:10] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 13:49:10,783 - config.database - INFO - Database connection established
+2025-09-26 13:49:10,792 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:49:10] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 13:49:31,738 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-26 13:49:31,777 - werkzeug - INFO -  * Restarting with stat
+2025-09-26 13:49:31,992 - werkzeug - WARNING -  * Debugger is active!
+2025-09-26 13:49:31,998 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-26 13:49:45,452 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:49:45] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 13:49:56,421 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/launchpad.py', reloading
+2025-09-26 13:49:56,453 - werkzeug - INFO -  * Restarting with stat
+2025-09-26 13:49:56,650 - werkzeug - WARNING -  * Debugger is active!
+2025-09-26 13:49:56,655 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-26 13:50:12,896 - config.database - INFO - Database connection established
+2025-09-26 13:50:12,906 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:50:12] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 13:50:57,361 - config.database - INFO - Database connection established
+2025-09-26 13:50:57,371 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:50:57] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 13:51:10,022 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:51:10] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 13:53:05,826 - config.database - INFO - Database connection established
+2025-09-26 13:53:05,835 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:53:05] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 13:53:29,843 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:53:29] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 13:55:13,944 - config.database - INFO - Database connection established
+2025-09-26 13:55:13,947 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:55:13] "[33mPOST /launchpad/api/queue/update-status HTTP/1.1[0m" 404 -
+2025-09-26 13:55:16,197 - config.database - INFO - Database connection established
+2025-09-26 13:55:16,202 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:55:16] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-26 13:55:19,915 - config.database - INFO - Database connection established
+2025-09-26 13:55:19,917 - blueprints.launchpad - INFO - Updated queue item 401 status to ready
+2025-09-26 13:55:19,918 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:55:19] "POST /launchpad/api/queue/update-status HTTP/1.1" 200 -
+2025-09-26 13:55:20,051 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:55:20] "[33mGET /servers/api/status HTTP/1.1[0m" 404 -
+2025-09-26 13:55:26,550 - config.database - INFO - Database connection established
+2025-09-26 13:55:26,557 - werkzeug - INFO - 127.0.0.1 - - [26/Sep/2025 13:55:26] "GET /launchpad/api/queue HTTP/1.1" 200 -

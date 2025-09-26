@@ -673,6 +673,36 @@
             color: white;
         }
         
+        .status-dropdown {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            color: #e0e0e0;
+            padding: 6px 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            min-width: 100px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .status-dropdown:hover {
+            border-color: #475569;
+            background: #334155;
+        }
+        
+        .status-dropdown:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+        
+        .status-dropdown option {
+            background: #1e293b;
+            color: #e0e0e0;
+            padding: 8px;
+        }
+        
         .action-btn {
             background: #334155;
             color: #94a3b8;
@@ -1509,9 +1539,12 @@
                             </div>
                         </td>
                         <td>
-                            <span class="status-badge status-${item.status}">
-                                ${item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                            </span>
+                            <select class="status-dropdown" data-item-id="${item.id}" onchange="updateStatus(${item.id}, this.value)">
+                                <option value="ready" ${item.status === 'ready' ? 'selected' : ''}>Ready</option>
+                                <option value="published" ${item.status === 'published' ? 'selected' : ''}>Published</option>
+                                <option value="pending" ${item.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                <option value="cancelled" ${item.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                            </select>
                         </td>
                         <td>
                             <button class="action-btn" onclick="editPost(${item.id})">
@@ -1670,6 +1703,66 @@
         function reschedulePost(id) {
             console.log('Reschedule post:', id);
             // TODO: Implement reschedule functionality
+        }
+        
+        async function updateStatus(itemId, newStatus) {
+            try {
+                console.log(`Updating status for item ${itemId} to ${newStatus}`);
+                
+                const response = await fetch('/launchpad/api/queue/update-status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        item_id: itemId,
+                        status: newStatus
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log(`Status updated successfully: ${result.message}`);
+                    
+                    // Show success notification
+                    showNotification(`Status updated to ${newStatus}`, 'success');
+                    
+                    // Reload the queue to reflect changes
+                    loadQueue();
+                    
+                    // Update KPIs
+                    loadCommandCenterKPIs();
+                } else {
+                    console.error('Failed to update status:', result.error);
+                    showNotification(`Failed to update status: ${result.error}`, 'error');
+                    
+                    // Revert the dropdown selection
+                    const dropdown = document.querySelector(`select[data-item-id="${itemId}"]`);
+                    if (dropdown) {
+                        // Find the previous status from the queue data
+                        const queueData = await fetch('/launchpad/api/queue').then(r => r.json());
+                        const item = queueData.timeline.find(i => i.id === itemId);
+                        if (item) {
+                            dropdown.value = item.status;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating status:', error);
+                showNotification(`Error updating status: ${error.message}`, 'error');
+                
+                // Revert the dropdown selection
+                const dropdown = document.querySelector(`select[data-item-id="${itemId}"]`);
+                if (dropdown) {
+                    // Find the previous status from the queue data
+                    const queueData = await fetch('/launchpad/api/queue').then(r => r.json());
+                    const item = queueData.timeline.find(i => i.id === itemId);
+                    if (item) {
+                        dropdown.value = item.status;
+                    }
+                }
+            }
         }
         
         function postNow(id) {
