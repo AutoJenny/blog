@@ -763,27 +763,8 @@ class ClanPublisher:
                 logger.info(f"HTML content length: {len(html_content)} characters")
                 logger.info(f"HTML file created at: {html_filepath}")
                 
-                # Send the request with the actual HTML file content and header image
+                # Send the request with the actual HTML file content
                 files = {'html_file': (html_filename, open(html_filepath, 'rb'), 'text/html')}
-                
-                # Add header image as file upload if available
-                header_image_path = None
-                if uploaded_images:
-                    # Find the header image in uploaded_images
-                    for local_path, clan_url in uploaded_images.items():
-                        if 'header' in local_path:
-                            # Convert clan URL back to local path for file upload
-                            header_image_path = local_path
-                            break
-                
-                if header_image_path:
-                    # Convert web path to filesystem path
-                    from config.paths import path_resolver
-                    fs_header_path = path_resolver.convert_web_path_to_filesystem(header_image_path)
-                    if os.path.exists(fs_header_path):
-                        header_filename = os.path.basename(fs_header_path)
-                        files['header_image'] = (header_filename, open(fs_header_path, 'rb'), 'image/jpeg')
-                        logger.info(f"Added header image file: {header_filename}")
                 
                 # DIAGNOSTIC LOGGING: Dump exact API data being sent
                 self._dump_api_call('post_create_update', endpoint, api_data, files, html_filename, json_args, html_content)
@@ -1079,9 +1060,9 @@ class ClanPublisher:
             
             template = env.from_string(template_content)
             
-            # For Clan.com API, exclude header image from HTML content since it's provided as thumbnail
+            # For Clan.com API, include header image in HTML content
             post_for_template = post.copy()
-            post_for_template['exclude_header_image'] = True
+            # Don't exclude header image - let Clan.com handle it
             
             html_content = template.render(post=post_for_template, sections=sections)
             
