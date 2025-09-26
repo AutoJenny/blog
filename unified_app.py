@@ -49,6 +49,13 @@ def create_app(config_name=None):
     from blueprints.images import bp as images_bp
     app.register_blueprint(images_bp, url_prefix='/images')
     
+    # Register new dedicated workflow blueprints
+    from blueprints.planning import bp as planning_bp
+    app.register_blueprint(planning_bp)
+    
+    from blueprints.authoring import bp as authoring_bp
+    app.register_blueprint(authoring_bp)
+    
     from blueprints.ui_state import ui_state_bp
     app.register_blueprint(ui_state_bp)
     

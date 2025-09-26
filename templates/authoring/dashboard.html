@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Authoring Dashboard - BlogForge{% endblock %}
+
+{% block head %}
+    <style>
+        .authoring-header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 16px;
+            margin-top: 2rem;
+        }
+        .authoring-nav {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        .authoring-nav a {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .authoring-nav a:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        .post-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .post-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border-color: #475569;
+        }
+        .post-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 0.5rem;
+        }
+        .post-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+        .status-draft { background: #fef3c7; color: #92400e; }
+        .status-in_process { background: #dbeafe; color: #1e40af; }
+        .status-published { background: #dcfce7; color: #166534; }
+        .authoring-progress {
+            margin-top: 1rem;
+        }
+        .progress-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            color: #94a3b8;
+        }
+        .progress-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.75rem;
+        }
+        .progress-complete { background: #10b981; }
+        .progress-pending { background: #6b7280; }
+        .progress-in-progress { background: #f59e0b; }
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="authoring-header">
+        <div class="container">
+            <h1>Authoring Dashboard</h1>
+            <p>Dedicated workspace for content creation and authoring</p>
+            <div class="authoring-nav">
+                <a href="{{ url_for('authoring.authoring_dashboard') }}">Overview</a>
+                <a href="{{ url_for('authoring.authoring_sections', post_id=53) }}">Sections</a>
+                <a href="{{ url_for('authoring.authoring_post_info', post_id=53) }}">Post Info</a>
+                <a href="{{ url_for('authoring.authoring_images', post_id=53) }}">Images</a>
+                <a href="/workflow/posts/53/writing/content" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3);">Old Interface</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="posts-grid" id="posts-grid">
+        <!-- Posts will be loaded here via JavaScript -->
+    </div>
+</div>
+
+<script>
+    async function loadPosts() {
+        try {
+            const response = await fetch('/authoring/api/posts');
+            const data = await response.json();
+            
+            if (data.success) {
+                const postsGrid = document.getElementById('posts-grid');
+                postsGrid.innerHTML = '';
+                
+                data.posts.forEach(post => {
+                    const postCard = document.createElement('div');
+                    postCard.className = 'post-card';
+                    postCard.innerHTML = `
+                        <div class="post-title">${post.title || 'Untitled Post'}</div>
+                        <div class="post-status status-${post.status}">${post.status}</div>
+                        <div class="authoring-progress">
+                            <div class="progress-item">
+                                <div class="progress-dot progress-complete"></div>
+                                <span>Sections</span>
+                            </div>
+                            <div class="progress-item">
+                                <div class="progress-dot progress-pending"></div>
+                                <span>Post Info</span>
+                            </div>
+                            <div class="progress-item">
+                                <div class="progress-dot progress-pending"></div>
+                                <span>Images</span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <a href="/authoring/posts/${post.id}" class="btn btn-primary">Open Authoring</a>
+                        </div>
+                    `;
+                    postsGrid.appendChild(postCard);
+                });
+            }
+        } catch (error) {
+            console.error('Error loading posts:', error);
+        }
+    }
+
+    // Load posts when page loads
+    document.addEventListener('DOMContentLoaded', loadPosts);
+</script>
+{% endblock %}
