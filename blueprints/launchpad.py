@@ -1559,12 +1559,13 @@ def replenish_queue(config):
         }
 
 def get_post_with_development(post_id):
-    """Fetch post with development data."""
+    """Fetch post with development data and include image paths."""
     with db_manager.get_cursor() as cursor:
         # Get post data, alias post.id as post_id
         cursor.execute("""
             SELECT p.id AS post_id, p.title, p.subtitle, p.created_at, p.updated_at, p.status, p.slug, p.summary, p.title_choices,
                    p.clan_post_id, p.clan_uploaded_url,
+                   p.header_image_id, p.header_image_caption, p.header_image_title, p.header_image_width, p.header_image_height,
                    pd.idea_seed, pd.intro_blurb, pd.main_title,
                    p.cross_promotion_category_id, p.cross_promotion_category_title,
                    p.cross_promotion_product_id, p.cross_promotion_product_title,
@@ -1579,7 +1580,21 @@ def get_post_with_development(post_id):
         if not post:
             return None
         
-        return dict(post)
+        post_dict = dict(post)
+        
+        # Add dynamically discovered image path
+        header_image_path = find_header_image(post_id)
+        if header_image_path:
+            post_dict['header_image'] = {
+                'path': header_image_path,
+                'id': post_dict.get('header_image_id'),
+                'caption': post_dict.get('header_image_caption'),
+                'title': post_dict.get('header_image_title'),
+                'width': post_dict.get('header_image_width'),
+                'height': post_dict.get('header_image_height')
+            }
+        
+        return post_dict
 
 def get_post_sections_with_images(post_id):
     """Fetch sections with complete image metadata."""
@@ -1605,22 +1620,21 @@ def get_post_sections_with_images(post_id):
         for section in raw_sections:
             section_dict = dict(section)
             
-            # Try to find image in the new directory structure first
-            image_path = find_section_image(post_id, section['id'])
-            
-            if image_path:
-                # Found image in new structure
-                section_dict['image_path'] = image_path
-                section_dict['image_url'] = f"/static/images/posts/{post_id}/sections/{section['id']}.jpg"
+            # Add image data if available
+            if section_dict.get('image_title'):
+                # Find the actual image file path
+                section_image_path = find_section_image(post_id, section['id'])
+                
+                section_dict['image'] = {
+                    'path': section_image_path,
+                    'title': section_dict['image_title'],
+                    'width': section_dict.get('image_width'),
+                    'height': section_dict.get('image_height'),
+                    'caption': section_dict.get('image_captions'),
+                    'placeholder': False
+                }
             else:
-                # Try legacy structure
-                legacy_path = f"/Users/autojenny/Documents/projects/blog/blog-images/static/images/posts/{post_id}/sections/{section['id']}.jpg"
-                if os.path.exists(legacy_path):
-                    section_dict['image_path'] = legacy_path
-                    section_dict['image_url'] = f"/static/images/posts/{post_id}/sections/{section['id']}.jpg"
-                else:
-                    section_dict['image_path'] = None
-                    section_dict['image_url'] = None
+                section_dict['image'] = None
             
             sections.append(section_dict)
         
