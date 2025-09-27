@@ -243,16 +243,6 @@
     margin-bottom: 0.25rem;
 }
 
-.schedule-header {
-    font-size: 12px;
-    font-weight: 600;
-    color: #374151;
-    margin-bottom: 6px;
-    padding: 4px 8px;
-    background: #f3f4f6;
-    border-radius: 4px;
-    border-left: 3px solid #3b82f6;
-}
 
 .idea-item, .event-item, .schedule-item {
     background: #10b981;
@@ -846,7 +836,6 @@ function renderWeekContent(ideas, events, schedule) {
     // Render schedule
     if (schedule && schedule.length > 0) {
         html += '<div class="schedule-section">';
-        html += '<div class="schedule-header">Scheduled Content</div>';
         schedule.forEach(item => {
             const title = item.idea_title || item.event_title || item.post_title || 'Scheduled Item';
             html += `
@@ -1145,7 +1134,7 @@ function deleteIdea(ideaId) {
 function scheduleIdea(ideaId) {
     console.log('Schedule idea:', ideaId);
     // TODO: Open scheduling modal
-    alert('Schedule idea functionality coming soon!');
+    showNotification('Schedule idea functionality coming soon!', 'info');
 }
 
 // Event editing functions
@@ -1263,7 +1252,7 @@ function deleteEvent(eventId) {
 function scheduleEvent(eventId) {
     console.log('Schedule event:', eventId);
     // TODO: Open scheduling modal
-    alert('Schedule event functionality coming soon!');
+    showNotification('Schedule event functionality coming soon!', 'info');
 }
 
 // Schedule editing functions
