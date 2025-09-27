@@ -309,6 +309,26 @@
     color: #ef4444;
 }
 
+/* Scheduled items styling */
+.idea-item.scheduled,
+.event-item.scheduled {
+    border-left: 3px solid #10b981;
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.status-tag {
+    font-size: 0.65rem;
+    padding: 1px 4px;
+    border-radius: 2px;
+    font-weight: 600;
+    margin-left: 4px;
+}
+
+.status-tag.scheduled {
+    background: #10b981;
+    color: white;
+}
+
 .week-cell.current-week .idea-item,
 .week-cell.current-week .event-item,
 .week-cell.current-week .schedule-item {
@@ -538,15 +558,27 @@ async function loadWeekContent(year, weekNumber) {
 function renderWeekContent(ideas, events, schedule) {
     let html = '';
     
+    // Get scheduled idea IDs to mark them differently
+    const scheduledIdeaIds = new Set();
+    const scheduledEventIds = new Set();
+    if (schedule && schedule.length > 0) {
+        schedule.forEach(item => {
+            if (item.idea_id) scheduledIdeaIds.add(item.idea_id);
+            if (item.event_id) scheduledEventIds.add(item.event_id);
+        });
+    }
+    
     // Render ideas
     if (ideas && ideas.length > 0) {
         html += '<div class="ideas-section">';
         ideas.forEach(idea => {
+            const isScheduled = scheduledIdeaIds.has(idea.id);
             html += `
-                <div class="idea-item" data-idea-id="${idea.id}">
+                <div class="idea-item ${isScheduled ? 'scheduled' : ''}" data-idea-id="${idea.id}">
                     <div class="idea-title">${idea.idea_title}</div>
                     <div class="idea-categories">
                         ${idea.categories.map(cat => `<span class="category-tag" style="background-color: ${cat.color}">${cat.name}</span>`).join('')}
+                        ${isScheduled ? '<span class="status-tag scheduled">Scheduled</span>' : ''}
                     </div>
                 </div>
             `;
@@ -558,11 +590,13 @@ function renderWeekContent(ideas, events, schedule) {
     if (events && events.length > 0) {
         html += '<div class="events-section">';
         events.forEach(event => {
+            const isScheduled = scheduledEventIds.has(event.id);
             html += `
-                <div class="event-item" data-event-id="${event.id}">
+                <div class="event-item ${isScheduled ? 'scheduled' : ''}" data-event-id="${event.id}">
                     <div class="event-title">${event.event_title}</div>
                     <div class="event-categories">
                         ${event.categories.map(cat => `<span class="category-tag" style="background-color: ${cat.color}">${cat.name}</span>`).join('')}
+                        ${isScheduled ? '<span class="status-tag scheduled">Scheduled</span>' : ''}
                     </div>
                 </div>
             `;
