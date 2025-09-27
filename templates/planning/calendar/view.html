@@ -799,6 +799,22 @@ async function loadWeekContent(year, weekNumber) {
             const contentDiv = weekCell.querySelector('.week-content');
             const renderedContent = renderWeekContent(ideasData.ideas, eventsData.events, scheduleData.schedule);
             contentDiv.innerHTML = renderedContent;
+            
+            // Debug: Check if Spring Cleaning Checklist dropdown was created
+            const springCleaningItem = contentDiv.querySelector('[data-idea-id]');
+            if (springCleaningItem) {
+                const springCleaningTitle = springCleaningItem.querySelector('.idea-title');
+                if (springCleaningTitle && springCleaningTitle.textContent === 'Spring Cleaning Checklist') {
+                    const dropdown = springCleaningItem.querySelector('.category-select');
+                    console.log('Spring Cleaning Checklist dropdown found in DOM:', dropdown);
+                    if (dropdown) {
+                        console.log('Dropdown options count:', dropdown.options.length);
+                        console.log('Dropdown selected value:', dropdown.value);
+                    } else {
+                        console.log('ERROR: Dropdown not found in DOM!');
+                    }
+                }
+            }
         } else {
         }
         
@@ -835,6 +851,20 @@ function renderWeekContent(ideas, events, schedule) {
                 console.log('Rendering Spring Cleaning Checklist:', idea);
                 console.log('Categories available:', categories.length);
                 console.log('Idea tags:', idea.tags);
+                
+                // Test the category selection logic
+                const testCategory = getPrimaryCategoryFromTags(idea.tags);
+                console.log('Test category result:', testCategory);
+                
+                // Test if categories array has the expected category
+                const generalCategory = categories.find(cat => cat.name === 'General');
+                console.log('General category found:', generalCategory);
+            }
+            
+            // Debug HTML generation for Spring Cleaning Checklist
+            if (idea.idea_title === 'Spring Cleaning Checklist') {
+                console.log('About to generate HTML for Spring Cleaning Checklist');
+                console.log('Categories for dropdown:', categories.map(c => c.name));
             }
             
             html += `
