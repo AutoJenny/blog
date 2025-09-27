@@ -302,27 +302,11 @@ function updateCalendar() {
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     
-    // Find all weeks that belong to each month
-    const monthWeeks = [];
-    for (let month = 0; month < 12; month++) {
-        const monthStart = new Date(currentYear, month, 1);
-        const monthEnd = new Date(currentYear, month + 1, 0);
-        const weeks = [];
-        
-        for (let week = 1; week <= 52; week++) {
-            const weekDates = getWeekDates(week, currentYear);
-            if (weekDates.start <= monthEnd && weekDates.end >= monthStart) {
-                weeks.push(week);
-            }
-        }
-        monthWeeks.push(weeks);
-    }
+    // Create a simple 52-week grid with months as rows
+    // Each week appears only once, in the month where it starts
     
-    // Find the maximum number of weeks in any month
-    const maxWeeks = Math.max(...monthWeeks.map(weeks => weeks.length));
-    
-    // Set grid columns dynamically
-    calendarGrid.style.gridTemplateColumns = `100px repeat(${maxWeeks}, 1fr)`;
+    // Set grid columns for 52 weeks + month column
+    calendarGrid.style.gridTemplateColumns = `100px repeat(52, 1fr)`;
     
     // Create header row
     const monthHeader = document.createElement('div');
@@ -330,10 +314,11 @@ function updateCalendar() {
     monthHeader.textContent = 'Month';
     calendarGrid.appendChild(monthHeader);
     
-    for (let i = 1; i <= maxWeeks; i++) {
+    // Create week headers (W1, W2, W3, etc.)
+    for (let week = 1; week <= 52; week++) {
         const weekHeader = document.createElement('div');
         weekHeader.className = 'week-header';
-        weekHeader.textContent = `Week ${i}`;
+        weekHeader.textContent = `W${week}`;
         calendarGrid.appendChild(weekHeader);
     }
     
@@ -345,16 +330,19 @@ function updateCalendar() {
         monthCell.textContent = monthNames[month];
         calendarGrid.appendChild(monthCell);
         
-        const weeks = monthWeeks[month];
-        
-        // Create week cells for this month
-        for (let weekIndex = 0; weekIndex < maxWeeks; weekIndex++) {
+        // Create week cells for all 52 weeks
+        for (let week = 1; week <= 52; week++) {
+            const weekDates = getWeekDates(week, currentYear);
+            const monthStart = new Date(currentYear, month, 1);
+            const monthEnd = new Date(currentYear, month + 1, 0);
+            
+            // Check if this week starts in this month
+            const weekStartsInMonth = weekDates.start >= monthStart && weekDates.start <= monthEnd;
+            
             const weekCell = document.createElement('div');
             weekCell.className = 'week-cell';
             
-            if (weekIndex < weeks.length) {
-                const week = weeks[weekIndex];
-                const weekDates = getWeekDates(week, currentYear);
+            if (weekStartsInMonth) {
                 const isCurrentWeek = isCurrentYear && week === weekNumber;
                 
                 if (isCurrentWeek) {
@@ -362,7 +350,6 @@ function updateCalendar() {
                 }
                 
                 weekCell.innerHTML = `
-                    <div class="week-number">W${week}</div>
                     <div class="week-dates">${formatDate(weekDates.start)} - ${formatDate(weekDates.end)}</div>
                     <div class="week-content">
                         <!-- Posts will be loaded here -->
