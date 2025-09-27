@@ -916,3 +916,313 @@ def start_ollama():
     
     except Exception as e:
         return jsonify({'success': False, 'error': 'Ollama is not running. Please start it manually with "ollama serve"'})
+
+# ============================================================================
+# CALENDAR EDITING API ENDPOINTS
+# ============================================================================
+
+@bp.route('/api/calendar/ideas', methods=['POST'])
+def api_calendar_idea_create():
+    """Create a new calendar idea"""
+    try:
+        data = request.get_json()
+        
+        required_fields = ['idea_title', 'week_number']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO calendar_ideas 
+                (week_number, idea_title, idea_description, seasonal_context, content_type, 
+                 priority, tags, is_recurring, can_span_weeks, max_weeks, is_evergreen, evergreen_frequency)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
+            """, (
+                data['week_number'],
+                data['idea_title'],
+                data.get('idea_description', ''),
+                data.get('seasonal_context', ''),
+                data.get('content_type', 'guide'),
+                data.get('priority', 1),
+                json.dumps(data.get('tags', [])),
+                data.get('is_recurring', True),
+                data.get('can_span_weeks', False),
+                data.get('max_weeks', 1),
+                data.get('is_evergreen', False),
+                data.get('evergreen_frequency', 'low-frequency')
+            ))
+            
+            idea_id = cursor.fetchone()['id']
+            cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Calendar idea created successfully',
+                'idea_id': idea_id
+            })
+            
+    except Exception as e:
+        logger.error(f"Error creating calendar idea: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/calendar/ideas/<int:idea_id>', methods=['PUT'])
+def api_calendar_idea_update(idea_id):
+    """Update a calendar idea"""
+    try:
+        data = request.get_json()
+        
+        with db_manager.get_cursor() as cursor:
+            # Check if idea exists
+            cursor.execute("SELECT id FROM calendar_ideas WHERE id = %s", (idea_id,))
+            if not cursor.fetchone():
+                return jsonify({'error': 'Idea not found'}), 404
+            
+            # Build update query dynamically
+            update_fields = []
+            values = []
+            
+            allowed_fields = [
+                'idea_title', 'idea_description', 'seasonal_context', 'content_type',
+                'priority', 'week_number', 'is_recurring', 'can_span_weeks', 'max_weeks',
+                'is_evergreen', 'evergreen_frequency', 'evergreen_notes'
+            ]
+            
+            for field in allowed_fields:
+                if field in data:
+                    if field == 'tags':
+                        update_fields.append(f"{field} = %s")
+                        values.append(json.dumps(data[field]))
+                    else:
+                        update_fields.append(f"{field} = %s")
+                        values.append(data[field])
+            
+            if not update_fields:
+                return jsonify({'error': 'No valid fields to update'}), 400
+            
+            update_fields.append("updated_at = NOW()")
+            values.append(idea_id)
+            
+            query = f"UPDATE calendar_ideas SET {', '.join(update_fields)} WHERE id = %s"
+            cursor.execute(query, values)
+            cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Calendar idea updated successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error updating calendar idea: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/calendar/ideas/<int:idea_id>', methods=['DELETE'])
+def api_calendar_idea_delete(idea_id):
+    """Delete a calendar idea"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Check if idea exists
+            cursor.execute("SELECT id FROM calendar_ideas WHERE id = %s", (idea_id,))
+            if not cursor.fetchone():
+                return jsonify({'error': 'Idea not found'}), 404
+            
+            # Delete the idea (cascade will handle related records)
+            cursor.execute("DELETE FROM calendar_ideas WHERE id = %s", (idea_id,))
+            cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Calendar idea deleted successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error deleting calendar idea: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/calendar/events', methods=['POST'])
+def api_calendar_event_create():
+    """Create a new calendar event"""
+    try:
+        data = request.get_json()
+        
+        required_fields = ['event_title', 'start_date', 'end_date', 'year']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO calendar_events 
+                (event_title, event_description, start_date, end_date, week_number, year,
+                 content_type, priority, tags, is_recurring, can_span_weeks, max_weeks)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
+            """, (
+                data['event_title'],
+                data.get('event_description', ''),
+                data['start_date'],
+                data['end_date'],
+                data.get('week_number'),
+                data['year'],
+                data.get('content_type', 'guide'),
+                data.get('priority', 1),
+                json.dumps(data.get('tags', [])),
+                data.get('is_recurring', False),
+                data.get('can_span_weeks', False),
+                data.get('max_weeks', 1)
+            ))
+            
+            event_id = cursor.fetchone()['id']
+            cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Calendar event created successfully',
+                'event_id': event_id
+            })
+            
+    except Exception as e:
+        logger.error(f"Error creating calendar event: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/calendar/events/<int:event_id>', methods=['PUT'])
+def api_calendar_event_update(event_id):
+    """Update a calendar event"""
+    try:
+        data = request.get_json()
+        
+        with db_manager.get_cursor() as cursor:
+            # Check if event exists
+            cursor.execute("SELECT id FROM calendar_events WHERE id = %s", (event_id,))
+            if not cursor.fetchone():
+                return jsonify({'error': 'Event not found'}), 404
+            
+            # Build update query dynamically
+            update_fields = []
+            values = []
+            
+            allowed_fields = [
+                'event_title', 'event_description', 'start_date', 'end_date',
+                'week_number', 'year', 'content_type', 'priority', 'is_recurring',
+                'can_span_weeks', 'max_weeks'
+            ]
+            
+            for field in allowed_fields:
+                if field in data:
+                    if field == 'tags':
+                        update_fields.append(f"{field} = %s")
+                        values.append(json.dumps(data[field]))
+                    else:
+                        update_fields.append(f"{field} = %s")
+                        values.append(data[field])
+            
+            if not update_fields:
+                return jsonify({'error': 'No valid fields to update'}), 400
+            
+            update_fields.append("updated_at = NOW()")
+            values.append(event_id)
+            
+            query = f"UPDATE calendar_events SET {', '.join(update_fields)} WHERE id = %s"
+            cursor.execute(query, values)
+            cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Calendar event updated successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error updating calendar event: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/calendar/events/<int:event_id>', methods=['DELETE'])
+def api_calendar_event_delete(event_id):
+    """Delete a calendar event"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Check if event exists
+            cursor.execute("SELECT id FROM calendar_events WHERE id = %s", (event_id,))
+            if not cursor.fetchone():
+                return jsonify({'error': 'Event not found'}), 404
+            
+            # Delete the event (cascade will handle related records)
+            cursor.execute("DELETE FROM calendar_events WHERE id = %s", (event_id,))
+            cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Calendar event deleted successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error deleting calendar event: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/calendar/schedule/<int:schedule_id>', methods=['PUT'])
+def api_calendar_schedule_update(schedule_id):
+    """Update a calendar schedule entry"""
+    try:
+        data = request.get_json()
+        
+        with db_manager.get_cursor() as cursor:
+            # Check if schedule exists
+            cursor.execute("SELECT id FROM calendar_schedule WHERE id = %s", (schedule_id,))
+            if not cursor.fetchone():
+                return jsonify({'error': 'Schedule entry not found'}), 404
+            
+            # Build update query dynamically
+            update_fields = []
+            values = []
+            
+            allowed_fields = [
+                'year', 'week_number', 'idea_id', 'event_id', 'post_id',
+                'status', 'scheduled_date', 'notes', 'is_override', 'original_idea_id'
+            ]
+            
+            for field in allowed_fields:
+                if field in data:
+                    update_fields.append(f"{field} = %s")
+                    values.append(data[field])
+            
+            if not update_fields:
+                return jsonify({'error': 'No valid fields to update'}), 400
+            
+            update_fields.append("updated_at = NOW()")
+            values.append(schedule_id)
+            
+            query = f"UPDATE calendar_schedule SET {', '.join(update_fields)} WHERE id = %s"
+            cursor.execute(query, values)
+            cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Schedule entry updated successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error updating schedule entry: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/calendar/schedule/<int:schedule_id>', methods=['DELETE'])
+def api_calendar_schedule_delete(schedule_id):
+    """Delete a calendar schedule entry"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Check if schedule exists
+            cursor.execute("SELECT id FROM calendar_schedule WHERE id = %s", (schedule_id,))
+            if not cursor.fetchone():
+                return jsonify({'error': 'Schedule entry not found'}), 404
+            
+            # Delete the schedule entry
+            cursor.execute("DELETE FROM calendar_schedule WHERE id = %s", (schedule_id,))
+            cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Schedule entry deleted successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error deleting schedule entry: {e}")
+        return jsonify({'error': str(e)}), 500

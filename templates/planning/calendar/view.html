@@ -329,6 +329,88 @@
     color: white;
 }
 
+/* Action buttons styling */
+.idea-item, .event-item, .schedule-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    margin: 4px 0;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.idea-content, .event-content, .schedule-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.idea-actions, .event-actions, .schedule-actions {
+    display: flex;
+    gap: 4px;
+    margin-left: 8px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.idea-item:hover .idea-actions,
+.event-item:hover .event-actions,
+.schedule-item:hover .schedule-actions {
+    opacity: 1;
+}
+
+.btn-edit, .btn-delete, .btn-schedule {
+    background: none;
+    border: none;
+    padding: 4px 6px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.btn-edit {
+    color: #3b82f6;
+}
+
+.btn-edit:hover {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.btn-delete {
+    color: #ef4444;
+}
+
+.btn-delete:hover {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.btn-schedule {
+    color: #10b981;
+}
+
+.btn-schedule:hover {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-select {
+    font-size: 11px;
+    padding: 2px 4px;
+    border: 1px solid #d1d5db;
+    border-radius: 3px;
+    background: white;
+    color: #374151;
+}
+
+.status-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 1px #3b82f6;
+}
+
 .week-cell.current-week .idea-item,
 .week-cell.current-week .event-item,
 .week-cell.current-week .schedule-item {
@@ -578,10 +660,23 @@ function renderWeekContent(ideas, events, schedule) {
             const isScheduled = scheduledIdeaIds.has(idea.id);
             html += `
                 <div class="idea-item ${isScheduled ? 'scheduled' : ''}" data-idea-id="${idea.id}">
-                    <div class="idea-title">${idea.idea_title}</div>
-                    <div class="idea-categories">
-                        ${idea.categories.map(cat => `<span class="category-tag" style="background-color: ${cat.color}">${cat.name}</span>`).join('')}
-                        ${isScheduled ? '<span class="status-tag scheduled">Scheduled</span>' : ''}
+                    <div class="idea-content">
+                        <div class="idea-title">${idea.idea_title}</div>
+                        <div class="idea-categories">
+                            ${idea.categories.map(cat => `<span class="category-tag" style="background-color: ${cat.color}">${cat.name}</span>`).join('')}
+                            ${isScheduled ? '<span class="status-tag scheduled">Scheduled</span>' : ''}
+                        </div>
+                    </div>
+                    <div class="idea-actions">
+                        <button class="btn-edit" onclick="editIdea(${idea.id})" title="Edit idea">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-delete" onclick="deleteIdea(${idea.id})" title="Delete idea">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button class="btn-schedule" onclick="scheduleIdea(${idea.id})" title="Schedule this idea">
+                            <i class="fas fa-calendar-plus"></i>
+                        </button>
                     </div>
                 </div>
             `;
@@ -596,10 +691,23 @@ function renderWeekContent(ideas, events, schedule) {
             const isScheduled = scheduledEventIds.has(event.id);
             html += `
                 <div class="event-item ${isScheduled ? 'scheduled' : ''}" data-event-id="${event.id}">
-                    <div class="event-title">${event.event_title}</div>
-                    <div class="event-categories">
-                        ${event.categories.map(cat => `<span class="category-tag" style="background-color: ${cat.color}">${cat.name}</span>`).join('')}
-                        ${isScheduled ? '<span class="status-tag scheduled">Scheduled</span>' : ''}
+                    <div class="event-content">
+                        <div class="event-title">${event.event_title}</div>
+                        <div class="event-categories">
+                            ${event.categories.map(cat => `<span class="category-tag" style="background-color: ${cat.color}">${cat.name}</span>`).join('')}
+                            ${isScheduled ? '<span class="status-tag scheduled">Scheduled</span>' : ''}
+                        </div>
+                    </div>
+                    <div class="event-actions">
+                        <button class="btn-edit" onclick="editEvent(${event.id})" title="Edit event">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-delete" onclick="deleteEvent(${event.id})" title="Delete event">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button class="btn-schedule" onclick="scheduleEvent(${event.id})" title="Schedule this event">
+                            <i class="fas fa-calendar-plus"></i>
+                        </button>
                     </div>
                 </div>
             `;
@@ -614,8 +722,24 @@ function renderWeekContent(ideas, events, schedule) {
             const title = item.idea_title || item.event_title || item.post_title || 'Scheduled Item';
             html += `
                 <div class="schedule-item" data-schedule-id="${item.id}">
-                    <div class="schedule-title">${title}</div>
-                    <div class="schedule-status status-${item.status}">${item.status}</div>
+                    <div class="schedule-content">
+                        <div class="schedule-title">${title}</div>
+                        <div class="schedule-status status-${item.status}">${item.status}</div>
+                    </div>
+                    <div class="schedule-actions">
+                        <select class="status-select" onchange="updateScheduleStatus(${item.id}, this.value)" title="Change status">
+                            <option value="planned" ${item.status === 'planned' ? 'selected' : ''}>Planned</option>
+                            <option value="in_progress" ${item.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
+                            <option value="published" ${item.status === 'published' ? 'selected' : ''}>Published</option>
+                            <option value="cancelled" ${item.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                        </select>
+                        <button class="btn-edit" onclick="editSchedule(${item.id})" title="Edit schedule">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-delete" onclick="deleteSchedule(${item.id})" title="Delete schedule">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </div>
             `;
         });
@@ -732,6 +856,182 @@ function getWeeksInMonth(monthStart, monthEnd) {
 function selectWeek(weekNumber, month) {
     // Implement week selection functionality
     // This could open a detailed view or allow scheduling posts for that week
+}
+
+// ============================================================================
+// CALENDAR EDITING FUNCTIONS
+// ============================================================================
+
+// Idea editing functions
+function editIdea(ideaId) {
+    console.log('Edit idea:', ideaId);
+    // TODO: Open edit modal or inline editing
+    alert('Edit idea functionality coming soon!');
+}
+
+function deleteIdea(ideaId) {
+    if (confirm('Are you sure you want to delete this idea?')) {
+        fetch(`/planning/api/calendar/ideas/${ideaId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload calendar content
+                updateCalendar();
+                showNotification('Idea deleted successfully', 'success');
+            } else {
+                showNotification('Error deleting idea: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error deleting idea', 'error');
+        });
+    }
+}
+
+function scheduleIdea(ideaId) {
+    console.log('Schedule idea:', ideaId);
+    // TODO: Open scheduling modal
+    alert('Schedule idea functionality coming soon!');
+}
+
+// Event editing functions
+function editEvent(eventId) {
+    console.log('Edit event:', eventId);
+    // TODO: Open edit modal or inline editing
+    alert('Edit event functionality coming soon!');
+}
+
+function deleteEvent(eventId) {
+    if (confirm('Are you sure you want to delete this event?')) {
+        fetch(`/planning/api/calendar/events/${eventId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload calendar content
+                updateCalendar();
+                showNotification('Event deleted successfully', 'success');
+            } else {
+                showNotification('Error deleting event: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error deleting event', 'error');
+        });
+    }
+}
+
+function scheduleEvent(eventId) {
+    console.log('Schedule event:', eventId);
+    // TODO: Open scheduling modal
+    alert('Schedule event functionality coming soon!');
+}
+
+// Schedule editing functions
+function editSchedule(scheduleId) {
+    console.log('Edit schedule:', scheduleId);
+    // TODO: Open edit modal or inline editing
+    alert('Edit schedule functionality coming soon!');
+}
+
+function deleteSchedule(scheduleId) {
+    if (confirm('Are you sure you want to delete this schedule entry?')) {
+        fetch(`/planning/api/calendar/schedule/${scheduleId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload calendar content
+                updateCalendar();
+                showNotification('Schedule entry deleted successfully', 'success');
+            } else {
+                showNotification('Error deleting schedule: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error deleting schedule', 'error');
+        });
+    }
+}
+
+function updateScheduleStatus(scheduleId, newStatus) {
+    fetch(`/planning/api/calendar/schedule/${scheduleId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            status: newStatus
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Reload calendar content to show updated status
+            updateCalendar();
+            showNotification('Status updated successfully', 'success');
+        } else {
+            showNotification('Error updating status: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error updating status', 'error');
+    });
+}
+
+// Utility function for notifications
+function showNotification(message, type = 'info') {
+    // Simple notification - could be enhanced with a proper notification system
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 4px;
+        color: white;
+        font-weight: 500;
+        z-index: 1000;
+        transition: all 0.3s ease;
+    `;
+    
+    if (type === 'success') {
+        notification.style.backgroundColor = '#10b981';
+    } else if (type === 'error') {
+        notification.style.backgroundColor = '#ef4444';
+    } else {
+        notification.style.backgroundColor = '#3b82f6';
+    }
+    
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
 }
 </script>
 {% endblock %}
