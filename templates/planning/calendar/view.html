@@ -668,6 +668,12 @@ async function updateCalendar() {
     document.getElementById('current-week').textContent = 
         `Week ${weekNumber} of 52`;
     
+    // Ensure categories are loaded before rendering content
+    if (categories.length === 0) {
+        console.log('Categories not loaded yet, loading now...');
+        await loadCategories();
+    }
+    
     try {
         // Load calendar weeks from database
         const response = await fetch(`/planning/api/calendar/weeks/${currentYear}`);
