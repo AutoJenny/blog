@@ -15,6 +15,10 @@
                         <input type="radio" id="table-post" name="table-selection" value="post">
                         <label for="table-post">Post Table</label>
                     </div>
+                    <div class="radio-group">
+                        <input type="radio" id="table-calendar-schedule" name="table-selection" value="calendar_schedule">
+                        <label for="table-calendar-schedule">Calendar Schedule Table</label>
+                    </div>
                 </div>
 
                 <!-- Post Development Table Display -->
@@ -33,6 +37,14 @@
                         <div style="color: #10b981; margin-top: 1rem;">
                             <strong>Debug:</strong> Data tab is rendering. If you see this, the include is working.
                         </div>
+                    </div>
+                </div>
+
+                <!-- Calendar Schedule Table Display -->
+                <div id="calendar-schedule-table-display" class="table-display">
+                    <h4>Calendar Schedule Table (ID: <span id="calendar-schedule-table-id">Loading...</span>)</h4>
+                    <div id="calendar-schedule-fields-container" class="fields-container">
+                        <div class="loading">Loading calendar schedule data...</div>
                     </div>
                 </div>
             </div>
@@ -624,6 +636,7 @@ function populateDatabaseTables(data) {
     // Set table IDs
     document.getElementById('post-table-id').textContent = data.id || 'Unknown';
     document.getElementById('post-development-table-id').textContent = data.id || 'Unknown';
+    document.getElementById('calendar-schedule-table-id').textContent = data.id || 'Unknown';
     
     // Populate Post table
     populateTableFields('post-fields-container', data, 'post');
@@ -633,6 +646,15 @@ function populateDatabaseTables(data) {
         populateTableFields('post-development-fields-container', data.development, 'post_development');
     } else {
         document.getElementById('post-development-fields-container').innerHTML = '<div class="loading">No development data found</div>';
+    }
+    
+    // Populate Calendar Schedule table
+    if (data.calendar_schedule && data.calendar_schedule.length > 0) {
+        // If there are multiple schedule entries, show the first one
+        const scheduleData = data.calendar_schedule[0];
+        populateTableFields('calendar-schedule-fields-container', scheduleData, 'calendar_schedule');
+    } else {
+        document.getElementById('calendar-schedule-fields-container').innerHTML = '<div class="loading">No calendar schedule data found</div>';
     }
 }
 
