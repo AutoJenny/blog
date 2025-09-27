@@ -406,7 +406,7 @@
     color: #065f46;
 }
 
-.status-select {
+.priority-select {
     font-size: 11px;
     padding: 2px 4px;
     border: 1px solid #d1d5db;
@@ -415,10 +415,25 @@
     color: #374151;
 }
 
-.status-select:focus {
+.priority-select:focus {
     outline: none;
     border-color: #3b82f6;
     box-shadow: 0 0 0 1px #3b82f6;
+}
+
+/* Mandatory highlighting */
+.schedule-item.mandatory {
+    background: #8b5cf6 !important; /* Purple background for mandatory */
+    border: 2px solid #7c3aed;
+}
+
+.schedule-item.mandatory .schedule-title {
+    font-weight: 600;
+}
+
+.schedule-item.mandatory .schedule-status {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
 }
 
 /* Perpetual items styling - simple green text */
@@ -839,17 +854,15 @@ function renderWeekContent(ideas, events, schedule) {
         schedule.forEach(item => {
             const title = item.idea_title || item.event_title || item.post_title || 'Scheduled Item';
             html += `
-                <div class="schedule-item" data-schedule-id="${item.id}" draggable="true">
+                <div class="schedule-item ${item.priority === 'mandatory' ? 'mandatory' : ''}" data-schedule-id="${item.id}" draggable="true">
                     <div class="schedule-content">
                         <div class="schedule-title">${title}</div>
-                        <div class="schedule-status status-${item.status}">${item.status}</div>
+                        <div class="schedule-status status-${item.priority}">${item.priority}</div>
                     </div>
                     <div class="schedule-actions">
-                        <select class="status-select" onchange="updateScheduleStatus(${item.id}, this.value)" title="Change status">
-                            <option value="planned" ${item.status === 'planned' ? 'selected' : ''}>Planned</option>
-                            <option value="in_progress" ${item.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
-                            <option value="published" ${item.status === 'published' ? 'selected' : ''}>Published</option>
-                            <option value="cancelled" ${item.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                        <select class="priority-select" onchange="updateSchedulePriority(${item.id}, this.value)" title="Set priority">
+                            <option value="random" ${item.priority === 'random' ? 'selected' : ''}>Random</option>
+                            <option value="mandatory" ${item.priority === 'mandatory' ? 'selected' : ''}>Mandatory</option>
                         </select>
                         <button class="btn-edit" onclick="editSchedule(${item.id})" title="Edit schedule">
                             <i class="fas fa-edit"></i>
@@ -1345,29 +1358,42 @@ function deleteSchedule(scheduleId) {
     }
 }
 
-function updateScheduleStatus(scheduleId, newStatus) {
+function updateSchedulePriority(scheduleId, newPriority) {
     fetch(`/planning/api/calendar/schedule/${scheduleId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            status: newStatus
+            priority: newPriority
         })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Reload calendar content to show updated status
-            updateCalendar();
-            showNotification('Status updated successfully', 'success');
+            // Update the visual state immediately
+            const scheduleItem = document.querySelector(`[data-schedule-id="${scheduleId}"]`);
+            if (scheduleItem) {
+                if (newPriority === 'mandatory') {
+                    scheduleItem.classList.add('mandatory');
+                } else {
+                    scheduleItem.classList.remove('mandatory');
+                }
+                // Update the status display
+                const statusElement = scheduleItem.querySelector('.schedule-status');
+                if (statusElement) {
+                    statusElement.textContent = newPriority;
+                    statusElement.className = `schedule-status status-${newPriority}`;
+                }
+            }
+            showNotification(`Priority set to ${newPriority}`, 'success');
         } else {
-            showNotification('Error updating status: ' + data.error, 'error');
+            showNotification('Error updating priority: ' + data.error, 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showNotification('Error updating status', 'error');
+        showNotification('Error updating priority', 'error');
     });
 }
 
