@@ -411,6 +411,59 @@
     box-shadow: 0 0 0 1px #3b82f6;
 }
 
+/* Drag and drop styling */
+.idea-item, .event-item, .schedule-item {
+    cursor: move;
+    user-select: none;
+}
+
+.idea-item.dragging, .event-item.dragging, .schedule-item.dragging {
+    opacity: 0.5;
+    transform: rotate(5deg);
+    z-index: 1000;
+}
+
+.week-cell.drag-over {
+    background: rgba(59, 130, 246, 0.2);
+    border: 2px dashed #3b82f6;
+}
+
+.week-cell.drag-over .week-content {
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 4px;
+    min-height: 40px;
+}
+
+.drag-ghost {
+    position: absolute;
+    background: white;
+    border: 2px solid #3b82f6;
+    border-radius: 4px;
+    padding: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    pointer-events: none;
+    z-index: 1001;
+    max-width: 200px;
+    font-size: 12px;
+}
+
+/* Inline editing styles */
+.inline-edit-input {
+    width: 100% !important;
+    padding: 4px 8px !important;
+    border: 2px solid #3b82f6 !important;
+    border-radius: 4px !important;
+    font-size: 14px !important;
+    background: white !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+}
+
+.inline-edit-input:focus {
+    border-color: #1d4ed8 !important;
+    box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.2) !important;
+}
+
 .week-cell.current-week .idea-item,
 .week-cell.current-week .event-item,
 .week-cell.current-week .schedule-item {
@@ -659,7 +712,7 @@ function renderWeekContent(ideas, events, schedule) {
         ideas.forEach(idea => {
             const isScheduled = scheduledIdeaIds.has(idea.id);
             html += `
-                <div class="idea-item ${isScheduled ? 'scheduled' : ''}" data-idea-id="${idea.id}">
+                <div class="idea-item ${isScheduled ? 'scheduled' : ''}" data-idea-id="${idea.id}" draggable="true">
                     <div class="idea-content">
                         <div class="idea-title">${idea.idea_title}</div>
                         <div class="idea-categories">
@@ -690,7 +743,7 @@ function renderWeekContent(ideas, events, schedule) {
         events.forEach(event => {
             const isScheduled = scheduledEventIds.has(event.id);
             html += `
-                <div class="event-item ${isScheduled ? 'scheduled' : ''}" data-event-id="${event.id}">
+                <div class="event-item ${isScheduled ? 'scheduled' : ''}" data-event-id="${event.id}" draggable="true">
                     <div class="event-content">
                         <div class="event-title">${event.event_title}</div>
                         <div class="event-categories">
@@ -721,7 +774,7 @@ function renderWeekContent(ideas, events, schedule) {
         schedule.forEach(item => {
             const title = item.idea_title || item.event_title || item.post_title || 'Scheduled Item';
             html += `
-                <div class="schedule-item" data-schedule-id="${item.id}">
+                <div class="schedule-item" data-schedule-id="${item.id}" draggable="true">
                     <div class="schedule-content">
                         <div class="schedule-title">${title}</div>
                         <div class="schedule-status status-${item.status}">${item.status}</div>
@@ -864,9 +917,89 @@ function selectWeek(weekNumber, month) {
 
 // Idea editing functions
 function editIdea(ideaId) {
-    console.log('Edit idea:', ideaId);
-    // TODO: Open edit modal or inline editing
-    alert('Edit idea functionality coming soon!');
+    const ideaItem = document.querySelector(`[data-idea-id="${ideaId}"]`);
+    if (!ideaItem) return;
+    
+    const titleElement = ideaItem.querySelector('.idea-title');
+    const currentTitle = titleElement.textContent;
+    
+    // Create input field
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = currentTitle;
+    input.className = 'inline-edit-input';
+    input.style.cssText = `
+        width: 100%;
+        padding: 4px 8px;
+        border: 2px solid #3b82f6;
+        border-radius: 4px;
+        font-size: 14px;
+        background: white;
+    `;
+    
+    // Replace title with input
+    titleElement.style.display = 'none';
+    titleElement.parentNode.insertBefore(input, titleElement);
+    input.focus();
+    input.select();
+    
+    // Handle save
+    const saveEdit = () => {
+        const newTitle = input.value.trim();
+        if (newTitle && newTitle !== currentTitle) {
+            updateIdeaTitle(ideaId, newTitle);
+        }
+        // Restore original display
+        input.remove();
+        titleElement.style.display = '';
+    };
+    
+    // Handle cancel
+    const cancelEdit = () => {
+        input.remove();
+        titleElement.style.display = '';
+    };
+    
+    // Event listeners
+    input.addEventListener('blur', saveEdit);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            saveEdit();
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            cancelEdit();
+        }
+    });
+}
+
+function updateIdeaTitle(ideaId, newTitle) {
+    fetch(`/planning/api/calendar/ideas/${ideaId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            idea_title: newTitle
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update the display
+            const ideaItem = document.querySelector(`[data-idea-id="${ideaId}"]`);
+            if (ideaItem) {
+                ideaItem.querySelector('.idea-title').textContent = newTitle;
+            }
+            showNotification('Idea title updated successfully', 'success');
+        } else {
+            showNotification('Error updating idea: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error updating idea', 'error');
+    });
 }
 
 function deleteIdea(ideaId) {
@@ -902,9 +1035,89 @@ function scheduleIdea(ideaId) {
 
 // Event editing functions
 function editEvent(eventId) {
-    console.log('Edit event:', eventId);
-    // TODO: Open edit modal or inline editing
-    alert('Edit event functionality coming soon!');
+    const eventItem = document.querySelector(`[data-event-id="${eventId}"]`);
+    if (!eventItem) return;
+    
+    const titleElement = eventItem.querySelector('.event-title');
+    const currentTitle = titleElement.textContent;
+    
+    // Create input field
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = currentTitle;
+    input.className = 'inline-edit-input';
+    input.style.cssText = `
+        width: 100%;
+        padding: 4px 8px;
+        border: 2px solid #3b82f6;
+        border-radius: 4px;
+        font-size: 14px;
+        background: white;
+    `;
+    
+    // Replace title with input
+    titleElement.style.display = 'none';
+    titleElement.parentNode.insertBefore(input, titleElement);
+    input.focus();
+    input.select();
+    
+    // Handle save
+    const saveEdit = () => {
+        const newTitle = input.value.trim();
+        if (newTitle && newTitle !== currentTitle) {
+            updateEventTitle(eventId, newTitle);
+        }
+        // Restore original display
+        input.remove();
+        titleElement.style.display = '';
+    };
+    
+    // Handle cancel
+    const cancelEdit = () => {
+        input.remove();
+        titleElement.style.display = '';
+    };
+    
+    // Event listeners
+    input.addEventListener('blur', saveEdit);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            saveEdit();
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            cancelEdit();
+        }
+    });
+}
+
+function updateEventTitle(eventId, newTitle) {
+    fetch(`/planning/api/calendar/events/${eventId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            event_title: newTitle
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update the display
+            const eventItem = document.querySelector(`[data-event-id="${eventId}"]`);
+            if (eventItem) {
+                eventItem.querySelector('.event-title').textContent = newTitle;
+            }
+            showNotification('Event title updated successfully', 'success');
+        } else {
+            showNotification('Error updating event: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error updating event', 'error');
+    });
 }
 
 function deleteEvent(eventId) {
@@ -940,9 +1153,67 @@ function scheduleEvent(eventId) {
 
 // Schedule editing functions
 function editSchedule(scheduleId) {
-    console.log('Edit schedule:', scheduleId);
-    // TODO: Open edit modal or inline editing
-    alert('Edit schedule functionality coming soon!');
+    const scheduleItem = document.querySelector(`[data-schedule-id="${scheduleId}"]`);
+    if (!scheduleItem) return;
+    
+    const titleElement = scheduleItem.querySelector('.schedule-title');
+    const currentTitle = titleElement.textContent;
+    
+    // Create input field
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = currentTitle;
+    input.className = 'inline-edit-input';
+    input.style.cssText = `
+        width: 100%;
+        padding: 4px 8px;
+        border: 2px solid #3b82f6;
+        border-radius: 4px;
+        font-size: 14px;
+        background: white;
+    `;
+    
+    // Replace title with input
+    titleElement.style.display = 'none';
+    titleElement.parentNode.insertBefore(input, titleElement);
+    input.focus();
+    input.select();
+    
+    // Handle save
+    const saveEdit = () => {
+        const newTitle = input.value.trim();
+        if (newTitle && newTitle !== currentTitle) {
+            updateScheduleTitle(scheduleId, newTitle);
+        }
+        // Restore original display
+        input.remove();
+        titleElement.style.display = '';
+    };
+    
+    // Handle cancel
+    const cancelEdit = () => {
+        input.remove();
+        titleElement.style.display = '';
+    };
+    
+    // Event listeners
+    input.addEventListener('blur', saveEdit);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            saveEdit();
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            cancelEdit();
+        }
+    });
+}
+
+function updateScheduleTitle(scheduleId, newTitle) {
+    // For schedule items, we need to update the related idea or event
+    // This is a simplified version - in a full implementation, we'd need to
+    // determine whether this is an idea or event and update accordingly
+    showNotification('Schedule title editing requires updating the related idea/event', 'info');
 }
 
 function deleteSchedule(scheduleId) {
@@ -1033,5 +1304,149 @@ function showNotification(message, type = 'info') {
         }, 300);
     }, 3000);
 }
+
+// ============================================================================
+// DRAG AND DROP FUNCTIONALITY
+// ============================================================================
+
+let draggedElement = null;
+let draggedType = null;
+let draggedId = null;
+let dragGhost = null;
+
+function initializeDragAndDrop() {
+    // Add drag event listeners to all draggable items
+    document.addEventListener('dragstart', handleDragStart);
+    document.addEventListener('dragend', handleDragEnd);
+    document.addEventListener('dragover', handleDragOver);
+    document.addEventListener('drop', handleDrop);
+    document.addEventListener('dragenter', handleDragEnter);
+    document.addEventListener('dragleave', handleDragLeave);
+}
+
+function handleDragStart(e) {
+    const item = e.target.closest('.idea-item, .event-item, .schedule-item');
+    if (!item) return;
+    
+    draggedElement = item;
+    draggedType = item.classList.contains('idea-item') ? 'idea' : 
+                  item.classList.contains('event-item') ? 'event' : 'schedule';
+    draggedId = item.dataset.ideaId || item.dataset.eventId || item.dataset.scheduleId;
+    
+    // Add dragging class
+    item.classList.add('dragging');
+    
+    // Create drag ghost
+    dragGhost = document.createElement('div');
+    dragGhost.className = 'drag-ghost';
+    dragGhost.textContent = item.querySelector('.idea-title, .event-title, .schedule-title').textContent;
+    document.body.appendChild(dragGhost);
+    
+    // Set drag image
+    e.dataTransfer.setDragImage(dragGhost, 0, 0);
+    e.dataTransfer.effectAllowed = 'move';
+    
+    console.log('Drag started:', draggedType, draggedId);
+}
+
+function handleDragEnd(e) {
+    if (draggedElement) {
+        draggedElement.classList.remove('dragging');
+        draggedElement = null;
+        draggedType = null;
+        draggedId = null;
+    }
+    
+    if (dragGhost) {
+        document.body.removeChild(dragGhost);
+        dragGhost = null;
+    }
+    
+    // Remove all drag-over classes
+    document.querySelectorAll('.week-cell.drag-over').forEach(cell => {
+        cell.classList.remove('drag-over');
+    });
+    
+    console.log('Drag ended');
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+}
+
+function handleDragEnter(e) {
+    const weekCell = e.target.closest('.week-cell');
+    if (weekCell && weekCell.querySelector('.week-content')) {
+        weekCell.classList.add('drag-over');
+    }
+}
+
+function handleDragLeave(e) {
+    const weekCell = e.target.closest('.week-cell');
+    if (weekCell && !weekCell.contains(e.relatedTarget)) {
+        weekCell.classList.remove('drag-over');
+    }
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    
+    const weekCell = e.target.closest('.week-cell');
+    if (!weekCell || !draggedElement) return;
+    
+    const targetWeek = weekCell.dataset.week;
+    if (!targetWeek) return;
+    
+    console.log('Drop:', draggedType, draggedId, 'to week', targetWeek);
+    
+    // Remove drag-over class
+    weekCell.classList.remove('drag-over');
+    
+    // Move the item
+    moveItemToWeek(draggedType, draggedId, parseInt(targetWeek));
+}
+
+function moveItemToWeek(itemType, itemId, targetWeek) {
+    let endpoint = '';
+    let data = { week_number: targetWeek };
+    
+    if (itemType === 'idea') {
+        endpoint = `/planning/api/calendar/ideas/${itemId}`;
+    } else if (itemType === 'event') {
+        endpoint = `/planning/api/calendar/events/${itemId}`;
+        data.year = currentYear; // Events need year
+    } else if (itemType === 'schedule') {
+        endpoint = `/planning/api/calendar/schedule/${itemId}`;
+        data.year = currentYear; // Schedule needs year
+    }
+    
+    fetch(endpoint, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(`${itemType.charAt(0).toUpperCase() + itemType.slice(1)} moved to week ${targetWeek}`, 'success');
+            // Reload calendar content
+            updateCalendar();
+        } else {
+            showNotification(`Error moving ${itemType}: ${data.error}`, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification(`Error moving ${itemType}`, 'error');
+    });
+}
+
+// Initialize drag and drop when calendar loads
+document.addEventListener('DOMContentLoaded', function() {
+    initializeDragAndDrop();
+});
 </script>
 {% endblock %}
