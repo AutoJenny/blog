@@ -243,6 +243,17 @@
     margin-bottom: 0.25rem;
 }
 
+.schedule-header {
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+    padding: 4px 8px;
+    background: #f3f4f6;
+    border-radius: 4px;
+    border-left: 3px solid #3b82f6;
+}
+
 .idea-item, .event-item, .schedule-item {
     background: #10b981;
     color: white;
@@ -409,6 +420,47 @@
     outline: none;
     border-color: #3b82f6;
     box-shadow: 0 0 0 1px #3b82f6;
+}
+
+/* Perpetual items styling - simple green text */
+.idea-item.perpetual, .event-item.perpetual {
+    background: none !important;
+    border: none !important;
+    padding: 4px 0;
+    margin: 2px 0;
+}
+
+.idea-item.perpetual .idea-title, 
+.event-item.perpetual .event-title {
+    color: #16a34a !important; /* Green text */
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.idea-item.perpetual .idea-categories,
+.event-item.perpetual .event-categories {
+    margin-bottom: 4px;
+}
+
+.idea-item.perpetual .category-tag,
+.event-item.perpetual .category-tag {
+    font-size: 10px;
+    padding: 1px 4px;
+    opacity: 0.8;
+}
+
+.idea-item.perpetual .idea-actions,
+.event-item.perpetual .event-actions {
+    opacity: 0.6;
+    margin-top: 2px;
+}
+
+.idea-item.perpetual .idea-actions button,
+.event-item.perpetual .event-actions button {
+    font-size: 10px;
+    padding: 2px 4px;
+    margin: 0 1px;
 }
 
 /* Drag and drop styling */
@@ -711,13 +763,16 @@ function renderWeekContent(ideas, events, schedule) {
         html += '<div class="ideas-section">';
         ideas.forEach(idea => {
             const isScheduled = scheduledIdeaIds.has(idea.id);
+            if (isScheduled) {
+                // Skip perpetual ideas that are already scheduled - they'll show in the schedule section
+                return;
+            }
             html += `
-                <div class="idea-item ${isScheduled ? 'scheduled' : ''}" data-idea-id="${idea.id}" draggable="true">
+                <div class="idea-item perpetual" data-idea-id="${idea.id}" draggable="true">
                     <div class="idea-content">
                         <div class="idea-title">${idea.idea_title}</div>
                         <div class="idea-categories">
                             ${idea.categories.map(cat => `<span class="category-tag" style="background-color: ${cat.color}">${cat.name}</span>`).join('')}
-                            ${isScheduled ? '<span class="status-tag scheduled">Scheduled</span>' : ''}
                         </div>
                     </div>
                     <div class="idea-actions">
@@ -742,13 +797,16 @@ function renderWeekContent(ideas, events, schedule) {
         html += '<div class="events-section">';
         events.forEach(event => {
             const isScheduled = scheduledEventIds.has(event.id);
+            if (isScheduled) {
+                // Skip perpetual events that are already scheduled - they'll show in the schedule section
+                return;
+            }
             html += `
-                <div class="event-item ${isScheduled ? 'scheduled' : ''}" data-event-id="${event.id}" draggable="true">
+                <div class="event-item perpetual" data-event-id="${event.id}" draggable="true">
                     <div class="event-content">
                         <div class="event-title">${event.event_title}</div>
                         <div class="event-categories">
                             ${event.categories.map(cat => `<span class="category-tag" style="background-color: ${cat.color}">${cat.name}</span>`).join('')}
-                            ${isScheduled ? '<span class="status-tag scheduled">Scheduled</span>' : ''}
                         </div>
                     </div>
                     <div class="event-actions">
@@ -771,6 +829,7 @@ function renderWeekContent(ideas, events, schedule) {
     // Render schedule
     if (schedule && schedule.length > 0) {
         html += '<div class="schedule-section">';
+        html += '<div class="schedule-header">Scheduled Content</div>';
         schedule.forEach(item => {
             const title = item.idea_title || item.event_title || item.post_title || 'Scheduled Item';
             html += `
