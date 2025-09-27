@@ -160,6 +160,11 @@ def planning_calendar_view(post_id):
     """Calendar View sub-stage"""
     return render_template('planning/calendar/view.html', post_id=post_id, blueprint_name='planning')
 
+@bp.route('/categories/manage')
+def categories_manage():
+    """Category management page"""
+    return render_template('planning/categories/manage.html', blueprint_name='planning')
+
 @bp.route('/posts/<int:post_id>/calendar/ideas')
 def planning_calendar_ideas(post_id):
     """Idea Generation sub-stage"""
@@ -544,6 +549,107 @@ def api_calendar_categories():
             
     except Exception as e:
         logger.error(f"Error fetching calendar categories: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/calendar/categories', methods=['POST'])
+def api_calendar_category_create():
+    """Create a new calendar category"""
+    try:
+        data = request.get_json()
+        
+        required_fields = ['name', 'color']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO calendar_categories (name, description, color, icon, is_active)
+                VALUES (%s, %s, %s, %s, %s)
+                RETURNING id
+            """, (
+                data['name'],
+                data.get('description', ''),
+                data['color'],
+                data.get('icon', ''),
+                data.get('is_active', True)
+            ))
+            
+            category_id = cursor.fetchone()['id']
+            cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Category created successfully',
+                'category_id': category_id
+            })
+            
+    except Exception as e:
+        logger.error(f"Error creating calendar category: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/calendar/categories/<int:category_id>', methods=['PUT'])
+def api_calendar_category_update(category_id):
+    """Update a calendar category"""
+    try:
+        data = request.get_json()
+        
+        with db_manager.get_cursor() as cursor:
+            # Check if category exists
+            cursor.execute("SELECT id FROM calendar_categories WHERE id = %s", (category_id,))
+            if not cursor.fetchone():
+                return jsonify({'error': 'Category not found'}), 404
+            
+            # Build update query dynamically
+            update_fields = []
+            values = []
+            
+            allowed_fields = ['name', 'description', 'color', 'icon', 'is_active']
+            
+            for field in allowed_fields:
+                if field in data:
+                    update_fields.append(f"{field} = %s")
+                    values.append(data[field])
+            
+            if not update_fields:
+                return jsonify({'error': 'No valid fields to update'}), 400
+            
+            values.append(category_id)
+            query = f"UPDATE calendar_categories SET {', '.join(update_fields)}, updated_at = NOW() WHERE id = %s"
+            
+            cursor.execute(query, values)
+            cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Category updated successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error updating calendar category: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/calendar/categories/<int:category_id>', methods=['DELETE'])
+def api_calendar_category_delete(category_id):
+    """Delete a calendar category"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Check if category exists
+            cursor.execute("SELECT id FROM calendar_categories WHERE id = %s", (category_id,))
+            if not cursor.fetchone():
+                return jsonify({'error': 'Category not found'}), 404
+            
+            # Delete the category (cascade will handle related records)
+            cursor.execute("DELETE FROM calendar_categories WHERE id = %s", (category_id,))
+            cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Category deleted successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error deleting calendar category: {e}")
         return jsonify({'error': str(e)}), 500
 
 @bp.route('/api/calendar/evergreen/<int:week_number>', methods=['GET'])
