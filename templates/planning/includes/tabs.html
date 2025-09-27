@@ -1,0 +1,120 @@
+<!-- Process/Data Tabs - Universal across all planning pages -->
+<div class="planning-tabs">
+    <div class="tab-buttons">
+        <button class="tab-btn active" data-tab="process">
+            <i class="fas fa-cogs"></i>
+            Process
+        </button>
+        <button class="tab-btn" data-tab="data">
+            <i class="fas fa-database"></i>
+            Data
+        </button>
+    </div>
+    
+    <div class="tab-content">
+        <div id="process-tab" class="tab-panel active">
+            {% block process_content %}
+            <!-- Process content will be inserted here by each page -->
+            {% endblock %}
+        </div>
+        
+        <div id="data-tab" class="tab-panel">
+            {% include 'planning/includes/data_tab.html' %}
+        </div>
+    </div>
+</div>
+
+<style>
+.planning-tabs {
+    margin-top: 2rem;
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding: 0.5rem;
+    background: #1e293b;
+    border-radius: 8px;
+    border: 1px solid #334155;
+}
+
+.tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    color: #94a3b8;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    background: #334155;
+    border-color: #64748b;
+    color: #e2e8f0;
+}
+
+.tab-btn.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+.tab-content {
+    position: relative;
+}
+
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
+</style>
+
+<script>
+// Tab switching functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-tab');
+            
+            // Remove active class from all buttons and panels
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabPanels.forEach(panel => panel.classList.remove('active'));
+            
+            // Add active class to clicked button and corresponding panel
+            this.classList.add('active');
+            const targetPanel = document.getElementById(targetTab + '-tab');
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+            }
+            
+            // Save tab state to localStorage
+            localStorage.setItem('planning-active-tab', targetTab);
+        });
+    });
+    
+    // Restore last active tab from localStorage
+    const lastActiveTab = localStorage.getItem('planning-active-tab');
+    if (lastActiveTab) {
+        const savedButton = document.querySelector(`[data-tab="${lastActiveTab}"]`);
+        const savedPanel = document.getElementById(lastActiveTab + '-tab');
+        if (savedButton && savedPanel) {
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabPanels.forEach(panel => panel.classList.remove('active'));
+            savedButton.classList.add('active');
+            savedPanel.classList.add('active');
+        }
+    }
+});
+</script>

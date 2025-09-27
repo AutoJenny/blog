@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+
+{% block title %}Source Research - Research & Resources - Planning - BlogForge{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Include shared header -->
+    {% include 'planning/includes/header.html' %}
+    
+    <!-- Include navigation -->
+    {% include 'planning/includes/navigation.html' %}
+    
+    <!-- Include tabs -->
+    {% include 'planning/includes/tabs.html' %}
+    
+    {% block process_content %}
+    <div class="sources-main">
+        <div class="sources-header">
+            <h2>Source Research</h2>
+            <p>Find authoritative sources and gather supporting information for your content.</p>
+        </div>
+        
+        <div class="sources-content">
+            <div class="search-section">
+                <div class="search-form">
+                    <h3>Find Sources</h3>
+                    <div class="form-group">
+                        <label for="search-query">Search Query</label>
+                        <input type="text" id="search-query" placeholder="Enter keywords or topics to research...">
+                    </div>
+                    <div class="form-group">
+                        <label for="source-type">Source Type</label>
+                        <select id="source-type">
+                            <option value="all">All Sources</option>
+                            <option value="academic">Academic Papers</option>
+                            <option value="news">News Articles</option>
+                            <option value="blogs">Blog Posts</option>
+                            <option value="government">Government Sources</option>
+                            <option value="expert">Expert Opinions</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="searchSources()">
+                        <i class="fas fa-search"></i> Search Sources
+                    </button>
+                </div>
+            </div>
+            
+            <div class="sources-results">
+                <h3>Research Sources</h3>
+                <div id="sources-list" class="sources-list">
+                    <!-- Sources will be loaded here -->
+                </div>
+            </div>
+            
+            <div class="sources-management">
+                <h3>Selected Sources</h3>
+                <div id="selected-sources" class="selected-sources">
+                    <!-- Selected sources will appear here -->
+                </div>
+                <div class="management-actions">
+                    <button class="btn btn-success" onclick="saveSources()">
+                        <i class="fas fa-save"></i> Save Sources
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportSources()">
+                        <i class="fas fa-download"></i> Export List
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</div>
+
+<style>
+.sources-main {
+    padding: 2rem 0;
+}
+
+.sources-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.sources-header h2 {
+    font-size: 2rem;
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+}
+
+.sources-header p {
+    color: #94a3b8;
+    font-size: 1.125rem;
+}
+
+.sources-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.search-section {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 2rem;
+}
+
+.search-form h3 {
+    color: #f1f5f9;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    color: #f1f5f9;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    color: #e2e8f0;
+    font-family: inherit;
+}
+
+.sources-results {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 2rem;
+}
+
+.sources-results h3 {
+    color: #f1f5f9;
+    margin-bottom: 1.5rem;
+}
+
+.sources-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.source-item {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
+}
+
+.source-item:hover {
+    border-color: #475569;
+}
+
+.source-title {
+    color: #f1f5f9;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.source-url {
+    color: #3b82f6;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    word-break: break-all;
+}
+
+.source-snippet {
+    color: #94a3b8;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    margin-bottom: 0.75rem;
+}
+
+.source-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+}
+
+.btn-success {
+    background: #10b981;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #059669;
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+}
+
+.sources-management {
+    grid-column: 1 / -1;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 2rem;
+}
+
+.sources-management h3 {
+    color: #f1f5f9;
+    margin-bottom: 1.5rem;
+}
+
+.selected-sources {
+    min-height: 200px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.management-actions {
+    display: flex;
+    gap: 1rem;
+}
+</style>
+
+<script>
+// Set navigation context
+document.addEventListener('DOMContentLoaded', function() {
+    // Set current stage for navigation
+    window.currentStage = 'research';
+    window.currentSubstage = 'sources';
+    window.postId = {{ post_id }};
+});
+
+function searchSources() {
+    const query = document.getElementById('search-query').value;
+    const sourceType = document.getElementById('source-type').value;
+    
+    if (!query.trim()) {
+        alert('Please enter a search query');
+        return;
+    }
+    
+    // Show loading state
+    const sourcesList = document.getElementById('sources-list');
+    sourcesList.innerHTML = '<div class="loading">Searching for sources...</div>';
+    
+    // Simulate search results (replace with actual API call)
+    setTimeout(() => {
+        const mockSources = [
+            {
+                title: "The Complete Guide to Content Strategy",
+                url: "https://example.com/content-strategy-guide",
+                snippet: "A comprehensive guide covering all aspects of content strategy, from planning to execution...",
+                type: "blog"
+            },
+            {
+                title: "Content Marketing Research 2024",
+                url: "https://example.com/content-marketing-research",
+                snippet: "Latest research findings on content marketing trends and best practices...",
+                type: "academic"
+            },
+            {
+                title: "How to Create Engaging Blog Content",
+                url: "https://example.com/engaging-blog-content",
+                snippet: "Practical tips and techniques for creating content that resonates with your audience...",
+                type: "blog"
+            }
+        ];
+        
+        displaySources(mockSources);
+    }, 1500);
+}
+
+function displaySources(sources) {
+    const sourcesList = document.getElementById('sources-list');
+    sourcesList.innerHTML = '';
+    
+    sources.forEach((source, index) => {
+        const sourceItem = document.createElement('div');
+        sourceItem.className = 'source-item';
+        sourceItem.innerHTML = `
+            <div class="source-title">${source.title}</div>
+            <div class="source-url">${source.url}</div>
+            <div class="source-snippet">${source.snippet}</div>
+            <div class="source-actions">
+                <button class="btn btn-primary" onclick="selectSource(${index})">
+                    <i class="fas fa-plus"></i> Select
+                </button>
+                <button class="btn btn-secondary" onclick="previewSource('${source.url}')">
+                    <i class="fas fa-external-link-alt"></i> Preview
+                </button>
+            </div>
+        `;
+        sourcesList.appendChild(sourceItem);
+    });
+}
+
+function selectSource(index) {
+    console.log('Selecting source:', index);
+    // Implement source selection
+}
+
+function previewSource(url) {
+    window.open(url, '_blank');
+}
+
+function saveSources() {
+    console.log('Saving sources...');
+    // Implement save functionality
+}
+
+function exportSources() {
+    console.log('Exporting sources...');
+    // Implement export functionality
+}
+</script>
+{% endblock %}

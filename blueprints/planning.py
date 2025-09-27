@@ -149,6 +149,85 @@ def planning_structure(post_id):
     """Structure planning phase"""
     return render_template('planning/structure.html', post_id=post_id, blueprint_name='planning')
 
+# Content Calendar Stage
+@bp.route('/posts/<int:post_id>/calendar')
+def planning_calendar(post_id):
+    """Content Calendar main stage"""
+    return render_template('planning/calendar.html', post_id=post_id, blueprint_name='planning')
+
+@bp.route('/posts/<int:post_id>/calendar/view')
+def planning_calendar_view(post_id):
+    """Calendar View sub-stage"""
+    return render_template('planning/calendar/view.html', post_id=post_id, blueprint_name='planning')
+
+@bp.route('/posts/<int:post_id>/calendar/ideas')
+def planning_calendar_ideas(post_id):
+    """Idea Generation sub-stage"""
+    return render_template('planning/calendar/ideas.html', post_id=post_id, blueprint_name='planning')
+
+@bp.route('/posts/<int:post_id>/calendar/gaps')
+def planning_calendar_gaps(post_id):
+    """Content Gaps sub-stage"""
+    return render_template('planning/calendar/gaps.html', post_id=post_id, blueprint_name='planning')
+
+@bp.route('/posts/<int:post_id>/calendar/schedule')
+def planning_calendar_schedule(post_id):
+    """Schedule Management sub-stage"""
+    return render_template('planning/calendar/schedule.html', post_id=post_id, blueprint_name='planning')
+
+# Concept Development Stage
+@bp.route('/posts/<int:post_id>/concept')
+def planning_concept(post_id):
+    """Concept Development main stage"""
+    return render_template('planning/concept.html', post_id=post_id, blueprint_name='planning')
+
+@bp.route('/posts/<int:post_id>/concept/proposal')
+def planning_concept_proposal(post_id):
+    """Basic Proposal sub-stage"""
+    return render_template('planning/concept/proposal.html', post_id=post_id, blueprint_name='planning')
+
+@bp.route('/posts/<int:post_id>/concept/brainstorm')
+def planning_concept_brainstorm(post_id):
+    """Topic Brainstorming sub-stage"""
+    return render_template('planning/concept/brainstorm.html', post_id=post_id, blueprint_name='planning')
+
+@bp.route('/posts/<int:post_id>/concept/sections')
+def planning_concept_sections(post_id):
+    """Section Planning sub-stage"""
+    return render_template('planning/concept/sections.html', post_id=post_id, blueprint_name='planning')
+
+@bp.route('/posts/<int:post_id>/concept/outline')
+def planning_concept_outline(post_id):
+    """Content Outline sub-stage"""
+    return render_template('planning/concept/outline.html', post_id=post_id, blueprint_name='planning')
+
+# Research & Resources Stage (updated)
+@bp.route('/posts/<int:post_id>/research/sources')
+def planning_research_sources(post_id):
+    """Source Research sub-stage"""
+    return render_template('planning/research/sources.html', post_id=post_id, blueprint_name='planning')
+
+@bp.route('/posts/<int:post_id>/research/visuals')
+def planning_research_visuals(post_id):
+    """Visual Planning sub-stage"""
+    return render_template('planning/research/visuals.html', post_id=post_id, blueprint_name='planning')
+
+@bp.route('/posts/<int:post_id>/research/prompts')
+def planning_research_prompts(post_id):
+    """Image Prompts sub-stage"""
+    return render_template('planning/research/prompts.html', post_id=post_id, blueprint_name='planning')
+
+@bp.route('/posts/<int:post_id>/research/verification')
+def planning_research_verification(post_id):
+    """Fact Verification sub-stage"""
+    return render_template('planning/research/verification.html', post_id=post_id, blueprint_name='planning')
+
+# Old Interface access
+@bp.route('/posts/<int:post_id>/old-interface')
+def planning_old_interface(post_id):
+    """Access to old workflow interface"""
+    return redirect(f'/workflow/posts/{post_id}/planning/idea/initial_concept')
+
 @bp.route('/api/posts')
 def api_posts():
     """API endpoint to get posts for planning"""

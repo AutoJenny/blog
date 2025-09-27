@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}Idea Generation - Content Calendar - Planning - BlogForge{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Include shared header -->
+    {% include 'planning/includes/header.html' %}
+    
+    <!-- Include navigation -->
+    {% include 'planning/includes/navigation.html' %}
+    
+    <!-- Include tabs -->
+    {% include 'planning/includes/tabs.html' %}
+    
+    {% block process_content %}
+    <div class="ideas-main">
+        <div class="ideas-header">
+            <h2>Idea Generation</h2>
+            <p>AI-powered suggestions based on seasons, trends, and content gaps.</p>
+        </div>
+        
+        <div class="ideas-content">
+            <div class="idea-generator">
+                <h3>Generate Ideas</h3>
+                <div class="form-group">
+                    <label for="seasonal-context">Seasonal Context</label>
+                    <select id="seasonal-context">
+                        <option value="spring">Spring</option>
+                        <option value="summer">Summer</option>
+                        <option value="autumn">Autumn</option>
+                        <option value="winter">Winter</option>
+                        <option value="any">Any Season</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="content-type">Content Type</label>
+                    <select id="content-type">
+                        <option value="tutorial">Tutorial</option>
+                        <option value="guide">Guide</option>
+                        <option value="list">List</option>
+                        <option value="review">Review</option>
+                        <option value="opinion">Opinion</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="generateIdeas()">
+                    <i class="fas fa-magic"></i> Generate Ideas
+                </button>
+            </div>
+            
+            <div class="ideas-results">
+                <h3>Generated Ideas</h3>
+                <div id="ideas-list" class="ideas-list">
+                    <!-- Generated ideas will appear here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</div>
+
+<style>
+.ideas-main {
+    padding: 2rem 0;
+}
+
+.ideas-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.ideas-header h2 {
+    font-size: 2rem;
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+}
+
+.ideas-header p {
+    color: #94a3b8;
+    font-size: 1.125rem;
+}
+
+.ideas-content {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+}
+
+.idea-generator {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 2rem;
+}
+
+.idea-generator h3 {
+    color: #f1f5f9;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    color: #f1f5f9;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    color: #e2e8f0;
+    font-family: inherit;
+}
+
+.ideas-results {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 2rem;
+}
+
+.ideas-results h3 {
+    color: #f1f5f9;
+    margin-bottom: 1.5rem;
+}
+
+.ideas-list {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.idea-item {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
+}
+
+.idea-item:hover {
+    border-color: #475569;
+}
+
+.idea-title {
+    color: #f1f5f9;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.idea-description {
+    color: #94a3b8;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    margin-bottom: 0.75rem;
+}
+
+.idea-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+}
+
+.btn-success {
+    background: #10b981;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #059669;
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+}
+</style>
+
+<script>
+// Set navigation context
+document.addEventListener('DOMContentLoaded', function() {
+    // Set current stage for navigation
+    window.currentStage = 'calendar';
+    window.currentSubstage = 'ideas';
+    window.postId = {{ post_id }};
+});
+
+function generateIdeas() {
+    const seasonalContext = document.getElementById('seasonal-context').value;
+    const contentType = document.getElementById('content-type').value;
+    
+    // Show loading state
+    const ideasList = document.getElementById('ideas-list');
+    ideasList.innerHTML = '<div class="loading">Generating ideas...</div>';
+    
+    // Simulate AI generation (replace with actual API call)
+    setTimeout(() => {
+        const mockIdeas = [
+            {
+                title: "Spring Gardening Tips for Beginners",
+                description: "A comprehensive guide to starting your first garden in spring, covering soil preparation, plant selection, and maintenance tips.",
+                type: "tutorial",
+                season: "spring"
+            },
+            {
+                title: "10 Spring Cleaning Hacks That Actually Work",
+                description: "Practical and effective spring cleaning tips to refresh your home and boost productivity.",
+                type: "list",
+                season: "spring"
+            },
+            {
+                title: "The Science Behind Spring Allergies",
+                description: "An informative piece explaining why allergies are worse in spring and how to manage them effectively.",
+                type: "guide",
+                season: "spring"
+            }
+        ];
+        
+        displayIdeas(mockIdeas);
+    }, 2000);
+}
+
+function displayIdeas(ideas) {
+    const ideasList = document.getElementById('ideas-list');
+    ideasList.innerHTML = '';
+    
+    ideas.forEach((idea, index) => {
+        const ideaItem = document.createElement('div');
+        ideaItem.className = 'idea-item';
+        ideaItem.innerHTML = `
+            <div class="idea-title">${idea.title}</div>
+            <div class="idea-description">${idea.description}</div>
+            <div class="idea-actions">
+                <button class="btn btn-success" onclick="selectIdea(${index})">
+                    <i class="fas fa-check"></i> Select
+                </button>
+                <button class="btn btn-secondary" onclick="refineIdea(${index})">
+                    <i class="fas fa-edit"></i> Refine
+                </button>
+            </div>
+        `;
+        ideasList.appendChild(ideaItem);
+    });
+}
+
+function selectIdea(index) {
+    console.log('Selecting idea:', index);
+    // Implement idea selection
+}
+
+function refineIdea(index) {
+    console.log('Refining idea:', index);
+    // Implement idea refinement
+}
+</script>
+{% endblock %}

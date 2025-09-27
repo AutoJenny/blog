@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Content Calendar - Planning - BlogForge{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Include shared header -->
+    {% include 'planning/includes/header.html' %}
+    
+    <!-- Include navigation -->
+    {% include 'planning/includes/navigation.html' %}
+    
+    <!-- Include tabs -->
+    {% include 'planning/includes/tabs.html' %}
+    
+    {% block process_content %}
+    <div class="calendar-main">
+        <div class="calendar-intro">
+            <h2>Content Calendar</h2>
+            <p>Strategic content planning and idea generation for consistent, relevant blog posts.</p>
+        </div>
+        
+        <div class="calendar-actions">
+            <div class="action-card">
+                <h3><i class="fas fa-calendar-alt"></i> Calendar View</h3>
+                <p>Monthly and weekly views of your content schedule</p>
+                <a href="{{ url_for('planning.planning_calendar_view', post_id=post_id) }}" class="btn btn-primary">Open Calendar</a>
+            </div>
+            
+            <div class="action-card">
+                <h3><i class="fas fa-lightbulb"></i> Idea Generation</h3>
+                <p>AI-powered suggestions based on seasons and trends</p>
+                <a href="{{ url_for('planning.planning_calendar_ideas', post_id=post_id) }}" class="btn btn-primary">Generate Ideas</a>
+            </div>
+            
+            <div class="action-card">
+                <h3><i class="fas fa-search"></i> Content Gaps</h3>
+                <p>Identify missing topics and opportunities</p>
+                <a href="{{ url_for('planning.planning_calendar_gaps', post_id=post_id) }}" class="btn btn-primary">Analyze Gaps</a>
+            </div>
+            
+            <div class="action-card">
+                <h3><i class="fas fa-clock"></i> Schedule Management</h3>
+                <p>Plan and manage your publishing timeline</p>
+                <a href="{{ url_for('planning.planning_calendar_schedule', post_id=post_id) }}" class="btn btn-primary">Manage Schedule</a>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</div>
+
+<style>
+.calendar-main {
+    padding: 2rem 0;
+}
+
+.calendar-intro {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.calendar-intro h2 {
+    font-size: 2.5rem;
+    color: #f1f5f9;
+    margin-bottom: 1rem;
+}
+
+.calendar-intro p {
+    font-size: 1.125rem;
+    color: #94a3b8;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.calendar-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.action-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.action-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border-color: #475569;
+}
+
+.action-card h3 {
+    color: #f1f5f9;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+.action-card h3 i {
+    color: #3b82f6;
+    margin-right: 0.5rem;
+}
+
+.action-card p {
+    color: #94a3b8;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: #3b82f6;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+</style>
+
+<script>
+// Set navigation context
+document.addEventListener('DOMContentLoaded', function() {
+    // Set current stage for navigation
+    window.currentStage = 'calendar';
+    window.currentSubstage = null;
+    window.postId = {{ post_id }};
+});
+</script>
+{% endblock %}

@@ -1,260 +1,140 @@
 {% extends "base.html" %}
 
-{% block title %}Research - Planning{% endblock %}
-
-{% block head %}
-    <style>
-        .planning-header {
-            margin-bottom: 2rem;
-            margin-top: 2rem;
-        }
-        .planning-nav {
-            display: flex;
-            gap: 0.5rem;
-            justify-content: center;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-        .planning-nav a {
-            background: #334155;
-            color: #e2e8f0;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-        .planning-nav a:hover {
-            background: #475569;
-            color: white;
-        }
-        .planning-nav a.active {
-            background: #3b82f6;
-            color: white;
-        }
-        .planning-title {
-            text-align: center;
-            color: #f1f5f9;
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin: 0;
-        }
-        .status-line {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-        .status-left {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .status-right {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        .status-label, .date-label {
-            color: #94a3b8;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-        .status-value, .date-value {
-            color: #f1f5f9;
-            font-weight: 600;
-        }
-        .content-area {
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-        .content-area h2 {
-            color: #f1f5f9;
-            margin-bottom: 1rem;
-        }
-        .content-area p {
-            color: #e2e8f0;
-            margin-bottom: 1rem;
-        }
-        .content-area ul {
-            color: #e2e8f0;
-            margin-bottom: 1rem;
-        }
-        .content-area li {
-            margin-bottom: 0.5rem;
-        }
-        .content-area em {
-            color: #94a3b8;
-        }
-        .planning-tabs {
-            background: #1e293b;
-            border-bottom: 1px solid #334155;
-            margin-bottom: 2rem;
-        }
-        .tab-navigation {
-            display: flex;
-            gap: 0;
-            margin: 0;
-        }
-        .tab-button {
-            background: transparent;
-            border: none;
-            color: #94a3b8;
-            padding: 1rem 2rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-bottom: 3px solid transparent;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .tab-button:hover {
-            color: #e2e8f0;
-            background: rgba(255, 255, 255, 0.05);
-        }
-        .tab-button.active {
-            color: #3b82f6;
-            border-bottom-color: #3b82f6;
-            background: rgba(59, 130, 246, 0.1);
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        .data-content {
-            margin-bottom: 2rem;
-        }
-        .data-content h2 {
-            color: #f1f5f9;
-            margin-bottom: 1rem;
-        }
-        .data-content p {
-            color: #e2e8f0;
-            margin-bottom: 2rem;
-        }
-        .data-placeholder {
-            text-align: center;
-            padding: 3rem;
-            color: #94a3b8;
-        }
-        .data-placeholder i {
-            margin-bottom: 1rem;
-            opacity: 0.5;
-        }
-    </style>
-{% endblock %}
+{% block title %}Research & Resources - Planning - BlogForge{% endblock %}
 
 {% block content %}
 <div class="container">
-    <div class="planning-header">
-        <div class="planning-nav">
-            <a href="/planning/">Overview</a>
-            <a href="/planning/posts/{{ post_id }}/idea">Idea</a>
-            <a href="/planning/posts/{{ post_id }}/research" class="active">Research</a>
-            <a href="/planning/posts/{{ post_id }}/structure">Structure</a>
-            <a href="/workflow/posts/{{ post_id }}/planning/idea/initial_concept">Old Interface</a>
+    <!-- Include shared header -->
+    {% include 'planning/includes/header.html' %}
+    
+    <!-- Include navigation -->
+    {% include 'planning/includes/navigation.html' %}
+    
+    <!-- Include tabs -->
+    {% include 'planning/includes/tabs.html' %}
+    
+    {% block process_content %}
+    <div class="research-main">
+        <div class="research-intro">
+            <h2>Research & Resources</h2>
+            <p>Gather knowledge and visual assets to support your content creation.</p>
         </div>
-        <h1 class="planning-title">Research Phase: ID: {{ post_id }}</h1>
-    </div>
-
-    <!-- Status Line -->
-    <div class="status-line">
-        <div class="status-left">
-            <span class="status-label">Status:</span>
-            <span id="post-status" class="status-value">Loading...</span>
-        </div>
-        <div class="status-right">
-            <span class="date-label">Created:</span>
-            <span id="post-created" class="date-value">Loading...</span>
-            <span class="date-label">Updated:</span>
-            <span id="post-updated" class="date-value">Loading...</span>
-        </div>
-    </div>
-
-    <!-- Process and Data Tabs -->
-    <div class="planning-tabs">
-        <div class="container">
-            <div class="tab-navigation">
-                <button class="tab-button active" data-tab="process">
-                    <i class="fas fa-cogs"></i>
-                    Process
-                </button>
-                <button class="tab-button" data-tab="data">
-                    <i class="fas fa-database"></i>
-                    Data
-                </button>
+        
+        <div class="research-actions">
+            <div class="action-card">
+                <h3><i class="fas fa-search"></i> Source Research</h3>
+                <p>Find authoritative sources and gather supporting information</p>
+                <a href="{{ url_for('planning.planning_research_sources', post_id=post_id) }}" class="btn btn-primary">Start Research</a>
+            </div>
+            
+            <div class="action-card">
+                <h3><i class="fas fa-palette"></i> Visual Planning</h3>
+                <p>Conceptualize distinct images for each section</p>
+                <a href="{{ url_for('planning.planning_research_visuals', post_id=post_id) }}" class="btn btn-primary">Plan Visuals</a>
+            </div>
+            
+            <div class="action-card">
+                <h3><i class="fas fa-image"></i> Image Prompts</h3>
+                <p>Generate specific prompts for AI image generation</p>
+                <a href="{{ url_for('planning.planning_research_prompts', post_id=post_id) }}" class="btn btn-primary">Create Prompts</a>
+            </div>
+            
+            <div class="action-card">
+                <h3><i class="fas fa-check-circle"></i> Fact Verification</h3>
+                <p>Cross-check key information and verify sources</p>
+                <a href="{{ url_for('planning.planning_research_verification', post_id=post_id) }}" class="btn btn-primary">Verify Facts</a>
             </div>
         </div>
     </div>
-
-    <!-- Process Tab Content -->
-    <div id="process-tab" class="tab-content active">
-        <div class="content-area">
-            <h2>Post ID: {{ post_id }}</h2>
-            <p>This is the dedicated Research workspace. Here you can:</p>
-            <ul>
-                <li>Gather relevant sources and references</li>
-                <li>Research key facts and statistics</li>
-                <li>Identify expert opinions and quotes</li>
-                <li>Build a knowledge base for your content</li>
-            </ul>
-            <p><em>This will be developed further with specific tools and interfaces.</em></p>
-        </div>
-    </div>
-
-    <!-- Data Tab Content -->
-    {% include 'planning/includes/data_tab.html' %}
+    {% endblock %}
 </div>
 
+<style>
+.research-main {
+    padding: 2rem 0;
+}
+
+.research-intro {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.research-intro h2 {
+    font-size: 2.5rem;
+    color: #f1f5f9;
+    margin-bottom: 1rem;
+}
+
+.research-intro p {
+    font-size: 1.125rem;
+    color: #94a3b8;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.research-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.action-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.action-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border-color: #475569;
+}
+
+.action-card h3 {
+    color: #f1f5f9;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+.action-card h3 i {
+    color: #10b981;
+    margin-right: 0.5rem;
+}
+
+.action-card p {
+    color: #94a3b8;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: #3b82f6;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+</style>
+
 <script>
-    // Tab switching functionality with localStorage persistence
-    document.addEventListener('DOMContentLoaded', function() {
-        const tabButtons = document.querySelectorAll('.tab-button');
-        const tabContents = document.querySelectorAll('.tab-content');
-        
-        // Get the last selected tab from localStorage, default to 'process'
-        const lastSelectedTab = localStorage.getItem('planning-tab-state') || 'process';
-        
-        // Set initial active state based on saved preference
-        tabButtons.forEach(btn => btn.classList.remove('active'));
-        tabContents.forEach(content => content.classList.remove('active'));
-        
-        const activeButton = document.querySelector(`[data-tab="${lastSelectedTab}"]`);
-        const activeContent = document.getElementById(lastSelectedTab + '-tab');
-        
-        if (activeButton && activeContent) {
-            activeButton.classList.add('active');
-            activeContent.classList.add('active');
-        } else {
-            // Fallback to process tab if saved tab doesn't exist
-            document.querySelector('[data-tab="process"]').classList.add('active');
-            document.getElementById('process-tab').classList.add('active');
-        }
-        
-        tabButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const targetTab = this.getAttribute('data-tab');
-                
-                // Remove active class from all buttons and contents
-                tabButtons.forEach(btn => btn.classList.remove('active'));
-                tabContents.forEach(content => content.classList.remove('active'));
-                
-                // Add active class to clicked button and corresponding content
-                this.classList.add('active');
-                document.getElementById(targetTab + '-tab').classList.add('active');
-                
-                // Save the selected tab to localStorage
-                localStorage.setItem('planning-tab-state', targetTab);
-            });
-        });
-    });
+// Set navigation context
+document.addEventListener('DOMContentLoaded', function() {
+    // Set current stage for navigation
+    window.currentStage = 'research';
+    window.currentSubstage = null;
+    window.postId = {{ post_id }};
+});
 </script>
 {% endblock %}
