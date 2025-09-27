@@ -422,18 +422,26 @@
 }
 
 /* Mandatory highlighting */
-.schedule-item.mandatory {
+.schedule-item.mandatory, .idea-item.mandatory, .event-item.mandatory {
     background: #8b5cf6 !important; /* Purple background for mandatory */
     border: 2px solid #7c3aed;
 }
 
-.schedule-item.mandatory .schedule-title {
+.schedule-item.mandatory .schedule-title,
+.idea-item.mandatory .idea-title,
+.event-item.mandatory .event-title {
     font-weight: 600;
 }
 
 .schedule-item.mandatory .schedule-status {
     background: rgba(255, 255, 255, 0.3);
     color: white;
+}
+
+/* Perpetual mandatory items - override green text with purple */
+.idea-item.perpetual.mandatory .idea-title,
+.event-item.perpetual.mandatory .event-title {
+    color: white !important;
 }
 
 /* Perpetual items styling - simple green text */
@@ -790,7 +798,7 @@ function renderWeekContent(ideas, events, schedule) {
                 return;
             }
             html += `
-                <div class="idea-item perpetual" data-idea-id="${idea.id}" draggable="true">
+                <div class="idea-item perpetual ${idea.priority === 'mandatory' ? 'mandatory' : ''}" data-idea-id="${idea.id}" draggable="true">
                     <div class="idea-content">
                         <div class="idea-title">${idea.idea_title}</div>
                         <div class="idea-categories">
@@ -798,6 +806,10 @@ function renderWeekContent(ideas, events, schedule) {
                         </div>
                     </div>
                     <div class="idea-actions">
+                        <select class="priority-select" onchange="updateIdeaPriority(${idea.id}, this.value)" title="Set priority">
+                            <option value="random" ${idea.priority === 'mandatory' ? '' : 'selected'}>Random</option>
+                            <option value="mandatory" ${idea.priority === 'mandatory' ? 'selected' : ''}>Mandatory</option>
+                        </select>
                         <button class="btn-edit" onclick="editIdea(${idea.id})" title="Edit idea">
                             <i class="fas fa-edit"></i>
                         </button>
@@ -824,7 +836,7 @@ function renderWeekContent(ideas, events, schedule) {
                 return;
             }
             html += `
-                <div class="event-item perpetual" data-event-id="${event.id}" draggable="true">
+                <div class="event-item perpetual ${event.priority === 'mandatory' ? 'mandatory' : ''}" data-event-id="${event.id}" draggable="true">
                     <div class="event-content">
                         <div class="event-title">${event.event_title}</div>
                         <div class="event-categories">
@@ -832,6 +844,10 @@ function renderWeekContent(ideas, events, schedule) {
                         </div>
                     </div>
                     <div class="event-actions">
+                        <select class="priority-select" onchange="updateEventPriority(${event.id}, this.value)" title="Set priority">
+                            <option value="random" ${event.priority === 'mandatory' ? '' : 'selected'}>Random</option>
+                            <option value="mandatory" ${event.priority === 'mandatory' ? 'selected' : ''}>Mandatory</option>
+                        </select>
                         <button class="btn-edit" onclick="editEvent(${event.id})" title="Edit event">
                             <i class="fas fa-edit"></i>
                         </button>
@@ -1358,6 +1374,72 @@ function deleteSchedule(scheduleId) {
     }
 }
 
+function updateIdeaPriority(ideaId, newPriority) {
+    fetch(`/planning/api/calendar/ideas/${ideaId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            priority: newPriority
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update the visual state immediately
+            const ideaItem = document.querySelector(`[data-idea-id="${ideaId}"]`);
+            if (ideaItem) {
+                if (newPriority === 'mandatory') {
+                    ideaItem.classList.add('mandatory');
+                } else {
+                    ideaItem.classList.remove('mandatory');
+                }
+            }
+            showNotification(`Idea priority set to ${newPriority}`, 'success');
+        } else {
+            showNotification('Error updating idea priority: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error updating idea priority', 'error');
+    });
+}
+
+function updateEventPriority(eventId, newPriority) {
+    fetch(`/planning/api/calendar/events/${eventId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            priority: newPriority
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update the visual state immediately
+            const eventItem = document.querySelector(`[data-event-id="${eventId}"]`);
+            if (eventItem) {
+                if (newPriority === 'mandatory') {
+                    eventItem.classList.add('mandatory');
+                } else {
+                    eventItem.classList.remove('mandatory');
+                }
+            }
+            showNotification(`Event priority set to ${newPriority}`, 'success');
+        } else {
+            showNotification('Error updating event priority: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error updating event priority', 'error');
+    });
+}
+
 function updateSchedulePriority(scheduleId, newPriority) {
     fetch(`/planning/api/calendar/schedule/${scheduleId}`, {
         method: 'PUT',
@@ -1386,14 +1468,14 @@ function updateSchedulePriority(scheduleId, newPriority) {
                     statusElement.className = `schedule-status status-${newPriority}`;
                 }
             }
-            showNotification(`Priority set to ${newPriority}`, 'success');
+            showNotification(`Schedule priority set to ${newPriority}`, 'success');
         } else {
-            showNotification('Error updating priority: ' + data.error, 'error');
+            showNotification('Error updating schedule priority: ' + data.error, 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showNotification('Error updating priority', 'error');
+        showNotification('Error updating schedule priority', 'error');
     });
 }
 
