@@ -296,11 +296,15 @@ def get_post_data(post_id):
             """, (post_id,))
             calendar_schedule_data = cursor.fetchall()
             
+            # Debug logging
+            logger.info(f"Calendar schedule query for post_id={post_id} returned {len(calendar_schedule_data)} results")
+            
             # Convert calendar schedule data to list of dicts
             calendar_schedule_list = []
             for row in calendar_schedule_data:
                 schedule_dict = dict(row)
                 calendar_schedule_list.append(schedule_dict)
+                logger.info(f"Calendar schedule entry: {schedule_dict}")
             
             return jsonify({
                 **post_info,
