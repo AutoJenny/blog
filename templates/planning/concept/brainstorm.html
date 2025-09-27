@@ -1,0 +1,404 @@
+{% extends "base.html" %}
+
+{% block title %}Topic Brainstorming - Concept Development - Planning - BlogForge{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Include shared header -->
+    {% include 'planning/includes/header.html' %}
+    
+    <!-- Include navigation -->
+    {% include 'planning/includes/navigation.html' %}
+    
+    <!-- Include tabs -->
+    {% include 'planning/includes/tabs.html' %}
+    
+    {% block process_content %}
+    <div class="brainstorm-main">
+        <div class="brainstorm-header">
+            <h2>Topic Brainstorming</h2>
+            <p>Generate 50+ topic ideas and curate the best ones for your content.</p>
+        </div>
+        
+        <div class="brainstorm-content">
+            <div class="brainstorm-controls">
+                <div class="form-group">
+                    <label for="base-topic">Base Topic</label>
+                    <input type="text" id="base-topic" placeholder="Enter your main topic or theme...">
+                </div>
+                <div class="form-group">
+                    <label for="brainstorm-type">Brainstorm Type</label>
+                    <select id="brainstorm-type">
+                        <option value="comprehensive">Comprehensive (50+ ideas)</option>
+                        <option value="focused">Focused (20-30 ideas)</option>
+                        <option value="creative">Creative (unusual angles)</option>
+                        <option value="practical">Practical (how-to focused)</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="startBrainstorming()">
+                    <i class="fas fa-brain"></i> Start Brainstorming
+                </button>
+            </div>
+            
+            <div class="brainstorm-results">
+                <div class="results-header">
+                    <h3>Generated Topics</h3>
+                    <div class="results-stats">
+                        <span id="total-ideas">0</span> ideas generated
+                        <span id="selected-ideas">0</span> selected
+                    </div>
+                </div>
+                
+                <div class="topic-filters">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="selected">Selected</button>
+                    <button class="filter-btn" data-filter="unselected">Unselected</button>
+                </div>
+                
+                <div id="topics-list" class="topics-list">
+                    <!-- Generated topics will appear here -->
+                </div>
+                
+                <div class="brainstorm-actions">
+                    <button class="btn btn-success" onclick="saveSelection()">
+                        <i class="fas fa-save"></i> Save Selection
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportTopics()">
+                        <i class="fas fa-download"></i> Export Topics
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</div>
+
+<style>
+.brainstorm-main {
+    padding: 2rem 0;
+}
+
+.brainstorm-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.brainstorm-header h2 {
+    font-size: 2rem;
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+}
+
+.brainstorm-header p {
+    color: #94a3b8;
+    font-size: 1.125rem;
+}
+
+.brainstorm-content {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+}
+
+.brainstorm-controls {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 2rem;
+    height: fit-content;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    color: #f1f5f9;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    color: #e2e8f0;
+    font-family: inherit;
+}
+
+.brainstorm-results {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 2rem;
+}
+
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.results-header h3 {
+    color: #f1f5f9;
+    margin: 0;
+}
+
+.results-stats {
+    color: #94a3b8;
+    font-size: 0.875rem;
+}
+
+.topic-filters {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.filter-btn {
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: 1px solid #475569;
+    border-radius: 4px;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.filter-btn:hover {
+    background: #334155;
+    color: #e2e8f0;
+}
+
+.filter-btn.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+.topics-list {
+    max-height: 500px;
+    overflow-y: auto;
+    margin-bottom: 2rem;
+}
+
+.topic-item {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.topic-item:hover {
+    border-color: #475569;
+}
+
+.topic-item.selected {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.topic-title {
+    color: #f1f5f9;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.topic-description {
+    color: #94a3b8;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.brainstorm-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+}
+
+.btn-success {
+    background: #10b981;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #059669;
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+}
+</style>
+
+<script>
+// Set navigation context
+document.addEventListener('DOMContentLoaded', function() {
+    // Set current stage for navigation
+    window.currentStage = 'concept';
+    window.currentSubstage = 'brainstorm';
+    window.postId = {{ post_id }};
+    
+    // Initialize topic selection
+    initializeTopicSelection();
+});
+
+let selectedTopics = new Set();
+
+function initializeTopicSelection() {
+    // Add click handlers for topic selection
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.topic-item')) {
+            const topicItem = e.target.closest('.topic-item');
+            const topicId = topicItem.dataset.topicId;
+            
+            if (selectedTopics.has(topicId)) {
+                selectedTopics.delete(topicId);
+                topicItem.classList.remove('selected');
+            } else {
+                selectedTopics.add(topicId);
+                topicItem.classList.add('selected');
+            }
+            
+            updateStats();
+        }
+    });
+    
+    // Add filter handlers
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            const filter = this.dataset.filter;
+            filterTopics(filter);
+        });
+    });
+}
+
+function startBrainstorming() {
+    const baseTopic = document.getElementById('base-topic').value;
+    const brainstormType = document.getElementById('brainstorm-type').value;
+    
+    if (!baseTopic.trim()) {
+        alert('Please enter a base topic');
+        return;
+    }
+    
+    // Show loading state
+    const topicsList = document.getElementById('topics-list');
+    topicsList.innerHTML = '<div class="loading">Generating topics...</div>';
+    
+    // Simulate AI generation (replace with actual API call)
+    setTimeout(() => {
+        const mockTopics = generateMockTopics(baseTopic, brainstormType);
+        displayTopics(mockTopics);
+    }, 3000);
+}
+
+function generateMockTopics(baseTopic, type) {
+    const topics = [];
+    const count = type === 'comprehensive' ? 50 : type === 'focused' ? 25 : 20;
+    
+    for (let i = 1; i <= count; i++) {
+        topics.push({
+            id: i,
+            title: `${baseTopic} - Topic ${i}`,
+            description: `A detailed exploration of ${baseTopic} focusing on aspect ${i}, providing practical insights and actionable advice.`,
+            category: ['tutorial', 'guide', 'list', 'review', 'opinion'][Math.floor(Math.random() * 5)]
+        });
+    }
+    
+    return topics;
+}
+
+function displayTopics(topics) {
+    const topicsList = document.getElementById('topics-list');
+    topicsList.innerHTML = '';
+    
+    topics.forEach(topic => {
+        const topicItem = document.createElement('div');
+        topicItem.className = 'topic-item';
+        topicItem.dataset.topicId = topic.id;
+        topicItem.innerHTML = `
+            <div class="topic-title">${topic.title}</div>
+            <div class="topic-description">${topic.description}</div>
+        `;
+        topicsList.appendChild(topicItem);
+    });
+    
+    updateStats();
+}
+
+function updateStats() {
+    const totalIdeas = document.querySelectorAll('.topic-item').length;
+    const selectedIdeas = selectedTopics.size;
+    
+    document.getElementById('total-ideas').textContent = totalIdeas;
+    document.getElementById('selected-ideas').textContent = selectedIdeas;
+}
+
+function filterTopics(filter) {
+    const topicItems = document.querySelectorAll('.topic-item');
+    
+    topicItems.forEach(item => {
+        const isSelected = selectedTopics.has(item.dataset.topicId);
+        
+        switch (filter) {
+            case 'all':
+                item.style.display = 'block';
+                break;
+            case 'selected':
+                item.style.display = isSelected ? 'block' : 'none';
+                break;
+            case 'unselected':
+                item.style.display = isSelected ? 'none' : 'block';
+                break;
+        }
+    });
+}
+
+function saveSelection() {
+    console.log('Saving selected topics:', Array.from(selectedTopics));
+    // Implement save functionality
+}
+
+function exportTopics() {
+    console.log('Exporting topics...');
+    // Implement export functionality
+}
+</script>
+{% endblock %}

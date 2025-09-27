@@ -1,0 +1,226 @@
+<!-- Planning Navigation - Two Level Structure -->
+<div class="planning-navigation">
+    <!-- Main Stage Navigation -->
+    <div class="main-stages">
+        <a href="{{ url_for('planning.planning_calendar', post_id=post_id) }}" 
+           class="stage-btn" data-stage="calendar">
+            <i class="fas fa-calendar-alt"></i>
+            Content Calendar
+        </a>
+        <a href="{{ url_for('planning.planning_concept', post_id=post_id) }}" 
+           class="stage-btn" data-stage="concept">
+            <i class="fas fa-lightbulb"></i>
+            Concept Development
+        </a>
+        <a href="{{ url_for('planning.planning_research', post_id=post_id) }}" 
+           class="stage-btn" data-stage="research">
+            <i class="fas fa-search"></i>
+            Research & Resources
+        </a>
+        <a href="{{ url_for('planning.planning_old_interface', post_id=post_id) }}" 
+           class="stage-btn old-interface" data-stage="old-interface">
+            <i class="fas fa-history"></i>
+            Old Interface
+        </a>
+    </div>
+    
+    <!-- Sub-stage Navigation -->
+    <div class="sub-stages" id="sub-stages">
+        <!-- Calendar sub-stages -->
+        <div class="sub-stage-group" data-stage="calendar">
+            <a href="{{ url_for('planning.planning_calendar_view', post_id=post_id) }}" 
+               class="sub-stage-btn" data-substage="view">
+                Calendar View
+            </a>
+            <a href="{{ url_for('planning.planning_calendar_ideas', post_id=post_id) }}" 
+               class="sub-stage-btn" data-substage="ideas">
+                Idea Generation
+            </a>
+            <a href="{{ url_for('planning.planning_calendar_gaps', post_id=post_id) }}" 
+               class="sub-stage-btn" data-substage="gaps">
+                Content Gaps
+            </a>
+            <a href="{{ url_for('planning.planning_calendar_schedule', post_id=post_id) }}" 
+               class="sub-stage-btn" data-substage="schedule">
+                Schedule Management
+            </a>
+        </div>
+        
+        <!-- Concept sub-stages -->
+        <div class="sub-stage-group" data-stage="concept">
+            <a href="{{ url_for('planning.planning_concept_proposal', post_id=post_id) }}" 
+               class="sub-stage-btn" data-substage="proposal">
+                Basic Proposal
+            </a>
+            <a href="{{ url_for('planning.planning_concept_brainstorm', post_id=post_id) }}" 
+               class="sub-stage-btn" data-substage="brainstorm">
+                Topic Brainstorming
+            </a>
+            <a href="{{ url_for('planning.planning_concept_sections', post_id=post_id) }}" 
+               class="sub-stage-btn" data-substage="sections">
+                Section Planning
+            </a>
+            <a href="{{ url_for('planning.planning_concept_outline', post_id=post_id) }}" 
+               class="sub-stage-btn" data-substage="outline">
+                Content Outline
+            </a>
+        </div>
+        
+        <!-- Research sub-stages -->
+        <div class="sub-stage-group" data-stage="research">
+            <a href="{{ url_for('planning.planning_research_sources', post_id=post_id) }}" 
+               class="sub-stage-btn" data-substage="sources">
+                Source Research
+            </a>
+            <a href="{{ url_for('planning.planning_research_visuals', post_id=post_id) }}" 
+               class="sub-stage-btn" data-substage="visuals">
+                Visual Planning
+            </a>
+            <a href="{{ url_for('planning.planning_research_prompts', post_id=post_id) }}" 
+               class="sub-stage-btn" data-substage="prompts">
+                Image Prompts
+            </a>
+            <a href="{{ url_for('planning.planning_research_verification', post_id=post_id) }}" 
+               class="sub-stage-btn" data-substage="verification">
+                Fact Verification
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.planning-navigation {
+    margin-bottom: 2rem;
+}
+
+.main-stages {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: #1e293b;
+    border-radius: 8px;
+    border: 1px solid #334155;
+}
+
+.stage-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.stage-btn:hover {
+    background: #334155;
+    border-color: #64748b;
+    color: #e2e8f0;
+}
+
+.stage-btn.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+.stage-btn.old-interface {
+    border-color: #f59e0b;
+    color: #f59e0b;
+}
+
+.stage-btn.old-interface:hover {
+    background: #f59e0b;
+    color: white;
+}
+
+.sub-stages {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: #0f172a;
+    border-radius: 6px;
+    border: 1px solid #334155;
+}
+
+.sub-stage-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.sub-stage-btn {
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: 1px solid #475569;
+    border-radius: 4px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.sub-stage-btn:hover {
+    background: #334155;
+    border-color: #64748b;
+    color: #e2e8f0;
+}
+
+.sub-stage-btn.active {
+    background: #06b6d4;
+    border-color: #06b6d4;
+    color: white;
+}
+</style>
+
+<script>
+// Navigation highlighting based on current page
+document.addEventListener('DOMContentLoaded', function() {
+    // Get current stage and substage from window object (set by each page)
+    const currentStage = window.currentStage;
+    const currentSubstage = window.currentSubstage;
+    
+    // Highlight main stage
+    if (currentStage) {
+        const stageButtons = document.querySelectorAll('.stage-btn');
+        stageButtons.forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-stage') === currentStage) {
+                btn.classList.add('active');
+            }
+        });
+    }
+    
+    // Show/hide sub-stages based on current stage
+    const subStages = document.querySelector('.sub-stages');
+    if (currentStage && currentStage !== 'old-interface' && subStages) {
+        subStages.style.display = 'flex';
+        
+        // Show only the relevant sub-stage group
+        const subStageGroups = document.querySelectorAll('.sub-stage-group');
+        subStageGroups.forEach(group => {
+            group.style.display = 'none';
+            if (group.getAttribute('data-stage') === currentStage) {
+                group.style.display = 'flex';
+            }
+        });
+        
+        // Highlight current substage
+        if (currentSubstage) {
+            const subStageButtons = document.querySelectorAll('.sub-stage-btn');
+            subStageButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-substage') === currentSubstage) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+    } else if (subStages) {
+        subStages.style.display = 'none';
+    }
+});
+</script>

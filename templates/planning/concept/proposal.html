@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}Basic Proposal - Concept Development - Planning - BlogForge{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Include shared header -->
+    {% include 'planning/includes/header.html' %}
+    
+    <!-- Include navigation -->
+    {% include 'planning/includes/navigation.html' %}
+    
+    <!-- Include tabs -->
+    {% include 'planning/includes/tabs.html' %}
+    
+    {% block process_content %}
+    <div class="proposal-main">
+        <div class="proposal-header">
+            <h2>Basic Proposal</h2>
+            <p>Expand your idea seed into a focused concept with AI assistance and human refinement.</p>
+        </div>
+        
+        <div class="proposal-content">
+            <div class="proposal-form">
+                <div class="form-group">
+                    <label for="idea-seed">Idea Seed</label>
+                    <textarea id="idea-seed" placeholder="Enter your basic idea or concept..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="target-audience">Target Audience</label>
+                    <input type="text" id="target-audience" placeholder="Who is this content for?">
+                </div>
+                
+                <div class="form-group">
+                    <label for="value-proposition">Value Proposition</label>
+                    <textarea id="value-proposition" placeholder="What value will this content provide?"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button class="btn btn-primary" onclick="generateProposal()">
+                        <i class="fas fa-magic"></i> Generate Proposal
+                    </button>
+                    <button class="btn btn-secondary" onclick="saveProposal()">
+                        <i class="fas fa-save"></i> Save Draft
+                    </button>
+                </div>
+            </div>
+            
+            <div class="proposal-output">
+                <h3>Generated Proposal</h3>
+                <div id="proposal-content" class="proposal-text">
+                    <!-- Generated content will appear here -->
+                </div>
+                <div class="proposal-actions">
+                    <button class="btn btn-success" onclick="acceptProposal()">
+                        <i class="fas fa-check"></i> Accept Proposal
+                    </button>
+                    <button class="btn btn-warning" onclick="refineProposal()">
+                        <i class="fas fa-edit"></i> Refine Proposal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</div>
+
+<style>
+.proposal-main {
+    padding: 2rem 0;
+}
+
+.proposal-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.proposal-header h2 {
+    font-size: 2rem;
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+}
+
+.proposal-header p {
+    color: #94a3b8;
+    font-size: 1.125rem;
+}
+
+.proposal-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.proposal-form {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    color: #f1f5f9;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    color: #e2e8f0;
+    font-family: inherit;
+}
+
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.proposal-output {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 2rem;
+}
+
+.proposal-output h3 {
+    color: #f1f5f9;
+    margin-bottom: 1rem;
+}
+
+.proposal-text {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 1rem;
+    min-height: 200px;
+    color: #e2e8f0;
+    line-height: 1.6;
+}
+
+.proposal-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+}
+
+.btn-success {
+    background: #10b981;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #059669;
+}
+
+.btn-warning {
+    background: #f59e0b;
+    color: white;
+}
+
+.btn-warning:hover {
+    background: #d97706;
+}
+</style>
+
+<script>
+// Set navigation context
+document.addEventListener('DOMContentLoaded', function() {
+    // Set current stage for navigation
+    window.currentStage = 'concept';
+    window.currentSubstage = 'proposal';
+    window.postId = {{ post_id }};
+});
+
+function generateProposal() {
+    const ideaSeed = document.getElementById('idea-seed').value;
+    const targetAudience = document.getElementById('target-audience').value;
+    const valueProposition = document.getElementById('value-proposition').value;
+    
+    if (!ideaSeed.trim()) {
+        alert('Please enter an idea seed');
+        return;
+    }
+    
+    // Show loading state
+    const proposalContent = document.getElementById('proposal-content');
+    proposalContent.innerHTML = '<div class="loading">Generating proposal...</div>';
+    
+    // Simulate AI generation (replace with actual API call)
+    setTimeout(() => {
+        proposalContent.innerHTML = `
+            <h4>Content Concept</h4>
+            <p>${ideaSeed}</p>
+            
+            <h4>Target Audience</h4>
+            <p>${targetAudience || 'General audience interested in this topic'}</p>
+            
+            <h4>Value Proposition</h4>
+            <p>${valueProposition || 'Educational and engaging content that provides practical insights'}</p>
+            
+            <h4>Content Structure</h4>
+            <p>This content will be structured as a comprehensive guide with clear sections, practical examples, and actionable takeaways.</p>
+            
+            <h4>Key Themes</h4>
+            <ul>
+                <li>Practical application</li>
+                <li>Real-world examples</li>
+                <li>Step-by-step guidance</li>
+                <li>Common challenges and solutions</li>
+            </ul>
+        `;
+    }, 2000);
+}
+
+function saveProposal() {
+    // Save current proposal to database
+    console.log('Saving proposal...');
+    // Implement save functionality
+}
+
+function acceptProposal() {
+    // Accept the generated proposal
+    console.log('Accepting proposal...');
+    // Implement accept functionality
+}
+
+function refineProposal() {
+    // Allow user to refine the proposal
+    console.log('Refining proposal...');
+    // Implement refine functionality
+}
+</script>
+{% endblock %}
