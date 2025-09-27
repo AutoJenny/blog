@@ -892,9 +892,28 @@ function renderWeekContent(ideas, events, schedule) {
             if (idea.idea_title === 'Spring Cleaning Checklist') {
                 console.log('About to generate HTML for Spring Cleaning Checklist');
                 console.log('Categories for dropdown:', categories.map(c => c.name));
+                
+                // Test the template generation step by step
+                try {
+                    const testCategory = getPrimaryCategoryFromTags(idea.tags);
+                    console.log('Test category for template:', testCategory);
+                    
+                    // Test the template string generation
+                    const testTemplate = `
+                        <div class="idea-categories">
+                            <select class="category-select" onchange="updateIdeaCategory(${idea.id}, this.value)" title="Change category">
+                                <option value="">Select Category</option>
+                                ${categories.map(cat => `<option value="${cat.name}">${cat.name}</option>`).join('')}
+                            </select>
+                        </div>
+                    `;
+                    console.log('Test template generated:', testTemplate);
+                } catch (error) {
+                    console.error('Error in template generation:', error);
+                }
             }
             
-            html += `
+            const ideaHtml = `
                 <div class="idea-item ${idea.priority === 'mandatory' ? 'mandatory' : ''}" data-idea-id="${idea.id}" draggable="true">
                     <div class="idea-content">
                         <div class="idea-title">${idea.idea_title}</div>
@@ -940,6 +959,15 @@ function renderWeekContent(ideas, events, schedule) {
                     </div>
                 </div>
             `;
+            
+            // Debug the generated HTML for Spring Cleaning Checklist
+            if (idea.idea_title === 'Spring Cleaning Checklist') {
+                console.log('Generated HTML for Spring Cleaning Checklist:', ideaHtml);
+                console.log('Does HTML contain category-select?', ideaHtml.includes('category-select'));
+                console.log('Does HTML contain idea-categories?', ideaHtml.includes('idea-categories'));
+            }
+            
+            html += ideaHtml;
         });
         html += '</div>';
     }
