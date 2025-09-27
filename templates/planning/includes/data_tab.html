@@ -352,6 +352,83 @@
     opacity: 1;
 }
 
+/* Field Input Styles */
+.field-value-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.field-input {
+    color: #e2e8f0;
+    background: transparent;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 0.5rem;
+    font-family: inherit;
+    font-size: inherit;
+    width: 100%;
+    cursor: text;
+    transition: all 0.2s ease;
+}
+
+.field-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.field-input.changed {
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.field-input.saving {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.field-input.error {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.field-textarea {
+    color: #e2e8f0;
+    background: transparent;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 0.5rem;
+    font-family: inherit;
+    font-size: inherit;
+    width: 100%;
+    min-height: 100px;
+    resize: vertical;
+    transition: all 0.2s ease;
+}
+
+.field-textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.field-textarea.changed {
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.field-textarea.saving {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.field-textarea.error {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
 .field-value.expanded {
     max-height: none;
     white-space: pre-wrap;
@@ -610,14 +687,24 @@ function populateTableFields(containerId, data, tableType) {
         const fieldItem = document.createElement('div');
         fieldItem.className = `field-item ${isEmpty ? 'empty' : 'populated'}`;
         
-        fieldItem.innerHTML = `
-            <div class="field-name">${fieldName}</div>
-            <div class="field-value ${isEmpty ? 'empty' : (isLongText ? 'preview' : '')}" 
-                 ${isLongText ? `onclick="toggleExpand(this)"` : ''}>
-                ${isEmpty ? 'Empty' : formatFieldValue(fieldValue)}
-            </div>
-            ${isLongText ? '<button class="expand-button" onclick="toggleExpand(this.previousElementSibling)">Expand</button>' : ''}
-        `;
+                fieldItem.innerHTML = `
+                    <div class="field-name">${fieldName}</div>
+                    <div class="field-value-container">
+                        ${isLongText ? `
+                            <div class="field-value ${isEmpty ? 'empty' : 'preview'}" 
+                                 ${isLongText ? `data-full-value="${String(fieldValue).replace(/"/g, '&quot;')}"` : ''}
+                                 ${isLongText ? `data-field="${fieldName}"` : ''}
+                                 ${isLongText ? `data-table="${tableType}"` : ''}>
+                                ${isEmpty ? 'Empty' : formatFieldValue(fieldValue)}
+                            </div>
+                            <button class="expand-button" onclick="toggleExpand(this.previousElementSibling)">Expand</button>
+                        ` : `
+                            <input type="text" class="field-input" value="${isEmpty ? '' : String(fieldValue).replace(/"/g, '&quot;')}" 
+                                   data-field="${fieldName}" data-table="${tableType}" 
+                                   onchange="markFieldChanged(this)" onblur="saveField(this)">
+                        `}
+                    </div>
+                `;
         
         container.appendChild(fieldItem);
     });
@@ -637,15 +724,39 @@ function formatFieldValue(value) {
 
 function toggleExpand(element) {
     if (element.classList.contains('preview')) {
+        // Expand: show editable textarea
         element.classList.remove('preview');
         element.classList.add('expanded');
-        element.textContent = element.textContent.replace('...', '');
+        
+        const fullValue = element.getAttribute('data-full-value');
+        const fieldName = element.getAttribute('data-field');
+        const tableType = element.getAttribute('data-table');
+        
+        // Replace with textarea
+        element.innerHTML = `
+            <textarea class="field-textarea" 
+                      data-field="${fieldName}" 
+                      data-table="${tableType}"
+                      onchange="markFieldChanged(this)" 
+                      onblur="saveField(this)">${fullValue}</textarea>
+        `;
+        
         element.nextElementSibling.textContent = 'Collapse';
         element.nextElementSibling.classList.add('expanded');
     } else {
+        // Collapse: show preview
         element.classList.remove('expanded');
         element.classList.add('preview');
-        element.textContent = element.textContent.substring(0, 100) + '...';
+        
+        const textarea = element.querySelector('.field-textarea');
+        const fullValue = textarea ? textarea.value : element.getAttribute('data-full-value');
+        
+        // Update data attribute with current value
+        element.setAttribute('data-full-value', fullValue);
+        
+        // Replace with preview text
+        element.innerHTML = fullValue.substring(0, 100) + '...';
+        
         element.nextElementSibling.textContent = 'Expand';
         element.nextElementSibling.classList.remove('expanded');
     }
@@ -654,6 +765,77 @@ function toggleExpand(element) {
 function refreshPostData() {
     loadPostData();
     showNotification('Post data refreshed', 'success');
+}
+
+// Field editing functions
+function markFieldChanged(input) {
+    input.classList.add('changed');
+    input.classList.remove('saving', 'error');
+}
+
+async function saveField(input) {
+    const fieldName = input.getAttribute('data-field');
+    const tableType = input.getAttribute('data-table');
+    const newValue = input.value;
+    
+    console.log('[Data Tab] Saving field:', { fieldName, tableType, newValue });
+    
+    // Get post ID
+    const postId = getPostId();
+    if (!postId) {
+        console.error('[Data Tab] Post ID not found');
+        showError('Post ID not found');
+        return;
+    }
+    
+    console.log('[Data Tab] Post ID:', postId);
+    
+    // Mark as saving
+    input.classList.remove('changed', 'error');
+    input.classList.add('saving');
+    
+    try {
+        const url = `/planning/api/posts/${postId}/update-field`;
+        const payload = {
+            field_name: fieldName,
+            table_type: tableType,
+            new_value: newValue
+        };
+        
+        console.log('[Data Tab] Making request to:', url, 'with payload:', payload);
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        console.log('[Data Tab] Response status:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('[Data Tab] Response error:', errorText);
+            throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
+        }
+        
+        const result = await response.json();
+        console.log('[Data Tab] Response result:', result);
+        
+        if (result.success) {
+            input.classList.remove('saving');
+            showNotification(`Field '${fieldName}' updated successfully`, 'success');
+        } else {
+            throw new Error(result.error || 'Update failed');
+        }
+        
+    } catch (error) {
+        console.error('[Data Tab] Error saving field:', error);
+        input.classList.remove('saving');
+        input.classList.add('error');
+        showError(`Failed to update field '${fieldName}': ${error.message}`);
+    }
 }
 
 function exportPostData() {
