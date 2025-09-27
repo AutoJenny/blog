@@ -10,6 +10,7 @@ Welcome to the BlogForge CMS documentation. This directory contains comprehensiv
 - **[Quick Reference Guide](quick-reference.md)** - Quick start, commands, and troubleshooting
 
 ### Feature Documentation
+- **[Planning Area Roadmap](planning_area_roadmap.md)** - New collaborative planning system roadmap
 - **[Auto-Replenish System](auto-replenish-system.md)** - Automated queue management system
 - **[Image Storage Migration](image_storage_migration_summary.md)** - Image system migration details
 
