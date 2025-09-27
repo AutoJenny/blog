@@ -829,6 +829,14 @@ function renderWeekContent(ideas, events, schedule) {
                 // Skip perpetual ideas that are already scheduled - they'll show in the schedule section
                 return;
             }
+            
+            // Debug specific item
+            if (idea.idea_title === 'Spring Cleaning Checklist') {
+                console.log('Rendering Spring Cleaning Checklist:', idea);
+                console.log('Categories available:', categories.length);
+                console.log('Idea tags:', idea.tags);
+            }
+            
             html += `
                 <div class="idea-item ${idea.priority === 'mandatory' ? 'mandatory' : ''}" data-idea-id="${idea.id}" draggable="true">
                     <div class="idea-content">
@@ -848,13 +856,13 @@ function renderWeekContent(ideas, events, schedule) {
                                     const category = getPrimaryCategoryFromTags(idea.tags);
                                     return !category.name ? 'selected' : '';
                                 })()}>Select Category</option>
-                                ${categories.map(cat => {
+                                ${categories.length > 0 ? categories.map(cat => {
                                     // Get the primary category for this idea
                                     const primaryCategory = getPrimaryCategoryFromTags(idea.tags);
                                     const isSelected = cat.name === primaryCategory.name;
                                     console.log('Rendering option for idea', idea.id, ':', cat.name, 'isSelected:', isSelected, 'primaryCategory:', primaryCategory.name);
                                     return `<option value="${cat.name}" ${isSelected ? 'selected' : ''}>${cat.name}</option>`;
-                                }).join('')}
+                                }).join('') : '<option value="">No categories loaded</option>'}
                             </select>
                         </div>
                     </div>
@@ -907,12 +915,12 @@ function renderWeekContent(ideas, events, schedule) {
                                     const category = getPrimaryCategoryFromTags(event.tags);
                                     return !category.name ? 'selected' : '';
                                 })()}>Select Category</option>
-                                ${categories.map(cat => {
+                                ${categories.length > 0 ? categories.map(cat => {
                                     // Get the primary category for this event
                                     const primaryCategory = getPrimaryCategoryFromTags(event.tags);
                                     const isSelected = cat.name === primaryCategory.name;
                                     return `<option value="${cat.name}" ${isSelected ? 'selected' : ''}>${cat.name}</option>`;
-                                }).join('')}
+                                }).join('') : '<option value="">No categories loaded</option>'}
                             </select>
                         </div>
                     </div>
