@@ -472,8 +472,11 @@ function renderCalendarFromData(weeks, currentWeekNumber) {
     // Set grid columns dynamically
     calendarGrid.style.gridTemplateColumns = `100px repeat(${maxWeeks}, 1fr)`;
     
-    // Create month rows
-    Object.keys(monthGroups).forEach(monthName => {
+    // Create month rows in chronological order
+    const monthOrder = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const sortedMonths = monthOrder.filter(month => monthGroups[month]);
+    
+    sortedMonths.forEach(monthName => {
         const monthWeeks = monthGroups[monthName];
         
         // Month name cell
