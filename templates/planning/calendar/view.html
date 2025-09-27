@@ -446,6 +446,29 @@
     box-shadow: 0 0 0 1px #3b82f6;
 }
 
+.category-select {
+    font-size: 11px;
+    padding: 2px 4px;
+    border: 1px solid #d1d5db;
+    border-radius: 3px;
+    background: white;
+    color: #374151;
+    min-width: 80px;
+    margin-right: 4px;
+}
+
+.category-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 1px #3b82f6;
+}
+
+.category-select option {
+    background: white;
+    color: #374151;
+    padding: 2px;
+}
+
 /* Mandatory highlighting */
 .schedule-item.mandatory, .idea-item.mandatory, .event-item.mandatory {
     background: #8b5cf6 !important; /* Purple background for mandatory */
@@ -799,10 +822,13 @@ function renderWeekContent(ideas, events, schedule) {
                     <div class="idea-content">
                         <div class="idea-title">${idea.idea_title}</div>
                         <div class="idea-categories">
-                            ${(() => {
-                                const category = getPrimaryCategoryFromTags(idea.tags);
-                                return `<span class="category-tag primary" style="background-color: ${category.color}">${category.name}</span>`;
-                            })()}
+                            <select class="category-select" onchange="updateIdeaCategory(${idea.id}, this.value)" title="Change category">
+                                ${categories.map(cat => {
+                                    const category = getPrimaryCategoryFromTags(idea.tags);
+                                    const isSelected = cat.name === category.name;
+                                    return `<option value="${cat.name}" ${isSelected ? 'selected' : ''} style="background-color: ${cat.color}">${cat.name}</option>`;
+                                }).join('')}
+                            </select>
                         </div>
                     </div>
                     <div class="idea-actions">
@@ -840,10 +866,13 @@ function renderWeekContent(ideas, events, schedule) {
                     <div class="event-content">
                         <div class="event-title">${event.event_title}</div>
                         <div class="event-categories">
-                            ${(() => {
-                                const category = getPrimaryCategoryFromTags(event.tags);
-                                return `<span class="category-tag primary" style="background-color: ${category.color}">${category.name}</span>`;
-                            })()}
+                            <select class="category-select" onchange="updateEventCategory(${event.id}, this.value)" title="Change category">
+                                ${categories.map(cat => {
+                                    const category = getPrimaryCategoryFromTags(event.tags);
+                                    const isSelected = cat.name === category.name;
+                                    return `<option value="${cat.name}" ${isSelected ? 'selected' : ''} style="background-color: ${cat.color}">${cat.name}</option>`;
+                                }).join('')}
+                            </select>
                         </div>
                     </div>
                     <div class="event-actions">
@@ -1051,6 +1080,59 @@ function getPrimaryCategoryFromTags(tags) {
         name: categoryName,
         color: category ? category.color : '#6b7280'
     };
+}
+
+// Category update functions
+function updateIdeaCategory(ideaId, newCategory) {
+    fetch(`/planning/api/calendar/ideas/${ideaId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            tags: [newCategory]
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(`Idea category updated to ${newCategory}`, 'success');
+            // Reload calendar content to show updated category
+            updateCalendar();
+        } else {
+            showNotification('Error updating idea category: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error updating idea category', 'error');
+    });
+}
+
+function updateEventCategory(eventId, newCategory) {
+    fetch(`/planning/api/calendar/events/${eventId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            tags: [newCategory]
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(`Event category updated to ${newCategory}`, 'success');
+            // Reload calendar content to show updated category
+            updateCalendar();
+        } else {
+            showNotification('Error updating event category: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error updating event category', 'error');
+    });
 }
 
 // Idea editing functions
