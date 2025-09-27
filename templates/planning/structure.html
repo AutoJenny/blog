@@ -5,34 +5,40 @@
 {% block head %}
     <style>
         .planning-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem 0;
             margin-bottom: 2rem;
-            border-radius: 16px;
             margin-top: 2rem;
         }
         .planning-nav {
             display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 2rem;
             flex-wrap: wrap;
         }
         .planning-nav a {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
+            background: #334155;
+            color: #e2e8f0;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             font-weight: 500;
+            font-size: 0.9rem;
         }
         .planning-nav a:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
+            background: #475569;
+            color: white;
         }
         .planning-nav a.active {
-            background: rgba(255, 255, 255, 0.4);
+            background: #3b82f6;
+            color: white;
+        }
+        .planning-title {
+            text-align: center;
+            color: #f1f5f9;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0;
         }
         .content-area {
             background: #1e293b;
@@ -129,17 +135,14 @@
 {% block content %}
 <div class="container">
     <div class="planning-header">
-        <div class="container">
-            <h1>Structure Planning</h1>
-            <p>Organize your content structure and outline</p>
-            <div class="planning-nav">
-                <a href="/planning/">Overview</a>
-                <a href="/planning/posts/{{ post_id }}/idea">Idea</a>
-                <a href="/planning/posts/{{ post_id }}/research">Research</a>
-                <a href="/planning/posts/{{ post_id }}/structure" class="active">Structure</a>
-                <a href="/workflow/posts/{{ post_id }}/planning/idea/initial_concept" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3);">Old Interface</a>
-            </div>
+        <div class="planning-nav">
+            <a href="/planning/">Overview</a>
+            <a href="/planning/posts/{{ post_id }}/idea">Idea</a>
+            <a href="/planning/posts/{{ post_id }}/research">Research</a>
+            <a href="/planning/posts/{{ post_id }}/structure" class="active">Structure</a>
+            <a href="/workflow/posts/{{ post_id }}/planning/idea/initial_concept">Old Interface</a>
         </div>
+        <h1 class="planning-title">Structure Planning</h1>
     </div>
 
     <!-- Process and Data Tabs -->
@@ -178,10 +181,29 @@
 </div>
 
 <script>
-    // Tab switching functionality
+    // Tab switching functionality with localStorage persistence
     document.addEventListener('DOMContentLoaded', function() {
         const tabButtons = document.querySelectorAll('.tab-button');
         const tabContents = document.querySelectorAll('.tab-content');
+        
+        // Get the last selected tab from localStorage, default to 'process'
+        const lastSelectedTab = localStorage.getItem('planning-tab-state') || 'process';
+        
+        // Set initial active state based on saved preference
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        tabContents.forEach(content => content.classList.remove('active'));
+        
+        const activeButton = document.querySelector(`[data-tab="${lastSelectedTab}"]`);
+        const activeContent = document.getElementById(lastSelectedTab + '-tab');
+        
+        if (activeButton && activeContent) {
+            activeButton.classList.add('active');
+            activeContent.classList.add('active');
+        } else {
+            // Fallback to process tab if saved tab doesn't exist
+            document.querySelector('[data-tab="process"]').classList.add('active');
+            document.getElementById('process-tab').classList.add('active');
+        }
         
         tabButtons.forEach(button => {
             button.addEventListener('click', function() {
@@ -194,6 +216,9 @@
                 // Add active class to clicked button and corresponding content
                 this.classList.add('active');
                 document.getElementById(targetTab + '-tab').classList.add('active');
+                
+                // Save the selected tab to localStorage
+                localStorage.setItem('planning-tab-state', targetTab);
             });
         });
     });

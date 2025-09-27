@@ -5,10 +5,6 @@
             <h2>Post Data</h2>
             <p>View and manage post data for Post ID: {{ post_id }}</p>
             
-            <!-- SIMPLE TEST -->
-            <div style="background: #10b981; color: white; padding: 2rem; margin: 2rem 0; border-radius: 8px; font-size: 1.5rem; text-align: center;">
-                <strong>TEST: DATA TAB IS WORKING!</strong>
-            </div>
             
             <!-- Post Overview Section -->
             <div class="data-section">
@@ -40,31 +36,31 @@
                 <!-- Table Selection Radio Buttons -->
                 <div class="table-selection">
                     <div class="radio-group">
-                        <input type="radio" id="table-post" name="table-selection" value="post" checked>
-                        <label for="table-post">Post Table</label>
+                        <input type="radio" id="table-post-development" name="table-selection" value="post_development" checked>
+                        <label for="table-post-development">Post Development Table</label>
                     </div>
                     <div class="radio-group">
-                        <input type="radio" id="table-post-development" name="table-selection" value="post_development">
-                        <label for="table-post-development">Post Development Table</label>
+                        <input type="radio" id="table-post" name="table-selection" value="post">
+                        <label for="table-post">Post Table</label>
+                    </div>
+                </div>
+
+                <!-- Post Development Table Display -->
+                <div id="post-development-table-display" class="table-display active">
+                    <h4>Post Development Table (ID: <span id="post-development-table-id">Loading...</span>)</h4>
+                    <div id="post-development-fields-container" class="fields-container">
+                        <div class="loading">Loading development data...</div>
                     </div>
                 </div>
 
                 <!-- Post Table Display -->
-                <div id="post-table-display" class="table-display active">
+                <div id="post-table-display" class="table-display">
                     <h4>Post Table (ID: <span id="post-table-id">Loading...</span>)</h4>
                     <div id="post-fields-container" class="fields-container">
                         <div class="loading">Loading post data...</div>
                         <div style="color: #10b981; margin-top: 1rem;">
                             <strong>Debug:</strong> Data tab is rendering. If you see this, the include is working.
                         </div>
-                    </div>
-                </div>
-
-                <!-- Post Development Table Display -->
-                <div id="post-development-table-display" class="table-display">
-                    <h4>Post Development Table (ID: <span id="post-development-table-id">Loading...</span>)</h4>
-                    <div id="post-development-fields-container" class="fields-container">
-                        <div class="loading">Loading development data...</div>
                     </div>
                 </div>
             </div>
@@ -594,12 +590,35 @@ function populateTableFields(containerId, data, tableType) {
         return;
     }
     
-    // Sort fields alphabetically, but put 'id' first
-    const fields = Object.keys(data).sort((a, b) => {
-        if (a === 'id') return -1;
-        if (b === 'id') return 1;
-        return a.localeCompare(b);
-    });
+    // For Post Development table, sort by content status (populated first), then alphabetically
+    // For other tables, keep alphabetical with 'id' first
+    let fields;
+    if (tableType === 'post_development') {
+        // Sort by content status: populated fields first, then empty fields
+        // Within each group, sort alphabetically with 'id' first
+        fields = Object.keys(data).sort((a, b) => {
+            const aValue = data[a];
+            const bValue = data[b];
+            const aIsEmpty = aValue === null || aValue === undefined || aValue === '';
+            const bIsEmpty = bValue === null || bValue === undefined || bValue === '';
+            
+            // If one is empty and the other isn't, populated comes first
+            if (aIsEmpty && !bIsEmpty) return 1;
+            if (!aIsEmpty && bIsEmpty) return -1;
+            
+            // If both have same content status, sort alphabetically with 'id' first
+            if (a === 'id') return -1;
+            if (b === 'id') return 1;
+            return a.localeCompare(b);
+        });
+    } else {
+        // Default sorting for other tables: alphabetical with 'id' first
+        fields = Object.keys(data).sort((a, b) => {
+            if (a === 'id') return -1;
+            if (b === 'id') return 1;
+            return a.localeCompare(b);
+        });
+    }
     
     console.log(`[Data Tab] Found ${fields.length} fields:`, fields);
     
@@ -626,12 +645,6 @@ function populateTableFields(containerId, data, tableType) {
     });
     
     console.log(`[Data Tab] Added ${fields.length} field items to container`);
-    
-    // Add a test element to make sure the container is visible
-    const testElement = document.createElement('div');
-    testElement.style.cssText = 'background: #10b981; color: white; padding: 1rem; margin: 1rem 0; border-radius: 4px;';
-    testElement.innerHTML = `<strong>TEST:</strong> ${fields.length} fields loaded successfully! Container: ${containerId}`;
-    container.appendChild(testElement);
 }
 
 function formatFieldValue(value) {
