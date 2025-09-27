@@ -226,7 +226,7 @@ def planning_research_verification(post_id):
 @bp.route('/posts/<int:post_id>/old-interface')
 def planning_old_interface(post_id):
     """Access to old workflow interface"""
-    return redirect(f'/workflow/posts/{post_id}/planning/idea/initial_concept')
+    return render_template('planning/old_interface.html', post_id=post_id, blueprint_name='planning')
 
 @bp.route('/api/posts')
 def api_posts():

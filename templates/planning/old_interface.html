@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Old Interface - Planning - BlogForge{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Include shared header -->
+    {% include 'planning/includes/header.html' %}
+    
+    <!-- Include navigation -->
+    {% include 'planning/includes/navigation.html' %}
+    
+    <div class="old-interface-content">
+        <div class="redirect-notice">
+            <h2>Redirecting to Old Interface</h2>
+            <p>You are being redirected to the legacy workflow interface...</p>
+            <div class="spinner"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+.old-interface-content {
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.redirect-notice {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 3rem;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.redirect-notice h2 {
+    color: #f1f5f9;
+    margin-bottom: 1rem;
+}
+
+.redirect-notice p {
+    color: #94a3b8;
+    margin-bottom: 2rem;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #334155;
+    border-top: 4px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+// Set navigation context
+document.addEventListener('DOMContentLoaded', function() {
+    // Set current stage for navigation
+    window.currentStage = 'old-interface';
+    window.currentSubstage = null;
+    window.postId = {{ post_id }};
+    
+    // Redirect after a short delay
+    setTimeout(() => {
+        window.location.href = '/workflow/posts/{{ post_id }}/planning/idea/initial_concept';
+    }, 2000);
+});
+</script>
+{% endblock %}

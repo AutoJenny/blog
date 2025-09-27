@@ -2,26 +2,30 @@
 <div class="planning-navigation">
     <!-- Main Stage Navigation -->
     <div class="main-stages">
-        <a href="{{ url_for('planning.planning_calendar', post_id=post_id) }}" 
-           class="stage-btn" data-stage="calendar">
-            <i class="fas fa-calendar-alt"></i>
-            Content Calendar
-        </a>
-        <a href="{{ url_for('planning.planning_concept', post_id=post_id) }}" 
-           class="stage-btn" data-stage="concept">
-            <i class="fas fa-lightbulb"></i>
-            Concept Development
-        </a>
-        <a href="{{ url_for('planning.planning_research', post_id=post_id) }}" 
-           class="stage-btn" data-stage="research">
-            <i class="fas fa-search"></i>
-            Research & Resources
-        </a>
-        <a href="{{ url_for('planning.planning_old_interface', post_id=post_id) }}" 
-           class="stage-btn old-interface" data-stage="old-interface">
-            <i class="fas fa-history"></i>
-            Old Interface
-        </a>
+        <div class="main-stage-group">
+            <a href="{{ url_for('planning.planning_calendar', post_id=post_id) }}" 
+               class="stage-btn" data-stage="calendar">
+                <i class="fas fa-calendar-alt"></i>
+                Content Calendar
+            </a>
+            <a href="{{ url_for('planning.planning_concept', post_id=post_id) }}" 
+               class="stage-btn" data-stage="concept">
+                <i class="fas fa-lightbulb"></i>
+                Concept Development
+            </a>
+            <a href="{{ url_for('planning.planning_research', post_id=post_id) }}" 
+               class="stage-btn" data-stage="research">
+                <i class="fas fa-search"></i>
+                Research & Resources
+            </a>
+        </div>
+        <div class="old-interface-group">
+            <a href="{{ url_for('planning.planning_old_interface', post_id=post_id) }}" 
+               class="stage-btn old-interface" data-stage="old-interface">
+                <i class="fas fa-history"></i>
+                Old Interface
+            </a>
+        </div>
     </div>
     
     <!-- Sub-stage Navigation -->
@@ -95,12 +99,22 @@
 
 .main-stages {
     display: flex;
-    gap: 1rem;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 1rem;
     padding: 1rem;
     background: #1e293b;
     border-radius: 8px;
     border: 1px solid #334155;
+}
+
+.main-stage-group {
+    display: flex;
+    gap: 1rem;
+}
+
+.old-interface-group {
+    display: flex;
 }
 
 .stage-btn {
@@ -179,18 +193,25 @@
 
 <script>
 // Navigation highlighting based on current page
-document.addEventListener('DOMContentLoaded', function() {
+function updateNavigationHighlighting() {
     // Get current stage and substage from window object (set by each page)
     const currentStage = window.currentStage;
     const currentSubstage = window.currentSubstage;
     
+    console.log('Navigation update - currentStage:', currentStage, 'currentSubstage:', currentSubstage);
+    
+    // Remove active class from all stage buttons first
+    const stageButtons = document.querySelectorAll('.stage-btn');
+    stageButtons.forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
     // Highlight main stage
     if (currentStage) {
-        const stageButtons = document.querySelectorAll('.stage-btn');
         stageButtons.forEach(btn => {
-            btn.classList.remove('active');
             if (btn.getAttribute('data-stage') === currentStage) {
                 btn.classList.add('active');
+                console.log('Highlighting stage:', currentStage);
             }
         });
     }
@@ -222,5 +243,11 @@ document.addEventListener('DOMContentLoaded', function() {
     } else if (subStages) {
         subStages.style.display = 'none';
     }
-});
+}
+
+// Run on DOM ready
+document.addEventListener('DOMContentLoaded', updateNavigationHighlighting);
+
+// Also run after a short delay to catch pages that set window.currentStage after DOM ready
+setTimeout(updateNavigationHighlighting, 100);
 </script>
