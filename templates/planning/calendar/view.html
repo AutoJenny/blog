@@ -438,60 +438,13 @@
     color: white;
 }
 
-/* Perpetual mandatory items - override green text with purple */
-.idea-item.perpetual.mandatory .idea-title,
-.event-item.perpetual.mandatory .event-title {
+/* All mandatory items use white text on purple background */
+.idea-item.mandatory .idea-title,
+.event-item.mandatory .event-title {
     color: white !important;
 }
 
-/* Perpetual items styling - simple green text */
-.idea-item.perpetual, .event-item.perpetual {
-    background: none !important;
-    border: none !important;
-    padding: 4px 0;
-    margin: 2px 0;
-}
-
-.idea-item.perpetual .idea-title, 
-.event-item.perpetual .event-title {
-    color: #16a34a !important; /* Green text */
-    font-size: 13px;
-    font-weight: 500;
-    margin-bottom: 2px;
-}
-
-.idea-item.perpetual .idea-categories,
-.event-item.perpetual .event-categories {
-    margin-bottom: 4px;
-}
-
-.idea-item.perpetual .category-tag,
-.event-item.perpetual .category-tag {
-    font-size: 10px;
-    padding: 1px 4px;
-    opacity: 0.8;
-}
-
-.idea-item.perpetual .category-tag.primary,
-.event-item.perpetual .category-tag.primary {
-    font-size: 9px;
-    padding: 2px 6px;
-    opacity: 0.9;
-    font-weight: 600;
-}
-
-.idea-item.perpetual .idea-actions,
-.event-item.perpetual .event-actions {
-    opacity: 0.6;
-    margin-top: 2px;
-}
-
-.idea-item.perpetual .idea-actions button,
-.event-item.perpetual .event-actions button {
-    font-size: 10px;
-    padding: 2px 4px;
-    margin: 0 1px;
-}
+/* All items use the same format - no special perpetual styling */
 
 /* Drag and drop styling */
 .idea-item, .event-item, .schedule-item {
@@ -798,7 +751,7 @@ function renderWeekContent(ideas, events, schedule) {
                 return;
             }
             html += `
-                <div class="idea-item perpetual ${idea.priority === 'mandatory' ? 'mandatory' : ''}" data-idea-id="${idea.id}" draggable="true">
+                <div class="idea-item ${idea.priority === 'mandatory' ? 'mandatory' : ''}" data-idea-id="${idea.id}" draggable="true">
                     <div class="idea-content">
                         <div class="idea-title">${idea.idea_title}</div>
                         <div class="idea-categories">
@@ -836,7 +789,7 @@ function renderWeekContent(ideas, events, schedule) {
                 return;
             }
             html += `
-                <div class="event-item perpetual ${event.priority === 'mandatory' ? 'mandatory' : ''}" data-event-id="${event.id}" draggable="true">
+                <div class="event-item ${event.priority === 'mandatory' ? 'mandatory' : ''}" data-event-id="${event.id}" draggable="true">
                     <div class="event-content">
                         <div class="event-title">${event.event_title}</div>
                         <div class="event-categories">
