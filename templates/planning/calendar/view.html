@@ -846,6 +846,7 @@ function renderWeekContent(ideas, events, schedule) {
                                     // Get the primary category for this idea
                                     const primaryCategory = getPrimaryCategoryFromTags(idea.tags);
                                     const isSelected = cat.name === primaryCategory.name;
+                                    console.log('Rendering option for idea', idea.id, ':', cat.name, 'isSelected:', isSelected, 'primaryCategory:', primaryCategory.name);
                                     return `<option value="${cat.name}" ${isSelected ? 'selected' : ''}>${cat.name}</option>`;
                                 }).join('')}
                             </select>
@@ -1096,7 +1097,10 @@ function getPrimaryCategory(categories) {
 
 // Helper function to get primary category from tags array (for ideas/events)
 function getPrimaryCategoryFromTags(tags) {
+    console.log('getPrimaryCategoryFromTags called with tags:', tags, 'categories available:', categories.length);
+    
     if (!tags || tags.length === 0) {
+        console.log('No tags provided, returning default');
         return { name: '', color: '#6b7280' };
     }
     
@@ -1108,14 +1112,17 @@ function getPrimaryCategoryFromTags(tags) {
     );
     
     const categoryName = holidayTag || tags[0] || '';
+    console.log('Selected category name:', categoryName);
     
     // Find the category in our loaded categories
     const category = categories.find(cat => cat.name === categoryName);
+    console.log('Found category:', category);
     
     const result = {
         name: categoryName,
         color: category ? category.color : '#6b7280'
     };
+    console.log('Returning result:', result);
     
     return result;
 }
