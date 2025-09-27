@@ -205,6 +205,61 @@ def get_post_data(post_id):
         logger.error(f"Error fetching post data: {e}")
         return jsonify({'error': str(e)}), 500
 
+@bp.route('/api/posts/<int:post_id>/update-field', methods=['POST'])
+def api_update_field(post_id):
+    """API endpoint to update a field in post or post_development table"""
+    try:
+        data = request.get_json()
+        field_name = data.get('field_name')
+        table_type = data.get('table_type')
+        new_value = data.get('new_value')
+        
+        if not field_name or not table_type:
+            return jsonify({'error': 'Missing field_name or table_type'}), 400
+        
+        # Validate table type
+        if table_type not in ['post', 'post_development']:
+            return jsonify({'error': 'Invalid table_type. Must be "post" or "post_development"'}), 400
+        
+        # Convert empty string to None for database
+        if new_value == '':
+            new_value = None
+        
+        with db_manager.get_cursor() as cursor:
+            # Update the field
+            if table_type == 'post':
+                cursor.execute(f"""
+                    UPDATE post 
+                    SET {field_name} = %s, updated_at = NOW()
+                    WHERE id = %s
+                """, (new_value, post_id))
+            else:  # post_development
+                cursor.execute(f"""
+                    UPDATE post_development 
+                    SET {field_name} = %s, updated_at = NOW()
+                    WHERE post_id = %s
+                """, (new_value, post_id))
+            
+            if cursor.rowcount == 0:
+                return jsonify({'error': 'No rows updated. Post may not exist.'}), 404
+            
+            # Commit the transaction
+            cursor.connection.commit()
+            
+            logger.info(f"Updated {table_type}.{field_name} for post {post_id} to: {new_value}")
+            
+            return jsonify({
+                'success': True,
+                'message': f'Field {field_name} updated successfully',
+                'field_name': field_name,
+                'table_type': table_type,
+                'new_value': new_value
+            })
+            
+    except Exception as e:
+        logger.error(f"Error updating field: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @bp.route('/api/posts/<int:post_id>/progress')
 def api_post_progress(post_id):
     """API endpoint to get planning progress for a post"""
