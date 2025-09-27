@@ -17,18 +17,17 @@
     <div class="calendar-view">
         <div class="calendar-header">
             <h2>Calendar View</h2>
-            <p>Monthly and weekly views of your content schedule</p>
+            <p>Weekly view of your content schedule - 52 weeks organized by month</p>
         </div>
         
         <div class="calendar-controls">
-            <div class="view-toggle">
-                <button class="toggle-btn active" data-view="month">Month</button>
-                <button class="toggle-btn" data-view="week">Week</button>
+            <div class="year-selector">
+                <button class="nav-btn" id="prev-year"><i class="fas fa-chevron-left"></i></button>
+                <span class="current-year" id="current-year">2025</span>
+                <button class="nav-btn" id="next-year"><i class="fas fa-chevron-right"></i></button>
             </div>
-            <div class="calendar-nav">
-                <button class="nav-btn" id="prev-month"><i class="fas fa-chevron-left"></i></button>
-                <span class="current-month" id="current-month">January 2025</span>
-                <button class="nav-btn" id="next-month"><i class="fas fa-chevron-right"></i></button>
+            <div class="current-week-info">
+                <span class="current-week" id="current-week">Week 1 of 52</span>
             </div>
         </div>
         
@@ -73,33 +72,7 @@
     border: 1px solid #334155;
 }
 
-.view-toggle {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.toggle-btn {
-    padding: 0.5rem 1rem;
-    background: transparent;
-    border: 1px solid #475569;
-    border-radius: 4px;
-    color: #94a3b8;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.toggle-btn:hover {
-    background: #334155;
-    color: #e2e8f0;
-}
-
-.toggle-btn.active {
-    background: #3b82f6;
-    border-color: #3b82f6;
-    color: white;
-}
-
-.calendar-nav {
+.year-selector {
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -120,11 +93,23 @@
     color: #e2e8f0;
 }
 
-.current-month {
+.current-year {
     color: #f1f5f9;
     font-weight: 600;
-    min-width: 150px;
+    min-width: 100px;
     text-align: center;
+    font-size: 1.25rem;
+}
+
+.current-week-info {
+    display: flex;
+    align-items: center;
+}
+
+.current-week {
+    color: #3b82f6;
+    font-weight: 600;
+    font-size: 1.125rem;
 }
 
 .calendar-container {
@@ -136,50 +121,89 @@
 
 .calendar-grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(13, 1fr);
     gap: 1px;
     background: #334155;
 }
 
-.calendar-day {
-    background: #1e293b;
-    padding: 1rem;
-    min-height: 120px;
-    border: 1px solid #334155;
-}
-
-.calendar-day-header {
+.month-header {
     background: #0f172a;
-    color: #94a3b8;
-    font-weight: 600;
+    color: #f1f5f9;
+    font-weight: 700;
     text-align: center;
-    padding: 0.5rem;
+    padding: 0.75rem 0.5rem;
     border: 1px solid #334155;
+    font-size: 0.875rem;
 }
 
-.calendar-day-number {
+.week-cell {
+    background: #1e293b;
+    padding: 0.75rem 0.5rem;
+    min-height: 80px;
+    border: 1px solid #334155;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.week-cell:hover {
+    background: #334155;
+}
+
+.week-cell.current-week {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+.week-cell.current-week:hover {
+    background: #2563eb;
+}
+
+.week-number {
     font-weight: 600;
     color: #f1f5f9;
-    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
 }
 
-.calendar-day-content {
-    font-size: 0.875rem;
+.week-cell.current-week .week-number {
+    color: white;
+}
+
+.week-dates {
+    font-size: 0.625rem;
     color: #94a3b8;
+    line-height: 1.2;
+}
+
+.week-cell.current-week .week-dates {
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .post-item {
-    background: #3b82f6;
+    background: #10b981;
     color: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    margin-bottom: 0.25rem;
-    font-size: 0.75rem;
+    padding: 0.125rem 0.25rem;
+    border-radius: 3px;
+    margin-bottom: 0.125rem;
+    font-size: 0.625rem;
     cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .post-item:hover {
-    background: #2563eb;
+    background: #059669;
+}
+
+.week-cell.current-week .post-item {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.week-cell.current-week .post-item:hover {
+    background: rgba(255, 255, 255, 0.3);
 }
 </style>
 
@@ -195,55 +219,134 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeCalendar();
 });
 
+let currentYear = new Date().getFullYear();
+let currentWeekNumber = getWeekNumber(new Date());
+
 function initializeCalendar() {
-    // Basic calendar functionality
-    const currentDate = new Date();
-    updateCalendar(currentDate);
+    updateCalendar();
     
     // Event listeners
-    document.getElementById('prev-month').addEventListener('click', () => {
-        currentDate.setMonth(currentDate.getMonth() - 1);
-        updateCalendar(currentDate);
+    document.getElementById('prev-year').addEventListener('click', () => {
+        currentYear--;
+        updateCalendar();
     });
     
-    document.getElementById('next-month').addEventListener('click', () => {
-        currentDate.setMonth(currentDate.getMonth() + 1);
-        updateCalendar(currentDate);
+    document.getElementById('next-year').addEventListener('click', () => {
+        currentYear++;
+        updateCalendar();
     });
 }
 
-function updateCalendar(date) {
-    const monthNames = ["January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"];
+function getWeekNumber(date) {
+    const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+    const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
+    return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+}
+
+function getWeekDates(weekNumber, year) {
+    const firstDayOfYear = new Date(year, 0, 1);
+    const firstMonday = new Date(firstDayOfYear);
+    firstMonday.setDate(firstDayOfYear.getDate() + (firstDayOfYear.getDay() === 0 ? 1 : 8 - firstDayOfYear.getDay()));
     
-    document.getElementById('current-month').textContent = 
-        `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+    const weekStart = new Date(firstMonday);
+    weekStart.setDate(firstMonday.getDate() + (weekNumber - 1) * 7);
     
-    // Generate calendar grid (simplified)
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    
+    return { start: weekStart, end: weekEnd };
+}
+
+function formatDate(date) {
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function updateCalendar() {
+    document.getElementById('current-year').textContent = currentYear;
+    
+    // Calculate current week for this year
+    const today = new Date();
+    const isCurrentYear = today.getFullYear() === currentYear;
+    const weekNumber = isCurrentYear ? getWeekNumber(today) : 1;
+    
+    document.getElementById('current-week').textContent = 
+        `Week ${weekNumber} of 52`;
+    
+    // Generate calendar grid
     const calendarGrid = document.getElementById('calendar-grid');
     calendarGrid.innerHTML = '';
     
-    // Add day headers
-    const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    dayHeaders.forEach(day => {
+    // Month headers (13 columns for 12 months + 1 for week numbers)
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    // Add week number header
+    const weekHeader = document.createElement('div');
+    weekHeader.className = 'month-header';
+    weekHeader.textContent = 'Week';
+    calendarGrid.appendChild(weekHeader);
+    
+    // Add month headers
+    monthNames.forEach(month => {
         const header = document.createElement('div');
-        header.className = 'calendar-day-header';
-        header.textContent = day;
+        header.className = 'month-header';
+        header.textContent = month;
         calendarGrid.appendChild(header);
     });
     
-    // Add calendar days (simplified - just show first 28 days)
-    for (let i = 1; i <= 28; i++) {
-        const day = document.createElement('div');
-        day.className = 'calendar-day';
-        day.innerHTML = `
-            <div class="calendar-day-number">${i}</div>
-            <div class="calendar-day-content">
-                <!-- Posts will be loaded here -->
-            </div>
+    // Generate 52 weeks
+    for (let week = 1; week <= 52; week++) {
+        // Week number cell
+        const weekNumberCell = document.createElement('div');
+        weekNumberCell.className = 'week-cell';
+        weekNumberCell.innerHTML = `
+            <div class="week-number">W${week}</div>
         `;
-        calendarGrid.appendChild(day);
+        calendarGrid.appendChild(weekNumberCell);
+        
+        // Generate week cells for each month
+        for (let month = 0; month < 12; month++) {
+            const weekDates = getWeekDates(week, currentYear);
+            const monthStart = new Date(currentYear, month, 1);
+            const monthEnd = new Date(currentYear, month + 1, 0);
+            
+            // Check if this week overlaps with this month
+            const weekOverlapsMonth = weekDates.start <= monthEnd && weekDates.end >= monthStart;
+            
+            const weekCell = document.createElement('div');
+            weekCell.className = 'week-cell';
+            
+            if (weekOverlapsMonth) {
+                const isCurrentWeek = isCurrentYear && week === weekNumber;
+                if (isCurrentWeek) {
+                    weekCell.classList.add('current-week');
+                }
+                
+                const startDate = weekDates.start > monthStart ? weekDates.start : monthStart;
+                const endDate = weekDates.end < monthEnd ? weekDates.end : monthEnd;
+                
+                weekCell.innerHTML = `
+                    <div class="week-dates">${formatDate(startDate)} - ${formatDate(endDate)}</div>
+                    <div class="week-content">
+                        <!-- Posts will be loaded here -->
+                    </div>
+                `;
+                
+                // Add click handler for week selection
+                weekCell.addEventListener('click', () => selectWeek(week, month));
+            } else {
+                weekCell.innerHTML = '<div class="week-dates">-</div>';
+            }
+            
+            calendarGrid.appendChild(weekCell);
+        }
     }
+}
+
+function selectWeek(weekNumber, month) {
+    console.log(`Selected week ${weekNumber} in month ${month + 1}`);
+    // Implement week selection functionality
+    // This could open a detailed view or allow scheduling posts for that week
 }
 </script>
 {% endblock %}
