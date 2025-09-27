@@ -266,7 +266,7 @@ def get_post_data(post_id):
         with db_manager.get_cursor() as cursor:
             # Get post data
             cursor.execute("""
-                SELECT p.*, pd.*
+                SELECT p.id as post_id, p.*, pd.*
                 FROM post p
                 LEFT JOIN post_development pd ON p.id = pd.post_id
                 WHERE p.id = %s
@@ -278,6 +278,11 @@ def get_post_data(post_id):
             
             # Convert to dict and separate post and development data
             data = dict(post_data)
+            
+            # Ensure we use the correct post ID
+            if 'post_id' in data:
+                data['id'] = data['post_id']
+            
             post_info = {k: v for k, v in data.items() if not k.startswith(('basic_idea', 'provisional_title', 'idea_scope', 'topics_to_cover', 'interesting_facts', 'section_headings', 'section_order', 'main_title', 'intro_blurb', 'seo_optimization', 'summary', 'idea_seed', 'provisional_title_primary', 'concepts', 'facts', 'outline', 'allocated_facts', 'sections', 'title_order', 'expanded_idea', 'image_montage_concept', 'image_montage_prompt', 'image_captions'))}
             development_info = {k: v for k, v in data.items() if k.startswith(('basic_idea', 'provisional_title', 'idea_scope', 'topics_to_cover', 'interesting_facts', 'section_headings', 'section_order', 'main_title', 'intro_blurb', 'seo_optimization', 'summary', 'idea_seed', 'provisional_title_primary', 'concepts', 'facts', 'outline', 'allocated_facts', 'sections', 'title_order', 'expanded_idea', 'image_montage_concept', 'image_montage_prompt', 'image_captions'))}
             
