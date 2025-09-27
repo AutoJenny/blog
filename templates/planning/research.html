@@ -60,6 +60,69 @@
         .content-area em {
             color: #94a3b8;
         }
+        .planning-tabs {
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+            margin-bottom: 2rem;
+        }
+        .tab-navigation {
+            display: flex;
+            gap: 0;
+            margin: 0;
+        }
+        .tab-button {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            padding: 1rem 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .tab-button:hover {
+            color: #e2e8f0;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .tab-button.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .data-content {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        .data-content h2 {
+            color: #f1f5f9;
+            margin-bottom: 1rem;
+        }
+        .data-content p {
+            color: #e2e8f0;
+            margin-bottom: 2rem;
+        }
+        .data-placeholder {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+        }
+        .data-placeholder i {
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
     </style>
 {% endblock %}
 
@@ -79,16 +142,60 @@
         </div>
     </div>
 
-    <div class="content-area">
-        <h2>Post ID: {{ post_id }}</h2>
-        <p>This is the dedicated Research workspace. Here you can:</p>
-        <ul>
-            <li>Gather relevant sources and references</li>
-            <li>Research key facts and statistics</li>
-            <li>Identify expert opinions and quotes</li>
-            <li>Build a knowledge base for your content</li>
-        </ul>
-        <p><em>This will be developed further with specific tools and interfaces.</em></p>
+    <!-- Process and Data Tabs -->
+    <div class="planning-tabs">
+        <div class="container">
+            <div class="tab-navigation">
+                <button class="tab-button active" data-tab="process">
+                    <i class="fas fa-cogs"></i>
+                    Process
+                </button>
+                <button class="tab-button" data-tab="data">
+                    <i class="fas fa-database"></i>
+                    Data
+                </button>
+            </div>
+        </div>
     </div>
+
+    <!-- Process Tab Content -->
+    <div id="process-tab" class="tab-content active">
+        <div class="content-area">
+            <h2>Post ID: {{ post_id }}</h2>
+            <p>This is the dedicated Research workspace. Here you can:</p>
+            <ul>
+                <li>Gather relevant sources and references</li>
+                <li>Research key facts and statistics</li>
+                <li>Identify expert opinions and quotes</li>
+                <li>Build a knowledge base for your content</li>
+            </ul>
+            <p><em>This will be developed further with specific tools and interfaces.</em></p>
+        </div>
+    </div>
+
+    <!-- Data Tab Content -->
+    {% include 'planning/includes/data_tab.html' %}
 </div>
+
+<script>
+    // Tab switching functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const targetTab = this.getAttribute('data-tab');
+                
+                // Remove active class from all buttons and contents
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+                
+                // Add active class to clicked button and corresponding content
+                this.classList.add('active');
+                document.getElementById(targetTab + '-tab').classList.add('active');
+            });
+        });
+    });
+</script>
 {% endblock %}
