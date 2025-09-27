@@ -545,6 +545,114 @@ def api_calendar_categories():
         logger.error(f"Error fetching calendar categories: {e}")
         return jsonify({'error': str(e)}), 500
 
+@bp.route('/api/calendar/evergreen/<int:week_number>', methods=['GET'])
+def api_calendar_evergreen(week_number):
+    """Get available evergreen content for a specific week"""
+    try:
+        year = request.args.get('year', 2025, type=int)
+        frequency = request.args.get('frequency', None)
+        
+        with db_manager.get_cursor() as cursor:
+            # Build query based on frequency
+            where_clause = "ci.is_evergreen = TRUE"
+            params = []
+            
+            if frequency:
+                where_clause += " AND ci.evergreen_frequency = %s"
+                params.append(frequency)
+            
+            # Get evergreen ideas with usage tracking
+            cursor.execute(f"""
+                SELECT ci.*, 
+                       COALESCE(
+                           json_agg(
+                               json_build_object(
+                                   'id', cc.id,
+                                   'name', cc.name,
+                                   'color', cc.color,
+                                   'icon', cc.icon
+                               )
+                           ) FILTER (WHERE cc.id IS NOT NULL), 
+                           '[]'::json
+                       ) as categories
+                FROM calendar_ideas ci
+                LEFT JOIN calendar_idea_categories cic ON ci.id = cic.idea_id
+                LEFT JOIN calendar_categories cc ON cic.category_id = cc.id
+                WHERE {where_clause}
+                GROUP BY ci.id
+                ORDER BY ci.usage_count ASC, ci.last_used_date ASC NULLS FIRST, ci.priority DESC
+            """, params)
+            
+            ideas = cursor.fetchall()
+            
+            # Filter based on frequency rules (simplified for now)
+            available_ideas = []
+            for idea in ideas:
+                # Simple availability check - can be enhanced later
+                if idea['usage_count'] < 3:  # Allow up to 3 uses per year
+                    available_ideas.append(idea)
+            
+            return jsonify({
+                'success': True,
+                'week_number': week_number,
+                'year': year,
+                'frequency': frequency,
+                'ideas': available_ideas
+            })
+            
+    except Exception as e:
+        logger.error(f"Error fetching evergreen content: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/calendar/evergreen/usage-report', methods=['GET'])
+def api_calendar_evergreen_usage_report():
+    """Get evergreen content usage report"""
+    try:
+        year = request.args.get('year', 2025, type=int)
+        
+        with db_manager.get_cursor() as cursor:
+            # Get frequency statistics
+            cursor.execute("""
+                SELECT 
+                    evergreen_frequency,
+                    COUNT(*) as total_ideas,
+                    AVG(usage_count) as avg_usage,
+                    MAX(usage_count) as max_usage,
+                    COUNT(CASE WHEN usage_count > 0 THEN 1 END) as used_ideas
+                FROM calendar_ideas 
+                WHERE is_evergreen = TRUE
+                GROUP BY evergreen_frequency
+                ORDER BY evergreen_frequency
+            """)
+            
+            frequency_stats = cursor.fetchall()
+            
+            # Get usage details
+            cursor.execute("""
+                SELECT 
+                    ci.idea_title,
+                    ci.evergreen_frequency,
+                    ci.usage_count,
+                    ci.last_used_date,
+                    ci.week_number
+                FROM calendar_ideas ci
+                WHERE ci.is_evergreen = TRUE
+                ORDER BY ci.usage_count DESC, ci.last_used_date DESC
+            """)
+            
+            usage_details = cursor.fetchall()
+            
+            return jsonify({
+                'success': True,
+                'year': year,
+                'frequency_stats': frequency_stats,
+                'usage_details': usage_details
+            })
+            
+    except Exception as e:
+        logger.error(f"Error fetching evergreen usage report: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @bp.route('/api/posts/<int:post_id>/progress')
 def api_post_progress(post_id):
     """API endpoint to get planning progress for a post"""
