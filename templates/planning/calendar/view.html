@@ -834,11 +834,15 @@ function renderWeekContent(ideas, events, schedule) {
                                 return category.color;
                             })()}" style="background-color: ${(() => {
                                 const category = getPrimaryCategoryFromTags(idea.tags);
-                                return category.color;
+                                return category.name ? category.color : '#6b7280';
                             })()}; color: white; border-color: ${(() => {
                                 const category = getPrimaryCategoryFromTags(idea.tags);
-                                return category.color;
+                                return category.name ? category.color : '#6b7280';
                             })()};">
+                                <option value="" ${(() => {
+                                    const category = getPrimaryCategoryFromTags(idea.tags);
+                                    return !category.name ? 'selected' : '';
+                                })()}>Select Category</option>
                                 ${categories.map(cat => {
                                     const category = getPrimaryCategoryFromTags(idea.tags);
                                     const isSelected = cat.name === category.name;
@@ -887,11 +891,15 @@ function renderWeekContent(ideas, events, schedule) {
                                 return category.color;
                             })()}" style="background-color: ${(() => {
                                 const category = getPrimaryCategoryFromTags(event.tags);
-                                return category.color;
+                                return category.name ? category.color : '#6b7280';
                             })()}; color: white; border-color: ${(() => {
                                 const category = getPrimaryCategoryFromTags(event.tags);
-                                return category.color;
+                                return category.name ? category.color : '#6b7280';
                             })()};">
+                                <option value="" ${(() => {
+                                    const category = getPrimaryCategoryFromTags(event.tags);
+                                    return !category.name ? 'selected' : '';
+                                })()}>Select Category</option>
                                 ${categories.map(cat => {
                                     const category = getPrimaryCategoryFromTags(event.tags);
                                     const isSelected = cat.name === category.name;
@@ -1109,6 +1117,12 @@ function getPrimaryCategoryFromTags(tags) {
 
 // Category update functions
 function updateIdeaCategory(ideaId, newCategory) {
+    // Handle empty category selection
+    if (!newCategory) {
+        showNotification('Please select a category', 'error');
+        return;
+    }
+    
     // Find the new category color
     const newCategoryData = categories.find(cat => cat.name === newCategory);
     const newColor = newCategoryData ? newCategoryData.color : '#6b7280';
@@ -1147,6 +1161,12 @@ function updateIdeaCategory(ideaId, newCategory) {
 }
 
 function updateEventCategory(eventId, newCategory) {
+    // Handle empty category selection
+    if (!newCategory) {
+        showNotification('Please select a category', 'error');
+        return;
+    }
+    
     // Find the new category color
     const newCategoryData = categories.find(cat => cat.name === newCategory);
     const newColor = newCategoryData ? newCategoryData.color : '#6b7280';
