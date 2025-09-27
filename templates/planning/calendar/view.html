@@ -376,7 +376,8 @@ function getWeekDates(weekNumber, year) {
     return { start: weekStart, end: weekEnd };
 }
 
-function formatDate(date) {
+function formatDate(dateString) {
+    const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
