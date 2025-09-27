@@ -339,6 +339,212 @@ def api_update_field(post_id):
         logger.error(f"Error updating field: {e}")
         return jsonify({'error': str(e)}), 500
 
+# ============================================================================
+# CALENDAR API ENDPOINTS
+# ============================================================================
+
+@bp.route('/api/calendar/weeks/<int:year>', methods=['GET'])
+def api_calendar_weeks(year):
+    """Get all calendar weeks for a given year"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, week_number, start_date, end_date, month_name, is_current_week
+                FROM calendar_weeks 
+                WHERE year = %s 
+                ORDER BY week_number
+            """, (year,))
+            
+            weeks = cursor.fetchall()
+            
+            return jsonify({
+                'success': True,
+                'year': year,
+                'weeks': weeks
+            })
+            
+    except Exception as e:
+        logger.error(f"Error fetching calendar weeks: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/calendar/ideas/<int:week_number>', methods=['GET'])
+def api_calendar_ideas(week_number):
+    """Get perpetual ideas for a specific week number"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT ci.*, 
+                       COALESCE(
+                           json_agg(
+                               json_build_object(
+                                   'id', cc.id,
+                                   'name', cc.name,
+                                   'color', cc.color,
+                                   'icon', cc.icon
+                               )
+                           ) FILTER (WHERE cc.id IS NOT NULL), 
+                           '[]'::json
+                       ) as categories
+                FROM calendar_ideas ci
+                LEFT JOIN calendar_idea_categories cic ON ci.id = cic.idea_id
+                LEFT JOIN calendar_categories cc ON cic.category_id = cc.id
+                WHERE ci.week_number = %s
+                GROUP BY ci.id
+                ORDER BY ci.priority DESC, ci.idea_title
+            """, (week_number,))
+            
+            ideas = cursor.fetchall()
+            
+            return jsonify({
+                'success': True,
+                'week_number': week_number,
+                'ideas': ideas
+            })
+            
+    except Exception as e:
+        logger.error(f"Error fetching calendar ideas: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/calendar/events/<int:year>/<int:week_number>', methods=['GET'])
+def api_calendar_events(year, week_number):
+    """Get events for a specific year and week"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT ce.*, 
+                       COALESCE(
+                           json_agg(
+                               json_build_object(
+                                   'id', cc.id,
+                                   'name', cc.name,
+                                   'color', cc.color,
+                                   'icon', cc.icon
+                               )
+                           ) FILTER (WHERE cc.id IS NOT NULL), 
+                           '[]'::json
+                       ) as categories
+                FROM calendar_events ce
+                LEFT JOIN calendar_event_categories cec ON ce.id = cec.event_id
+                LEFT JOIN calendar_categories cc ON cec.category_id = cc.id
+                WHERE ce.year = %s AND ce.week_number = %s
+                GROUP BY ce.id
+                ORDER BY ce.priority DESC, ce.event_title
+            """, (year, week_number))
+            
+            events = cursor.fetchall()
+            
+            return jsonify({
+                'success': True,
+                'year': year,
+                'week_number': week_number,
+                'events': events
+            })
+            
+    except Exception as e:
+        logger.error(f"Error fetching calendar events: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/calendar/schedule/<int:year>/<int:week_number>', methods=['GET'])
+def api_calendar_schedule(year, week_number):
+    """Get scheduled items for a specific year and week"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT cs.*, 
+                       ci.idea_title, ci.idea_description, ci.seasonal_context,
+                       ce.event_title, ce.event_description,
+                       p.title as post_title, p.status as post_status
+                FROM calendar_schedule cs
+                LEFT JOIN calendar_ideas ci ON cs.idea_id = ci.id
+                LEFT JOIN calendar_events ce ON cs.event_id = ce.id
+                LEFT JOIN post p ON cs.post_id = p.id
+                WHERE cs.year = %s AND cs.week_number = %s
+                ORDER BY cs.scheduled_date, cs.created_at
+            """, (year, week_number))
+            
+            schedule = cursor.fetchall()
+            
+            return jsonify({
+                'success': True,
+                'year': year,
+                'week_number': week_number,
+                'schedule': schedule
+            })
+            
+    except Exception as e:
+        logger.error(f"Error fetching calendar schedule: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/calendar/schedule', methods=['POST'])
+def api_calendar_schedule_create():
+    """Create a new calendar schedule entry"""
+    try:
+        data = request.get_json()
+        
+        required_fields = ['year', 'week_number']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        # Must have either idea_id or event_id
+        if not data.get('idea_id') and not data.get('event_id'):
+            return jsonify({'error': 'Must provide either idea_id or event_id'}), 400
+        
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO calendar_schedule 
+                (year, week_number, idea_id, event_id, post_id, status, scheduled_date, notes, is_override, original_idea_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
+            """, (
+                data['year'],
+                data['week_number'],
+                data.get('idea_id'),
+                data.get('event_id'),
+                data.get('post_id'),
+                data.get('status', 'planned'),
+                data.get('scheduled_date'),
+                data.get('notes'),
+                data.get('is_override', False),
+                data.get('original_idea_id')
+            ))
+            
+            schedule_id = cursor.fetchone()['id']
+            cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Schedule entry created successfully',
+                'schedule_id': schedule_id
+            })
+            
+    except Exception as e:
+        logger.error(f"Error creating calendar schedule: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/calendar/categories', methods=['GET'])
+def api_calendar_categories():
+    """Get all calendar categories"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, name, description, color, icon, is_active
+                FROM calendar_categories 
+                WHERE is_active = TRUE
+                ORDER BY name
+            """)
+            
+            categories = cursor.fetchall()
+            
+            return jsonify({
+                'success': True,
+                'categories': categories
+            })
+            
+    except Exception as e:
+        logger.error(f"Error fetching calendar categories: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @bp.route('/api/posts/<int:post_id>/progress')
 def api_post_progress(post_id):
     """API endpoint to get planning progress for a post"""

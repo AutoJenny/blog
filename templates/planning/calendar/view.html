@@ -235,6 +235,89 @@
 .week-cell.current-week .post-item:hover {
     background: rgba(255, 255, 255, 0.3);
 }
+
+/* New content types */
+.ideas-section, .events-section, .schedule-section {
+    margin-bottom: 0.25rem;
+}
+
+.idea-item, .event-item, .schedule-item {
+    background: #10b981;
+    color: white;
+    padding: 0.125rem 0.25rem;
+    border-radius: 3px;
+    margin-bottom: 0.125rem;
+    font-size: 0.625rem;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.event-item {
+    background: #f59e0b;
+}
+
+.schedule-item {
+    background: #8b5cf6;
+}
+
+.idea-item:hover, .event-item:hover, .schedule-item:hover {
+    opacity: 0.8;
+}
+
+.idea-title, .event-title, .schedule-title {
+    font-weight: 600;
+    margin-bottom: 0.125rem;
+}
+
+.idea-categories, .event-categories {
+    display: flex;
+    gap: 0.125rem;
+    flex-wrap: wrap;
+}
+
+.category-tag {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.0625rem 0.25rem;
+    border-radius: 2px;
+    font-size: 0.5rem;
+    font-weight: 500;
+}
+
+.schedule-status {
+    font-size: 0.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-planned {
+    color: #fbbf24;
+}
+
+.status-in_progress {
+    color: #3b82f6;
+}
+
+.status-published {
+    color: #10b981;
+}
+
+.status-cancelled {
+    color: #ef4444;
+}
+
+.week-cell.current-week .idea-item,
+.week-cell.current-week .event-item,
+.week-cell.current-week .schedule-item {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.week-cell.current-week .idea-item:hover,
+.week-cell.current-week .event-item:hover,
+.week-cell.current-week .schedule-item:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
 </style>
 
 <script>
@@ -253,6 +336,12 @@ let currentYear = new Date().getFullYear();
 let currentWeekNumber = getWeekNumber(new Date());
 
 function initializeCalendar() {
+    console.log('initializeCalendar called');
+    
+    // Always render the fallback first to ensure calendar is visible
+    renderCalendarFallback();
+    
+    // Then try to load from database
     updateCalendar();
     
     // Event listeners
@@ -291,7 +380,9 @@ function formatDate(date) {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-function updateCalendar() {
+async function updateCalendar() {
+    console.log('updateCalendar called for year:', currentYear);
+    
     document.getElementById('current-year').textContent = currentYear;
     
     // Calculate current week for this year
@@ -302,9 +393,189 @@ function updateCalendar() {
     document.getElementById('current-week').textContent = 
         `Week ${weekNumber} of 52`;
     
-    // Generate calendar grid
+    try {
+        // Load calendar weeks from database
+        console.log('Loading calendar data from database...');
+        const response = await fetch(`/planning/api/calendar/weeks/${currentYear}`);
+        const data = await response.json();
+        
+        console.log('Database response:', data);
+        
+        if (data.success && data.weeks && data.weeks.length > 0) {
+            console.log('Rendering calendar from database data...');
+            renderCalendarFromData(data.weeks, weekNumber);
+            await loadCalendarContent(currentYear, data.weeks);
+        } else {
+            console.error('Error loading calendar data or no weeks found:', data.error || 'No weeks data');
+            // Re-render fallback if database fails
+            renderCalendarFallback();
+        }
+    } catch (error) {
+        console.error('Error loading calendar data:', error);
+        // Re-render fallback if database fails
+        renderCalendarFallback();
+    }
+}
+
+function renderCalendarFromData(weeks, currentWeekNumber) {
     const calendarGrid = document.getElementById('calendar-grid');
     calendarGrid.innerHTML = '';
+    
+    // Group weeks by month
+    const monthGroups = {};
+    weeks.forEach(week => {
+        if (!monthGroups[week.month_name]) {
+            monthGroups[week.month_name] = [];
+        }
+        monthGroups[week.month_name].push(week);
+    });
+    
+    // Find the maximum number of weeks in any month
+    const maxWeeks = Math.max(...Object.values(monthGroups).map(group => group.length));
+    
+    // Set grid columns dynamically
+    calendarGrid.style.gridTemplateColumns = `100px repeat(${maxWeeks}, 1fr)`;
+    
+    // Create month rows
+    Object.keys(monthGroups).forEach(monthName => {
+        const monthWeeks = monthGroups[monthName];
+        
+        // Month name cell
+        const monthCell = document.createElement('div');
+        monthCell.className = 'month-cell';
+        monthCell.textContent = monthName;
+        calendarGrid.appendChild(monthCell);
+        
+        // Create week cells for this month
+        for (let i = 0; i < maxWeeks; i++) {
+            const weekCell = document.createElement('div');
+            weekCell.className = 'week-cell';
+            
+            if (i < monthWeeks.length) {
+                const week = monthWeeks[i];
+                const isCurrentWeek = week.is_current_week;
+                
+                if (isCurrentWeek) {
+                    weekCell.classList.add('current-week');
+                }
+                
+                weekCell.innerHTML = `
+                    <div class="week-number">W${week.week_number}</div>
+                    <div class="week-dates">${formatDate(week.start_date)} - ${formatDate(week.end_date)}</div>
+                    <div class="week-content">
+                        <!-- Ideas and events will be loaded here -->
+                    </div>
+                `;
+                
+                // Add click handler for week selection
+                weekCell.addEventListener('click', () => selectWeek(week.week_number, week.month_name));
+            } else {
+                weekCell.innerHTML = '<div class="week-dates">-</div>';
+            }
+            
+            calendarGrid.appendChild(weekCell);
+        }
+    });
+}
+
+async function loadCalendarContent(year, weeks) {
+    // Load ideas and events for each week
+    for (const week of weeks) {
+        await loadWeekContent(year, week.week_number);
+    }
+}
+
+async function loadWeekContent(year, weekNumber) {
+    try {
+        // Load ideas (perpetual)
+        const ideasResponse = await fetch(`/planning/api/calendar/ideas/${weekNumber}`);
+        const ideasData = await ideasResponse.json();
+        
+        // Load events (year-specific)
+        const eventsResponse = await fetch(`/planning/api/calendar/events/${year}/${weekNumber}`);
+        const eventsData = await eventsResponse.json();
+        
+        // Load schedule
+        const scheduleResponse = await fetch(`/planning/api/calendar/schedule/${year}/${weekNumber}`);
+        const scheduleData = await scheduleResponse.json();
+        
+        // Render content for this week
+        const weekCell = document.querySelector(`[data-week="${weekNumber}"]`);
+        if (weekCell) {
+            const contentDiv = weekCell.querySelector('.week-content');
+            contentDiv.innerHTML = renderWeekContent(ideasData.ideas, eventsData.events, scheduleData.schedule);
+        }
+        
+    } catch (error) {
+        console.error(`Error loading content for week ${weekNumber}:`, error);
+    }
+}
+
+function renderWeekContent(ideas, events, schedule) {
+    let html = '';
+    
+    // Render ideas
+    if (ideas && ideas.length > 0) {
+        html += '<div class="ideas-section">';
+        ideas.forEach(idea => {
+            html += `
+                <div class="idea-item" data-idea-id="${idea.id}">
+                    <div class="idea-title">${idea.idea_title}</div>
+                    <div class="idea-categories">
+                        ${idea.categories.map(cat => `<span class="category-tag" style="background-color: ${cat.color}">${cat.name}</span>`).join('')}
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+    }
+    
+    // Render events
+    if (events && events.length > 0) {
+        html += '<div class="events-section">';
+        events.forEach(event => {
+            html += `
+                <div class="event-item" data-event-id="${event.id}">
+                    <div class="event-title">${event.event_title}</div>
+                    <div class="event-categories">
+                        ${event.categories.map(cat => `<span class="category-tag" style="background-color: ${cat.color}">${cat.name}</span>`).join('')}
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+    }
+    
+    // Render schedule
+    if (schedule && schedule.length > 0) {
+        html += '<div class="schedule-section">';
+        schedule.forEach(item => {
+            const title = item.idea_title || item.event_title || item.post_title || 'Scheduled Item';
+            html += `
+                <div class="schedule-item" data-schedule-id="${item.id}">
+                    <div class="schedule-title">${title}</div>
+                    <div class="schedule-status status-${item.status}">${item.status}</div>
+                </div>
+            `;
+        });
+        html += '</div>';
+    }
+    
+    return html;
+}
+
+function renderCalendarFallback() {
+    console.log('renderCalendarFallback called for year:', currentYear);
+    
+    // Fallback to the original hardcoded generation
+    const calendarGrid = document.getElementById('calendar-grid');
+    if (!calendarGrid) {
+        console.error('calendar-grid element not found!');
+        return;
+    }
+    
+    calendarGrid.innerHTML = '';
+    console.log('Cleared calendar grid');
     
     // Group weeks by month
     const monthGroups = [];
@@ -332,8 +603,11 @@ function updateCalendar() {
         monthGroups.push(currentGroup);
     }
     
+    console.log('Month groups:', monthGroups);
+    
     // Find the maximum number of weeks in any month
     const maxWeeks = Math.max(...monthGroups.map(group => group.length));
+    console.log('Max weeks in any month:', maxWeeks);
     
     // Set grid columns dynamically
     calendarGrid.style.gridTemplateColumns = `100px repeat(${maxWeeks}, 1fr)`;
@@ -346,6 +620,8 @@ function updateCalendar() {
         const firstWeek = weeks[0];
         const weekDates = getWeekDates(firstWeek, currentYear);
         const monthName = monthNames[weekDates.start.getMonth()];
+        
+        console.log(`Creating month row for ${monthName} with ${weeks.length} weeks`);
         
         // Month name cell
         const monthCell = document.createElement('div');
@@ -361,7 +637,10 @@ function updateCalendar() {
             if (i < weeks.length) {
                 const week = weeks[i];
                 const weekDates = getWeekDates(week, currentYear);
-                const isCurrentWeek = isCurrentYear && week === weekNumber;
+                const today = new Date();
+                const isCurrentYear = today.getFullYear() === currentYear;
+                const currentWeekNumber = isCurrentYear ? getWeekNumber(today) : 1;
+                const isCurrentWeek = isCurrentYear && week === currentWeekNumber;
                 
                 if (isCurrentWeek) {
                     weekCell.classList.add('current-week');
@@ -384,6 +663,8 @@ function updateCalendar() {
             calendarGrid.appendChild(weekCell);
         }
     });
+    
+    console.log('Calendar fallback rendering complete');
 }
 
 function getWeeksInMonth(monthStart, monthEnd) {
