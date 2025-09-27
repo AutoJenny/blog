@@ -245,7 +245,7 @@
 
 
 .idea-item, .event-item, .schedule-item {
-    background: #10b981;
+    background: #374151; /* Plain dark background */
     color: white;
     padding: 0.125rem 0.25rem;
     border-radius: 3px;
@@ -255,6 +255,11 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.idea-title, .event-title, .schedule-title {
+    color: #16a34a !important; /* Green text for titles */
+    font-weight: 500;
 }
 
 .event-item {
@@ -826,7 +831,6 @@ function renderWeekContent(ideas, events, schedule) {
                 <div class="schedule-item ${item.priority === 'mandatory' ? 'mandatory' : ''}" data-schedule-id="${item.id}" draggable="true">
                     <div class="schedule-content">
                         <div class="schedule-title">${title}</div>
-                        <div class="schedule-status status-${item.priority}">${item.priority}</div>
                     </div>
                     <div class="schedule-actions">
                         <select class="priority-select" onchange="updateSchedulePriority(${item.id}, this.value)" title="Set priority">
