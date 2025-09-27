@@ -18,6 +18,11 @@
         <div class="calendar-header">
             <h2>Calendar View</h2>
             <p>Weekly view of your content schedule - 52 weeks organized by month</p>
+            <div class="calendar-actions">
+                <a href="{{ url_for('planning.categories_manage') }}" class="btn-secondary">
+                    <i class="fas fa-tags mr-2"></i>Manage Categories
+                </a>
+            </div>
         </div>
         
         <div class="calendar-controls">
@@ -59,6 +64,27 @@
 .calendar-header p {
     color: #94a3b8;
     font-size: 1.125rem;
+}
+
+.calendar-actions {
+    margin-top: 1rem;
+}
+
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: #f1f5f9;
+    text-decoration: none;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 .calendar-controls {
@@ -528,8 +554,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
 let currentYear = new Date().getFullYear();
 let currentWeekNumber = getWeekNumber(new Date());
+let categories = [];
 
-function initializeCalendar() {
+async function loadCategories() {
+    try {
+        const response = await fetch('/planning/api/calendar/categories');
+        const data = await response.json();
+        
+        if (data.success) {
+            categories = data.categories;
+            console.log('Categories loaded:', categories);
+        } else {
+            console.error('Error loading categories:', data.error);
+        }
+    } catch (error) {
+        console.error('Error loading categories:', error);
+    }
+}
+
+async function initializeCalendar() {
     
     // Test if calendar grid exists
     const calendarGrid = document.getElementById('calendar-grid');
@@ -538,6 +581,8 @@ function initializeCalendar() {
         return;
     }
     
+    // Load categories first
+    await loadCategories();
     
     // Always render the fallback first to ensure calendar is visible
     renderCalendarFallback();
@@ -754,7 +799,10 @@ function renderWeekContent(ideas, events, schedule) {
                     <div class="idea-content">
                         <div class="idea-title">${idea.idea_title}</div>
                         <div class="idea-categories">
-                            ${getPrimaryCategoryFromTags(idea.tags)}
+                            ${(() => {
+                                const category = getPrimaryCategoryFromTags(idea.tags);
+                                return `<span class="category-tag primary" style="background-color: ${category.color}">${category.name}</span>`;
+                            })()}
                         </div>
                     </div>
                     <div class="idea-actions">
@@ -792,7 +840,10 @@ function renderWeekContent(ideas, events, schedule) {
                     <div class="event-content">
                         <div class="event-title">${event.event_title}</div>
                         <div class="event-categories">
-                            ${getPrimaryCategoryFromTags(event.tags)}
+                            ${(() => {
+                                const category = getPrimaryCategoryFromTags(event.tags);
+                                return `<span class="category-tag primary" style="background-color: ${category.color}">${category.name}</span>`;
+                            })()}
                         </div>
                     </div>
                     <div class="event-actions">
@@ -982,7 +1033,7 @@ function getPrimaryCategory(categories) {
 
 // Helper function to get primary category from tags array (for ideas/events)
 function getPrimaryCategoryFromTags(tags) {
-    if (!tags || tags.length === 0) return '';
+    if (!tags || tags.length === 0) return { name: '', color: '#6b7280' };
     
     // Look for Holiday category first
     const holidayTag = tags.find(tag => 
@@ -991,12 +1042,15 @@ function getPrimaryCategoryFromTags(tags) {
         tag.toLowerCase().includes('celebration')
     );
     
-    if (holidayTag) {
-        return `<span class="category-tag primary">${holidayTag}</span>`;
-    }
+    const categoryName = holidayTag || tags[0] || '';
     
-    // If no holiday, use the first tag
-    return `<span class="category-tag primary">${tags[0]}</span>`;
+    // Find the category in our loaded categories
+    const category = categories.find(cat => cat.name === categoryName);
+    
+    return {
+        name: categoryName,
+        color: category ? category.color : '#6b7280'
+    };
 }
 
 // Idea editing functions
