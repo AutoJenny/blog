@@ -530,7 +530,7 @@ function initializeDataTab() {
                 tableDisplays.forEach(display => display.classList.remove('active'));
                 
                 // Add active class to selected table display
-                const targetDisplay = document.getElementById(this.value + '-table-display');
+                const targetDisplay = document.getElementById(this.value.replace('_', '-') + '-table-display');
                 if (targetDisplay) {
                     targetDisplay.classList.add('active');
                 }
@@ -649,11 +649,14 @@ function populateDatabaseTables(data) {
     }
     
     // Populate Calendar Schedule table
+    console.log('[Data Tab] Calendar schedule data:', data.calendar_schedule);
     if (data.calendar_schedule && data.calendar_schedule.length > 0) {
         // If there are multiple schedule entries, show the first one
         const scheduleData = data.calendar_schedule[0];
+        console.log('[Data Tab] Populating calendar schedule with data:', scheduleData);
         populateTableFields('calendar-schedule-fields-container', scheduleData, 'calendar_schedule');
     } else {
+        console.log('[Data Tab] No calendar schedule data, showing empty message');
         document.getElementById('calendar-schedule-fields-container').innerHTML = '<div class="loading">No calendar schedule data found</div>';
     }
 }
