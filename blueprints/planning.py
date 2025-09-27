@@ -1093,7 +1093,7 @@ def api_calendar_idea_update(idea_id):
             allowed_fields = [
                 'idea_title', 'idea_description', 'seasonal_context', 'content_type',
                 'priority', 'week_number', 'is_recurring', 'can_span_weeks', 'max_weeks',
-                'is_evergreen', 'evergreen_frequency', 'evergreen_notes'
+                'is_evergreen', 'evergreen_frequency', 'evergreen_notes', 'tags'
             ]
             
             for field in allowed_fields:
@@ -1212,7 +1212,7 @@ def api_calendar_event_update(event_id):
             allowed_fields = [
                 'event_title', 'event_description', 'start_date', 'end_date',
                 'week_number', 'year', 'content_type', 'priority', 'is_recurring',
-                'can_span_weeks', 'max_weeks'
+                'can_span_weeks', 'max_weeks', 'tags'
             ]
             
             for field in allowed_fields:
