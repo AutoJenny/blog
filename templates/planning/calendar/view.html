@@ -469,6 +469,13 @@
     padding: 2px;
 }
 
+/* Color the selected option background based on category */
+.category-select[data-category-color] {
+    background-color: var(--category-color);
+    color: white;
+    border-color: var(--category-color);
+}
+
 /* Mandatory highlighting */
 .schedule-item.mandatory, .idea-item.mandatory, .event-item.mandatory {
     background: #8b5cf6 !important; /* Purple background for mandatory */
@@ -822,11 +829,20 @@ function renderWeekContent(ideas, events, schedule) {
                     <div class="idea-content">
                         <div class="idea-title">${idea.idea_title}</div>
                         <div class="idea-categories">
-                            <select class="category-select" onchange="updateIdeaCategory(${idea.id}, this.value)" title="Change category">
+                            <select class="category-select" onchange="updateIdeaCategory(${idea.id}, this.value)" title="Change category" data-category-color="${(() => {
+                                const category = getPrimaryCategoryFromTags(idea.tags);
+                                return category.color;
+                            })()}" style="background-color: ${(() => {
+                                const category = getPrimaryCategoryFromTags(idea.tags);
+                                return category.color;
+                            })()}; color: white; border-color: ${(() => {
+                                const category = getPrimaryCategoryFromTags(idea.tags);
+                                return category.color;
+                            })()};">
                                 ${categories.map(cat => {
                                     const category = getPrimaryCategoryFromTags(idea.tags);
                                     const isSelected = cat.name === category.name;
-                                    return `<option value="${cat.name}" ${isSelected ? 'selected' : ''} style="background-color: ${cat.color}">${cat.name}</option>`;
+                                    return `<option value="${cat.name}" ${isSelected ? 'selected' : ''}>${cat.name}</option>`;
                                 }).join('')}
                             </select>
                         </div>
@@ -866,11 +882,20 @@ function renderWeekContent(ideas, events, schedule) {
                     <div class="event-content">
                         <div class="event-title">${event.event_title}</div>
                         <div class="event-categories">
-                            <select class="category-select" onchange="updateEventCategory(${event.id}, this.value)" title="Change category">
+                            <select class="category-select" onchange="updateEventCategory(${event.id}, this.value)" title="Change category" data-category-color="${(() => {
+                                const category = getPrimaryCategoryFromTags(event.tags);
+                                return category.color;
+                            })()}" style="background-color: ${(() => {
+                                const category = getPrimaryCategoryFromTags(event.tags);
+                                return category.color;
+                            })()}; color: white; border-color: ${(() => {
+                                const category = getPrimaryCategoryFromTags(event.tags);
+                                return category.color;
+                            })()};">
                                 ${categories.map(cat => {
                                     const category = getPrimaryCategoryFromTags(event.tags);
                                     const isSelected = cat.name === category.name;
-                                    return `<option value="${cat.name}" ${isSelected ? 'selected' : ''} style="background-color: ${cat.color}">${cat.name}</option>`;
+                                    return `<option value="${cat.name}" ${isSelected ? 'selected' : ''}>${cat.name}</option>`;
                                 }).join('')}
                             </select>
                         </div>
@@ -1084,6 +1109,18 @@ function getPrimaryCategoryFromTags(tags) {
 
 // Category update functions
 function updateIdeaCategory(ideaId, newCategory) {
+    // Find the new category color
+    const newCategoryData = categories.find(cat => cat.name === newCategory);
+    const newColor = newCategoryData ? newCategoryData.color : '#6b7280';
+    
+    // Update the visual styling immediately
+    const selectElement = document.querySelector(`[data-idea-id="${ideaId}"] .category-select`);
+    if (selectElement) {
+        selectElement.style.backgroundColor = newColor;
+        selectElement.style.borderColor = newColor;
+        selectElement.setAttribute('data-category-color', newColor);
+    }
+    
     fetch(`/planning/api/calendar/ideas/${ideaId}`, {
         method: 'PUT',
         headers: {
@@ -1110,6 +1147,18 @@ function updateIdeaCategory(ideaId, newCategory) {
 }
 
 function updateEventCategory(eventId, newCategory) {
+    // Find the new category color
+    const newCategoryData = categories.find(cat => cat.name === newCategory);
+    const newColor = newCategoryData ? newCategoryData.color : '#6b7280';
+    
+    // Update the visual styling immediately
+    const selectElement = document.querySelector(`[data-event-id="${eventId}"] .category-select`);
+    if (selectElement) {
+        selectElement.style.backgroundColor = newColor;
+        selectElement.style.borderColor = newColor;
+        selectElement.setAttribute('data-category-color', newColor);
+    }
+    
     fetch(`/planning/api/calendar/events/${eventId}`, {
         method: 'PUT',
         headers: {
