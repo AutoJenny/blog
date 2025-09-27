@@ -66,14 +66,26 @@ class LLMOrchestrator {
     }
 
     /**
-     * Extract workflow context from URL parameters
+     * Extract workflow context from URL parameters or data attributes
      */
     extractContext() {
+        // First try URL parameters (legacy support)
         const urlParams = new URLSearchParams(window.location.search);
-        const stage = urlParams.get('stage');
-        const substage = urlParams.get('substage');
-        const step = urlParams.get('step');
-        const post_id = urlParams.get('post_id');
+        let stage = urlParams.get('stage');
+        let substage = urlParams.get('substage');
+        let step = urlParams.get('step');
+        let post_id = urlParams.get('post_id');
+        
+        // If URL parameters are missing, try data attributes from container
+        if (!stage || !substage || !step || !post_id) {
+            const container = document.querySelector('.llm-container');
+            if (container) {
+                stage = stage || container.dataset.stage;
+                substage = substage || container.dataset.substage;
+                step = step || container.dataset.step;
+                post_id = post_id || container.dataset.postId;
+            }
+        }
         
         this.logger.debug('orchestrator', 'Raw URL parameters:', { stage, substage, step, post_id });
         

@@ -1,0 +1,720 @@
+<!-- Data Tab Content - Shared across planning pages -->
+<div id="data-tab" class="tab-content">
+    <div class="container">
+        <div class="data-content">
+            <h2>Post Data</h2>
+            <p>View and manage post data for Post ID: {{ post_id }}</p>
+            
+            <!-- SIMPLE TEST -->
+            <div style="background: #10b981; color: white; padding: 2rem; margin: 2rem 0; border-radius: 8px; font-size: 1.5rem; text-align: center;">
+                <strong>TEST: DATA TAB IS WORKING!</strong>
+            </div>
+            
+            <!-- Post Overview Section -->
+            <div class="data-section">
+                <h3><i class="fas fa-file-alt"></i> Post Overview</h3>
+                <div class="data-grid">
+                    <div class="data-item">
+                        <label>Post ID:</label>
+                        <span>{{ post_id }}</span>
+                    </div>
+                    <div class="data-item">
+                        <label>Status:</label>
+                        <span id="post-status">Loading...</span>
+                    </div>
+                    <div class="data-item">
+                        <label>Created:</label>
+                        <span id="post-created">Loading...</span>
+                    </div>
+                    <div class="data-item">
+                        <label>Updated:</label>
+                        <span id="post-updated">Loading...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Database Tables Section -->
+            <div class="data-section">
+                <h3><i class="fas fa-database"></i> Database Tables</h3>
+                
+                <!-- Table Selection Radio Buttons -->
+                <div class="table-selection">
+                    <div class="radio-group">
+                        <input type="radio" id="table-post" name="table-selection" value="post" checked>
+                        <label for="table-post">Post Table</label>
+                    </div>
+                    <div class="radio-group">
+                        <input type="radio" id="table-post-development" name="table-selection" value="post_development">
+                        <label for="table-post-development">Post Development Table</label>
+                    </div>
+                </div>
+
+                <!-- Post Table Display -->
+                <div id="post-table-display" class="table-display active">
+                    <h4>Post Table (ID: <span id="post-table-id">Loading...</span>)</h4>
+                    <div id="post-fields-container" class="fields-container">
+                        <div class="loading">Loading post data...</div>
+                        <div style="color: #10b981; margin-top: 1rem;">
+                            <strong>Debug:</strong> Data tab is rendering. If you see this, the include is working.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Post Development Table Display -->
+                <div id="post-development-table-display" class="table-display">
+                    <h4>Post Development Table (ID: <span id="post-development-table-id">Loading...</span>)</h4>
+                    <div id="post-development-fields-container" class="fields-container">
+                        <div class="loading">Loading development data...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions Section -->
+            <div class="data-section">
+                <h3><i class="fas fa-tools"></i> Actions</h3>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="refreshPostData()">
+                        <i class="fas fa-sync-alt"></i> Refresh Data
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportPostData()">
+                        <i class="fas fa-download"></i> Export Data
+                    </button>
+                    <button class="btn btn-info" onclick="viewInDatabase()">
+                        <i class="fas fa-database"></i> View in Database
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.data-content {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.data-content h2 {
+    color: #f1f5f9;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #3b82f6;
+    padding-bottom: 0.5rem;
+}
+
+.data-content h3 {
+    color: #e2e8f0;
+    margin: 2rem 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.data-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #0f172a;
+    border-radius: 8px;
+    border: 1px solid #334155;
+}
+
+.data-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.data-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.data-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.data-item label {
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.data-item span {
+    color: #e2e8f0;
+    background: #1e293b;
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #334155;
+    min-height: 2rem;
+    display: flex;
+    align-items: center;
+}
+
+.data-item textarea {
+    color: #e2e8f0;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 0.5rem;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.data-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #334155;
+}
+
+.data-tab-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+    font-weight: 500;
+}
+
+.data-tab-btn:hover {
+    color: #e2e8f0;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.data-tab-btn.active {
+    color: #3b82f6;
+    border-bottom-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.data-tab-content {
+    display: none;
+}
+
+.data-tab-content.active {
+    display: block;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+    transform: translateY(-1px);
+}
+
+.btn-info {
+    background: #06b6d4;
+    color: white;
+}
+
+.btn-info:hover {
+    background: #0891b2;
+    transform: translateY(-1px);
+}
+
+/* Table Selection Styles */
+.table-selection {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: #0f172a;
+    border-radius: 8px;
+    border: 1px solid #334155;
+}
+
+.radio-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.radio-group input[type="radio"] {
+    accent-color: #3b82f6;
+}
+
+.radio-group label {
+    color: #e2e8f0;
+    font-weight: 500;
+    cursor: pointer;
+    margin: 0;
+}
+
+/* Table Display Styles */
+.table-display {
+    display: none;
+}
+
+.table-display.active {
+    display: block;
+}
+
+.table-display h4 {
+    color: #f1f5f9;
+    margin: 1.5rem 0 1rem 0;
+    padding: 0.75rem 1rem;
+    background: #1e293b;
+    border-radius: 6px;
+    border-left: 4px solid #3b82f6;
+}
+
+.fields-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.field-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.field-item:hover {
+    border-color: #3b82f6;
+    background: #1e293b;
+}
+
+.field-item.empty {
+    opacity: 0.6;
+    border-style: dashed;
+}
+
+.field-item.populated {
+    border-left: 4px solid #10b981;
+}
+
+.field-name {
+    min-width: 200px;
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+}
+
+.field-value {
+    flex: 1;
+    color: #e2e8f0;
+    word-break: break-word;
+}
+
+.field-value.empty {
+    color: #6b7280;
+    font-style: italic;
+}
+
+.field-value.preview {
+    max-height: 1.5em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    position: relative;
+}
+
+.field-value.preview::after {
+    content: "Click to expand";
+    position: absolute;
+    right: 0;
+    top: 0;
+    background: #1e293b;
+    color: #3b82f6;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.field-value.preview:hover::after {
+    opacity: 1;
+}
+
+.field-value.expanded {
+    max-height: none;
+    white-space: pre-wrap;
+}
+
+.field-value.expanded::after {
+    display: none;
+}
+
+.expand-button {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.expand-button:hover {
+    background: #2563eb;
+}
+
+.expand-button.expanded {
+    background: #6b7280;
+}
+
+.loading {
+    text-align: center;
+    color: #94a3b8;
+    padding: 2rem;
+    font-style: italic;
+}
+</style>
+
+<script>
+// Data tab functionality
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('[Data Tab] Initializing...');
+    
+    // Initialize data tab
+    initializeDataTab();
+    
+    // Load post data with a small delay to ensure DOM is ready
+    setTimeout(() => {
+        loadPostData();
+    }, 100);
+});
+
+function initializeDataTab() {
+    // Data tab switching
+    const dataTabButtons = document.querySelectorAll('.data-tab-btn');
+    const dataTabContents = document.querySelectorAll('.data-tab-content');
+    
+    dataTabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-tab');
+            
+            // Remove active class from all buttons and contents
+            dataTabButtons.forEach(btn => btn.classList.remove('active'));
+            dataTabContents.forEach(content => content.classList.remove('active'));
+            
+            // Add active class to clicked button and corresponding content
+            this.classList.add('active');
+            const targetContent = document.getElementById(targetTab + '-tab');
+            if (targetContent) {
+                targetContent.classList.add('active');
+                console.log(`[Data Tab] Tab ${targetTab} activated, content element:`, targetContent);
+                console.log(`[Data Tab] Content classes after activation:`, targetContent.className);
+                console.log(`[Data Tab] Content display style after activation:`, window.getComputedStyle(targetContent).display);
+            } else {
+                console.error(`[Data Tab] Target content not found: ${targetTab}-tab`);
+            }
+        });
+    });
+    
+    // Table selection radio buttons
+    const tableRadios = document.querySelectorAll('input[name="table-selection"]');
+    const tableDisplays = document.querySelectorAll('.table-display');
+    
+    tableRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.checked) {
+                // Remove active class from all table displays
+                tableDisplays.forEach(display => display.classList.remove('active'));
+                
+                // Add active class to selected table display
+                const targetDisplay = document.getElementById(this.value + '-table-display');
+                if (targetDisplay) {
+                    targetDisplay.classList.add('active');
+                }
+            }
+        });
+    });
+    
+        // Add event listener for when Data tab is clicked to ensure data loads
+        const dataTabButton = document.querySelector('[data-tab="data"]');
+        if (dataTabButton) {
+            dataTabButton.addEventListener('click', function() {
+                console.log('[Data Tab] Data tab clicked, ensuring data is loaded...');
+                // Check if data is already loaded, if not, load it
+                const postStatus = document.getElementById('post-status');
+                if (postStatus && postStatus.textContent === 'Loading...') {
+                    loadPostData();
+                }
+            });
+        }
+        
+        // Debug: Check if data tab content exists
+        const dataTabContent = document.getElementById('data-tab');
+        if (dataTabContent) {
+            console.log('[Data Tab] Data tab content found:', dataTabContent);
+            console.log('[Data Tab] Data tab classes:', dataTabContent.className);
+            console.log('[Data Tab] Data tab display style:', window.getComputedStyle(dataTabContent).display);
+        } else {
+            console.error('[Data Tab] Data tab content not found!');
+        }
+}
+
+async function loadPostData() {
+    try {
+        console.log('[Data Tab] Loading post data...');
+        
+        // Get post ID from the URL or from a data attribute
+        const postId = getPostId();
+        console.log('[Data Tab] Post ID:', postId);
+        
+        if (!postId) {
+            throw new Error('Post ID not found');
+        }
+        
+        const url = `/planning/api/posts/${postId}`;
+        console.log('[Data Tab] Fetching from:', url);
+        
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('[Data Tab] Data received:', data);
+        
+        populatePostData(data);
+    } catch (error) {
+        console.error('[Data Tab] Error loading post data:', error);
+        showError('Failed to load post data: ' + error.message);
+    }
+}
+
+function getPostId() {
+    // Try to get post ID from various sources
+    const llmContainer = document.querySelector('.llm-container');
+    if (llmContainer && llmContainer.dataset.postId) {
+        return llmContainer.dataset.postId;
+    }
+    
+    // Try to get from URL
+    const urlMatch = window.location.pathname.match(/\/posts\/(\d+)/);
+    if (urlMatch) {
+        return urlMatch[1];
+    }
+    
+    // Try to get from a data attribute on the body or container
+    const body = document.body;
+    if (body.dataset.postId) {
+        return body.dataset.postId;
+    }
+    
+    return null;
+}
+
+function populatePostData(data) {
+    console.log('[Data Tab] Populating post data:', data);
+    
+    // Post overview
+    const postStatus = document.getElementById('post-status');
+    const postCreated = document.getElementById('post-created');
+    const postUpdated = document.getElementById('post-updated');
+    
+    if (postStatus) postStatus.textContent = data.status || 'Unknown';
+    if (postCreated) postCreated.textContent = data.created_at ? new Date(data.created_at).toLocaleString() : 'Unknown';
+    if (postUpdated) postUpdated.textContent = data.updated_at ? new Date(data.updated_at).toLocaleString() : 'Unknown';
+    
+    // Populate database tables
+    populateDatabaseTables(data);
+    
+    console.log('[Data Tab] Post data populated successfully');
+}
+
+function populateDatabaseTables(data) {
+    // Set table IDs
+    document.getElementById('post-table-id').textContent = data.id || 'Unknown';
+    document.getElementById('post-development-table-id').textContent = data.id || 'Unknown';
+    
+    // Populate Post table
+    populateTableFields('post-fields-container', data, 'post');
+    
+    // Populate Post Development table
+    if (data.development) {
+        populateTableFields('post-development-fields-container', data.development, 'post_development');
+    } else {
+        document.getElementById('post-development-fields-container').innerHTML = '<div class="loading">No development data found</div>';
+    }
+}
+
+function populateTableFields(containerId, data, tableType) {
+    console.log(`[Data Tab] Populating ${tableType} fields in container: ${containerId}`);
+    const container = document.getElementById(containerId);
+    
+    if (!container) {
+        console.error(`[Data Tab] Container not found: ${containerId}`);
+        return;
+    }
+    
+    // Sort fields alphabetically, but put 'id' first
+    const fields = Object.keys(data).sort((a, b) => {
+        if (a === 'id') return -1;
+        if (b === 'id') return 1;
+        return a.localeCompare(b);
+    });
+    
+    console.log(`[Data Tab] Found ${fields.length} fields:`, fields);
+    
+    container.innerHTML = '';
+    
+    fields.forEach(fieldName => {
+        const fieldValue = data[fieldName];
+        const isEmpty = fieldValue === null || fieldValue === undefined || fieldValue === '';
+        const isLongText = typeof fieldValue === 'string' && fieldValue.length > 100;
+        
+        const fieldItem = document.createElement('div');
+        fieldItem.className = `field-item ${isEmpty ? 'empty' : 'populated'}`;
+        
+        fieldItem.innerHTML = `
+            <div class="field-name">${fieldName}</div>
+            <div class="field-value ${isEmpty ? 'empty' : (isLongText ? 'preview' : '')}" 
+                 ${isLongText ? `onclick="toggleExpand(this)"` : ''}>
+                ${isEmpty ? 'Empty' : formatFieldValue(fieldValue)}
+            </div>
+            ${isLongText ? '<button class="expand-button" onclick="toggleExpand(this.previousElementSibling)">Expand</button>' : ''}
+        `;
+        
+        container.appendChild(fieldItem);
+    });
+    
+    console.log(`[Data Tab] Added ${fields.length} field items to container`);
+    
+    // Add a test element to make sure the container is visible
+    const testElement = document.createElement('div');
+    testElement.style.cssText = 'background: #10b981; color: white; padding: 1rem; margin: 1rem 0; border-radius: 4px;';
+    testElement.innerHTML = `<strong>TEST:</strong> ${fields.length} fields loaded successfully! Container: ${containerId}`;
+    container.appendChild(testElement);
+}
+
+function formatFieldValue(value) {
+    if (value === null || value === undefined) return 'null';
+    if (typeof value === 'boolean') return value ? 'true' : 'false';
+    if (typeof value === 'object') return JSON.stringify(value, null, 2);
+    if (typeof value === 'string' && value.length > 100) {
+        return value.substring(0, 100) + '...';
+    }
+    return String(value);
+}
+
+function toggleExpand(element) {
+    if (element.classList.contains('preview')) {
+        element.classList.remove('preview');
+        element.classList.add('expanded');
+        element.textContent = element.textContent.replace('...', '');
+        element.nextElementSibling.textContent = 'Collapse';
+        element.nextElementSibling.classList.add('expanded');
+    } else {
+        element.classList.remove('expanded');
+        element.classList.add('preview');
+        element.textContent = element.textContent.substring(0, 100) + '...';
+        element.nextElementSibling.textContent = 'Expand';
+        element.nextElementSibling.classList.remove('expanded');
+    }
+}
+
+function refreshPostData() {
+    loadPostData();
+    showNotification('Post data refreshed', 'success');
+}
+
+function exportPostData() {
+    const data = {
+        post_id: document.querySelector('.llm-container').dataset.postId,
+        timestamp: new Date().toISOString(),
+        data: {
+            status: document.getElementById('post-status').textContent,
+            title: document.getElementById('post-title').textContent,
+            slug: document.getElementById('post-slug').textContent,
+            // Add more fields as needed
+        }
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `post-${data.post_id}-data.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showNotification('Post data exported', 'success');
+}
+
+function viewInDatabase() {
+    window.open('/db/', '_blank');
+}
+
+function showNotification(message, type = 'info') {
+    // Simple notification - you can enhance this
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 6px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        document.body.removeChild(notification);
+    }, 3000);
+}
+
+function showError(message) {
+    showNotification(message, 'error');
+}
+</script>
