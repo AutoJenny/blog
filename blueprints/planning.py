@@ -286,9 +286,26 @@ def get_post_data(post_id):
             post_info = {k: v for k, v in data.items() if not k.startswith(('basic_idea', 'provisional_title', 'idea_scope', 'topics_to_cover', 'interesting_facts', 'section_headings', 'section_order', 'main_title', 'intro_blurb', 'seo_optimization', 'summary', 'idea_seed', 'provisional_title_primary', 'concepts', 'facts', 'outline', 'allocated_facts', 'sections', 'title_order', 'expanded_idea', 'image_montage_concept', 'image_montage_prompt', 'image_captions'))}
             development_info = {k: v for k, v in data.items() if k.startswith(('basic_idea', 'provisional_title', 'idea_scope', 'topics_to_cover', 'interesting_facts', 'section_headings', 'section_order', 'main_title', 'intro_blurb', 'seo_optimization', 'summary', 'idea_seed', 'provisional_title_primary', 'concepts', 'facts', 'outline', 'allocated_facts', 'sections', 'title_order', 'expanded_idea', 'image_montage_concept', 'image_montage_prompt', 'image_captions'))}
             
+            # Get calendar schedule data for this post
+            cursor.execute("""
+                SELECT cs.*, ci.idea_title, ce.event_title
+                FROM calendar_schedule cs
+                LEFT JOIN calendar_ideas ci ON cs.idea_id = ci.id
+                LEFT JOIN calendar_events ce ON cs.event_id = ce.id
+                WHERE cs.post_id = %s
+            """, (post_id,))
+            calendar_schedule_data = cursor.fetchall()
+            
+            # Convert calendar schedule data to list of dicts
+            calendar_schedule_list = []
+            for row in calendar_schedule_data:
+                schedule_dict = dict(row)
+                calendar_schedule_list.append(schedule_dict)
+            
             return jsonify({
                 **post_info,
-                'development': development_info
+                'development': development_info,
+                'calendar_schedule': calendar_schedule_list
             })
     except Exception as e:
         logger.error(f"Error fetching post data: {e}")
