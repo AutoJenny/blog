@@ -594,6 +594,7 @@ async function loadCategories() {
         if (data.success) {
             categories = data.categories;
             console.log('Categories loaded:', categories);
+            console.log('Categories count:', categories.length);
         } else {
             console.error('Error loading categories:', data.error);
         }
@@ -1095,7 +1096,13 @@ function getPrimaryCategory(categories) {
 
 // Helper function to get primary category from tags array (for ideas/events)
 function getPrimaryCategoryFromTags(tags) {
-    if (!tags || tags.length === 0) return { name: '', color: '#6b7280' };
+    console.log('getPrimaryCategoryFromTags called with:', tags);
+    console.log('Available categories:', categories);
+    
+    if (!tags || tags.length === 0) {
+        console.log('No tags provided, returning default');
+        return { name: '', color: '#6b7280' };
+    }
     
     // Look for Holiday category first
     const holidayTag = tags.find(tag => 
@@ -1105,14 +1112,19 @@ function getPrimaryCategoryFromTags(tags) {
     );
     
     const categoryName = holidayTag || tags[0] || '';
+    console.log('Selected category name:', categoryName);
     
     // Find the category in our loaded categories
     const category = categories.find(cat => cat.name === categoryName);
+    console.log('Found category:', category);
     
-    return {
+    const result = {
         name: categoryName,
         color: category ? category.color : '#6b7280'
     };
+    console.log('Returning result:', result);
+    
+    return result;
 }
 
 // Category update functions
