@@ -565,6 +565,35 @@
 .week-cell.current-week .schedule-item:hover {
     background: rgba(255, 255, 255, 0.3);
 }
+
+/* Week actions styling */
+.week-actions {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.week-cell:hover .week-actions {
+    opacity: 1;
+}
+
+.btn-add-entry {
+    background: #10b981;
+    border: none;
+    color: white;
+    padding: 4px 6px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.btn-add-entry:hover {
+    background: #059669;
+    transform: scale(1.1);
+}
 </style>
 
 <script>
@@ -755,6 +784,11 @@ function renderCalendarFromData(weeks, currentWeekNumber) {
                     <div class="week-dates">${formatDate(week.start_date)} - ${formatDate(week.end_date)}</div>
                     <div class="week-content">
                         <!-- Ideas and events will be loaded here -->
+                    </div>
+                    <div class="week-actions">
+                        <button class="btn-add-entry" onclick="addNewEntry(${week.week_number})" title="Add new entry">
+                            <i class="fas fa-plus"></i>
+                        </button>
                     </div>
                 `;
                 
@@ -1143,6 +1177,11 @@ function renderCalendarFallback() {
                     <div class="week-dates">${formatDate(weekDates.start)} - ${formatDate(weekDates.end)}</div>
                     <div class="week-content">
                         <!-- Posts will be loaded here -->
+                    </div>
+                    <div class="week-actions">
+                        <button class="btn-add-entry" onclick="addNewEntry(${week})" title="Add new entry">
+                            <i class="fas fa-plus"></i>
+                        </button>
                     </div>
                 `;
                 
@@ -1920,6 +1959,96 @@ function moveItemToWeek(itemType, itemId, targetWeek) {
     .catch(error => {
         console.error('Error:', error);
         showNotification(`Error moving ${itemType}`, 'error');
+    });
+}
+
+// Add new entry function
+function addNewEntry(weekNumber) {
+    const title = prompt('Enter the title for the new entry:');
+    if (!title) return;
+    
+    // Show category selection
+    const categoryOptions = categories.map(cat => `<option value="${cat.name}">${cat.name}</option>`).join('');
+    const categoryHtml = `
+        <div style="margin: 10px 0;">
+            <label for="new-entry-category">Category:</label>
+            <select id="new-entry-category" style="margin-left: 10px; padding: 4px;">
+                <option value="">Select Category</option>
+                ${categoryOptions}
+            </select>
+        </div>
+    `;
+    
+    // Create a simple modal
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    `;
+    
+    modal.innerHTML = `
+        <div style="background: white; padding: 20px; border-radius: 8px; min-width: 300px;">
+            <h3>Add New Entry</h3>
+            <p><strong>Title:</strong> ${title}</p>
+            <p><strong>Week:</strong> ${weekNumber}</p>
+            ${categoryHtml}
+            <div style="margin-top: 20px; text-align: right;">
+                <button onclick="this.closest('.modal').remove()" style="margin-right: 10px; padding: 8px 16px;">Cancel</button>
+                <button onclick="saveNewEntry(${weekNumber}, '${title.replace(/'/g, "\\'")}')" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 4px;">Save</button>
+            </div>
+        </div>
+    `;
+    
+    modal.className = 'modal';
+    document.body.appendChild(modal);
+}
+
+function saveNewEntry(weekNumber, title) {
+    const categorySelect = document.getElementById('new-entry-category');
+    const category = categorySelect.value;
+    
+    if (!category) {
+        alert('Please select a category');
+        return;
+    }
+    
+    // Create the new idea
+    fetch('/planning/api/calendar/ideas', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            idea_title: title,
+            week_number: weekNumber,
+            tags: [category],
+            priority: 'random',
+            is_evergreen: true
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('New entry added successfully', 'success');
+            // Remove modal
+            document.querySelector('.modal').remove();
+            // Reload calendar
+            updateCalendar();
+        } else {
+            showNotification('Error adding entry: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error adding entry', 'error');
     });
 }
 
