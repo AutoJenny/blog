@@ -810,6 +810,33 @@ async function loadWeekContent(year, weekNumber) {
                     if (dropdown) {
                         console.log('Dropdown options count:', dropdown.options.length);
                         console.log('Dropdown selected value:', dropdown.value);
+                        
+                        // Check computed styles and dimensions
+                        const computedStyle = window.getComputedStyle(dropdown);
+                        console.log('Dropdown computed styles:', {
+                            display: computedStyle.display,
+                            visibility: computedStyle.visibility,
+                            opacity: computedStyle.opacity,
+                            width: computedStyle.width,
+                            height: computedStyle.height,
+                            backgroundColor: computedStyle.backgroundColor,
+                            color: computedStyle.color,
+                            position: computedStyle.position,
+                            zIndex: computedStyle.zIndex
+                        });
+                        
+                        // Check bounding box
+                        const rect = dropdown.getBoundingClientRect();
+                        console.log('Dropdown bounding box:', rect);
+                        
+                        // Check if it's actually visible in viewport
+                        console.log('Is dropdown in viewport?', rect.width > 0 && rect.height > 0 && rect.top >= 0 && rect.left >= 0);
+                        
+                        // Temporarily highlight the dropdown for debugging
+                        dropdown.style.border = '3px solid red !important';
+                        dropdown.style.backgroundColor = 'yellow !important';
+                        dropdown.style.color = 'black !important';
+                        console.log('Applied temporary debugging styles to dropdown');
                     } else {
                         console.log('ERROR: Dropdown not found in DOM!');
                     }
