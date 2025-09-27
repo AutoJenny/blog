@@ -124,6 +124,7 @@
     gap: 1px;
     background: #334155;
     overflow-x: auto;
+    min-height: 400px;
 }
 
 .month-header {
@@ -167,6 +168,7 @@
     position: relative;
     cursor: pointer;
     transition: all 0.2s ease;
+    min-width: 100px; /* Ensure cells are wide enough */
 }
 
 .week-cell:hover {
@@ -323,20 +325,30 @@
 <script>
 // Set navigation context
 document.addEventListener('DOMContentLoaded', function() {
+    
     // Set current stage for navigation
     window.currentStage = 'calendar';
     window.currentSubstage = 'view';
     window.postId = {{ post_id }};
     
+    
     // Initialize calendar
     initializeCalendar();
+    
 });
 
 let currentYear = new Date().getFullYear();
 let currentWeekNumber = getWeekNumber(new Date());
 
 function initializeCalendar() {
-    console.log('initializeCalendar called');
+    
+    // Test if calendar grid exists
+    const calendarGrid = document.getElementById('calendar-grid');
+    if (!calendarGrid) {
+        console.error('CRITICAL: calendar-grid element not found!');
+        return;
+    }
+    
     
     // Always render the fallback first to ensure calendar is visible
     renderCalendarFallback();
@@ -382,7 +394,6 @@ function formatDate(dateString) {
 }
 
 async function updateCalendar() {
-    console.log('updateCalendar called for year:', currentYear);
     
     document.getElementById('current-year').textContent = currentYear;
     
@@ -396,14 +407,11 @@ async function updateCalendar() {
     
     try {
         // Load calendar weeks from database
-        console.log('Loading calendar data from database...');
         const response = await fetch(`/planning/api/calendar/weeks/${currentYear}`);
         const data = await response.json();
         
-        console.log('Database response:', data);
         
         if (data.success && data.weeks && data.weeks.length > 0) {
-            console.log('Rendering calendar from database data...');
             renderCalendarFromData(data.weeks, weekNumber);
             await loadCalendarContent(currentYear, data.weeks);
         } else {
@@ -419,7 +427,13 @@ async function updateCalendar() {
 }
 
 function renderCalendarFromData(weeks, currentWeekNumber) {
+    
     const calendarGrid = document.getElementById('calendar-grid');
+    if (!calendarGrid) {
+        console.error('Calendar grid not found in renderCalendarFromData');
+        return;
+    }
+    
     calendarGrid.innerHTML = '';
     
     // Group weeks by month
@@ -430,6 +444,7 @@ function renderCalendarFromData(weeks, currentWeekNumber) {
         }
         monthGroups[week.month_name].push(week);
     });
+    
     
     // Find the maximum number of weeks in any month
     const maxWeeks = Math.max(...Object.values(monthGroups).map(group => group.length));
@@ -460,6 +475,9 @@ function renderCalendarFromData(weeks, currentWeekNumber) {
                     weekCell.classList.add('current-week');
                 }
                 
+                // Add data-week attribute for content loading
+                weekCell.setAttribute('data-week', week.week_number);
+                
                 weekCell.innerHTML = `
                     <div class="week-number">W${week.week_number}</div>
                     <div class="week-dates">${formatDate(week.start_date)} - ${formatDate(week.end_date)}</div>
@@ -477,13 +495,16 @@ function renderCalendarFromData(weeks, currentWeekNumber) {
             calendarGrid.appendChild(weekCell);
         }
     });
+    
 }
 
 async function loadCalendarContent(year, weeks) {
+    
     // Load ideas and events for each week
     for (const week of weeks) {
         await loadWeekContent(year, week.week_number);
     }
+    
 }
 
 async function loadWeekContent(year, weekNumber) {
@@ -504,7 +525,9 @@ async function loadWeekContent(year, weekNumber) {
         const weekCell = document.querySelector(`[data-week="${weekNumber}"]`);
         if (weekCell) {
             const contentDiv = weekCell.querySelector('.week-content');
-            contentDiv.innerHTML = renderWeekContent(ideasData.ideas, eventsData.events, scheduleData.schedule);
+            const renderedContent = renderWeekContent(ideasData.ideas, eventsData.events, scheduleData.schedule);
+            contentDiv.innerHTML = renderedContent;
+        } else {
         }
         
     } catch (error) {
@@ -566,7 +589,6 @@ function renderWeekContent(ideas, events, schedule) {
 }
 
 function renderCalendarFallback() {
-    console.log('renderCalendarFallback called for year:', currentYear);
     
     // Fallback to the original hardcoded generation
     const calendarGrid = document.getElementById('calendar-grid');
@@ -576,7 +598,6 @@ function renderCalendarFallback() {
     }
     
     calendarGrid.innerHTML = '';
-    console.log('Cleared calendar grid');
     
     // Group weeks by month
     const monthGroups = [];
@@ -604,11 +625,9 @@ function renderCalendarFallback() {
         monthGroups.push(currentGroup);
     }
     
-    console.log('Month groups:', monthGroups);
     
     // Find the maximum number of weeks in any month
     const maxWeeks = Math.max(...monthGroups.map(group => group.length));
-    console.log('Max weeks in any month:', maxWeeks);
     
     // Set grid columns dynamically
     calendarGrid.style.gridTemplateColumns = `100px repeat(${maxWeeks}, 1fr)`;
@@ -622,7 +641,6 @@ function renderCalendarFallback() {
         const weekDates = getWeekDates(firstWeek, currentYear);
         const monthName = monthNames[weekDates.start.getMonth()];
         
-        console.log(`Creating month row for ${monthName} with ${weeks.length} weeks`);
         
         // Month name cell
         const monthCell = document.createElement('div');
@@ -665,7 +683,6 @@ function renderCalendarFallback() {
         }
     });
     
-    console.log('Calendar fallback rendering complete');
 }
 
 function getWeeksInMonth(monthStart, monthEnd) {
@@ -676,7 +693,6 @@ function getWeeksInMonth(monthStart, monthEnd) {
 }
 
 function selectWeek(weekNumber, month) {
-    console.log(`Selected week ${weekNumber} in month ${month + 1}`);
     // Implement week selection functionality
     // This could open a detailed view or allow scheduling posts for that week
 }
