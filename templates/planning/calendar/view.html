@@ -190,6 +190,13 @@
     margin-bottom: 0.25rem;
 }
 
+.week-month {
+    font-weight: 600;
+    color: #3b82f6;
+    font-size: 0.7rem;
+    margin-bottom: 0.25rem;
+}
+
 .week-cell.current-week .week-number {
     color: white;
 }
@@ -295,75 +302,41 @@ function updateCalendar() {
     document.getElementById('current-week').textContent = 
         `Week ${weekNumber} of 52`;
     
-    // Generate calendar grid
+    // Generate calendar grid - just 52 weeks in one row
     const calendarGrid = document.getElementById('calendar-grid');
     calendarGrid.innerHTML = '';
     
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    // Set grid to show 52 weeks in one row
+    calendarGrid.style.gridTemplateColumns = 'repeat(52, 1fr)';
     
-    // Create a simple 52-week grid with months as rows
-    // Each week appears only once, in the month where it starts
-    
-    // Set grid columns for 52 weeks + month column
-    calendarGrid.style.gridTemplateColumns = `100px repeat(52, 1fr)`;
-    
-    // Create header row
-    const monthHeader = document.createElement('div');
-    monthHeader.className = 'month-header';
-    monthHeader.textContent = 'Month';
-    calendarGrid.appendChild(monthHeader);
-    
-    // Create week headers (W1, W2, W3, etc.)
+    // Create 52 week cells
     for (let week = 1; week <= 52; week++) {
-        const weekHeader = document.createElement('div');
-        weekHeader.className = 'week-header';
-        weekHeader.textContent = `W${week}`;
-        calendarGrid.appendChild(weekHeader);
-    }
-    
-    // Create month rows
-    for (let month = 0; month < 12; month++) {
-        // Month name cell
-        const monthCell = document.createElement('div');
-        monthCell.className = 'month-cell';
-        monthCell.textContent = monthNames[month];
-        calendarGrid.appendChild(monthCell);
+        const weekDates = getWeekDates(week, currentYear);
+        const weekMonth = weekDates.start.getMonth();
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         
-        // Create week cells for all 52 weeks
-        for (let week = 1; week <= 52; week++) {
-            const weekDates = getWeekDates(week, currentYear);
-            const monthStart = new Date(currentYear, month, 1);
-            const monthEnd = new Date(currentYear, month + 1, 0);
-            
-            // Check if this week starts in this month
-            const weekStartsInMonth = weekDates.start >= monthStart && weekDates.start <= monthEnd;
-            
-            const weekCell = document.createElement('div');
-            weekCell.className = 'week-cell';
-            
-            if (weekStartsInMonth) {
-                const isCurrentWeek = isCurrentYear && week === weekNumber;
-                
-                if (isCurrentWeek) {
-                    weekCell.classList.add('current-week');
-                }
-                
-                weekCell.innerHTML = `
-                    <div class="week-dates">${formatDate(weekDates.start)} - ${formatDate(weekDates.end)}</div>
-                    <div class="week-content">
-                        <!-- Posts will be loaded here -->
-                    </div>
-                `;
-                
-                // Add click handler for week selection
-                weekCell.addEventListener('click', () => selectWeek(week, month));
-            } else {
-                weekCell.innerHTML = '<div class="week-dates">-</div>';
-            }
-            
-            calendarGrid.appendChild(weekCell);
+        const weekCell = document.createElement('div');
+        weekCell.className = 'week-cell';
+        
+        const isCurrentWeek = isCurrentYear && week === weekNumber;
+        if (isCurrentWeek) {
+            weekCell.classList.add('current-week');
         }
+        
+        weekCell.innerHTML = `
+            <div class="week-number">W${week}</div>
+            <div class="week-month">${monthNames[weekMonth]}</div>
+            <div class="week-dates">${formatDate(weekDates.start)} - ${formatDate(weekDates.end)}</div>
+            <div class="week-content">
+                <!-- Posts will be loaded here -->
+            </div>
+        `;
+        
+        // Add click handler for week selection
+        weekCell.addEventListener('click', () => selectWeek(week, weekMonth));
+        
+        calendarGrid.appendChild(weekCell);
     }
 }
 
