@@ -493,8 +493,8 @@ def api_calendar_schedule_create():
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 INSERT INTO calendar_schedule 
-                (year, week_number, idea_id, event_id, post_id, status, scheduled_date, notes, is_override, original_idea_id)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                (year, week_number, idea_id, event_id, post_id, status, priority, scheduled_date, notes, is_override, original_idea_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id
             """, (
                 data['year'],
@@ -503,6 +503,7 @@ def api_calendar_schedule_create():
                 data.get('event_id'),
                 data.get('post_id'),
                 data.get('status', 'planned'),
+                data.get('priority', 'random'),
                 data.get('scheduled_date'),
                 data.get('notes'),
                 data.get('is_override', False),
@@ -1177,7 +1178,7 @@ def api_calendar_schedule_update(schedule_id):
             
             allowed_fields = [
                 'year', 'week_number', 'idea_id', 'event_id', 'post_id',
-                'status', 'scheduled_date', 'notes', 'is_override', 'original_idea_id'
+                'status', 'priority', 'scheduled_date', 'notes', 'is_override', 'original_idea_id'
             ]
             
             for field in allowed_fields:
