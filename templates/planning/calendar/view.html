@@ -121,9 +121,9 @@
 
 .calendar-grid {
     display: grid;
-    grid-template-columns: 100px repeat(52, 1fr);
     gap: 1px;
     background: #334155;
+    overflow-x: auto;
 }
 
 .month-header {
@@ -302,16 +302,38 @@ function updateCalendar() {
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     
-    // Create week headers (W1, W2, W3, etc.)
-    const weekHeader = document.createElement('div');
-    weekHeader.className = 'month-header';
-    weekHeader.textContent = 'Month';
-    calendarGrid.appendChild(weekHeader);
+    // Find all weeks that belong to each month
+    const monthWeeks = [];
+    for (let month = 0; month < 12; month++) {
+        const monthStart = new Date(currentYear, month, 1);
+        const monthEnd = new Date(currentYear, month + 1, 0);
+        const weeks = [];
+        
+        for (let week = 1; week <= 52; week++) {
+            const weekDates = getWeekDates(week, currentYear);
+            if (weekDates.start <= monthEnd && weekDates.end >= monthStart) {
+                weeks.push(week);
+            }
+        }
+        monthWeeks.push(weeks);
+    }
     
-    for (let week = 1; week <= 52; week++) {
+    // Find the maximum number of weeks in any month
+    const maxWeeks = Math.max(...monthWeeks.map(weeks => weeks.length));
+    
+    // Set grid columns dynamically
+    calendarGrid.style.gridTemplateColumns = `100px repeat(${maxWeeks}, 1fr)`;
+    
+    // Create header row
+    const monthHeader = document.createElement('div');
+    monthHeader.className = 'month-header';
+    monthHeader.textContent = 'Month';
+    calendarGrid.appendChild(monthHeader);
+    
+    for (let i = 1; i <= maxWeeks; i++) {
         const weekHeader = document.createElement('div');
         weekHeader.className = 'week-header';
-        weekHeader.textContent = `W${week}`;
+        weekHeader.textContent = `Week ${i}`;
         calendarGrid.appendChild(weekHeader);
     }
     
@@ -323,26 +345,24 @@ function updateCalendar() {
         monthCell.textContent = monthNames[month];
         calendarGrid.appendChild(monthCell);
         
-        // Calculate how many weeks this month has
-        const monthStart = new Date(currentYear, month, 1);
-        const monthEnd = new Date(currentYear, month + 1, 0);
-        const weeksInMonth = getWeeksInMonth(monthStart, monthEnd);
+        const weeks = monthWeeks[month];
         
         // Create week cells for this month
-        for (let week = 1; week <= 52; week++) {
-            const weekDates = getWeekDates(week, currentYear);
-            const weekOverlapsMonth = weekDates.start <= monthEnd && weekDates.end >= monthStart;
-            
+        for (let weekIndex = 0; weekIndex < maxWeeks; weekIndex++) {
             const weekCell = document.createElement('div');
             weekCell.className = 'week-cell';
             
-            if (weekOverlapsMonth) {
+            if (weekIndex < weeks.length) {
+                const week = weeks[weekIndex];
+                const weekDates = getWeekDates(week, currentYear);
                 const isCurrentWeek = isCurrentYear && week === weekNumber;
+                
                 if (isCurrentWeek) {
                     weekCell.classList.add('current-week');
                 }
                 
                 weekCell.innerHTML = `
+                    <div class="week-number">W${week}</div>
                     <div class="week-dates">${formatDate(weekDates.start)} - ${formatDate(weekDates.end)}</div>
                     <div class="week-content">
                         <!-- Posts will be loaded here -->
