@@ -1632,6 +1632,39 @@ def api_get_topic_brainstorming_prompt():
         logger.error(f"Error fetching topic brainstorming prompt: {e}")
         return jsonify({'error': str(e)}), 500
 
+@bp.route('/api/llm/prompts/topic-brainstorming', methods=['PUT'])
+def api_update_topic_brainstorming_prompt():
+    """Update the LLM prompt used for topic brainstorming"""
+    try:
+        data = request.get_json()
+        system_prompt = data.get('system_prompt', '')
+        prompt_text = data.get('prompt_text', '')
+        
+        if not prompt_text:
+            return jsonify({'error': 'Prompt text is required'}), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Update the existing prompt
+            cursor.execute("""
+                UPDATE llm_prompt 
+                SET system_prompt = %s, prompt_text = %s, updated_at = CURRENT_TIMESTAMP
+                WHERE name = 'Topic Brainstorming'
+            """, (system_prompt, prompt_text))
+            
+            if cursor.rowcount == 0:
+                return jsonify({'error': 'Topic brainstorming prompt not found'}), 404
+            
+            cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Prompt updated successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error updating topic brainstorming prompt: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @bp.route('/api/brainstorm/topics', methods=['POST'])
 def api_generate_brainstorm_topics():
     """Generate brainstorming topics using LLM"""
