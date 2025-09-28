@@ -17377,3 +17377,5 @@ LINE 4:                 LEFT JOIN calendar_ideas ci ON cs.idea_id = ...
 2025-09-28 20:09:00,866 - config.database - INFO - Database connection established
 2025-09-28 20:09:00,872 - blueprints.planning - INFO - Calendar schedule query for post_id=55 returned 0 results
 2025-09-28 20:09:00,873 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:09:00] "GET /planning/api/posts/55 HTTP/1.1" 200 -
+2025-09-28 20:10:22,012 - config.database - INFO - Database connection established
+2025-09-28 20:10:22,017 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:10:22] "GET /planning/posts/60/calendar/ideas HTTP/1.1" 200 -
