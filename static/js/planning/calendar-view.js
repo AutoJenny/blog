@@ -3,6 +3,7 @@ import CONFIG from './calendar/utils/constants.js';
 import DataLoader from './calendar/api/data-loader.js';
 import CacheManager from './calendar/api/cache-manager.js';
 import { getPrimaryCategory, getPrimaryCategoryFromTags, showNotification, renderCalendarFallback, renderCalendarFromData } from './calendar/ui/calendar-renderer.js';
+import { DragDropManager } from './calendar/ui/drag-drop.js';
 
 // Global variables
 let currentYear = new Date().getFullYear();
@@ -12,6 +13,9 @@ let categories = [];
 // Initialize API modules
 const dataLoader = new DataLoader('/planning/api/calendar');
 const cacheManager = new CacheManager();
+
+// Initialize drag and drop manager
+const dragDropManager = new DragDropManager(dataLoader, cacheManager);
 
 document.addEventListener('DOMContentLoaded', function() {
     
@@ -25,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeCalendar();
     
     // Initialize drag and drop
-    initializeDragAndDrop();
+    dragDropManager.initialize();
     
 });
 
@@ -776,123 +780,8 @@ async function updateSchedulePriority(scheduleId, newPriority) {
 // ============================================================================
 // DRAG AND DROP FUNCTIONALITY
 // ============================================================================
+// Moved to DragDropManager class in drag-drop.js
 
-let draggedElement = null;
-let draggedType = null;
-let draggedId = null;
-let dragGhost = null;
-
-function initializeDragAndDrop() {
-    // Add drag event listeners to all draggable items
-    document.addEventListener('dragstart', handleDragStart);
-    document.addEventListener('dragend', handleDragEnd);
-    document.addEventListener('dragover', handleDragOver);
-    document.addEventListener('drop', handleDrop);
-    document.addEventListener('dragenter', handleDragEnter);
-    document.addEventListener('dragleave', handleDragLeave);
-}
-
-function handleDragStart(e) {
-    const item = e.target.closest('.idea-item, .event-item, .schedule-item');
-    if (!item) return;
-    
-    draggedElement = item;
-    draggedType = item.classList.contains('idea-item') ? 'idea' : 
-                  item.classList.contains('event-item') ? 'event' : 'schedule';
-    draggedId = item.dataset.ideaId || item.dataset.eventId || item.dataset.scheduleId;
-    
-    // Add dragging class
-    item.classList.add('dragging');
-    
-    // Create drag ghost
-    dragGhost = document.createElement('div');
-    dragGhost.className = 'drag-ghost';
-    dragGhost.textContent = item.querySelector('.idea-title, .event-title, .schedule-title').textContent;
-    document.body.appendChild(dragGhost);
-    
-    // Set drag image
-    e.dataTransfer.setDragImage(dragGhost, 0, 0);
-    e.dataTransfer.effectAllowed = 'move';
-    
-}
-
-function handleDragEnd(e) {
-    if (draggedElement) {
-        draggedElement.classList.remove('dragging');
-        draggedElement = null;
-        draggedType = null;
-        draggedId = null;
-    }
-    
-    if (dragGhost) {
-        document.body.removeChild(dragGhost);
-        dragGhost = null;
-    }
-    
-    // Remove all drag-over classes
-    document.querySelectorAll('.week-cell.drag-over').forEach(cell => {
-        cell.classList.remove('drag-over');
-    });
-    
-}
-
-function handleDragOver(e) {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-}
-
-function handleDragEnter(e) {
-    const weekCell = e.target.closest('.week-cell');
-    if (weekCell && weekCell.querySelector('.week-content')) {
-        weekCell.classList.add('drag-over');
-    }
-}
-
-function handleDragLeave(e) {
-    const weekCell = e.target.closest('.week-cell');
-    if (weekCell && !weekCell.contains(e.relatedTarget)) {
-        weekCell.classList.remove('drag-over');
-    }
-}
-
-function handleDrop(e) {
-    e.preventDefault();
-    
-    const weekCell = e.target.closest('.week-cell');
-    if (!weekCell || !draggedElement) return;
-    
-    const targetWeek = weekCell.dataset.week;
-    if (!targetWeek) return;
-    
-    
-    // Remove drag-over class
-    weekCell.classList.remove('drag-over');
-    
-    // Move the item
-    moveItemToWeek(draggedType, draggedId, parseInt(targetWeek));
-}
-
-async function moveItemToWeek(itemType, itemId, targetWeek) {
-    try {
-        let result;
-        if (itemType === 'idea') {
-            result = await dataLoader.updateIdeaWeek(itemId, targetWeek);
-        } else if (itemType === 'event') {
-            result = await dataLoader.updateEventWeek(itemId, targetWeek);
-        } else if (itemType === 'schedule') {
-            result = await dataLoader.updateScheduleWeek(itemId, targetWeek);
-        }
-        
-        showNotification(`${itemType.charAt(0).toUpperCase() + itemType.slice(1)} moved to week ${targetWeek}`, 'success');
-        // Invalidate cache for this week
-        cacheManager.invalidateWeek(currentYear, currentWeekNumber);
-        // Reload current week's content
-        await loadWeekContent(currentYear, currentWeekNumber);
-    } catch (error) {
-        console.error('Error:', error);
-        showNotification(`Error moving ${itemType}`, 'error');
-    }
-}
 
 // Add new entry function
 async function addNewEntry(weekNumber) {
@@ -972,3 +861,4 @@ async function saveNewEntry(weekNumber, title) {
 window.updateIdeaPriority = updateIdeaPriority;
 window.updateEventPriority = updateEventPriority;
 window.updateSchedulePriority = updateSchedulePriority;
+window.loadWeekContent = loadWeekContent;
