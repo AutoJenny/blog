@@ -59,6 +59,18 @@
                         <!-- LLM prompt will appear here -->
                     </div>
                 </div>
+                
+                <div class="expanded-idea-display">
+                    <div class="expanded-idea-header">
+                        <h4>Expanded Idea</h4>
+                        <button class="btn btn-primary" onclick="generateExpandedIdea()" id="expand-btn">
+                            <i class="fas fa-magic"></i> Generate Expanded Idea
+                        </button>
+                    </div>
+                    <div id="expanded-idea-content" class="expanded-idea-content">
+                        <!-- Expanded idea will appear here -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -405,6 +417,55 @@
     color: #fbbf24; /* Yellow for data placeholders */
     font-style: italic;
 }
+
+.expanded-idea-display {
+    margin-top: 2rem;
+}
+
+.expanded-idea-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.expanded-idea-header h4 {
+    color: #f1f5f9;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.expanded-idea-content {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 1rem;
+    min-height: 150px;
+    color: #f1f5f9;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+.expanded-idea-content .loading {
+    color: #94a3b8;
+    font-style: italic;
+    text-align: center;
+    padding: 2rem;
+}
+
+.expanded-idea-content .error {
+    color: #dc2626;
+    font-style: italic;
+    text-align: center;
+    padding: 2rem;
+}
+
+.expanded-idea-content .no-expanded-idea {
+    color: #94a3b8;
+    font-style: italic;
+    text-align: center;
+    padding: 2rem;
+}
 </style>
 
 <script>
@@ -420,6 +481,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadIdeasForWeek();
     loadCurrentIdeaSeed();
     loadLLMPrompt();
+    loadExpandedIdea();
 });
 
 let availableIdeas = [];
@@ -657,6 +719,90 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+async function loadExpandedIdea() {
+    try {
+        const response = await fetch(`/planning/api/posts/${window.postId}/expanded-idea`);
+        const data = await response.json();
+        
+        if (data.success) {
+            displayExpandedIdea(data.expanded_idea);
+        } else {
+            console.error('Error loading expanded idea:', data.error);
+            displayExpandedIdeaError(data.error);
+        }
+    } catch (error) {
+        console.error('Error loading expanded idea:', error);
+        displayExpandedIdeaError('Failed to load expanded idea');
+    }
+}
+
+function displayExpandedIdea(expandedIdea) {
+    const expandedContent = document.getElementById('expanded-idea-content');
+    
+    if (!expandedIdea) {
+        expandedContent.innerHTML = '<div class="no-expanded-idea">No expanded idea generated yet. Click "Generate Expanded Idea" to create one.</div>';
+        return;
+    }
+    
+    expandedContent.innerHTML = escapeHtml(expandedIdea);
+}
+
+function displayExpandedIdeaError(error) {
+    const expandedContent = document.getElementById('expanded-idea-content');
+    expandedContent.innerHTML = `<div class="error">Error loading expanded idea: ${error}</div>`;
+}
+
+async function generateExpandedIdea() {
+    // Get the current idea seed
+    const ideaSeedElement = document.getElementById('current-idea-seed');
+    const ideaSeedText = ideaSeedElement.querySelector('.idea-seed-content');
+    
+    if (!ideaSeedText || !ideaSeedText.textContent.trim()) {
+        alert('Please select and confirm an idea seed first before generating an expanded idea.');
+        return;
+    }
+    
+    const ideaSeed = ideaSeedText.textContent.trim();
+    
+    // Show loading state
+    const expandedContent = document.getElementById('expanded-idea-content');
+    const expandBtn = document.getElementById('expand-btn');
+    
+    expandedContent.innerHTML = '<div class="loading">Generating expanded idea with AI...</div>';
+    expandBtn.disabled = true;
+    expandBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    
+    try {
+        const response = await fetch(`/planning/api/posts/${window.postId}/expanded-idea`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                idea_seed: ideaSeed
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            displayExpandedIdea(data.expanded_idea);
+            alert('Expanded idea generated successfully!');
+        } else {
+            displayExpandedIdeaError(data.error);
+            alert('Error generating expanded idea: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Error generating expanded idea:', error);
+        displayExpandedIdeaError('Failed to generate expanded idea');
+        alert('Error generating expanded idea: ' + error.message);
+    } finally {
+        // Reset button state
+        expandBtn.disabled = false;
+        expandBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Expanded Idea';
+    }
 }
 </script>
 {% endblock %}
