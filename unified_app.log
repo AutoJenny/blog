@@ -22,7 +22,82 @@
 2025-09-28 10:44:55,704 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:44:55] "[33mGET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1[0m" 404 -
 2025-09-28 10:44:55,705 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:44:55] "[33mGET /static/images/site/apple-touch-icon.png HTTP/1.1[0m" 404 -
 2025-09-28 10:44:55,717 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:44:55] "GET /launchpad/api/queue HTTP/1.1" 200 -
-HTTP/1.1[0m" 404 -
-2025-09-28 10:44:55,704 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:44:55] "[33mGET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1[0m" 404 -
-2025-09-28 10:44:55,705 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:44:55] "[33mGET /static/images/site/apple-touch-icon.png HTTP/1.1[0m" 404 -
-2025-09-28 10:44:55,717 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:44:55] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-28 10:45:25,702 - config.database - INFO - Database connection established
+2025-09-28 10:45:25,707 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:25] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-28 10:45:43,409 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:43] "[33mGET /planning/calendar/view HTTP/1.1[0m" 404 -
+2025-09-28 10:45:48,096 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:48] "GET /launchpad/ HTTP/1.1" 200 -
+2025-09-28 10:45:48,105 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:48] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-28 10:45:48,311 - config.database - INFO - Database connection established
+2025-09-28 10:45:48,312 - config.database - INFO - Database connection established
+2025-09-28 10:45:48,314 - config.database - INFO - Database connection established
+2025-09-28 10:45:48,317 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:48] "GET /api/posts HTTP/1.1" 200 -
+2025-09-28 10:45:48,318 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:48] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-28 10:45:48,319 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:48] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-28 10:45:48,325 - config.database - INFO - Database connection established
+2025-09-28 10:45:48,328 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:48] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-28 10:45:48,345 - config.database - INFO - Database connection established
+2025-09-28 10:45:48,349 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:48] "GET /launchpad/api/syndication/pieces HTTP/1.1" 200 -
+2025-09-28 10:45:48,358 - config.database - INFO - Database connection established
+2025-09-28 10:45:48,361 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:48] "GET /launchpad/api/social-media/timeline HTTP/1.1" 200 -
+2025-09-28 10:45:48,369 - config.database - INFO - Database connection established
+2025-09-28 10:45:48,374 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:48] "GET /launchpad/api/syndication/facebook/credentials HTTP/1.1" 200 -
+2025-09-28 10:45:50,799 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:50] "GET /launchpad/syndication/facebook/product_post HTTP/1.1" 200 -
+2025-09-28 10:45:50,802 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:50] "[36mGET /static/js/state-manager.js HTTP/1.1[0m" 304 -
+2025-09-28 10:45:51,122 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "[36mGET /static/css/syndication.css HTTP/1.1[0m" 304 -
+2025-09-28 10:45:51,125 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "[36mGET /static/css/launchpad.css HTTP/1.1[0m" 304 -
+2025-09-28 10:45:51,128 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "[36mGET /static/js/item-selection-utils.js HTTP/1.1[0m" 304 -
+2025-09-28 10:45:51,128 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "[36mGET /static/js/item-selection-data.js HTTP/1.1[0m" 304 -
+2025-09-28 10:45:51,129 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-28 10:45:51,129 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "[36mGET /static/js/item-selection-browser.js HTTP/1.1[0m" 304 -
+2025-09-28 10:45:51,129 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "[36mGET /static/js/item-selection-selection.js HTTP/1.1[0m" 304 -
+2025-09-28 10:45:51,130 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "[36mGET /static/js/item-selection-accordions.js HTTP/1.1[0m" 304 -
+2025-09-28 10:45:51,133 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "[36mGET /static/js/item-selection-core.js HTTP/1.1[0m" 304 -
+2025-09-28 10:45:51,135 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "[36mGET /static/js/queue-manager.js HTTP/1.1[0m" 304 -
+2025-09-28 10:45:51,137 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "[36mGET /static/js/ai-content-generation-content.js HTTP/1.1[0m" 304 -
+2025-09-28 10:45:51,138 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "[36mGET /static/js/posting-control.js HTTP/1.1[0m" 304 -
+2025-09-28 10:45:51,138 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "[36mGET /static/js/ai-content-generation-events.js HTTP/1.1[0m" 304 -
+2025-09-28 10:45:51,138 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "[36mGET /static/js/ai-content-generation-data.js HTTP/1.1[0m" 304 -
+2025-09-28 10:45:51,140 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "[36mGET /static/js/ai-content-generation-core.js HTTP/1.1[0m" 304 -
+2025-09-28 10:45:51,141 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "[36mGET /static/js/ai-content-generation-prompts.js HTTP/1.1[0m" 304 -
+2025-09-28 10:45:51,141 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "[36mGET /static/js/ai-content-generation-utils.js HTTP/1.1[0m" 304 -
+2025-09-28 10:45:51,220 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "[33mGET /launchpad/api/syndication/categories HTTP/1.1[0m" 404 -
+2025-09-28 10:45:51,221 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "[33mGET /launchpad/api/syndication/last-updated HTTP/1.1[0m" 404 -
+2025-09-28 10:45:51,230 - config.database - INFO - Database connection established
+2025-09-28 10:45:51,233 - config.database - INFO - Database connection established
+2025-09-28 10:45:51,233 - config.database - INFO - Database connection established
+2025-09-28 10:45:51,234 - config.database - INFO - Database connection established
+2025-09-28 10:45:51,235 - config.database - INFO - Database connection established
+2025-09-28 10:45:51,237 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "GET /api/ui/selection-state?page_type=product_post&selection_type=product HTTP/1.1" 200 -
+2025-09-28 10:45:51,237 - config.database - INFO - Database connection established
+2025-09-28 10:45:51,237 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-09-28 10:45:51,238 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "GET /launchpad/api/syndication/today-status HTTP/1.1" 200 -
+2025-09-28 10:45:51,238 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "GET /api/ui/selection-state?page_type=product_post&selection_type=product HTTP/1.1" 200 -
+2025-09-28 10:45:51,239 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-09-28 10:45:51,242 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "GET /launchpad/api/syndication/llm-prompts/6 HTTP/1.1" 200 -
+2025-09-28 10:45:51,249 - config.database - INFO - Database connection established
+2025-09-28 10:45:51,250 - config.database - INFO - Database connection established
+2025-09-28 10:45:51,254 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "GET /launchpad/api/syndication/get-generated-content/143451/product HTTP/1.1" 200 -
+2025-09-28 10:45:51,258 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "POST /api/ui/selection-state HTTP/1.1" 200 -
+2025-09-28 10:45:51,269 - config.database - INFO - Database connection established
+2025-09-28 10:45:51,272 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:51] "GET /launchpad/api/syndication/get-generated-content/143451/product HTTP/1.1" 200 -
+2025-09-28 10:45:53,174 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:53] "[33mGET /planning/calendar/view HTTP/1.1[0m" 404 -
+2025-09-28 10:45:58,662 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:45:58] "[33mGET /posts/1/calendar/view HTTP/1.1[0m" 404 -
+2025-09-28 10:46:01,244 - config.database - INFO - Database connection established
+2025-09-28 10:46:01,250 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:46:01] "GET /api/posts HTTP/1.1" 200 -
+2025-09-28 10:46:04,816 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:46:04] "[33mGET /posts/54/calendar/view HTTP/1.1[0m" 404 -
+2025-09-28 10:46:15,243 - config.database - INFO - Database connection established
+2025-09-28 10:46:15,252 - config.database - INFO - Database connection established
+2025-09-28 10:46:15,256 - blueprints.launchpad - INFO - Posting to Scotweb CLAN (Page ID: 196935752675)
+2025-09-28 10:46:15,256 - blueprints.launchpad - INFO - Post content:  👋 Hey Clan lovers! 🎉 We've got a fresh, new addition to our collection that'll bring a burst of Sco...
+2025-09-28 10:46:15,256 - blueprints.launchpad - INFO - Link URL: https://clan.com/tartan-tea-towel
+2025-09-28 10:46:15,256 - blueprints.launchpad - INFO - Access token being used: EAAUeqRZAekZBkBPt2zz...
+2025-09-28 10:46:15,256 - blueprints.launchpad - INFO - Refreshing Facebook cache for: https://clan.com/tartan-tea-towel
+2025-09-28 10:46:15,256 - blueprints.launchpad - INFO - Facebook cache refresh attempted (requires app access token)
+2025-09-28 10:46:15,256 - blueprints.launchpad - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/196935752675/feed
+2025-09-28 10:46:15,259 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): graph.facebook.com:443
+el
+2025-09-28 10:46:15,256 - blueprints.launchpad - INFO - Access token being used: EAAUeqRZAekZBkBPt2zz...
+2025-09-28 10:46:15,256 - blueprints.launchpad - INFO - Refreshing Facebook cache for: https://clan.com/tartan-tea-towel
+2025-09-28 10:46:15,256 - blueprints.launchpad - INFO - Facebook cache refresh attempted (requires app access token)
+2025-09-28 10:46:15,256 - blueprints.launchpad - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/196935752675/feed
+2025-09-28 10:46:15,259 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): graph.facebook.com:443
