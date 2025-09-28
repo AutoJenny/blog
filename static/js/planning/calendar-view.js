@@ -605,6 +605,8 @@ async function updateIdeaCategory(ideaId, newCategory) {
 
 // Make functions globally accessible immediately after definition
 window.updateIdeaCategory = updateIdeaCategory;
+window.editIdea = editIdea;
+window.deleteIdea = deleteIdea;
 
 async function updateEventCategory(eventId, newCategory) {
     // Handle empty category selection
@@ -640,6 +642,8 @@ async function updateEventCategory(eventId, newCategory) {
 
 // Make functions globally accessible immediately after definition
 window.updateEventCategory = updateEventCategory;
+window.editEvent = editEvent;
+window.deleteEvent = deleteEvent;
 
 // Idea editing functions
 function editIdea(ideaId) {
@@ -923,6 +927,10 @@ async function deleteSchedule(scheduleId) {
         }
     }
 }
+
+// Make schedule functions globally accessible
+window.editSchedule = editSchedule;
+window.deleteSchedule = deleteSchedule;
 
 async function updateIdeaPriority(ideaId, newPriority) {
     try {
@@ -1227,6 +1235,9 @@ async function saveNewEntry(weekNumber, title) {
 
 // Make functions globally accessible for HTML onclick handlers
 // This needs to be done after the functions are defined
+window.updateIdeaPriority = updateIdeaPriority;
+window.updateEventPriority = updateEventPriority;
+window.updateSchedulePriority = updateSchedulePriority;
 
 // Initialize drag and drop when calendar loads
 document.addEventListener('DOMContentLoaded', function() {
