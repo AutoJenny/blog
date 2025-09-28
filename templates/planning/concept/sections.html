@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Section Planning - Concept Development - Planning - BlogForge{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Include shared header -->
+    {% include 'planning/includes/header.html' %}
+    
+    <!-- Include navigation -->
+    {% include 'planning/includes/navigation.html' %}
+    
+    <!-- Include tabs -->
+    {% include 'planning/includes/tabs.html' %}
+    
+    {% block process_content %}
+    <div class="sections-main">
+        <div class="sections-header">
+            <h2>Section Planning</h2>
+            <p>Organize your topics into thematic sections with clear themes and flow.</p>
+        </div>
+        
+        <div class="sections-content">
+            <div class="sections-controls">
+                <div class="form-group">
+                    <label for="section-theme">Section Theme</label>
+                    <input type="text" id="section-theme" placeholder="Enter the main theme for this section...">
+                </div>
+                <div class="form-group">
+                    <label for="section-description">Section Description</label>
+                    <textarea id="section-description" placeholder="Describe what this section will cover..."></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="createSection()">
+                    <i class="fas fa-plus"></i> Add Section
+                </button>
+            </div>
+            
+            <div class="sections-list">
+                <h3>Content Sections</h3>
+                <div id="sections-container">
+                    <div class="no-sections">
+                        <p>No sections created yet. Add your first section above.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</div>
+
+<style>
+.sections-main {
+    padding: 2rem 0;
+}
+
+.sections-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.sections-header h2 {
+    font-size: 2.5rem;
+    color: #f1f5f9;
+    margin-bottom: 1rem;
+}
+
+.sections-header p {
+    font-size: 1.125rem;
+    color: #94a3b8;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.sections-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.sections-controls {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    color: #f1f5f9;
+    font-size: 1rem;
+}
+
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.sections-list h3 {
+    color: #f1f5f9;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.no-sections {
+    text-align: center;
+    color: #94a3b8;
+    padding: 3rem;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: #3b82f6;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+</style>
+
+<script>
+let sections = [];
+
+function createSection() {
+    const theme = document.getElementById('section-theme').value;
+    const description = document.getElementById('section-description').value;
+    
+    if (!theme.trim()) {
+        alert('Please enter a section theme');
+        return;
+    }
+    
+    const section = {
+        id: Date.now(),
+        theme: theme,
+        description: description,
+        topics: []
+    };
+    
+    sections.push(section);
+    displaySections();
+    
+    // Clear form
+    document.getElementById('section-theme').value = '';
+    document.getElementById('section-description').value = '';
+}
+
+function displaySections() {
+    const container = document.getElementById('sections-container');
+    
+    if (sections.length === 0) {
+        container.innerHTML = '<div class="no-sections"><p>No sections created yet. Add your first section above.</p></div>';
+        return;
+    }
+    
+    container.innerHTML = sections.map(section => `
+        <div class="section-item" data-section-id="${section.id}">
+            <div class="section-header">
+                <h4>${section.theme}</h4>
+                <div class="section-actions">
+                    <button class="btn btn-secondary" onclick="editSection(${section.id})">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="btn btn-danger" onclick="deleteSection(${section.id})">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+            <div class="section-description">${section.description}</div>
+            <div class="section-topics">
+                <h5>Topics in this section:</h5>
+                <div class="topics-list">
+                    ${section.topics.length === 0 ? '<p class="no-topics">No topics assigned yet</p>' : 
+                      section.topics.map(topic => `<span class="topic-tag">${topic}</span>`).join('')}
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function editSection(sectionId) {
+    const section = sections.find(s => s.id === sectionId);
+    if (section) {
+        document.getElementById('section-theme').value = section.theme;
+        document.getElementById('section-description').value = section.description;
+        deleteSection(sectionId);
+    }
+}
+
+function deleteSection(sectionId) {
+    sections = sections.filter(s => s.id !== sectionId);
+    displaySections();
+}
+
+// Set navigation context
+document.addEventListener('DOMContentLoaded', function() {
+    // Set current stage for navigation
+    window.currentStage = 'concept';
+    window.currentSubstage = 'sections';
+    window.postId = {{ post_id }};
+});
+</script>
+{% endblock %}
