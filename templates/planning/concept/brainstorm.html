@@ -400,5 +400,13 @@ function exportTopics() {
     console.log('Exporting topics...');
     // Implement export functionality
 }
+
+// Set navigation context
+document.addEventListener('DOMContentLoaded', function() {
+    // Set current stage for navigation
+    window.currentStage = 'concept';
+    window.currentSubstage = 'brainstorm';
+    window.postId = {{ post_id }};
+});
 </script>
 {% endblock %}

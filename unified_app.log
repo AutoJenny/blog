@@ -17949,3 +17949,9 @@ LINE 4:                 LEFT JOIN calendar_ideas ci ON cs.idea_id = ...
 2025-09-28 21:06:23,284 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:06:23] "[33mGET /static/images/site/favicon.ico HTTP/1.1[0m" 404 -
 2025-09-28 21:06:23,284 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:06:23] "[33mGET /static/images/site/apple-touch-icon.png HTTP/1.1[0m" 404 -
 2025-09-28 21:06:23,285 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:06:23] "[33mGET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1[0m" 404 -
+2025-09-28 21:08:30,124 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-28 21:08:30,375 - werkzeug - WARNING -  * Debugger is active!
+2025-09-28 21:08:30,381 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-28 21:08:37,847 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-28 21:08:38,094 - werkzeug - WARNING -  * Debugger is active!
+2025-09-28 21:08:38,099 - werkzeug - INFO -  * Debugger PIN: 102-335-875

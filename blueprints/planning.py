@@ -209,13 +209,9 @@ def planning_calendar_ideas(post_id):
 # Concept Development Stage
 @bp.route('/posts/<int:post_id>/concept')
 def planning_concept(post_id):
-    """Concept Development main stage"""
-    return render_template('planning/concept.html', post_id=post_id, blueprint_name='planning')
+    """Concept Development main stage - redirects to Topic Brainstorming by default"""
+    return redirect(url_for('planning.planning_concept_brainstorm', post_id=post_id))
 
-@bp.route('/posts/<int:post_id>/concept/proposal')
-def planning_concept_proposal(post_id):
-    """Basic Proposal sub-stage"""
-    return render_template('planning/concept/proposal.html', post_id=post_id, blueprint_name='planning')
 
 @bp.route('/posts/<int:post_id>/concept/brainstorm')
 def planning_concept_brainstorm(post_id):
