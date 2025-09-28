@@ -3250,9 +3250,28 @@
 2025-09-28 11:20:58,630 - config.database - INFO - Database connection established
 2025-09-28 11:20:58,641 - blueprints.planning - INFO - Calendar schedule query for post_id=54 returned 0 results
 2025-09-28 11:20:58,642 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:20:58] "GET /planning/api/posts/54 HTTP/1.1" 200 -
+2025-09-28 11:23:38,451 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:23:38] "GET /planning/posts/54/calendar/view HTTP/1.1" 200 -
+2025-09-28 11:23:38,476 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:23:38] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-28 11:23:38,479 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:23:38] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-28 11:23:38,480 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:23:38] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-28 11:23:38,480 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:23:38] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-28 11:23:38,483 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:23:38] "GET /static/js/planning/calendar-view.js HTTP/1.1" 200 -
+2025-09-28 11:23:38,483 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:23:38] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-28 11:23:38,484 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:23:38] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-28 11:23:38,485 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:23:38] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-28 11:23:38,494 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:23:38] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-28 11:23:38,496 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:23:38] "[36mGET /static/js/planning/calendar/api/cache-manager.js HTTP/1.1[0m" 304 -
+2025-09-28 11:23:38,497 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:23:38] "[36mGET /static/js/planning/calendar/api/data-loader.js HTTP/1.1[0m" 304 -
+2025-09-28 11:23:38,497 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:23:38] "[36mGET /static/js/planning/calendar/utils/constants.js HTTP/1.1[0m" 304 -
+2025-09-28 11:23:38,498 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:23:38] "GET /static/js/planning/calendar/ui/calendar-renderer.js HTTP/1.1" 200 -
+2025-09-28 11:23:38,510 - config.database - INFO - Database connection established
+2025-09-28 11:23:38,513 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:23:38] "GET /planning/api/calendar/categories HTTP/1.1" 200 -
+2025-09-28 11:23:38,613 - config.database - INFO - Database connection established
+2025-09-28 11:23:38,618 - blueprints.planning - INFO - Calendar schedule query for post_id=54 returned 0 results
+2025-09-28 11:23:38,619 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:23:38] "GET /planning/api/posts/54 HTTP/1.1" 200 -
 8] "GET /static/js/planning/calendar/ui/calendar-renderer.js HTTP/1.1" 200 -
-2025-09-28 11:20:58,527 - config.database - INFO - Database connection established
-2025-09-28 11:20:58,528 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:20:58] "GET /planning/api/calendar/categories HTTP/1.1" 200 -
-2025-09-28 11:20:58,630 - config.database - INFO - Database connection established
-2025-09-28 11:20:58,641 - blueprints.planning - INFO - Calendar schedule query for post_id=54 returned 0 results
-2025-09-28 11:20:58,642 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:20:58] "GET /planning/api/posts/54 HTTP/1.1" 200 -
+2025-09-28 11:23:38,510 - config.database - INFO - Database connection established
+2025-09-28 11:23:38,513 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:23:38] "GET /planning/api/calendar/categories HTTP/1.1" 200 -
+2025-09-28 11:23:38,613 - config.database - INFO - Database connection established
+2025-09-28 11:23:38,618 - blueprints.planning - INFO - Calendar schedule query for post_id=54 returned 0 results
+2025-09-28 11:23:38,619 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:23:38] "GET /planning/api/posts/54 HTTP/1.1" 200 -
