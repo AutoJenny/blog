@@ -169,25 +169,10 @@ def categories_manage():
 def planning_calendar_ideas(post_id):
     """Idea Generation sub-stage"""
     try:
-        # Get current week number
-        from datetime import datetime, timedelta
+        # Use the same week calculation as the calendar system
+        from datetime import datetime
         current_date = datetime.now()
-        current_year = current_date.year
-        
-        # Calculate current week number using the same logic as the calendar system
-        jan_1 = datetime(current_year, 1, 1)
-        days_since_jan_1 = (current_date - jan_1).days
-        first_monday = jan_1
-        if jan_1.weekday() != 0:  # If Jan 1 is not Monday
-            days_to_monday = (7 - jan_1.weekday()) % 7
-            first_monday = jan_1 + timedelta(days=days_to_monday)
-        
-        if current_date < first_monday:
-            # If current date is before first Monday, it's week 52 of previous year
-            week_number = 52
-        else:
-            days_since_first_monday = (current_date - first_monday).days
-            week_number = (days_since_first_monday // 7) + 1
+        week_number = current_date.isocalendar()[1]  # Use ISO week standard
         
         # Get week dates for display
         with db_manager.get_cursor() as cursor:
@@ -195,13 +180,13 @@ def planning_calendar_ideas(post_id):
                 SELECT start_date, end_date, month_name
                 FROM calendar_weeks 
                 WHERE year = %s AND week_number = %s
-            """, (current_year, week_number))
+            """, (current_date.year, week_number))
             week_data = cursor.fetchone()
             
             if week_data:
                 week_dates = f"{week_data['start_date'].strftime('%b %d')} - {week_data['end_date'].strftime('%b %d, %Y')}"
             else:
-                week_dates = f"Week {week_number}, {current_year}"
+                week_dates = f"Week {week_number}, {current_date.year}"
         
         return render_template('planning/calendar/ideas.html', 
                              post_id=post_id, 
