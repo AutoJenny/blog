@@ -1706,56 +1706,33 @@ def parse_brainstorm_topics(content):
     topics = []
     lines = content.split('\n')
     
-    current_topic = None
-    current_description = []
-    
     for line in lines:
         line = line.strip()
         if not line:
             continue
             
-        # Check if this looks like a topic title (numbered or bulleted)
-        if (line.startswith(('1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.')) or 
+        # Check if this looks like a topic (numbered, bulleted, or short line)
+        if (line.startswith(('1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.', '10.', '11.', '12.', '13.', '14.', '15.', '16.', '17.', '18.', '19.', '20.', '21.', '22.', '23.', '24.', '25.', '26.', '27.', '28.', '29.', '30.', '31.', '32.', '33.', '34.', '35.', '36.', '37.', '38.', '39.', '40.', '41.', '42.', '43.', '44.', '45.', '46.', '47.', '48.', '49.', '50.')) or 
             line.startswith(('-', '*', '•')) or
-            (len(line) < 100 and not line.endswith('.'))):
+            (len(line) < 100 and not line.endswith('.') and not line.startswith('SERIOUS') and not line.startswith('BALANCED') and not line.startswith('QUIRKY') and not line.startswith('Format') and not line.startswith('Ensure'))):
             
-            # Save previous topic if exists
-            if current_topic:
+            # Clean up the line and add as topic
+            clean_line = line.lstrip('1234567890.-*• ').strip()
+            if clean_line and len(clean_line) > 3:  # Only add if it's substantial
                 topics.append({
-                    'title': current_topic,
-                    'description': ' '.join(current_description).strip(),
+                    'title': clean_line,
+                    'description': clean_line,  # Same as title since it's a short summary
                     'category': 'general'
                 })
-            
-            # Start new topic
-            current_topic = line.lstrip('123456789.-*• ').strip()
-            current_description = []
-        else:
-            # This is part of the description
-            current_description.append(line)
     
-    # Add the last topic
-    if current_topic:
-        topics.append({
-            'title': current_topic,
-            'description': ' '.join(current_description).strip(),
-            'category': 'general'
-        })
-    
-    # If no structured topics found, try to split by paragraphs
+    # If no structured topics found, try to split by lines that look like topics
     if not topics:
-        paragraphs = content.split('\n\n')
-        for i, para in enumerate(paragraphs):
-            para = para.strip()
-            if para and len(para) > 10:
-                # Extract title (first sentence or first 50 chars)
-                title = para.split('.')[0][:50]
-                if len(title) < 10:
-                    title = para[:50]
-                
+        for line in lines:
+            line = line.strip()
+            if line and len(line) < 100 and not line.startswith(('SERIOUS', 'BALANCED', 'QUIRKY', 'Format', 'Ensure', 'Generate')):
                 topics.append({
-                    'title': title,
-                    'description': para,
+                    'title': line,
+                    'description': line,
                     'category': 'general'
                 })
     
