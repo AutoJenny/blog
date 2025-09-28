@@ -289,10 +289,8 @@ def get_post_data(post_id):
             
             # Get calendar schedule data for this post
             cursor.execute("""
-                SELECT cs.*, ci.idea_title, ce.event_title
+                SELECT cs.*
                 FROM calendar_schedule cs
-                LEFT JOIN calendar_ideas ci ON cs.idea_id = ci.id
-                LEFT JOIN calendar_events ce ON cs.event_id = ce.id
                 WHERE cs.post_id = %s
             """, (post_id,))
             calendar_schedule_data = cursor.fetchall()
@@ -483,12 +481,8 @@ def api_calendar_schedule(year, week_number):
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 SELECT cs.*, 
-                       ci.idea_title, ci.idea_description, ci.seasonal_context,
-                       ce.event_title, ce.event_description,
                        p.title as post_title, p.status as post_status
                 FROM calendar_schedule cs
-                LEFT JOIN calendar_ideas ci ON cs.idea_id = ci.id
-                LEFT JOIN calendar_events ce ON cs.event_id = ce.id
                 LEFT JOIN post p ON cs.post_id = p.id
                 WHERE cs.year = %s AND cs.week_number = %s
                 ORDER BY cs.scheduled_date, cs.created_at
@@ -518,28 +512,17 @@ def api_calendar_schedule_create():
             if field not in data:
                 return jsonify({'error': f'Missing required field: {field}'}), 400
         
-        # Must have either idea_id or event_id
-        if not data.get('idea_id') and not data.get('event_id'):
-            return jsonify({'error': 'Must provide either idea_id or event_id'}), 400
-        
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 INSERT INTO calendar_schedule 
-                (year, week_number, idea_id, event_id, post_id, status, priority, scheduled_date, notes, is_override, original_idea_id)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                (year, week_number, post_id, scheduled_date)
+                VALUES (%s, %s, %s, %s)
                 RETURNING id
             """, (
                 data['year'],
                 data['week_number'],
-                data.get('idea_id'),
-                data.get('event_id'),
                 data.get('post_id'),
-                data.get('status', 'planned'),
-                data.get('priority', 'random'),
-                data.get('scheduled_date'),
-                data.get('notes'),
-                data.get('is_override', False),
-                data.get('original_idea_id')
+                data.get('scheduled_date')
             ))
             
             schedule_id = cursor.fetchone()['id']
