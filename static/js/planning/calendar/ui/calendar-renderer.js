@@ -121,6 +121,4 @@ function showNotification(message, type = 'info') {
 }
 
 // Export for use in other modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { getPrimaryCategory, getPrimaryCategoryFromTags, showNotification };
-}
+export { getPrimaryCategory, getPrimaryCategoryFromTags, showNotification };
