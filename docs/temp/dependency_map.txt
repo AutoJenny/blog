@@ -1,0 +1,149 @@
+=== document.addEventListener (line 1) ===
+Date(
+addEventListener(
+function(
+getFullYear(
+getWeekNumber(
+initializeCalendar(
+
+=== loadCategories (line 18) ===
+error(
+fetch(
+json(
+loadCategories(
+
+=== initializeCalendar (line 33) ===
+addEventListener(
+error(
+getElementById(
+initializeCalendar(
+loadCategories(
+renderCalendarFallback(
+updateCalendar(
+
+=== getWeekNumber (line 63) ===
+Date(
+ceil(
+getDay(
+getFullYear(
+getWeekNumber(
+
+=== getWeekDates (line 69) ===
+Date(
+getDate(
+getDay(
+getWeekDates(
+setDate(
+
+=== formatDate (line 83) ===
+Date(
+formatDate(
+toLocaleDateString(
+
+=== updateCalendar (line 88) ===
+Date(
+error(
+fetch(
+getElementById(
+getFullYear(
+getWeekNumber(
+json(
+loadCalendarContent(
+loadCategories(
+log(
+renderCalendarFallback(
+renderCalendarFromData(
+updateCalendar(
+
+=== renderCalendarFromData (line 127) ===
+add(
+addEventListener(
+addNewEntry(
+appendChild(
+createElement(
+error(
+filter(
+forEach(
+formatDate(
+getElementById(
+map(
+max(
+push(
+renderCalendarFromData(
+repeat(
+selectWeek(
+setAttribute(
+values(
+
+=== loadCalendarContent (line 207) ===
+loadCalendarContent(
+loadWeekContent(
+
+=== loadWeekContent (line 216) ===
+error(
+fetch(
+getBoundingClientRect(
+getComputedStyle(
+json(
+loadWeekContent(
+log(
+querySelector(
+renderWeekContent(
+
+=== renderWeekContent (line 287) ===
+Set(
+add(
+deleteEvent(
+deleteIdea(
+deleteSchedule(
+editEvent(
+editIdea(
+editSchedule(
+error(
+find(
+forEach(
+getPrimaryCategoryFromTags(
+has(
+includes(
+join(
+log(
+map(
+renderWeekContent(
+scheduleEvent(
+scheduleIdea(
+updateEventCategory(
+updateEventPriority(
+updateIdeaCategory(
+updateIdeaPriority(
+updateSchedulePriority(
+
+=== renderCalendarFallback (line 498) ===
+Date(
+add(
+addEventListener(
+addNewEntry(
+appendChild(
+createElement(
+error(
+forEach(
+formatDate(
+getElementById(
+getFullYear(
+getMonth(
+getWeekDates(
+getWeekNumber(
+map(
+max(
+push(
+renderCalendarFallback(
+repeat(
+selectWeek(
+
+=== getWeeksInMonth (line 600) ===
+getWeekNumber(
+getWeeksInMonth(
+
+=== selectWeek (line 607) ===
+selectWeek(
+
+=== // Implement week selection functionality (line 608) ===
