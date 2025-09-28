@@ -140,35 +140,42 @@ function renderCalendarFallback(currentYear, currentWeekNumber) {
     
     calendarGrid.innerHTML = '';
     
-    // Group weeks by month
-    const monthGroups = [];
-    let currentMonth = -1;
-    let currentGroup = [];
+    // Create rolling 12-month view starting from current month
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYearForView = currentDate.getFullYear();
     
-    for (let week = 1; week <= 52; week++) {
-        const weekDates = DateUtils.getWeekDates(week, currentYear);
-        const weekMonth = weekDates.start.getMonth();
+    // Generate 12 months starting from current month
+    const monthGroups = [];
+    for (let i = 0; i < 12; i++) {
+        const monthDate = new Date(currentYearForView, currentMonth + i, 1);
+        const monthYear = monthDate.getFullYear();
+        const monthIndex = monthDate.getMonth();
         
-        if (weekMonth !== currentMonth) {
-            // New month - start a new group
-            if (currentGroup.length > 0) {
-                monthGroups.push(currentGroup);
+        // Find all weeks that fall within this month
+        const monthWeeks = [];
+        for (let week = 1; week <= 52; week++) {
+            const weekDates = DateUtils.getWeekDates(week, monthYear);
+            const weekMonth = weekDates.start.getMonth();
+            
+            // Include weeks that start in this month
+            if (weekMonth === monthIndex) {
+                monthWeeks.push(week);
             }
-            currentGroup = [];
-            currentMonth = weekMonth;
         }
         
-        currentGroup.push(week);
-    }
-    
-    // Add the last group
-    if (currentGroup.length > 0) {
-        monthGroups.push(currentGroup);
+        if (monthWeeks.length > 0) {
+            monthGroups.push({
+                month: monthIndex,
+                year: monthYear,
+                weeks: monthWeeks
+            });
+        }
     }
     
     
     // Find the maximum number of weeks in any month
-    const maxWeeks = Math.max(...monthGroups.map(group => group.length));
+    const maxWeeks = Math.max(...monthGroups.map(group => group.weeks.length));
     
     // Set grid columns dynamically
     calendarGrid.style.gridTemplateColumns = `100px repeat(${maxWeeks}, 1fr)`;
@@ -177,16 +184,16 @@ function renderCalendarFallback(currentYear, currentWeekNumber) {
                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     
     // Create month rows
-    monthGroups.forEach((weeks, groupIndex) => {
-        const firstWeek = weeks[0];
-        const weekDates = DateUtils.getWeekDates(firstWeek, currentYear);
-        const monthName = monthNames[weekDates.start.getMonth()];
+    monthGroups.forEach((monthGroup, groupIndex) => {
+        const monthName = monthNames[monthGroup.month];
+        const monthYear = monthGroup.year;
+        const weeks = monthGroup.weeks;
         
-        
-        // Month name cell
+        // Month name cell with year if different from current year
         const monthCell = document.createElement('div');
         monthCell.className = CONFIG.CSS.MONTH_CELL;
-        monthCell.textContent = monthName;
+        const yearSuffix = monthYear !== currentYearForView ? ` ${monthYear}` : '';
+        monthCell.textContent = `${monthName}${yearSuffix}`;
         calendarGrid.appendChild(monthCell);
         
         // Create week cells for this month
@@ -196,9 +203,9 @@ function renderCalendarFallback(currentYear, currentWeekNumber) {
             
             if (i < weeks.length) {
                 const week = weeks[i];
-                const weekDates = DateUtils.getWeekDates(week, currentYear);
+                const weekDates = DateUtils.getWeekDates(week, monthYear);
                 const today = new Date();
-                const isCurrentYear = today.getFullYear() === currentYear;
+                const isCurrentYear = today.getFullYear() === monthYear;
                 const currentWeekNumber = isCurrentYear ? DateUtils.getWeekNumber(today) : 1;
                 const isCurrentWeek = isCurrentYear && week === currentWeekNumber;
                 
@@ -214,8 +221,9 @@ function renderCalendarFallback(currentYear, currentWeekNumber) {
                 `;
                 
                 // Add click handler for week selection
-                weekCell.addEventListener('click', () => DateUtils.selectWeek(week, weekDates.start.getMonth()));
+                weekCell.addEventListener('click', () => DateUtils.selectWeek(week, monthGroup.month));
             } else {
+                // Empty cell for months with fewer weeks
                 weekCell.innerHTML = '<div class="week-dates">-</div>';
             }
             
@@ -240,33 +248,53 @@ function renderCalendarFromData(weeks, currentWeekNumber) {
     
     calendarGrid.innerHTML = '';
     
-    // Group weeks by month
-    const monthGroups = {};
-    weeks.forEach(week => {
-        if (!monthGroups[week.month_name]) {
-            monthGroups[week.month_name] = [];
-        }
-        monthGroups[week.month_name].push(week);
-    });
+    // Create rolling 12-month view starting from current month
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYearForView = currentDate.getFullYear();
     
+    // Group weeks by month and year for rolling view
+    const monthGroups = [];
+    for (let i = 0; i < 12; i++) {
+        const monthDate = new Date(currentYearForView, currentMonth + i, 1);
+        const monthYear = monthDate.getFullYear();
+        const monthIndex = monthDate.getMonth();
+        
+        // Find weeks for this month
+        const monthWeeks = weeks.filter(week => {
+            const weekDate = new Date(week.start_date);
+            return weekDate.getMonth() === monthIndex && weekDate.getFullYear() === monthYear;
+        });
+        
+        if (monthWeeks.length > 0) {
+            monthGroups.push({
+                month: monthIndex,
+                year: monthYear,
+                weeks: monthWeeks
+            });
+        }
+    }
     
     // Find the maximum number of weeks in any month
-    const maxWeeks = Math.max(...Object.values(monthGroups).map(group => group.length));
+    const maxWeeks = Math.max(...monthGroups.map(group => group.weeks.length));
     
     // Set grid columns dynamically
     calendarGrid.style.gridTemplateColumns = `100px repeat(${maxWeeks}, 1fr)`;
     
-    // Create month rows in chronological order
-    const monthOrder = CONFIG.MONTHS;
-    const sortedMonths = monthOrder.filter(month => monthGroups[month]);
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     
-    sortedMonths.forEach(monthName => {
-        const monthWeeks = monthGroups[monthName];
+    // Create month rows
+    monthGroups.forEach((monthGroup, groupIndex) => {
+        const monthName = monthNames[monthGroup.month];
+        const monthYear = monthGroup.year;
+        const monthWeeks = monthGroup.weeks;
         
-        // Month name cell
+        // Month name cell with year if different from current year
         const monthCell = document.createElement('div');
         monthCell.className = CONFIG.CSS.MONTH_CELL;
-        monthCell.textContent = monthName;
+        const yearSuffix = monthYear !== currentYearForView ? ` ${monthYear}` : '';
+        monthCell.textContent = `${monthName}${yearSuffix}`;
         calendarGrid.appendChild(monthCell);
         
         // Create week cells for this month
@@ -299,8 +327,9 @@ function renderCalendarFromData(weeks, currentWeekNumber) {
                 `;
                 
                 // Add click handler for week selection
-                weekCell.addEventListener('click', () => DateUtils.selectWeek(week.week_number, week.month_name));
+                weekCell.addEventListener('click', () => DateUtils.selectWeek(week.week_number, monthName));
             } else {
+                // Empty cell for months with fewer weeks
                 weekCell.innerHTML = '<div class="week-dates">-</div>';
             }
             
