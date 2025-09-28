@@ -325,6 +325,63 @@ class DataLoader {
         return { success: true, message: 'Event scheduled successfully' };
     }
 
+    async updateIdeaWeek(ideaId, weekNumber) {
+        const response = await fetch(`${this.baseUrl}/ideas/${ideaId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                week_number: weekNumber
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        return await response.json();
+    }
+
+    async updateEventWeek(eventId, weekNumber) {
+        const response = await fetch(`${this.baseUrl}/events/${eventId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                week_number: weekNumber
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        return await response.json();
+    }
+
+    async updateScheduleWeek(scheduleId, weekNumber) {
+        const response = await fetch(`${this.baseUrl}/schedule/${scheduleId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                week_number: weekNumber
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        return await response.json();
+    }
+
     async addNewEntry(weekNumber) {
         // This function shows a modal for adding new entries
         // The actual saving is handled by saveNewEntry

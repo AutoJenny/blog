@@ -1315,9 +1315,1024 @@
 2025-09-28 11:14:44,029 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:14:44] "GET /planning/api/calendar/events/2025/40 HTTP/1.1" 200 -
 2025-09-28 11:14:44,037 - config.database - INFO - Database connection established
 2025-09-28 11:14:44,040 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:14:44] "GET /planning/api/calendar/schedule/2025/40 HTTP/1.1" 200 -
+2025-09-28 11:16:52,269 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/posts/54/calendar/view HTTP/1.1" 200 -
+2025-09-28 11:16:52,303 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-28 11:16:52,305 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-28 11:16:52,308 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-28 11:16:52,311 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-28 11:16:52,311 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /static/js/planning/calendar-view.js HTTP/1.1" 200 -
+2025-09-28 11:16:52,311 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-28 11:16:52,312 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-28 11:16:52,312 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-28 11:16:52,323 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-28 11:16:52,325 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "[36mGET /static/js/planning/calendar/api/data-loader.js HTTP/1.1[0m" 304 -
+2025-09-28 11:16:52,326 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "[36mGET /static/js/planning/calendar/utils/constants.js HTTP/1.1[0m" 304 -
+2025-09-28 11:16:52,326 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "[36mGET /static/js/planning/calendar/ui/calendar-renderer.js HTTP/1.1[0m" 304 -
+2025-09-28 11:16:52,327 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "[36mGET /static/js/planning/calendar/api/cache-manager.js HTTP/1.1[0m" 304 -
+2025-09-28 11:16:52,336 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,338 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/calendar/categories HTTP/1.1" 200 -
+2025-09-28 11:16:52,352 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,355 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/calendar/weeks/2025 HTTP/1.1" 200 -
+2025-09-28 11:16:52,369 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,374 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/calendar/ideas/1 HTTP/1.1" 200 -
+2025-09-28 11:16:52,383 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,386 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/calendar/events/2025/1 HTTP/1.1" 200 -
+2025-09-28 11:16:52,394 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,398 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/calendar/schedule/2025/1 HTTP/1.1" 200 -
+2025-09-28 11:16:52,438 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,444 - blueprints.planning - INFO - Calendar schedule query for post_id=54 returned 0 results
+2025-09-28 11:16:52,445 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/posts/54 HTTP/1.1" 200 -
+2025-09-28 11:16:52,459 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,463 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/calendar/ideas/2 HTTP/1.1" 200 -
+2025-09-28 11:16:52,472 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,475 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/calendar/events/2025/2 HTTP/1.1" 200 -
+2025-09-28 11:16:52,484 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,490 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/calendar/schedule/2025/2 HTTP/1.1" 200 -
+2025-09-28 11:16:52,551 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,559 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/calendar/ideas/3 HTTP/1.1" 200 -
+2025-09-28 11:16:52,569 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,574 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/calendar/events/2025/3 HTTP/1.1" 200 -
+2025-09-28 11:16:52,589 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,593 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/calendar/schedule/2025/3 HTTP/1.1" 200 -
+2025-09-28 11:16:52,671 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,679 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/calendar/ideas/4 HTTP/1.1" 200 -
+2025-09-28 11:16:52,689 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,697 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/calendar/events/2025/4 HTTP/1.1" 200 -
+2025-09-28 11:16:52,707 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,713 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/calendar/schedule/2025/4 HTTP/1.1" 200 -
+2025-09-28 11:16:52,776 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,781 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/calendar/ideas/5 HTTP/1.1" 200 -
+2025-09-28 11:16:52,793 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,797 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/calendar/events/2025/5 HTTP/1.1" 200 -
+2025-09-28 11:16:52,810 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,814 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/calendar/schedule/2025/5 HTTP/1.1" 200 -
+2025-09-28 11:16:52,874 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,878 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/calendar/ideas/6 HTTP/1.1" 200 -
+2025-09-28 11:16:52,887 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,890 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/calendar/events/2025/6 HTTP/1.1" 200 -
+2025-09-28 11:16:52,896 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,900 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/calendar/schedule/2025/6 HTTP/1.1" 200 -
+2025-09-28 11:16:52,963 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,966 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/calendar/ideas/7 HTTP/1.1" 200 -
+2025-09-28 11:16:52,973 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,977 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/calendar/events/2025/7 HTTP/1.1" 200 -
+2025-09-28 11:16:52,986 - config.database - INFO - Database connection established
+2025-09-28 11:16:52,990 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:52] "GET /planning/api/calendar/schedule/2025/7 HTTP/1.1" 200 -
+2025-09-28 11:16:53,051 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,054 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/ideas/8 HTTP/1.1" 200 -
+2025-09-28 11:16:53,064 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,070 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/events/2025/8 HTTP/1.1" 200 -
+2025-09-28 11:16:53,081 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,085 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/schedule/2025/8 HTTP/1.1" 200 -
+2025-09-28 11:16:53,148 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,156 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/ideas/9 HTTP/1.1" 200 -
+2025-09-28 11:16:53,167 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,172 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/events/2025/9 HTTP/1.1" 200 -
+2025-09-28 11:16:53,183 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,188 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/schedule/2025/9 HTTP/1.1" 200 -
+2025-09-28 11:16:53,252 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,258 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/ideas/10 HTTP/1.1" 200 -
+2025-09-28 11:16:53,270 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,273 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/events/2025/10 HTTP/1.1" 200 -
+2025-09-28 11:16:53,285 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,292 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/schedule/2025/10 HTTP/1.1" 200 -
+2025-09-28 11:16:53,357 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,363 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/ideas/11 HTTP/1.1" 200 -
+2025-09-28 11:16:53,376 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,383 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/events/2025/11 HTTP/1.1" 200 -
+2025-09-28 11:16:53,397 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,403 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/schedule/2025/11 HTTP/1.1" 200 -
+2025-09-28 11:16:53,472 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,477 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/ideas/12 HTTP/1.1" 200 -
+2025-09-28 11:16:53,494 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,497 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/events/2025/12 HTTP/1.1" 200 -
+2025-09-28 11:16:53,514 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,521 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/schedule/2025/12 HTTP/1.1" 200 -
+2025-09-28 11:16:53,590 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,597 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/ideas/13 HTTP/1.1" 200 -
+2025-09-28 11:16:53,613 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,617 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/events/2025/13 HTTP/1.1" 200 -
+2025-09-28 11:16:53,632 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,640 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/schedule/2025/13 HTTP/1.1" 200 -
+2025-09-28 11:16:53,712 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,719 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/ideas/14 HTTP/1.1" 200 -
+2025-09-28 11:16:53,735 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,740 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/events/2025/14 HTTP/1.1" 200 -
+2025-09-28 11:16:53,754 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,762 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/schedule/2025/14 HTTP/1.1" 200 -
+2025-09-28 11:16:53,830 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,837 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/ideas/15 HTTP/1.1" 200 -
+2025-09-28 11:16:53,852 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,857 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/events/2025/15 HTTP/1.1" 200 -
+2025-09-28 11:16:53,869 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,878 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/schedule/2025/15 HTTP/1.1" 200 -
+2025-09-28 11:16:53,941 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,945 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/ideas/16 HTTP/1.1" 200 -
+2025-09-28 11:16:53,953 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,956 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/events/2025/16 HTTP/1.1" 200 -
+2025-09-28 11:16:53,965 - config.database - INFO - Database connection established
+2025-09-28 11:16:53,969 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:53] "GET /planning/api/calendar/schedule/2025/16 HTTP/1.1" 200 -
+2025-09-28 11:16:54,037 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,042 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/ideas/17 HTTP/1.1" 200 -
+2025-09-28 11:16:54,056 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,060 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/events/2025/17 HTTP/1.1" 200 -
+2025-09-28 11:16:54,072 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,077 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/schedule/2025/17 HTTP/1.1" 200 -
+2025-09-28 11:16:54,144 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,148 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/ideas/18 HTTP/1.1" 200 -
+2025-09-28 11:16:54,163 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,167 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/events/2025/18 HTTP/1.1" 200 -
+2025-09-28 11:16:54,179 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,183 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/schedule/2025/18 HTTP/1.1" 200 -
+2025-09-28 11:16:54,249 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,255 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/ideas/19 HTTP/1.1" 200 -
+2025-09-28 11:16:54,266 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,271 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/events/2025/19 HTTP/1.1" 200 -
+2025-09-28 11:16:54,284 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,289 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/schedule/2025/19 HTTP/1.1" 200 -
+2025-09-28 11:16:54,352 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,357 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/ideas/20 HTTP/1.1" 200 -
+2025-09-28 11:16:54,369 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,372 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/events/2025/20 HTTP/1.1" 200 -
+2025-09-28 11:16:54,384 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,389 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/schedule/2025/20 HTTP/1.1" 200 -
+2025-09-28 11:16:54,456 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,463 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/ideas/21 HTTP/1.1" 200 -
+2025-09-28 11:16:54,478 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,483 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/events/2025/21 HTTP/1.1" 200 -
+2025-09-28 11:16:54,495 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,501 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/schedule/2025/21 HTTP/1.1" 200 -
+2025-09-28 11:16:54,568 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,573 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/ideas/22 HTTP/1.1" 200 -
+2025-09-28 11:16:54,588 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,592 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/events/2025/22 HTTP/1.1" 200 -
+2025-09-28 11:16:54,606 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,612 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/schedule/2025/22 HTTP/1.1" 200 -
+2025-09-28 11:16:54,674 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,678 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/ideas/23 HTTP/1.1" 200 -
+2025-09-28 11:16:54,687 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,691 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/events/2025/23 HTTP/1.1" 200 -
+2025-09-28 11:16:54,701 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,706 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/schedule/2025/23 HTTP/1.1" 200 -
+2025-09-28 11:16:54,769 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,775 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/ideas/24 HTTP/1.1" 200 -
+2025-09-28 11:16:54,787 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,792 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/events/2025/24 HTTP/1.1" 200 -
+2025-09-28 11:16:54,804 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,810 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/schedule/2025/24 HTTP/1.1" 200 -
+2025-09-28 11:16:54,874 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,880 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/ideas/25 HTTP/1.1" 200 -
+2025-09-28 11:16:54,893 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,898 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/events/2025/25 HTTP/1.1" 200 -
+2025-09-28 11:16:54,912 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,918 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/schedule/2025/25 HTTP/1.1" 200 -
+2025-09-28 11:16:54,987 - config.database - INFO - Database connection established
+2025-09-28 11:16:54,992 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:54] "GET /planning/api/calendar/ideas/26 HTTP/1.1" 200 -
+2025-09-28 11:16:55,006 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,012 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/events/2025/26 HTTP/1.1" 200 -
+2025-09-28 11:16:55,022 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,026 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/schedule/2025/26 HTTP/1.1" 200 -
+2025-09-28 11:16:55,090 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,095 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/ideas/27 HTTP/1.1" 200 -
+2025-09-28 11:16:55,105 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,109 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/events/2025/27 HTTP/1.1" 200 -
+2025-09-28 11:16:55,118 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,122 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/schedule/2025/27 HTTP/1.1" 200 -
+2025-09-28 11:16:55,186 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,189 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/ideas/28 HTTP/1.1" 200 -
+2025-09-28 11:16:55,202 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,207 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/events/2025/28 HTTP/1.1" 200 -
+2025-09-28 11:16:55,220 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,225 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/schedule/2025/28 HTTP/1.1" 200 -
+2025-09-28 11:16:55,295 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,302 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/ideas/29 HTTP/1.1" 200 -
+2025-09-28 11:16:55,316 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,319 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/events/2025/29 HTTP/1.1" 200 -
+2025-09-28 11:16:55,333 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,338 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/schedule/2025/29 HTTP/1.1" 200 -
+2025-09-28 11:16:55,408 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,413 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/ideas/30 HTTP/1.1" 200 -
+2025-09-28 11:16:55,429 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,434 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/events/2025/30 HTTP/1.1" 200 -
+2025-09-28 11:16:55,449 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,453 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/schedule/2025/30 HTTP/1.1" 200 -
+2025-09-28 11:16:55,521 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,526 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/ideas/31 HTTP/1.1" 200 -
+2025-09-28 11:16:55,537 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,540 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/events/2025/31 HTTP/1.1" 200 -
+2025-09-28 11:16:55,549 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,555 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/schedule/2025/31 HTTP/1.1" 200 -
+2025-09-28 11:16:55,617 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,623 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/ideas/32 HTTP/1.1" 200 -
+2025-09-28 11:16:55,633 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,637 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/events/2025/32 HTTP/1.1" 200 -
+2025-09-28 11:16:55,647 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,652 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/schedule/2025/32 HTTP/1.1" 200 -
+2025-09-28 11:16:55,712 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,717 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/ideas/33 HTTP/1.1" 200 -
+2025-09-28 11:16:55,728 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,731 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/events/2025/33 HTTP/1.1" 200 -
+2025-09-28 11:16:55,742 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,746 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/schedule/2025/33 HTTP/1.1" 200 -
+2025-09-28 11:16:55,808 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,812 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/ideas/34 HTTP/1.1" 200 -
+2025-09-28 11:16:55,823 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,826 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/events/2025/34 HTTP/1.1" 200 -
+2025-09-28 11:16:55,835 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,843 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/schedule/2025/34 HTTP/1.1" 200 -
+2025-09-28 11:16:55,905 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,911 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/ideas/35 HTTP/1.1" 200 -
+2025-09-28 11:16:55,921 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,924 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/events/2025/35 HTTP/1.1" 200 -
+2025-09-28 11:16:55,935 - config.database - INFO - Database connection established
+2025-09-28 11:16:55,940 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:55] "GET /planning/api/calendar/schedule/2025/35 HTTP/1.1" 200 -
+2025-09-28 11:16:56,004 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,011 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/ideas/36 HTTP/1.1" 200 -
+2025-09-28 11:16:56,023 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,027 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/events/2025/36 HTTP/1.1" 200 -
+2025-09-28 11:16:56,037 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,043 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/schedule/2025/36 HTTP/1.1" 200 -
+2025-09-28 11:16:56,106 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,111 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/ideas/37 HTTP/1.1" 200 -
+2025-09-28 11:16:56,119 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,122 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/events/2025/37 HTTP/1.1" 200 -
+2025-09-28 11:16:56,131 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,137 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/schedule/2025/37 HTTP/1.1" 200 -
+2025-09-28 11:16:56,200 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,204 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/ideas/38 HTTP/1.1" 200 -
+2025-09-28 11:16:56,211 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,214 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/events/2025/38 HTTP/1.1" 200 -
+2025-09-28 11:16:56,222 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,225 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/schedule/2025/38 HTTP/1.1" 200 -
+2025-09-28 11:16:56,287 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,291 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/ideas/39 HTTP/1.1" 200 -
+2025-09-28 11:16:56,303 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,309 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/events/2025/39 HTTP/1.1" 200 -
+2025-09-28 11:16:56,324 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,329 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/schedule/2025/39 HTTP/1.1" 200 -
+2025-09-28 11:16:56,398 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,403 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/ideas/40 HTTP/1.1" 200 -
+2025-09-28 11:16:56,421 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,424 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/events/2025/40 HTTP/1.1" 200 -
+2025-09-28 11:16:56,436 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,442 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/schedule/2025/40 HTTP/1.1" 200 -
+2025-09-28 11:16:56,485 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,489 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "PUT /planning/api/calendar/ideas/49 HTTP/1.1" 200 -
+2025-09-28 11:16:56,499 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,501 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,504 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/ideas/41 HTTP/1.1" 200 -
+2025-09-28 11:16:56,504 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/ideas/40 HTTP/1.1" 200 -
+2025-09-28 11:16:56,514 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,516 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,517 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/events/2025/41 HTTP/1.1" 200 -
+2025-09-28 11:16:56,518 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/events/2025/40 HTTP/1.1" 200 -
+2025-09-28 11:16:56,524 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,525 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,528 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/schedule/2025/41 HTTP/1.1" 200 -
+2025-09-28 11:16:56,529 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/schedule/2025/40 HTTP/1.1" 200 -
+2025-09-28 11:16:56,590 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,595 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/ideas/42 HTTP/1.1" 200 -
+2025-09-28 11:16:56,606 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,611 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/events/2025/42 HTTP/1.1" 200 -
+2025-09-28 11:16:56,622 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,626 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/schedule/2025/42 HTTP/1.1" 200 -
+2025-09-28 11:16:56,689 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,698 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/ideas/43 HTTP/1.1" 200 -
+2025-09-28 11:16:56,709 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,713 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/events/2025/43 HTTP/1.1" 200 -
+2025-09-28 11:16:56,726 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,735 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/schedule/2025/43 HTTP/1.1" 200 -
+2025-09-28 11:16:56,800 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,807 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/ideas/44 HTTP/1.1" 200 -
+2025-09-28 11:16:56,822 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,827 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/events/2025/44 HTTP/1.1" 200 -
+2025-09-28 11:16:56,842 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,849 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/schedule/2025/44 HTTP/1.1" 200 -
+2025-09-28 11:16:56,917 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,922 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/ideas/45 HTTP/1.1" 200 -
+2025-09-28 11:16:56,938 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,942 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/events/2025/45 HTTP/1.1" 200 -
+2025-09-28 11:16:56,957 - config.database - INFO - Database connection established
+2025-09-28 11:16:56,962 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:56] "GET /planning/api/calendar/schedule/2025/45 HTTP/1.1" 200 -
+2025-09-28 11:16:57,034 - config.database - INFO - Database connection established
+2025-09-28 11:16:57,039 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:57] "GET /planning/api/calendar/ideas/46 HTTP/1.1" 200 -
+2025-09-28 11:16:57,056 - config.database - INFO - Database connection established
+2025-09-28 11:16:57,061 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:57] "GET /planning/api/calendar/events/2025/46 HTTP/1.1" 200 -
+2025-09-28 11:16:57,076 - config.database - INFO - Database connection established
+2025-09-28 11:16:57,081 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:57] "GET /planning/api/calendar/schedule/2025/46 HTTP/1.1" 200 -
+2025-09-28 11:16:57,152 - config.database - INFO - Database connection established
+2025-09-28 11:16:57,161 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:57] "GET /planning/api/calendar/ideas/47 HTTP/1.1" 200 -
+2025-09-28 11:16:57,174 - config.database - INFO - Database connection established
+2025-09-28 11:16:57,179 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:57] "GET /planning/api/calendar/events/2025/47 HTTP/1.1" 200 -
+2025-09-28 11:16:57,189 - config.database - INFO - Database connection established
+2025-09-28 11:16:57,192 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:57] "GET /planning/api/calendar/schedule/2025/47 HTTP/1.1" 200 -
+2025-09-28 11:16:57,257 - config.database - INFO - Database connection established
+2025-09-28 11:16:57,264 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:57] "GET /planning/api/calendar/ideas/48 HTTP/1.1" 200 -
+2025-09-28 11:16:57,275 - config.database - INFO - Database connection established
+2025-09-28 11:16:57,278 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:57] "GET /planning/api/calendar/events/2025/48 HTTP/1.1" 200 -
+2025-09-28 11:16:57,287 - config.database - INFO - Database connection established
+2025-09-28 11:16:57,291 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:57] "GET /planning/api/calendar/schedule/2025/48 HTTP/1.1" 200 -
+2025-09-28 11:16:57,353 - config.database - INFO - Database connection established
+2025-09-28 11:16:57,358 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:57] "GET /planning/api/calendar/ideas/49 HTTP/1.1" 200 -
+2025-09-28 11:16:57,370 - config.database - INFO - Database connection established
+2025-09-28 11:16:57,375 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:57] "GET /planning/api/calendar/events/2025/49 HTTP/1.1" 200 -
+2025-09-28 11:16:57,386 - config.database - INFO - Database connection established
+2025-09-28 11:16:57,393 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:57] "GET /planning/api/calendar/schedule/2025/49 HTTP/1.1" 200 -
+2025-09-28 11:16:57,459 - config.database - INFO - Database connection established
+2025-09-28 11:16:57,464 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:57] "GET /planning/api/calendar/ideas/50 HTTP/1.1" 200 -
+2025-09-28 11:16:57,475 - config.database - INFO - Database connection established
+2025-09-28 11:16:57,480 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:57] "GET /planning/api/calendar/events/2025/50 HTTP/1.1" 200 -
+2025-09-28 11:16:57,491 - config.database - INFO - Database connection established
+2025-09-28 11:16:57,498 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:57] "GET /planning/api/calendar/schedule/2025/50 HTTP/1.1" 200 -
+2025-09-28 11:16:57,561 - config.database - INFO - Database connection established
+2025-09-28 11:16:57,567 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:57] "GET /planning/api/calendar/ideas/51 HTTP/1.1" 200 -
+2025-09-28 11:16:57,582 - config.database - INFO - Database connection established
+2025-09-28 11:16:57,586 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:57] "GET /planning/api/calendar/events/2025/51 HTTP/1.1" 200 -
+2025-09-28 11:16:57,597 - config.database - INFO - Database connection established
+2025-09-28 11:16:57,602 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:57] "GET /planning/api/calendar/schedule/2025/51 HTTP/1.1" 200 -
+2025-09-28 11:16:57,666 - config.database - INFO - Database connection established
+2025-09-28 11:16:57,672 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:57] "GET /planning/api/calendar/ideas/52 HTTP/1.1" 200 -
+2025-09-28 11:16:57,685 - config.database - INFO - Database connection established
+2025-09-28 11:16:57,690 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:57] "GET /planning/api/calendar/events/2025/52 HTTP/1.1" 200 -
+2025-09-28 11:16:57,702 - config.database - INFO - Database connection established
+2025-09-28 11:16:57,707 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:57] "GET /planning/api/calendar/schedule/2025/52 HTTP/1.1" 200 -
+2025-09-28 11:16:59,245 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/posts/54/calendar/view HTTP/1.1" 200 -
+2025-09-28 11:16:59,275 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-28 11:16:59,277 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-28 11:16:59,279 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-28 11:16:59,279 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-28 11:16:59,280 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "[36mGET /static/js/planning/calendar-view.js HTTP/1.1[0m" 304 -
+2025-09-28 11:16:59,283 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-28 11:16:59,284 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-28 11:16:59,284 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-28 11:16:59,292 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-28 11:16:59,293 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "[36mGET /static/js/planning/calendar/utils/constants.js HTTP/1.1[0m" 304 -
+2025-09-28 11:16:59,295 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "[36mGET /static/js/planning/calendar/api/cache-manager.js HTTP/1.1[0m" 304 -
+2025-09-28 11:16:59,295 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "[36mGET /static/js/planning/calendar/api/data-loader.js HTTP/1.1[0m" 304 -
+2025-09-28 11:16:59,296 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "[36mGET /static/js/planning/calendar/ui/calendar-renderer.js HTTP/1.1[0m" 304 -
+2025-09-28 11:16:59,306 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,307 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/categories HTTP/1.1" 200 -
+2025-09-28 11:16:59,319 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,322 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/weeks/2025 HTTP/1.1" 200 -
+2025-09-28 11:16:59,334 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,337 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/ideas/1 HTTP/1.1" 200 -
+2025-09-28 11:16:59,344 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,349 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/events/2025/1 HTTP/1.1" 200 -
+2025-09-28 11:16:59,356 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,361 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/schedule/2025/1 HTTP/1.1" 200 -
+2025-09-28 11:16:59,406 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,413 - blueprints.planning - INFO - Calendar schedule query for post_id=54 returned 0 results
+2025-09-28 11:16:59,413 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/posts/54 HTTP/1.1" 200 -
+2025-09-28 11:16:59,420 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,424 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/ideas/2 HTTP/1.1" 200 -
+2025-09-28 11:16:59,432 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,434 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/events/2025/2 HTTP/1.1" 200 -
+2025-09-28 11:16:59,441 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,445 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/schedule/2025/2 HTTP/1.1" 200 -
+2025-09-28 11:16:59,505 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,510 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/ideas/3 HTTP/1.1" 200 -
+2025-09-28 11:16:59,518 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,522 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/events/2025/3 HTTP/1.1" 200 -
+2025-09-28 11:16:59,532 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,537 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/schedule/2025/3 HTTP/1.1" 200 -
+2025-09-28 11:16:59,600 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,604 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/ideas/4 HTTP/1.1" 200 -
+2025-09-28 11:16:59,614 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,617 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/events/2025/4 HTTP/1.1" 200 -
+2025-09-28 11:16:59,623 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,627 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/schedule/2025/4 HTTP/1.1" 200 -
+2025-09-28 11:16:59,689 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,694 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/ideas/5 HTTP/1.1" 200 -
+2025-09-28 11:16:59,704 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,707 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/events/2025/5 HTTP/1.1" 200 -
+2025-09-28 11:16:59,716 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,721 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/schedule/2025/5 HTTP/1.1" 200 -
+2025-09-28 11:16:59,782 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,787 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/ideas/6 HTTP/1.1" 200 -
+2025-09-28 11:16:59,798 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,802 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/events/2025/6 HTTP/1.1" 200 -
+2025-09-28 11:16:59,814 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,819 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/schedule/2025/6 HTTP/1.1" 200 -
+2025-09-28 11:16:59,883 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,891 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/ideas/7 HTTP/1.1" 200 -
+2025-09-28 11:16:59,904 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,907 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/events/2025/7 HTTP/1.1" 200 -
+2025-09-28 11:16:59,919 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,924 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/schedule/2025/7 HTTP/1.1" 200 -
+2025-09-28 11:16:59,988 - config.database - INFO - Database connection established
+2025-09-28 11:16:59,993 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:16:59] "GET /planning/api/calendar/ideas/8 HTTP/1.1" 200 -
+2025-09-28 11:17:00,005 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,008 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/events/2025/8 HTTP/1.1" 200 -
+2025-09-28 11:17:00,019 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,024 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/schedule/2025/8 HTTP/1.1" 200 -
+2025-09-28 11:17:00,092 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,097 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/ideas/9 HTTP/1.1" 200 -
+2025-09-28 11:17:00,112 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,116 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/events/2025/9 HTTP/1.1" 200 -
+2025-09-28 11:17:00,128 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,134 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/schedule/2025/9 HTTP/1.1" 200 -
+2025-09-28 11:17:00,203 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,209 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/ideas/10 HTTP/1.1" 200 -
+2025-09-28 11:17:00,222 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,225 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/events/2025/10 HTTP/1.1" 200 -
+2025-09-28 11:17:00,237 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,243 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/schedule/2025/10 HTTP/1.1" 200 -
+2025-09-28 11:17:00,308 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,313 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/ideas/11 HTTP/1.1" 200 -
+2025-09-28 11:17:00,326 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,331 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/events/2025/11 HTTP/1.1" 200 -
+2025-09-28 11:17:00,344 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,350 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/schedule/2025/11 HTTP/1.1" 200 -
+2025-09-28 11:17:00,414 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,421 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/ideas/12 HTTP/1.1" 200 -
+2025-09-28 11:17:00,428 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,431 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/events/2025/12 HTTP/1.1" 200 -
+2025-09-28 11:17:00,440 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,443 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/schedule/2025/12 HTTP/1.1" 200 -
+2025-09-28 11:17:00,505 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,508 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/ideas/13 HTTP/1.1" 200 -
+2025-09-28 11:17:00,518 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,520 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/events/2025/13 HTTP/1.1" 200 -
+2025-09-28 11:17:00,529 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,533 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/schedule/2025/13 HTTP/1.1" 200 -
+2025-09-28 11:17:00,597 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,602 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/ideas/14 HTTP/1.1" 200 -
+2025-09-28 11:17:00,617 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,621 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/events/2025/14 HTTP/1.1" 200 -
+2025-09-28 11:17:00,636 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,641 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/schedule/2025/14 HTTP/1.1" 200 -
+2025-09-28 11:17:00,709 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,716 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/ideas/15 HTTP/1.1" 200 -
+2025-09-28 11:17:00,731 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,737 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/events/2025/15 HTTP/1.1" 200 -
+2025-09-28 11:17:00,751 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,758 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/schedule/2025/15 HTTP/1.1" 200 -
+2025-09-28 11:17:00,824 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,828 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/ideas/16 HTTP/1.1" 200 -
+2025-09-28 11:17:00,841 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,846 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/events/2025/16 HTTP/1.1" 200 -
+2025-09-28 11:17:00,857 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,863 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/schedule/2025/16 HTTP/1.1" 200 -
+2025-09-28 11:17:00,925 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,931 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/ideas/17 HTTP/1.1" 200 -
+2025-09-28 11:17:00,943 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,947 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/events/2025/17 HTTP/1.1" 200 -
+2025-09-28 11:17:00,959 - config.database - INFO - Database connection established
+2025-09-28 11:17:00,964 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:00] "GET /planning/api/calendar/schedule/2025/17 HTTP/1.1" 200 -
+2025-09-28 11:17:01,027 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,033 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/ideas/18 HTTP/1.1" 200 -
+2025-09-28 11:17:01,046 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,050 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/events/2025/18 HTTP/1.1" 200 -
+2025-09-28 11:17:01,063 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,070 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/schedule/2025/18 HTTP/1.1" 200 -
+2025-09-28 11:17:01,134 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,140 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/ideas/19 HTTP/1.1" 200 -
+2025-09-28 11:17:01,152 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,156 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/events/2025/19 HTTP/1.1" 200 -
+2025-09-28 11:17:01,169 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,174 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/schedule/2025/19 HTTP/1.1" 200 -
+2025-09-28 11:17:01,243 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,248 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/ideas/20 HTTP/1.1" 200 -
+2025-09-28 11:17:01,263 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,268 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/events/2025/20 HTTP/1.1" 200 -
+2025-09-28 11:17:01,281 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,287 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/schedule/2025/20 HTTP/1.1" 200 -
+2025-09-28 11:17:01,358 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,365 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/ideas/21 HTTP/1.1" 200 -
+2025-09-28 11:17:01,381 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,386 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/events/2025/21 HTTP/1.1" 200 -
+2025-09-28 11:17:01,400 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,406 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/schedule/2025/21 HTTP/1.1" 200 -
+2025-09-28 11:17:01,472 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,479 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/ideas/22 HTTP/1.1" 200 -
+2025-09-28 11:17:01,490 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,494 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/events/2025/22 HTTP/1.1" 200 -
+2025-09-28 11:17:01,505 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,509 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/schedule/2025/22 HTTP/1.1" 200 -
+2025-09-28 11:17:01,572 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,575 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/ideas/23 HTTP/1.1" 200 -
+2025-09-28 11:17:01,585 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,587 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/events/2025/23 HTTP/1.1" 200 -
+2025-09-28 11:17:01,596 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,599 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/schedule/2025/23 HTTP/1.1" 200 -
+2025-09-28 11:17:01,663 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,667 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/ideas/24 HTTP/1.1" 200 -
+2025-09-28 11:17:01,679 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,682 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/events/2025/24 HTTP/1.1" 200 -
+2025-09-28 11:17:01,695 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,701 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/schedule/2025/24 HTTP/1.1" 200 -
+2025-09-28 11:17:01,766 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,772 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/ideas/25 HTTP/1.1" 200 -
+2025-09-28 11:17:01,786 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,792 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/events/2025/25 HTTP/1.1" 200 -
+2025-09-28 11:17:01,805 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,810 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/schedule/2025/25 HTTP/1.1" 200 -
+2025-09-28 11:17:01,875 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,881 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/ideas/26 HTTP/1.1" 200 -
+2025-09-28 11:17:01,893 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,898 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/events/2025/26 HTTP/1.1" 200 -
+2025-09-28 11:17:01,911 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,916 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/schedule/2025/26 HTTP/1.1" 200 -
+2025-09-28 11:17:01,982 - config.database - INFO - Database connection established
+2025-09-28 11:17:01,987 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:01] "GET /planning/api/calendar/ideas/27 HTTP/1.1" 200 -
+2025-09-28 11:17:02,000 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,005 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/events/2025/27 HTTP/1.1" 200 -
+2025-09-28 11:17:02,020 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,024 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/schedule/2025/27 HTTP/1.1" 200 -
+2025-09-28 11:17:02,093 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,098 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/ideas/28 HTTP/1.1" 200 -
+2025-09-28 11:17:02,112 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,116 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/events/2025/28 HTTP/1.1" 200 -
+2025-09-28 11:17:02,128 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,132 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/schedule/2025/28 HTTP/1.1" 200 -
+2025-09-28 11:17:02,201 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,207 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/ideas/29 HTTP/1.1" 200 -
+2025-09-28 11:17:02,223 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,228 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/events/2025/29 HTTP/1.1" 200 -
+2025-09-28 11:17:02,243 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,250 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/schedule/2025/29 HTTP/1.1" 200 -
+2025-09-28 11:17:02,319 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,323 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/ideas/30 HTTP/1.1" 200 -
+2025-09-28 11:17:02,334 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,338 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/events/2025/30 HTTP/1.1" 200 -
+2025-09-28 11:17:02,347 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,353 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/schedule/2025/30 HTTP/1.1" 200 -
+2025-09-28 11:17:02,416 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,422 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/ideas/31 HTTP/1.1" 200 -
+2025-09-28 11:17:02,432 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,435 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/events/2025/31 HTTP/1.1" 200 -
+2025-09-28 11:17:02,446 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,450 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/schedule/2025/31 HTTP/1.1" 200 -
+2025-09-28 11:17:02,514 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,518 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/ideas/32 HTTP/1.1" 200 -
+2025-09-28 11:17:02,530 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,534 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/events/2025/32 HTTP/1.1" 200 -
+2025-09-28 11:17:02,544 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,549 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/schedule/2025/32 HTTP/1.1" 200 -
+2025-09-28 11:17:02,612 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,617 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/ideas/33 HTTP/1.1" 200 -
+2025-09-28 11:17:02,625 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,628 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/events/2025/33 HTTP/1.1" 200 -
+2025-09-28 11:17:02,636 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,641 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/schedule/2025/33 HTTP/1.1" 200 -
+2025-09-28 11:17:02,701 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,704 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/ideas/34 HTTP/1.1" 200 -
+2025-09-28 11:17:02,712 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,715 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/events/2025/34 HTTP/1.1" 200 -
+2025-09-28 11:17:02,724 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,728 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/schedule/2025/34 HTTP/1.1" 200 -
+2025-09-28 11:17:02,796 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,800 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/ideas/35 HTTP/1.1" 200 -
+2025-09-28 11:17:02,815 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,819 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/events/2025/35 HTTP/1.1" 200 -
+2025-09-28 11:17:02,831 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,837 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/schedule/2025/35 HTTP/1.1" 200 -
+2025-09-28 11:17:02,900 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,905 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/ideas/36 HTTP/1.1" 200 -
+2025-09-28 11:17:02,918 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,922 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/events/2025/36 HTTP/1.1" 200 -
+2025-09-28 11:17:02,935 - config.database - INFO - Database connection established
+2025-09-28 11:17:02,939 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:02] "GET /planning/api/calendar/schedule/2025/36 HTTP/1.1" 200 -
+2025-09-28 11:17:03,006 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,013 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/ideas/37 HTTP/1.1" 200 -
+2025-09-28 11:17:03,029 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,033 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/events/2025/37 HTTP/1.1" 200 -
+2025-09-28 11:17:03,046 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,051 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/schedule/2025/37 HTTP/1.1" 200 -
+2025-09-28 11:17:03,120 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,125 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/ideas/38 HTTP/1.1" 200 -
+2025-09-28 11:17:03,142 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,146 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/events/2025/38 HTTP/1.1" 200 -
+2025-09-28 11:17:03,161 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,166 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/schedule/2025/38 HTTP/1.1" 200 -
+2025-09-28 11:17:03,234 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,238 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/ideas/39 HTTP/1.1" 200 -
+2025-09-28 11:17:03,254 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,257 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/events/2025/39 HTTP/1.1" 200 -
+2025-09-28 11:17:03,275 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,282 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/schedule/2025/39 HTTP/1.1" 200 -
+2025-09-28 11:17:03,350 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,356 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/ideas/40 HTTP/1.1" 200 -
+2025-09-28 11:17:03,373 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,377 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/events/2025/40 HTTP/1.1" 200 -
+2025-09-28 11:17:03,393 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,398 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/schedule/2025/40 HTTP/1.1" 200 -
+2025-09-28 11:17:03,467 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,474 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/ideas/41 HTTP/1.1" 200 -
+2025-09-28 11:17:03,490 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,494 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/events/2025/41 HTTP/1.1" 200 -
+2025-09-28 11:17:03,509 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,515 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/schedule/2025/41 HTTP/1.1" 200 -
+2025-09-28 11:17:03,585 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,590 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/ideas/42 HTTP/1.1" 200 -
+2025-09-28 11:17:03,605 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,609 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/events/2025/42 HTTP/1.1" 200 -
+2025-09-28 11:17:03,630 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,633 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,636 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/schedule/2025/42 HTTP/1.1" 200 -
+2025-09-28 11:17:03,638 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "PUT /planning/api/calendar/ideas/49 HTTP/1.1" 200 -
+2025-09-28 11:17:03,649 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,652 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/ideas/40 HTTP/1.1" 200 -
+2025-09-28 11:17:03,660 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,663 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/events/2025/40 HTTP/1.1" 200 -
+2025-09-28 11:17:03,671 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,677 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/schedule/2025/40 HTTP/1.1" 200 -
+2025-09-28 11:17:03,695 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,699 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/ideas/43 HTTP/1.1" 200 -
+2025-09-28 11:17:03,706 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,709 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/events/2025/43 HTTP/1.1" 200 -
+2025-09-28 11:17:03,715 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,719 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/schedule/2025/43 HTTP/1.1" 200 -
+2025-09-28 11:17:03,780 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,788 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/ideas/44 HTTP/1.1" 200 -
+2025-09-28 11:17:03,797 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,801 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/events/2025/44 HTTP/1.1" 200 -
+2025-09-28 11:17:03,812 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,816 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/schedule/2025/44 HTTP/1.1" 200 -
+2025-09-28 11:17:03,880 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,885 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/ideas/45 HTTP/1.1" 200 -
+2025-09-28 11:17:03,896 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,899 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/events/2025/45 HTTP/1.1" 200 -
+2025-09-28 11:17:03,910 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,915 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/schedule/2025/45 HTTP/1.1" 200 -
+2025-09-28 11:17:03,980 - config.database - INFO - Database connection established
+2025-09-28 11:17:03,986 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:03] "GET /planning/api/calendar/ideas/46 HTTP/1.1" 200 -
+2025-09-28 11:17:03,997 - config.database - INFO - Database connection established
+2025-09-28 11:17:04,003 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:04] "GET /planning/api/calendar/events/2025/46 HTTP/1.1" 200 -
+2025-09-28 11:17:04,016 - config.database - INFO - Database connection established
+2025-09-28 11:17:04,022 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:04] "GET /planning/api/calendar/schedule/2025/46 HTTP/1.1" 200 -
+2025-09-28 11:17:04,084 - config.database - INFO - Database connection established
+2025-09-28 11:17:04,090 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:04] "GET /planning/api/calendar/ideas/47 HTTP/1.1" 200 -
+2025-09-28 11:17:04,103 - config.database - INFO - Database connection established
+2025-09-28 11:17:04,106 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:04] "GET /planning/api/calendar/events/2025/47 HTTP/1.1" 200 -
+2025-09-28 11:17:04,118 - config.database - INFO - Database connection established
+2025-09-28 11:17:04,124 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:04] "GET /planning/api/calendar/schedule/2025/47 HTTP/1.1" 200 -
+2025-09-28 11:17:04,185 - config.database - INFO - Database connection established
+2025-09-28 11:17:04,191 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:04] "GET /planning/api/calendar/ideas/48 HTTP/1.1" 200 -
+2025-09-28 11:17:04,204 - config.database - INFO - Database connection established
+2025-09-28 11:17:04,207 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:04] "GET /planning/api/calendar/events/2025/48 HTTP/1.1" 200 -
+2025-09-28 11:17:04,218 - config.database - INFO - Database connection established
+2025-09-28 11:17:04,224 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:04] "GET /planning/api/calendar/schedule/2025/48 HTTP/1.1" 200 -
+2025-09-28 11:17:04,292 - config.database - INFO - Database connection established
+2025-09-28 11:17:04,298 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:04] "GET /planning/api/calendar/ideas/49 HTTP/1.1" 200 -
+2025-09-28 11:17:04,315 - config.database - INFO - Database connection established
+2025-09-28 11:17:04,321 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:04] "GET /planning/api/calendar/events/2025/49 HTTP/1.1" 200 -
+2025-09-28 11:17:04,333 - config.database - INFO - Database connection established
+2025-09-28 11:17:04,340 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:04] "GET /planning/api/calendar/schedule/2025/49 HTTP/1.1" 200 -
+2025-09-28 11:17:04,407 - config.database - INFO - Database connection established
+2025-09-28 11:17:04,412 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:04] "GET /planning/api/calendar/ideas/50 HTTP/1.1" 200 -
+2025-09-28 11:17:04,427 - config.database - INFO - Database connection established
+2025-09-28 11:17:04,432 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:04] "GET /planning/api/calendar/events/2025/50 HTTP/1.1" 200 -
+2025-09-28 11:17:04,447 - config.database - INFO - Database connection established
+2025-09-28 11:17:04,452 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:04] "GET /planning/api/calendar/schedule/2025/50 HTTP/1.1" 200 -
+2025-09-28 11:17:04,520 - config.database - INFO - Database connection established
+2025-09-28 11:17:04,526 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:04] "GET /planning/api/calendar/ideas/51 HTTP/1.1" 200 -
+2025-09-28 11:17:04,542 - config.database - INFO - Database connection established
+2025-09-28 11:17:04,547 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:04] "GET /planning/api/calendar/events/2025/51 HTTP/1.1" 200 -
+2025-09-28 11:17:04,561 - config.database - INFO - Database connection established
+2025-09-28 11:17:04,566 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:04] "GET /planning/api/calendar/schedule/2025/51 HTTP/1.1" 200 -
+2025-09-28 11:17:04,632 - config.database - INFO - Database connection established
+2025-09-28 11:17:04,637 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:04] "GET /planning/api/calendar/ideas/52 HTTP/1.1" 200 -
+2025-09-28 11:17:04,651 - config.database - INFO - Database connection established
+2025-09-28 11:17:04,655 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:04] "GET /planning/api/calendar/events/2025/52 HTTP/1.1" 200 -
+2025-09-28 11:17:04,669 - config.database - INFO - Database connection established
+2025-09-28 11:17:04,674 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:04] "GET /planning/api/calendar/schedule/2025/52 HTTP/1.1" 200 -
+2025-09-28 11:17:10,159 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/posts/54/calendar/view HTTP/1.1" 200 -
+2025-09-28 11:17:10,188 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-28 11:17:10,190 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-28 11:17:10,192 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-28 11:17:10,192 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-28 11:17:10,192 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "[36mGET /static/js/planning/calendar-view.js HTTP/1.1[0m" 304 -
+2025-09-28 11:17:10,193 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-28 11:17:10,194 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-28 11:17:10,195 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-28 11:17:10,210 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-28 11:17:10,212 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "[36mGET /static/js/planning/calendar/utils/constants.js HTTP/1.1[0m" 304 -
+2025-09-28 11:17:10,212 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "[36mGET /static/js/planning/calendar/api/data-loader.js HTTP/1.1[0m" 304 -
+2025-09-28 11:17:10,213 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "[36mGET /static/js/planning/calendar/ui/calendar-renderer.js HTTP/1.1[0m" 304 -
+2025-09-28 11:17:10,213 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "[36mGET /static/js/planning/calendar/api/cache-manager.js HTTP/1.1[0m" 304 -
+2025-09-28 11:17:10,223 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,225 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/categories HTTP/1.1" 200 -
+2025-09-28 11:17:10,237 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,239 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/weeks/2025 HTTP/1.1" 200 -
+2025-09-28 11:17:10,250 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,254 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/ideas/1 HTTP/1.1" 200 -
+2025-09-28 11:17:10,260 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,263 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/events/2025/1 HTTP/1.1" 200 -
+2025-09-28 11:17:10,269 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,273 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/schedule/2025/1 HTTP/1.1" 200 -
+2025-09-28 11:17:10,324 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,330 - blueprints.planning - INFO - Calendar schedule query for post_id=54 returned 0 results
+2025-09-28 11:17:10,330 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/posts/54 HTTP/1.1" 200 -
+2025-09-28 11:17:10,331 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,337 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/ideas/2 HTTP/1.1" 200 -
+2025-09-28 11:17:10,344 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,347 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/events/2025/2 HTTP/1.1" 200 -
+2025-09-28 11:17:10,355 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,358 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/schedule/2025/2 HTTP/1.1" 200 -
+2025-09-28 11:17:10,420 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,426 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/ideas/3 HTTP/1.1" 200 -
+2025-09-28 11:17:10,437 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,441 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/events/2025/3 HTTP/1.1" 200 -
+2025-09-28 11:17:10,452 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,458 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/schedule/2025/3 HTTP/1.1" 200 -
+2025-09-28 11:17:10,529 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,535 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/ideas/4 HTTP/1.1" 200 -
+2025-09-28 11:17:10,547 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,551 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/events/2025/4 HTTP/1.1" 200 -
+2025-09-28 11:17:10,562 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,569 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/schedule/2025/4 HTTP/1.1" 200 -
+2025-09-28 11:17:10,635 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,643 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/ideas/5 HTTP/1.1" 200 -
+2025-09-28 11:17:10,653 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,657 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/events/2025/5 HTTP/1.1" 200 -
+2025-09-28 11:17:10,668 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,673 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/schedule/2025/5 HTTP/1.1" 200 -
+2025-09-28 11:17:10,737 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,744 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/ideas/6 HTTP/1.1" 200 -
+2025-09-28 11:17:10,755 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,761 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/events/2025/6 HTTP/1.1" 200 -
+2025-09-28 11:17:10,774 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,778 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/schedule/2025/6 HTTP/1.1" 200 -
+2025-09-28 11:17:10,846 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,853 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/ideas/7 HTTP/1.1" 200 -
+2025-09-28 11:17:10,867 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,873 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/events/2025/7 HTTP/1.1" 200 -
+2025-09-28 11:17:10,889 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,894 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/schedule/2025/7 HTTP/1.1" 200 -
+2025-09-28 11:17:10,963 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,968 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/ideas/8 HTTP/1.1" 200 -
+2025-09-28 11:17:10,984 - config.database - INFO - Database connection established
+2025-09-28 11:17:10,988 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:10] "GET /planning/api/calendar/events/2025/8 HTTP/1.1" 200 -
+2025-09-28 11:17:11,004 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,009 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/schedule/2025/8 HTTP/1.1" 200 -
+2025-09-28 11:17:11,076 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,081 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/ideas/9 HTTP/1.1" 200 -
+2025-09-28 11:17:11,096 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,099 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/events/2025/9 HTTP/1.1" 200 -
+2025-09-28 11:17:11,113 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,118 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/schedule/2025/9 HTTP/1.1" 200 -
+2025-09-28 11:17:11,178 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,181 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/ideas/10 HTTP/1.1" 200 -
+2025-09-28 11:17:11,188 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,191 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/events/2025/10 HTTP/1.1" 200 -
+2025-09-28 11:17:11,199 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,202 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/schedule/2025/10 HTTP/1.1" 200 -
+2025-09-28 11:17:11,265 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,271 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/ideas/11 HTTP/1.1" 200 -
+2025-09-28 11:17:11,281 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,284 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/events/2025/11 HTTP/1.1" 200 -
+2025-09-28 11:17:11,293 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,299 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/schedule/2025/11 HTTP/1.1" 200 -
+2025-09-28 11:17:11,366 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,372 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/ideas/12 HTTP/1.1" 200 -
+2025-09-28 11:17:11,386 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,390 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/events/2025/12 HTTP/1.1" 200 -
+2025-09-28 11:17:11,406 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,413 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/schedule/2025/12 HTTP/1.1" 200 -
+2025-09-28 11:17:11,483 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,489 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/ideas/13 HTTP/1.1" 200 -
+2025-09-28 11:17:11,505 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,509 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/events/2025/13 HTTP/1.1" 200 -
+2025-09-28 11:17:11,525 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,531 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/schedule/2025/13 HTTP/1.1" 200 -
+2025-09-28 11:17:11,600 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,606 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/ideas/14 HTTP/1.1" 200 -
+2025-09-28 11:17:11,623 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,626 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/events/2025/14 HTTP/1.1" 200 -
+2025-09-28 11:17:11,641 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,646 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/schedule/2025/14 HTTP/1.1" 200 -
+2025-09-28 11:17:11,715 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,721 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/ideas/15 HTTP/1.1" 200 -
+2025-09-28 11:17:11,734 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,738 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/events/2025/15 HTTP/1.1" 200 -
+2025-09-28 11:17:11,749 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,755 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/schedule/2025/15 HTTP/1.1" 200 -
+2025-09-28 11:17:11,826 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,832 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/ideas/16 HTTP/1.1" 200 -
+2025-09-28 11:17:11,848 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,854 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/events/2025/16 HTTP/1.1" 200 -
+2025-09-28 11:17:11,869 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,875 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/schedule/2025/16 HTTP/1.1" 200 -
+2025-09-28 11:17:11,944 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,949 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/ideas/17 HTTP/1.1" 200 -
+2025-09-28 11:17:11,965 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,969 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/events/2025/17 HTTP/1.1" 200 -
+2025-09-28 11:17:11,985 - config.database - INFO - Database connection established
+2025-09-28 11:17:11,992 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:11] "GET /planning/api/calendar/schedule/2025/17 HTTP/1.1" 200 -
+2025-09-28 11:17:12,061 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,068 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/ideas/18 HTTP/1.1" 200 -
+2025-09-28 11:17:12,085 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,090 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/events/2025/18 HTTP/1.1" 200 -
+2025-09-28 11:17:12,105 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,110 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/schedule/2025/18 HTTP/1.1" 200 -
+2025-09-28 11:17:12,176 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,183 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/ideas/19 HTTP/1.1" 200 -
+2025-09-28 11:17:12,231 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,235 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/events/2025/19 HTTP/1.1" 200 -
+2025-09-28 11:17:12,246 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,251 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/schedule/2025/19 HTTP/1.1" 200 -
+2025-09-28 11:17:12,314 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,319 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/ideas/20 HTTP/1.1" 200 -
+2025-09-28 11:17:12,329 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,332 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/events/2025/20 HTTP/1.1" 200 -
+2025-09-28 11:17:12,340 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,344 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/schedule/2025/20 HTTP/1.1" 200 -
+2025-09-28 11:17:12,405 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,409 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/ideas/21 HTTP/1.1" 200 -
+2025-09-28 11:17:12,417 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,420 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/events/2025/21 HTTP/1.1" 200 -
+2025-09-28 11:17:12,428 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,432 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/schedule/2025/21 HTTP/1.1" 200 -
+2025-09-28 11:17:12,498 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,502 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/ideas/22 HTTP/1.1" 200 -
+2025-09-28 11:17:12,518 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,522 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/events/2025/22 HTTP/1.1" 200 -
+2025-09-28 11:17:12,538 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,543 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/schedule/2025/22 HTTP/1.1" 200 -
+2025-09-28 11:17:12,613 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,619 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/ideas/23 HTTP/1.1" 200 -
+2025-09-28 11:17:12,636 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,640 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/events/2025/23 HTTP/1.1" 200 -
+2025-09-28 11:17:12,656 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,661 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/schedule/2025/23 HTTP/1.1" 200 -
+2025-09-28 11:17:12,729 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,734 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/ideas/24 HTTP/1.1" 200 -
+2025-09-28 11:17:12,747 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,752 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/events/2025/24 HTTP/1.1" 200 -
+2025-09-28 11:17:12,765 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,770 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/schedule/2025/24 HTTP/1.1" 200 -
+2025-09-28 11:17:12,838 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,843 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/ideas/25 HTTP/1.1" 200 -
+2025-09-28 11:17:12,860 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,865 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/events/2025/25 HTTP/1.1" 200 -
+2025-09-28 11:17:12,882 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,888 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/schedule/2025/25 HTTP/1.1" 200 -
+2025-09-28 11:17:12,957 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,964 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/ideas/26 HTTP/1.1" 200 -
+2025-09-28 11:17:12,979 - config.database - INFO - Database connection established
+2025-09-28 11:17:12,983 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:12] "GET /planning/api/calendar/events/2025/26 HTTP/1.1" 200 -
+2025-09-28 11:17:12,997 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,003 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/schedule/2025/26 HTTP/1.1" 200 -
+2025-09-28 11:17:13,078 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,084 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/ideas/27 HTTP/1.1" 200 -
+2025-09-28 11:17:13,101 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,105 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/events/2025/27 HTTP/1.1" 200 -
+2025-09-28 11:17:13,120 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,126 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/schedule/2025/27 HTTP/1.1" 200 -
+2025-09-28 11:17:13,197 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,204 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/ideas/28 HTTP/1.1" 200 -
+2025-09-28 11:17:13,222 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,226 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/events/2025/28 HTTP/1.1" 200 -
+2025-09-28 11:17:13,243 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,251 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/schedule/2025/28 HTTP/1.1" 200 -
+2025-09-28 11:17:13,319 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,325 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/ideas/29 HTTP/1.1" 200 -
+2025-09-28 11:17:13,338 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,341 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/events/2025/29 HTTP/1.1" 200 -
+2025-09-28 11:17:13,353 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,357 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/schedule/2025/29 HTTP/1.1" 200 -
+2025-09-28 11:17:13,420 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,423 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/ideas/30 HTTP/1.1" 200 -
+2025-09-28 11:17:13,434 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,436 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/events/2025/30 HTTP/1.1" 200 -
+2025-09-28 11:17:13,446 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,449 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/schedule/2025/30 HTTP/1.1" 200 -
+2025-09-28 11:17:13,513 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,518 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/ideas/31 HTTP/1.1" 200 -
+2025-09-28 11:17:13,532 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,535 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/events/2025/31 HTTP/1.1" 200 -
+2025-09-28 11:17:13,548 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,556 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/schedule/2025/31 HTTP/1.1" 200 -
+2025-09-28 11:17:13,624 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,631 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/ideas/32 HTTP/1.1" 200 -
+2025-09-28 11:17:13,648 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,653 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/events/2025/32 HTTP/1.1" 200 -
+2025-09-28 11:17:13,670 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,679 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/schedule/2025/32 HTTP/1.1" 200 -
+2025-09-28 11:17:13,755 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,759 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/ideas/33 HTTP/1.1" 200 -
+2025-09-28 11:17:13,831 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,834 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/events/2025/33 HTTP/1.1" 200 -
+2025-09-28 11:17:13,844 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,848 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/schedule/2025/33 HTTP/1.1" 200 -
+2025-09-28 11:17:13,908 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,912 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/ideas/34 HTTP/1.1" 200 -
+2025-09-28 11:17:13,919 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,922 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/events/2025/34 HTTP/1.1" 200 -
+2025-09-28 11:17:13,928 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,935 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/schedule/2025/34 HTTP/1.1" 200 -
+2025-09-28 11:17:13,995 - config.database - INFO - Database connection established
+2025-09-28 11:17:13,998 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:13] "GET /planning/api/calendar/ideas/35 HTTP/1.1" 200 -
+2025-09-28 11:17:14,006 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,009 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/events/2025/35 HTTP/1.1" 200 -
+2025-09-28 11:17:14,017 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,020 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/schedule/2025/35 HTTP/1.1" 200 -
+2025-09-28 11:17:14,081 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,084 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/ideas/36 HTTP/1.1" 200 -
+2025-09-28 11:17:14,092 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,095 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/events/2025/36 HTTP/1.1" 200 -
+2025-09-28 11:17:14,104 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,108 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/schedule/2025/36 HTTP/1.1" 200 -
+2025-09-28 11:17:14,178 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,184 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/ideas/37 HTTP/1.1" 200 -
+2025-09-28 11:17:14,200 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,205 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/events/2025/37 HTTP/1.1" 200 -
+2025-09-28 11:17:14,220 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,225 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/schedule/2025/37 HTTP/1.1" 200 -
+2025-09-28 11:17:14,293 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,299 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/ideas/38 HTTP/1.1" 200 -
+2025-09-28 11:17:14,316 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,323 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/events/2025/38 HTTP/1.1" 200 -
+2025-09-28 11:17:14,337 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,343 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/schedule/2025/38 HTTP/1.1" 200 -
+2025-09-28 11:17:14,445 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,453 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/ideas/39 HTTP/1.1" 200 -
+2025-09-28 11:17:14,461 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,466 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/events/2025/39 HTTP/1.1" 200 -
+2025-09-28 11:17:14,474 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,478 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/schedule/2025/39 HTTP/1.1" 200 -
+2025-09-28 11:17:14,538 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,542 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/ideas/40 HTTP/1.1" 200 -
+2025-09-28 11:17:14,551 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,554 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/events/2025/40 HTTP/1.1" 200 -
+2025-09-28 11:17:14,562 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,566 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/schedule/2025/40 HTTP/1.1" 200 -
+2025-09-28 11:17:14,628 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,632 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/ideas/41 HTTP/1.1" 200 -
+2025-09-28 11:17:14,641 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,645 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/events/2025/41 HTTP/1.1" 200 -
+2025-09-28 11:17:14,654 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,658 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/schedule/2025/41 HTTP/1.1" 200 -
+2025-09-28 11:17:14,722 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,728 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/ideas/42 HTTP/1.1" 200 -
+2025-09-28 11:17:14,739 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,743 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/events/2025/42 HTTP/1.1" 200 -
+2025-09-28 11:17:14,755 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,760 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/schedule/2025/42 HTTP/1.1" 200 -
+2025-09-28 11:17:14,827 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,833 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/ideas/43 HTTP/1.1" 200 -
+2025-09-28 11:17:14,850 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,855 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/events/2025/43 HTTP/1.1" 200 -
+2025-09-28 11:17:14,870 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,876 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/schedule/2025/43 HTTP/1.1" 200 -
+2025-09-28 11:17:14,943 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,949 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/ideas/44 HTTP/1.1" 200 -
+2025-09-28 11:17:14,963 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,968 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/events/2025/44 HTTP/1.1" 200 -
+2025-09-28 11:17:14,979 - config.database - INFO - Database connection established
+2025-09-28 11:17:14,985 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:14] "GET /planning/api/calendar/schedule/2025/44 HTTP/1.1" 200 -
+2025-09-28 11:17:15,052 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,056 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/ideas/45 HTTP/1.1" 200 -
+2025-09-28 11:17:15,070 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,074 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/events/2025/45 HTTP/1.1" 200 -
+2025-09-28 11:17:15,088 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,094 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/schedule/2025/45 HTTP/1.1" 200 -
+2025-09-28 11:17:15,160 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,166 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/ideas/46 HTTP/1.1" 200 -
+2025-09-28 11:17:15,178 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,181 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/events/2025/46 HTTP/1.1" 200 -
+2025-09-28 11:17:15,194 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,198 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/schedule/2025/46 HTTP/1.1" 200 -
+2025-09-28 11:17:15,262 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,266 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/ideas/47 HTTP/1.1" 200 -
+2025-09-28 11:17:15,277 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,281 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/events/2025/47 HTTP/1.1" 200 -
+2025-09-28 11:17:15,292 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,297 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/schedule/2025/47 HTTP/1.1" 200 -
+2025-09-28 11:17:15,362 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,366 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/ideas/48 HTTP/1.1" 200 -
+2025-09-28 11:17:15,378 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,380 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/events/2025/48 HTTP/1.1" 200 -
+2025-09-28 11:17:15,391 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,394 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/schedule/2025/48 HTTP/1.1" 200 -
+2025-09-28 11:17:15,458 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,465 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/ideas/49 HTTP/1.1" 200 -
+2025-09-28 11:17:15,479 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,483 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/events/2025/49 HTTP/1.1" 200 -
+2025-09-28 11:17:15,493 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,499 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/schedule/2025/49 HTTP/1.1" 200 -
+2025-09-28 11:17:15,565 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,568 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/ideas/50 HTTP/1.1" 200 -
+2025-09-28 11:17:15,580 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,584 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/events/2025/50 HTTP/1.1" 200 -
+2025-09-28 11:17:15,596 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,599 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/schedule/2025/50 HTTP/1.1" 200 -
+2025-09-28 11:17:15,668 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,673 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/ideas/51 HTTP/1.1" 200 -
+2025-09-28 11:17:15,685 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,689 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/events/2025/51 HTTP/1.1" 200 -
+2025-09-28 11:17:15,699 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,704 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/schedule/2025/51 HTTP/1.1" 200 -
+2025-09-28 11:17:15,772 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,778 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/ideas/52 HTTP/1.1" 200 -
+2025-09-28 11:17:15,794 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,798 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/events/2025/52 HTTP/1.1" 200 -
+2025-09-28 11:17:15,811 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,816 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/schedule/2025/52 HTTP/1.1" 200 -
  - Database connection established
-2025-09-28 11:14:44,019 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:14:44] "GET /planning/api/calendar/ideas/40 HTTP/1.1" 200 -
-2025-09-28 11:14:44,026 - config.database - INFO - Database connection established
-2025-09-28 11:14:44,029 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:14:44] "GET /planning/api/calendar/events/2025/40 HTTP/1.1" 200 -
-2025-09-28 11:14:44,037 - config.database - INFO - Database connection established
-2025-09-28 11:14:44,040 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:14:44] "GET /planning/api/calendar/schedule/2025/40 HTTP/1.1" 200 -
+2025-09-28 11:17:15,778 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/ideas/52 HTTP/1.1" 200 -
+2025-09-28 11:17:15,794 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,798 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/events/2025/52 HTTP/1.1" 200 -
+2025-09-28 11:17:15,811 - config.database - INFO - Database connection established
+2025-09-28 11:17:15,816 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 11:17:15] "GET /planning/api/calendar/schedule/2025/52 HTTP/1.1" 200 -
