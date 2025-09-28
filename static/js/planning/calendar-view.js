@@ -2,7 +2,7 @@ import DateUtils from './calendar/utils/date-utils.js';
 import CONFIG from './calendar/utils/constants.js';
 import DataLoader from './calendar/api/data-loader.js';
 import CacheManager from './calendar/api/cache-manager.js';
-import { getPrimaryCategory, getPrimaryCategoryFromTags, showNotification } from './calendar/ui/calendar-renderer.js';
+import { getPrimaryCategory, getPrimaryCategoryFromTags, showNotification, renderCalendarFallback } from './calendar/ui/calendar-renderer.js';
 
 // Global variables
 let currentYear = new Date().getFullYear();
@@ -58,7 +58,7 @@ async function initializeCalendar() {
     await loadCategories();
     
     // Always render the fallback first to ensure calendar is visible
-    renderCalendarFallback();
+    renderCalendarFallback(currentYear, currentWeekNumber);
     
     // Then try to load from database
     updateCalendar();
@@ -109,7 +109,7 @@ async function updateCalendar() {
         } else {
             console.error(CONFIG.MESSAGES.CALENDAR_ERROR, 'No weeks data');
             // Re-render fallback if database fails
-            renderCalendarFallback();
+            renderCalendarFallback(currentYear, currentWeekNumber);
         }
     } catch (error) {
         console.error(CONFIG.MESSAGES.CALENDAR_LOAD_ERROR, error);
@@ -409,107 +409,6 @@ function renderWeekContent(ideas, events, schedule) {
     return html;
 }
 
-function renderCalendarFallback() {
-    
-    // Fallback to the original hardcoded generation
-    const calendarGrid = document.getElementById('calendar-grid');
-    if (!calendarGrid) {
-        console.error('calendar-grid element not found!');
-        return;
-    }
-    
-    calendarGrid.innerHTML = '';
-    
-    // Group weeks by month
-    const monthGroups = [];
-    let currentMonth = -1;
-    let currentGroup = [];
-    
-    for (let week = 1; week <= 52; week++) {
-        const weekDates = DateUtils.getWeekDates(week, currentYear);
-        const weekMonth = weekDates.start.getMonth();
-        
-        if (weekMonth !== currentMonth) {
-            // New month - start a new group
-            if (currentGroup.length > 0) {
-                monthGroups.push(currentGroup);
-            }
-            currentGroup = [];
-            currentMonth = weekMonth;
-        }
-        
-        currentGroup.push(week);
-    }
-    
-    // Add the last group
-    if (currentGroup.length > 0) {
-        monthGroups.push(currentGroup);
-    }
-    
-    
-    // Find the maximum number of weeks in any month
-    const maxWeeks = Math.max(...monthGroups.map(group => group.length));
-    
-    // Set grid columns dynamically
-    calendarGrid.style.gridTemplateColumns = `100px repeat(${maxWeeks}, 1fr)`;
-    
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
-    // Create month rows
-    monthGroups.forEach((weeks, groupIndex) => {
-        const firstWeek = weeks[0];
-        const weekDates = DateUtils.getWeekDates(firstWeek, currentYear);
-        const monthName = monthNames[weekDates.start.getMonth()];
-        
-        
-        // Month name cell
-        const monthCell = document.createElement('div');
-        monthCell.className = CONFIG.CSS.MONTH_CELL;
-        monthCell.textContent = monthName;
-        calendarGrid.appendChild(monthCell);
-        
-        // Create week cells for this month
-        for (let i = 0; i < maxWeeks; i++) {
-            const weekCell = document.createElement('div');
-            weekCell.className = CONFIG.CSS.WEEK_CELL;
-            
-            if (i < weeks.length) {
-                const week = weeks[i];
-                const weekDates = DateUtils.getWeekDates(week, currentYear);
-                const today = new Date();
-                const isCurrentYear = today.getFullYear() === currentYear;
-                const currentWeekNumber = isCurrentYear ? DateUtils.getWeekNumber(today) : 1;
-                const isCurrentWeek = isCurrentYear && week === currentWeekNumber;
-                
-                if (isCurrentWeek) {
-                    weekCell.classList.add(CONFIG.CSS.CURRENT_WEEK);
-                }
-                
-                weekCell.innerHTML = `
-                    <div class="week-number">W${week}</div>
-                    <div class="week-dates">${DateUtils.formatDate(weekDates.start)} - ${DateUtils.formatDate(weekDates.end)}</div>
-                    <div class="week-content">
-                        <!-- Posts will be loaded here -->
-                    </div>
-                    <div class="week-actions">
-                        <button class="btn-add-entry" onclick="addNewEntry(${week})" title="Add new entry">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </div>
-                `;
-                
-                // Add click handler for week selection
-                weekCell.addEventListener('click', () => DateUtils.selectWeek(week, weekDates.start.getMonth()));
-            } else {
-                weekCell.innerHTML = '<div class="week-dates">-</div>';
-            }
-            
-            calendarGrid.appendChild(weekCell);
-        }
-    });
-    
-}
 
 
 // ============================================================================
