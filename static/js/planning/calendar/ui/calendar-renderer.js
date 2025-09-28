@@ -78,7 +78,49 @@ function getPrimaryCategoryFromTags(tags, categories) {
     };
 }
 
+/**
+ * Show notification to user
+ * @param {string} message - Notification message
+ * @param {string} type - Notification type ('success', 'error', 'info')
+ */
+function showNotification(message, type = 'info') {
+    // Simple notification - could be enhanced with a proper notification system
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 4px;
+        color: white;
+        font-weight: 500;
+        z-index: 1000;
+        transition: all 0.3s ease;
+    `;
+    
+    if (type === 'success') {
+        notification.style.backgroundColor = '#10b981';
+    } else if (type === 'error') {
+        notification.style.backgroundColor = '#ef4444';
+    } else {
+        notification.style.backgroundColor = '#3b82f6';
+    }
+    
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
 // Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { getPrimaryCategory, getPrimaryCategoryFromTags };
+    module.exports = { getPrimaryCategory, getPrimaryCategoryFromTags, showNotification };
 }
