@@ -2,14 +2,18 @@
  * Drag and Drop Module
  * Handles drag and drop functionality
  * 
- * Functions to be extracted in Phase 4:
- * - initializeDragAndDrop()
- * - handleDragStart()
- * - handleDragOver()
- * - handleDrop()
- * - moveItemToWeek()
+ * Implemented Classes:
+ * - DragDropManager - Main class that handles all drag and drop state and functionality
  * 
- * Currently placeholder for future implementation
+ * Implemented Methods:
+ * - initialize() - Initialize drag and drop event listeners
+ * - handleDragStart() - Handle drag start event
+ * - handleDragEnd() - Handle drag end event
+ * - handleDragOver() - Handle drag over event
+ * - handleDragEnter() - Handle drag enter event
+ * - handleDragLeave() - Handle drag leave event
+ * - handleDrop() - Handle drop event
+ * - moveItemToWeek() - Move item to a different week
  */
 
 import DataLoader from '../api/data-loader.js';
