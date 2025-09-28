@@ -17497,3 +17497,47 @@ LINE 4:                 LEFT JOIN calendar_ideas ci ON cs.idea_id = ...
 2025-09-28 20:41:03,009 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:41:03] "GET /planning/api/llm/prompts/idea-expansion HTTP/1.1" 200 -
 2025-09-28 20:41:06,017 - config.database - INFO - Database connection established
 2025-09-28 20:41:06,042 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:41:06] "GET /planning/posts/60/calendar/ideas HTTP/1.1" 200 -
+2025-09-28 20:45:34,652 - config.database - INFO - Database connection established
+2025-09-28 20:45:34,657 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:45:34] "GET /planning/posts/55/calendar/ideas HTTP/1.1" 200 -
+2025-09-28 20:45:34,722 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:45:34] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-28 20:45:34,722 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:45:34] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-09-28 20:45:34,723 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:45:34] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-28 20:45:34,723 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:45:34] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-28 20:45:34,724 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:45:34] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-28 20:45:34,725 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:45:34] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-28 20:45:34,726 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:45:34] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-28 20:45:34,727 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:45:34] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-28 20:45:34,740 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:45:34] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-28 20:45:34,752 - config.database - INFO - Database connection established
+2025-09-28 20:45:34,754 - config.database - INFO - Database connection established
+2025-09-28 20:45:34,756 - config.database - INFO - Database connection established
+2025-09-28 20:45:34,756 - config.database - INFO - Database connection established
+2025-09-28 20:45:34,756 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:45:34] "GET /planning/api/posts/55/idea-seed HTTP/1.1" 200 -
+2025-09-28 20:45:34,757 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:45:34] "GET /planning/api/calendar/ideas/week/38 HTTP/1.1" 200 -
+2025-09-28 20:45:34,758 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:45:34] "GET /planning/api/posts/55/expanded-idea HTTP/1.1" 200 -
+2025-09-28 20:45:34,758 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:45:34] "GET /planning/api/llm/prompts/idea-expansion HTTP/1.1" 200 -
+2025-09-28 20:45:34,854 - config.database - INFO - Database connection established
+2025-09-28 20:45:34,859 - blueprints.planning - INFO - Calendar schedule query for post_id=55 returned 0 results
+2025-09-28 20:45:34,859 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:45:34] "GET /planning/api/posts/55 HTTP/1.1" 200 -
+2025-09-28 20:45:42,461 - config.database - INFO - Database connection established
+2025-09-28 20:45:42,470 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-28 20:45:42,475 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 404 65
+2025-09-28 20:45:42,475 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:45:42] "[35m[1mPOST /planning/api/posts/55/expanded-idea HTTP/1.1[0m" 500 -
+2025-09-28 20:46:19,894 - config.database - INFO - Database connection established
+2025-09-28 20:46:19,896 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-28 20:46:19,898 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 404 65
+2025-09-28 20:46:19,899 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:46:19] "[35m[1mPOST /planning/api/posts/60/expanded-idea HTTP/1.1[0m" 500 -
+2025-09-28 20:46:27,581 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-28 20:46:27,834 - werkzeug - WARNING -  * Debugger is active!
+2025-09-28 20:46:27,839 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-28 20:46:34,259 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-28 20:46:34,503 - werkzeug - WARNING -  * Debugger is active!
+2025-09-28 20:46:34,508 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-28 20:46:36,874 - config.database - INFO - Database connection established
+2025-09-28 20:46:36,879 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-28 20:46:41,184 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-28 20:46:41,193 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:46:41] "POST /planning/api/posts/60/expanded-idea HTTP/1.1" 200 -
+2025-09-28 20:46:45,004 - config.database - INFO - Database connection established
+2025-09-28 20:46:45,027 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:46:45] "GET /planning/posts/60/calendar/ideas HTTP/1.1" 200 -
+2025-09-28 20:46:48,135 - config.database - INFO - Database connection established
+2025-09-28 20:46:48,139 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:46:48] "GET /planning/api/llm/prompts/idea-expansion HTTP/1.1" 200 -
