@@ -110,11 +110,8 @@
                     </div>
                     
                     <div class="topics-actions">
-                        <button class="btn btn-success" onclick="saveSelection()">
-                            <i class="fas fa-save"></i> Save Selected Topics
-                        </button>
-                        <button class="btn btn-secondary" onclick="exportTopics()">
-                            <i class="fas fa-download"></i> Export Topics
+                        <button class="btn btn-primary" onclick="regenerateTopics()" id="regenerate-btn">
+                            <i class="fas fa-redo"></i> Regenerate
                         </button>
                     </div>
                 </div>
@@ -509,6 +506,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load expanded idea and LLM prompt
     loadExpandedIdea();
     loadLLMPrompt();
+    loadExistingTopics();
     
     // Initialize brainstorming functionality
     initializeBrainstorming();
@@ -623,6 +621,24 @@ function displayLLMConfig(config) {
     `;
 }
 
+async function loadExistingTopics() {
+    try {
+        const response = await fetch(`/planning/api/posts/${window.postId}/idea-scope`);
+        const data = await response.json();
+        
+        if (data.success && data.idea_scope) {
+            const ideaScope = JSON.parse(data.idea_scope);
+            if (ideaScope.generated_topics && ideaScope.generated_topics.length > 0) {
+                generatedTopics = ideaScope.generated_topics;
+                displayTopics(generatedTopics);
+                console.log(`Loaded ${generatedTopics.length} existing topics`);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading existing topics:', error);
+    }
+}
+
 function initializeBrainstorming() {
     // Set up topic filter dropdown
     const topicFilter = document.getElementById('topic-filter');
@@ -690,6 +706,8 @@ async function startBrainstorming() {
         if (data.success) {
             generatedTopics = data.topics || [];
             displayTopics(generatedTopics);
+            // Automatically save all generated topics
+            await saveTopicsToDatabase(generatedTopics);
         } else {
             console.error('Error generating topics:', data.error);
             topicsList.innerHTML = `<div class="error">Error generating topics: ${data.error}</div>`;
@@ -752,18 +770,83 @@ function updateStats() {
     document.getElementById('total-ideas').textContent = totalIdeas;
 }
 
-function saveSelection() {
-    const selectedTopicsList = Array.from(selectedTopics).map(id => generatedTopics[id]);
-    console.log('Saving selected topics:', selectedTopicsList);
-    // TODO: Implement save functionality
-    alert(`Saving ${selectedTopicsList.length} selected topics...`);
+async function regenerateTopics() {
+    const brainstormType = document.getElementById('brainstorm-type').value;
+    
+    // Get the expanded idea content
+    const expandedIdeaElement = document.getElementById('expanded-idea-display');
+    const expandedIdea = expandedIdeaElement.textContent.trim();
+    
+    if (!expandedIdea || expandedIdea.includes('No expanded idea available')) {
+        alert('Please go back to the previous page to generate an expanded idea first.');
+        return;
+    }
+    
+    // Show loading state
+    const topicsList = document.getElementById('topics-list');
+    const regenerateBtn = document.getElementById('regenerate-btn');
+    
+    topicsList.innerHTML = '<div class="loading">Regenerating topics...</div>';
+    regenerateBtn.disabled = true;
+    regenerateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Regenerating...';
+    
+    try {
+        // Call the brainstorming API
+        const response = await fetch('/planning/api/brainstorm/topics', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                expanded_idea: expandedIdea,
+                brainstorm_type: brainstormType,
+                post_id: window.postId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            generatedTopics = data.topics || [];
+            displayTopics(generatedTopics);
+            // Automatically save all generated topics (overwrites previous)
+            await saveTopicsToDatabase(generatedTopics);
+        } else {
+            console.error('Error regenerating topics:', data.error);
+            topicsList.innerHTML = `<div class="error">Error regenerating topics: ${data.error}</div>`;
+        }
+    } catch (error) {
+        console.error('Error regenerating topics:', error);
+        topicsList.innerHTML = `<div class="error">Failed to regenerate topics: ${error.message}</div>`;
+    } finally {
+        // Reset button state
+        regenerateBtn.disabled = false;
+        regenerateBtn.innerHTML = '<i class="fas fa-redo"></i> Regenerate';
+    }
 }
 
-function exportTopics() {
-    const selectedTopicsList = Array.from(selectedTopics).map(id => generatedTopics[id]);
-    console.log('Exporting topics:', selectedTopicsList);
-    // TODO: Implement export functionality
-    alert(`Exporting ${selectedTopicsList.length} selected topics...`);
+async function saveTopicsToDatabase(topics) {
+    try {
+        const response = await fetch(`/planning/api/posts/${window.postId}/idea-scope`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                topics: topics
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('Topics saved to IDEA_SCOPE field');
+        } else {
+            console.error('Error saving topics:', data.error);
+        }
+    } catch (error) {
+        console.error('Error saving topics:', error);
+    }
 }
 
 function escapeHtml(text) {
