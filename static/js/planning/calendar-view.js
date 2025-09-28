@@ -143,16 +143,10 @@ function updateCalendarHeader(weekNumber) {
         year: 'numeric'
     });
     
-    // Update the calendar title and subtitle
-    const titleElement = document.getElementById('calendar-title');
-    const subtitleElement = document.getElementById('calendar-subtitle');
-    
+    // Update the shared planning header title
+    const titleElement = document.getElementById('planning-title');
     if (titleElement) {
         titleElement.textContent = `Post ID: ${postId} - ${startDate}-${endDate} (Week ${weekNumber})`;
-    }
-    
-    if (subtitleElement) {
-        subtitleElement.textContent = `Weekly view of your content schedule - 52 weeks organized by month`;
     }
 }
 
