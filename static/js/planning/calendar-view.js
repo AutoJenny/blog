@@ -1056,11 +1056,11 @@ async function moveItemToWeek(itemType, itemId, targetWeek) {
     try {
         let result;
         if (itemType === 'idea') {
-            result = await dataLoader.updateIdeaTitle(itemId, targetWeek); // This needs to be updated to handle week movement
+            result = await dataLoader.updateIdeaWeek(itemId, targetWeek);
         } else if (itemType === 'event') {
-            result = await dataLoader.updateEventTitle(itemId, targetWeek); // This needs to be updated to handle week movement
+            result = await dataLoader.updateEventWeek(itemId, targetWeek);
         } else if (itemType === 'schedule') {
-            result = await dataLoader.updateScheduleTitle(itemId, targetWeek); // This needs to be updated to handle week movement
+            result = await dataLoader.updateScheduleWeek(itemId, targetWeek);
         }
         
         showNotification(`${itemType.charAt(0).toUpperCase() + itemType.slice(1)} moved to week ${targetWeek}`, 'success');
