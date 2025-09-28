@@ -3,8 +3,6 @@ import CONFIG from './calendar/utils/constants.js';
 import DataLoader from './calendar/api/data-loader.js';
 import CacheManager from './calendar/api/cache-manager.js';
 
-console.log('Modules imported successfully:', { DateUtils, CONFIG, DataLoader, CacheManager });
-
 // Global variables
 let currentYear = new Date().getFullYear();
 let currentWeekNumber = DateUtils.getWeekNumber(new Date());
@@ -13,8 +11,6 @@ let categories = [];
 // Initialize API modules
 const dataLoader = new DataLoader('/planning/api/calendar');
 const cacheManager = new CacheManager();
-console.log('DataLoader initialized:', dataLoader);
-console.log('CacheManager initialized:', cacheManager);
 
 document.addEventListener('DOMContentLoaded', function() {
     
@@ -31,21 +27,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function loadCategories() {
     try {
-        console.log('Loading categories...');
         // Check cache first
         let categoriesData = cacheManager.getCategories();
         if (!categoriesData) {
-            console.log('Categories not in cache, fetching from API...');
             categoriesData = await dataLoader.loadCategories();
-            console.log('Categories loaded from API:', categoriesData);
             if (categoriesData.length > 0) {
                 cacheManager.setCategories(categoriesData);
             }
-        } else {
-            console.log('Categories loaded from cache:', categoriesData);
         }
         categories = categoriesData;
-        console.log('Categories set to global variable:', categories);
     } catch (error) {
         console.error(CONFIG.MESSAGES.CATEGORIES_ERROR, error);
     }
@@ -96,7 +86,6 @@ async function updateCalendar() {
     
     // Ensure categories are loaded before rendering content
     if (categories.length === 0) {
-        console.log(CONFIG.MESSAGES.CATEGORIES_NOT_LOADED);
         await loadCategories();
     }
     
@@ -242,48 +231,6 @@ async function loadWeekContent(year, weekNumber) {
             const renderedContent = renderWeekContent(weekData.ideas, weekData.events, weekData.schedule);
             contentDiv.innerHTML = renderedContent;
             
-            // Debug: Check if Spring Cleaning Checklist dropdown was created
-            const springCleaningItem = contentDiv.querySelector('[data-idea-id]');
-            if (springCleaningItem) {
-                const springCleaningTitle = springCleaningItem.querySelector('.idea-title');
-                if (springCleaningTitle && springCleaningTitle.textContent === 'Spring Cleaning Checklist') {
-                    const dropdown = springCleaningItem.querySelector('.category-select');
-                    console.log('Spring Cleaning Checklist dropdown found in DOM:', dropdown);
-                    if (dropdown) {
-                        console.log('Dropdown options count:', dropdown.options.length);
-                        console.log('Dropdown selected value:', dropdown.value);
-                        
-                        // Check computed styles and dimensions
-                        const computedStyle = window.getComputedStyle(dropdown);
-                        console.log('Dropdown computed styles:', {
-                            display: computedStyle.display,
-                            visibility: computedStyle.visibility,
-                            opacity: computedStyle.opacity,
-                            width: computedStyle.width,
-                            height: computedStyle.height,
-                            backgroundColor: computedStyle.backgroundColor,
-                            color: computedStyle.color,
-                            position: computedStyle.position,
-                            zIndex: computedStyle.zIndex
-                        });
-                        
-                        // Check bounding box
-                        const rect = dropdown.getBoundingClientRect();
-                        console.log('Dropdown bounding box:', rect);
-                        
-                        // Check if it's actually visible in viewport
-                        console.log('Is dropdown in viewport?', rect.width > 0 && rect.height > 0 && rect.top >= 0 && rect.left >= 0);
-                        
-                        // Temporarily highlight the dropdown for debugging
-                        dropdown.style.border = '3px solid red !important';
-                        dropdown.style.backgroundColor = 'yellow !important';
-                        dropdown.style.color = 'black !important';
-                        console.log('Applied temporary debugging styles to dropdown');
-                    } else {
-                        console.log('ERROR: Dropdown not found in DOM!');
-                    }
-                }
-            }
         } else {
         }
         
@@ -315,45 +262,7 @@ function renderWeekContent(ideas, events, schedule) {
                 return;
             }
             
-            // Debug specific item
-            if (idea.idea_title === 'Spring Cleaning Checklist') {
-                console.log('Rendering Spring Cleaning Checklist:', idea);
-                console.log('Categories available:', categories.length);
-                console.log('Idea tags:', idea.tags);
-                
-                // Test the category selection logic
-                const testCategory = getPrimaryCategoryFromTags(idea.tags);
-                console.log('Test category result:', testCategory);
-                
-                // Test if categories array has the expected category
-                const generalCategory = categories.find(cat => cat.name === 'General');
-                console.log('General category found:', generalCategory);
-            }
             
-            // Debug HTML generation for Spring Cleaning Checklist
-            if (idea.idea_title === 'Spring Cleaning Checklist') {
-                console.log('About to generate HTML for Spring Cleaning Checklist');
-                console.log('Categories for dropdown:', categories.map(c => c.name));
-                
-                // Test the template generation step by step
-                try {
-                    const testCategory = getPrimaryCategoryFromTags(idea.tags);
-                    console.log('Test category for template:', testCategory);
-                    
-                    // Test the template string generation
-                    const testTemplate = `
-                        <div class="idea-categories">
-                            <select class="category-select" onchange="updateIdeaCategory(${idea.id}, this.value)" title="Change category">
-                                <option value="">Select Category</option>
-                                ${categories.map(cat => `<option value="${cat.name}">${cat.name}</option>`).join('')}
-                            </select>
-                        </div>
-                    `;
-                    console.log('Test template generated:', testTemplate);
-                } catch (error) {
-                    console.error('Error in template generation:', error);
-                }
-            }
             
             const ideaHtml = `
                 <div class="idea-item ${idea.priority === 'mandatory' ? 'mandatory' : ''}" data-idea-id="${idea.id}" draggable="true">
@@ -378,7 +287,6 @@ function renderWeekContent(ideas, events, schedule) {
                                     // Get the primary category for this idea
                                     const primaryCategory = getPrimaryCategoryFromTags(idea.tags);
                                     const isSelected = cat.name === primaryCategory.name;
-                                    console.log('Rendering option for idea', idea.id, ':', cat.name, 'isSelected:', isSelected, 'primaryCategory:', primaryCategory.name);
                                     return `<option value="${cat.name}" ${isSelected ? 'selected' : ''}>${cat.name}</option>`;
                                 }).join('') : '<option value="">No categories loaded</option>'}
                             </select>
@@ -402,12 +310,6 @@ function renderWeekContent(ideas, events, schedule) {
                 </div>
             `;
             
-            // Debug the generated HTML for Spring Cleaning Checklist
-            if (idea.idea_title === 'Spring Cleaning Checklist') {
-                console.log('Generated HTML for Spring Cleaning Checklist:', ideaHtml);
-                console.log('Does HTML contain category-select?', ideaHtml.includes('category-select'));
-                console.log('Does HTML contain idea-categories?', ideaHtml.includes('idea-categories'));
-            }
             
             html += ideaHtml;
         });
@@ -669,7 +571,6 @@ function getPrimaryCategoryFromTags(tags) {
 
 // Category update functions
 async function updateIdeaCategory(ideaId, newCategory) {
-    console.log('updateIdeaCategory called with:', ideaId, newCategory);
     
     // Handle empty category selection
     if (!newCategory) {
@@ -678,14 +579,11 @@ async function updateIdeaCategory(ideaId, newCategory) {
     }
     
     // Find the new category color
-    console.log('Available categories:', categories);
     const newCategoryData = categories.find(cat => cat.name === newCategory);
     const newColor = newCategoryData ? newCategoryData.color : '#6b7280';
-    console.log('Category data found:', newCategoryData, 'Color:', newColor);
     
     // Update the visual styling immediately
     const selectElement = document.querySelector(`[data-idea-id="${ideaId}"] .category-select`);
-    console.log('Select element found:', selectElement);
     if (selectElement) {
         selectElement.style.backgroundColor = newColor;
         selectElement.style.borderColor = newColor;
@@ -693,11 +591,7 @@ async function updateIdeaCategory(ideaId, newCategory) {
     }
     
     try {
-        console.log('Calling dataLoader.updateIdeaCategory...');
-        console.log('DataLoader object:', dataLoader);
-        console.log('DataLoader.updateIdeaCategory method:', dataLoader.updateIdeaCategory);
         const result = await dataLoader.updateIdeaCategory(ideaId, newCategory);
-        console.log('DataLoader result:', result);
         showNotification(result.message, 'success');
         // Invalidate cache for this week
         cacheManager.invalidateWeek(currentYear, currentWeekNumber);
@@ -713,8 +607,6 @@ async function updateIdeaCategory(ideaId, newCategory) {
 window.updateIdeaCategory = updateIdeaCategory;
 
 async function updateEventCategory(eventId, newCategory) {
-    console.log('updateEventCategory called with:', eventId, newCategory);
-    
     // Handle empty category selection
     if (!newCategory) {
         showNotification('Please select a category', 'error');
@@ -722,14 +614,11 @@ async function updateEventCategory(eventId, newCategory) {
     }
     
     // Find the new category color
-    console.log('Available categories:', categories);
     const newCategoryData = categories.find(cat => cat.name === newCategory);
     const newColor = newCategoryData ? newCategoryData.color : '#6b7280';
-    console.log('Category data found:', newCategoryData, 'Color:', newColor);
     
     // Update the visual styling immediately
     const selectElement = document.querySelector(`[data-event-id="${eventId}"] .category-select`);
-    console.log('Select element found:', selectElement);
     if (selectElement) {
         selectElement.style.backgroundColor = newColor;
         selectElement.style.borderColor = newColor;
@@ -737,9 +626,7 @@ async function updateEventCategory(eventId, newCategory) {
     }
     
     try {
-        console.log('Calling dataLoader.updateEventCategory...');
         const result = await dataLoader.updateEventCategory(eventId, newCategory);
-        console.log('DataLoader result:', result);
         showNotification(result.message, 'success');
         // Invalidate cache for this week
         cacheManager.invalidateWeek(currentYear, currentWeekNumber);
@@ -846,7 +733,6 @@ async function deleteIdea(ideaId) {
 }
 
 function scheduleIdea(ideaId) {
-    console.log('Schedule idea:', ideaId);
     // TODO: Open scheduling modal
     showNotification('Schedule idea functionality coming soon!', 'info');
 }
@@ -943,7 +829,6 @@ async function deleteEvent(eventId) {
 }
 
 function scheduleEvent(eventId) {
-    console.log('Schedule event:', eventId);
     // TODO: Open scheduling modal
     showNotification('Schedule event functionality coming soon!', 'info');
 }
@@ -1187,7 +1072,6 @@ function handleDragStart(e) {
     e.dataTransfer.setDragImage(dragGhost, 0, 0);
     e.dataTransfer.effectAllowed = 'move';
     
-    console.log('Drag started:', draggedType, draggedId);
 }
 
 function handleDragEnd(e) {
@@ -1208,7 +1092,6 @@ function handleDragEnd(e) {
         cell.classList.remove('drag-over');
     });
     
-    console.log('Drag ended');
 }
 
 function handleDragOver(e) {
@@ -1239,7 +1122,6 @@ function handleDrop(e) {
     const targetWeek = weekCell.dataset.week;
     if (!targetWeek) return;
     
-    console.log('Drop:', draggedType, draggedId, 'to week', targetWeek);
     
     // Remove drag-over class
     weekCell.classList.remove('drag-over');
