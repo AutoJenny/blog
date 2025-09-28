@@ -2,7 +2,7 @@ import DateUtils from './calendar/utils/date-utils.js';
 import CONFIG from './calendar/utils/constants.js';
 import DataLoader from './calendar/api/data-loader.js';
 import CacheManager from './calendar/api/cache-manager.js';
-import { getPrimaryCategory, getPrimaryCategoryFromTags, showNotification, renderCalendarFallback, renderCalendarFromData } from './calendar/ui/calendar-renderer.js';
+import { getPrimaryCategory, getPrimaryCategoryFromTags, showNotification, renderCalendarFallback, renderCalendarFromData, renderIdeaItem, renderEventItem, renderScheduleItem } from './calendar/ui/calendar-renderer.js';
 import { DragDropManager } from './calendar/ui/drag-drop.js';
 
 // Global variables
@@ -186,61 +186,7 @@ function renderWeekContent(ideas, events, schedule) {
         html += '<div class="ideas-section">';
         ideas.forEach(idea => {
             const isScheduled = scheduledIdeaIds.has(idea.id);
-            if (isScheduled) {
-                // Skip perpetual ideas that are already scheduled - they'll show in the schedule section
-                return;
-            }
-            
-            
-            
-            const ideaHtml = `
-                <div class="idea-item ${idea.priority === 'mandatory' ? 'mandatory' : ''}" data-idea-id="${idea.id}" draggable="true">
-                    <div class="idea-content">
-                        <div class="idea-title">${idea.idea_title}</div>
-                        <div class="idea-categories">
-                            <select class="category-select" onchange="updateIdeaCategory(${idea.id}, this.value)" title="Change category" data-category-color="${(() => {
-                                const category = getPrimaryCategoryFromTags(idea.tags, categories);
-                                return category.color;
-                            })()}" style="background-color: ${(() => {
-                                const category = getPrimaryCategoryFromTags(idea.tags, categories);
-                                return category.name ? category.color : '#6b7280';
-                            })()}; color: white; border-color: ${(() => {
-                                const category = getPrimaryCategoryFromTags(idea.tags, categories);
-                                return category.name ? category.color : '#6b7280';
-                            })()};">
-                                <option value="" ${(() => {
-                                    const category = getPrimaryCategoryFromTags(idea.tags, categories);
-                                    return !category.name ? 'selected' : '';
-                                })()}>Select Category</option>
-                                ${categories.length > 0 ? categories.map(cat => {
-                                    // Get the primary category for this idea
-                                    const primaryCategory = getPrimaryCategoryFromTags(idea.tags, categories);
-                                    const isSelected = cat.name === primaryCategory.name;
-                                    return `<option value="${cat.name}" ${isSelected ? 'selected' : ''}>${cat.name}</option>`;
-                                }).join('') : '<option value="">No categories loaded</option>'}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="idea-actions">
-                        <select class="priority-select" onchange="updateIdeaPriority(${idea.id}, this.value)" title="Set priority">
-                            <option value="random" ${idea.priority === 'mandatory' ? '' : 'selected'}>Random</option>
-                            <option value="mandatory" ${idea.priority === 'mandatory' ? 'selected' : ''}>Mandatory</option>
-                        </select>
-                        <button class="btn-edit" onclick="editIdea(${idea.id})" title="Edit idea">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-delete" onclick="deleteIdea(${idea.id})" title="Delete idea">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                        <button class="btn-schedule" onclick="scheduleIdea(${idea.id})" title="Schedule this idea">
-                            <i class="fas fa-calendar-plus"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            
-            html += ideaHtml;
+            html += renderIdeaItem(idea, categories, isScheduled);
         });
         html += '</div>';
     }
@@ -250,55 +196,7 @@ function renderWeekContent(ideas, events, schedule) {
         html += '<div class="events-section">';
         events.forEach(event => {
             const isScheduled = scheduledEventIds.has(event.id);
-            if (isScheduled) {
-                // Skip perpetual events that are already scheduled - they'll show in the schedule section
-                return;
-            }
-            html += `
-                <div class="event-item ${event.priority === 'mandatory' ? 'mandatory' : ''}" data-event-id="${event.id}" draggable="true">
-                    <div class="event-content">
-                        <div class="event-title">${event.event_title}</div>
-                        <div class="event-categories">
-                            <select class="category-select" onchange="updateEventCategory(${event.id}, this.value)" title="Change category" data-category-color="${(() => {
-                                const category = getPrimaryCategoryFromTags(event.tags, categories);
-                                return category.color;
-                            })()}" style="background-color: ${(() => {
-                                const category = getPrimaryCategoryFromTags(event.tags, categories);
-                                return category.name ? category.color : '#6b7280';
-                            })()}; color: white; border-color: ${(() => {
-                                const category = getPrimaryCategoryFromTags(event.tags, categories);
-                                return category.name ? category.color : '#6b7280';
-                            })()};">
-                                <option value="" ${(() => {
-                                    const category = getPrimaryCategoryFromTags(event.tags, categories);
-                                    return !category.name ? 'selected' : '';
-                                })()}>Select Category</option>
-                                ${categories.length > 0 ? categories.map(cat => {
-                                    // Get the primary category for this event
-                                    const primaryCategory = getPrimaryCategoryFromTags(event.tags, categories);
-                                    const isSelected = cat.name === primaryCategory.name;
-                                    return `<option value="${cat.name}" ${isSelected ? 'selected' : ''}>${cat.name}</option>`;
-                                }).join('') : '<option value="">No categories loaded</option>'}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="event-actions">
-                        <select class="priority-select" onchange="updateEventPriority(${event.id}, this.value)" title="Set priority">
-                            <option value="random" ${event.priority === 'mandatory' ? '' : 'selected'}>Random</option>
-                            <option value="mandatory" ${event.priority === 'mandatory' ? 'selected' : ''}>Mandatory</option>
-                        </select>
-                        <button class="btn-edit" onclick="editEvent(${event.id})" title="Edit event">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-delete" onclick="deleteEvent(${event.id})" title="Delete event">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                        <button class="btn-schedule" onclick="scheduleEvent(${event.id})" title="Schedule this event">
-                            <i class="fas fa-calendar-plus"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
+            html += renderEventItem(event, categories, isScheduled);
         });
         html += '</div>';
     }
@@ -307,26 +205,7 @@ function renderWeekContent(ideas, events, schedule) {
     if (schedule && schedule.length > 0) {
         html += '<div class="schedule-section">';
         schedule.forEach(item => {
-            const title = item.idea_title || item.event_title || item.post_title || 'Scheduled Item';
-            html += `
-                <div class="schedule-item ${item.priority === 'mandatory' ? 'mandatory' : ''}" data-schedule-id="${item.id}" draggable="true">
-                    <div class="schedule-content">
-                        <div class="schedule-title">${title}</div>
-                    </div>
-                    <div class="schedule-actions">
-                        <select class="priority-select" onchange="updateSchedulePriority(${item.id}, this.value)" title="Set priority">
-                            <option value="random" ${item.priority === 'random' ? 'selected' : ''}>Random</option>
-                            <option value="mandatory" ${item.priority === 'mandatory' ? 'selected' : ''}>Mandatory</option>
-                        </select>
-                        <button class="btn-edit" onclick="editSchedule(${item.id})" title="Edit schedule">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-delete" onclick="deleteSchedule(${item.id})" title="Delete schedule">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
+            html += renderScheduleItem(item);
         });
         html += '</div>';
     }
