@@ -66,7 +66,7 @@
                 <div class="expanded-idea-display">
                     <div class="expanded-idea-header">
                         <h4>Expanded Idea</h4>
-                        <button class="btn btn-primary" onclick="generateExpandedIdea()" id="expand-btn">
+                        <button class="btn btn-primary" onclick="console.log('Button clicked'); generateExpandedIdea()" id="expand-btn">
                             <i class="fas fa-magic"></i> Generate Expanded Idea
                         </button>
                     </div>
@@ -541,9 +541,14 @@ async function loadIdeasForWeek() {
 }
 
 async function loadCurrentIdeaSeed() {
+    console.log('loadCurrentIdeaSeed called, postId:', window.postId);
     try {
-        const response = await fetch(`/planning/api/posts/${window.postId}/idea-seed`);
+        const url = `/planning/api/posts/${window.postId}/idea-seed`;
+        console.log('Fetching from URL:', url);
+        const response = await fetch(url);
+        console.log('Response status:', response.status);
         const data = await response.json();
+        console.log('Response data:', data);
         
         if (data.success) {
             displayCurrentIdeaSeed(data.idea_seed);
@@ -626,13 +631,16 @@ function displaySelectedIdea() {
 }
 
 function displayCurrentIdeaSeed(ideaSeed) {
+    console.log('displayCurrentIdeaSeed called with:', ideaSeed);
     const currentSeedDisplay = document.getElementById('current-idea-seed');
     
     if (!ideaSeed) {
+        console.log('No idea seed, showing no-idea-seed message');
         currentSeedDisplay.innerHTML = '<div class="no-idea-seed">No idea seed set</div>';
         return;
     }
     
+    console.log('Setting idea seed content');
     currentSeedDisplay.innerHTML = `
         <div class="idea-seed-content">${ideaSeed}</div>
     `;
@@ -819,16 +827,23 @@ function displayExpandedIdeaError(error) {
 }
 
 async function generateExpandedIdea() {
+    console.log('generateExpandedIdea called');
+    
     // Get the current idea seed
     const ideaSeedElement = document.getElementById('current-idea-seed');
+    console.log('ideaSeedElement:', ideaSeedElement);
+    
     const ideaSeedText = ideaSeedElement.querySelector('.idea-seed-content');
+    console.log('ideaSeedText:', ideaSeedText);
     
     if (!ideaSeedText || !ideaSeedText.textContent.trim()) {
+        console.log('No idea seed found');
         alert('Please select and confirm an idea seed first before generating an expanded idea.');
         return;
     }
     
     const ideaSeed = ideaSeedText.textContent.trim();
+    console.log('ideaSeed:', ideaSeed);
     
     // Show loading state
     const expandedContent = document.getElementById('expanded-idea-content');
