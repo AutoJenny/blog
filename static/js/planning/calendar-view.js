@@ -24,6 +24,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize calendar
     initializeCalendar();
     
+    // Initialize drag and drop
+    initializeDragAndDrop();
+    
 });
 
 async function loadCategories() {
@@ -1149,8 +1152,3 @@ async function saveNewEntry(weekNumber, title) {
 window.updateIdeaPriority = updateIdeaPriority;
 window.updateEventPriority = updateEventPriority;
 window.updateSchedulePriority = updateSchedulePriority;
-
-// Initialize drag and drop when calendar loads
-document.addEventListener('DOMContentLoaded', function() {
-    initializeDragAndDrop();
-});
