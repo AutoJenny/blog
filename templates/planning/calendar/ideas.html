@@ -52,6 +52,13 @@
                 <div id="current-idea-seed" class="idea-seed-display">
                     <!-- Current idea seed will appear here -->
                 </div>
+                
+                <div class="prompt-display">
+                    <h4>LLM Prompt in Use</h4>
+                    <div id="llm-prompt-display" class="prompt-content">
+                        <!-- LLM prompt will appear here -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -358,6 +365,46 @@
     border: 1px solid #334155;
     border-radius: 6px;
 }
+
+.prompt-display {
+    margin-top: 2rem;
+}
+
+.prompt-display h4 {
+    color: #f1f5f9;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.prompt-content {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #a855f7; /* Purple color for LLM prompts */
+    white-space: pre-wrap;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.prompt-content .system-prompt {
+    color: #a855f7;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.prompt-content .user-prompt {
+    color: #c084fc; /* Lighter purple for user instructions */
+    margin-bottom: 1rem;
+}
+
+.prompt-content .data-placeholder {
+    color: #fbbf24; /* Yellow for data placeholders */
+    font-style: italic;
+}
 </style>
 
 <script>
@@ -372,6 +419,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load ideas and current selection
     loadIdeasForWeek();
     loadCurrentIdeaSeed();
+    loadLLMPrompt();
 });
 
 let availableIdeas = [];
@@ -545,6 +593,70 @@ function openNewIdeaDialog() {
 function displayNoIdeas() {
     const ideasList = document.getElementById('available-ideas-list');
     ideasList.innerHTML = '<div class="no-ideas">No ideas available for this week</div>';
+}
+
+async function loadLLMPrompt() {
+    try {
+        const response = await fetch('/planning/api/llm/prompts/idea-expansion');
+        const data = await response.json();
+        
+        if (data.success) {
+            displayLLMPrompt(data.prompt);
+        } else {
+            console.error('Error loading LLM prompt:', data.error);
+            displayLLMPromptError(data.error);
+        }
+    } catch (error) {
+        console.error('Error loading LLM prompt:', error);
+        displayLLMPromptError('Failed to load LLM prompt');
+    }
+}
+
+function displayLLMPrompt(prompt) {
+    const promptDisplay = document.getElementById('llm-prompt-display');
+    
+    let promptHTML = '';
+    
+    // If there's a separate system prompt, display it first
+    if (prompt.system_prompt) {
+        promptHTML += `<div class="system-prompt">${escapeHtml(prompt.system_prompt)}</div>`;
+    }
+    
+    // Display the main prompt text
+    if (prompt.prompt_text) {
+        // Parse the prompt text to separate system and user parts
+        const promptText = prompt.prompt_text;
+        
+        // Check if it contains [system] markers
+        if (promptText.includes('[system]')) {
+            const parts = promptText.split('[system]');
+            for (let i = 1; i < parts.length; i++) {
+                const part = parts[i].trim();
+                if (part) {
+                    promptHTML += `<div class="system-prompt">${escapeHtml(part)}</div>`;
+                }
+            }
+        } else {
+            // If no [system] markers, display as user prompt
+            promptHTML += `<div class="user-prompt">${escapeHtml(promptText)}</div>`;
+        }
+    }
+    
+    // Highlight data placeholders
+    promptHTML = promptHTML.replace(/\[data:(\w+)\]/g, '<span class="data-placeholder">[data:$1]</span>');
+    
+    promptDisplay.innerHTML = promptHTML;
+}
+
+function displayLLMPromptError(error) {
+    const promptDisplay = document.getElementById('llm-prompt-display');
+    promptDisplay.innerHTML = `<div class="no-idea-seed">Error loading prompt: ${error}</div>`;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 </script>
 {% endblock %}
