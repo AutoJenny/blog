@@ -1514,7 +1514,7 @@ def api_get_idea_expansion_prompt():
                 },
                 'llm_config': {
                     'provider': 'Ollama',
-                    'model': 'llama3.1:8b',
+                    'model': 'llama3.2:latest',
                     'temperature': 0.7,
                     'max_tokens': 2000,
                     'timeout': 60
@@ -1587,7 +1587,7 @@ def api_generate_expanded_idea(post_id):
             messages.append({'role': 'user', 'content': prompt_text})
             
             # Execute LLM request
-            result = llm_service.execute_llm_request('ollama', 'llama3.1:8b', messages)
+            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
             
             if 'error' in result:
                 return jsonify({'error': f'LLM generation failed: {result["error"]}'}), 500
