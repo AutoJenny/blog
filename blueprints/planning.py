@@ -1511,6 +1511,13 @@ def api_get_idea_expansion_prompt():
                     'description': prompt_data['description'],
                     'system_prompt': prompt_data['system_prompt'],
                     'prompt_text': prompt_data['prompt_text']
+                },
+                'llm_config': {
+                    'provider': 'Ollama',
+                    'model': 'llama3.1:8b',
+                    'temperature': 0.7,
+                    'max_tokens': 2000,
+                    'timeout': 60
                 }
             })
             

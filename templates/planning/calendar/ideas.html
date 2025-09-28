@@ -55,6 +55,9 @@
                 
                 <div class="prompt-display">
                     <h4>LLM Prompt in Use</h4>
+                    <div id="llm-provider-info" class="llm-provider-info">
+                        <!-- LLM provider, model, and settings will appear here -->
+                    </div>
                     <div id="llm-prompt-display" class="prompt-content">
                         <!-- LLM prompt will appear here -->
                     </div>
@@ -388,6 +391,37 @@
     font-size: 1.1rem;
 }
 
+.llm-provider-info {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.llm-provider-info .provider-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.llm-provider-info .provider-label {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.llm-provider-info .provider-value {
+    color: #f1f5f9;
+    font-weight: 500;
+}
+
 .prompt-content {
     background: #1e293b;
     border: 1px solid #334155;
@@ -664,6 +698,9 @@ async function loadLLMPrompt() {
         
         if (data.success) {
             displayLLMPrompt(data.prompt);
+            if (data.llm_config) {
+                displayLLMConfig(data.llm_config);
+            }
         } else {
             console.error('Error loading LLM prompt:', data.error);
             displayLLMPromptError(data.error);
@@ -713,6 +750,33 @@ function displayLLMPrompt(prompt) {
 function displayLLMPromptError(error) {
     const promptDisplay = document.getElementById('llm-prompt-display');
     promptDisplay.innerHTML = `<div class="no-idea-seed">Error loading prompt: ${error}</div>`;
+}
+
+function displayLLMConfig(config) {
+    const providerInfo = document.getElementById('llm-provider-info');
+    
+    providerInfo.innerHTML = `
+        <div class="provider-item">
+            <div class="provider-label">Provider</div>
+            <div class="provider-value">${config.provider}</div>
+        </div>
+        <div class="provider-item">
+            <div class="provider-label">Model</div>
+            <div class="provider-value">${config.model}</div>
+        </div>
+        <div class="provider-item">
+            <div class="provider-label">Temperature</div>
+            <div class="provider-value">${config.temperature}</div>
+        </div>
+        <div class="provider-item">
+            <div class="provider-label">Max Tokens</div>
+            <div class="provider-value">${config.max_tokens}</div>
+        </div>
+        <div class="provider-item">
+            <div class="provider-label">Timeout</div>
+            <div class="provider-value">${config.timeout}s</div>
+        </div>
+    `;
 }
 
 function escapeHtml(text) {
