@@ -1517,3 +1517,98 @@ def api_get_idea_expansion_prompt():
     except Exception as e:
         logger.error(f"Error fetching idea expansion prompt: {e}")
         return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/expanded-idea', methods=['GET'])
+def api_get_expanded_idea(post_id):
+    """Get the current expanded idea for a post"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT expanded_idea 
+                FROM post_development 
+                WHERE post_id = %s
+            """, (post_id,))
+            
+            result = cursor.fetchone()
+            expanded_idea = result['expanded_idea'] if result else None
+            
+            return jsonify({
+                'success': True,
+                'post_id': post_id,
+                'expanded_idea': expanded_idea
+            })
+            
+    except Exception as e:
+        logger.error(f"Error fetching expanded idea for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/expanded-idea', methods=['POST'])
+def api_generate_expanded_idea(post_id):
+    """Generate expanded idea using LLM"""
+    try:
+        data = request.get_json()
+        idea_seed = data.get('idea_seed', '')
+        
+        if not idea_seed:
+            return jsonify({'error': 'Idea seed is required'}), 400
+        
+        # Get the LLM prompt
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, name, system_prompt, prompt_text
+                FROM llm_prompt 
+                WHERE name = 'Scottish Idea Expansion'
+                ORDER BY updated_at DESC
+                LIMIT 1
+            """)
+            
+            prompt_data = cursor.fetchone()
+            
+            if not prompt_data:
+                return jsonify({'error': 'Idea expansion prompt not found'}), 404
+            
+            # Build the prompt with the idea seed
+            prompt_text = prompt_data['prompt_text']
+            if '[data:idea_seed]' in prompt_text:
+                prompt_text = prompt_text.replace('[data:idea_seed]', idea_seed)
+            
+            # Prepare messages for LLM
+            messages = []
+            if prompt_data['system_prompt']:
+                messages.append({'role': 'system', 'content': prompt_data['system_prompt']})
+            
+            messages.append({'role': 'user', 'content': prompt_text})
+            
+            # Execute LLM request
+            result = llm_service.execute_llm_request('ollama', 'llama3.1:8b', messages)
+            
+            if 'error' in result:
+                return jsonify({'error': f'LLM generation failed: {result["error"]}'}), 500
+            
+            expanded_idea = result['content']
+            
+            # Save to database
+            cursor.execute("""
+                UPDATE post_development 
+                SET expanded_idea = %s, updated_at = CURRENT_TIMESTAMP
+                WHERE post_id = %s
+            """, (expanded_idea, post_id))
+            
+            if cursor.rowcount == 0:
+                # Create post_development record if it doesn't exist
+                cursor.execute("""
+                    INSERT INTO post_development (post_id, expanded_idea)
+                    VALUES (%s, %s)
+                """, (post_id, expanded_idea))
+            
+            cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Expanded idea generated successfully',
+                'expanded_idea': expanded_idea
+            })
+            
+    except Exception as e:
+        logger.error(f"Error generating expanded idea for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
