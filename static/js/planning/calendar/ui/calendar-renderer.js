@@ -12,6 +12,9 @@
  * Currently placeholder for future implementation
  */
 
+import DateUtils from '../utils/date-utils.js';
+import CONFIG from '../utils/constants.js';
+
 /**
  * Get primary category HTML from categories array
  * @param {Array} categories - Array of category objects
