@@ -23,35 +23,37 @@
         <div class="ideas-content">
             <div class="idea-generator">
                 <h3>Generate Ideas</h3>
-                <div class="form-group">
-                    <label for="seasonal-context">Seasonal Context</label>
-                    <select id="seasonal-context">
-                        <option value="spring">Spring</option>
-                        <option value="summer">Summer</option>
-                        <option value="autumn">Autumn</option>
-                        <option value="winter">Winter</option>
-                        <option value="any">Any Season</option>
-                    </select>
+                <div class="week-info">
+                    <p><strong>Week {{ week_number }} ({{ week_dates }})</strong></p>
                 </div>
-                <div class="form-group">
-                    <label for="content-type">Content Type</label>
-                    <select id="content-type">
-                        <option value="tutorial">Tutorial</option>
-                        <option value="guide">Guide</option>
-                        <option value="list">List</option>
-                        <option value="review">Review</option>
-                        <option value="opinion">Opinion</option>
-                    </select>
+                
+                <div class="available-ideas">
+                    <h4>Available Ideas for This Week</h4>
+                    <div id="available-ideas-list" class="ideas-list">
+                        <!-- Available ideas will appear here -->
+                    </div>
                 </div>
-                <button class="btn btn-primary" onclick="generateIdeas()">
-                    <i class="fas fa-magic"></i> Generate Ideas
-                </button>
+                
+                <div class="selected-idea">
+                    <h4>Selected Idea</h4>
+                    <div id="selected-idea-display" class="selected-idea-content">
+                        <!-- Selected idea will appear here -->
+                    </div>
+                    <div class="selected-idea-actions">
+                        <button class="btn btn-success" onclick="confirmSelection()" id="confirm-btn" disabled>
+                            <i class="fas fa-check"></i> Confirm Selection
+                        </button>
+                        <button class="btn btn-secondary" onclick="openNewIdeaDialog()">
+                            <i class="fas fa-plus"></i> New Idea
+                        </button>
+                    </div>
+                </div>
             </div>
             
             <div class="ideas-results">
-                <h3>Generated Ideas</h3>
-                <div id="ideas-list" class="ideas-list">
-                    <!-- Generated ideas will appear here -->
+                <h3>Current Idea Seed</h3>
+                <div id="current-idea-seed" class="idea-seed-display">
+                    <!-- Current idea seed will appear here -->
                 </div>
             </div>
         </div>
@@ -206,6 +208,172 @@
 .btn-secondary:hover {
     background: #4b5563;
 }
+
+.week-info {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.week-info p {
+    margin: 0;
+    color: #f1f5f9;
+    font-size: 1.1rem;
+}
+
+.available-ideas, .selected-idea {
+    margin-bottom: 2rem;
+}
+
+.available-ideas h4, .selected-idea h4 {
+    color: #f1f5f9;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.idea-item {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: border-color 0.2s;
+}
+
+.idea-item:hover {
+    border-color: #475569;
+}
+
+.idea-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.idea-title {
+    color: #f1f5f9;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.idea-priority {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.priority-mandatory {
+    background: #dc2626;
+    color: white;
+}
+
+.priority-random {
+    background: #2563eb;
+    color: white;
+}
+
+.priority-custom {
+    background: #059669;
+    color: white;
+}
+
+.idea-description {
+    color: #cbd5e1;
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+}
+
+.idea-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.idea-context, .idea-type {
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.selected-idea-content {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.selected-idea-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.selected-idea-title {
+    color: #f1f5f9;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.selected-idea-priority {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.selected-idea-description {
+    color: #cbd5e1;
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+}
+
+.selected-idea-meta {
+    display: flex;
+    gap: 1rem;
+}
+
+.selected-idea-context, .selected-idea-type {
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.selected-idea-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.idea-seed-display {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 1rem;
+    min-height: 100px;
+}
+
+.idea-seed-content {
+    color: #f1f5f9;
+    line-height: 1.6;
+}
+
+.no-ideas, .no-selection, .no-idea-seed {
+    color: #94a3b8;
+    font-style: italic;
+    text-align: center;
+    padding: 2rem;
+}
+
+.no-ideas {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 6px;
+}
 </style>
 
 <script>
@@ -215,59 +383,73 @@ document.addEventListener('DOMContentLoaded', function() {
     window.currentStage = 'calendar';
     window.currentSubstage = 'ideas';
     window.postId = {{ post_id }};
+    window.weekNumber = {{ week_number }};
+    
+    // Load ideas and current selection
+    loadIdeasForWeek();
+    loadCurrentIdeaSeed();
 });
 
-function generateIdeas() {
-    const seasonalContext = document.getElementById('seasonal-context').value;
-    const contentType = document.getElementById('content-type').value;
-    
-    // Show loading state
-    const ideasList = document.getElementById('ideas-list');
-    ideasList.innerHTML = '<div class="loading">Generating ideas...</div>';
-    
-    // Simulate AI generation (replace with actual API call)
-    setTimeout(() => {
-        const mockIdeas = [
-            {
-                title: "Spring Gardening Tips for Beginners",
-                description: "A comprehensive guide to starting your first garden in spring, covering soil preparation, plant selection, and maintenance tips.",
-                type: "tutorial",
-                season: "spring"
-            },
-            {
-                title: "10 Spring Cleaning Hacks That Actually Work",
-                description: "Practical and effective spring cleaning tips to refresh your home and boost productivity.",
-                type: "list",
-                season: "spring"
-            },
-            {
-                title: "The Science Behind Spring Allergies",
-                description: "An informative piece explaining why allergies are worse in spring and how to manage them effectively.",
-                type: "guide",
-                season: "spring"
-            }
-        ];
+let availableIdeas = [];
+let selectedIdea = null;
+
+async function loadIdeasForWeek() {
+    try {
+        const response = await fetch(`/planning/api/calendar/ideas/week/${window.weekNumber}`);
+        const data = await response.json();
         
-        displayIdeas(mockIdeas);
-    }, 2000);
+        if (data.success) {
+            availableIdeas = data.ideas;
+            displayAvailableIdeas();
+            autoSelectIdea();
+        } else {
+            console.error('Error loading ideas:', data.error);
+            displayNoIdeas();
+        }
+    } catch (error) {
+        console.error('Error loading ideas:', error);
+        displayNoIdeas();
+    }
 }
 
-function displayIdeas(ideas) {
-    const ideasList = document.getElementById('ideas-list');
+async function loadCurrentIdeaSeed() {
+    try {
+        const response = await fetch(`/planning/api/posts/${window.postId}/idea-seed`);
+        const data = await response.json();
+        
+        if (data.success) {
+            displayCurrentIdeaSeed(data.idea_seed);
+        }
+    } catch (error) {
+        console.error('Error loading current idea seed:', error);
+    }
+}
+
+function displayAvailableIdeas() {
+    const ideasList = document.getElementById('available-ideas-list');
     ideasList.innerHTML = '';
     
-    ideas.forEach((idea, index) => {
+    if (availableIdeas.length === 0) {
+        ideasList.innerHTML = '<div class="no-ideas">No ideas available for this week</div>';
+        return;
+    }
+    
+    availableIdeas.forEach((idea, index) => {
         const ideaItem = document.createElement('div');
         ideaItem.className = 'idea-item';
         ideaItem.innerHTML = `
-            <div class="idea-title">${idea.title}</div>
-            <div class="idea-description">${idea.description}</div>
+            <div class="idea-header">
+                <div class="idea-title">${idea.idea_title}</div>
+                <div class="idea-priority priority-${idea.priority}">${idea.priority}</div>
+            </div>
+            <div class="idea-description">${idea.idea_description || 'No description available'}</div>
+            <div class="idea-meta">
+                <span class="idea-context">${idea.seasonal_context || 'No context'}</span>
+                <span class="idea-type">${idea.content_type || 'No type'}</span>
+            </div>
             <div class="idea-actions">
-                <button class="btn btn-success" onclick="selectIdea(${index})">
+                <button class="btn btn-primary" onclick="selectIdea(${index})">
                     <i class="fas fa-check"></i> Select
-                </button>
-                <button class="btn btn-secondary" onclick="refineIdea(${index})">
-                    <i class="fas fa-edit"></i> Refine
                 </button>
             </div>
         `;
@@ -275,14 +457,110 @@ function displayIdeas(ideas) {
     });
 }
 
-function selectIdea(index) {
-    console.log('Selecting idea:', index);
-    // Implement idea selection
+function autoSelectIdea() {
+    // Auto-select mandatory idea if available, otherwise random
+    const mandatoryIdeas = availableIdeas.filter(idea => idea.priority === 'mandatory');
+    const randomIdeas = availableIdeas.filter(idea => idea.priority === 'random');
+    
+    if (mandatoryIdeas.length > 0) {
+        selectIdea(availableIdeas.indexOf(mandatoryIdeas[0]));
+    } else if (randomIdeas.length > 0) {
+        const randomIndex = Math.floor(Math.random() * randomIdeas.length);
+        selectIdea(availableIdeas.indexOf(randomIdeas[randomIndex]));
+    }
 }
 
-function refineIdea(index) {
-    console.log('Refining idea:', index);
-    // Implement idea refinement
+function selectIdea(index) {
+    selectedIdea = availableIdeas[index];
+    displaySelectedIdea();
+    document.getElementById('confirm-btn').disabled = false;
+}
+
+function displaySelectedIdea() {
+    const selectedDisplay = document.getElementById('selected-idea-display');
+    
+    if (!selectedIdea) {
+        selectedDisplay.innerHTML = '<div class="no-selection">No idea selected</div>';
+        return;
+    }
+    
+    selectedDisplay.innerHTML = `
+        <div class="selected-idea-header">
+            <div class="selected-idea-title">${selectedIdea.idea_title}</div>
+            <div class="selected-idea-priority priority-${selectedIdea.priority}">${selectedIdea.priority}</div>
+        </div>
+        <div class="selected-idea-description">${selectedIdea.idea_description || 'No description available'}</div>
+        <div class="selected-idea-meta">
+            <span class="selected-idea-context">${selectedIdea.seasonal_context || 'No context'}</span>
+            <span class="selected-idea-type">${selectedIdea.content_type || 'No type'}</span>
+        </div>
+    `;
+}
+
+function displayCurrentIdeaSeed(ideaSeed) {
+    const currentSeedDisplay = document.getElementById('current-idea-seed');
+    
+    if (!ideaSeed) {
+        currentSeedDisplay.innerHTML = '<div class="no-idea-seed">No idea seed set</div>';
+        return;
+    }
+    
+    currentSeedDisplay.innerHTML = `
+        <div class="idea-seed-content">${ideaSeed}</div>
+    `;
+}
+
+async function confirmSelection() {
+    if (!selectedIdea) {
+        alert('Please select an idea first');
+        return;
+    }
+    
+    try {
+        const ideaSeedText = `${selectedIdea.idea_title}: ${selectedIdea.idea_description || 'No description available'}`;
+        
+        const response = await fetch(`/planning/api/posts/${window.postId}/idea-seed`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                idea_seed: ideaSeedText
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            displayCurrentIdeaSeed(data.idea_seed);
+            alert('Idea seed updated successfully!');
+        } else {
+            alert('Error updating idea seed: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Error confirming selection:', error);
+        alert('Error updating idea seed: ' + error.message);
+    }
+}
+
+function openNewIdeaDialog() {
+    const customIdea = prompt('Enter your custom idea:');
+    if (customIdea && customIdea.trim()) {
+        selectedIdea = {
+            idea_title: 'Custom Idea',
+            idea_description: customIdea.trim(),
+            seasonal_context: 'Custom',
+            content_type: 'Custom',
+            priority: 'custom'
+        };
+        displaySelectedIdea();
+        document.getElementById('confirm-btn').disabled = false;
+    }
+}
+
+function displayNoIdeas() {
+    const ideasList = document.getElementById('available-ideas-list');
+    ideasList.innerHTML = '<div class="no-ideas">No ideas available for this week</div>';
 }
 </script>
 {% endblock %}
