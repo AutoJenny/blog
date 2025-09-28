@@ -16,8 +16,8 @@
     {% block process_content %}
     <div class="calendar-view">
         <div class="calendar-header">
-            <h2>Calendar View</h2>
-            <p>Weekly view of your content schedule - 52 weeks organized by month</p>
+            <h2 id="calendar-title">Calendar View</h2>
+            <p id="calendar-subtitle">Weekly view of your content schedule - 52 weeks organized by month</p>
             <div class="calendar-actions">
                 <a href="{{ url_for('planning.categories_manage') }}" class="btn-secondary">
                     <i class="fas fa-tags mr-2"></i>Manage Categories
