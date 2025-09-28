@@ -8,17 +8,9 @@ INFO:werkzeug:[33mPress CTRL+C to quit[0m
 INFO:werkzeug: * Restarting with stat
 WARNING:werkzeug: * Debugger is active!
 INFO:werkzeug: * Debugger PIN: 830-133-383
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:00:08] "GET / HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:00:17] "GET /health HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:01:46] "GET / HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:01:46] "GET / HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:01:47] "GET /api/post/53 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:01:47] "GET /api/post_development/53 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:04:06] "GET / HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:04:06] "GET / HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:04:07] "GET /api/post/53 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:04:07] "GET /api/post_development/53 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [25/Sep/2025 15:05:03] "GET / HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [25/Sep/2025 15:05:03] "GET / HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [25/Sep/2025 15:05:03] "GET /api/post/53 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [25/Sep/2025 15:05:03] "GET /api/post_development/53 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [27/Sep/2025 22:27:04] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [27/Sep/2025 22:27:12] "GET /health HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [27/Sep/2025 22:27:29] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [27/Sep/2025 22:27:29] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [27/Sep/2025 22:27:29] "GET /api/post/53 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [27/Sep/2025 22:27:29] "GET /api/post_development/53 HTTP/1.1" 200 -

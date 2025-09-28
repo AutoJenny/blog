@@ -8,33 +8,19 @@ INFO:werkzeug:[33mPress CTRL+C to quit[0m
 INFO:werkzeug: * Restarting with stat
 WARNING:werkzeug: * Debugger is active!
 INFO:werkzeug: * Debugger PIN: 830-133-383
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 15:59:53] "GET / HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:00:17] "GET /health HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:01:46] "GET / HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:01:46] "GET / HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:01:47] "GET /api/posts HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:01:47] "GET /api/daily-product-posts/today-status HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:01:47] "[31m[1mGET /api/syndication/pieces HTTP/1.1[0m" 400 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:01:47] "GET /api/social-media/timeline HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:01:47] "GET /api/syndication/facebook/credentials HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:04:06] "GET / HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:04:06] "GET / HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:04:07] "GET /api/posts HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:04:07] "GET /api/daily-product-posts/today-status HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:04:07] "[31m[1mGET /api/syndication/pieces HTTP/1.1[0m" 400 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:04:07] "GET /api/social-media/timeline HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:04:07] "GET /api/syndication/facebook/credentials HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:05:17] "[33mGET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1[0m" 404 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:05:24] "[33mGET /launchpad/api/syndication/llm-prompts/1 HTTP/1.1[0m" 404 -
-INFO:werkzeug:127.0.0.1 - - [24/Sep/2025 16:05:30] "[33mGET /launchpad/syndication/facebook/product_post HTTP/1.1[0m" 404 -
-INFO:werkzeug: * Detected change in '/Users/autojenny/Documents/projects/blog/blog-launchpad/app.py', reloading
-INFO:werkzeug: * Restarting with stat
-WARNING:werkzeug: * Debugger is active!
-INFO:werkzeug: * Debugger PIN: 830-133-383
-INFO:werkzeug:127.0.0.1 - - [25/Sep/2025 15:05:03] "GET / HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [25/Sep/2025 15:05:03] "GET / HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [25/Sep/2025 15:05:03] "GET /api/posts HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [25/Sep/2025 15:05:03] "GET /api/daily-product-posts/today-status HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [25/Sep/2025 15:05:03] "[31m[1mGET /api/syndication/pieces HTTP/1.1[0m" 400 -
-INFO:werkzeug:127.0.0.1 - - [25/Sep/2025 15:05:03] "GET /api/social-media/timeline HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [25/Sep/2025 15:05:04] "GET /api/syndication/facebook/credentials HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [27/Sep/2025 22:26:49] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [27/Sep/2025 22:26:59] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [27/Sep/2025 22:26:59] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [27/Sep/2025 22:26:59] "GET /api/posts HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [27/Sep/2025 22:26:59] "GET /api/daily-product-posts/today-status HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [27/Sep/2025 22:26:59] "[31m[1mGET /api/syndication/pieces HTTP/1.1[0m" 400 -
+INFO:werkzeug:127.0.0.1 - - [27/Sep/2025 22:26:59] "GET /api/social-media/timeline HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [27/Sep/2025 22:26:59] "GET /api/syndication/facebook/credentials HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [27/Sep/2025 22:27:12] "GET /health HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [27/Sep/2025 22:27:29] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [27/Sep/2025 22:27:29] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [27/Sep/2025 22:27:29] "GET /api/posts HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [27/Sep/2025 22:27:29] "GET /api/daily-product-posts/today-status HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [27/Sep/2025 22:27:29] "[31m[1mGET /api/syndication/pieces HTTP/1.1[0m" 400 -
+INFO:werkzeug:127.0.0.1 - - [27/Sep/2025 22:27:29] "GET /api/social-media/timeline HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [27/Sep/2025 22:27:29] "GET /api/syndication/facebook/credentials HTTP/1.1" 200 -
