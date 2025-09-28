@@ -2,7 +2,7 @@ import DateUtils from './calendar/utils/date-utils.js';
 import CONFIG from './calendar/utils/constants.js';
 import DataLoader from './calendar/api/data-loader.js';
 import CacheManager from './calendar/api/cache-manager.js';
-import { getPrimaryCategory } from './calendar/ui/calendar-renderer.js';
+import { getPrimaryCategory, getPrimaryCategoryFromTags } from './calendar/ui/calendar-renderer.js';
 
 // Global variables
 let currentYear = new Date().getFullYear();
@@ -271,22 +271,22 @@ function renderWeekContent(ideas, events, schedule) {
                         <div class="idea-title">${idea.idea_title}</div>
                         <div class="idea-categories">
                             <select class="category-select" onchange="updateIdeaCategory(${idea.id}, this.value)" title="Change category" data-category-color="${(() => {
-                                const category = getPrimaryCategoryFromTags(idea.tags);
+                                const category = getPrimaryCategoryFromTags(idea.tags, categories);
                                 return category.color;
                             })()}" style="background-color: ${(() => {
-                                const category = getPrimaryCategoryFromTags(idea.tags);
+                                const category = getPrimaryCategoryFromTags(idea.tags, categories);
                                 return category.name ? category.color : '#6b7280';
                             })()}; color: white; border-color: ${(() => {
-                                const category = getPrimaryCategoryFromTags(idea.tags);
+                                const category = getPrimaryCategoryFromTags(idea.tags, categories);
                                 return category.name ? category.color : '#6b7280';
                             })()};">
                                 <option value="" ${(() => {
-                                    const category = getPrimaryCategoryFromTags(idea.tags);
+                                    const category = getPrimaryCategoryFromTags(idea.tags, categories);
                                     return !category.name ? 'selected' : '';
                                 })()}>Select Category</option>
                                 ${categories.length > 0 ? categories.map(cat => {
                                     // Get the primary category for this idea
-                                    const primaryCategory = getPrimaryCategoryFromTags(idea.tags);
+                                    const primaryCategory = getPrimaryCategoryFromTags(idea.tags, categories);
                                     const isSelected = cat.name === primaryCategory.name;
                                     return `<option value="${cat.name}" ${isSelected ? 'selected' : ''}>${cat.name}</option>`;
                                 }).join('') : '<option value="">No categories loaded</option>'}
@@ -332,22 +332,22 @@ function renderWeekContent(ideas, events, schedule) {
                         <div class="event-title">${event.event_title}</div>
                         <div class="event-categories">
                             <select class="category-select" onchange="updateEventCategory(${event.id}, this.value)" title="Change category" data-category-color="${(() => {
-                                const category = getPrimaryCategoryFromTags(event.tags);
+                                const category = getPrimaryCategoryFromTags(event.tags, categories);
                                 return category.color;
                             })()}" style="background-color: ${(() => {
-                                const category = getPrimaryCategoryFromTags(event.tags);
+                                const category = getPrimaryCategoryFromTags(event.tags, categories);
                                 return category.name ? category.color : '#6b7280';
                             })()}; color: white; border-color: ${(() => {
-                                const category = getPrimaryCategoryFromTags(event.tags);
+                                const category = getPrimaryCategoryFromTags(event.tags, categories);
                                 return category.name ? category.color : '#6b7280';
                             })()};">
                                 <option value="" ${(() => {
-                                    const category = getPrimaryCategoryFromTags(event.tags);
+                                    const category = getPrimaryCategoryFromTags(event.tags, categories);
                                     return !category.name ? 'selected' : '';
                                 })()}>Select Category</option>
                                 ${categories.length > 0 ? categories.map(cat => {
                                     // Get the primary category for this event
-                                    const primaryCategory = getPrimaryCategoryFromTags(event.tags);
+                                    const primaryCategory = getPrimaryCategoryFromTags(event.tags, categories);
                                     const isSelected = cat.name === primaryCategory.name;
                                     return `<option value="${cat.name}" ${isSelected ? 'selected' : ''}>${cat.name}</option>`;
                                 }).join('') : '<option value="">No categories loaded</option>'}
@@ -515,42 +515,6 @@ function renderCalendarFallback() {
 
 // Helper function to get primary category (Holiday if exists, otherwise first available)
 
-// Helper function to get primary category from tags array (for ideas/events)
-function getPrimaryCategoryFromTags(tags) {
-    if (!tags || tags.length === 0) {
-        return { name: '', color: '#6b7280' };
-    }
-    
-    // Look for Holiday category first
-    const holidayTag = tags.find(tag => 
-        tag.toLowerCase().includes('holiday') || 
-        tag.toLowerCase().includes('festival') ||
-        tag.toLowerCase().includes('celebration')
-    );
-    
-    const categoryName = holidayTag || tags[0] || '';
-    
-    // Find the category in our loaded categories
-    const category = categories.find(cat => cat.name === categoryName);
-    
-    // If no exact match, try case-insensitive match
-    if (!category) {
-        const caseInsensitiveCategory = categories.find(cat => 
-            cat.name.toLowerCase() === categoryName.toLowerCase()
-        );
-        if (caseInsensitiveCategory) {
-            return {
-                name: caseInsensitiveCategory.name,
-                color: caseInsensitiveCategory.color
-            };
-        }
-    }
-    
-    return {
-        name: categoryName,
-        color: category ? category.color : '#6b7280'
-    };
-}
 
 // Category update functions
 async function updateIdeaCategory(ideaId, newCategory) {
