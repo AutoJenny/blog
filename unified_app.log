@@ -17215,3 +17215,62 @@
 2025-09-28 19:42:46,325 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
 2025-09-28 19:42:46,325 - blueprints.planning - INFO - Calendar schedule entry: {'id': 21, 'year': 2025, 'week_number': 39, 'idea_id': 107, 'event_id': None, 'post_id': 60, 'status': 'planned', 'scheduled_date': datetime.date(2025, 9, 28), 'notes': 'Test calendar schedule entry', 'is_override': False, 'original_idea_id': None, 'created_at': datetime.datetime(2025, 9, 28, 19, 42, 42, 150176), 'updated_at': datetime.datetime(2025, 9, 28, 19, 42, 42, 150176), 'priority': 'mandatory', 'idea_title': "St Andrew's Day - Scotland's Patron Saint", 'event_title': None}
 2025-09-28 19:42:46,325 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:42:46] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-09-28 19:42:52,740 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:42:52] "GET /planning/posts/60/calendar/ideas HTTP/1.1" 200 -
+2025-09-28 19:48:38,008 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:48:38] "GET /planning/posts/60/calendar/ideas HTTP/1.1" 200 -
+2025-09-28 19:48:38,061 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:48:38] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-28 19:48:38,062 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:48:38] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-28 19:48:38,062 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:48:38] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-28 19:48:38,062 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:48:38] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-28 19:48:38,063 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:48:38] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-09-28 19:48:38,063 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:48:38] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-28 19:48:38,066 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:48:38] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-28 19:48:38,067 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:48:38] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-28 19:48:38,081 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:48:38] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-28 19:48:38,193 - config.database - INFO - Database connection established
+2025-09-28 19:48:38,199 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
+2025-09-28 19:48:38,200 - blueprints.planning - INFO - Calendar schedule entry: {'id': 21, 'year': 2025, 'week_number': 39, 'idea_id': 107, 'event_id': None, 'post_id': 60, 'status': 'planned', 'scheduled_date': datetime.date(2025, 9, 28), 'notes': 'Test calendar schedule entry', 'is_override': False, 'original_idea_id': None, 'created_at': datetime.datetime(2025, 9, 28, 19, 42, 42, 150176), 'updated_at': datetime.datetime(2025, 9, 28, 19, 42, 42, 150176), 'priority': 'mandatory', 'idea_title': "St Andrew's Day - Scotland's Patron Saint", 'event_title': None}
+2025-09-28 19:48:38,200 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:48:38] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-09-28 19:51:04,234 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:04] "GET /planning/posts/60/calendar/ideas HTTP/1.1" 200 -
+2025-09-28 19:51:04,274 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:04] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-28 19:51:04,277 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:04] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-28 19:51:04,278 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:04] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-28 19:51:04,278 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:04] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-09-28 19:51:04,281 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:04] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-28 19:51:04,282 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:04] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-28 19:51:04,282 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:04] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-28 19:51:04,283 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:04] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-28 19:51:04,290 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:04] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-28 19:51:04,404 - config.database - INFO - Database connection established
+2025-09-28 19:51:04,410 - blueprints.planning - ERROR - Error fetching post data: column cs.idea_id does not exist
+LINE 4:                 LEFT JOIN calendar_ideas ci ON cs.idea_id = ...
+                                                       ^
+2025-09-28 19:51:04,411 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:04] "[35m[1mGET /planning/api/posts/60 HTTP/1.1[0m" 500 -
+2025-09-28 19:51:08,146 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-28 19:51:08,398 - werkzeug - WARNING -  * Debugger is active!
+2025-09-28 19:51:08,403 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-28 19:51:20,172 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-28 19:51:20,418 - werkzeug - WARNING -  * Debugger is active!
+2025-09-28 19:51:20,422 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-28 19:51:36,487 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-28 19:51:36,749 - werkzeug - WARNING -  * Debugger is active!
+2025-09-28 19:51:36,754 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-28 19:51:37,737 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:37] "GET /planning/posts/60/calendar/ideas HTTP/1.1" 200 -
+2025-09-28 19:51:37,771 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:37] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-28 19:51:37,772 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:37] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-09-28 19:51:37,774 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:37] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-28 19:51:37,774 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:37] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-28 19:51:37,775 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:37] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-28 19:51:37,775 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:37] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-28 19:51:37,775 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:37] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-28 19:51:37,776 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:37] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-28 19:51:37,786 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:37] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-28 19:51:37,908 - config.database - INFO - Database connection established
+2025-09-28 19:51:37,912 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 0 results
+2025-09-28 19:51:37,912 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:37] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-09-28 19:51:39,560 - config.database - INFO - Database connection established
+2025-09-28 19:51:39,563 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 0 results
+2025-09-28 19:51:39,563 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:39] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-09-28 19:51:51,613 - config.database - INFO - Database connection established
+2025-09-28 19:51:51,619 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
+2025-09-28 19:51:51,619 - blueprints.planning - INFO - Calendar schedule entry: {'id': 1, 'year': 2025, 'week_number': 39, 'post_id': 60, 'scheduled_date': datetime.date(2025, 9, 28), 'created_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660), 'updated_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660)}
+2025-09-28 19:51:51,619 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 19:51:51] "GET /planning/api/posts/60 HTTP/1.1" 200 -
