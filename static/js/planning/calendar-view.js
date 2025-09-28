@@ -219,9 +219,6 @@ function renderWeekContent(ideas, events, schedule) {
 // CALENDAR EDITING FUNCTIONS
 // ============================================================================
 
-// Helper function to get primary category (Holiday if exists, otherwise first available)
-
-
 // Category update functions
 async function updateIdeaCategory(ideaId, newCategory) {
     
@@ -653,8 +650,6 @@ async function updateSchedulePriority(scheduleId, newPriority) {
         showNotification(error.message, 'error');
     }
 }
-
-// Utility function for notifications
 
 // ============================================================================
 // DRAG AND DROP FUNCTIONALITY
