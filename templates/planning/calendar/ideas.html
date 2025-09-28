@@ -23,13 +23,9 @@
         <div class="ideas-content">
             <div class="idea-generator">
                 <h3>Generate Ideas</h3>
-                <div class="week-info">
-                    <p><strong>Week {{ week_number }} ({{ week_dates }})</strong></p>
-                </div>
-                
                 <div class="available-ideas">
                     <div class="available-ideas-header">
-                        <h4>Available Ideas for This Week</h4>
+                        <h4>Available Ideas for Week {{ week_number }} ({{ week_dates }})</h4>
                         <button class="btn btn-secondary" onclick="openNewIdeaDialog()">
                             <i class="fas fa-plus"></i> New Idea
                         </button>
@@ -211,19 +207,6 @@
     background: #4b5563;
 }
 
-.week-info {
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 6px;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.week-info p {
-    margin: 0;
-    color: #f1f5f9;
-    font-size: 1.1rem;
-}
 
 .available-ideas, .selected-idea {
     margin-bottom: 2rem;
