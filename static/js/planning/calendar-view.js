@@ -67,14 +67,16 @@ async function initializeCalendar() {
     // Then try to load from database
     updateCalendar();
     
-    // Event listeners
+    // Event listeners - now for month navigation
     document.getElementById('prev-year').addEventListener('click', () => {
-        currentYear--;
+        // Move back 12 months (one full cycle)
+        currentYear -= 1;
         updateCalendar();
     });
     
     document.getElementById('next-year').addEventListener('click', () => {
-        currentYear++;
+        // Move forward 12 months (one full cycle)
+        currentYear += 1;
         updateCalendar();
     });
 }
@@ -82,12 +84,23 @@ async function initializeCalendar() {
 
 async function updateCalendar() {
     
-    document.getElementById(CONFIG.UI.CURRENT_YEAR).textContent = currentYear;
+    // Calculate the start month for the rolling view
+    const currentDate = new Date();
+    const startMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + currentYear - new Date().getFullYear(), 1);
     
-    // Calculate current week for this year
+    // Update the display to show the current month range
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const startMonthName = monthNames[startMonth.getMonth()];
+    const endMonth = new Date(startMonth.getFullYear(), startMonth.getMonth() + 11, 1);
+    const endMonthName = monthNames[endMonth.getMonth()];
+    const yearSuffix = endMonth.getFullYear() !== startMonth.getFullYear() ? ` ${endMonth.getFullYear()}` : '';
+    
+    document.getElementById(CONFIG.UI.CURRENT_YEAR).textContent = `${startMonthName} - ${endMonthName}${yearSuffix}`;
+    
+    // Calculate current week for display
     const today = new Date();
-    const isCurrentYear = today.getFullYear() === currentYear;
-    const weekNumber = isCurrentYear ? DateUtils.getWeekNumber(today) : 1;
+    const weekNumber = DateUtils.getWeekNumber(today);
     
     document.getElementById(CONFIG.UI.CURRENT_WEEK).textContent = 
         `Week ${weekNumber} of 52`;
@@ -103,22 +116,31 @@ async function updateCalendar() {
     }
     
     try {
-        // Check cache first
-        let weeksData = cacheManager.getCalendarData(currentYear);
-        if (!weeksData || weeksData.length === 0) {
-            weeksData = await dataLoader.loadCalendarData(currentYear);
-            if (weeksData.length > 0) {
-                cacheManager.setCalendarData(currentYear, weeksData);
+        // Load data for the rolling 12-month period
+        const startYear = startMonth.getFullYear();
+        const endYear = endMonth.getFullYear();
+        
+        let allWeeksData = [];
+        
+        // Load data for each year in the range
+        for (let year = startYear; year <= endYear; year++) {
+            let weeksData = cacheManager.getCalendarData(year);
+            if (!weeksData || weeksData.length === 0) {
+                weeksData = await dataLoader.loadCalendarData(year);
+                if (weeksData.length > 0) {
+                    cacheManager.setCalendarData(year, weeksData);
+                }
             }
+            allWeeksData = allWeeksData.concat(weeksData);
         }
         
-        if (weeksData && weeksData.length > 0) {
-            renderCalendarFromData(weeksData, weekNumber);
-            await loadCalendarContent(currentYear, weeksData);
+        if (allWeeksData && allWeeksData.length > 0) {
+            renderCalendarFromData(allWeeksData, weekNumber);
+            await loadCalendarContent(startYear, allWeeksData);
         } else {
             console.error(CONFIG.MESSAGES.CALENDAR_ERROR, 'No weeks data');
             // Re-render fallback if database fails
-            renderCalendarFallback(currentYear, currentWeekNumber);
+            renderCalendarFallback(startYear, weekNumber);
         }
     } catch (error) {
         console.error(CONFIG.MESSAGES.CALENDAR_LOAD_ERROR, error);
