@@ -6,7 +6,7 @@ import { getPrimaryCategory, getPrimaryCategoryFromTags, showNotification, rende
 import { DragDropManager } from './calendar/ui/drag-drop.js';
 
 // Global variables
-let currentYear = new Date().getFullYear();
+let currentYearOffset = 0; // Offset from current year (0 = current year, 1 = next year, etc.)
 let currentWeekNumber = DateUtils.getWeekNumber(new Date());
 let categories = [];
 
@@ -62,7 +62,7 @@ async function initializeCalendar() {
     await loadCategories();
     
     // Always render the fallback first to ensure calendar is visible
-    renderCalendarFallback(currentYear, currentWeekNumber);
+    renderCalendarFallback(currentYearOffset, currentWeekNumber);
     
     // Then try to load from database
     updateCalendar();
@@ -70,13 +70,13 @@ async function initializeCalendar() {
     // Event listeners - now for month navigation
     document.getElementById('prev-year').addEventListener('click', () => {
         // Move back 12 months (one full cycle)
-        currentYear -= 1;
+        currentYearOffset -= 1;
         updateCalendar();
     });
     
     document.getElementById('next-year').addEventListener('click', () => {
         // Move forward 12 months (one full cycle)
-        currentYear += 1;
+        currentYearOffset += 1;
         updateCalendar();
     });
 }
@@ -86,7 +86,7 @@ async function updateCalendar() {
     
     // Calculate the start month for the rolling view
     const currentDate = new Date();
-    const startMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + currentYear - new Date().getFullYear(), 1);
+    const startMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + currentYearOffset, 1);
     
     // Update the display to show the current month range
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
@@ -135,17 +135,17 @@ async function updateCalendar() {
         }
         
         if (allWeeksData && allWeeksData.length > 0) {
-            renderCalendarFromData(allWeeksData, weekNumber);
+            renderCalendarFromData(allWeeksData, weekNumber, currentYearOffset);
             await loadCalendarContent(startYear, allWeeksData);
         } else {
             console.error(CONFIG.MESSAGES.CALENDAR_ERROR, 'No weeks data');
             // Re-render fallback if database fails
-            renderCalendarFallback(startYear, weekNumber);
+            renderCalendarFallback(currentYearOffset, weekNumber);
         }
     } catch (error) {
         console.error(CONFIG.MESSAGES.CALENDAR_LOAD_ERROR, error);
         // Re-render fallback if database fails
-        renderCalendarFallback();
+        renderCalendarFallback(currentYearOffset, weekNumber);
     }
 }
 
