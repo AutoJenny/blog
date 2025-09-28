@@ -50,12 +50,35 @@
             
             <div class="brainstorm-results">
                 <div class="prompt-display">
-                    <h4>LLM Prompt in Use</h4>
+                    <div class="prompt-header">
+                        <h4>LLM Prompt in Use</h4>
+                        <div class="prompt-actions">
+                            <button class="btn btn-secondary" onclick="togglePromptEdit()" id="edit-prompt-btn">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-success" onclick="savePrompt()" id="save-prompt-btn" style="display: none;">
+                                <i class="fas fa-save"></i> Save
+                            </button>
+                            <button class="btn btn-secondary" onclick="cancelPromptEdit()" id="cancel-prompt-btn" style="display: none;">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </div>
                     <div id="llm-provider-info" class="llm-provider-info">
                         <!-- LLM provider, model, and settings will appear here -->
                     </div>
                     <div id="llm-prompt-display" class="prompt-content">
                         <!-- LLM prompt will appear here -->
+                    </div>
+                    <div id="llm-prompt-edit" class="prompt-edit" style="display: none;">
+                        <div class="form-group">
+                            <label for="system-prompt-edit">System Prompt</label>
+                            <textarea id="system-prompt-edit" rows="4" placeholder="System prompt..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="user-prompt-edit">User Prompt</label>
+                            <textarea id="user-prompt-edit" rows="8" placeholder="User prompt..."></textarea>
+                        </div>
                     </div>
                 </div>
                 
@@ -213,10 +236,42 @@
     padding: 1.5rem;
 }
 
-.prompt-display h4 {
-    color: #f1f5f9;
+.prompt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 1rem;
+}
+
+.prompt-header h4 {
+    color: #f1f5f9;
+    margin: 0;
     font-size: 1.25rem;
+}
+
+.prompt-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.prompt-edit {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.prompt-edit textarea {
+    width: 100%;
+    padding: 0.75rem;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    color: #f1f5f9;
+    font-size: 0.9rem;
+    font-family: 'Courier New', monospace;
+    resize: vertical;
 }
 
 .llm-provider-info {
@@ -442,6 +497,7 @@
 <script>
 let selectedTopics = new Set();
 let generatedTopics = [];
+let currentPrompt = null;
 
 // Set navigation context
 document.addEventListener('DOMContentLoaded', function() {
@@ -513,6 +569,9 @@ async function loadLLMPrompt() {
 
 function displayLLMPrompt(prompt) {
     const promptDisplay = document.getElementById('llm-prompt-display');
+    
+    // Store the current prompt for editing
+    currentPrompt = prompt;
     
     let promptHTML = '';
     
@@ -711,6 +770,86 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+function togglePromptEdit() {
+    const promptDisplay = document.getElementById('llm-prompt-display');
+    const promptEdit = document.getElementById('llm-prompt-edit');
+    const editBtn = document.getElementById('edit-prompt-btn');
+    const saveBtn = document.getElementById('save-prompt-btn');
+    const cancelBtn = document.getElementById('cancel-prompt-btn');
+    
+    if (promptEdit.style.display === 'none') {
+        // Show edit mode
+        promptDisplay.style.display = 'none';
+        promptEdit.style.display = 'block';
+        editBtn.style.display = 'none';
+        saveBtn.style.display = 'inline-block';
+        cancelBtn.style.display = 'inline-block';
+        
+        // Populate edit fields
+        document.getElementById('system-prompt-edit').value = currentPrompt?.system_prompt || '';
+        document.getElementById('user-prompt-edit').value = currentPrompt?.prompt_text || '';
+    }
+}
+
+function cancelPromptEdit() {
+    const promptDisplay = document.getElementById('llm-prompt-display');
+    const promptEdit = document.getElementById('llm-prompt-edit');
+    const editBtn = document.getElementById('edit-prompt-btn');
+    const saveBtn = document.getElementById('save-prompt-btn');
+    const cancelBtn = document.getElementById('cancel-prompt-btn');
+    
+    // Hide edit mode
+    promptDisplay.style.display = 'block';
+    promptEdit.style.display = 'none';
+    editBtn.style.display = 'inline-block';
+    saveBtn.style.display = 'none';
+    cancelBtn.style.display = 'none';
+}
+
+async function savePrompt() {
+    const systemPrompt = document.getElementById('system-prompt-edit').value;
+    const userPrompt = document.getElementById('user-prompt-edit').value;
+    
+    if (!userPrompt.trim()) {
+        alert('User prompt cannot be empty');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/planning/api/llm/prompts/topic-brainstorming', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                system_prompt: systemPrompt,
+                prompt_text: userPrompt
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update the current prompt
+            currentPrompt.system_prompt = systemPrompt;
+            currentPrompt.prompt_text = userPrompt;
+            
+            // Refresh the display
+            displayLLMPrompt(currentPrompt);
+            
+            // Hide edit mode
+            cancelPromptEdit();
+            
+            alert('Prompt updated successfully!');
+        } else {
+            alert('Error updating prompt: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Error updating prompt:', error);
+        alert('Error updating prompt: ' + error.message);
+    }
 }
 </script>
 {% endblock %}
