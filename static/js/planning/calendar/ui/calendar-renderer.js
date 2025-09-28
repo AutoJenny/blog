@@ -129,7 +129,7 @@ function showNotification(message, type = 'info') {
  * @param {number} currentYear - Current year
  * @param {number} currentWeekNumber - Current week number
  */
-function renderCalendarFallback(currentYear, currentWeekNumber) {
+function renderCalendarFallback(yearOffset = 0, currentWeekNumber) {
     
     // Fallback to the original hardcoded generation
     const calendarGrid = document.getElementById('calendar-grid');
@@ -140,10 +140,11 @@ function renderCalendarFallback(currentYear, currentWeekNumber) {
     
     calendarGrid.innerHTML = '';
     
-    // Create rolling 12-month view starting from current month
+    // Create rolling 12-month view starting from current month + offset
     const currentDate = new Date();
-    const currentMonth = currentDate.getMonth();
-    const currentYearForView = currentDate.getFullYear();
+    const startMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + yearOffset, 1);
+    const currentMonth = startMonth.getMonth();
+    const currentYearForView = startMonth.getFullYear();
     
     // Generate 12 months starting from current month
     const monthGroups = [];
@@ -238,7 +239,7 @@ function renderCalendarFallback(currentYear, currentWeekNumber) {
  * @param {Array} weeks - Array of week objects from database
  * @param {number} currentWeekNumber - Current week number
  */
-function renderCalendarFromData(weeks, currentWeekNumber) {
+function renderCalendarFromData(weeks, currentWeekNumber, yearOffset = 0) {
     
     const calendarGrid = document.getElementById('calendar-grid');
     if (!calendarGrid) {
@@ -248,10 +249,11 @@ function renderCalendarFromData(weeks, currentWeekNumber) {
     
     calendarGrid.innerHTML = '';
     
-    // Create rolling 12-month view starting from current month
+    // Create rolling 12-month view starting from current month + offset
     const currentDate = new Date();
-    const currentMonth = currentDate.getMonth();
-    const currentYearForView = currentDate.getFullYear();
+    const startMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + yearOffset, 1);
+    const currentMonth = startMonth.getMonth();
+    const currentYearForView = startMonth.getFullYear();
     
     // Group weeks by month and year for rolling view
     const monthGroups = [];
@@ -266,13 +268,12 @@ function renderCalendarFromData(weeks, currentWeekNumber) {
             return weekDate.getMonth() === monthIndex && weekDate.getFullYear() === monthYear;
         });
         
-        if (monthWeeks.length > 0) {
-            monthGroups.push({
-                month: monthIndex,
-                year: monthYear,
-                weeks: monthWeeks
-            });
-        }
+        // Always add the month group, even if empty
+        monthGroups.push({
+            month: monthIndex,
+            year: monthYear,
+            weeks: monthWeeks
+        });
     }
     
     // Find the maximum number of weeks in any month
