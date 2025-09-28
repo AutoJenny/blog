@@ -1,4 +1,3 @@
-// Set navigation context
 document.addEventListener('DOMContentLoaded', function() {
     
     // Set current stage for navigation

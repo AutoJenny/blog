@@ -1,0 +1,42 @@
+18:async function loadCategories() {
+33:async function initializeCalendar() {
+63:function getWeekNumber(date) {
+69:function getWeekDates(weekNumber, year) {
+83:function formatDate(dateString) {
+88:async function updateCalendar() {
+127:function renderCalendarFromData(weeks, currentWeekNumber) {
+207:async function loadCalendarContent(year, weeks) {
+216:async function loadWeekContent(year, weekNumber) {
+287:function renderWeekContent(ideas, events, schedule) {
+498:function renderCalendarFallback() {
+600:function getWeeksInMonth(monthStart, monthEnd) {
+607:function selectWeek(weekNumber, month) {
+617:function getPrimaryCategory(categories) {
+637:function getPrimaryCategoryFromTags(tags) {
+669:function updateIdeaCategory(ideaId, newCategory) {
+713:function updateEventCategory(eventId, newCategory) {
+758:function editIdea(ideaId) {
+815:function updateIdeaTitle(ideaId, newTitle) {
+844:function deleteIdea(ideaId) {
+869:function scheduleIdea(ideaId) {
+876:function editEvent(eventId) {
+933:function updateEventTitle(eventId, newTitle) {
+962:function deleteEvent(eventId) {
+987:function scheduleEvent(eventId) {
+994:function editSchedule(scheduleId) {
+1051:function updateScheduleTitle(scheduleId, newTitle) {
+1058:function deleteSchedule(scheduleId) {
+1083:function updateIdeaPriority(ideaId, newPriority) {
+1116:function updateEventPriority(eventId, newPriority) {
+1149:function updateSchedulePriority(scheduleId, newPriority) {
+1189:function showNotification(message, type = 'info') {
+1235:function initializeDragAndDrop() {
+1245:function handleDragStart(e) {
+1270:function handleDragEnd(e) {
+1291:function handleDragOver(e) {
+1296:function handleDragEnter(e) {
+1303:function handleDragLeave(e) {
+1310:function handleDrop(e) {
+1328:function moveItemToWeek(itemType, itemId, targetWeek) {
+1366:function addNewEntry(weekNumber) {
+1414:function saveNewEntry(weekNumber, title) {

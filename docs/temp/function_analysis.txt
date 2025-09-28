@@ -1,0 +1,42 @@
+Function: async function loadCategories at line 18
+Function: async function initializeCalendar at line 33
+Function: function getWeekNumber at line 63
+Function: function getWeekDates at line 69
+Function: function formatDate at line 83
+Function: async function updateCalendar at line 88
+Function: function renderCalendarFromData at line 127
+Function: async function loadCalendarContent at line 207
+Function: async function loadWeekContent at line 216
+Function: function renderWeekContent at line 287
+Function: function renderCalendarFallback at line 498
+Function: function getWeeksInMonth at line 600
+Function: function selectWeek at line 607
+Function: function getPrimaryCategory at line 617
+Function: function getPrimaryCategoryFromTags at line 637
+Function: function updateIdeaCategory at line 669
+Function: function updateEventCategory at line 713
+Function: function editIdea at line 758
+Function: function updateIdeaTitle at line 815
+Function: function deleteIdea at line 844
+Function: function scheduleIdea at line 869
+Function: function editEvent at line 876
+Function: function updateEventTitle at line 933
+Function: function deleteEvent at line 962
+Function: function scheduleEvent at line 987
+Function: function editSchedule at line 994
+Function: function updateScheduleTitle at line 1051
+Function: function deleteSchedule at line 1058
+Function: function updateIdeaPriority at line 1083
+Function: function updateEventPriority at line 1116
+Function: function updateSchedulePriority at line 1149
+Function: function showNotification at line 1189
+Function: function initializeDragAndDrop at line 1235
+Function: function handleDragStart at line 1245
+Function: function handleDragEnd at line 1270
+Function: function handleDragOver at line 1291
+Function: function handleDragEnter at line 1296
+Function: function handleDragLeave at line 1303
+Function: function handleDrop at line 1310
+Function: function moveItemToWeek at line 1328
+Function: function addNewEntry at line 1366
+Function: function saveNewEntry at line 1414
