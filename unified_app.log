@@ -18120,3 +18120,32 @@ LINE 4:                 LEFT JOIN calendar_ideas ci ON cs.idea_id = ...
 2025-09-28 21:40:29,829 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
 2025-09-28 21:40:30,101 - werkzeug - WARNING -  * Debugger is active!
 2025-09-28 21:40:30,106 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-28 21:41:07,342 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:41:07] "GET /planning/posts/60/concept/brainstorm HTTP/1.1" 200 -
+2025-09-28 21:41:07,395 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:41:07] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-28 21:41:07,396 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:41:07] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-28 21:41:07,400 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:41:07] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-28 21:41:07,401 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:41:07] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-28 21:41:07,401 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:41:07] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-28 21:41:07,402 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:41:07] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-28 21:41:07,402 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:41:07] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-28 21:41:07,402 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:41:07] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-09-28 21:41:07,416 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:41:07] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-28 21:41:07,439 - config.database - INFO - Database connection established
+2025-09-28 21:41:07,440 - config.database - INFO - Database connection established
+2025-09-28 21:41:07,441 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:41:07] "GET /planning/api/posts/60/expanded-idea HTTP/1.1" 200 -
+2025-09-28 21:41:07,443 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:41:07] "GET /planning/api/llm/prompts/topic-brainstorming HTTP/1.1" 200 -
+2025-09-28 21:41:07,527 - config.database - INFO - Database connection established
+2025-09-28 21:41:07,532 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
+2025-09-28 21:41:07,532 - blueprints.planning - INFO - Calendar schedule entry: {'id': 1, 'year': 2025, 'week_number': 39, 'post_id': 60, 'scheduled_date': datetime.date(2025, 9, 28), 'created_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660), 'updated_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660)}
+2025-09-28 21:41:07,533 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:41:07] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-09-28 21:41:29,987 - config.database - INFO - Database connection established
+2025-09-28 21:41:29,993 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-28 21:42:11,552 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-28 21:42:11,556 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:42:11] "POST /planning/api/brainstorm/topics HTTP/1.1" 200 -
+2025-09-28 21:47:07,420 - config.database - INFO - Database connection established
+2025-09-28 21:47:07,425 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-28 21:47:15,087 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-28 21:47:15,089 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:47:15] "POST /planning/api/brainstorm/topics HTTP/1.1" 200 -
+2025-09-28 21:48:48,388 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-28 21:48:48,646 - werkzeug - WARNING -  * Debugger is active!
+2025-09-28 21:48:48,651 - werkzeug - INFO -  * Debugger PIN: 102-335-875
