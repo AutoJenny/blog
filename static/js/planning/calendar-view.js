@@ -2,7 +2,7 @@ import DateUtils from './calendar/utils/date-utils.js';
 import CONFIG from './calendar/utils/constants.js';
 import DataLoader from './calendar/api/data-loader.js';
 import CacheManager from './calendar/api/cache-manager.js';
-import { getPrimaryCategory, getPrimaryCategoryFromTags, showNotification, renderCalendarFallback } from './calendar/ui/calendar-renderer.js';
+import { getPrimaryCategory, getPrimaryCategoryFromTags, showNotification, renderCalendarFallback, renderCalendarFromData } from './calendar/ui/calendar-renderer.js';
 
 // Global variables
 let currentYear = new Date().getFullYear();
@@ -118,85 +118,6 @@ async function updateCalendar() {
     }
 }
 
-function renderCalendarFromData(weeks, currentWeekNumber) {
-    
-    const calendarGrid = document.getElementById('calendar-grid');
-    if (!calendarGrid) {
-        console.error('Calendar grid not found in renderCalendarFromData');
-        return;
-    }
-    
-    calendarGrid.innerHTML = '';
-    
-    // Group weeks by month
-    const monthGroups = {};
-    weeks.forEach(week => {
-        if (!monthGroups[week.month_name]) {
-            monthGroups[week.month_name] = [];
-        }
-        monthGroups[week.month_name].push(week);
-    });
-    
-    
-    // Find the maximum number of weeks in any month
-    const maxWeeks = Math.max(...Object.values(monthGroups).map(group => group.length));
-    
-    // Set grid columns dynamically
-    calendarGrid.style.gridTemplateColumns = `100px repeat(${maxWeeks}, 1fr)`;
-    
-    // Create month rows in chronological order
-    const monthOrder = CONFIG.MONTHS;
-    const sortedMonths = monthOrder.filter(month => monthGroups[month]);
-    
-    sortedMonths.forEach(monthName => {
-        const monthWeeks = monthGroups[monthName];
-        
-        // Month name cell
-        const monthCell = document.createElement('div');
-        monthCell.className = CONFIG.CSS.MONTH_CELL;
-        monthCell.textContent = monthName;
-        calendarGrid.appendChild(monthCell);
-        
-        // Create week cells for this month
-        for (let i = 0; i < maxWeeks; i++) {
-            const weekCell = document.createElement('div');
-            weekCell.className = CONFIG.CSS.WEEK_CELL;
-            
-            if (i < monthWeeks.length) {
-                const week = monthWeeks[i];
-                const isCurrentWeek = week.is_current_week;
-                
-                if (isCurrentWeek) {
-                    weekCell.classList.add(CONFIG.CSS.CURRENT_WEEK);
-                }
-                
-                // Add data-week attribute for content loading
-                weekCell.setAttribute('data-week', week.week_number);
-                
-                weekCell.innerHTML = `
-                    <div class="week-number">W${week.week_number}</div>
-                    <div class="week-dates">${DateUtils.formatDate(week.start_date)} - ${DateUtils.formatDate(week.end_date)}</div>
-                    <div class="week-content">
-                        <!-- Ideas and events will be loaded here -->
-                    </div>
-                    <div class="week-actions">
-                        <button class="btn-add-entry" onclick="addNewEntry(${week.week_number})" title="Add new entry">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </div>
-                `;
-                
-                // Add click handler for week selection
-                weekCell.addEventListener('click', () => DateUtils.selectWeek(week.week_number, week.month_name));
-            } else {
-                weekCell.innerHTML = '<div class="week-dates">-</div>';
-            }
-            
-            calendarGrid.appendChild(weekCell);
-        }
-    });
-    
-}
 
 async function loadCalendarContent(year, weeks) {
     
