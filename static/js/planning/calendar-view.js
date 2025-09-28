@@ -86,7 +86,7 @@ async function updateCalendar() {
     
     // Calculate the start month for the rolling view
     const currentDate = new Date();
-    const startMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + currentYearOffset, 1);
+    const startMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + (currentYearOffset * 12), 1);
     
     // Update the display to show the current month range
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 

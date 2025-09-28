@@ -142,7 +142,7 @@ function renderCalendarFallback(yearOffset = 0, currentWeekNumber) {
     
     // Create rolling 12-month view starting from current month + offset
     const currentDate = new Date();
-    const startMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + yearOffset, 1);
+    const startMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + (yearOffset * 12), 1);
     const currentMonth = startMonth.getMonth();
     const currentYearForView = startMonth.getFullYear();
     
@@ -251,7 +251,7 @@ function renderCalendarFromData(weeks, currentWeekNumber, yearOffset = 0) {
     
     // Create rolling 12-month view starting from current month + offset
     const currentDate = new Date();
-    const startMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + yearOffset, 1);
+    const startMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + (yearOffset * 12), 1);
     const currentMonth = startMonth.getMonth();
     const currentYearForView = startMonth.getFullYear();
     
