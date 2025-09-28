@@ -21,51 +21,79 @@
         </div>
         
         <div class="brainstorm-content">
-            <div class="brainstorm-controls">
-                <div class="form-group">
-                    <label for="base-topic">Base Topic</label>
-                    <input type="text" id="base-topic" placeholder="Enter your main topic or theme...">
-                </div>
-                <div class="form-group">
-                    <label for="brainstorm-type">Brainstorm Type</label>
-                    <select id="brainstorm-type">
-                        <option value="comprehensive">Comprehensive (50+ ideas)</option>
-                        <option value="focused">Focused (20-30 ideas)</option>
-                        <option value="creative">Creative (unusual angles)</option>
-                        <option value="practical">Practical (how-to focused)</option>
-                    </select>
-                </div>
-                <button class="btn btn-primary" onclick="startBrainstorming()">
-                    <i class="fas fa-brain"></i> Start Brainstorming
-                </button>
-            </div>
-            
-            <div class="brainstorm-results">
-                <div class="results-header">
-                    <h3>Generated Topics</h3>
-                    <div class="results-stats">
-                        <span id="total-ideas">0</span> ideas generated
-                        <span id="selected-ideas">0</span> selected
+            <div class="idea-generator">
+                <div class="input-data">
+                    <h4>Input Data</h4>
+                    <div id="expanded-idea-display" class="expanded-idea-content">
+                        <!-- Expanded idea from previous page will appear here -->
+                    </div>
+                    <div class="input-actions">
+                        <button class="btn btn-primary" onclick="startBrainstorming()" id="generate-btn">
+                            <i class="fas fa-brain"></i> Generate Topics
+                        </button>
                     </div>
                 </div>
                 
-                <div class="topic-filters">
-                    <button class="filter-btn active" data-filter="all">All</button>
-                    <button class="filter-btn" data-filter="selected">Selected</button>
-                    <button class="filter-btn" data-filter="unselected">Unselected</button>
+                <div class="brainstorm-settings">
+                    <h4>Brainstorm Settings</h4>
+                    <div class="form-group">
+                        <label for="brainstorm-type">Brainstorm Type</label>
+                        <select id="brainstorm-type">
+                            <option value="comprehensive">Comprehensive (50+ ideas)</option>
+                            <option value="focused">Focused (20-30 ideas)</option>
+                            <option value="creative">Creative (unusual angles)</option>
+                            <option value="practical">Practical (how-to focused)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="brainstorm-results">
+                <div class="prompt-display">
+                    <h4>LLM Prompt in Use</h4>
+                    <div id="llm-provider-info" class="llm-provider-info">
+                        <!-- LLM provider, model, and settings will appear here -->
+                    </div>
+                    <div id="llm-prompt-display" class="prompt-content">
+                        <!-- LLM prompt will appear here -->
+                    </div>
                 </div>
                 
-                <div id="topics-list" class="topics-list">
-                    <!-- Generated topics will appear here -->
-                </div>
-                
-                <div class="brainstorm-actions">
-                    <button class="btn btn-success" onclick="saveSelection()">
-                        <i class="fas fa-save"></i> Save Selection
-                    </button>
-                    <button class="btn btn-secondary" onclick="exportTopics()">
-                        <i class="fas fa-download"></i> Export Topics
-                    </button>
+                <div class="topics-results">
+                    <div class="topics-header">
+                        <h4>Generated Topics</h4>
+                        <div class="topics-controls">
+                            <div class="filter-group">
+                                <label for="topic-filter">Filter by Category:</label>
+                                <select id="topic-filter">
+                                    <option value="all">All Topics</option>
+                                    <option value="tutorial">Tutorial</option>
+                                    <option value="guide">Guide</option>
+                                    <option value="list">List</option>
+                                    <option value="review">Review</option>
+                                    <option value="opinion">Opinion</option>
+                                </select>
+                            </div>
+                            <div class="stats">
+                                <span id="total-ideas">0</span> ideas generated
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="topics-list" class="topics-list">
+                        <div class="no-topics">
+                            <p>No topics generated yet. Click "Generate Topics" to begin.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="topics-actions">
+                        <button class="btn btn-success" onclick="saveSelection()">
+                            <i class="fas fa-save"></i> Save Selected Topics
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportTopics()">
+                            <i class="fas fa-download"></i> Export Topics
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -90,164 +118,304 @@
 }
 
 .brainstorm-header p {
-    color: #94a3b8;
     font-size: 1.125rem;
+    color: #94a3b8;
+    max-width: 600px;
+    margin: 0 auto;
 }
 
 .brainstorm-content {
     display: grid;
-    grid-template-columns: 1fr 2fr;
+    grid-template-columns: 1fr 1fr;
     gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
-.brainstorm-controls {
+.idea-generator {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.input-data {
     background: #1e293b;
     border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.input-data h4 {
+    color: #f1f5f9;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+.expanded-idea-content {
+    background: #0f172a;
+    border: 1px solid #334155;
     border-radius: 8px;
-    padding: 2rem;
-    height: fit-content;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    min-height: 120px;
+    color: #cbd5e1;
+    line-height: 1.6;
+}
+
+.input-actions {
+    text-align: center;
+}
+
+.brainstorm-settings {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.brainstorm-settings h4 {
+    color: #f1f5f9;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
 }
 
 .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .form-group label {
     display: block;
     color: #f1f5f9;
-    font-weight: 500;
     margin-bottom: 0.5rem;
+    font-weight: 500;
 }
 
-.form-group input,
 .form-group select {
     width: 100%;
     padding: 0.75rem;
     background: #0f172a;
     border: 1px solid #334155;
-    border-radius: 4px;
-    color: #e2e8f0;
-    font-family: inherit;
+    border-radius: 6px;
+    color: #f1f5f9;
+    font-size: 1rem;
 }
 
 .brainstorm-results {
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 8px;
-    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
-.results-header {
+.prompt-display {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.prompt-display h4 {
+    color: #f1f5f9;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+.llm-provider-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: #0f172a;
+    border-radius: 8px;
+    border: 1px solid #334155;
+}
+
+.provider-item {
+    text-align: center;
+}
+
+.provider-label {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-bottom: 0.25rem;
+}
+
+.provider-value {
+    font-size: 0.9rem;
+    color: #f1f5f9;
+    font-weight: 500;
+}
+
+.prompt-content {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem;
+    color: #cbd5e1;
+    line-height: 1.6;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+
+.system-prompt {
+    color: #a78bfa;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #334155;
+}
+
+.user-prompt {
+    color: #cbd5e1;
+}
+
+.data-placeholder {
+    background: #3b82f6;
+    color: white;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.topics-results {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.topics-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
-.results-header h3 {
+.topics-header h4 {
     color: #f1f5f9;
     margin: 0;
+    font-size: 1.25rem;
 }
 
-.results-stats {
-    color: #94a3b8;
-    font-size: 0.875rem;
-}
-
-.topic-filters {
+.topics-controls {
     display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
     gap: 0.5rem;
-    margin-bottom: 1.5rem;
 }
 
-.filter-btn {
-    padding: 0.5rem 1rem;
-    background: transparent;
-    border: 1px solid #475569;
-    border-radius: 4px;
+.filter-group label {
     color: #94a3b8;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
 }
 
-.filter-btn:hover {
-    background: #334155;
-    color: #e2e8f0;
+.filter-group select {
+    padding: 0.5rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    color: #f1f5f9;
+    font-size: 0.9rem;
 }
 
-.filter-btn.active {
-    background: #3b82f6;
-    border-color: #3b82f6;
-    color: white;
+.stats {
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.stats span {
+    color: #3b82f6;
+    font-weight: 600;
 }
 
 .topics-list {
-    max-height: 500px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    max-height: 400px;
     overflow-y: auto;
-    margin-bottom: 2rem;
 }
 
 .topic-item {
     background: #0f172a;
     border: 1px solid #334155;
-    border-radius: 6px;
+    border-radius: 8px;
     padding: 1rem;
-    margin-bottom: 0.75rem;
-    transition: all 0.2s ease;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .topic-item:hover {
     border-color: #475569;
+    transform: translateY(-2px);
 }
 
 .topic-item.selected {
-    border-color: #10b981;
-    background: rgba(16, 185, 129, 0.1);
+    border-color: #3b82f6;
+    background: #1e3a8a;
 }
 
 .topic-title {
     color: #f1f5f9;
     font-weight: 600;
     margin-bottom: 0.5rem;
+    font-size: 0.95rem;
 }
 
 .topic-description {
     color: #94a3b8;
-    font-size: 0.875rem;
+    font-size: 0.85rem;
     line-height: 1.4;
 }
 
-.brainstorm-actions {
+.no-topics {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: #94a3b8;
+    padding: 2rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+}
+
+.topics-actions {
     display: flex;
     gap: 1rem;
+    justify-content: center;
 }
 
 .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
+    display: inline-block;
     padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 6px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.btn-primary {
     background: #3b82f6;
     color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
 }
 
-.btn-primary:hover {
+.btn:hover {
     background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.btn:disabled {
+    background: #6b7280;
+    cursor: not-allowed;
+    transform: none;
 }
 
 .btn-success {
     background: #10b981;
-    color: white;
 }
 
 .btn-success:hover {
@@ -256,15 +424,30 @@
 
 .btn-secondary {
     background: #6b7280;
-    color: white;
 }
 
 .btn-secondary:hover {
     background: #4b5563;
 }
+
+.loading {
+    text-align: center;
+    color: #3b82f6;
+    padding: 2rem;
+    font-style: italic;
+}
+
+@media (max-width: 1024px) {
+    .brainstorm-content {
+        grid-template-columns: 1fr;
+    }
+}
 </style>
 
 <script>
+let selectedTopics = new Set();
+let generatedTopics = [];
+
 // Set navigation context
 document.addEventListener('DOMContentLoaded', function() {
     // Set current stage for navigation
@@ -272,103 +455,129 @@ document.addEventListener('DOMContentLoaded', function() {
     window.currentSubstage = 'brainstorm';
     window.postId = {{ post_id }};
     
-    // Initialize topic selection
-    initializeTopicSelection();
+    // Load expanded idea and LLM prompt
+    loadExpandedIdea();
+    loadLLMPrompt();
+    
+    // Initialize brainstorming functionality
+    initializeBrainstorming();
 });
 
-let selectedTopics = new Set();
-
-function initializeTopicSelection() {
-    // Add click handlers for topic selection
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.topic-item')) {
-            const topicItem = e.target.closest('.topic-item');
-            const topicId = topicItem.dataset.topicId;
-            
-            if (selectedTopics.has(topicId)) {
-                selectedTopics.delete(topicId);
-                topicItem.classList.remove('selected');
-            } else {
-                selectedTopics.add(topicId);
-                topicItem.classList.add('selected');
-            }
-            
-            updateStats();
+async function loadExpandedIdea() {
+    try {
+        const response = await fetch(`/planning/api/posts/${window.postId}/expanded-idea`);
+        const data = await response.json();
+        
+        if (data.success) {
+            displayExpandedIdea(data.expanded_idea);
+        } else {
+            console.error('Error loading expanded idea:', data.error);
+            displayExpandedIdeaError(data.error);
         }
-    });
-    
-    // Add filter handlers
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            
-            const filter = this.dataset.filter;
-            filterTopics(filter);
-        });
-    });
+    } catch (error) {
+        console.error('Error loading expanded idea:', error);
+        displayExpandedIdeaError('Failed to load expanded idea');
+    }
 }
 
-function startBrainstorming() {
-    const baseTopic = document.getElementById('base-topic').value;
-    const brainstormType = document.getElementById('brainstorm-type').value;
+function displayExpandedIdea(expandedIdea) {
+    const expandedContent = document.getElementById('expanded-idea-display');
     
-    if (!baseTopic.trim()) {
-        alert('Please enter a base topic');
+    if (!expandedIdea) {
+        expandedContent.innerHTML = '<div class="no-expanded-idea">No expanded idea available. Please go back to the previous page to generate one.</div>';
         return;
     }
     
-    // Show loading state
-    const topicsList = document.getElementById('topics-list');
-    topicsList.innerHTML = '<div class="loading">Generating topics...</div>';
-    
-    // Simulate AI generation (replace with actual API call)
-    setTimeout(() => {
-        const mockTopics = generateMockTopics(baseTopic, brainstormType);
-        displayTopics(mockTopics);
-    }, 3000);
+    expandedContent.innerHTML = escapeHtml(expandedIdea);
 }
 
-function generateMockTopics(baseTopic, type) {
-    const topics = [];
-    const count = type === 'comprehensive' ? 50 : type === 'focused' ? 25 : 20;
+function displayExpandedIdeaError(error) {
+    const expandedContent = document.getElementById('expanded-idea-display');
+    expandedContent.innerHTML = `<div class="error">Error loading expanded idea: ${error}</div>`;
+}
+
+async function loadLLMPrompt() {
+    try {
+        const response = await fetch('/planning/api/llm/prompts/topic-brainstorming');
+        const data = await response.json();
+        
+        if (data.success) {
+            displayLLMPrompt(data.prompt);
+            if (data.llm_config) {
+                displayLLMConfig(data.llm_config);
+            }
+        } else {
+            console.error('Error loading LLM prompt:', data.error);
+            displayLLMPromptError(data.error);
+        }
+    } catch (error) {
+        console.error('Error loading LLM prompt:', error);
+        displayLLMPromptError('Failed to load LLM prompt');
+    }
+}
+
+function displayLLMPrompt(prompt) {
+    const promptDisplay = document.getElementById('llm-prompt-display');
     
-    for (let i = 1; i <= count; i++) {
-        topics.push({
-            id: i,
-            title: `${baseTopic} - Topic ${i}`,
-            description: `A detailed exploration of ${baseTopic} focusing on aspect ${i}, providing practical insights and actionable advice.`,
-            category: ['tutorial', 'guide', 'list', 'review', 'opinion'][Math.floor(Math.random() * 5)]
-        });
+    let promptHTML = '';
+    
+    // If there's a separate system prompt, display it first
+    if (prompt.system_prompt) {
+        promptHTML += `<div class="system-prompt">${escapeHtml(prompt.system_prompt)}</div>`;
     }
     
-    return topics;
+    // Display the main prompt text
+    if (prompt.prompt_text) {
+        promptHTML += `<div class="user-prompt">${escapeHtml(prompt.prompt_text)}</div>`;
+    }
+    
+    // Highlight data placeholders
+    promptHTML = promptHTML.replace(/\[TOPIC\]/g, '<span class="data-placeholder">[TOPIC]</span>');
+    
+    promptDisplay.innerHTML = promptHTML;
 }
 
-function displayTopics(topics) {
-    const topicsList = document.getElementById('topics-list');
-    topicsList.innerHTML = '';
-    
-    topics.forEach(topic => {
-        const topicItem = document.createElement('div');
-        topicItem.className = 'topic-item';
-        topicItem.dataset.topicId = topic.id;
-        topicItem.innerHTML = `
-            <div class="topic-title">${topic.title}</div>
-            <div class="topic-description">${topic.description}</div>
-        `;
-        topicsList.appendChild(topicItem);
-    });
-    
-    updateStats();
+function displayLLMPromptError(error) {
+    const promptDisplay = document.getElementById('llm-prompt-display');
+    promptDisplay.innerHTML = `<div class="error">Error loading prompt: ${error}</div>`;
 }
 
-function updateStats() {
-    const totalIdeas = document.querySelectorAll('.topic-item').length;
-    const selectedIdeas = selectedTopics.size;
+function displayLLMConfig(config) {
+    const providerInfo = document.getElementById('llm-provider-info');
     
-    document.getElementById('total-ideas').textContent = totalIdeas;
-    document.getElementById('selected-ideas').textContent = selectedIdeas;
+    providerInfo.innerHTML = `
+        <div class="provider-item">
+            <div class="provider-label">Provider</div>
+            <div class="provider-value">${config.provider}</div>
+        </div>
+        <div class="provider-item">
+            <div class="provider-label">Model</div>
+            <div class="provider-value">${config.model}</div>
+        </div>
+        <div class="provider-item">
+            <div class="provider-label">Temperature</div>
+            <div class="provider-value">${config.temperature}</div>
+        </div>
+        <div class="provider-item">
+            <div class="provider-label">Max Tokens</div>
+            <div class="provider-value">${config.max_tokens}</div>
+        </div>
+        <div class="provider-item">
+            <div class="provider-label">Timeout</div>
+            <div class="provider-value">${config.timeout}s</div>
+        </div>
+    `;
+}
+
+function initializeBrainstorming() {
+    // Set up topic filter dropdown
+    const topicFilter = document.getElementById('topic-filter');
+    if (topicFilter) {
+        topicFilter.addEventListener('change', function() {
+            const filter = this.value;
+            filterTopics(filter);
+        });
+    }
 }
 
 function filterTopics(filter) {
@@ -376,37 +585,138 @@ function filterTopics(filter) {
     
     topicItems.forEach(item => {
         const isSelected = selectedTopics.has(item.dataset.topicId);
+        const category = item.dataset.category;
         
-        switch (filter) {
-            case 'all':
-                item.style.display = 'block';
-                break;
-            case 'selected':
-                item.style.display = isSelected ? 'block' : 'none';
-                break;
-            case 'unselected':
-                item.style.display = isSelected ? 'none' : 'block';
-                break;
+        let show = true;
+        
+        if (filter !== 'all' && category !== filter) {
+            show = false;
         }
+        
+        item.style.display = show ? 'block' : 'none';
     });
 }
 
+async function startBrainstorming() {
+    const brainstormType = document.getElementById('brainstorm-type').value;
+    
+    // Get the expanded idea content
+    const expandedIdeaElement = document.getElementById('expanded-idea-display');
+    const expandedIdea = expandedIdeaElement.textContent.trim();
+    
+    if (!expandedIdea || expandedIdea.includes('No expanded idea available')) {
+        alert('Please go back to the previous page to generate an expanded idea first.');
+        return;
+    }
+    
+    // Show loading state
+    const topicsList = document.getElementById('topics-list');
+    const generateBtn = document.getElementById('generate-btn');
+    
+    topicsList.innerHTML = '<div class="loading">Generating topics...</div>';
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    
+    try {
+        // Call the brainstorming API
+        const response = await fetch('/planning/api/brainstorm/topics', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                expanded_idea: expandedIdea,
+                brainstorm_type: brainstormType,
+                post_id: window.postId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            generatedTopics = data.topics || [];
+            displayTopics(generatedTopics);
+        } else {
+            console.error('Error generating topics:', data.error);
+            topicsList.innerHTML = `<div class="error">Error generating topics: ${data.error}</div>`;
+        }
+    } catch (error) {
+        console.error('Error generating topics:', error);
+        topicsList.innerHTML = `<div class="error">Failed to generate topics: ${error.message}</div>`;
+    } finally {
+        // Reset button state
+        generateBtn.disabled = false;
+        generateBtn.innerHTML = '<i class="fas fa-brain"></i> Generate Topics';
+    }
+}
+
+function displayTopics(topics) {
+    const topicsList = document.getElementById('topics-list');
+    topicsList.innerHTML = '';
+    
+    if (topics.length === 0) {
+        topicsList.innerHTML = '<div class="no-topics">No topics generated. Try again with different settings.</div>';
+        return;
+    }
+    
+    topics.forEach((topic, index) => {
+        const topicItem = document.createElement('div');
+        topicItem.className = 'topic-item';
+        topicItem.dataset.topicId = index;
+        topicItem.dataset.category = topic.category || 'general';
+        topicItem.innerHTML = `
+            <div class="topic-title">${topic.title}</div>
+            <div class="topic-description">${topic.description}</div>
+        `;
+        
+        // Add click handler for selection
+        topicItem.addEventListener('click', function() {
+            toggleTopicSelection(index);
+        });
+        
+        topicsList.appendChild(topicItem);
+    });
+    
+    updateStats();
+}
+
+function toggleTopicSelection(topicId) {
+    const topicItem = document.querySelector(`[data-topic-id="${topicId}"]`);
+    
+    if (selectedTopics.has(topicId)) {
+        selectedTopics.delete(topicId);
+        topicItem.classList.remove('selected');
+    } else {
+        selectedTopics.add(topicId);
+        topicItem.classList.add('selected');
+    }
+    
+    updateStats();
+}
+
+function updateStats() {
+    const totalIdeas = document.querySelectorAll('.topic-item').length;
+    document.getElementById('total-ideas').textContent = totalIdeas;
+}
+
 function saveSelection() {
-    console.log('Saving selected topics:', Array.from(selectedTopics));
-    // Implement save functionality
+    const selectedTopicsList = Array.from(selectedTopics).map(id => generatedTopics[id]);
+    console.log('Saving selected topics:', selectedTopicsList);
+    // TODO: Implement save functionality
+    alert(`Saving ${selectedTopicsList.length} selected topics...`);
 }
 
 function exportTopics() {
-    console.log('Exporting topics...');
-    // Implement export functionality
+    const selectedTopicsList = Array.from(selectedTopics).map(id => generatedTopics[id]);
+    console.log('Exporting topics:', selectedTopicsList);
+    // TODO: Implement export functionality
+    alert(`Exporting ${selectedTopicsList.length} selected topics...`);
 }
 
-// Set navigation context
-document.addEventListener('DOMContentLoaded', function() {
-    // Set current stage for navigation
-    window.currentStage = 'concept';
-    window.currentSubstage = 'brainstorm';
-    window.postId = {{ post_id }};
-});
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 </script>
 {% endblock %}

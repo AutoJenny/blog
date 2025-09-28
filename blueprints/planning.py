@@ -1591,3 +1591,172 @@ def api_generate_expanded_idea(post_id):
     except Exception as e:
         logger.error(f"Error generating expanded idea for post {post_id}: {e}")
         return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/llm/prompts/topic-brainstorming', methods=['GET'])
+def api_get_topic_brainstorming_prompt():
+    """Get the LLM prompt used for topic brainstorming"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, name, system_prompt, prompt_text, description
+                FROM llm_prompt 
+                WHERE name = 'Topic Brainstorming'
+                ORDER BY updated_at DESC
+                LIMIT 1
+            """)
+            
+            prompt_data = cursor.fetchone()
+            
+            if not prompt_data:
+                return jsonify({'error': 'Topic brainstorming prompt not found'}), 404
+            
+            return jsonify({
+                'success': True,
+                'prompt': {
+                    'id': prompt_data['id'],
+                    'name': prompt_data['name'],
+                    'description': prompt_data['description'],
+                    'system_prompt': prompt_data['system_prompt'],
+                    'prompt_text': prompt_data['prompt_text']
+                },
+                'llm_config': {
+                    'provider': 'Ollama',
+                    'model': 'llama3.2:latest',
+                    'temperature': 0.8,
+                    'max_tokens': 3000,
+                    'timeout': 90
+                }
+            })
+            
+    except Exception as e:
+        logger.error(f"Error fetching topic brainstorming prompt: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/brainstorm/topics', methods=['POST'])
+def api_generate_brainstorm_topics():
+    """Generate brainstorming topics using LLM"""
+    try:
+        data = request.get_json()
+        expanded_idea = data.get('expanded_idea', '')
+        brainstorm_type = data.get('brainstorm_type', 'comprehensive')
+        post_id = data.get('post_id')
+        
+        if not expanded_idea:
+            return jsonify({'error': 'Expanded idea is required'}), 400
+        
+        # Get the LLM prompt
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, name, system_prompt, prompt_text
+                FROM llm_prompt 
+                WHERE name = 'Topic Brainstorming'
+                ORDER BY updated_at DESC
+                LIMIT 1
+            """)
+            
+            prompt_data = cursor.fetchone()
+            
+            if not prompt_data:
+                return jsonify({'error': 'Topic brainstorming prompt not found'}), 404
+            
+            # Build the prompt with the expanded idea
+            prompt_text = prompt_data['prompt_text']
+            if '[TOPIC]' in prompt_text:
+                prompt_text = prompt_text.replace('[TOPIC]', expanded_idea)
+            
+            # Add brainstorm type context
+            type_context = {
+                'comprehensive': 'Generate 50+ diverse topic ideas',
+                'focused': 'Generate 20-30 focused topic ideas',
+                'creative': 'Generate 20+ creative and unusual topic ideas',
+                'practical': 'Generate 20+ practical how-to focused topic ideas'
+            }
+            
+            prompt_text = f"{type_context.get(brainstorm_type, 'Generate diverse topic ideas')}.\n\n{prompt_text}"
+            
+            # Prepare messages for LLM
+            messages = []
+            if prompt_data['system_prompt']:
+                messages.append({'role': 'system', 'content': prompt_data['system_prompt']})
+            
+            messages.append({'role': 'user', 'content': prompt_text})
+            
+            # Execute LLM request
+            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+            
+            if 'error' in result:
+                return jsonify({'error': f'LLM generation failed: {result["error"]}'}), 500
+            
+            # Parse the generated topics from the response
+            topics = parse_brainstorm_topics(result['content'])
+            
+            return jsonify({
+                'success': True,
+                'message': 'Topics generated successfully',
+                'topics': topics,
+                'count': len(topics)
+            })
+            
+    except Exception as e:
+        logger.error(f"Error generating brainstorm topics: {e}")
+        return jsonify({'error': str(e)}), 500
+
+def parse_brainstorm_topics(content):
+    """Parse the LLM response to extract individual topics"""
+    topics = []
+    lines = content.split('\n')
+    
+    current_topic = None
+    current_description = []
+    
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+            
+        # Check if this looks like a topic title (numbered or bulleted)
+        if (line.startswith(('1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.')) or 
+            line.startswith(('-', '*', '•')) or
+            (len(line) < 100 and not line.endswith('.'))):
+            
+            # Save previous topic if exists
+            if current_topic:
+                topics.append({
+                    'title': current_topic,
+                    'description': ' '.join(current_description).strip(),
+                    'category': 'general'
+                })
+            
+            # Start new topic
+            current_topic = line.lstrip('123456789.-*• ').strip()
+            current_description = []
+        else:
+            # This is part of the description
+            current_description.append(line)
+    
+    # Add the last topic
+    if current_topic:
+        topics.append({
+            'title': current_topic,
+            'description': ' '.join(current_description).strip(),
+            'category': 'general'
+        })
+    
+    # If no structured topics found, try to split by paragraphs
+    if not topics:
+        paragraphs = content.split('\n\n')
+        for i, para in enumerate(paragraphs):
+            para = para.strip()
+            if para and len(para) > 10:
+                # Extract title (first sentence or first 50 chars)
+                title = para.split('.')[0][:50]
+                if len(title) < 10:
+                    title = para[:50]
+                
+                topics.append({
+                    'title': title,
+                    'description': para,
+                    'category': 'general'
+                })
+    
+    return topics[:50]  # Limit to 50 topics
