@@ -18177,3 +18177,33 @@ LINE 4:                 LEFT JOIN calendar_ideas ci ON cs.idea_id = ...
 2025-09-28 21:52:26,863 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
 2025-09-28 21:52:27,129 - werkzeug - WARNING -  * Debugger is active!
 2025-09-28 21:52:27,134 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-28 21:52:37,748 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:52:37] "GET /planning/posts/60/concept/brainstorm HTTP/1.1" 200 -
+2025-09-28 21:52:37,798 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:52:37] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-28 21:52:37,800 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:52:37] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-28 21:52:37,800 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:52:37] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-28 21:52:37,802 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:52:37] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-28 21:52:37,802 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:52:37] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-09-28 21:52:37,803 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:52:37] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-28 21:52:37,804 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:52:37] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-28 21:52:37,804 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:52:37] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-28 21:52:37,818 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:52:37] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-28 21:52:37,844 - config.database - INFO - Database connection established
+2025-09-28 21:52:37,845 - config.database - INFO - Database connection established
+2025-09-28 21:52:37,846 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:52:37] "GET /planning/api/posts/60/expanded-idea HTTP/1.1" 200 -
+2025-09-28 21:52:37,848 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:52:37] "GET /planning/api/llm/prompts/topic-brainstorming HTTP/1.1" 200 -
+2025-09-28 21:52:37,932 - config.database - INFO - Database connection established
+2025-09-28 21:52:37,936 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
+2025-09-28 21:52:37,936 - blueprints.planning - INFO - Calendar schedule entry: {'id': 1, 'year': 2025, 'week_number': 39, 'post_id': 60, 'scheduled_date': datetime.date(2025, 9, 28), 'created_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660), 'updated_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660)}
+2025-09-28 21:52:37,936 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:52:37] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-09-28 21:55:47,835 - config.database - INFO - Database connection established
+2025-09-28 21:55:47,841 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:55:47] "PUT /planning/api/llm/prompts/topic-brainstorming HTTP/1.1" 200 -
+2025-09-28 21:55:55,895 - config.database - INFO - Database connection established
+2025-09-28 21:55:55,902 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-28 21:56:03,678 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-28 21:56:03,681 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 21:56:03] "POST /planning/api/brainstorm/topics HTTP/1.1" 200 -
+2025-09-28 22:02:25,552 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-28 22:02:25,819 - werkzeug - WARNING -  * Debugger is active!
+2025-09-28 22:02:25,825 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-28 22:02:54,454 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-28 22:02:54,725 - werkzeug - WARNING -  * Debugger is active!
+2025-09-28 22:02:54,730 - werkzeug - INFO -  * Debugger PIN: 102-335-875

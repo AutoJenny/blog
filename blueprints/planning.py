@@ -1770,3 +1770,74 @@ def parse_brainstorm_topics(content):
                 })
     
     return topics[:50]  # Limit to 50 topics
+
+@bp.route('/api/posts/<int:post_id>/idea-scope', methods=['GET'])
+def api_get_idea_scope(post_id):
+    """Get the IDEA_SCOPE field from post_development"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT idea_scope 
+                FROM post_development 
+                WHERE post_id = %s
+            """, (post_id,))
+            
+            result = cursor.fetchone()
+            idea_scope = result['idea_scope'] if result else None
+            
+            return jsonify({
+                'success': True,
+                'post_id': post_id,
+                'idea_scope': idea_scope
+            })
+            
+    except Exception as e:
+        logger.error(f"Error fetching idea scope for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/idea-scope', methods=['POST'])
+def api_update_idea_scope(post_id):
+    """Update the IDEA_SCOPE field in post_development with generated topics"""
+    try:
+        data = request.get_json()
+        topics = data.get('topics', [])
+        
+        if not topics:
+            return jsonify({'error': 'No topics provided'}), 400
+        
+        # Format topics as JSON for storage
+        import json
+        idea_scope_json = json.dumps({
+            'generated_topics': topics,
+            'generated_at': datetime.now().isoformat(),
+            'total_count': len(topics)
+        }, indent=2)
+        
+        with db_manager.get_cursor() as cursor:
+            # Check if post_development record exists
+            cursor.execute("SELECT id FROM post_development WHERE post_id = %s", (post_id,))
+            if not cursor.fetchone():
+                # Create post_development record if it doesn't exist
+                cursor.execute("""
+                    INSERT INTO post_development (post_id, idea_scope)
+                    VALUES (%s, %s)
+                """, (post_id, idea_scope_json))
+            else:
+                # Update existing record
+                cursor.execute("""
+                    UPDATE post_development 
+                    SET idea_scope = %s, updated_at = CURRENT_TIMESTAMP
+                    WHERE post_id = %s
+                """, (idea_scope_json, post_id))
+            
+            cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Idea scope updated successfully',
+                'topics_saved': len(topics)
+            })
+            
+    except Exception as e:
+        logger.error(f"Error updating idea scope for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
