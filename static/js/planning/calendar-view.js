@@ -2,6 +2,7 @@ import DateUtils from './calendar/utils/date-utils.js';
 import CONFIG from './calendar/utils/constants.js';
 import DataLoader from './calendar/api/data-loader.js';
 import CacheManager from './calendar/api/cache-manager.js';
+import { getPrimaryCategory } from './calendar/ui/calendar-renderer.js';
 
 // Global variables
 let currentYear = new Date().getFullYear();
@@ -513,24 +514,6 @@ function renderCalendarFallback() {
 // ============================================================================
 
 // Helper function to get primary category (Holiday if exists, otherwise first available)
-function getPrimaryCategory(categories) {
-    if (!categories || categories.length === 0) return '';
-    
-    // Look for Holiday category first
-    const holidayCategory = categories.find(cat => 
-        cat.name.toLowerCase().includes('holiday') || 
-        cat.name.toLowerCase().includes('festival') ||
-        cat.name.toLowerCase().includes('celebration')
-    );
-    
-    if (holidayCategory) {
-        return `<span class="category-tag primary" style="background-color: ${holidayCategory.color}">${holidayCategory.name}</span>`;
-    }
-    
-    // If no holiday, use the first category
-    const primaryCategory = categories[0];
-    return `<span class="category-tag primary" style="background-color: ${primaryCategory.color}">${primaryCategory.name}</span>`;
-}
 
 // Helper function to get primary category from tags array (for ideas/events)
 function getPrimaryCategoryFromTags(tags) {
