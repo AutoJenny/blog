@@ -92,8 +92,10 @@ async function updateCalendar() {
     document.getElementById(CONFIG.UI.CURRENT_WEEK).textContent = 
         `Week ${weekNumber} of 52`;
     
-    // Update calendar header with post ID and current week info
-    updateCalendarHeader(weekNumber);
+    // Update planning header with post ID and current week info
+    if (window.planningHeaderUpdater) {
+        window.planningHeaderUpdater.updateHeader(weekNumber);
+    }
     
     // Ensure categories are loaded before rendering content
     if (categories.length === 0) {
@@ -125,30 +127,6 @@ async function updateCalendar() {
     }
 }
 
-function updateCalendarHeader(weekNumber) {
-    // Get the post ID from the window object (set in the HTML template)
-    const postId = window.postId || 'Unknown';
-    
-    // Calculate the week dates for the current week
-    const weekDates = DateUtils.getWeekDates(weekNumber, currentYear);
-    
-    // Format the dates nicely
-    const startDate = weekDates.start.toLocaleDateString('en-US', { 
-        month: 'long', 
-        day: 'numeric' 
-    });
-    const endDate = weekDates.end.toLocaleDateString('en-US', { 
-        month: 'long', 
-        day: 'numeric',
-        year: 'numeric'
-    });
-    
-    // Update the shared planning header title
-    const titleElement = document.getElementById('planning-title');
-    if (titleElement) {
-        titleElement.textContent = `Post ID: ${postId} - ${startDate}-${endDate} (Week ${weekNumber})`;
-    }
-}
 
 async function loadCalendarContent(year, weeks) {
     
