@@ -95,9 +95,26 @@
 2025-09-28 10:46:15,256 - blueprints.launchpad - INFO - Facebook cache refresh attempted (requires app access token)
 2025-09-28 10:46:15,256 - blueprints.launchpad - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/196935752675/feed
 2025-09-28 10:46:15,259 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): graph.facebook.com:443
-el
-2025-09-28 10:46:15,256 - blueprints.launchpad - INFO - Access token being used: EAAUeqRZAekZBkBPt2zz...
-2025-09-28 10:46:15,256 - blueprints.launchpad - INFO - Refreshing Facebook cache for: https://clan.com/tartan-tea-towel
-2025-09-28 10:46:15,256 - blueprints.launchpad - INFO - Facebook cache refresh attempted (requires app access token)
-2025-09-28 10:46:15,256 - blueprints.launchpad - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/196935752675/feed
-2025-09-28 10:46:15,259 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): graph.facebook.com:443
+2025-09-28 10:46:24,998 - urllib3.connectionpool - DEBUG - https://graph.facebook.com:443 "POST /v18.0/196935752675/feed HTTP/1.1" 200 38
+2025-09-28 10:46:25,000 - blueprints.launchpad - INFO - Facebook API response - Status: 200
+2025-09-28 10:46:25,000 - blueprints.launchpad - INFO - Facebook API response - Content: {"id":"196935752675_1116979763906679"}
+2025-09-28 10:46:25,002 - blueprints.launchpad - INFO - Posting to CLAN by Scotweb (Page ID: 108385661622841)
+2025-09-28 10:46:25,002 - blueprints.launchpad - INFO - Post content:  👋 Hey Clan lovers! 🎉 We've got a fresh, new addition to our collection that'll bring a burst of Sco...
+2025-09-28 10:46:25,002 - blueprints.launchpad - INFO - Link URL: https://clan.com/tartan-tea-towel
+2025-09-28 10:46:25,002 - blueprints.launchpad - INFO - Access token being used: EAAUeqRZAekZBkBPvpVG...
+2025-09-28 10:46:25,002 - blueprints.launchpad - INFO - Refreshing Facebook cache for: https://clan.com/tartan-tea-towel
+2025-09-28 10:46:25,002 - blueprints.launchpad - INFO - Facebook cache refresh attempted (requires app access token)
+2025-09-28 10:46:25,002 - blueprints.launchpad - INFO - Facebook API call - URL: https://graph.facebook.com/v18.0/108385661622841/feed
+2025-09-28 10:46:25,005 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): graph.facebook.com:443
+2025-09-28 10:46:29,004 - urllib3.connectionpool - DEBUG - https://graph.facebook.com:443 "POST /v18.0/108385661622841/feed HTTP/1.1" 200 40
+2025-09-28 10:46:29,006 - blueprints.launchpad - INFO - Facebook API response - Status: 200
+2025-09-28 10:46:29,006 - blueprints.launchpad - INFO - Facebook API response - Content: {"id":"108385661622841_811268548088534"}
+2025-09-28 10:46:29,015 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:46:29] "POST /launchpad/api/syndication/post-now HTTP/1.1" 200 -
+2025-09-28 10:46:29,031 - config.database - INFO - Database connection established
+2025-09-28 10:46:29,043 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:46:29] "GET /launchpad/api/queue HTTP/1.1" 200 -
+22841/feed HTTP/1.1" 200 40
+2025-09-28 10:46:29,006 - blueprints.launchpad - INFO - Facebook API response - Status: 200
+2025-09-28 10:46:29,006 - blueprints.launchpad - INFO - Facebook API response - Content: {"id":"108385661622841_811268548088534"}
+2025-09-28 10:46:29,015 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:46:29] "POST /launchpad/api/syndication/post-now HTTP/1.1" 200 -
+2025-09-28 10:46:29,031 - config.database - INFO - Database connection established
+2025-09-28 10:46:29,043 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 10:46:29] "GET /launchpad/api/queue HTTP/1.1" 200 -
