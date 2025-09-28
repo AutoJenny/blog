@@ -32,18 +32,6 @@
                 <p>AI-powered suggestions based on seasons and trends</p>
                 <a href="{{ url_for('planning.planning_calendar_ideas', post_id=post_id) }}" class="btn btn-primary">Generate Ideas</a>
             </div>
-            
-            <div class="action-card">
-                <h3><i class="fas fa-search"></i> Content Gaps</h3>
-                <p>Identify missing topics and opportunities</p>
-                <a href="{{ url_for('planning.planning_calendar_gaps', post_id=post_id) }}" class="btn btn-primary">Analyze Gaps</a>
-            </div>
-            
-            <div class="action-card">
-                <h3><i class="fas fa-clock"></i> Schedule Management</h3>
-                <p>Plan and manage your publishing timeline</p>
-                <a href="{{ url_for('planning.planning_calendar_schedule', post_id=post_id) }}" class="btn btn-primary">Manage Schedule</a>
-            </div>
         </div>
     </div>
     {% endblock %}

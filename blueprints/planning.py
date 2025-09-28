@@ -220,15 +220,6 @@ def planning_calendar_ideas(post_id):
                              week_dates=f"Week {week_number}, {current_date.year}",
                              blueprint_name='planning')
 
-@bp.route('/posts/<int:post_id>/calendar/gaps')
-def planning_calendar_gaps(post_id):
-    """Content Gaps sub-stage"""
-    return render_template('planning/calendar/gaps.html', post_id=post_id, blueprint_name='planning')
-
-@bp.route('/posts/<int:post_id>/calendar/schedule')
-def planning_calendar_schedule(post_id):
-    """Schedule Management sub-stage"""
-    return render_template('planning/calendar/schedule.html', post_id=post_id, blueprint_name='planning')
 
 # Concept Development Stage
 @bp.route('/posts/<int:post_id>/concept')
