@@ -595,8 +595,8 @@ async function updateIdeaCategory(ideaId, newCategory) {
         showNotification(result.message, 'success');
         // Invalidate cache for this week
         cacheManager.invalidateWeek(currentYear, currentWeekNumber);
-        // Reload calendar content to show updated category
-        updateCalendar();
+        // Reload current week's content to show updated category
+        await loadWeekContent(currentYear, currentWeekNumber);
     } catch (error) {
         console.error('Error:', error);
         showNotification(error.message, 'error');
@@ -632,8 +632,8 @@ async function updateEventCategory(eventId, newCategory) {
         showNotification(result.message, 'success');
         // Invalidate cache for this week
         cacheManager.invalidateWeek(currentYear, currentWeekNumber);
-        // Reload calendar content to show updated category
-        updateCalendar();
+        // Reload current week's content to show updated category
+        await loadWeekContent(currentYear, currentWeekNumber);
     } catch (error) {
         console.error('Error:', error);
         showNotification(error.message, 'error');
@@ -723,11 +723,11 @@ async function updateIdeaTitle(ideaId, newTitle) {
 async function deleteIdea(ideaId) {
     if (confirm('Are you sure you want to delete this idea?')) {
         try {
-            const result = await dataLoader.deleteIdea(ideaId);
-            // Invalidate cache for this week
-            cacheManager.invalidateWeek(currentYear, currentWeekNumber);
-            // Reload calendar content
-            updateCalendar();
+        const result = await dataLoader.deleteIdea(ideaId);
+        // Invalidate cache for this week
+        cacheManager.invalidateWeek(currentYear, currentWeekNumber);
+        // Reload current week's content
+        await loadWeekContent(currentYear, currentWeekNumber);
             showNotification(result.message, 'success');
         } catch (error) {
             console.error('Error:', error);
@@ -819,11 +819,11 @@ async function updateEventTitle(eventId, newTitle) {
 async function deleteEvent(eventId) {
     if (confirm('Are you sure you want to delete this event?')) {
         try {
-            const result = await dataLoader.deleteEvent(eventId);
-            // Invalidate cache for this week
-            cacheManager.invalidateWeek(currentYear, currentWeekNumber);
-            // Reload calendar content
-            updateCalendar();
+        const result = await dataLoader.deleteEvent(eventId);
+        // Invalidate cache for this week
+        cacheManager.invalidateWeek(currentYear, currentWeekNumber);
+        // Reload current week's content
+        await loadWeekContent(currentYear, currentWeekNumber);
             showNotification(result.message, 'success');
         } catch (error) {
             console.error('Error:', error);
@@ -915,11 +915,11 @@ async function updateScheduleTitle(scheduleId, newTitle) {
 async function deleteSchedule(scheduleId) {
     if (confirm('Are you sure you want to delete this schedule entry?')) {
         try {
-            const result = await dataLoader.deleteSchedule(scheduleId);
-            // Invalidate cache for this week
-            cacheManager.invalidateWeek(currentYear, currentWeekNumber);
-            // Reload calendar content
-            updateCalendar();
+        const result = await dataLoader.deleteSchedule(scheduleId);
+        // Invalidate cache for this week
+        cacheManager.invalidateWeek(currentYear, currentWeekNumber);
+        // Reload current week's content
+        await loadWeekContent(currentYear, currentWeekNumber);
             showNotification(result.message, 'success');
         } catch (error) {
             console.error('Error:', error);
@@ -1152,8 +1152,8 @@ async function moveItemToWeek(itemType, itemId, targetWeek) {
         showNotification(`${itemType.charAt(0).toUpperCase() + itemType.slice(1)} moved to week ${targetWeek}`, 'success');
         // Invalidate cache for this week
         cacheManager.invalidateWeek(currentYear, currentWeekNumber);
-        // Reload calendar content
-        updateCalendar();
+        // Reload current week's content
+        await loadWeekContent(currentYear, currentWeekNumber);
     } catch (error) {
         console.error('Error:', error);
         showNotification(`Error moving ${itemType}`, 'error');
@@ -1225,8 +1225,8 @@ async function saveNewEntry(weekNumber, title) {
         document.querySelector('.modal').remove();
         // Invalidate cache for this week
         cacheManager.invalidateWeek(currentYear, currentWeekNumber);
-        // Reload calendar
-        updateCalendar();
+        // Reload current week's content
+        await loadWeekContent(currentYear, currentWeekNumber);
     } catch (error) {
         console.error('Error:', error);
         showNotification(error.message, 'error');
