@@ -17674,3 +17674,6 @@ LINE 4:                 LEFT JOIN calendar_ideas ci ON cs.idea_id = ...
 2025-09-28 20:54:09,964 - config.database - INFO - Database connection established
 2025-09-28 20:54:09,969 - blueprints.planning - INFO - Calendar schedule query for post_id=55 returned 0 results
 2025-09-28 20:54:09,969 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 20:54:09] "GET /planning/api/posts/55 HTTP/1.1" 200 -
+2025-09-28 20:57:56,949 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-28 20:57:57,191 - werkzeug - WARNING -  * Debugger is active!
+2025-09-28 20:57:57,196 - werkzeug - INFO -  * Debugger PIN: 102-335-875
