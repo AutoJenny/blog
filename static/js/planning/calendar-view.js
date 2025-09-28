@@ -1,8 +1,16 @@
+import DateUtils from './calendar/utils/date-utils.js';
+import CONFIG from './calendar/utils/constants.js';
+
+// Global variables
+let currentYear = new Date().getFullYear();
+let currentWeekNumber = DateUtils.getWeekNumber(new Date());
+let categories = [];
+
 document.addEventListener('DOMContentLoaded', function() {
     
     // Set current stage for navigation
-    window.currentStage = 'calendar';
-    window.currentSubstage = 'view';
+    window.currentStage = CONFIG.WINDOW.CURRENT_STAGE;
+    window.currentSubstage = CONFIG.WINDOW.CURRENT_SUBSTAGE;
     // postId is set in the HTML template
     
     
@@ -11,31 +19,27 @@ document.addEventListener('DOMContentLoaded', function() {
     
 });
 
-let currentYear = new Date().getFullYear();
-let currentWeekNumber = getWeekNumber(new Date());
-let categories = [];
-
 async function loadCategories() {
     try {
-        const response = await fetch('/planning/api/calendar/categories');
+        const response = await fetch(CONFIG.API.CATEGORIES);
         const data = await response.json();
         
         if (data.success) {
             categories = data.categories;
         } else {
-            console.error('Error loading categories:', data.error);
+            console.error(CONFIG.MESSAGES.CATEGORIES_ERROR, data.error);
         }
     } catch (error) {
-        console.error('Error loading categories:', error);
+        console.error(CONFIG.MESSAGES.CATEGORIES_ERROR, error);
     }
 }
 
 async function initializeCalendar() {
     
     // Test if calendar grid exists
-    const calendarGrid = document.getElementById('calendar-grid');
+    const calendarGrid = document.getElementById(CONFIG.UI.CALENDAR_GRID);
     if (!calendarGrid) {
-        console.error('CRITICAL: calendar-grid element not found!');
+        console.error(CONFIG.MESSAGES.CRITICAL_GRID_ERROR);
         return;
     }
     
@@ -60,52 +64,28 @@ async function initializeCalendar() {
     });
 }
 
-function getWeekNumber(date) {
-    const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
-    const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
-    return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
-}
-
-function getWeekDates(weekNumber, year) {
-    const firstDayOfYear = new Date(year, 0, 1);
-    const firstMonday = new Date(firstDayOfYear);
-    firstMonday.setDate(firstDayOfYear.getDate() + (firstDayOfYear.getDay() === 0 ? 1 : 8 - firstDayOfYear.getDay()));
-    
-    const weekStart = new Date(firstMonday);
-    weekStart.setDate(firstMonday.getDate() + (weekNumber - 1) * 7);
-    
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekStart.getDate() + 6);
-    
-    return { start: weekStart, end: weekEnd };
-}
-
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
 
 async function updateCalendar() {
     
-    document.getElementById('current-year').textContent = currentYear;
+    document.getElementById(CONFIG.UI.CURRENT_YEAR).textContent = currentYear;
     
     // Calculate current week for this year
     const today = new Date();
     const isCurrentYear = today.getFullYear() === currentYear;
-    const weekNumber = isCurrentYear ? getWeekNumber(today) : 1;
+    const weekNumber = isCurrentYear ? DateUtils.getWeekNumber(today) : 1;
     
-    document.getElementById('current-week').textContent = 
+    document.getElementById(CONFIG.UI.CURRENT_WEEK).textContent = 
         `Week ${weekNumber} of 52`;
     
     // Ensure categories are loaded before rendering content
     if (categories.length === 0) {
-        console.log('Categories not loaded yet, loading now...');
+        console.log(CONFIG.MESSAGES.CATEGORIES_NOT_LOADED);
         await loadCategories();
     }
     
     try {
         // Load calendar weeks from database
-        const response = await fetch(`/planning/api/calendar/weeks/${currentYear}`);
+        const response = await fetch(`${CONFIG.API.CALENDAR_DATA}/${currentYear}`);
         const data = await response.json();
         
         
@@ -113,12 +93,12 @@ async function updateCalendar() {
             renderCalendarFromData(data.weeks, weekNumber);
             await loadCalendarContent(currentYear, data.weeks);
         } else {
-            console.error('Error loading calendar data or no weeks found:', data.error || 'No weeks data');
+            console.error(CONFIG.MESSAGES.CALENDAR_ERROR, data.error || 'No weeks data');
             // Re-render fallback if database fails
             renderCalendarFallback();
         }
     } catch (error) {
-        console.error('Error loading calendar data:', error);
+        console.error(CONFIG.MESSAGES.CALENDAR_LOAD_ERROR, error);
         // Re-render fallback if database fails
         renderCalendarFallback();
     }
@@ -151,7 +131,7 @@ function renderCalendarFromData(weeks, currentWeekNumber) {
     calendarGrid.style.gridTemplateColumns = `100px repeat(${maxWeeks}, 1fr)`;
     
     // Create month rows in chronological order
-    const monthOrder = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthOrder = CONFIG.MONTHS;
     const sortedMonths = monthOrder.filter(month => monthGroups[month]);
     
     sortedMonths.forEach(monthName => {
@@ -159,21 +139,21 @@ function renderCalendarFromData(weeks, currentWeekNumber) {
         
         // Month name cell
         const monthCell = document.createElement('div');
-        monthCell.className = 'month-cell';
+        monthCell.className = CONFIG.CSS.MONTH_CELL;
         monthCell.textContent = monthName;
         calendarGrid.appendChild(monthCell);
         
         // Create week cells for this month
         for (let i = 0; i < maxWeeks; i++) {
             const weekCell = document.createElement('div');
-            weekCell.className = 'week-cell';
+            weekCell.className = CONFIG.CSS.WEEK_CELL;
             
             if (i < monthWeeks.length) {
                 const week = monthWeeks[i];
                 const isCurrentWeek = week.is_current_week;
                 
                 if (isCurrentWeek) {
-                    weekCell.classList.add('current-week');
+                    weekCell.classList.add(CONFIG.CSS.CURRENT_WEEK);
                 }
                 
                 // Add data-week attribute for content loading
@@ -181,7 +161,7 @@ function renderCalendarFromData(weeks, currentWeekNumber) {
                 
                 weekCell.innerHTML = `
                     <div class="week-number">W${week.week_number}</div>
-                    <div class="week-dates">${formatDate(week.start_date)} - ${formatDate(week.end_date)}</div>
+                    <div class="week-dates">${DateUtils.formatDate(week.start_date)} - ${DateUtils.formatDate(week.end_date)}</div>
                     <div class="week-content">
                         <!-- Ideas and events will be loaded here -->
                     </div>
@@ -193,7 +173,7 @@ function renderCalendarFromData(weeks, currentWeekNumber) {
                 `;
                 
                 // Add click handler for week selection
-                weekCell.addEventListener('click', () => selectWeek(week.week_number, week.month_name));
+                weekCell.addEventListener('click', () => DateUtils.selectWeek(week.week_number, week.month_name));
             } else {
                 weekCell.innerHTML = '<div class="week-dates">-</div>';
             }
@@ -206,9 +186,19 @@ function renderCalendarFromData(weeks, currentWeekNumber) {
 
 async function loadCalendarContent(year, weeks) {
     
-    // Load ideas and events for each week
-    for (const week of weeks) {
-        await loadWeekContent(year, week.week_number);
+    // Load ideas and events for each week with rate limiting
+    for (let i = 0; i < weeks.length; i++) {
+        const week = weeks[i];
+        try {
+            await loadWeekContent(year, week.week_number);
+            // Add small delay to prevent overwhelming the server
+            if (i < weeks.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+        } catch (error) {
+            console.error(`Failed to load content for week ${week.week_number}:`, error);
+            // Continue with next week even if one fails
+        }
     }
     
 }
@@ -217,14 +207,23 @@ async function loadWeekContent(year, weekNumber) {
     try {
         // Load ideas (perpetual)
         const ideasResponse = await fetch(`/planning/api/calendar/ideas/${weekNumber}`);
+        if (!ideasResponse.ok) {
+            throw new Error(`HTTP ${ideasResponse.status}: ${ideasResponse.statusText}`);
+        }
         const ideasData = await ideasResponse.json();
         
         // Load events (year-specific)
         const eventsResponse = await fetch(`/planning/api/calendar/events/${year}/${weekNumber}`);
+        if (!eventsResponse.ok) {
+            throw new Error(`HTTP ${eventsResponse.status}: ${eventsResponse.statusText}`);
+        }
         const eventsData = await eventsResponse.json();
         
         // Load schedule
         const scheduleResponse = await fetch(`/planning/api/calendar/schedule/${year}/${weekNumber}`);
+        if (!scheduleResponse.ok) {
+            throw new Error(`HTTP ${scheduleResponse.status}: ${scheduleResponse.statusText}`);
+        }
         const scheduleData = await scheduleResponse.json();
         
         // Render content for this week
@@ -512,7 +511,7 @@ function renderCalendarFallback() {
     let currentGroup = [];
     
     for (let week = 1; week <= 52; week++) {
-        const weekDates = getWeekDates(week, currentYear);
+        const weekDates = DateUtils.getWeekDates(week, currentYear);
         const weekMonth = weekDates.start.getMonth();
         
         if (weekMonth !== currentMonth) {
@@ -545,36 +544,36 @@ function renderCalendarFallback() {
     // Create month rows
     monthGroups.forEach((weeks, groupIndex) => {
         const firstWeek = weeks[0];
-        const weekDates = getWeekDates(firstWeek, currentYear);
+        const weekDates = DateUtils.getWeekDates(firstWeek, currentYear);
         const monthName = monthNames[weekDates.start.getMonth()];
         
         
         // Month name cell
         const monthCell = document.createElement('div');
-        monthCell.className = 'month-cell';
+        monthCell.className = CONFIG.CSS.MONTH_CELL;
         monthCell.textContent = monthName;
         calendarGrid.appendChild(monthCell);
         
         // Create week cells for this month
         for (let i = 0; i < maxWeeks; i++) {
             const weekCell = document.createElement('div');
-            weekCell.className = 'week-cell';
+            weekCell.className = CONFIG.CSS.WEEK_CELL;
             
             if (i < weeks.length) {
                 const week = weeks[i];
-                const weekDates = getWeekDates(week, currentYear);
+                const weekDates = DateUtils.getWeekDates(week, currentYear);
                 const today = new Date();
                 const isCurrentYear = today.getFullYear() === currentYear;
-                const currentWeekNumber = isCurrentYear ? getWeekNumber(today) : 1;
+                const currentWeekNumber = isCurrentYear ? DateUtils.getWeekNumber(today) : 1;
                 const isCurrentWeek = isCurrentYear && week === currentWeekNumber;
                 
                 if (isCurrentWeek) {
-                    weekCell.classList.add('current-week');
+                    weekCell.classList.add(CONFIG.CSS.CURRENT_WEEK);
                 }
                 
                 weekCell.innerHTML = `
                     <div class="week-number">W${week}</div>
-                    <div class="week-dates">${formatDate(weekDates.start)} - ${formatDate(weekDates.end)}</div>
+                    <div class="week-dates">${DateUtils.formatDate(weekDates.start)} - ${DateUtils.formatDate(weekDates.end)}</div>
                     <div class="week-content">
                         <!-- Posts will be loaded here -->
                     </div>
@@ -586,7 +585,7 @@ function renderCalendarFallback() {
                 `;
                 
                 // Add click handler for week selection
-                weekCell.addEventListener('click', () => selectWeek(week, weekDates.start.getMonth()));
+                weekCell.addEventListener('click', () => DateUtils.selectWeek(week, weekDates.start.getMonth()));
             } else {
                 weekCell.innerHTML = '<div class="week-dates">-</div>';
             }
@@ -597,17 +596,6 @@ function renderCalendarFallback() {
     
 }
 
-function getWeeksInMonth(monthStart, monthEnd) {
-    // Calculate how many weeks this month spans
-    const firstWeek = getWeekNumber(monthStart);
-    const lastWeek = getWeekNumber(monthEnd);
-    return lastWeek - firstWeek + 1;
-}
-
-function selectWeek(weekNumber, month) {
-    // Implement week selection functionality
-    // This could open a detailed view or allow scheduling posts for that week
-}
 
 // ============================================================================
 // CALENDAR EDITING FUNCTIONS
@@ -1451,6 +1439,23 @@ function saveNewEntry(weekNumber, title) {
         showNotification('Error adding entry', 'error');
     });
 }
+
+// Make functions globally accessible for HTML onclick handlers
+window.deleteIdea = deleteIdea;
+window.deleteEvent = deleteEvent;
+window.deleteSchedule = deleteSchedule;
+window.updateIdeaPriority = updateIdeaPriority;
+window.updateEventPriority = updateEventPriority;
+window.updateSchedulePriority = updateSchedulePriority;
+window.updateIdeaCategory = updateIdeaCategory;
+window.updateEventCategory = updateEventCategory;
+window.editIdea = editIdea;
+window.editEvent = editEvent;
+window.editSchedule = editSchedule;
+window.scheduleIdea = scheduleIdea;
+window.scheduleEvent = scheduleEvent;
+window.addNewEntry = addNewEntry;
+window.saveNewEntry = saveNewEntry;
 
 // Initialize drag and drop when calendar loads
 document.addEventListener('DOMContentLoaded', function() {
