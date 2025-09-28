@@ -1484,3 +1484,36 @@ def api_update_idea_seed(post_id):
     except Exception as e:
         logger.error(f"Error updating idea seed for post {post_id}: {e}")
         return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/llm/prompts/idea-expansion', methods=['GET'])
+def api_get_idea_expansion_prompt():
+    """Get the LLM prompt used for idea expansion"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, name, system_prompt, prompt_text, description
+                FROM llm_prompt 
+                WHERE name = 'Scottish Idea Expansion'
+                ORDER BY updated_at DESC
+                LIMIT 1
+            """)
+            
+            prompt_data = cursor.fetchone()
+            
+            if not prompt_data:
+                return jsonify({'error': 'Idea expansion prompt not found'}), 404
+            
+            return jsonify({
+                'success': True,
+                'prompt': {
+                    'id': prompt_data['id'],
+                    'name': prompt_data['name'],
+                    'description': prompt_data['description'],
+                    'system_prompt': prompt_data['system_prompt'],
+                    'prompt_text': prompt_data['prompt_text']
+                }
+            })
+            
+    except Exception as e:
+        logger.error(f"Error fetching idea expansion prompt: {e}")
+        return jsonify({'error': str(e)}), 500
