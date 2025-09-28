@@ -168,7 +168,57 @@ def categories_manage():
 @bp.route('/posts/<int:post_id>/calendar/ideas')
 def planning_calendar_ideas(post_id):
     """Idea Generation sub-stage"""
-    return render_template('planning/calendar/ideas.html', post_id=post_id, blueprint_name='planning')
+    try:
+        # Get current week number
+        from datetime import datetime, timedelta
+        current_date = datetime.now()
+        current_year = current_date.year
+        
+        # Calculate current week number using the same logic as the calendar system
+        jan_1 = datetime(current_year, 1, 1)
+        days_since_jan_1 = (current_date - jan_1).days
+        first_monday = jan_1
+        if jan_1.weekday() != 0:  # If Jan 1 is not Monday
+            days_to_monday = (7 - jan_1.weekday()) % 7
+            first_monday = jan_1 + timedelta(days=days_to_monday)
+        
+        if current_date < first_monday:
+            # If current date is before first Monday, it's week 52 of previous year
+            week_number = 52
+        else:
+            days_since_first_monday = (current_date - first_monday).days
+            week_number = (days_since_first_monday // 7) + 1
+        
+        # Get week dates for display
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT start_date, end_date, month_name
+                FROM calendar_weeks 
+                WHERE year = %s AND week_number = %s
+            """, (current_year, week_number))
+            week_data = cursor.fetchone()
+            
+            if week_data:
+                week_dates = f"{week_data['start_date'].strftime('%b %d')} - {week_data['end_date'].strftime('%b %d, %Y')}"
+            else:
+                week_dates = f"Week {week_number}, {current_year}"
+        
+        return render_template('planning/calendar/ideas.html', 
+                             post_id=post_id, 
+                             week_number=week_number,
+                             week_dates=week_dates,
+                             blueprint_name='planning')
+    except Exception as e:
+        logger.error(f"Error in planning_calendar_ideas: {e}")
+        # Fallback with basic week number
+        from datetime import datetime
+        current_date = datetime.now()
+        week_number = current_date.isocalendar()[1]
+        return render_template('planning/calendar/ideas.html', 
+                             post_id=post_id, 
+                             week_number=week_number,
+                             week_dates=f"Week {week_number}, {current_date.year}",
+                             blueprint_name='planning')
 
 @bp.route('/posts/<int:post_id>/calendar/gaps')
 def planning_calendar_gaps(post_id):
@@ -1342,4 +1392,95 @@ def api_calendar_schedule_delete(schedule_id):
             
     except Exception as e:
         logger.error(f"Error deleting schedule entry: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/calendar/ideas/week/<int:week_number>', methods=['GET'])
+def api_calendar_ideas_for_week(week_number):
+    """Get all calendar ideas for a specific week number"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, idea_title, idea_description, seasonal_context, 
+                       content_type, priority, tags, is_recurring
+                FROM calendar_ideas 
+                WHERE week_number = %s
+                ORDER BY 
+                    CASE priority 
+                        WHEN 'mandatory' THEN 1 
+                        WHEN 'random' THEN 2 
+                        ELSE 3 
+                    END,
+                    id
+            """, (week_number,))
+            
+            ideas = cursor.fetchall()
+            
+            return jsonify({
+                'success': True,
+                'week_number': week_number,
+                'ideas': [dict(idea) for idea in ideas]
+            })
+            
+    except Exception as e:
+        logger.error(f"Error fetching calendar ideas for week {week_number}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/idea-seed', methods=['GET'])
+def api_get_idea_seed(post_id):
+    """Get the current idea seed for a post"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT idea_seed 
+                FROM post_development 
+                WHERE post_id = %s
+            """, (post_id,))
+            
+            result = cursor.fetchone()
+            idea_seed = result['idea_seed'] if result else None
+            
+            return jsonify({
+                'success': True,
+                'post_id': post_id,
+                'idea_seed': idea_seed
+            })
+            
+    except Exception as e:
+        logger.error(f"Error fetching idea seed for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/idea-seed', methods=['POST'])
+def api_update_idea_seed(post_id):
+    """Update the idea seed for a post"""
+    try:
+        data = request.get_json()
+        idea_seed = data.get('idea_seed', '')
+        
+        with db_manager.get_cursor() as cursor:
+            # Check if post_development record exists
+            cursor.execute("SELECT id FROM post_development WHERE post_id = %s", (post_id,))
+            if not cursor.fetchone():
+                # Create post_development record if it doesn't exist
+                cursor.execute("""
+                    INSERT INTO post_development (post_id, idea_seed)
+                    VALUES (%s, %s)
+                """, (post_id, idea_seed))
+            else:
+                # Update existing record
+                cursor.execute("""
+                    UPDATE post_development 
+                    SET idea_seed = %s, updated_at = CURRENT_TIMESTAMP
+                    WHERE post_id = %s
+                """, (idea_seed, post_id))
+            
+            cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Idea seed updated successfully',
+                'idea_seed': idea_seed
+            })
+            
+    except Exception as e:
+        logger.error(f"Error updating idea seed for post {post_id}: {e}")
         return jsonify({'error': str(e)}), 500
