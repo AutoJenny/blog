@@ -228,6 +228,17 @@
     transform: none;
 }
 
+.fallback-notice {
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    color: #92400e;
+    padding: 0.75rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
 @media (max-width: 768px) {
     .sections-content {
         grid-template-columns: 1fr;
@@ -374,8 +385,24 @@ async function startSectionPlanning() {
     }
 }
 
-function displaySections(sections) {
+function displaySections(sectionsData) {
     const resultsDisplay = document.getElementById('llm-results-display');
+    
+    // Handle both old format (array) and new format (object with sections array)
+    let sections = [];
+    let metadata = {};
+    
+    if (Array.isArray(sectionsData)) {
+        // Old format - direct array
+        sections = sectionsData;
+    } else if (sectionsData && sectionsData.sections) {
+        // New format - object with sections array
+        sections = sectionsData.sections;
+        metadata = sectionsData.metadata || {};
+    } else {
+        resultsDisplay.innerHTML = '<div class="no-results">No sections generated. Try again with different settings.</div>';
+        return;
+    }
     
     if (sections.length === 0) {
         resultsDisplay.innerHTML = '<div class="no-results">No sections generated. Try again with different settings.</div>';
@@ -383,6 +410,11 @@ function displaySections(sections) {
     }
     
     let sectionsHTML = '<div class="sections-list">';
+    
+    // Add metadata info if available
+    if (metadata.fallback) {
+        sectionsHTML += '<div class="fallback-notice">⚠️ Using fallback allocation due to LLM validation issues</div>';
+    }
     
     sections.forEach((section, index) => {
         sectionsHTML += `
@@ -406,7 +438,7 @@ function displaySections(sections) {
     resultsDisplay.innerHTML = sectionsHTML;
 }
 
-async function saveSectionsToDatabase(sections) {
+async function saveSectionsToDatabase(sectionsData) {
     try {
         const response = await fetch(`/planning/api/posts/${window.postId}/sections`, {
             method: 'POST',
@@ -414,7 +446,7 @@ async function saveSectionsToDatabase(sections) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                sections: sections
+                sections: sectionsData
             })
         });
         
