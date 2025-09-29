@@ -1783,7 +1783,16 @@ def api_get_idea_scope(post_id):
             """, (post_id,))
             
             result = cursor.fetchone()
-            idea_scope = result['idea_scope'] if result else None
+            idea_scope_raw = result['idea_scope'] if result else None
+            
+            # Parse the JSON string if it exists
+            idea_scope = None
+            if idea_scope_raw:
+                try:
+                    idea_scope = json.loads(idea_scope_raw)
+                except json.JSONDecodeError:
+                    logger.error(f"Failed to parse idea_scope JSON for post {post_id}")
+                    idea_scope = None
             
             return jsonify({
                 'success': True,
