@@ -1,9 +1,5 @@
 {% extends "base.html" %}
 
-{% block css_assets %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/llm-module.css') }}">
-{% endblock %}
-
 {% block title %}Topic Brainstorming - Concept Development - Planning - BlogForge{% endblock %}
 
 {% block content %}
@@ -40,20 +36,51 @@
                 
                 <div class="brainstorm-settings">
                     <h4>Brainstorm Settings</h4>
-                <div class="form-group">
-                    <label for="brainstorm-type">Brainstorm Type</label>
-                    <select id="brainstorm-type">
-                        <option value="comprehensive">Comprehensive (50+ ideas)</option>
-                        <option value="focused">Focused (20-30 ideas)</option>
-                        <option value="creative">Creative (unusual angles)</option>
-                        <option value="practical">Practical (how-to focused)</option>
-                    </select>
-                </div>
+                    <div class="form-group">
+                        <label for="brainstorm-type">Brainstorm Type</label>
+                        <select id="brainstorm-type">
+                            <option value="comprehensive">Comprehensive (50+ ideas)</option>
+                            <option value="focused">Focused (20-30 ideas)</option>
+                            <option value="creative">Creative (unusual angles)</option>
+                            <option value="practical">Practical (how-to focused)</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             
             <div class="brainstorm-results">
-                {% include 'includes/llm_module.html' %}
+                <div class="prompt-display">
+                    <div class="prompt-header">
+                        <h4>LLM Prompt in Use</h4>
+                        <div class="prompt-actions">
+                            <button class="btn btn-secondary" onclick="togglePromptEdit()" id="edit-prompt-btn">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-success" onclick="savePrompt()" id="save-prompt-btn" style="display: none;">
+                                <i class="fas fa-save"></i> Save
+                            </button>
+                            <button class="btn btn-secondary" onclick="cancelPromptEdit()" id="cancel-prompt-btn" style="display: none;">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </div>
+                    <div id="llm-provider-info" class="llm-provider-info">
+                        <!-- LLM provider, model, and settings will appear here -->
+                    </div>
+                    <div id="llm-prompt-display" class="prompt-content">
+                        <!-- LLM prompt will appear here -->
+                    </div>
+                    <div id="llm-prompt-edit" class="prompt-edit" style="display: none;">
+                        <div class="form-group">
+                            <label for="system-prompt-edit">System Prompt</label>
+                            <textarea id="system-prompt-edit" rows="4" placeholder="System prompt..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="user-prompt-edit">User Prompt</label>
+                            <textarea id="user-prompt-edit" rows="8" placeholder="User prompt..."></textarea>
+                        </div>
+                    </div>
+                </div>
                 
                 <div class="topics-results">
                     <div class="topics-header">
@@ -71,21 +98,21 @@
                                 </select>
                             </div>
                             <div class="stats">
-                        <span id="total-ideas">0</span> ideas generated
+                                <span id="total-ideas">0</span> ideas generated
                             </div>
+                        </div>
                     </div>
-                </div>
-                
-                <div id="topics-list" class="topics-list">
+                    
+                    <div id="topics-list" class="topics-list">
                         <div class="no-topics">
                             <p>No topics generated yet. Click "Generate Topics" to begin.</p>
                         </div>
-                </div>
-                
+                    </div>
+                    
                     <div class="topics-actions">
                         <button class="btn btn-primary" onclick="regenerateTopics()" id="regenerate-btn">
                             <i class="fas fa-redo"></i> Regenerate
-                    </button>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -467,7 +494,7 @@
 <script>
 let selectedTopics = new Set();
 let generatedTopics = [];
-let llmModule = null;
+let currentPrompt = null;
 
 // Set navigation context
 document.addEventListener('DOMContentLoaded', function() {
@@ -476,11 +503,9 @@ document.addEventListener('DOMContentLoaded', function() {
     window.currentSubstage = 'brainstorm';
     window.postId = {{ post_id }};
     
-    // Initialize LLM module
-    llmModule = initializeLLMModule('brainstorm', window.postId);
-    
-    // Load expanded idea and existing topics
+    // Load expanded idea and LLM prompt
     loadExpandedIdea();
+    loadLLMPrompt();
     loadExistingTopics();
     
     // Initialize brainstorming functionality
@@ -518,6 +543,82 @@ function displayExpandedIdea(expandedIdea) {
 function displayExpandedIdeaError(error) {
     const expandedContent = document.getElementById('expanded-idea-display');
     expandedContent.innerHTML = `<div class="error">Error loading expanded idea: ${error}</div>`;
+}
+
+async function loadLLMPrompt() {
+    try {
+        const response = await fetch('/planning/api/llm/prompts/topic-brainstorming');
+        const data = await response.json();
+        
+        if (data.success) {
+            displayLLMPrompt(data.prompt);
+            if (data.llm_config) {
+                displayLLMConfig(data.llm_config);
+            }
+        } else {
+            console.error('Error loading LLM prompt:', data.error);
+            displayLLMPromptError(data.error);
+        }
+    } catch (error) {
+        console.error('Error loading LLM prompt:', error);
+        displayLLMPromptError('Failed to load LLM prompt');
+    }
+}
+
+function displayLLMPrompt(prompt) {
+    const promptDisplay = document.getElementById('llm-prompt-display');
+    
+    // Store the current prompt for editing
+    currentPrompt = prompt;
+    
+    let promptHTML = '';
+    
+    // If there's a separate system prompt, display it first
+    if (prompt.system_prompt) {
+        promptHTML += `<div class="system-prompt">${escapeHtml(prompt.system_prompt)}</div>`;
+    }
+    
+    // Display the main prompt text
+    if (prompt.prompt_text) {
+        promptHTML += `<div class="user-prompt">${escapeHtml(prompt.prompt_text)}</div>`;
+    }
+    
+    // Highlight data placeholders
+    promptHTML = promptHTML.replace(/\[TOPIC\]/g, '<span class="data-placeholder">[TOPIC]</span>');
+    
+    promptDisplay.innerHTML = promptHTML;
+}
+
+function displayLLMPromptError(error) {
+    const promptDisplay = document.getElementById('llm-prompt-display');
+    promptDisplay.innerHTML = `<div class="error">Error loading prompt: ${error}</div>`;
+}
+
+function displayLLMConfig(config) {
+    const providerInfo = document.getElementById('llm-provider-info');
+    
+    providerInfo.innerHTML = `
+        <div class="provider-item">
+            <div class="provider-label">Provider</div>
+            <div class="provider-value">${config.provider}</div>
+        </div>
+        <div class="provider-item">
+            <div class="provider-label">Model</div>
+            <div class="provider-value">${config.model}</div>
+        </div>
+        <div class="provider-item">
+            <div class="provider-label">Temperature</div>
+            <div class="provider-value">${config.temperature}</div>
+        </div>
+        <div class="provider-item">
+            <div class="provider-label">Max Tokens</div>
+            <div class="provider-value">${config.max_tokens}</div>
+        </div>
+        <div class="provider-item">
+            <div class="provider-label">Timeout</div>
+            <div class="provider-value">${config.timeout}s</div>
+        </div>
+    `;
 }
 
 async function loadExistingTopics() {
@@ -578,88 +679,73 @@ async function startBrainstorming() {
         return;
     }
     
-    // Use the shared LLM module to generate content
-    if (llmModule) {
-        // Override the generateContent method to use the brainstorm API
-        const originalGenerateContent = llmModule.generateContent.bind(llmModule);
-        llmModule.generateContent = async function() {
-            const generateBtn = document.getElementById('generate-btn');
-            const resultsDisplay = document.getElementById('llm-results-display');
-            
-            if (!generateBtn || !resultsDisplay) return;
-    
     // Show loading state
-            generateBtn.disabled = true;
-            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
-            resultsDisplay.innerHTML = '<div class="loading">Generating topics...</div>';
-            
-            try {
-                // Call the brainstorming API
-                const response = await fetch('/planning/api/brainstorm/topics', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        expanded_idea: expandedIdea,
-                        brainstorm_type: brainstormType,
-                        post_id: window.postId
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    generatedTopics = data.topics || [];
-                    displayTopics(generatedTopics);
-                    // Automatically save all generated topics
-                    await saveTopicsToDatabase(generatedTopics);
-                } else {
-                    console.error('Error generating topics:', data.error);
-                    resultsDisplay.innerHTML = `<div class="error">Error generating topics: ${data.error}</div>`;
-                }
-            } catch (error) {
-                console.error('Error generating topics:', error);
-                resultsDisplay.innerHTML = `<div class="error">Failed to generate topics: ${error.message}</div>`;
-            } finally {
-                // Reset button state
-                generateBtn.disabled = false;
-                generateBtn.innerHTML = '<i class="fas fa-brain"></i> Generate Topics';
-            }
-        };
+    const topicsList = document.getElementById('topics-list');
+    const generateBtn = document.getElementById('generate-btn');
+    
+    topicsList.innerHTML = '<div class="loading">Generating topics...</div>';
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    
+    try {
+        // Call the brainstorming API
+        const response = await fetch('/planning/api/brainstorm/topics', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                expanded_idea: expandedIdea,
+                brainstorm_type: brainstormType,
+                post_id: window.postId
+            })
+        });
         
-        // Call the modified generateContent method
-        await llmModule.generateContent();
+        const data = await response.json();
+        
+        if (data.success) {
+            generatedTopics = data.topics || [];
+            displayTopics(generatedTopics);
+            // Automatically save all generated topics
+            await saveTopicsToDatabase(generatedTopics);
+        } else {
+            console.error('Error generating topics:', data.error);
+            topicsList.innerHTML = `<div class="error">Error generating topics: ${data.error}</div>`;
+        }
+    } catch (error) {
+        console.error('Error generating topics:', error);
+        topicsList.innerHTML = `<div class="error">Failed to generate topics: ${error.message}</div>`;
+    } finally {
+        // Reset button state
+        generateBtn.disabled = false;
+        generateBtn.innerHTML = '<i class="fas fa-brain"></i> Generate Topics';
     }
 }
 
 function displayTopics(topics) {
-    const resultsDisplay = document.getElementById('llm-results-display');
+    const topicsList = document.getElementById('topics-list');
+    topicsList.innerHTML = '';
     
     if (topics.length === 0) {
-        resultsDisplay.innerHTML = '<div class="no-results">No topics generated. Try again with different settings.</div>';
+        topicsList.innerHTML = '<div class="no-topics">No topics generated. Try again with different settings.</div>';
         return;
     }
     
-    let topicsHTML = '<div class="topics-list">';
-    
     topics.forEach((topic, index) => {
-        topicsHTML += `
-            <div class="topic-item" data-topic-id="${index}" data-category="${topic.category || 'general'}">
-                <div class="topic-content">${topic.title}</div>
-            </div>
+        const topicItem = document.createElement('div');
+        topicItem.className = 'topic-item';
+        topicItem.dataset.topicId = index;
+        topicItem.dataset.category = topic.category || 'general';
+        topicItem.innerHTML = `
+            <div class="topic-content">${topic.title}</div>
         `;
-    });
-    
-    topicsHTML += '</div>';
-    
-    resultsDisplay.innerHTML = topicsHTML;
-    
-    // Add click handlers for selection
-    resultsDisplay.querySelectorAll('.topic-item').forEach((item, index) => {
-        item.addEventListener('click', function() {
+        
+        // Add click handler for selection
+        topicItem.addEventListener('click', function() {
             toggleTopicSelection(index);
         });
+        
+        topicsList.appendChild(topicItem);
     });
     
     updateStats();
@@ -667,17 +753,17 @@ function displayTopics(topics) {
 
 function toggleTopicSelection(topicId) {
     const topicItem = document.querySelector(`[data-topic-id="${topicId}"]`);
-            
-            if (selectedTopics.has(topicId)) {
-                selectedTopics.delete(topicId);
-                topicItem.classList.remove('selected');
-            } else {
-                selectedTopics.add(topicId);
-                topicItem.classList.add('selected');
-            }
-            
-            updateStats();
-        }
+    
+    if (selectedTopics.has(topicId)) {
+        selectedTopics.delete(topicId);
+        topicItem.classList.remove('selected');
+    } else {
+        selectedTopics.add(topicId);
+        topicItem.classList.add('selected');
+    }
+    
+    updateStats();
+}
 
 function updateStats() {
     const totalIdeas = document.querySelectorAll('.topic-item').length;
@@ -768,6 +854,85 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
+
+function togglePromptEdit() {
+    const promptDisplay = document.getElementById('llm-prompt-display');
+    const promptEdit = document.getElementById('llm-prompt-edit');
+    const editBtn = document.getElementById('edit-prompt-btn');
+    const saveBtn = document.getElementById('save-prompt-btn');
+    const cancelBtn = document.getElementById('cancel-prompt-btn');
+    
+    if (promptEdit.style.display === 'none') {
+        // Show edit mode
+        promptDisplay.style.display = 'none';
+        promptEdit.style.display = 'block';
+        editBtn.style.display = 'none';
+        saveBtn.style.display = 'inline-block';
+        cancelBtn.style.display = 'inline-block';
+        
+        // Populate edit fields
+        document.getElementById('system-prompt-edit').value = currentPrompt?.system_prompt || '';
+        document.getElementById('user-prompt-edit').value = currentPrompt?.prompt_text || '';
+    }
+}
+
+function cancelPromptEdit() {
+    const promptDisplay = document.getElementById('llm-prompt-display');
+    const promptEdit = document.getElementById('llm-prompt-edit');
+    const editBtn = document.getElementById('edit-prompt-btn');
+    const saveBtn = document.getElementById('save-prompt-btn');
+    const cancelBtn = document.getElementById('cancel-prompt-btn');
+    
+    // Hide edit mode
+    promptDisplay.style.display = 'block';
+    promptEdit.style.display = 'none';
+    editBtn.style.display = 'inline-block';
+    saveBtn.style.display = 'none';
+    cancelBtn.style.display = 'none';
+}
+
+async function savePrompt() {
+    const systemPrompt = document.getElementById('system-prompt-edit').value;
+    const userPrompt = document.getElementById('user-prompt-edit').value;
+    
+    if (!userPrompt.trim()) {
+        alert('User prompt cannot be empty');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/planning/api/llm/prompts/topic-brainstorming', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                system_prompt: systemPrompt,
+                prompt_text: userPrompt
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update the current prompt
+            currentPrompt.system_prompt = systemPrompt;
+            currentPrompt.prompt_text = userPrompt;
+            
+            // Refresh the display
+            displayLLMPrompt(currentPrompt);
+            
+            // Hide edit mode
+            cancelPromptEdit();
+            
+            alert('Prompt updated successfully!');
+        } else {
+            alert('Error updating prompt: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Error updating prompt:', error);
+        alert('Error updating prompt: ' + error.message);
+    }
+}
 </script>
-<script src="{{ url_for('static', filename='js/llm-module.js') }}"></script>
 {% endblock %}

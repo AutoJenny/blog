@@ -1,0 +1,258 @@
+/* LLM Module - Shared styles for LLM interactions */
+
+.llm-module {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* Prompt Panel */
+.llm-prompt-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.prompt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.prompt-header h4 {
+    color: #f1f5f9;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.prompt-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Provider Information */
+.llm-provider-info {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.provider-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.provider-label {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.provider-value {
+    font-size: 0.875rem;
+    color: #f1f5f9;
+    font-weight: 500;
+}
+
+/* Prompt Display */
+.llm-prompt-display {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 1rem;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #e2e8f0;
+}
+
+.system-prompt {
+    color: #a78bfa;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #334155;
+}
+
+.prompt-text {
+    color: #e2e8f0;
+}
+
+/* Placeholder highlighting */
+.llm-prompt-display .placeholder {
+    background: rgba(139, 92, 246, 0.2);
+    color: #a78bfa;
+    padding: 0.125rem 0.25rem;
+    border-radius: 3px;
+    font-weight: 500;
+}
+
+/* Prompt Edit Form */
+.llm-prompt-edit {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 1rem;
+}
+
+.llm-prompt-edit .form-group {
+    margin-bottom: 1rem;
+}
+
+.llm-prompt-edit label {
+    display: block;
+    color: #f1f5f9;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.llm-prompt-edit textarea {
+    width: 100%;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 0.75rem;
+    color: #f1f5f9;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+.llm-prompt-edit textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+/* Results Panel */
+.llm-results-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.results-header h4 {
+    color: #f1f5f9;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+/* Results Display */
+.llm-results-display {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 1rem;
+    min-height: 100px;
+}
+
+.llm-results-display .loading {
+    color: #94a3b8;
+    font-style: italic;
+    text-align: center;
+    padding: 2rem;
+}
+
+.llm-results-display .error {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 4px;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.llm-results-display .no-results {
+    color: #94a3b8;
+    font-style: italic;
+    text-align: center;
+    padding: 2rem;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+}
+
+.btn-success {
+    background: #10b981;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #059669;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .llm-module {
+        gap: 1rem;
+    }
+    
+    .llm-prompt-panel,
+    .llm-results-panel {
+        padding: 1rem;
+    }
+    
+    .prompt-header,
+    .results-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .prompt-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
