@@ -1737,6 +1737,36 @@ def api_generate_brainstorm_topics():
 def parse_brainstorm_topics(content):
     """Parse the LLM response to extract individual topics"""
     topics = []
+    
+    # First, try to parse as JSON (expected format)
+    try:
+        import json
+        # Clean up the content to extract JSON
+        content_clean = content.strip()
+        
+        # Find JSON array boundaries
+        start_idx = content_clean.find('[')
+        end_idx = content_clean.rfind(']')
+        
+        if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+            json_str = content_clean[start_idx:end_idx + 1]
+            topic_list = json.loads(json_str)
+            
+            if isinstance(topic_list, list):
+                for topic_text in topic_list:
+                    if isinstance(topic_text, str) and len(topic_text.strip()) > 3:
+                        topics.append({
+                            'title': topic_text.strip(),
+                            'description': topic_text.strip(),
+                            'category': 'general'
+                        })
+                
+                if topics:
+                    return topics[:50]  # Limit to 50 topics
+    except (json.JSONDecodeError, ValueError, TypeError):
+        pass  # Fall back to text parsing
+    
+    # Fallback: Parse as text format (numbered, bulleted, or short lines)
     lines = content.split('\n')
     
     for line in lines:
