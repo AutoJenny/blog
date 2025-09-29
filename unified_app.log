@@ -19086,3 +19086,29 @@ LINE 4:                 LEFT JOIN calendar_ideas ci ON cs.idea_id = ...
 2025-09-29 16:09:20,537 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
 2025-09-29 16:09:20,537 - blueprints.planning - INFO - Calendar schedule entry: {'id': 1, 'year': 2025, 'week_number': 39, 'post_id': 60, 'scheduled_date': datetime.date(2025, 9, 28), 'created_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660), 'updated_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660)}
 2025-09-29 16:09:20,538 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 16:09:20] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-09-29 16:15:03,372 - config.database - INFO - Database connection established
+2025-09-29 16:15:03,374 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 16:15:03] "GET /planning/api/llm/prompts/section-planning HTTP/1.1" 200 -
+2025-09-29 16:15:05,038 - config.database - INFO - Database connection established
+2025-09-29 16:15:05,040 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 16:15:05] "GET /planning/api/posts/60/expanded-idea HTTP/1.1" 200 -
+2025-09-29 17:20:27,265 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/add_section_planning_prompt.py', reloading
+2025-09-29 17:20:27,310 - werkzeug - INFO -  * Restarting with stat
+2025-09-29 17:20:27,553 - werkzeug - WARNING -  * Debugger is active!
+2025-09-29 17:20:27,559 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-29 17:20:45,702 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-29 17:20:45,744 - werkzeug - INFO -  * Restarting with stat
+2025-09-29 17:20:45,980 - werkzeug - WARNING -  * Debugger is active!
+2025-09-29 17:20:45,985 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-29 17:20:49,237 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-29 17:20:49,275 - werkzeug - INFO -  * Restarting with stat
+2025-09-29 17:20:49,517 - werkzeug - WARNING -  * Debugger is active!
+2025-09-29 17:20:49,524 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-29 17:21:01,278 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-29 17:21:01,313 - werkzeug - INFO -  * Restarting with stat
+2025-09-29 17:21:01,547 - werkzeug - WARNING -  * Debugger is active!
+2025-09-29 17:21:01,553 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-29 17:21:20,737 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-29 17:21:20,772 - werkzeug - INFO -  * Restarting with stat
+2025-09-29 17:21:20,998 - werkzeug - WARNING -  * Debugger is active!
+2025-09-29 17:21:21,004 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-29 17:21:23,106 - config.database - INFO - Database connection established
+2025-09-29 17:21:23,109 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:21:23] "GET /planning/api/llm/prompts/section-planning HTTP/1.1" 200 -

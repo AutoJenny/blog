@@ -1957,12 +1957,32 @@ def api_sections_plan():
                     'error': 'Section Planning prompt not found'
                 }), 404
         
-        # Prepare the prompt with topics
+        # Get the expanded idea for context
+        expanded_idea = ""
+        if post_id:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT expanded_idea 
+                    FROM post_development 
+                    WHERE post_id = %s
+                """, (post_id,))
+                result = cursor.fetchone()
+                if result and result['expanded_idea']:
+                    expanded_idea = result['expanded_idea']
+        
+        # Prepare the prompt with topics and expanded idea
         topics_text = '\n'.join([f"- {topic['title']}" for topic in topics])
         
-        prompt_text = prompt_data['prompt_text'].replace('[TOPICS]', topics_text)
+        prompt_text = prompt_data['prompt_text'].replace('[EXPANDED_IDEA]', expanded_idea)
+        prompt_text = prompt_text.replace('[TOPICS]', topics_text)
         prompt_text = prompt_text.replace('[SECTION_COUNT]', str(section_count))
         prompt_text = prompt_text.replace('[SECTION_STYLE]', section_style)
+        prompt_text = prompt_text.replace('[TOTAL_TOPICS]', str(len(topics)))
+        
+        # Add timestamp
+        from datetime import datetime
+        timestamp = datetime.now().isoformat()
+        prompt_text = prompt_text.replace('[TIMESTAMP]', timestamp)
         
         # Call LLM
         llm_response = call_llm_api(
@@ -1970,7 +1990,7 @@ def api_sections_plan():
             system_prompt=prompt_data['system_prompt'],
             model='llama3.2:latest',
             temperature=0.7,
-            max_tokens=2000
+            max_tokens=3000
         )
         
         if not llm_response['success']:
@@ -1980,12 +2000,21 @@ def api_sections_plan():
             }), 500
         
         # Parse the response to extract sections
-        sections = parse_sections_response(llm_response['response'])
+        sections_data = parse_sections_response(llm_response['response'])
+        
+        # Validate the response
+        validation_errors = validate_sections_response(sections_data, topics, section_count)
+        if validation_errors:
+            return jsonify({
+                'success': False,
+                'error': 'Validation failed',
+                'validation_errors': validation_errors,
+                'raw_response': llm_response['response']
+            }), 400
         
         return jsonify({
             'success': True,
-            'sections': sections,
-            'total_count': len(sections)
+            'sections': sections_data
         })
         
     except Exception as e:
@@ -2000,26 +2029,45 @@ def api_save_sections(post_id):
     """Save generated sections to post_development table"""
     try:
         data = request.get_json()
-        sections = data.get('sections', [])
+        sections_data = data.get('sections', {})
+        
+        if not sections_data or 'sections' not in sections_data:
+            return jsonify({
+                'success': False,
+                'error': 'No sections data provided'
+            }), 400
+        
+        sections = sections_data['sections']
+        section_headings = sections_data.get('section_headings', [])
+        metadata = sections_data.get('metadata', {})
+        
+        # Convert to JSON strings for database storage
+        sections_json = json.dumps(sections_data)
+        headings_json = json.dumps(section_headings)
+        
+        # Create section order array
+        section_order = [section.get('id', f"section_{i+1}") for i, section in enumerate(sections)]
+        order_json = json.dumps(section_order)
         
         with db_manager.get_cursor() as cursor:
             # Save sections to post_development table
             cursor.execute("""
                 UPDATE post_development 
-                SET sections = %s, updated_at = NOW()
+                SET sections = %s, section_headings = %s, section_order = %s, updated_at = NOW()
                 WHERE post_id = %s
-            """, (json.dumps(sections), post_id))
+            """, (sections_json, headings_json, order_json, post_id))
             
             if cursor.rowcount == 0:
                 # Create new record if it doesn't exist
                 cursor.execute("""
-                    INSERT INTO post_development (post_id, sections, created_at, updated_at)
-                    VALUES (%s, %s, NOW(), NOW())
-                """, (post_id, json.dumps(sections)))
+                    INSERT INTO post_development (post_id, sections, section_headings, section_order, created_at, updated_at)
+                    VALUES (%s, %s, %s, %s, NOW(), NOW())
+                """, (post_id, sections_json, headings_json, order_json))
         
         return jsonify({
             'success': True,
-            'message': 'Sections saved successfully'
+            'message': 'Sections saved successfully',
+            'metadata': metadata
         })
         
     except Exception as e:
@@ -2031,18 +2079,30 @@ def api_save_sections(post_id):
 
 def parse_sections_response(response_text):
     """Parse LLM response to extract sections"""
-    sections = []
-    
-    # Try to parse JSON first
+    # Try to parse JSON first (new format)
     try:
         import json
         parsed = json.loads(response_text)
-        if isinstance(parsed, list):
+        if isinstance(parsed, dict) and 'sections' in parsed:
             return parsed
-    except:
+        elif isinstance(parsed, list):
+            # Convert old format to new format
+            return {
+                'section_headings': [section.get('title', '') for section in parsed],
+                'sections': parsed,
+                'metadata': {
+                    'total_sections': len(parsed),
+                    'total_topics': sum(len(section.get('topics', [])) for section in parsed),
+                    'allocated_topics': sum(len(section.get('topics', [])) for section in parsed),
+                    'style': 'thematic',
+                    'generated_at': datetime.now().isoformat()
+                }
+            }
+    except json.JSONDecodeError:
         pass
     
-    # Parse text format
+    # Parse text format (fallback)
+    sections = []
     lines = response_text.split('\n')
     current_section = None
     
@@ -2061,9 +2121,11 @@ def parse_sections_response(response_text):
             title = title.split(':')[0].strip()
             
             current_section = {
+                'id': f"section_{len(sections) + 1}",
                 'title': title,
                 'description': '',
-                'topics': []
+                'topics': [],
+                'order': len(sections) + 1
             }
         
         # Check for description
@@ -2080,4 +2142,78 @@ def parse_sections_response(response_text):
     if current_section:
         sections.append(current_section)
     
-    return sections
+    # Convert to new format
+    return {
+        'section_headings': [section['title'] for section in sections],
+        'sections': sections,
+        'metadata': {
+            'total_sections': len(sections),
+            'total_topics': sum(len(section['topics']) for section in sections),
+            'allocated_topics': sum(len(section['topics']) for section in sections),
+            'style': 'thematic',
+            'generated_at': datetime.now().isoformat()
+        }
+    }
+
+def validate_sections_response(sections_data, original_topics, expected_section_count):
+    """Validate that all topics are allocated and structure is correct"""
+    errors = []
+    
+    if not isinstance(sections_data, dict):
+        errors.append("Response must be a JSON object")
+        return errors
+    
+    if 'sections' not in sections_data:
+        errors.append("Response must contain 'sections' array")
+        return errors
+    
+    sections = sections_data['sections']
+    
+    # Check section count
+    if not (6 <= len(sections) <= 8):
+        errors.append(f"Must have 6-8 sections, got {len(sections)}")
+    
+    # Check expected section count
+    if len(sections) != expected_section_count:
+        errors.append(f"Expected {expected_section_count} sections, got {len(sections)}")
+    
+    # Check all topics allocated
+    allocated_topics = []
+    original_topic_titles = [topic['title'] for topic in original_topics]
+    
+    for section in sections:
+        if 'topics' not in section:
+            errors.append(f"Section '{section.get('title', 'Unknown')}' missing topics array")
+            continue
+        
+        for topic in section['topics']:
+            allocated_topics.append(topic)
+    
+    # Check topic count
+    if len(allocated_topics) != len(original_topic_titles):
+        errors.append(f"Topic count mismatch: {len(allocated_topics)} allocated vs {len(original_topic_titles)} original")
+    
+    # Check for unallocated topics
+    unallocated_topics = []
+    for topic_title in original_topic_titles:
+        if topic_title not in allocated_topics:
+            unallocated_topics.append(topic_title)
+    
+    if unallocated_topics:
+        errors.append(f"Unallocated topics: {', '.join(unallocated_topics[:5])}{'...' if len(unallocated_topics) > 5 else ''}")
+    
+    # Check for duplicate topics
+    if len(set(allocated_topics)) != len(allocated_topics):
+        duplicates = [topic for topic in allocated_topics if allocated_topics.count(topic) > 1]
+        errors.append(f"Duplicate topics found: {', '.join(set(duplicates))}")
+    
+    # Check section structure
+    for i, section in enumerate(sections):
+        if 'title' not in section:
+            errors.append(f"Section {i+1} missing title")
+        if 'topics' not in section:
+            errors.append(f"Section '{section.get('title', 'Unknown')}' missing topics")
+        elif len(section['topics']) == 0:
+            errors.append(f"Section '{section.get('title', 'Unknown')}' has no topics")
+    
+    return errors
