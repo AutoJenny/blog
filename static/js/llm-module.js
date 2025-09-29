@@ -75,6 +75,12 @@ class LLMModule {
         const promptDisplay = document.getElementById('llm-prompt-display');
         if (!promptDisplay) return;
         
+        // Update the prompt header with the prompt name
+        const promptHeader = document.querySelector('.prompt-header h4');
+        if (promptHeader && prompt.name) {
+            promptHeader.textContent = prompt.name;
+        }
+        
         let promptHTML = '';
         
         // If there's a separate system prompt, display it first
