@@ -231,7 +231,8 @@ async function loadGeneratedTopics() {
         const data = await response.json();
         
         if (data.success && data.idea_scope) {
-            const ideaScope = JSON.parse(data.idea_scope);
+            const ideaScope = data.idea_scope; // Already parsed by API
+            
             if (ideaScope.generated_topics && ideaScope.generated_topics.length > 0) {
                 generatedTopics = ideaScope.generated_topics;
                 displayGeneratedTopics(generatedTopics);
@@ -250,6 +251,11 @@ async function loadGeneratedTopics() {
 
 function displayGeneratedTopics(topics) {
     const topicsDisplay = document.getElementById('generated-topics-display');
+    
+    if (!topicsDisplay) {
+        console.error('Topics display element not found');
+        return;
+    }
     
     if (topics.length === 0) {
         topicsDisplay.innerHTML = '<div class="no-topics">No topics available. Please generate topics in the brainstorming page first.</div>';
