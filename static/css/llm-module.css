@@ -11,14 +11,22 @@
     background: #1e293b;
     border: 1px solid #334155;
     border-radius: 12px;
-    padding: 1.5rem;
+    padding: 0;
+    overflow: hidden;
 }
 
 .prompt-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 0;
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.prompt-header:hover {
+    background-color: #334155;
 }
 
 .prompt-header h4 {
@@ -27,9 +35,32 @@
     font-size: 1.1rem;
 }
 
+.accordion-toggle {
+    color: #94a3b8;
+    transition: transform 0.2s ease;
+}
+
+.accordion-toggle i {
+    font-size: 0.875rem;
+}
+
+.accordion-content {
+    padding: 0 1.5rem 1.5rem 1.5rem;
+    border-top: 1px solid #334155;
+}
+
+.accordion-content.open {
+    display: block;
+}
+
+.accordion-content.closed {
+    display: none;
+}
+
 .prompt-actions {
     display: flex;
     gap: 0.5rem;
+    margin-bottom: 1rem;
 }
 
 /* Provider Information */

@@ -76,9 +76,9 @@ class LLMModule {
         if (!promptDisplay) return;
         
         // Update the prompt header with the prompt name
-        const promptHeader = document.querySelector('.prompt-header h4');
-        if (promptHeader && prompt.name) {
-            promptHeader.textContent = prompt.name;
+        const promptTitle = document.getElementById('prompt-title');
+        if (promptTitle && prompt.name) {
+            promptTitle.textContent = `Prompt: ${prompt.name}`;
         }
         
         let promptHTML = '';
@@ -272,6 +272,30 @@ class LLMModule {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+}
+
+// Global accordion toggle function
+function toggleLLMAccordion() {
+    const accordionContent = document.getElementById('llm-accordion-content');
+    const accordionIcon = document.getElementById('accordion-icon');
+    
+    if (!accordionContent || !accordionIcon) return;
+    
+    const isOpen = accordionContent.style.display !== 'none';
+    
+    if (isOpen) {
+        // Close accordion
+        accordionContent.style.display = 'none';
+        accordionIcon.style.transform = 'rotate(0deg)';
+        accordionContent.classList.remove('open');
+        accordionContent.classList.add('closed');
+    } else {
+        // Open accordion
+        accordionContent.style.display = 'block';
+        accordionIcon.style.transform = 'rotate(180deg)';
+        accordionContent.classList.remove('closed');
+        accordionContent.classList.add('open');
     }
 }
 

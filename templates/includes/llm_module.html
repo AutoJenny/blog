@@ -2,32 +2,38 @@
 <div class="llm-module">
     <!-- LLM Prompt Panel -->
     <div class="llm-prompt-panel">
-        <div class="prompt-header">
-            <h4>LLM Prompt in Use</h4>
+        <div class="prompt-header accordion-header" onclick="toggleLLMAccordion()">
+            <h4 id="prompt-title">Prompt: Loading...</h4>
+            <div class="accordion-toggle">
+                <i class="fas fa-chevron-down" id="accordion-icon"></i>
+            </div>
+        </div>
+        
+        <div class="accordion-content" id="llm-accordion-content" style="display: none;">
             <div class="prompt-actions" id="prompt-actions">
                 <!-- Edit buttons will be conditionally shown based on config -->
             </div>
-        </div>
-        
-        <!-- Provider Information -->
-        <div id="llm-provider-info" class="llm-provider-info">
-            <!-- LLM provider, model, and settings will appear here -->
-        </div>
-        
-        <!-- Prompt Display -->
-        <div id="llm-prompt-display" class="llm-prompt-display">
-            <!-- LLM prompt will appear here -->
-        </div>
-        
-        <!-- Prompt Edit Form (hidden by default) -->
-        <div id="llm-prompt-edit" class="llm-prompt-edit" style="display: none;">
-            <div class="form-group">
-                <label for="system-prompt-edit">System Prompt</label>
-                <textarea id="system-prompt-edit" rows="4" placeholder="System prompt..."></textarea>
+            
+            <!-- Provider Information -->
+            <div id="llm-provider-info" class="llm-provider-info">
+                <!-- LLM provider, model, and settings will appear here -->
             </div>
-            <div class="form-group">
-                <label for="user-prompt-edit">User Prompt</label>
-                <textarea id="user-prompt-edit" rows="8" placeholder="User prompt..."></textarea>
+            
+            <!-- Prompt Display -->
+            <div id="llm-prompt-display" class="llm-prompt-display">
+                <!-- LLM prompt will appear here -->
+            </div>
+            
+            <!-- Prompt Edit Form (hidden by default) -->
+            <div id="llm-prompt-edit" class="llm-prompt-edit" style="display: none;">
+                <div class="form-group">
+                    <label for="system-prompt-edit">System Prompt</label>
+                    <textarea id="system-prompt-edit" rows="4" placeholder="System prompt..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="user-prompt-edit">User Prompt</label>
+                    <textarea id="user-prompt-edit" rows="8" placeholder="User prompt..."></textarea>
+                </div>
             </div>
         </div>
     </div>
