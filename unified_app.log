@@ -19444,3 +19444,35 @@ LINE 4:                 LEFT JOIN calendar_ideas ci ON cs.idea_id = ...
 2025-09-29 17:34:29,597 - blueprints.planning - INFO - Validation errors: ['Topic count mismatch: 12 allocated vs 5 original', "Unallocated topics: [Scottish Autumn Folklore: A Timeless Legacy], [A Journey Through Scotland's Harvest Season], [Unraveling the Mysteries of Samhain], [The Celtic Roots of Hogmanay Celebrations], [Ceres: Uncovering Ancient Fertility Rituals]", "Duplicate topics found: A Journey Through Scotland's Harvest Season, Ceres: Uncovering Ancient Fertility Rituals, Unraveling the Mysteries of Samhain, The Celtic Roots of Hogmanay Celebrations, Scottish Autumn Folklore: A Timeless Legacy", "Invented topics found: Scottish Autumn Folklore: A Timeless Legacy, A Journey Through Scotland's Harvest Season, Unraveling the Mysteries of Samhain, The Celtic Roots of Hogmanay Celebrations, Ceres: Uncovering Ancient Fertility Rituals..."]
 2025-09-29 17:34:29,597 - blueprints.planning - INFO - LLM validation failed, creating fallback allocation
 2025-09-29 17:34:29,597 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:34:29] "POST /planning/api/sections/plan HTTP/1.1" 200 -
+2025-09-29 17:35:11,538 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:35:11] "GET /planning/posts/60/concept/sections HTTP/1.1" 200 -
+2025-09-29 17:35:11,563 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:35:11] "[36mGET /static/css/llm-module.css HTTP/1.1[0m" 304 -
+2025-09-29 17:35:11,564 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:35:11] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-09-29 17:35:11,565 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:35:11] "[36mGET /static/js/llm-module.js HTTP/1.1[0m" 304 -
+2025-09-29 17:35:11,565 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:35:11] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-29 17:35:11,565 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:35:11] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-29 17:35:11,566 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:35:11] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-29 17:35:11,567 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:35:11] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-29 17:35:11,577 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:35:11] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-29 17:35:11,587 - config.database - INFO - Database connection established
+2025-09-29 17:35:11,588 - config.database - INFO - Database connection established
+2025-09-29 17:35:11,589 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:35:11] "GET /planning/api/posts/60/idea-scope HTTP/1.1" 200 -
+2025-09-29 17:35:11,590 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:35:11] "GET /planning/api/llm/prompts/section-planning HTTP/1.1" 200 -
+2025-09-29 17:35:11,691 - config.database - INFO - Database connection established
+2025-09-29 17:35:11,695 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
+2025-09-29 17:35:11,695 - blueprints.planning - INFO - Calendar schedule entry: {'id': 1, 'year': 2025, 'week_number': 39, 'post_id': 60, 'scheduled_date': datetime.date(2025, 9, 28), 'created_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660), 'updated_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660)}
+2025-09-29 17:35:11,695 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:35:11] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-09-29 17:35:13,493 - config.database - INFO - Database connection established
+2025-09-29 17:35:13,494 - config.database - INFO - Database connection established
+2025-09-29 17:35:13,502 - config.database - INFO - Database connection established
+2025-09-29 17:35:13,503 - config.database - INFO - Database connection established
+2025-09-29 17:35:13,504 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-29 17:35:13,505 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-29 17:35:19,967 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-29 17:35:19,968 - blueprints.planning - INFO - Validation errors: ['Must have 6-8 sections, got 4', 'Topic count mismatch: 16 allocated vs 47 original', "Unallocated topics: [Scottish Autumn Folklore: A Timeless Legacy], [A Journey Through Scotland's Harvest Season], [Unraveling the Mysteries of Samhain], [The Celtic Roots of Hogmanay Celebrations], [Ceres: Uncovering Ancient Fertility Rituals]...", "Invented topics found: Scotland's Cultural Significance: A Reflection of the Nation's History, A Beginner's Guide to Scotland's Autumnal Festivals, Exploring Scotland's Unique Connection to the Celtic World, Autumn in Scotland: A Season of Transformation and Renewal, Case Study: The Impact of Christianity on Scottish Harvest Customs..."]
+2025-09-29 17:35:19,968 - blueprints.planning - INFO - LLM validation failed, creating fallback allocation
+2025-09-29 17:35:19,968 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:35:19] "POST /planning/api/sections/plan HTTP/1.1" 200 -
+2025-09-29 17:35:25,266 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-29 17:35:25,267 - blueprints.planning - INFO - Validation errors: ['Must have 6-8 sections, got 4', 'Topic count mismatch: 12 allocated vs 47 original', "Unallocated topics: [Scottish Autumn Folklore: A Timeless Legacy], [A Journey Through Scotland's Harvest Season], [Unraveling the Mysteries of Samhain], [The Celtic Roots of Hogmanay Celebrations], [Ceres: Uncovering Ancient Fertility Rituals]...", "Invented topics found: Scotland's Unique Connection to the Natural World, Case Study: The Preservation of Traditional Scottish Harvest Customs, Autumn in Scotland: A Season of Transformation and Renewal, A Journey Through Scotland's Harvest Season, Unraveling the Mysteries of Samhain..."]
+2025-09-29 17:35:25,267 - blueprints.planning - INFO - LLM validation failed, creating fallback allocation
+2025-09-29 17:35:25,267 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:35:25] "POST /planning/api/sections/plan HTTP/1.1" 200 -
+2025-09-29 17:36:08,024 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:36:08] "GET /planning/posts/60/concept/sections HTTP/1.1" 200 -
