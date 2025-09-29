@@ -2065,6 +2065,9 @@ def api_save_sections(post_id):
                     INSERT INTO post_development (post_id, sections, section_headings, section_order, created_at, updated_at)
                     VALUES (%s, %s, %s, %s, NOW(), NOW())
                 """, (post_id, sections_json, headings_json, order_json))
+            
+            # Commit the transaction
+            cursor.connection.commit()
         
         return jsonify({
             'success': True,
