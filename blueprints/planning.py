@@ -2003,6 +2003,7 @@ def api_sections_plan():
         
         # Validate the response
         validation_errors = validate_sections_response(sections_data, topics, section_count)
+        logger.info(f"Validation errors: {validation_errors}")
         if validation_errors:
             # If validation fails, create a simple fallback allocation
             logger.info("LLM validation failed, creating fallback allocation")
@@ -2163,6 +2164,70 @@ def validate_sections_response(sections_data, original_topics, expected_section_
     if not isinstance(sections_data, dict):
         errors.append("Response must be a JSON object")
         return errors
+    
+    if 'sections' not in sections_data:
+        errors.append("Response must contain 'sections' array")
+        return errors
+    
+    sections = sections_data['sections']
+    
+    # Check section count
+    if not (6 <= len(sections) <= 8):
+        errors.append(f"Must have 6-8 sections, got {len(sections)}")
+    
+    # Check expected section count
+    if len(sections) != expected_section_count:
+        errors.append(f"Expected {expected_section_count} sections, got {len(sections)}")
+    
+    # Check all topics allocated
+    allocated_topics = []
+    original_topic_titles = [topic['title'] for topic in original_topics]
+    
+    for section in sections:
+        if 'topics' not in section:
+            errors.append(f"Section '{section.get('title', 'Unknown')}' missing topics array")
+            continue
+        
+        for topic in section['topics']:
+            allocated_topics.append(topic)
+    
+    # Check topic count
+    if len(allocated_topics) != len(original_topic_titles):
+        errors.append(f"Topic count mismatch: {len(allocated_topics)} allocated vs {len(original_topic_titles)} original")
+    
+    # Check for unallocated topics
+    unallocated_topics = []
+    for topic_title in original_topic_titles:
+        if topic_title not in allocated_topics:
+            unallocated_topics.append(topic_title)
+    
+    if unallocated_topics:
+        errors.append(f"Unallocated topics: {', '.join(unallocated_topics[:5])}{'...' if len(unallocated_topics) > 5 else ''}")
+    
+    # Check for duplicate topics
+    if len(set(allocated_topics)) != len(allocated_topics):
+        duplicates = [topic for topic in allocated_topics if allocated_topics.count(topic) > 1]
+        errors.append(f"Duplicate topics found: {', '.join(set(duplicates))}")
+    
+    # Check for invented topics (topics not in original list)
+    invented_topics = []
+    for topic in allocated_topics:
+        if topic not in original_topic_titles:
+            invented_topics.append(topic)
+    
+    if invented_topics:
+        errors.append(f"Invented topics found: {', '.join(invented_topics[:5])}{'...' if len(invented_topics) > 5 else ''}")
+    
+    # Check section structure
+    for i, section in enumerate(sections):
+        if 'title' not in section:
+            errors.append(f"Section {i+1} missing title")
+        if 'topics' not in section:
+            errors.append(f"Section '{section.get('title', 'Unknown')}' missing topics")
+        elif len(section['topics']) == 0:
+            errors.append(f"Section '{section.get('title', 'Unknown')}' has no topics")
+    
+    return errors
 
 def create_fallback_sections(topics, section_count, section_style, timestamp):
     """Create a simple fallback section allocation when LLM fails"""
@@ -2245,6 +2310,15 @@ def create_fallback_sections(topics, section_count, section_style, timestamp):
     if len(set(allocated_topics)) != len(allocated_topics):
         duplicates = [topic for topic in allocated_topics if allocated_topics.count(topic) > 1]
         errors.append(f"Duplicate topics found: {', '.join(set(duplicates))}")
+    
+    # Check for invented topics (topics not in original list)
+    invented_topics = []
+    for topic in allocated_topics:
+        if topic not in original_topic_titles:
+            invented_topics.append(topic)
+    
+    if invented_topics:
+        errors.append(f"Invented topics found: {', '.join(invented_topics[:5])}{'...' if len(invented_topics) > 5 else ''}")
     
     # Check section structure
     for i, section in enumerate(sections):

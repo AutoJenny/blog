@@ -19347,3 +19347,100 @@ LINE 4:                 LEFT JOIN calendar_ideas ci ON cs.idea_id = ...
 2025-09-29 17:31:44,393 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
 2025-09-29 17:31:49,618 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
 2025-09-29 17:31:49,619 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:31:49] "POST /planning/api/sections/plan HTTP/1.1" 200 -
+2025-09-29 17:31:55,182 - config.database - INFO - Database connection established
+2025-09-29 17:31:55,184 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:31:55] "GET /planning/api/posts/60/idea-scope HTTP/1.1" 200 -
+2025-09-29 17:31:57,542 - config.database - INFO - Database connection established
+2025-09-29 17:31:57,549 - config.database - INFO - Database connection established
+2025-09-29 17:31:57,551 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-29 17:32:03,182 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-29 17:32:03,182 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:32:03] "POST /planning/api/sections/plan HTTP/1.1" 200 -
+2025-09-29 17:32:06,033 - config.database - INFO - Database connection established
+2025-09-29 17:32:06,041 - config.database - INFO - Database connection established
+2025-09-29 17:32:06,043 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-29 17:32:11,729 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-29 17:32:11,730 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:32:11] "POST /planning/api/sections/plan HTTP/1.1" 200 -
+2025-09-29 17:32:14,483 - config.database - INFO - Database connection established
+2025-09-29 17:32:14,490 - config.database - INFO - Database connection established
+2025-09-29 17:32:14,492 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-29 17:32:21,023 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-29 17:32:21,024 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:32:21] "POST /planning/api/sections/plan HTTP/1.1" 200 -
+2025-09-29 17:32:24,932 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-29 17:32:24,962 - werkzeug - INFO -  * Restarting with stat
+2025-09-29 17:32:25,186 - werkzeug - WARNING -  * Debugger is active!
+2025-09-29 17:32:25,191 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-29 17:32:27,131 - config.database - INFO - Database connection established
+2025-09-29 17:32:27,139 - config.database - INFO - Database connection established
+2025-09-29 17:32:27,143 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-29 17:32:32,786 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-29 17:32:32,787 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:32:32] "POST /planning/api/sections/plan HTTP/1.1" 200 -
+2025-09-29 17:32:35,625 - config.database - INFO - Database connection established
+2025-09-29 17:32:35,632 - config.database - INFO - Database connection established
+2025-09-29 17:32:35,634 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-29 17:32:41,522 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-29 17:32:41,522 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:32:41] "POST /planning/api/sections/plan HTTP/1.1" 200 -
+2025-09-29 17:32:44,094 - config.database - INFO - Database connection established
+2025-09-29 17:32:44,102 - config.database - INFO - Database connection established
+2025-09-29 17:32:44,104 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-29 17:32:47,095 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1509
+2025-09-29 17:32:47,096 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:32:47] "POST /planning/api/sections/plan HTTP/1.1" 200 -
+2025-09-29 17:32:49,892 - config.database - INFO - Database connection established
+2025-09-29 17:32:49,900 - config.database - INFO - Database connection established
+2025-09-29 17:32:49,902 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-29 17:32:53,083 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1677
+2025-09-29 17:32:53,084 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:32:53] "POST /planning/api/sections/plan HTTP/1.1" 200 -
+2025-09-29 17:32:55,469 - config.database - INFO - Database connection established
+2025-09-29 17:32:55,478 - config.database - INFO - Database connection established
+2025-09-29 17:32:55,480 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-29 17:32:58,551 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1709
+2025-09-29 17:32:58,552 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:32:58] "POST /planning/api/sections/plan HTTP/1.1" 200 -
+2025-09-29 17:33:05,452 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-29 17:33:05,488 - werkzeug - INFO -  * Restarting with stat
+2025-09-29 17:33:05,711 - werkzeug - WARNING -  * Debugger is active!
+2025-09-29 17:33:05,715 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-29 17:33:07,129 - config.database - INFO - Database connection established
+2025-09-29 17:33:07,136 - config.database - INFO - Database connection established
+2025-09-29 17:33:07,141 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-29 17:33:10,546 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1865
+2025-09-29 17:33:10,547 - blueprints.planning - INFO - Validation errors: None
+2025-09-29 17:33:10,548 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:33:10] "POST /planning/api/sections/plan HTTP/1.1" 200 -
+2025-09-29 17:33:26,965 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-29 17:33:26,995 - werkzeug - INFO -  * Restarting with stat
+2025-09-29 17:33:27,219 - werkzeug - WARNING -  * Debugger is active!
+2025-09-29 17:33:27,224 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-29 17:33:47,728 - config.database - INFO - Database connection established
+2025-09-29 17:33:47,736 - config.database - INFO - Database connection established
+2025-09-29 17:33:47,740 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-29 17:33:50,802 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1657
+2025-09-29 17:33:50,802 - blueprints.planning - INFO - Validation errors: ['Must have 6-8 sections, got 3', "Section 'Exploring the Symbolism and Practices of Scottish Autumn' has no topics"]
+2025-09-29 17:33:50,802 - blueprints.planning - INFO - LLM validation failed, creating fallback allocation
+2025-09-29 17:33:50,803 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:33:50] "POST /planning/api/sections/plan HTTP/1.1" 200 -
+2025-09-29 17:33:55,657 - config.database - INFO - Database connection established
+2025-09-29 17:33:55,664 - config.database - INFO - Database connection established
+2025-09-29 17:33:55,666 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-29 17:33:58,305 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1424
+2025-09-29 17:33:58,306 - blueprints.planning - INFO - Validation errors: ['Must have 6-8 sections, got 3', "Section 'Exploring the Core Themes of Autumn in Scotland' has no topics"]
+2025-09-29 17:33:58,306 - blueprints.planning - INFO - LLM validation failed, creating fallback allocation
+2025-09-29 17:33:58,307 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:33:58] "POST /planning/api/sections/plan HTTP/1.1" 200 -
+2025-09-29 17:34:00,791 - config.database - INFO - Database connection established
+2025-09-29 17:34:00,797 - config.database - INFO - Database connection established
+2025-09-29 17:34:00,800 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-29 17:34:03,947 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1707
+2025-09-29 17:34:03,947 - blueprints.planning - INFO - Validation errors: ['Must have 6-8 sections, got 3', "Section 'Exploring the Bounty and Symbolism of Autumn' has no topics"]
+2025-09-29 17:34:03,947 - blueprints.planning - INFO - LLM validation failed, creating fallback allocation
+2025-09-29 17:34:03,948 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:34:03] "POST /planning/api/sections/plan HTTP/1.1" 200 -
+2025-09-29 17:34:06,326 - config.database - INFO - Database connection established
+2025-09-29 17:34:06,328 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:34:06] "GET /planning/api/posts/60/idea-scope HTTP/1.1" 200 -
+2025-09-29 17:34:13,514 - config.database - INFO - Database connection established
+2025-09-29 17:34:13,522 - config.database - INFO - Database connection established
+2025-09-29 17:34:13,525 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-29 17:34:20,699 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-29 17:34:20,699 - blueprints.planning - INFO - Validation errors: ['Topic count mismatch: 12 allocated vs 5 original', "Unallocated topics: [Scottish Autumn Folklore: A Timeless Legacy], [A Journey Through Scotland's Harvest Season], [Unraveling the Mysteries of Samhain], [The Celtic Roots of Hogmanay Celebrations], [Ceres: Uncovering Ancient Fertility Rituals]", "Duplicate topics found: Unraveling the Mysteries of Samhain, A Journey Through Scotland's Harvest Season, The Celtic Roots of Hogmanay Celebrations, Scottish Autumn Folklore: A Timeless Legacy", "Invented topics found: Scottish Autumn Folklore: A Timeless Legacy, A Journey Through Scotland's Harvest Season, The Celtic Roots of Hogmanay Celebrations, Uncovering Ancient Fertility Rituals: Ceres, Unraveling the Mysteries of Samhain..."]
+2025-09-29 17:34:20,699 - blueprints.planning - INFO - LLM validation failed, creating fallback allocation
+2025-09-29 17:34:20,700 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:34:20] "POST /planning/api/sections/plan HTTP/1.1" 200 -
+2025-09-29 17:34:23,834 - config.database - INFO - Database connection established
+2025-09-29 17:34:23,842 - config.database - INFO - Database connection established
+2025-09-29 17:34:23,845 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-29 17:34:29,596 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-29 17:34:29,597 - blueprints.planning - INFO - Validation errors: ['Topic count mismatch: 12 allocated vs 5 original', "Unallocated topics: [Scottish Autumn Folklore: A Timeless Legacy], [A Journey Through Scotland's Harvest Season], [Unraveling the Mysteries of Samhain], [The Celtic Roots of Hogmanay Celebrations], [Ceres: Uncovering Ancient Fertility Rituals]", "Duplicate topics found: A Journey Through Scotland's Harvest Season, Ceres: Uncovering Ancient Fertility Rituals, Unraveling the Mysteries of Samhain, The Celtic Roots of Hogmanay Celebrations, Scottish Autumn Folklore: A Timeless Legacy", "Invented topics found: Scottish Autumn Folklore: A Timeless Legacy, A Journey Through Scotland's Harvest Season, Unraveling the Mysteries of Samhain, The Celtic Roots of Hogmanay Celebrations, Ceres: Uncovering Ancient Fertility Rituals..."]
+2025-09-29 17:34:29,597 - blueprints.planning - INFO - LLM validation failed, creating fallback allocation
+2025-09-29 17:34:29,597 - werkzeug - INFO - 127.0.0.1 - - [29/Sep/2025 17:34:29] "POST /planning/api/sections/plan HTTP/1.1" 200 -
