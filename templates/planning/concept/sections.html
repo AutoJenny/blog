@@ -129,6 +129,35 @@
     overflow-y: auto;
 }
 
+.topics-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.topic-item {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.topic-item:hover {
+    background: #334155;
+    border-color: #475569;
+}
+
+.topic-content {
+    color: #e2e8f0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
 .input-actions {
     text-align: center;
 }
@@ -262,12 +291,17 @@ function displayGeneratedTopics(topics) {
         return;
     }
     
-    let topicsHTML = `Found ${topics.length} generated topics:\n\n`;
+    let topicsHTML = `<div class="topics-list">`;
     
     topics.forEach((topic, index) => {
-        topicsHTML += `${index + 1}. ${topic.title}\n`;
+        topicsHTML += `
+            <div class="topic-item" data-topic-id="${index}" data-category="${topic.category || 'general'}">
+                <div class="topic-content">${topic.title}</div>
+            </div>
+        `;
     });
     
+    topicsHTML += '</div>';
     topicsDisplay.innerHTML = topicsHTML;
 }
 
