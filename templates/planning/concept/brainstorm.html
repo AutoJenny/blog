@@ -492,7 +492,7 @@ async function loadExistingTopics() {
         const data = await response.json();
         
         if (data.success && data.idea_scope) {
-            const ideaScope = JSON.parse(data.idea_scope);
+            const ideaScope = data.idea_scope; // Already parsed by API
             if (ideaScope.generated_topics && ideaScope.generated_topics.length > 0) {
                 generatedTopics = ideaScope.generated_topics;
                 displayTopics(generatedTopics);
