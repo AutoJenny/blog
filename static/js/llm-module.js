@@ -314,6 +314,13 @@ const LLM_CONFIGS = {
         resultsField: 'idea_scope',
         resultsTitle: 'Generated Topics',
         allowEdit: true
+    },
+    'sections': {
+        promptEndpoint: '/planning/api/llm/prompts/section-planning',
+        generateEndpoint: '/planning/api/sections/plan',
+        resultsField: 'sections',
+        resultsTitle: 'Generated Sections',
+        allowEdit: true
     }
 };
 
