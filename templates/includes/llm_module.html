@@ -1,0 +1,49 @@
+<!-- LLM Module - Reusable component for LLM interactions -->
+<div class="llm-module">
+    <!-- LLM Prompt Panel -->
+    <div class="llm-prompt-panel">
+        <div class="prompt-header">
+            <h4>LLM Prompt in Use</h4>
+            <div class="prompt-actions" id="prompt-actions">
+                <!-- Edit buttons will be conditionally shown based on config -->
+            </div>
+        </div>
+        
+        <!-- Provider Information -->
+        <div id="llm-provider-info" class="llm-provider-info">
+            <!-- LLM provider, model, and settings will appear here -->
+        </div>
+        
+        <!-- Prompt Display -->
+        <div id="llm-prompt-display" class="llm-prompt-display">
+            <!-- LLM prompt will appear here -->
+        </div>
+        
+        <!-- Prompt Edit Form (hidden by default) -->
+        <div id="llm-prompt-edit" class="llm-prompt-edit" style="display: none;">
+            <div class="form-group">
+                <label for="system-prompt-edit">System Prompt</label>
+                <textarea id="system-prompt-edit" rows="4" placeholder="System prompt..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="user-prompt-edit">User Prompt</label>
+                <textarea id="user-prompt-edit" rows="8" placeholder="User prompt..."></textarea>
+            </div>
+        </div>
+    </div>
+    
+    <!-- LLM Results Panel -->
+    <div class="llm-results-panel">
+        <div class="results-header">
+            <h4 id="results-title">Generated Results</h4>
+            <button class="btn btn-primary" id="generate-btn">
+                <i class="fas fa-magic"></i> Generate
+            </button>
+        </div>
+        
+        <!-- Results Display -->
+        <div id="llm-results-display" class="llm-results-display">
+            <!-- Generated results will appear here -->
+        </div>
+    </div>
+</div>
