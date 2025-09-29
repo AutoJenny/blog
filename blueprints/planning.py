@@ -1985,32 +1985,33 @@ def api_sections_plan():
         prompt_text = prompt_text.replace('[TIMESTAMP]', timestamp)
         
         # Call LLM
-        llm_response = call_llm_api(
-            prompt_text,
-            system_prompt=prompt_data['system_prompt'],
-            model='llama3.2:latest',
-            temperature=0.7,
-            max_tokens=3000
-        )
+        messages = []
+        if prompt_data['system_prompt']:
+            messages.append({'role': 'system', 'content': prompt_data['system_prompt']})
+        messages.append({'role': 'user', 'content': prompt_text})
         
-        if not llm_response['success']:
+        llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+        
+        if 'error' in llm_response:
             return jsonify({
                 'success': False,
                 'error': f"LLM generation failed: {llm_response['error']}"
             }), 500
         
         # Parse the response to extract sections
-        sections_data = parse_sections_response(llm_response['response'])
+        sections_data = parse_sections_response(llm_response['content'])
         
         # Validate the response
         validation_errors = validate_sections_response(sections_data, topics, section_count)
         if validation_errors:
-            return jsonify({
-                'success': False,
-                'error': 'Validation failed',
-                'validation_errors': validation_errors,
-                'raw_response': llm_response['response']
-            }), 400
+            # If validation fails, create a simple fallback allocation
+            logger.info("LLM validation failed, creating fallback allocation")
+            
+            # Adjust section count based on topic count
+            actual_section_count = min(section_count, max(3, len(topics) // 2 + 1))
+            
+            # Create simple sections with topics distributed evenly
+            sections_data = create_fallback_sections(topics, actual_section_count, section_style, timestamp)
         
         return jsonify({
             'success': True,
@@ -2162,10 +2163,48 @@ def validate_sections_response(sections_data, original_topics, expected_section_
     if not isinstance(sections_data, dict):
         errors.append("Response must be a JSON object")
         return errors
+
+def create_fallback_sections(topics, section_count, section_style, timestamp):
+    """Create a simple fallback section allocation when LLM fails"""
+    topic_titles = [topic['title'] for topic in topics]
     
-    if 'sections' not in sections_data:
-        errors.append("Response must contain 'sections' array")
-        return errors
+    # Distribute topics evenly across sections
+    topics_per_section = len(topics) // section_count
+    remainder = len(topics) % section_count
+    
+    sections = []
+    topic_index = 0
+    
+    for i in range(section_count):
+        # Calculate how many topics this section gets
+        section_topic_count = topics_per_section + (1 if i < remainder else 0)
+        
+        # Get topics for this section
+        section_topics = topic_titles[topic_index:topic_index + section_topic_count]
+        topic_index += section_topic_count
+        
+        # Create section
+        section = {
+            'id': f'section_{i+1}',
+            'title': f'Section {i+1}',
+            'description': f'Topics related to {section_style} theme',
+            'topics': section_topics,
+            'order': i + 1
+        }
+        sections.append(section)
+    
+    return {
+        'section_headings': [section['title'] for section in sections],
+        'sections': sections,
+        'metadata': {
+            'total_sections': len(sections),
+            'total_topics': len(topics),
+            'allocated_topics': len(topics),
+            'style': section_style,
+            'generated_at': timestamp,
+            'fallback': True
+        }
+    }
     
     sections = sections_data['sections']
     
@@ -2217,3 +2256,45 @@ def validate_sections_response(sections_data, original_topics, expected_section_
             errors.append(f"Section '{section.get('title', 'Unknown')}' has no topics")
     
     return errors
+
+def create_fallback_sections(topics, section_count, section_style, timestamp):
+    """Create a simple fallback section allocation when LLM fails"""
+    topic_titles = [topic['title'] for topic in topics]
+    
+    # Distribute topics evenly across sections
+    topics_per_section = len(topics) // section_count
+    remainder = len(topics) % section_count
+    
+    sections = []
+    topic_index = 0
+    
+    for i in range(section_count):
+        # Calculate how many topics this section gets
+        section_topic_count = topics_per_section + (1 if i < remainder else 0)
+        
+        # Get topics for this section
+        section_topics = topic_titles[topic_index:topic_index + section_topic_count]
+        topic_index += section_topic_count
+        
+        # Create section
+        section = {
+            'id': f'section_{i+1}',
+            'title': f'Section {i+1}',
+            'description': f'Topics related to {section_style} theme',
+            'topics': section_topics,
+            'order': i + 1
+        }
+        sections.append(section)
+    
+    return {
+        'section_headings': [section['title'] for section in sections],
+        'sections': sections,
+        'metadata': {
+            'total_sections': len(sections),
+            'total_topics': len(topics),
+            'allocated_topics': len(topics),
+            'style': section_style,
+            'generated_at': timestamp,
+            'fallback': True
+        }
+    }

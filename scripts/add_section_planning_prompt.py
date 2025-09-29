@@ -20,7 +20,9 @@ def add_section_planning_prompt():
 
 CRITICAL REQUIREMENTS:
 - Create exactly 6-8 sections (no more, no less)
-- Every single topic must be allocated to exactly one section
+- Every single topic must be allocated to exactly one section (NO DUPLICATES)
+- Use ONLY the topics provided in the input list - do not create, modify, or invent topics
+- Each topic must appear in exactly one section only
 - Determine the optimal section order for reader engagement
 - Balance section sizes (aim for 6-8 topics per section)
 - Create compelling section titles that reflect the content
@@ -41,14 +43,15 @@ And these generated topics: [TOPICS]
 
 Organize these topics into exactly [SECTION_COUNT] sections using a [SECTION_STYLE] approach.
 
-REQUIREMENTS:
+CRITICAL REQUIREMENTS:
 - Create exactly [SECTION_COUNT] sections (enforced)
-- Allocate every single topic to exactly one section (no exceptions)
+- Each topic must be allocated to EXACTLY ONE section only (no duplicates, no exceptions)
+- Every topic from the input list must be used exactly once
+- Do not create, modify, or invent new topics - use only the provided topics
 - Determine optimal section order for reader engagement
 - Balance section sizes (aim for 6-8 topics per section)
 - Create compelling section titles that reflect the content
 - Ensure logical flow and progression between sections
-- Force topics into closest fit if they don't align perfectly
 
 OPTIMAL ORDERING STRATEGY:
 1. Introduction/Overview: Start with broad context and significance
