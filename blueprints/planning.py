@@ -1841,3 +1841,204 @@ def api_update_idea_scope(post_id):
     except Exception as e:
         logger.error(f"Error updating idea scope for post {post_id}: {e}")
         return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/llm/prompts/section-planning', methods=['GET'])
+def api_get_section_planning_prompt():
+    """Get the Section Planning prompt and LLM configuration"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get the section planning prompt
+            cursor.execute("""
+                SELECT id, name, prompt_text, system_prompt
+                FROM llm_prompt 
+                WHERE name = 'Section Planning'
+                ORDER BY id DESC
+                LIMIT 1
+            """)
+            prompt = cursor.fetchone()
+            
+            if not prompt:
+                return jsonify({
+                    'success': False,
+                    'error': 'Section Planning prompt not found'
+                }), 404
+            
+            # Get LLM configuration
+            llm_config = {
+                'provider': 'Ollama',
+                'model': 'llama3.2:latest',
+                'temperature': 0.7,
+                'max_tokens': 2000,
+                'timeout': 60
+            }
+            
+            return jsonify({
+                'success': True,
+                'prompt': dict(prompt),
+                'llm_config': llm_config
+            })
+            
+    except Exception as e:
+        logger.error(f"Error getting section planning prompt: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@bp.route('/api/sections/plan', methods=['POST'])
+def api_sections_plan():
+    """Generate sections from topics using LLM"""
+    try:
+        data = request.get_json()
+        topics = data.get('topics', [])
+        section_count = data.get('section_count', 4)
+        section_style = data.get('section_style', 'thematic')
+        post_id = data.get('post_id')
+        
+        if not topics:
+            return jsonify({
+                'success': False,
+                'error': 'No topics provided'
+            }), 400
+        
+        # Get the section planning prompt
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT prompt_text, system_prompt
+                FROM llm_prompt 
+                WHERE name = 'Section Planning'
+                ORDER BY id DESC
+                LIMIT 1
+            """)
+            prompt_data = cursor.fetchone()
+            
+            if not prompt_data:
+                return jsonify({
+                    'success': False,
+                    'error': 'Section Planning prompt not found'
+                }), 404
+        
+        # Prepare the prompt with topics
+        topics_text = '\n'.join([f"- {topic['title']}" for topic in topics])
+        
+        prompt_text = prompt_data['prompt_text'].replace('[TOPICS]', topics_text)
+        prompt_text = prompt_text.replace('[SECTION_COUNT]', str(section_count))
+        prompt_text = prompt_text.replace('[SECTION_STYLE]', section_style)
+        
+        # Call LLM
+        llm_response = call_llm_api(
+            prompt_text,
+            system_prompt=prompt_data['system_prompt'],
+            model='llama3.2:latest',
+            temperature=0.7,
+            max_tokens=2000
+        )
+        
+        if not llm_response['success']:
+            return jsonify({
+                'success': False,
+                'error': f"LLM generation failed: {llm_response['error']}"
+            }), 500
+        
+        # Parse the response to extract sections
+        sections = parse_sections_response(llm_response['response'])
+        
+        return jsonify({
+            'success': True,
+            'sections': sections,
+            'total_count': len(sections)
+        })
+        
+    except Exception as e:
+        logger.error(f"Error generating sections: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@bp.route('/api/posts/<int:post_id>/sections', methods=['POST'])
+def api_save_sections(post_id):
+    """Save generated sections to post_development table"""
+    try:
+        data = request.get_json()
+        sections = data.get('sections', [])
+        
+        with db_manager.get_cursor() as cursor:
+            # Save sections to post_development table
+            cursor.execute("""
+                UPDATE post_development 
+                SET sections = %s, updated_at = NOW()
+                WHERE post_id = %s
+            """, (json.dumps(sections), post_id))
+            
+            if cursor.rowcount == 0:
+                # Create new record if it doesn't exist
+                cursor.execute("""
+                    INSERT INTO post_development (post_id, sections, created_at, updated_at)
+                    VALUES (%s, %s, NOW(), NOW())
+                """, (post_id, json.dumps(sections)))
+        
+        return jsonify({
+            'success': True,
+            'message': 'Sections saved successfully'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error saving sections: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+def parse_sections_response(response_text):
+    """Parse LLM response to extract sections"""
+    sections = []
+    
+    # Try to parse JSON first
+    try:
+        import json
+        parsed = json.loads(response_text)
+        if isinstance(parsed, list):
+            return parsed
+    except:
+        pass
+    
+    # Parse text format
+    lines = response_text.split('\n')
+    current_section = None
+    
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+            
+        # Check for section header (e.g., "Section 1:", "## Section 1:", etc.)
+        if line.startswith(('Section ', '## Section ', '### Section ')):
+            if current_section:
+                sections.append(current_section)
+            
+            # Extract section title
+            title = line.replace('Section ', '').replace('## ', '').replace('### ', '')
+            title = title.split(':')[0].strip()
+            
+            current_section = {
+                'title': title,
+                'description': '',
+                'topics': []
+            }
+        
+        # Check for description
+        elif current_section and not current_section['description'] and not line.startswith('-'):
+            current_section['description'] = line
+        
+        # Check for topics (lines starting with - or *)
+        elif current_section and (line.startswith('- ') or line.startswith('* ')):
+            topic = line[2:].strip()
+            if topic:
+                current_section['topics'].append(topic)
+    
+    # Add the last section
+    if current_section:
+        sections.append(current_section)
+    
+    return sections

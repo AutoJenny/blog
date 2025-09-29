@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block css_assets %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/llm-module.css') }}">
+{% endblock %}
+
 {% block title %}Section Planning - Concept Development - Planning - BlogForge{% endblock %}
 
 {% block content %}
@@ -17,31 +21,48 @@
     <div class="sections-main">
         <div class="sections-header">
             <h2>Section Planning</h2>
-            <p>Organize your topics into thematic sections with clear themes and flow.</p>
+            <p>Organize your generated topics into thematic sections with clear themes and flow.</p>
         </div>
         
         <div class="sections-content">
-            <div class="sections-controls">
-                <div class="form-group">
-                    <label for="section-theme">Section Theme</label>
-                    <input type="text" id="section-theme" placeholder="Enter the main theme for this section...">
-                </div>
-                <div class="form-group">
-                    <label for="section-description">Section Description</label>
-                    <textarea id="section-description" placeholder="Describe what this section will cover..."></textarea>
-                </div>
-                <button class="btn btn-primary" onclick="createSection()">
-                    <i class="fas fa-plus"></i> Add Section
-                </button>
-            </div>
-            
-            <div class="sections-list">
-                <h3>Content Sections</h3>
-                <div id="sections-container">
-                    <div class="no-sections">
-                        <p>No sections created yet. Add your first section above.</p>
+            <div class="sections-input">
+                <div class="input-data">
+                    <h4>Input Data</h4>
+                    <div id="generated-topics-display" class="topics-content">
+                        <!-- Generated topics from brainstorm page will appear here -->
+                    </div>
+                    <div class="input-actions">
+                        <button class="btn btn-primary" onclick="startSectionPlanning()" id="generate-btn">
+                            <i class="fas fa-sitemap"></i> Generate Sections
+                        </button>
                     </div>
                 </div>
+                
+                <div class="section-settings">
+                    <h4>Section Settings</h4>
+                    <div class="form-group">
+                        <label for="section-count">Number of Sections</label>
+                        <select id="section-count">
+                            <option value="3">3 Sections</option>
+                            <option value="4" selected>4 Sections</option>
+                            <option value="5">5 Sections</option>
+                            <option value="6">6 Sections</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="section-style">Section Style</label>
+                        <select id="section-style">
+                            <option value="thematic">Thematic (by topic theme)</option>
+                            <option value="chronological">Chronological (by time period)</option>
+                            <option value="progressive">Progressive (building complexity)</option>
+                            <option value="comparative">Comparative (contrasting views)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sections-results">
+                {% include 'includes/llm_module.html' %}
             </div>
         </div>
     </div>
@@ -59,33 +80,74 @@
 }
 
 .sections-header h2 {
-    font-size: 2.5rem;
+    font-size: 2rem;
     color: #f1f5f9;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 
 .sections-header p {
-    font-size: 1.125rem;
     color: #94a3b8;
-    max-width: 600px;
-    margin: 0 auto;
+    font-size: 1.125rem;
 }
 
 .sections-content {
-    max-width: 1200px;
-    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
 }
 
-.sections-controls {
+.sections-input {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.input-data {
     background: #1e293b;
     border: 1px solid #334155;
     border-radius: 12px;
-    padding: 2rem;
-    margin-bottom: 2rem;
+    padding: 1.5rem;
+}
+
+.input-data h4 {
+    color: #f1f5f9;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+.topics-content {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    min-height: 120px;
+    color: #cbd5e1;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.input-actions {
+    text-align: center;
+}
+
+.section-settings {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.section-settings h4 {
+    color: #f1f5f9;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
 }
 
 .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .form-group label {
@@ -95,39 +157,26 @@
     font-weight: 500;
 }
 
-.form-group input,
-.form-group textarea {
+.form-group select {
     width: 100%;
     padding: 0.75rem;
     background: #0f172a;
     border: 1px solid #334155;
     border-radius: 6px;
     color: #f1f5f9;
-    font-size: 1rem;
+    font-family: inherit;
 }
 
-.form-group textarea {
-    min-height: 100px;
-    resize: vertical;
-}
-
-.sections-list h3 {
-    color: #f1f5f9;
-    margin-bottom: 1.5rem;
-    font-size: 1.5rem;
-}
-
-.no-sections {
-    text-align: center;
-    color: #94a3b8;
-    padding: 3rem;
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 12px;
+.sections-results {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
 .btn {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     padding: 0.75rem 1.5rem;
     background: #3b82f6;
     color: white;
@@ -143,81 +192,24 @@
     background: #2563eb;
     transform: translateY(-1px);
 }
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+@media (max-width: 768px) {
+    .sections-content {
+        grid-template-columns: 1fr;
+    }
+}
 </style>
 
+<script src="{{ url_for('static', filename='js/llm-module.js') }}"></script>
 <script>
-let sections = [];
-
-function createSection() {
-    const theme = document.getElementById('section-theme').value;
-    const description = document.getElementById('section-description').value;
-    
-    if (!theme.trim()) {
-        alert('Please enter a section theme');
-        return;
-    }
-    
-    const section = {
-        id: Date.now(),
-        theme: theme,
-        description: description,
-        topics: []
-    };
-    
-    sections.push(section);
-    displaySections();
-    
-    // Clear form
-    document.getElementById('section-theme').value = '';
-    document.getElementById('section-description').value = '';
-}
-
-function displaySections() {
-    const container = document.getElementById('sections-container');
-    
-    if (sections.length === 0) {
-        container.innerHTML = '<div class="no-sections"><p>No sections created yet. Add your first section above.</p></div>';
-        return;
-    }
-    
-    container.innerHTML = sections.map(section => `
-        <div class="section-item" data-section-id="${section.id}">
-            <div class="section-header">
-                <h4>${section.theme}</h4>
-                <div class="section-actions">
-                    <button class="btn btn-secondary" onclick="editSection(${section.id})">
-                        <i class="fas fa-edit"></i> Edit
-                    </button>
-                    <button class="btn btn-danger" onclick="deleteSection(${section.id})">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
-                </div>
-            </div>
-            <div class="section-description">${section.description}</div>
-            <div class="section-topics">
-                <h5>Topics in this section:</h5>
-                <div class="topics-list">
-                    ${section.topics.length === 0 ? '<p class="no-topics">No topics assigned yet</p>' : 
-                      section.topics.map(topic => `<span class="topic-tag">${topic}</span>`).join('')}
-                </div>
-            </div>
-        </div>
-    `).join('');
-}
-
-function editSection(sectionId) {
-    const section = sections.find(s => s.id === sectionId);
-    if (section) {
-        document.getElementById('section-theme').value = section.theme;
-        document.getElementById('section-description').value = section.description;
-        deleteSection(sectionId);
-    }
-}
-
-function deleteSection(sectionId) {
-    sections = sections.filter(s => s.id !== sectionId);
-    displaySections();
-}
+let generatedTopics = [];
+let llmModule = null;
 
 // Set navigation context
 document.addEventListener('DOMContentLoaded', function() {
@@ -225,6 +217,177 @@ document.addEventListener('DOMContentLoaded', function() {
     window.currentStage = 'concept';
     window.currentSubstage = 'sections';
     window.postId = {{ post_id }};
+    
+    // Initialize LLM module
+    llmModule = initializeLLMModule('sections', window.postId);
+    
+    // Load generated topics
+    loadGeneratedTopics();
 });
+
+async function loadGeneratedTopics() {
+    try {
+        const response = await fetch(`/planning/api/posts/${window.postId}/idea-scope`);
+        const data = await response.json();
+        
+        if (data.success && data.idea_scope) {
+            const ideaScope = JSON.parse(data.idea_scope);
+            if (ideaScope.generated_topics && ideaScope.generated_topics.length > 0) {
+                generatedTopics = ideaScope.generated_topics;
+                displayGeneratedTopics(generatedTopics);
+                console.log(`Loaded ${generatedTopics.length} generated topics`);
+            } else {
+                displayNoTopics();
+            }
+        } else {
+            displayNoTopics();
+        }
+    } catch (error) {
+        console.error('Error loading generated topics:', error);
+        displayNoTopics();
+    }
+}
+
+function displayGeneratedTopics(topics) {
+    const topicsDisplay = document.getElementById('generated-topics-display');
+    
+    if (topics.length === 0) {
+        topicsDisplay.innerHTML = '<div class="no-topics">No topics available. Please generate topics in the brainstorming page first.</div>';
+        return;
+    }
+    
+    let topicsHTML = `Found ${topics.length} generated topics:\n\n`;
+    
+    topics.forEach((topic, index) => {
+        topicsHTML += `${index + 1}. ${topic.title}\n`;
+    });
+    
+    topicsDisplay.innerHTML = topicsHTML;
+}
+
+function displayNoTopics() {
+    const topicsDisplay = document.getElementById('generated-topics-display');
+    topicsDisplay.innerHTML = '<div class="no-topics">No topics available. Please generate topics in the brainstorming page first.</div>';
+}
+
+async function startSectionPlanning() {
+    if (generatedTopics.length === 0) {
+        alert('Please generate topics in the brainstorming page first.');
+        return;
+    }
+    
+    const sectionCount = document.getElementById('section-count').value;
+    const sectionStyle = document.getElementById('section-style').value;
+    
+    // Use the shared LLM module to generate content
+    if (llmModule) {
+        // Override the generateContent method to use the section planning API
+        const originalGenerateContent = llmModule.generateContent.bind(llmModule);
+        llmModule.generateContent = async function() {
+            const generateBtn = document.getElementById('generate-btn');
+            const resultsDisplay = document.getElementById('llm-results-display');
+            
+            if (!generateBtn || !resultsDisplay) return;
+            
+            // Show loading state
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            resultsDisplay.innerHTML = '<div class="loading">Generating sections...</div>';
+            
+            try {
+                // Call the section planning API
+                const response = await fetch('/planning/api/sections/plan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        topics: generatedTopics,
+                        section_count: parseInt(sectionCount),
+                        section_style: sectionStyle,
+                        post_id: window.postId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displaySections(data.sections);
+                    // Automatically save sections
+                    await saveSectionsToDatabase(data.sections);
+                } else {
+                    console.error('Error generating sections:', data.error);
+                    resultsDisplay.innerHTML = `<div class="error">Error generating sections: ${data.error}</div>`;
+                }
+            } catch (error) {
+                console.error('Error generating sections:', error);
+                resultsDisplay.innerHTML = `<div class="error">Failed to generate sections: ${error.message}</div>`;
+            } finally {
+                // Reset button state
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="fas fa-sitemap"></i> Generate Sections';
+            }
+        };
+        
+        // Call the modified generateContent method
+        await llmModule.generateContent();
+    }
+}
+
+function displaySections(sections) {
+    const resultsDisplay = document.getElementById('llm-results-display');
+    
+    if (sections.length === 0) {
+        resultsDisplay.innerHTML = '<div class="no-results">No sections generated. Try again with different settings.</div>';
+        return;
+    }
+    
+    let sectionsHTML = '<div class="sections-list">';
+    
+    sections.forEach((section, index) => {
+        sectionsHTML += `
+            <div class="section-item" data-section-id="${index}">
+                <div class="section-header">
+                    <h4>Section ${index + 1}: ${section.title}</h4>
+                </div>
+                <div class="section-description">${section.description}</div>
+                <div class="section-topics">
+                    <h5>Topics in this section:</h5>
+                    <div class="topics-list">
+                        ${section.topics.map(topic => `<span class="topic-tag">${topic}</span>`).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    sectionsHTML += '</div>';
+    
+    resultsDisplay.innerHTML = sectionsHTML;
+}
+
+async function saveSectionsToDatabase(sections) {
+    try {
+        const response = await fetch(`/planning/api/posts/${window.postId}/sections`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                sections: sections
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('Sections saved successfully');
+        } else {
+            console.error('Error saving sections:', data.error);
+        }
+    } catch (error) {
+        console.error('Error saving sections:', error);
+    }
+}
 </script>
 {% endblock %}
