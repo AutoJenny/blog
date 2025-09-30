@@ -2370,8 +2370,8 @@ def api_allocate_topics():
             sections_text += f"  Boundaries: {section['boundaries']}\n"
             sections_text += f"  Exclusions: {section['exclusions']}\n"
         
-        # Format topics for prompt with explicit numbering
-        topics_text = '\n'.join([f"{i+1}. {topic.get('title', topic) if isinstance(topic, dict) else topic}" for i, topic in enumerate(topics)])
+        # Format topics for prompt with unique codes
+        topics_text = '\n'.join([f"{i+1}. {topic.get('title', topic) if isinstance(topic, dict) else topic} {{IDEA{i+1:02d}}}" for i, topic in enumerate(topics)])
         
         # Create allocation prompt
         allocation_prompt = f"""TASK: Allocate {len(topics)} topics to sections based on THEMATIC COHERENCE. Each topic must go to its BEST FIT section based on content and theme.
@@ -2392,19 +2392,20 @@ THEMATIC MATCHING GUIDELINES:
 - S07 (Conclusion): Heritage synthesis, contemporary relevance, Scottish identity
 
 REQUIRED OUTPUT FORMAT - return exactly {len(topics)} lines like this:
-Celtic Roots of Samhain Traditions {{S01}}
-Crop Rotation Practices in Ancient Scotland {{S02}}
-Hogmanay Traditions in Modern Scotland {{S03}}
+{{IDEA01}} {{S01}}
+{{IDEA02}} {{S02}}
+{{IDEA03}} {{S03}}
 
 CRITICAL RULES:
 1. Return EXACTLY {len(topics)} lines
-2. Keep topics in the SAME ORDER as numbered above (1-{len(topics)})
-3. Each line format: Topic Title {{S01}}
-4. Use section codes S01, S02, S03, S04, S05, S06, S07
-5. NO JSON format, NO quotes, NO commas
-6. Each topic appears exactly once
-7. Match topics to their THEMATICALLY MOST APPROPRIATE section
-8. Process topics in order: 1, 2, 3, 4, 5... up to {len(topics)}
+2. Keep topics in the SAME ORDER as numbered above (IDEA01, IDEA02, IDEA03...)
+3. Each line format: {{IDEAXX}} {{SXX}}
+4. Use idea codes IDEA01, IDEA02, IDEA03... up to IDEA{len(topics):02d}
+5. Use section codes S01, S02, S03, S04, S05, S06, S07
+6. NO JSON format, NO quotes, NO commas
+7. Each topic appears exactly once
+8. Match topics to their THEMATICALLY MOST APPROPRIATE section
+9. Process topics in order: IDEA01, IDEA02, IDEA03... up to IDEA{len(topics):02d}
 
 DO NOT return JSON format. Return simple text lines only."""
         
@@ -2452,9 +2453,16 @@ DO NOT return JSON format. Return simple text lines only."""
             for i, line in enumerate(lines[:5]):
                 logger.info(f"  Line {i+1}: '{line}'")
             
-            # Parse the new format: Topic Title {S01}
+            # Parse the new format: {IDEAXX} {S01}
             allocations = {}
             lines = content.split('\n')
+            
+            # Create idea code to topic mapping
+            idea_to_topic = {}
+            for i, topic in enumerate(topics):
+                idea_code = f"IDEA{i+1:02d}"
+                topic_title = topic.get('title', topic) if isinstance(topic, dict) else topic
+                idea_to_topic[idea_code] = topic_title
             
             # Filter out empty lines and invalid lines
             valid_lines = []
@@ -2463,29 +2471,30 @@ DO NOT return JSON format. Return simple text lines only."""
                 if not line:
                     continue
                     
-                # Parse format: Topic Title {S01}
+                # Parse format: {IDEAXX} {S01}
                 if '{' in line and '}' in line:
-                    # Extract section code from curly braces
-                    start_brace = line.rfind('{')
-                    end_brace = line.rfind('}')
+                    import re
+                    # Extract idea code and section code
+                    idea_match = re.search(r'\{IDEA(\d+)\}', line)
+                    section_match = re.search(r'\{S(\d+)\}', line)
                     
-                    if start_brace != -1 and end_brace != -1 and end_brace > start_brace:
-                        section_code = line[start_brace + 1:end_brace].strip()
-                        topic_title = line[:start_brace].strip()
+                    if idea_match and section_match:
+                        idea_code = f"IDEA{idea_match.group(1).zfill(2)}"
+                        section_code = f"S{section_match.group(1).zfill(2)}"
                         
-                        # Strip numbered prefixes (e.g., "1. Topic Title" -> "Topic Title")
-                        if topic_title and topic_title[0].isdigit() and '. ' in topic_title:
-                            topic_title = topic_title.split('. ', 1)[1]
-                        
-                        # Validate section code format
-                        if section_code.startswith('S') and len(section_code) == 3:
+                        # Get topic title from mapping
+                        if idea_code in idea_to_topic:
+                            topic_title = idea_to_topic[idea_code]
+                            # Validate section code format
                             try:
                                 section_num = int(section_code[1:])
                                 if 1 <= section_num <= 7:  # Valid section range
-                                    if topic_title:  # Must have a topic title
-                                        valid_lines.append((section_code, topic_title))
+                                    valid_lines.append((section_code, topic_title))
+                                    logger.info(f"Mapped {idea_code} -> {topic_title} -> {section_code}")
                             except ValueError:
                                 continue
+                        else:
+                            logger.warning(f"Unknown idea code: {idea_code}")
             
             # Check if we have the right number of allocations
             if len(valid_lines) != len(topics):
@@ -2628,27 +2637,26 @@ def allocate_missing_topics(missing_topics, section_structure, post_id):
 SECTION STRUCTURE:
 {chr(10).join([f"S{i:02d}: {section.get('theme', f'Section {i}')} - {section.get('boundaries', 'No boundaries specified')}" for i, section in enumerate(section_structure.get('sections', []), 1)])}
 
-MISSING TOPICS TO ALLOCATE (COPY THESE EXACTLY):
-{chr(10).join([f"{i+1}. {topic}" for i, topic in enumerate(missing_topics)])}
+MISSING TOPICS TO ALLOCATE (USE THESE IDEA CODES):
+{chr(10).join([f"{i+1}. {topic} {{IDEA{i+1:02d}}}" for i, topic in enumerate(missing_topics)])}
 
 CRITICAL REQUIREMENTS:
 - Return EXACTLY {len(missing_topics)} lines
-- Use format: [EXACT TOPIC NAME] {{SXX}}
+- Use format: {{IDEAXX}} {{SXX}}
+- Use idea codes: {', '.join([f"IDEA{i+1:02d}" for i in range(len(missing_topics))])}
 - Use section codes: {', '.join(section_codes.keys())}
-- Copy the EXACT topic names from the list above (without numbers)
-- Do NOT include "1.", "2.", etc. in the topic names
 - Do NOT create new topics or use section themes
-- Do NOT modify topic names in any way
+- Do NOT modify idea codes
 - Do NOT add extra topics
 - ONLY allocate the topics listed above
 - Allocate each topic to its BEST FIT section
 - Do NOT skip any topics
 
 OUTPUT FORMAT (example):
-Hogmanay in the 19th Century Scottish Literature {{S03}}
-Scottish Turnips as a Symbol of Fertility {{S04}}
+{{IDEA01}} {{S03}}
+{{IDEA02}} {{S04}}
 
-IMPORTANT: Copy the topic names EXACTLY as they appear above."""
+IMPORTANT: Use the exact idea codes shown above."""
 
         logger.info(f"Retry prompt for {len(missing_topics)} missing topics")
         
@@ -2667,21 +2675,32 @@ IMPORTANT: Copy the topic names EXACTLY as they appear above."""
         content = result['content'].strip()
         lines = content.split('\n')
         
+        # Create idea code to topic mapping for missing topics
+        idea_to_topic = {}
+        for i, topic in enumerate(missing_topics):
+            idea_code = f"IDEA{i+1:02d}"
+            idea_to_topic[idea_code] = topic
+        
         retry_allocations = {}
         for line in lines:
             line = line.strip()
             if not line:
                 continue
             
-            # Parse format: Topic Title {S01}
-            if '{' in line and '}' in line:
-                topic_part = line[:line.rfind('{')].strip()
-                section_part = line[line.rfind('{')+1:line.rfind('}')].strip()
+            # Parse format: {IDEAXX} {S01}
+            import re
+            idea_match = re.search(r'\{IDEA(\d+)\}', line)
+            section_match = re.search(r'\{S(\d+)\}', line)
+            
+            if idea_match and section_match:
+                idea_code = f"IDEA{idea_match.group(1).zfill(2)}"
+                section_code = f"S{section_match.group(1).zfill(2)}"
                 
-                if section_part in section_codes:
-                    if section_part not in retry_allocations:
-                        retry_allocations[section_part] = []
-                    retry_allocations[section_part].append(topic_part)
+                if idea_code in idea_to_topic and section_code in section_codes:
+                    topic_title = idea_to_topic[idea_code]
+                    if section_code not in retry_allocations:
+                        retry_allocations[section_code] = []
+                    retry_allocations[section_code].append(topic_title)
         
         # Convert to allocation format
         allocation_data = {
