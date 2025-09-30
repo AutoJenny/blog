@@ -1,50 +1,71 @@
 {% extends "base.html" %}
 
+{% block css_assets %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/llm-module.css') }}">
+{% endblock %}
+
 {% block title %}Section Structure Design - Concept Development - Planning - BlogForge{% endblock %}
 
 {% block content %}
-<div class="planning-container">
-    <!-- Left Panel: Input Data -->
-    <div class="left-panel">
-        <div class="panel-header">
-            <h3>Input Data</h3>
-        </div>
+<div class="container">
+    <!-- Include condensed header -->
+    {% include 'planning/includes/condensed_header.html' %}
+    
+    {% block process_content %}
+    <div class="brainstorm-main">
         
-        <div class="panel-content">
-            <div class="data-section">
-                <h4>Generated Topics</h4>
-                <div id="topics-display" class="data-display">
-                    <p class="loading">Loading topics from brainstorming...</p>
+        <div class="brainstorm-content">
+            <div class="idea-generator">
+                <div class="input-data">
+                    <h4>Input Data</h4>
+                    <div class="data-section">
+                        <h5>Generated Topics</h5>
+                        <div id="topics-display" class="data-display">
+                            <p class="loading">Loading topics from brainstorming...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="input-actions">
+                        <button id="generate-structure-btn" class="btn btn-primary" onclick="generateSectionStructure()">
+                            <i class="fas fa-magic"></i>
+                            Design Section Structure
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="brainstorm-settings">
+                    <h4>Section Structure Settings</h4>
+                    <div class="form-group">
+                        <label for="structure-type">Structure Type</label>
+                        <select id="structure-type">
+                            <option value="chronological">Chronological (time-based)</option>
+                            <option value="thematic">Thematic (topic-based)</option>
+                            <option value="progressive">Progressive (building complexity)</option>
+                            <option value="comparative">Comparative (contrasting views)</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             
-            <div class="action-section">
-                <button id="generate-structure-btn" class="btn btn-primary" onclick="generateSectionStructure()">
-                    <i class="fas fa-magic"></i>
-                    Design Section Structure
-                </button>
+            <div class="brainstorm-results">
+                {% include 'includes/llm_module.html' %}
             </div>
         </div>
     </div>
 
-    <!-- Right Panel: LLM Module -->
-    <div class="right-panel">
-        <div class="llm-module" id="llm-module">
-            <!-- LLM Module will be initialized here -->
+    <!-- Results Panel -->
+    <div id="results-panel" class="results-panel" style="display: none;">
+        <div class="panel-header">
+            <h3>Generated Section Structure</h3>
+        </div>
+        <div class="panel-content">
+            <div id="structure-results" class="results-display">
+                <!-- Structure results will be displayed here -->
+            </div>
         </div>
     </div>
-</div>
-
-<!-- Results Panel -->
-<div id="results-panel" class="results-panel" style="display: none;">
-    <div class="panel-header">
-        <h3>Generated Section Structure</h3>
-    </div>
-    <div class="panel-content">
-        <div id="structure-results" class="results-display">
-            <!-- Structure results will be displayed here -->
-        </div>
-    </div>
+    {% endblock %}
 </div>
 
 <script>

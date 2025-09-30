@@ -1,50 +1,71 @@
 {% extends "base.html" %}
 
+{% block css_assets %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/llm-module.css') }}">
+{% endblock %}
+
 {% block title %}Topic Refinement - Concept Development - Planning - BlogForge{% endblock %}
 
 {% block content %}
-<div class="planning-container">
-    <!-- Left Panel: Input Data -->
-    <div class="left-panel">
-        <div class="panel-header">
-            <h3>Input Data</h3>
-        </div>
+<div class="container">
+    <!-- Include condensed header -->
+    {% include 'planning/includes/condensed_header.html' %}
+    
+    {% block process_content %}
+    <div class="brainstorm-main">
         
-        <div class="panel-content">
-            <div class="data-section">
-                <h4>Current Topic Allocation</h4>
-                <div id="allocation-display" class="data-display">
-                    <p class="loading">Loading topic allocation...</p>
+        <div class="brainstorm-content">
+            <div class="idea-generator">
+                <div class="input-data">
+                    <h4>Input Data</h4>
+                    <div class="data-section">
+                        <h5>Current Topic Allocation</h5>
+                        <div id="allocation-display" class="data-display">
+                            <p class="loading">Loading topic allocation...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="input-actions">
+                        <button id="refine-topics-btn" class="btn btn-primary" onclick="refineTopics()">
+                            <i class="fas fa-compress-alt"></i>
+                            Refine Overloaded Sections
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="brainstorm-settings">
+                    <h4>Refinement Settings</h4>
+                    <div class="form-group">
+                        <label for="refinement-strategy">Refinement Strategy</label>
+                        <select id="refinement-strategy">
+                            <option value="consolidate">Consolidate (merge similar topics)</option>
+                            <option value="prioritize">Prioritize (keep most important)</option>
+                            <option value="redistribute">Redistribute (move to other sections)</option>
+                            <option value="summarize">Summarize (create overview topics)</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             
-            <div class="action-section">
-                <button id="refine-topics-btn" class="btn btn-primary" onclick="refineTopics()">
-                    <i class="fas fa-compress-alt"></i>
-                    Refine Overloaded Sections
-                </button>
+            <div class="brainstorm-results">
+                {% include 'includes/llm_module.html' %}
             </div>
         </div>
     </div>
 
-    <!-- Right Panel: LLM Module -->
-    <div class="right-panel">
-        <div class="llm-module" id="llm-module">
-            <!-- LLM Module will be initialized here -->
+    <!-- Results Panel -->
+    <div id="results-panel" class="results-panel" style="display: none;">
+        <div class="panel-header">
+            <h3>Refined Topic Allocation</h3>
+        </div>
+        <div class="panel-content">
+            <div id="refinement-results" class="results-display">
+                <!-- Refinement results will be displayed here -->
+            </div>
         </div>
     </div>
-</div>
-
-<!-- Results Panel -->
-<div id="results-panel" class="results-panel" style="display: none;">
-    <div class="panel-header">
-        <h3>Refined Topic Allocation</h3>
-    </div>
-    <div class="panel-content">
-        <div id="refinement-results" class="results-display">
-            <!-- Refinement results will be displayed here -->
-        </div>
-    </div>
+    {% endblock %}
 </div>
 
 <script>
