@@ -106,10 +106,6 @@
             
             <!-- Authoring sub-stages -->
             <div class="sub-stage-group" data-stage="authoring">
-                <a href="{{ url_for('authoring.authoring_sections_ideas_to_include', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="ideas-to-include">
-                    Ideas to Include
-                </a>
                 <a href="{{ url_for('authoring.authoring_sections_author_first_drafts', post_id=post_id) }}" 
                    class="sub-stage-btn" data-substage="author-first-drafts">
                     Author First Drafts
@@ -468,7 +464,6 @@ const subtitles = {
         'verification': 'Verify facts and ensure content accuracy.'
     },
     'authoring': {
-        'ideas-to-include': 'Generate specific ideas and key points for each section.',
         'author-first-drafts': 'Create initial draft content for each section.',
         'fix-language': 'Refine and improve language, flow, and readability.',
         'image-concepts': 'Develop visual concepts and image requirements.',
