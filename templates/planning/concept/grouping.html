@@ -331,6 +331,11 @@
         <!-- Left Panel: Input Data -->
         <div class="input-panel">
             <h4>Input Data</h4>
+            <div class="input-actions" style="margin-bottom: 15px;">
+                <button class="btn btn-primary" onclick="runSectionGrouping()" id="run-grouping-btn-top">
+                    <i class="fas fa-sitemap"></i> Run Section Grouping
+                </button>
+            </div>
             <div id="topics-display" class="topics-display">
                 <div class="text-muted">Loading topics from brainstorming...</div>
             </div>
@@ -528,25 +533,58 @@ function displayTopics() {
 // Run complete section grouping process
 async function runSectionGrouping() {
     try {
-        showLoading('run-grouping-btn');
+        // Show loading state on both buttons
+        const runBtn = document.getElementById('run-grouping-btn');
+        const runBtnTop = document.getElementById('run-grouping-btn-top');
+        const originalText = runBtn.innerHTML;
+        const loadingText = '<i class="fas fa-spinner fa-spin"></i> Running Section Grouping...';
+        
+        runBtn.innerHTML = loadingText;
+        runBtn.disabled = true;
+        runBtnTop.innerHTML = loadingText;
+        runBtnTop.disabled = true;
+        
+        // Clear any previous results
+        document.getElementById('final-results-display').innerHTML = '<div class="text-muted">Running section grouping process...</div>';
         
         // Step 1: Design section structure
+        console.log('Starting Step 1: Design Section Structure');
         await designSectionStructure();
+        console.log('Step 1 completed');
         
         // Step 2: Allocate topics
+        console.log('Starting Step 2: Allocate Topics');
         await allocateTopics();
+        console.log('Step 2 completed');
         
-        // Step 3: Refine topics (optional)
+        // Step 3: Refine topics
+        console.log('Starting Step 3: Refine Topics');
         await refineTopics();
+        console.log('Step 3 completed');
         
         // Display final results
+        console.log('Displaying final results');
         displayFinalResults();
         
-        hideLoading('run-grouping-btn');
+        // Reset buttons
+        runBtn.innerHTML = originalText;
+        runBtn.disabled = false;
+        runBtnTop.innerHTML = originalText;
+        runBtnTop.disabled = false;
+        
+        console.log('Section grouping process completed successfully');
+        
     } catch (error) {
         console.error('Error in section grouping:', error);
         showError('final-results-display', `Error: ${error.message}`);
-        hideLoading('run-grouping-btn');
+        
+        // Reset buttons
+        const runBtn = document.getElementById('run-grouping-btn');
+        const runBtnTop = document.getElementById('run-grouping-btn-top');
+        runBtn.innerHTML = '<i class="fas fa-sitemap"></i> Run Section Grouping';
+        runBtn.disabled = false;
+        runBtnTop.innerHTML = '<i class="fas fa-sitemap"></i> Run Section Grouping';
+        runBtnTop.disabled = false;
     }
 }
 
