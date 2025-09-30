@@ -476,8 +476,24 @@
 2025-09-30 10:09:05,588 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:09:05] "[33mGET /static/images/site/apple-touch-icon.png HTTP/1.1[0m" 404 -
 2025-09-30 10:09:05,588 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:09:05] "[33mGET /static/images/site/favicon.ico HTTP/1.1[0m" 404 -
 2025-09-30 10:09:05,588 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:09:05] "[33mGET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1[0m" 404 -
-04 -
-2025-09-30 10:09:05,587 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:09:05] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
-2025-09-30 10:09:05,588 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:09:05] "[33mGET /static/images/site/apple-touch-icon.png HTTP/1.1[0m" 404 -
-2025-09-30 10:09:05,588 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:09:05] "[33mGET /static/images/site/favicon.ico HTTP/1.1[0m" 404 -
-2025-09-30 10:09:05,588 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:09:05] "[33mGET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1[0m" 404 -
+2025-09-30 10:14:48,286 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:14:48] "GET /planning/posts/60/concept/titling HTTP/1.1" 200 -
+2025-09-30 10:15:04,891 - config.database - INFO - Database connection established
+2025-09-30 10:15:04,894 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:15:04] "GET /planning/api/llm/prompts/section-planning HTTP/1.1" 200 -
+2025-09-30 10:15:25,331 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/add_section_titling_prompt.py', reloading
+2025-09-30 10:15:25,364 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 10:15:25,582 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 10:15:25,588 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 10:15:41,503 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 10:15:41,532 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 10:15:41,766 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 10:15:41,771 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 10:15:42,437 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:15:42] "GET /planning/posts/60/concept/titling HTTP/1.1" 200 -
+2025-09-30 10:15:44,205 - config.database - INFO - Database connection established
+2025-09-30 10:15:44,207 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:15:44] "GET /planning/api/llm/prompts/section-titling HTTP/1.1" 200 -
+eloading
+2025-09-30 10:15:41,532 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 10:15:41,766 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 10:15:41,771 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 10:15:42,437 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:15:42] "GET /planning/posts/60/concept/titling HTTP/1.1" 200 -
+2025-09-30 10:15:44,205 - config.database - INFO - Database connection established
+2025-09-30 10:15:44,207 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:15:44] "GET /planning/api/llm/prompts/section-titling HTTP/1.1" 200 -
