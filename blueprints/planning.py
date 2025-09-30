@@ -1711,7 +1711,9 @@ def api_generate_brainstorm_topics():
             
             # Build the prompt with the expanded idea
             prompt_text = prompt_data['prompt_text']
-            if '[TOPIC]' in prompt_text:
+            if '[EXPANDED_IDEA]' in prompt_text:
+                prompt_text = prompt_text.replace('[EXPANDED_IDEA]', expanded_idea)
+            elif '[TOPIC]' in prompt_text:  # Fallback for old format
                 prompt_text = prompt_text.replace('[TOPIC]', expanded_idea)
             
             # Add brainstorm type context
