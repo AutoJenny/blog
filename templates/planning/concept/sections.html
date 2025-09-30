@@ -230,6 +230,144 @@
     font-weight: 500;
 }
 
+/* Enhanced Section Display */
+.section-item.enhanced {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.2s ease;
+}
+
+.section-item.enhanced:hover {
+    border-color: #3b82f6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.section-title {
+    color: #f1f5f9;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    flex: 1;
+}
+
+.section-meta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.topic-count {
+    background: #3b82f6;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.section-order {
+    background: #64748b;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.section-description {
+    color: #94a3b8;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+
+.topics-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.topics-header h5 {
+    color: #f1f5f9;
+    font-size: 1rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+.category-indicators {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.category-tag {
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.category-tag.historical {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.category-tag.cultural {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.category-tag.practical {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.category-tag.contemporary {
+    background: #fce7f3;
+    color: #be185d;
+}
+
+.category-tag.general {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.topics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 0.75rem;
+}
+
+.topic-item.enhanced {
+    background: #334155;
+    border: 1px solid #475569;
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.topic-item.enhanced:hover {
+    background: #475569;
+    border-color: #64748b;
+}
+
+.topic-text {
+    color: #e2e8f0;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
 @media (max-width: 768px) {
     .sections-content {
         grid-template-columns: 1fr;
@@ -407,17 +545,36 @@ function displaySections(sectionsData) {
         sectionsHTML += '<div class="fallback-notice">⚠️ Using fallback allocation due to LLM validation issues</div>';
     }
     
+    // Display sections with enhanced formatting
     sections.forEach((section, index) => {
+        const topicCount = section.topics ? section.topics.length : 0;
+        const categoryCounts = getCategoryCounts(section.topics || []);
+        
         sectionsHTML += `
-            <div class="section-item" data-section-id="${index}">
+            <div class="section-item enhanced" data-section-id="${section.id || index}">
                 <div class="section-header">
-                    <h4>Section ${index + 1}: ${section.title}</h4>
+                    <h4 class="section-title">${section.title || `Section ${index + 1}`}</h4>
+                    <div class="section-meta">
+                        <span class="topic-count">${topicCount} topics</span>
+                        <span class="section-order">${section.order || index + 1}</span>
+                    </div>
                 </div>
-                <div class="section-description">${section.description}</div>
+                <div class="section-description">${section.description || 'No description provided'}</div>
                 <div class="section-topics">
-                    <h5>Topics in this section:</h5>
-                    <div class="topics-list">
-                        ${section.topics.map(topic => `<span class="topic-tag">${topic}</span>`).join('')}
+                    <div class="topics-header">
+                        <h5>Topics in this section:</h5>
+                        <div class="category-indicators">
+                            ${Object.entries(categoryCounts).map(([cat, count]) => 
+                                `<span class="category-tag ${cat}">${cat} (${count})</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                    <div class="topics-grid">
+                        ${(section.topics || []).map(topic => 
+                            `<div class="topic-item enhanced" data-topic="${topic}">
+                                <span class="topic-text">${topic}</span>
+                            </div>`
+                        ).join('')}
                     </div>
                 </div>
             </div>
@@ -427,6 +584,29 @@ function displaySections(sectionsData) {
     sectionsHTML += '</div>';
     
     resultsDisplay.innerHTML = sectionsHTML;
+}
+
+function getCategoryCounts(topics) {
+    const categories = {};
+    topics.forEach(topic => {
+        const category = categorizeTopic(topic);
+        categories[category] = (categories[category] || 0) + 1;
+    });
+    return categories;
+}
+
+function categorizeTopic(topic) {
+    const topicLower = topic.toLowerCase();
+    if (topicLower.includes('history') || topicLower.includes('ancient') || topicLower.includes('traditional')) {
+        return 'historical';
+    } else if (topicLower.includes('culture') || topicLower.includes('festival') || topicLower.includes('celebration')) {
+        return 'cultural';
+    } else if (topicLower.includes('how') || topicLower.includes('guide') || topicLower.includes('tips')) {
+        return 'practical';
+    } else if (topicLower.includes('modern') || topicLower.includes('contemporary') || topicLower.includes('today')) {
+        return 'contemporary';
+    }
+    return 'general';
 }
 
 async function saveSectionsToDatabase(sectionsData) {

@@ -20750,3 +20750,41 @@ LINE 4:                 LEFT JOIN calendar_ideas ci ON cs.idea_id = ...
 2025-09-30 08:59:51,364 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 08:59:51] "[33mGET /static/images/site/favicon.ico HTTP/1.1[0m" 404 -
 2025-09-30 08:59:51,365 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 08:59:51] "[33mGET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1[0m" 404 -
 2025-09-30 08:59:51,365 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 08:59:51] "[33mGET /static/images/site/apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-30 09:01:38,038 - config.database - INFO - Database connection established
+2025-09-30 09:01:38,040 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:01:38] "GET /planning/api/llm/prompts/topic-brainstorming HTTP/1.1" 200 -
+2025-09-30 09:01:40,010 - config.database - INFO - Database connection established
+2025-09-30 09:01:40,013 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:01:40] "GET /planning/api/llm/prompts/section-planning HTTP/1.1" 200 -
+2025-09-30 09:01:42,057 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:01:42] "GET /planning/posts/60/concept/sections HTTP/1.1" 200 -
+2025-09-30 09:15:43,414 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 09:15:43,451 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 09:15:43,676 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 09:15:43,681 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 09:15:50,149 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 09:15:50,179 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 09:15:50,408 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 09:15:50,413 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 09:15:55,778 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 09:15:55,815 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 09:15:56,055 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 09:15:56,062 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 09:16:01,432 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 09:16:01,460 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 09:16:01,685 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 09:16:01,691 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 09:16:50,767 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 09:16:50,801 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 09:16:51,032 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 09:16:51,038 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 09:17:07,058 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 09:17:07,086 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 09:17:07,317 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 09:17:07,322 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 09:17:15,882 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 09:17:15,921 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 09:17:16,159 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 09:17:16,164 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 09:18:13,539 - config.database - INFO - Database connection established
+2025-09-30 09:18:13,541 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:18:13] "GET /planning/api/llm/prompts/topic-brainstorming HTTP/1.1" 200 -
+2025-09-30 09:18:16,783 - config.database - INFO - Database connection established
+2025-09-30 09:18:16,786 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:18:16] "GET /planning/api/llm/prompts/section-planning HTTP/1.1" 200 -
+2025-09-30 09:18:20,402 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:18:20] "GET /planning/posts/60/concept/sections HTTP/1.1" 200 -

@@ -1752,10 +1752,10 @@ def api_generate_brainstorm_topics():
         return jsonify({'error': str(e)}), 500
 
 def parse_brainstorm_topics(content):
-    """Parse the LLM response to extract individual topics"""
+    """Enhanced topic parsing with validation and categorization"""
     topics = []
     
-    # First, try to parse as JSON (expected format)
+    # Step 1: Try JSON parsing (expected format)
     try:
         import json
         # Clean up the content to extract JSON
@@ -1771,16 +1771,19 @@ def parse_brainstorm_topics(content):
             
             if isinstance(topic_list, list):
                 for topic_text in topic_list:
-                    if isinstance(topic_text, str) and len(topic_text.strip()) > 3:
+                    if isinstance(topic_text, str) and validate_topic(topic_text):
                         topics.append({
                             'title': topic_text.strip(),
                             'description': topic_text.strip(),
-                            'category': 'general'
+                            'category': categorize_topic(topic_text),
+                            'word_count': len(topic_text.split())
                         })
                 
                 if topics:
+                    logger.info(f"Successfully parsed {len(topics)} topics from JSON format")
                     return topics[:50]  # Limit to 50 topics
-    except (json.JSONDecodeError, ValueError, TypeError):
+    except (json.JSONDecodeError, ValueError, TypeError) as e:
+        logger.warning(f"JSON parsing failed: {e}, falling back to text parsing")
         pass  # Fall back to text parsing
     
     # Fallback: Parse as text format (numbered, bulleted, or short lines)
@@ -1798,25 +1801,73 @@ def parse_brainstorm_topics(content):
             
             # Clean up the line and add as topic
             clean_line = line.lstrip('1234567890.-*• ').strip()
-            if clean_line and len(clean_line) > 3:  # Only add if it's substantial
+            if clean_line and validate_topic(clean_line):
                 topics.append({
                     'title': clean_line,
                     'description': clean_line,  # Same as title since it's a short summary
-                    'category': 'general'
+                    'category': categorize_topic(clean_line),
+                    'word_count': len(clean_line.split())
                 })
     
     # If no structured topics found, try to split by lines that look like topics
     if not topics:
         for line in lines:
             line = line.strip()
-            if line and len(line) < 100 and not line.startswith(('SERIOUS', 'BALANCED', 'QUIRKY', 'Format', 'Ensure', 'Generate')):
+            if line and validate_topic(line):
                 topics.append({
                     'title': line,
                     'description': line,
-                    'category': 'general'
+                    'category': categorize_topic(line),
+                    'word_count': len(line.split())
                 })
     
     return topics[:50]  # Limit to 50 topics
+
+def validate_topic(topic):
+    """Validate individual topic for length and content"""
+    if not topic or not isinstance(topic, str):
+        return False
+    
+    words = topic.strip().split()
+    # Check word count (5-8 words)
+    if not (5 <= len(words) <= 8):
+        return False
+    
+    # Check minimum length
+    if len(topic.strip()) < 10:
+        return False
+    
+    # Check for common invalid patterns
+    invalid_patterns = ['SERIOUS', 'BALANCED', 'QUIRKY', 'Format', 'Ensure', 'Generate', 'Here are', 'The following']
+    topic_lower = topic.lower()
+    if any(pattern.lower() in topic_lower for pattern in invalid_patterns):
+        return False
+    
+    return True
+
+def categorize_topic(topic):
+    """Categorize topic by content type"""
+    topic_lower = topic.lower()
+    
+    # Historical topics
+    if any(word in topic_lower for word in ['history', 'ancient', 'traditional', 'heritage', 'origins', 'centuries', 'medieval', 'celtic']):
+        return 'historical'
+    
+    # Cultural topics
+    elif any(word in topic_lower for word in ['culture', 'festival', 'celebration', 'custom', 'tradition', 'folklore', 'mythology', 'legend']):
+        return 'cultural'
+    
+    # Practical topics
+    elif any(word in topic_lower for word in ['how', 'guide', 'tips', 'practical', 'step', 'method', 'technique', 'recipe']):
+        return 'practical'
+    
+    # Contemporary topics
+    elif any(word in topic_lower for word in ['modern', 'contemporary', 'today', 'current', 'now', 'present', 'recent', 'today\'s']):
+        return 'contemporary'
+    
+    # Default category
+    else:
+        return 'general'
 
 @bp.route('/api/posts/<int:post_id>/idea-scope', methods=['GET'])
 def api_get_idea_scope(post_id):
@@ -2021,15 +2072,25 @@ def api_sections_plan():
         # Validate the response
         validation_errors = validate_sections_response(sections_data, topics, section_count)
         logger.info(f"Validation errors: {validation_errors}")
+        
         if validation_errors:
-            # If validation fails, create a simple fallback allocation
-            logger.info("LLM validation failed, creating fallback allocation")
+            # Try auto-correction first
+            corrections = auto_correct_sections(sections_data, topics)
+            if corrections:
+                logger.info(f"Applied auto-corrections: {corrections}")
+                # Re-validate after corrections
+                validation_errors = validate_sections_response(sections_data, topics, section_count)
+                logger.info(f"Validation errors after correction: {validation_errors}")
             
-            # Adjust section count based on topic count
-            actual_section_count = min(section_count, max(3, len(topics) // 2 + 1))
-            
-            # Create simple sections with topics distributed evenly
-            sections_data = create_fallback_sections(topics, actual_section_count, section_style, timestamp)
+            # If still failing, create fallback allocation
+            if validation_errors:
+                logger.info("LLM validation failed even after auto-correction, creating fallback allocation")
+                
+                # Adjust section count based on topic count
+                actual_section_count = min(section_count, max(3, len(topics) // 2 + 1))
+                
+                # Create simple sections with topics distributed evenly
+                sections_data = create_fallback_sections(topics, actual_section_count, section_style, timestamp)
         
         return jsonify({
             'success': True,
@@ -2178,76 +2239,180 @@ def parse_sections_response(response_text):
     }
 
 def validate_sections_response(sections_data, original_topics, expected_section_count):
-    """Validate that all topics are allocated and structure is correct"""
+    """Enhanced validation with progressive levels"""
     errors = []
     
+    # Level 1: Structure validation
+    structure_errors = validate_structure(sections_data)
+    if structure_errors:
+        return structure_errors
+    
+    # Level 2: Count validation
+    count_errors = validate_counts(sections_data, expected_section_count, len(original_topics))
+    if count_errors:
+        errors.extend(count_errors)
+    
+    # Level 3: Allocation validation
+    allocation_errors = validate_allocation(sections_data, original_topics)
+    if allocation_errors:
+        errors.extend(allocation_errors)
+    
+    # Level 4: Quality validation
+    quality_errors = validate_quality(sections_data)
+    if quality_errors:
+        errors.extend(quality_errors)
+    
+    return errors
+
+def validate_structure(sections_data):
+    """Level 1: Basic structure validation"""
+    errors = []
     if not isinstance(sections_data, dict):
         errors.append("Response must be a JSON object")
-        return errors
-    
     if 'sections' not in sections_data:
         errors.append("Response must contain 'sections' array")
-        return errors
+    return errors
+
+def validate_counts(sections_data, expected_count, total_topics):
+    """Level 2: Count validation with flexibility"""
+    errors = []
+    sections = sections_data.get('sections', [])
     
-    sections = sections_data['sections']
-    
-    # Check section count
+    # Flexible section count (6-8 range)
     if not (6 <= len(sections) <= 8):
         errors.append(f"Must have 6-8 sections, got {len(sections)}")
     
-    # Check expected section count
-    if len(sections) != expected_section_count:
-        errors.append(f"Expected {expected_section_count} sections, got {len(sections)}")
+    # Check topic allocation
+    allocated_count = sum(len(section.get('topics', [])) for section in sections)
+    if allocated_count != total_topics:
+        errors.append(f"Topic count mismatch: {allocated_count} allocated vs {total_topics} original")
     
-    # Check all topics allocated
+    return errors
+
+def validate_allocation(sections_data, original_topics):
+    """Level 3: Topic allocation validation with fuzzy matching"""
+    errors = []
+    sections = sections_data.get('sections', [])
+    original_titles = [topic['title'] for topic in original_topics]
     allocated_topics = []
-    original_topic_titles = [topic['title'] for topic in original_topics]
     
     for section in sections:
-        if 'topics' not in section:
-            errors.append(f"Section '{section.get('title', 'Unknown')}' missing topics array")
-            continue
-        
-        for topic in section['topics']:
+        for topic in section.get('topics', []):
             allocated_topics.append(topic)
     
-    # Check topic count
-    if len(allocated_topics) != len(original_topic_titles):
-        errors.append(f"Topic count mismatch: {len(allocated_topics)} allocated vs {len(original_topic_titles)} original")
+    # Check for unallocated topics (with fuzzy matching)
+    unallocated = []
+    for original in original_titles:
+        if not any(fuzzy_match(original, allocated) for allocated in allocated_topics):
+            unallocated.append(original)
     
-    # Check for unallocated topics
-    unallocated_topics = []
-    for topic_title in original_topic_titles:
-        if topic_title not in allocated_topics:
-            unallocated_topics.append(topic_title)
+    if unallocated:
+        errors.append(f"Unallocated topics: {', '.join(unallocated[:5])}{'...' if len(unallocated) > 5 else ''}")
     
-    if unallocated_topics:
-        errors.append(f"Unallocated topics: {', '.join(unallocated_topics[:5])}{'...' if len(unallocated_topics) > 5 else ''}")
-    
-    # Check for duplicate topics
+    # Check for duplicates
     if len(set(allocated_topics)) != len(allocated_topics):
         duplicates = [topic for topic in allocated_topics if allocated_topics.count(topic) > 1]
         errors.append(f"Duplicate topics found: {', '.join(set(duplicates))}")
     
-    # Check for invented topics (topics not in original list)
-    invented_topics = []
-    for topic in allocated_topics:
-        if topic not in original_topic_titles:
-            invented_topics.append(topic)
+    return errors
+
+def validate_quality(sections_data):
+    """Level 4: Quality validation"""
+    errors = []
+    sections = sections_data.get('sections', [])
     
-    if invented_topics:
-        errors.append(f"Invented topics found: {', '.join(invented_topics[:5])}{'...' if len(invented_topics) > 5 else ''}")
-    
-    # Check section structure
     for i, section in enumerate(sections):
-        if 'title' not in section:
-            errors.append(f"Section {i+1} missing title")
-        if 'topics' not in section:
-            errors.append(f"Section '{section.get('title', 'Unknown')}' missing topics")
-        elif len(section['topics']) == 0:
-            errors.append(f"Section '{section.get('title', 'Unknown')}' has no topics")
+        if not section.get('title') or len(section.get('title', '')) < 10:
+            errors.append(f"Section {i+1} has inadequate title")
+        if not section.get('description') or len(section.get('description', '')) < 20:
+            errors.append(f"Section {i+1} has inadequate description")
+        if len(section.get('topics', [])) < 3:
+            errors.append(f"Section {i+1} has too few topics")
     
     return errors
+
+def fuzzy_match(str1, str2, threshold=0.8):
+    """Fuzzy string matching for topic validation"""
+    from difflib import SequenceMatcher
+    return SequenceMatcher(None, str1.lower(), str2.lower()).ratio() >= threshold
+
+def auto_correct_sections(sections_data, original_topics):
+    """Auto-correct minor issues in section data"""
+    corrections = []
+    
+    sections = sections_data.get('sections', [])
+    original_titles = [topic['title'] for topic in original_topics]
+    
+    # Fix empty sections
+    for section in sections:
+        if not section.get('topics'):
+            # Find nearby topics to allocate
+            nearby_topics = find_nearby_topics(section, original_topics)
+            section['topics'] = nearby_topics
+            corrections.append(f"Added {len(nearby_topics)} topics to empty section")
+    
+    # Fix duplicate topics
+    all_topics = []
+    for section in sections:
+        unique_topics = []
+        for topic in section.get('topics', []):
+            if topic not in all_topics:
+                unique_topics.append(topic)
+                all_topics.append(topic)
+        section['topics'] = unique_topics
+    
+    # Fix inadequate titles
+    for section in sections:
+        if not section.get('title') or len(section.get('title', '')) < 10:
+            section['title'] = generate_section_title(section.get('topics', []))
+            corrections.append("Generated section title")
+    
+    # Fix inadequate descriptions
+    for section in sections:
+        if not section.get('description') or len(section.get('description', '')) < 20:
+            section['description'] = generate_section_description(section.get('topics', []))
+            corrections.append("Generated section description")
+    
+    return corrections
+
+def find_nearby_topics(section, original_topics):
+    """Find topics that could fit in an empty section"""
+    # Simple heuristic: return first few unallocated topics
+    return [topic['title'] for topic in original_topics[:3]]
+
+def generate_section_title(topics):
+    """Generate a meaningful section title from topics"""
+    if not topics:
+        return "Untitled Section"
+    
+    # Extract common words from topics
+    common_words = []
+    for topic in topics[:3]:  # Use first 3 topics
+        words = topic.lower().split()
+        common_words.extend(words)
+    
+    # Find most common words
+    from collections import Counter
+    word_counts = Counter(common_words)
+    common_terms = [word for word, count in word_counts.most_common(3) if count > 1]
+    
+    if common_terms:
+        return f"Exploring {', '.join(common_terms).title()}"
+    else:
+        return f"Section: {topics[0][:30]}..."
+
+def generate_section_description(topics):
+    """Generate a meaningful section description from topics"""
+    if not topics:
+        return "This section covers various related topics."
+    
+    topic_count = len(topics)
+    if topic_count == 1:
+        return f"This section explores {topics[0].lower()}."
+    elif topic_count <= 3:
+        return f"This section covers {topic_count} related topics including {topics[0].lower()}."
+    else:
+        return f"This section explores {topic_count} interconnected topics and themes."
 
 def create_fallback_sections(topics, section_count, section_style, timestamp):
     """Create a simple fallback section allocation when LLM fails"""
