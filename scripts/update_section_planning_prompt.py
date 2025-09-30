@@ -45,9 +45,9 @@ OUTPUT FORMAT:
 {
   "sections": [
     {
-      "id": "intro",
-      "title": "Introduction to Scottish Autumn Traditions",
-      "description": "Overview of Scotland's autumn heritage and cultural significance",
+      "id": "section_1",
+      "title": "Engaging, subject-agnostic section title",
+      "description": "Brief description relevant to the provided topics and expanded idea",
       "topics": ["Topic 1", "Topic 2", ...],
       "order": 1
     }
@@ -56,7 +56,7 @@ OUTPUT FORMAT:
     "total_sections": [SECTION_COUNT],
     "total_topics": [TOTAL_TOPICS],
     "allocated_topics": [TOTAL_TOPICS],
-    "flow_type": "chronological"
+    "flow_type": "heritage-engagement"
   }
 }
 
