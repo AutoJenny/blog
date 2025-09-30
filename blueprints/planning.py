@@ -2219,29 +2219,29 @@ CRITICAL REQUIREMENTS:
             topics_list = '\n  '.join(group.get('topics', []))
             groups_text += f"\nGroup {group.get('order', 1)}: {group.get('theme', 'Untitled')}\n  {topics_list}\n"
         
-        titling_prompt = f"""Given these thematic groups about {expanded_idea}, create engaging titles and descriptions for each section that will captivate Scottish heritage enthusiasts and general readers interested in Scottish culture.
+        titling_prompt = f"""You are tasked with creating engaging titles and snappy subtitles for these existing thematic groups about {expanded_idea}. DO NOT reorganize, reorder, or change the topics - just add creative titles and subtitles.
 
-THEMATIC GROUPS TO TITLE:
+EXISTING GROUPS TO TITLE (PRESERVE EXACTLY AS IS):
 {groups_text}
 
-REQUIREMENTS:
-- Create compelling titles that evoke Scottish heritage and cultural significance
-- Write descriptions that explain what each section covers and why it matters
-- Use authentic Scottish terminology and cultural references where appropriate
-- Make content accessible to both Scottish and international audiences
-- Focus on the cultural importance and historical significance of each theme
+CRITICAL REQUIREMENTS:
+- Keep the EXACT same group structure, topics, and order
+- Only add creative titles and snappy subtitles
+- Do NOT reorganize or reallocate topics
+- Do NOT change the group themes or explanations
+- Do NOT modify the topic lists
 
 OUTPUT FORMAT: Return ONLY valid JSON:
 {{
   "sections": [
     {{
-      "id": "section_1",
+      "id": "group_1",
       "title": "Engaging Scottish Heritage Title",
-      "subtitle": "Compelling subtitle that adds depth",
-      "description": "Detailed description of what this section covers and its cultural significance",
-      "topics": ["Topic 1", "Topic 2", ...],
+      "subtitle": "Snappy subtitle - no fluff like 'This section delves into'",
+      "description": "Brief description of what this section covers",
+      "topics": ["EXACT SAME TOPICS AS INPUT"],
       "order": 1,
-      "cultural_significance": "Brief explanation of why this theme matters to Scottish heritage"
+      "cultural_significance": "Why this theme matters to Scottish heritage"
     }}
   ],
   "metadata": {{
@@ -2259,12 +2259,18 @@ TITLE GUIDELINES:
 - Avoid overly academic or dry language
 - Focus on emotional connection and cultural pride
 
+SUBTITLE GUIDELINES:
+- Keep subtitles snappy and direct
+- NO fluff phrases like "This section delves into", "Join us as we explore", "Discover the fascinating"
+- Start with action words or direct statements
+- Maximum 8-10 words
+- Focus on the core essence of the group
+
 DESCRIPTION GUIDELINES:
-- Explain what readers will learn in this section
+- Brief, direct description of what readers will learn
 - Highlight the cultural and historical significance
-- Connect themes to broader Scottish heritage
 - Use engaging, accessible language
-- Include why this content matters to Scottish culture"""
+- Keep under 2 sentences"""
         
         logger.info(f"Prompt prepared, length: {len(titling_prompt)}")
         
