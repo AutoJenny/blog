@@ -2088,8 +2088,29 @@ OUTPUT FORMAT: Return ONLY valid JSON:
         # Parse response
         try:
             import json
-            groups_data = json.loads(llm_response['content'])
-        except json.JSONDecodeError:
+            content = llm_response['content'].strip()
+            
+            # Remove markdown code blocks if present
+            if content.startswith('```'):
+                lines = content.split('\n')
+                # Find the JSON part between code blocks
+                json_lines = []
+                in_json = False
+                for line in lines:
+                    if line.strip() == '```' and not in_json:
+                        in_json = True
+                        continue
+                    elif line.strip() == '```' and in_json:
+                        break
+                    elif in_json:
+                        json_lines.append(line)
+                content = '\n'.join(json_lines)
+            
+            groups_data = json.loads(content)
+            logger.info(f"Successfully parsed LLM response for grouping")
+        except json.JSONDecodeError as e:
+            logger.warning(f"LLM JSON parsing failed: {e}")
+            logger.warning(f"LLM response content: {llm_response['content'][:500]}...")
             # Fallback: create simple groups
             groups_data = create_fallback_groups(topics, group_count)
         
