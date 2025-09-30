@@ -2509,20 +2509,30 @@ DO NOT return JSON format. Return simple text lines only."""
             logger.info(f"Allocation data to validate: {allocation_data}")
             logger.info(f"Original topics: {topics}")
             
-            if not validate_topic_allocation(allocation_data, topics):
+            validation_result = validate_topic_allocation(allocation_data, topics)
+            if not validation_result:
                 logger.error(f"Validation failed for allocation: {allocation_data}")
                 logger.error(f"Valid lines found: {len(valid_lines)}")
                 logger.error(f"Sample valid lines: {valid_lines[:3]}")
+                
+                # Get missing topics for better error message
+                allocated_topics = []
+                for allocation in allocation_data.get('allocations', []):
+                    allocated_topics.extend(allocation.get('topics', []))
+                original_titles = [topic.get('title', topic) if isinstance(topic, dict) else topic for topic in topics]
+                missing_topics = set(original_titles) - set(allocated_topics)
+                
                 return jsonify({
                     'success': False,
-                    'error': 'Invalid topic allocation format',
+                    'error': f'Invalid allocation count: expected {len(original_titles)}, got {len(set(allocated_topics))}. Missing topics: {list(missing_topics)}',
                     'llm_response': content,
                     'debug_info': {
                         'total_lines': len(lines),
                         'valid_lines': len(valid_lines),
                         'sample_valid_lines': valid_lines[:3],
                         'sample_raw_lines': lines[:3],
-                        'allocation_data': allocation_data
+                        'allocation_data': allocation_data,
+                        'missing_topics': list(missing_topics)
                     }
                 }), 400
             
@@ -2588,6 +2598,12 @@ def validate_topic_allocation(allocation_data, original_topics):
             logger.error(f"Topic count mismatch: allocated={len(set(allocated_topics))}, original={len(original_titles)}")
             logger.error(f"Allocated topics: {set(allocated_topics)}")
             logger.error(f"Original topics: {original_titles}")
+            
+            # Find missing topics
+            allocated_set = set(allocated_topics)
+            original_set = set(original_titles)
+            missing_topics = original_set - allocated_set
+            logger.error(f"Missing topics: {missing_topics}")
             return False
         
         # Check that all original topics are present in allocated topics
