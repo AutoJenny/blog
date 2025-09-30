@@ -2625,7 +2625,8 @@ CRITICAL REQUIREMENTS:
 - Return EXACTLY {len(missing_topics)} lines
 - Use format: [EXACT TOPIC NAME] {{SXX}}
 - Use section codes: {', '.join(section_codes.keys())}
-- Copy the EXACT topic names from the list above
+- Copy the EXACT topic names from the list above (without numbers)
+- Do NOT include "1.", "2.", etc. in the topic names
 - Allocate each topic to its BEST FIT section
 - Do NOT skip any topics
 
