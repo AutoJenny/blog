@@ -2069,7 +2069,7 @@ OUTPUT FORMAT: Return ONLY valid JSON:
     "total_topics": {len(topics)},
     "allocated_topics": {len(topics)}
   }}
-}"""
+}}"""
         
         # Call LLM
         messages = [
@@ -2209,6 +2209,7 @@ def create_fallback_groups(topics, group_count):
         groups.append({
             'id': f'group_{i+1}',
             'theme': f'Thematic Group {i+1}',
+            'explanation': 'Topics grouped by broad thematic similarity for coherent coverage.',
             'topics': group_topics,
             'order': i + 1
         })
