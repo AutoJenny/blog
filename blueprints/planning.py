@@ -192,6 +192,7 @@ def planning_calendar_ideas(post_id):
                              post_id=post_id, 
                              week_number=week_number,
                              week_dates=week_dates,
+                             page_title='Idea Generation',
                              blueprint_name='planning')
     except Exception as e:
         logger.error(f"Error in planning_calendar_ideas: {e}")
@@ -203,6 +204,7 @@ def planning_calendar_ideas(post_id):
                              post_id=post_id, 
                              week_number=week_number,
                              week_dates=f"Week {week_number}, {current_date.year}",
+                             page_title='Idea Generation',
                              blueprint_name='planning')
 
 
@@ -216,17 +218,26 @@ def planning_concept(post_id):
 @bp.route('/posts/<int:post_id>/concept/brainstorm')
 def planning_concept_brainstorm(post_id):
     """Topic Brainstorming sub-stage"""
-    return render_template('planning/concept/brainstorm.html', post_id=post_id, blueprint_name='planning')
+    return render_template('planning/concept/brainstorm.html', 
+                         post_id=post_id, 
+                         page_title='Topic Brainstorming',
+                         blueprint_name='planning')
 
 @bp.route('/posts/<int:post_id>/concept/sections')
 def planning_concept_sections(post_id):
     """Section Planning sub-stage"""
-    return render_template('planning/concept/sections.html', post_id=post_id, blueprint_name='planning')
+    return render_template('planning/concept/sections.html', 
+                         post_id=post_id, 
+                         page_title='Section Planning',
+                         blueprint_name='planning')
 
 @bp.route('/posts/<int:post_id>/concept/outline')
 def planning_concept_outline(post_id):
     """Content Outline sub-stage"""
-    return render_template('planning/concept/outline.html', post_id=post_id, blueprint_name='planning')
+    return render_template('planning/concept/outline.html', 
+                         post_id=post_id, 
+                         page_title='Content Outline',
+                         blueprint_name='planning')
 
 # Research & Resources Stage (updated)
 @bp.route('/posts/<int:post_id>/research/sources')

@@ -1,0 +1,452 @@
+<!-- Condensed Planning Header - Combines post info, navigation, and tabs -->
+<div class="condensed-planning-header">
+    <!-- Main Title Line -->
+    <div class="main-title-line">
+        <h1 class="planning-title" id="planning-title">{{ page_title }}: ID: {{ post_id }}</h1>
+    </div>
+    
+    <!-- Combined Navigation and Status Line -->
+    <div class="combined-nav-status">
+        <!-- Main Stage Navigation -->
+        <div class="main-stages">
+            <a href="{{ url_for('planning.planning_calendar', post_id=post_id) }}" 
+               class="stage-btn" data-stage="calendar">
+                <i class="fas fa-calendar-alt"></i>
+                Content Calendar
+            </a>
+            <a href="{{ url_for('planning.planning_concept', post_id=post_id) }}" 
+               class="stage-btn" data-stage="concept">
+                <i class="fas fa-lightbulb"></i>
+                Concept Development
+            </a>
+            <a href="{{ url_for('planning.planning_research', post_id=post_id) }}" 
+               class="stage-btn" data-stage="research">
+                <i class="fas fa-search"></i>
+                Research & Resources
+            </a>
+            <a href="{{ url_for('planning.planning_old_interface', post_id=post_id) }}" 
+               class="stage-btn old-interface" data-stage="old-interface">
+                <i class="fas fa-history"></i>
+                Old Interface
+            </a>
+        </div>
+        
+        <!-- Status Info -->
+        <div class="status-info">
+            <span class="status-label">Status:</span>
+            <span class="status-value" id="post-status">{{ post_status or 'Unknown' }}</span>
+            <span class="date-label">Created:</span>
+            <span class="date-value" id="post-created">{{ post_created or 'Unknown' }}</span>
+            <span class="date-label">Updated:</span>
+            <span class="date-value" id="post-updated">{{ post_updated or 'Unknown' }}</span>
+        </div>
+    </div>
+    
+    <!-- Sub-stages and Tabs Combined -->
+    <div class="sub-stages-tabs" id="sub-stages-tabs">
+        <!-- Sub-stage Navigation -->
+        <div class="sub-stages" id="sub-stages">
+            <!-- Calendar sub-stages -->
+            <div class="sub-stage-group" data-stage="calendar">
+                <a href="{{ url_for('planning.planning_calendar_view', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="view">
+                    Calendar View
+                </a>
+                <a href="{{ url_for('planning.planning_calendar_ideas', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="ideas">
+                    Idea Generation
+                </a>
+            </div>
+            
+            <!-- Concept sub-stages -->
+            <div class="sub-stage-group" data-stage="concept">
+                <a href="{{ url_for('planning.planning_concept_brainstorm', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="brainstorm">
+                    Topic Brainstorming
+                </a>
+                <a href="{{ url_for('planning.planning_concept_sections', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="sections">
+                    Section Planning
+                </a>
+                <a href="{{ url_for('planning.planning_concept_outline', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="outline">
+                    Content Outline
+                </a>
+            </div>
+            
+            <!-- Research sub-stages -->
+            <div class="sub-stage-group" data-stage="research">
+                <a href="{{ url_for('planning.planning_research_sources', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="sources">
+                    Source Research
+                </a>
+                <a href="{{ url_for('planning.planning_research_visuals', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="visuals">
+                    Visual Planning
+                </a>
+                <a href="{{ url_for('planning.planning_research_prompts', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="prompts">
+                    Image Prompts
+                </a>
+                <a href="{{ url_for('planning.planning_research_verification', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="verification">
+                    Fact Verification
+                </a>
+            </div>
+        </div>
+        
+        <!-- Process/Data Tabs -->
+        <div class="tab-buttons">
+            <button class="tab-btn active" data-tab="process">
+                <i class="fas fa-cogs"></i>
+                Process
+            </button>
+            <button class="tab-btn" data-tab="data">
+                <i class="fas fa-database"></i>
+                Data
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Tab Content Container -->
+<div class="tab-content">
+    <div id="process-tab" class="tab-panel active">
+        {% block process_content %}
+        <!-- Process content will be inserted here by each page -->
+        {% endblock %}
+    </div>
+    
+    <div id="data-tab" class="tab-panel">
+        {% include 'planning/includes/data_tab.html' %}
+    </div>
+</div>
+
+<style>
+/* Condensed Planning Header Styles */
+.condensed-planning-header {
+    margin-bottom: 1rem;
+}
+
+.main-title-line {
+    margin-bottom: 0.75rem;
+}
+
+.planning-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin: 0;
+    text-align: center;
+}
+
+/* Combined Navigation and Status */
+.combined-nav-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: #1e293b;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.main-stages {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.stage-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.stage-btn:hover {
+    background: #334155;
+    border-color: #64748b;
+    color: #e2e8f0;
+}
+
+.stage-btn.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+.stage-btn.old-interface {
+    border-color: #f59e0b;
+    color: #f59e0b;
+}
+
+.stage-btn.old-interface:hover {
+    background: #f59e0b;
+    color: white;
+}
+
+.status-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.status-label, .date-label {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-value, .date-value {
+    color: #e2e8f0;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.status-value {
+    padding: 0.2rem 0.5rem;
+    background: #1e293b;
+    border-radius: 4px;
+    border: 1px solid #334155;
+}
+
+/* Sub-stages and Tabs Combined */
+.sub-stages-tabs {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #0f172a;
+    border-radius: 6px;
+    border: 1px solid #334155;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.sub-stages {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.sub-stage-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.sub-stage-btn {
+    padding: 0.4rem 0.8rem;
+    background: transparent;
+    border: 1px solid #475569;
+    border-radius: 4px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+}
+
+.sub-stage-btn:hover {
+    background: #334155;
+    border-color: #64748b;
+    color: #e2e8f0;
+}
+
+.sub-stage-btn.active {
+    background: #06b6d4;
+    border-color: #06b6d4;
+    color: white;
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    background: transparent;
+    border: 1px solid #475569;
+    border-radius: 4px;
+    color: #94a3b8;
+    font-weight: 500;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    background: #334155;
+    border-color: #64748b;
+    color: #e2e8f0;
+}
+
+.tab-btn.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+/* Tab Content */
+.tab-content {
+    position: relative;
+}
+
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .combined-nav-status {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .main-stages {
+        justify-content: center;
+    }
+    
+    .status-info {
+        justify-content: center;
+    }
+    
+    .sub-stages-tabs {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .sub-stages {
+        justify-content: center;
+    }
+    
+    .tab-buttons {
+        justify-content: center;
+    }
+}
+</style>
+
+<script type="module" src="/static/js/planning/planning-header-updater.js"></script>
+
+<script>
+// Navigation highlighting based on current page
+function updateNavigationHighlighting() {
+    // Get current stage and substage from window object (set by each page)
+    const currentStage = window.currentStage;
+    const currentSubstage = window.currentSubstage;
+    
+    console.log('Navigation update - currentStage:', currentStage, 'currentSubstage:', currentSubstage);
+    
+    // Remove active class from all stage buttons first
+    const stageButtons = document.querySelectorAll('.stage-btn');
+    stageButtons.forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Highlight main stage
+    if (currentStage) {
+        stageButtons.forEach(btn => {
+            if (btn.getAttribute('data-stage') === currentStage) {
+                btn.classList.add('active');
+                console.log('Highlighting stage:', currentStage);
+            }
+        });
+    }
+    
+    // Show/hide sub-stages based on current stage
+    const subStagesTabs = document.querySelector('.sub-stages-tabs');
+    if (currentStage && currentStage !== 'old-interface' && subStagesTabs) {
+        subStagesTabs.style.display = 'flex';
+        
+        // Show only the relevant sub-stage group
+        const subStageGroups = document.querySelectorAll('.sub-stage-group');
+        subStageGroups.forEach(group => {
+            group.style.display = 'none';
+            if (group.getAttribute('data-stage') === currentStage) {
+                group.style.display = 'flex';
+            }
+        });
+        
+        // Highlight current substage
+        if (currentSubstage) {
+            const subStageButtons = document.querySelectorAll('.sub-stage-btn');
+            subStageButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-substage') === currentSubstage) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+    } else if (subStagesTabs) {
+        subStagesTabs.style.display = 'none';
+    }
+}
+
+// Tab switching functionality
+function initializeTabs() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-tab');
+            
+            // Remove active class from all buttons and panels
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabPanels.forEach(panel => panel.classList.remove('active'));
+            
+            // Add active class to clicked button and corresponding panel
+            this.classList.add('active');
+            const targetPanel = document.getElementById(targetTab + '-tab');
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+            }
+            
+            // Save tab state to localStorage
+            localStorage.setItem('planning-active-tab', targetTab);
+        });
+    });
+    
+    // Restore last active tab from localStorage
+    const lastActiveTab = localStorage.getItem('planning-active-tab');
+    if (lastActiveTab) {
+        const savedButton = document.querySelector(`[data-tab="${lastActiveTab}"]`);
+        const savedPanel = document.getElementById(lastActiveTab + '-tab');
+        if (savedButton && savedPanel) {
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabPanels.forEach(panel => panel.classList.remove('active'));
+            savedButton.classList.add('active');
+            savedPanel.classList.add('active');
+        }
+    }
+}
+
+// Run on DOM ready
+document.addEventListener('DOMContentLoaded', function() {
+    updateNavigationHighlighting();
+    initializeTabs();
+});
+
+// Also run after a short delay to catch pages that set window.currentStage after DOM ready
+setTimeout(updateNavigationHighlighting, 100);
+</script>
