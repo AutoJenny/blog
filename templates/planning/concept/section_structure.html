@@ -285,7 +285,7 @@ async function loadBrainstormTopics() {
     }
 }
 
-// Display topics
+// Display topics (same format as brainstorming output)
 function displayTopics() {
     const container = document.getElementById('topics-display');
     if (topics.length === 0) {
@@ -293,14 +293,14 @@ function displayTopics() {
         return;
     }
     
+    // Display topics in the same format as the brainstorming output
     const topicsList = topics.map((topic, index) => 
-        `<div class="topic-item">${index + 1}. ${topic}</div>`
-    ).join('');
+        `${index + 1}. ${topic}`
+    ).join('\n');
     
     container.innerHTML = `
-        <div class="topics-list">
-            <p><strong>${topics.length} topics from brainstorming:</strong></p>
-            ${topicsList}
+        <div class="brainstorm-output">
+            <pre style="white-space: pre-wrap; font-family: inherit; margin: 0; color: #e2e8f0;">${topicsList}</pre>
         </div>
     `;
 }
