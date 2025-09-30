@@ -1,57 +1,78 @@
 {% extends "base.html" %}
 
+{% block css_assets %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/llm-module.css') }}">
+{% endblock %}
+
 {% block title %}Topic Allocation - Concept Development - Planning - BlogForge{% endblock %}
 
 {% block content %}
-<div class="planning-container">
-    <!-- Left Panel: Input Data -->
-    <div class="left-panel">
-        <div class="panel-header">
-            <h3>Input Data</h3>
-        </div>
+<div class="container">
+    <!-- Include condensed header -->
+    {% include 'planning/includes/condensed_header.html' %}
+    
+    {% block process_content %}
+    <div class="brainstorm-main">
         
+        <div class="brainstorm-content">
+            <div class="idea-generator">
+                <div class="input-data">
+                    <h4>Input Data</h4>
+                    <div class="data-section">
+                        <h5>Generated Topics</h5>
+                        <div id="topics-display" class="data-display">
+                            <p class="loading">Loading topics from brainstorming...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="data-section">
+                        <h5>Section Structure</h5>
+                        <div id="structure-display" class="data-display">
+                            <p class="loading">Loading section structure...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="input-actions">
+                        <button id="allocate-topics-btn" class="btn btn-primary" onclick="allocateTopics()">
+                            <i class="fas fa-share-alt"></i>
+                            Allocate Topics to Sections
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="brainstorm-settings">
+                    <h4>Allocation Settings</h4>
+                    <div class="form-group">
+                        <label for="allocation-strategy">Allocation Strategy</label>
+                        <select id="allocation-strategy">
+                            <option value="thematic">Thematic (by topic similarity)</option>
+                            <option value="chronological">Chronological (by time period)</option>
+                            <option value="progressive">Progressive (by complexity)</option>
+                            <option value="balanced">Balanced (even distribution)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="brainstorm-results">
+                {% include 'includes/llm_module.html' %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Panel -->
+    <div id="results-panel" class="results-panel" style="display: none;">
+        <div class="panel-header">
+            <h3>Topic Allocation Results</h3>
+        </div>
         <div class="panel-content">
-            <div class="data-section">
-                <h4>Generated Topics</h4>
-                <div id="topics-display" class="data-display">
-                    <p class="loading">Loading topics from brainstorming...</p>
-                </div>
-            </div>
-            
-            <div class="data-section">
-                <h4>Section Structure</h4>
-                <div id="structure-display" class="data-display">
-                    <p class="loading">Loading section structure...</p>
-                </div>
-            </div>
-            
-            <div class="action-section">
-                <button id="allocate-topics-btn" class="btn btn-primary" onclick="allocateTopics()">
-                    <i class="fas fa-share-alt"></i>
-                    Allocate Topics to Sections
-                </button>
+            <div id="allocation-results" class="results-display">
+                <!-- Allocation results will be displayed here -->
             </div>
         </div>
     </div>
-
-    <!-- Right Panel: LLM Module -->
-    <div class="right-panel">
-        <div class="llm-module" id="llm-module">
-            <!-- LLM Module will be initialized here -->
-        </div>
-    </div>
-</div>
-
-<!-- Results Panel -->
-<div id="results-panel" class="results-panel" style="display: none;">
-    <div class="panel-header">
-        <h3>Topic Allocation Results</h3>
-    </div>
-    <div class="panel-content">
-        <div id="allocation-results" class="results-display">
-            <!-- Allocation results will be displayed here -->
-        </div>
-    </div>
+    {% endblock %}
 </div>
 
 <script>
