@@ -301,30 +301,141 @@ class LLMModule {
     }
     
     escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
+        return escapeHtml(text);
     }
     
     toggleAccordion() {
-        const accordionContent = document.getElementById('llm-accordion-content');
-        const accordionIcon = document.getElementById('accordion-icon');
+        toggleLLMAccordion();
+    }
+    
+    displayResults(data) {
+        const resultsDisplay = document.getElementById('llm-results-display');
+        if (!resultsDisplay) return;
         
-        if (!accordionContent || !accordionIcon) return;
-        
-        if (accordionContent.classList.contains('open')) {
-            // Close accordion
-            accordionContent.style.display = 'none';
-            accordionIcon.style.transform = 'rotate(0deg)';
-            accordionContent.classList.remove('open');
-            accordionContent.classList.add('closed');
+        // Handle different types of results based on the data structure
+        if (Array.isArray(data)) {
+            // Handle array results (topics, sections, etc.)
+            this.displayArrayResults(data, resultsDisplay);
+        } else if (typeof data === 'object' && data !== null) {
+            // Handle object results
+            this.displayObjectResults(data, resultsDisplay);
+        } else if (typeof data === 'string') {
+            // Handle string results
+            resultsDisplay.innerHTML = `<div class="generated-content">${this.escapeHtml(data)}</div>`;
         } else {
-            // Open accordion
-            accordionContent.style.display = 'block';
-            accordionIcon.style.transform = 'rotate(180deg)';
-            accordionContent.classList.remove('closed');
-            accordionContent.classList.add('open');
+            this.displayError('No valid results to display');
         }
+    }
+    
+    displayArrayResults(data, resultsDisplay) {
+        if (data.length === 0) {
+            resultsDisplay.innerHTML = '<div class="no-results">No results generated. Try again with different settings.</div>';
+            return;
+        }
+        
+        // Check if it's topics (has title property)
+        if (data[0] && data[0].title) {
+            this.displayTopics(data, resultsDisplay);
+        } else if (data[0] && data[0].theme) {
+            // Check if it's groups (has theme property)
+            this.displayGroups(data, resultsDisplay);
+        } else if (data[0] && data[0].section_title) {
+            // Check if it's sections (has section_title property)
+            this.displaySections(data, resultsDisplay);
+        } else {
+            // Generic array display
+            let html = '<div class="results-list">';
+            data.forEach((item, index) => {
+                html += `<div class="result-item" data-index="${index}">${this.escapeHtml(item)}</div>`;
+            });
+            html += '</div>';
+            resultsDisplay.innerHTML = html;
+        }
+    }
+    
+    displayObjectResults(data, resultsDisplay) {
+        // Handle nested results structure
+        if (data.sections) {
+            this.displaySections(data.sections, resultsDisplay);
+        } else if (data.groups) {
+            this.displayGroups(data.groups, resultsDisplay);
+        } else if (data.topics) {
+            this.displayTopics(data.topics, resultsDisplay);
+        } else {
+            // Generic object display
+            resultsDisplay.innerHTML = `<div class="generated-content">${this.escapeHtml(JSON.stringify(data, null, 2))}</div>`;
+        }
+    }
+    
+    displayTopics(topics, resultsDisplay) {
+        let topicsHTML = '<div class="topics-list">';
+        
+        topics.forEach((topic, index) => {
+            const topicText = typeof topic === 'string' ? topic : (topic.title || topic);
+            const category = topic.category || 'general';
+            
+            topicsHTML += `
+                <div class="topic-item" data-topic-id="${index}" data-category="${category}">
+                    <div class="topic-content">${this.escapeHtml(topicText)}</div>
+                </div>
+            `;
+        });
+        
+        topicsHTML += '</div>';
+        resultsDisplay.innerHTML = topicsHTML;
+    }
+    
+    displayGroups(groups, resultsDisplay) {
+        let groupsHTML = '<div class="groups-list">';
+        
+        groups.forEach((group, index) => {
+            groupsHTML += `
+                <div class="group-item" data-group-id="${group.id || group.order || index}">
+                    <h5 class="group-theme">${this.escapeHtml(group.theme || `Group ${index + 1}`)}</h5>
+                    <p class="group-explanation">${this.escapeHtml(group.explanation || 'No explanation provided.')}</p>
+                    <div class="group-topics">
+                        ${(group.topics || []).map(topic => 
+                            `<div class="group-topic-item">${this.escapeHtml(topic)}</div>`
+                        ).join('')}
+                    </div>
+                </div>
+            `;
+        });
+        
+        groupsHTML += '</div>';
+        resultsDisplay.innerHTML = groupsHTML;
+    }
+    
+    displaySections(sections, resultsDisplay) {
+        let sectionsHTML = '<div class="sections-list">';
+        
+        sections.forEach((section, index) => {
+            const topicCount = section.topics ? section.topics.length : 0;
+            
+            sectionsHTML += `
+                <div class="section-item" data-section-id="${section.id || index}">
+                    <div class="section-header">
+                        <h4 class="section-title">${this.escapeHtml(section.title || section.section_title || `Section ${index + 1}`)}</h4>
+                        <div class="section-meta">
+                            <span class="topic-count">${topicCount} topics</span>
+                            <span class="section-order">${section.order || index + 1}</span>
+                        </div>
+                    </div>
+                    ${section.subtitle ? `<div class="section-subtitle">${this.escapeHtml(section.subtitle)}</div>` : ''}
+                    ${section.description ? `<div class="section-description">${this.escapeHtml(section.description)}</div>` : ''}
+                    <div class="section-topics">
+                        ${(section.topics || []).map(topic => 
+                            `<div class="section-topic-item" data-topic="${this.escapeHtml(topic)}">
+                                <span class="topic-text">${this.escapeHtml(topic)}</span>
+                            </div>`
+                        ).join('')}
+                    </div>
+                </div>
+            `;
+        });
+        
+        sectionsHTML += '</div>';
+        resultsDisplay.innerHTML = sectionsHTML;
     }
     
     displayAuthoringResults(data) {
@@ -422,100 +533,6 @@ class LLMModule {
     }
 }
 
-// Global accordion toggle function
-function toggleLLMAccordion() {
-    const accordionContent = document.getElementById('llm-accordion-content');
-    const accordionIcon = document.getElementById('accordion-icon');
-    
-    if (!accordionContent || !accordionIcon) return;
-    
-    const isOpen = accordionContent.style.display !== 'none';
-    
-    if (isOpen) {
-        // Close accordion
-        accordionContent.style.display = 'none';
-        accordionIcon.style.transform = 'rotate(0deg)';
-        accordionContent.classList.remove('open');
-        accordionContent.classList.add('closed');
-    } else {
-        // Open accordion
-        accordionContent.style.display = 'block';
-        accordionIcon.style.transform = 'rotate(180deg)';
-        accordionContent.classList.remove('closed');
-        accordionContent.classList.add('open');
-    }
-}
-
-// Configuration for different page types
-const LLM_CONFIGS = {
-    'ideas': {
-        promptEndpoint: '/planning/api/llm/prompts/idea-expansion',
-        generateEndpoint: '/planning/api/posts/{id}/expanded-idea',
-        resultsField: 'expanded_idea',
-        resultsTitle: 'Expanded Idea',
-        allowEdit: false
-    },
-    'brainstorm': {
-        promptEndpoint: '/planning/api/llm/prompts/topic-brainstorming',
-        generateEndpoint: '/planning/api/brainstorm/topics',
-        resultsField: 'idea_scope',
-        resultsTitle: 'Generated Topics',
-        allowEdit: true
-    },
-    'grouping': {
-        promptEndpoint: '/planning/api/llm/prompts/section-planning',
-        generateEndpoint: '/planning/api/sections/group',
-        resultsField: 'groups',
-        resultsTitle: 'Generated Groups',
-        allowEdit: true
-    },
-    'titling': {
-        promptEndpoint: '/planning/api/llm/prompts/section-titling',
-        generateEndpoint: '/planning/api/sections/title',
-        resultsField: 'sections',
-        resultsTitle: 'Generated Sections',
-        allowEdit: true
-    },
-    'sections': {
-        promptEndpoint: '/planning/api/llm/prompts/section-planning',
-        generateEndpoint: '/planning/api/sections/plan',
-        resultsField: 'sections',
-        resultsTitle: 'Generated Sections',
-        allowEdit: true
-    },
-    'author_draft': { // Config for authoring section drafts
-        promptEndpoint: '/authoring/api/llm/prompts/section-drafting',
-        generateEndpoint: '/authoring/api/posts/{id}/sections/{section_id}/generate',
-        resultsField: 'draft_content',
-        resultsTitle: 'Generated Draft',
-        allowEdit: true
-    }
-};
-
-// Initialize LLM module for a specific page type
-function initializeLLMModule(pageType, postId, sectionId = null) {
-    const config = LLM_CONFIGS[pageType];
-    if (!config) {
-        console.error(`Unknown page type: ${pageType}`);
-        return null;
-    }
-    
-    // Replace {id} placeholder in generate endpoint
-    config.generateEndpoint = config.generateEndpoint.replace('{id}', postId);
-    
-    // Replace {section_id} placeholder if present and sectionId provided
-    if (sectionId && config.generateEndpoint.includes('{section_id}')) {
-        config.generateEndpoint = config.generateEndpoint.replace('{section_id}', sectionId);
-    }
-    
-    const module = new LLMModule(config);
-    module.setPostId(postId);
-    
-    // Set results title
-    const resultsTitle = document.getElementById('results-title');
-    if (resultsTitle) {
-        resultsTitle.textContent = config.resultsTitle;
-    }
-    
-    return module;
-}
+// Note: Configuration and utilities are now in separate files:
+// - llm-config.js: Contains LLM_CONFIGS and initializeLLMModule()
+// - llm-utils.js: Contains utility functions like escapeHtml() and toggleLLMAccordion()
