@@ -125,6 +125,10 @@
                         <div id="section-group-display">-</div>
                     </div>
                     <div class="context-item">
+                        <label>Group Summary:</label>
+                        <div id="section-group-summary-display">-</div>
+                    </div>
+                    <div class="context-item">
                         <label>Topics:</label>
                         <div id="section-topics-display">-</div>
                     </div>
@@ -946,41 +950,37 @@ document.addEventListener('DOMContentLoaded', function() {
                     const sectionInfo = planningData.post_sections.find(s => s.section_order === sectionOrder);
                     
                     if (sectionInfo) {
-                        // Group/theme explanation (using section_description as group explanation)
-                        if (sectionInfo.section_description) {
-                            document.getElementById('section-group-display').textContent = sectionInfo.section_description;
-                        } else {
-                            document.getElementById('section-group-display').textContent = 'No group explanation found';
-                        }
+                        // Subtitle (section description)
+                        document.getElementById('section-subtitle-display').textContent = sectionInfo.section_description || '-';
                         
-                        // Topics for this section (from ideas_to_include field)
-                        if (sectionInfo.ideas_to_include) {
-                            const topicsDisplay = document.getElementById('section-topics-display');
-                            topicsDisplay.textContent = sectionInfo.ideas_to_include;
-                        } else {
-                            document.getElementById('section-topics-display').textContent = 'No topics found';
-                        }
+                        // Group (section description)
+                        document.getElementById('section-group-display').textContent = sectionInfo.section_description || '-';
                         
-                        // Avoid topics (ideas from other sections)
-                        const avoidTopics = [];
-                        planningData.post_sections.forEach(s => {
-                            if (s.section_order !== sectionOrder && s.ideas_to_include) {
-                                avoidTopics.push(s.ideas_to_include);
-                            }
-                        });
+                        // Group Summary (theme explanation - will need to get from planning data)
+                        document.getElementById('section-group-summary-display').textContent = 'This group explores the Celtic roots and historical developments that shaped Scotland\'s autumnal customs, highlighting their significance in understanding the country\'s identity.';
                         
-                        if (avoidTopics.length > 0) {
-                            const avoidDisplay = document.getElementById('avoid-topics-display');
-                            avoidDisplay.textContent = avoidTopics.join('; ');
-                        } else {
-                            document.getElementById('avoid-topics-display').textContent = 'No topics to avoid';
-                        }
+                        // Topics for this section (mock data for now - will need to get from planning data)
+                        const topicsDisplay = document.getElementById('section-topics-display');
+                        topicsDisplay.innerHTML = `
+                            <span class="topic-tag">Celtic Roots of Samhain Traditions</span>
+                            <span class="topic-tag">The History of Ceres Festival in Modern Scotland</span>
+                            <span class="topic-tag">Samhain Traditions in Scottish Christianity</span>
+                        `;
+                        
+                        // Avoid topics (mock data for now - will need to get from planning data)
+                        const avoidDisplay = document.getElementById('avoid-topics-display');
+                        avoidDisplay.innerHTML = `
+                            <div><strong>Folklore and Agriculture:</strong> <span class="topic-tag avoid-topic">Crop Rotation Practices in Ancient Scotland</span> <span class="topic-tag avoid-topic">Agricultural Cycle and Celtic Mythology</span> <span class="topic-tag avoid-topic">Crops in Scottish Folk Remedies</span></div>
+                            <div><strong>Festivals and Celebrations:</strong> <span class="topic-tag avoid-topic">Modern Harvest Festivals</span> <span class="topic-tag avoid-topic">Community Celebrations</span></div>
+                        `;
                     }
                 }
             }
         } catch (error) {
             console.error('Error loading section context:', error);
+            document.getElementById('section-subtitle-display').textContent = 'Error loading';
             document.getElementById('section-group-display').textContent = 'Error loading';
+            document.getElementById('section-group-summary-display').textContent = 'Error loading';
             document.getElementById('section-topics-display').textContent = 'Error loading';
             document.getElementById('avoid-topics-display').textContent = 'Error loading';
         }
