@@ -45,6 +45,27 @@ const LLM_CONFIGS = {
         resultsField: 'draft_content',
         resultsTitle: 'Generated Draft',
         allowEdit: true
+    },
+    'section_structure': { // New config for section structure design
+        promptEndpoint: '/planning/api/llm/prompts/section-structure',
+        generateEndpoint: '/planning/api/sections/design-structure',
+        resultsField: 'section_structure',
+        resultsTitle: 'Generated Section Structure',
+        allowEdit: true
+    },
+    'topic_allocation': { // New config for topic allocation
+        promptEndpoint: '/planning/api/llm/prompts/topic-allocation',
+        generateEndpoint: '/planning/api/sections/allocate-topics',
+        resultsField: 'topic_allocation',
+        resultsTitle: 'Generated Topic Allocation',
+        allowEdit: true
+    },
+    'topic_refinement': { // New config for topic refinement
+        promptEndpoint: '/planning/api/llm/prompts/topic-refinement',
+        generateEndpoint: '/planning/api/sections/refine-topics',
+        resultsField: 'refined_topics',
+        resultsTitle: 'Generated Topic Refinement',
+        allowEdit: true
     }
 };
 

@@ -2123,6 +2123,135 @@ def api_get_section_titling_prompt():
             'error': str(e)
         }), 500
 
+@bp.route('/api/llm/prompts/section-structure', methods=['GET'])
+def api_get_section_structure_prompt():
+    """Get the Section Structure Design prompt and LLM configuration"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get the section structure prompt
+            cursor.execute("""
+                SELECT id, name, prompt_text, system_prompt
+                FROM llm_prompt 
+                WHERE name = 'Section Structure Design'
+                ORDER BY id DESC
+                LIMIT 1
+            """)
+            prompt = cursor.fetchone()
+            
+            if not prompt:
+                return jsonify({
+                    'success': False,
+                    'error': 'Section Structure Design prompt not found'
+                }), 404
+            
+            # Get LLM configuration
+            llm_config = {
+                'provider': 'Ollama',
+                'model': 'llama3.2:latest',
+                'temperature': 0.7,
+                'max_tokens': 2000,
+                'timeout': 60
+            }
+            
+            return jsonify({
+                'success': True,
+                'prompt': dict(prompt),
+                'llm_config': llm_config
+            })
+            
+    except Exception as e:
+        logger.error(f"Error getting section structure prompt: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@bp.route('/api/llm/prompts/topic-allocation', methods=['GET'])
+def api_get_topic_allocation_prompt():
+    """Get the Topic Allocation prompt and LLM configuration"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get the topic allocation prompt
+            cursor.execute("""
+                SELECT id, name, prompt_text, system_prompt
+                FROM llm_prompt 
+                WHERE name = 'Topic Allocation'
+                ORDER BY id DESC
+                LIMIT 1
+            """)
+            prompt = cursor.fetchone()
+            
+            if not prompt:
+                return jsonify({
+                    'success': False,
+                    'error': 'Topic Allocation prompt not found'
+                }), 404
+            
+            # Get LLM configuration
+            llm_config = {
+                'provider': 'Ollama',
+                'model': 'llama3.2:latest',
+                'temperature': 0.7,
+                'max_tokens': 2000,
+                'timeout': 60
+            }
+            
+            return jsonify({
+                'success': True,
+                'prompt': dict(prompt),
+                'llm_config': llm_config
+            })
+            
+    except Exception as e:
+        logger.error(f"Error getting topic allocation prompt: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@bp.route('/api/llm/prompts/topic-refinement', methods=['GET'])
+def api_get_topic_refinement_prompt():
+    """Get the Topic Refinement prompt and LLM configuration"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get the topic refinement prompt
+            cursor.execute("""
+                SELECT id, name, prompt_text, system_prompt
+                FROM llm_prompt 
+                WHERE name = 'Topic Refinement'
+                ORDER BY id DESC
+                LIMIT 1
+            """)
+            prompt = cursor.fetchone()
+            
+            if not prompt:
+                return jsonify({
+                    'success': False,
+                    'error': 'Topic Refinement prompt not found'
+                }), 404
+            
+            # Get LLM configuration
+            llm_config = {
+                'provider': 'Ollama',
+                'model': 'llama3.2:latest',
+                'temperature': 0.7,
+                'max_tokens': 2000,
+                'timeout': 60
+            }
+            
+            return jsonify({
+                'success': True,
+                'prompt': dict(prompt),
+                'llm_config': llm_config
+            })
+            
+    except Exception as e:
+        logger.error(f"Error getting topic refinement prompt: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @bp.route('/api/sections/design-structure', methods=['POST'])
 def api_design_section_structure():
     """Step 1: Design 7-section blog structure"""
