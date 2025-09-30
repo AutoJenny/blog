@@ -2377,23 +2377,33 @@ SECTION STRUCTURE:
 TOPICS TO ALLOCATE ({len(topics)} topics):
 {topics_text}
 
-REQUIREMENTS:
-- ALL {len(topics)} topics MUST be allocated to exactly ONE section each
-- Use the EXACT section codes (S01, S02, etc.) provided above
-- Each topic must appear in exactly ONE section's topics list
-- Choose the section where each topic fits BEST
+CRITICAL REQUIREMENTS:
+- You MUST allocate ALL {len(topics)} topics to sections
+- Each topic can ONLY be assigned to ONE section
+- Return ONLY ONE allocation attempt in the exact format specified below
+- Do NOT generate multiple allocation attempts
+- Do NOT leave any sections empty
 
-OUTPUT FORMAT: Return ONLY this exact format, one line per topic:
-S01: Topic Title 1
-S02: Topic Title 2
-S03: Topic Title 3
-... (continue for all {len(topics)} topics)
+MANDATORY OUTPUT FORMAT:
+Return exactly {len(topics)} lines in this format:
+S01: Topic Title
+S02: Topic Title
+S03: Topic Title
+... (exactly {len(topics)} lines total)
 
-CRITICAL: 
-- Use ONLY the section codes S01-S07
-- Include ALL {len(topics)} topics
-- One topic per line
-- No additional text or explanations"""
+CRITICAL INSTRUCTIONS:
+1. Return ONLY the allocation lines above
+2. Do NOT include any explanatory text, comments, or additional content
+3. Do NOT generate multiple allocation attempts
+4. Do NOT leave any sections empty (S07: with nothing after colon)
+5. Each line must have a topic title after the colon
+6. Return exactly {len(topics)} lines, no more, no less
+
+VALIDATION CHECKLIST:
+- All {len(topics)} topics are allocated exactly once
+- No empty sections (S07: with nothing after colon)
+- No duplicate topic assignments
+- Exactly {len(topics)} lines returned"""
         
         # Execute LLM request
         messages = [
@@ -2420,6 +2430,8 @@ CRITICAL:
             allocations = {}
             lines = content.split('\n')
             
+            # Filter out empty lines and invalid lines
+            valid_lines = []
             for line in lines:
                 line = line.strip()
                 if not line:
@@ -2432,10 +2444,31 @@ CRITICAL:
                         section_code = parts[0].strip()
                         topic_title = parts[1].strip()
                         
-                        if section_code in section_codes:
-                            if section_code not in allocations:
-                                allocations[section_code] = []
-                            allocations[section_code].append(topic_title)
+                        # Validate section code format
+                        if section_code.startswith('S') and len(section_code) == 3:
+                            try:
+                                section_num = int(section_code[1:])
+                                if 1 <= section_num <= 7:  # Valid section range
+                                    if topic_title:  # Must have a topic title
+                                        valid_lines.append((section_code, topic_title))
+                            except ValueError:
+                                continue
+            
+            # Check if we have the right number of allocations
+            if len(valid_lines) != len(topics):
+                logger.error(f"Expected {len(topics)} allocations, got {len(valid_lines)}")
+                logger.error(f"Valid lines: {valid_lines}")
+                return jsonify({
+                    'success': False,
+                    'error': f'Invalid allocation count: expected {len(topics)}, got {len(valid_lines)}',
+                    'llm_response': content
+                }), 400
+            
+            # Convert to allocation format
+            for section_code, topic_title in valid_lines:
+                if section_code not in allocations:
+                    allocations[section_code] = []
+                allocations[section_code].append(topic_title)
             
             # Convert to expected format
             allocation_data = {
