@@ -940,44 +940,40 @@ document.addEventListener('DOMContentLoaded', function() {
             if (sectionData.success && sectionData.section) {
                 const sectionOrder = sectionData.section.order;
                 
-                // Get planning data for this section
-                const planningResponse = await fetch(`/planning/api/posts/${window.postId}/sections`);
+                // Get planning data for this section from the main post data
+                const planningResponse = await fetch(`/planning/api/posts/${window.postId}`);
                 const planningData = await planningResponse.json();
                 
-                if (planningData.success && planningData.sections) {
-                    const sectionInfo = planningData.sections.find(s => s.order === sectionOrder);
+                if (planningData.post_sections && planningData.post_sections.length > 0) {
+                    const sectionInfo = planningData.post_sections.find(s => s.section_order === sectionOrder);
                     
                     if (sectionInfo) {
-                        // Group/theme explanation
-                        if (sectionInfo.theme_explanation) {
-                            document.getElementById('section-group-display').textContent = sectionInfo.theme_explanation;
+                        // Group/theme explanation (using section_description as group explanation)
+                        if (sectionInfo.section_description) {
+                            document.getElementById('section-group-display').textContent = sectionInfo.section_description;
                         } else {
                             document.getElementById('section-group-display').textContent = 'No group explanation found';
                         }
                         
-                        // Topics for this section
-                        if (sectionInfo.topics && sectionInfo.topics.length > 0) {
+                        // Topics for this section (from ideas_to_include field)
+                        if (sectionInfo.ideas_to_include) {
                             const topicsDisplay = document.getElementById('section-topics-display');
-                            topicsDisplay.innerHTML = sectionInfo.topics.map(topic => 
-                                `<span class="topic-tag">${topic}</span>`
-                            ).join('');
+                            topicsDisplay.textContent = sectionInfo.ideas_to_include;
                         } else {
                             document.getElementById('section-topics-display').textContent = 'No topics found';
                         }
                         
-                        // Avoid topics (topics from other sections)
+                        // Avoid topics (ideas from other sections)
                         const avoidTopics = [];
-                        planningData.sections.forEach(s => {
-                            if (s.order !== sectionOrder && s.topics) {
-                                avoidTopics.push(...s.topics);
+                        planningData.post_sections.forEach(s => {
+                            if (s.section_order !== sectionOrder && s.ideas_to_include) {
+                                avoidTopics.push(s.ideas_to_include);
                             }
                         });
                         
                         if (avoidTopics.length > 0) {
                             const avoidDisplay = document.getElementById('avoid-topics-display');
-                            avoidDisplay.innerHTML = avoidTopics.map(topic => 
-                                `<span class="topic-tag avoid-topic">${topic}</span>`
-                            ).join('');
+                            avoidDisplay.textContent = avoidTopics.join('; ');
                         } else {
                             document.getElementById('avoid-topics-display').textContent = 'No topics to avoid';
                         }
