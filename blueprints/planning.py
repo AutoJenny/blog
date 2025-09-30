@@ -2431,6 +2431,12 @@ DO NOT return JSON format. Return simple text lines only."""
                     'llm_response': content
                 }), 400
             
+            # Debug: Log the first few lines of the response
+            lines = content.split('\n')
+            logger.info(f"First 5 lines of LLM response:")
+            for i, line in enumerate(lines[:5]):
+                logger.info(f"  Line {i+1}: '{line}'")
+            
             # Parse the new format: Topic Title {S01}
             allocations = {}
             lines = content.split('\n')
@@ -2505,10 +2511,19 @@ DO NOT return JSON format. Return simple text lines only."""
             
             if not validate_topic_allocation(allocation_data, topics):
                 logger.error(f"Validation failed for allocation: {allocation_data}")
+                logger.error(f"Valid lines found: {len(valid_lines)}")
+                logger.error(f"Sample valid lines: {valid_lines[:3]}")
                 return jsonify({
                     'success': False,
                     'error': 'Invalid topic allocation format',
-                    'llm_response': content
+                    'llm_response': content,
+                    'debug_info': {
+                        'total_lines': len(lines),
+                        'valid_lines': len(valid_lines),
+                        'sample_valid_lines': valid_lines[:3],
+                        'sample_raw_lines': lines[:3],
+                        'allocation_data': allocation_data
+                    }
                 }), 400
             
             # Save to database

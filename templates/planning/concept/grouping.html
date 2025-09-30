@@ -910,7 +910,12 @@ function hideLoading(elementId) {
 function showError(containerId, message) {
     const container = document.getElementById(containerId);
     if (container) {
-        container.innerHTML = `<div class="error-message">${message}</div>`;
+        // Check if message contains debug info
+        if (message.includes('Debug Info:')) {
+            container.innerHTML = `<div class="error-message">${message}</div>`;
+        } else {
+            container.innerHTML = `<div class="error-message">${message}</div>`;
+        }
     }
 }
 
