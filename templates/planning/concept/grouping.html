@@ -296,8 +296,20 @@ async function loadGeneratedTopics() {
         const data = await response.json();
         
         if (data.success && data.idea_scope) {
-            generatedTopics = data.idea_scope;
-            displayGeneratedTopics(generatedTopics);
+            // Handle both old format (direct array) and new format (nested structure)
+            if (Array.isArray(data.idea_scope)) {
+                generatedTopics = data.idea_scope;
+            } else if (data.idea_scope.generated_topics) {
+                generatedTopics = data.idea_scope.generated_topics;
+            } else {
+                generatedTopics = [];
+            }
+            
+            if (generatedTopics.length > 0) {
+                displayGeneratedTopics(generatedTopics);
+            } else {
+                displayGeneratedTopicsError('No topics found. Please go back to Topic Brainstorming to generate topics first.');
+            }
         } else {
             console.error('Error loading topics:', data.error);
             displayGeneratedTopicsError('No topics found. Please go back to Topic Brainstorming to generate topics first.');
