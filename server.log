@@ -1,0 +1,181 @@
+ * Serving Flask app 'unified_app'
+ * Debug mode: on
+2025-09-30 11:21:53,262 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-30 11:21:53,262 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-30 11:21:53,263 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 11:21:53,473 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 11:21:53,479 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 11:21:57,791 - config.database - INFO - Database connection established
+2025-09-30 11:21:57,815 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:21:57] "GET /test-authoring/60 HTTP/1.1" 200 -
+2025-09-30 11:22:02,089 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/unified_app.py', reloading
+2025-09-30 11:22:02,131 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 11:22:02,369 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 11:22:02,374 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 11:22:02,920 - config.database - INFO - Database connection established
+2025-09-30 11:22:02,951 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:22:02] "GET /test-authoring/60 HTTP/1.1" 200 -
+2025-09-30 11:22:02,995 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:22:02] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-30 11:22:02,997 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:22:02] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-30 11:22:03,000 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:22:03] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-30 11:22:03,001 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:22:03] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-30 11:22:03,002 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:22:03] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-30 11:22:03,002 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:22:03] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-09-30 11:22:03,016 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:22:03] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-30 11:22:03,022 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:22:03] "[33mGET /authoring/api/posts/60/sections HTTP/1.1[0m" 404 -
+2025-09-30 11:24:56,451 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/authoring.py', reloading
+2025-09-30 11:24:56,483 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 11:24:56,703 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 11:24:56,708 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 11:26:46,430 - config.database - INFO - Database connection established
+2025-09-30 11:26:46,452 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:26:46] "GET /authoring/posts/60/sections/ideas_to_include HTTP/1.1" 200 -
+2025-09-30 11:26:56,438 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/authoring.py', reloading
+2025-09-30 11:26:56,468 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 11:26:56,685 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 11:26:56,690 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 11:41:52,323 - config.database - INFO - Database connection established
+2025-09-30 11:41:52,350 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:41:52] "GET /authoring/posts/60/sections/ideas_to_include HTTP/1.1" 200 -
+2025-09-30 11:41:52,390 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:41:52] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-30 11:41:52,390 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:41:52] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-30 11:41:52,392 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:41:52] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-30 11:41:52,394 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:41:52] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-30 11:41:52,394 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:41:52] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-30 11:41:52,394 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:41:52] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-09-30 11:41:52,404 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:41:52] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-30 11:41:52,419 - config.database - INFO - Database connection established
+2025-09-30 11:41:52,420 - blueprints.authoring - ERROR - Error in api_get_sections: column "sections" does not exist
+LINE 2:                 SELECT sections
+                               ^
+2025-09-30 11:41:52,420 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:41:52] "[35m[1mGET /authoring/api/posts/60/sections HTTP/1.1[0m" 500 -
+2025-09-30 11:41:52,521 - config.database - INFO - Database connection established
+2025-09-30 11:41:52,527 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
+2025-09-30 11:41:52,527 - blueprints.planning - INFO - Calendar schedule entry: {'id': 1, 'year': 2025, 'week_number': 39, 'post_id': 60, 'scheduled_date': datetime.date(2025, 9, 28), 'created_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660), 'updated_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660)}
+2025-09-30 11:41:52,527 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:41:52] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-09-30 11:43:47,920 - config.database - INFO - Database connection established
+2025-09-30 11:43:47,922 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:43:47] "GET /planning/api/posts/60/sections HTTP/1.1" 200 -
+2025-09-30 11:43:50,422 - config.database - INFO - Database connection established
+2025-09-30 11:43:50,425 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:43:50] "GET /planning/api/posts/60/sections HTTP/1.1" 200 -
+2025-09-30 11:45:06,871 - config.database - INFO - Database connection established
+2025-09-30 11:45:06,879 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:45:06] "GET /authoring/posts/60/sections/author_first_drafts HTTP/1.1" 200 -
+2025-09-30 11:47:52,810 - config.database - INFO - Database connection established
+2025-09-30 11:47:52,819 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:47:52] "GET /authoring/posts/60/sections/ideas_to_include HTTP/1.1" 200 -
+2025-09-30 11:47:52,864 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:47:52] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-30 11:47:52,866 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:47:52] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-09-30 11:47:52,868 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:47:52] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-30 11:47:52,868 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:47:52] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-30 11:47:52,868 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:47:52] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-30 11:47:52,868 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:47:52] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-30 11:47:52,882 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:47:52] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-30 11:47:52,893 - config.database - INFO - Database connection established
+2025-09-30 11:47:52,895 - blueprints.authoring - ERROR - Error in api_get_sections: column "sections" does not exist
+LINE 2:                 SELECT sections
+                               ^
+2025-09-30 11:47:52,895 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:47:52] "[35m[1mGET /authoring/api/posts/60/sections HTTP/1.1[0m" 500 -
+2025-09-30 11:47:52,995 - config.database - INFO - Database connection established
+2025-09-30 11:47:53,000 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
+2025-09-30 11:47:53,000 - blueprints.planning - INFO - Calendar schedule entry: {'id': 1, 'year': 2025, 'week_number': 39, 'post_id': 60, 'scheduled_date': datetime.date(2025, 9, 28), 'created_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660), 'updated_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660)}
+2025-09-30 11:47:53,001 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:47:53] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-09-30 11:48:06,546 - config.database - INFO - Database connection established
+2025-09-30 11:48:06,557 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:48:06] "GET /authoring/posts/60/sections/author_first_drafts HTTP/1.1" 200 -
+2025-09-30 11:48:06,907 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:48:06] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-30 11:48:06,911 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:48:06] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-30 11:48:06,911 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:48:06] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-30 11:48:06,911 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:48:06] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-30 11:48:06,912 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:48:06] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-09-30 11:48:06,912 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:48:06] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-30 11:48:06,928 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:48:06] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-30 11:48:06,941 - config.database - INFO - Database connection established
+2025-09-30 11:48:06,942 - blueprints.authoring - ERROR - Error in api_get_sections: column "sections" does not exist
+LINE 2:                 SELECT sections
+                               ^
+2025-09-30 11:48:06,942 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:48:06] "[35m[1mGET /authoring/api/posts/60/sections HTTP/1.1[0m" 500 -
+2025-09-30 11:48:07,042 - config.database - INFO - Database connection established
+2025-09-30 11:48:07,047 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
+2025-09-30 11:48:07,047 - blueprints.planning - INFO - Calendar schedule entry: {'id': 1, 'year': 2025, 'week_number': 39, 'post_id': 60, 'scheduled_date': datetime.date(2025, 9, 28), 'created_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660), 'updated_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660)}
+2025-09-30 11:48:07,048 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 11:48:07] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-09-30 12:13:04,040 - config.database - INFO - Database connection established
+2025-09-30 12:13:04,045 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:13:04] "GET /authoring/posts/60/sections/author_first_drafts HTTP/1.1" 200 -
+2025-09-30 12:13:04,080 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:13:04] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-30 12:13:04,083 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:13:04] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-30 12:13:04,083 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:13:04] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-30 12:13:04,084 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:13:04] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-30 12:13:04,084 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:13:04] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-30 12:13:04,085 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:13:04] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-09-30 12:13:04,099 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:13:04] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-30 12:13:04,112 - config.database - INFO - Database connection established
+2025-09-30 12:13:04,114 - blueprints.authoring - ERROR - Error in api_get_sections: column "sections" does not exist
+LINE 2:                 SELECT sections
+                               ^
+2025-09-30 12:13:04,114 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:13:04] "[35m[1mGET /authoring/api/posts/60/sections HTTP/1.1[0m" 500 -
+2025-09-30 12:13:04,213 - config.database - INFO - Database connection established
+2025-09-30 12:13:04,220 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
+2025-09-30 12:13:04,221 - blueprints.planning - INFO - Calendar schedule entry: {'id': 1, 'year': 2025, 'week_number': 39, 'post_id': 60, 'scheduled_date': datetime.date(2025, 9, 28), 'created_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660), 'updated_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660)}
+2025-09-30 12:13:04,222 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:13:04] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-09-30 12:13:30,247 - config.database - INFO - Database connection established
+2025-09-30 12:13:30,249 - blueprints.authoring - ERROR - Error in api_get_sections: column "sections" does not exist
+LINE 2:                 SELECT sections
+                               ^
+2025-09-30 12:13:30,249 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:13:30] "[35m[1mGET /authoring/api/posts/60/sections HTTP/1.1[0m" 500 -
+2025-09-30 12:13:32,787 - config.database - INFO - Database connection established
+2025-09-30 12:13:32,790 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:13:32] "GET /planning/api/posts/60/sections HTTP/1.1" 200 -
+2025-09-30 12:13:40,897 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/authoring.py', reloading
+2025-09-30 12:13:40,929 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 12:13:41,151 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 12:13:41,156 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 12:13:48,638 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/authoring.py', reloading
+2025-09-30 12:13:48,669 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 12:13:48,893 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 12:13:48,898 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 12:13:50,341 - config.database - INFO - Database connection established
+2025-09-30 12:13:50,343 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:13:50] "GET /authoring/api/posts/60/sections HTTP/1.1" 200 -
+2025-09-30 12:13:59,557 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/authoring.py', reloading
+2025-09-30 12:13:59,591 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 12:13:59,824 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 12:13:59,830 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 12:14:33,263 - config.database - INFO - Database connection established
+2025-09-30 12:14:33,291 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:14:33] "GET /authoring/posts/60/sections/author_first_drafts HTTP/1.1" 200 -
+2025-09-30 12:14:33,329 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:14:33] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-30 12:14:33,329 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:14:33] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-30 12:14:33,329 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:14:33] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-30 12:14:33,331 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:14:33] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-09-30 12:14:33,331 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:14:33] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-30 12:14:33,331 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:14:33] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-30 12:14:33,344 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:14:33] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-30 12:14:33,357 - config.database - INFO - Database connection established
+2025-09-30 12:14:33,359 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:14:33] "GET /authoring/api/posts/60/sections HTTP/1.1" 200 -
+2025-09-30 12:14:33,457 - config.database - INFO - Database connection established
+2025-09-30 12:14:33,461 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
+2025-09-30 12:14:33,461 - blueprints.planning - INFO - Calendar schedule entry: {'id': 1, 'year': 2025, 'week_number': 39, 'post_id': 60, 'scheduled_date': datetime.date(2025, 9, 28), 'created_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660), 'updated_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660)}
+2025-09-30 12:14:33,461 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:14:33] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-09-30 12:19:07,081 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/authoring.py', reloading
+2025-09-30 12:19:07,118 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 12:19:07,341 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 12:19:07,347 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 12:19:18,011 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/authoring.py', reloading
+2025-09-30 12:19:18,039 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 12:19:18,264 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 12:19:18,269 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 12:19:44,700 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/authoring.py', reloading
+2025-09-30 12:19:44,733 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 12:19:44,954 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 12:19:44,959 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 12:19:51,569 - config.database - INFO - Database connection established
+2025-09-30 12:19:51,573 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:19:51] "GET /authoring/api/posts/60/sections HTTP/1.1" 200 -
+2025-09-30 12:20:05,178 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/authoring.py', reloading
+2025-09-30 12:20:05,207 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 12:20:05,421 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 12:20:05,426 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 12:21:24,382 - config.database - INFO - Database connection established
+2025-09-30 12:21:24,414 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:21:24] "GET /authoring/posts/60/sections/author_first_drafts HTTP/1.1" 200 -
+2025-09-30 12:21:24,446 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:21:24] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-30 12:21:24,447 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:21:24] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-30 12:21:24,447 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:21:24] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-09-30 12:21:24,447 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:21:24] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-30 12:21:24,449 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:21:24] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-30 12:21:24,450 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:21:24] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-30 12:21:24,462 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:21:24] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-30 12:21:24,475 - config.database - INFO - Database connection established
+2025-09-30 12:21:24,477 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:21:24] "GET /authoring/api/posts/60/sections HTTP/1.1" 200 -
+2025-09-30 12:21:24,576 - config.database - INFO - Database connection established
+2025-09-30 12:21:24,581 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
+2025-09-30 12:21:24,582 - blueprints.planning - INFO - Calendar schedule entry: {'id': 1, 'year': 2025, 'week_number': 39, 'post_id': 60, 'scheduled_date': datetime.date(2025, 9, 28), 'created_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660), 'updated_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660)}
+2025-09-30 12:21:24,582 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:21:24] "GET /planning/api/posts/60 HTTP/1.1" 200 -
