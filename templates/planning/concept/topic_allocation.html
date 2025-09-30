@@ -95,7 +95,9 @@ async function loadBrainstormTopics() {
         const data = await response.json();
         
         if (data.success && data.development.idea_scope) {
-            topics = JSON.parse(data.development.idea_scope);
+            const ideaScopeData = JSON.parse(data.development.idea_scope);
+            // Extract topic titles from the brainstorming results
+            topics = ideaScopeData.generated_topics.map(topic => topic.title);
             displayTopics();
         } else {
             document.getElementById('topics-display').innerHTML = '<p class="error">No topics found from brainstorming</p>';
