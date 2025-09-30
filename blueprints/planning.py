@@ -2188,14 +2188,19 @@ OUTPUT FORMAT: Return ONLY valid JSON:
         try:
             import json
             import re
+            
             # Remove markdown code blocks if present
             content = result['content'].strip()
-            if content.startswith('```') and content.endswith('```'):
-                content = content[3:-3].strip()
-            elif content.startswith('```json'):
+            
+            # Handle various markdown code block formats
+            if content.startswith('```json'):
+                # Remove ```json and trailing ```
                 content = content[7:].strip()
                 if content.endswith('```'):
                     content = content[:-3].strip()
+            elif content.startswith('```') and content.endswith('```'):
+                # Remove ``` and ```
+                content = content[3:-3].strip()
             
             # Clean up common JSON issues
             content = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', content)  # Remove control characters
