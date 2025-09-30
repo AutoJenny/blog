@@ -272,6 +272,34 @@
     border-radius: 4px;
     margin-bottom: 15px;
 }
+
+.llm-response-display {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.llm-response-display h5 {
+    margin: 0 0 10px 0;
+    color: #495057;
+    font-size: 14px;
+}
+
+.raw-response {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: #495057;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 200px;
+    overflow-y: auto;
+}
 </style>
 {% endblock %}
 
@@ -361,6 +389,10 @@
                         <h4>Topic Allocation</h4>
                         <div id="allocation-display" class="allocation-display">
                             <div class="text-muted">Topic allocation will appear here after generation</div>
+                        </div>
+                        <div id="llm-response-display" class="llm-response-display" style="display: none;">
+                            <h5>LLM Raw Response:</h5>
+                            <pre id="raw-llm-response" class="raw-response"></pre>
                         </div>
                     </div>
                 </div>
@@ -578,6 +610,9 @@ async function allocateTopics() {
         showLoading('step-2-loading');
         disableButton('step-2-btn');
         
+        // Clear previous LLM response
+        hideLLMResponse();
+        
         const response = await fetch('/planning/api/sections/allocate-topics', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -597,13 +632,17 @@ async function allocateTopics() {
             showStep(3);
         } else {
             showError('allocation-display', result.error);
+            // Show LLM response for debugging
+            if (result.llm_response) {
+                showLLMResponse(result.llm_response);
+            }
         }
         
         hideLoading('step-2-loading');
         enableButton('step-2-btn');
     } catch (error) {
         console.error('Error allocating topics:', error);
-        showError('allocation-display', 'Error allocating topics.');
+        showError('allocation-display', `Error allocating topics: ${error.message}`);
         hideLoading('step-2-loading');
         enableButton('step-2-btn');
     }
@@ -793,6 +832,22 @@ function disableButton(buttonId) {
 
 function enableButton(buttonId) {
     document.getElementById(buttonId).disabled = false;
+}
+
+function showLLMResponse(response) {
+    const display = document.getElementById('llm-response-display');
+    const rawResponse = document.getElementById('raw-llm-response');
+    if (display && rawResponse) {
+        rawResponse.textContent = response;
+        display.style.display = 'block';
+    }
+}
+
+function hideLLMResponse() {
+    const display = document.getElementById('llm-response-display');
+    if (display) {
+        display.style.display = 'none';
+    }
 }
 </script>
 {% endblock %}
