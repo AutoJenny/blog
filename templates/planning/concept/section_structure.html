@@ -23,7 +23,7 @@
                         <!-- Topics from brainstorming will appear here -->
                     </div>
                     <div class="input-actions">
-                        <button class="btn btn-primary" onclick="generateSectionStructure()" id="generate-btn">
+                        <button class="btn btn-primary" onclick="generateSectionStructure()" id="custom-generate-btn">
                             <i class="fas fa-magic"></i> Design Section Structure
                         </button>
                     </div>
@@ -219,6 +219,37 @@
     padding: 2rem;
 }
 
+.section-structure-results {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.section-item {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.section-item h5 {
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.section-item p {
+    color: #cbd5e1;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.section-item strong {
+    color: #e2e8f0;
+}
+
 .topics-list {
     max-height: 300px;
     overflow-y: auto;
@@ -307,7 +338,7 @@ function displayTopics() {
 
 // Generate section structure
 async function generateSectionStructure() {
-    const btn = document.getElementById('generate-btn');
+    const btn = document.getElementById('custom-generate-btn');
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Designing Structure...';
     
@@ -324,8 +355,9 @@ async function generateSectionStructure() {
         const result = await response.json();
         
         if (result.success) {
-            sectionStructure = result.structure;
-            // The LLM module will handle displaying the results
+            sectionStructure = result.section_structure;
+            // Display the results in the LLM module
+            displaySectionStructure(sectionStructure);
             console.log('Section structure generated successfully');
         } else {
             alert('Error: ' + result.error);
@@ -339,14 +371,40 @@ async function generateSectionStructure() {
     }
 }
 
+// Display section structure results
+function displaySectionStructure(structure) {
+    const resultsDisplay = document.getElementById('llm-results-display');
+    if (!resultsDisplay) return;
+    
+    let html = '<div class="section-structure-results">';
+    
+    if (structure.sections) {
+        structure.sections.forEach((section, index) => {
+            const sectionCode = `S${String(index + 1).padStart(2, '0')}`;
+            html += `
+                <div class="section-item">
+                    <h5>{${sectionCode}} ${section.theme}</h5>
+                    <p><strong>Description:</strong> ${section.description}</p>
+                    <p><strong>Boundaries:</strong> ${section.boundaries}</p>
+                    <p><strong>Exclusions:</strong> ${section.exclusions}</p>
+                </div>
+            `;
+        });
+    }
+    
+    html += '</div>';
+    resultsDisplay.innerHTML = html;
+}
+
 // Load existing structure
 async function loadExistingStructure() {
     try {
         const response = await fetch(`/planning/api/sections/design-structure/${window.postId}`);
         const data = await response.json();
         
-        if (data.success && data.structure) {
-            sectionStructure = data.structure;
+        if (data.success && data.section_structure) {
+            sectionStructure = data.section_structure;
+            displaySectionStructure(sectionStructure);
             console.log('Existing structure loaded');
         }
     } catch (error) {
