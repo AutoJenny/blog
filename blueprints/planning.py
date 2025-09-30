@@ -2369,41 +2369,33 @@ def api_allocate_topics():
         topics_text = '\n'.join([f"- {topic.get('title', topic) if isinstance(topic, dict) else topic}" for topic in topics])
         
         # Create allocation prompt
-        allocation_prompt = f"""TASK: Allocate ALL {len(topics)} topics to sections using the exact format below.
+        allocation_prompt = f"""You are a content strategist allocating {len(topics)} topics into {len(sections)} blog sections about Scottish autumn traditions.
+
+CRITICAL INSTRUCTION: Return each topic in EXACTLY the same order as provided, with the most appropriate section code appended in curly braces.
 
 SECTION STRUCTURE:
 {sections_text}
 
-TOPICS TO ALLOCATE ({len(topics)} topics):
+TOPICS TO ALLOCATE (in this exact order):
 {topics_text}
 
-CRITICAL REQUIREMENTS:
-- You MUST allocate ALL {len(topics)} topics to sections
-- Each topic can ONLY be assigned to ONE section
-- Return ONLY ONE allocation attempt in the exact format specified below
-- Do NOT generate multiple allocation attempts
-- Do NOT leave any sections empty
+OUTPUT FORMAT: Return each topic in the same order, with section code suffix:
+Topic Title 1 {{S01}}
+Topic Title 2 {{S03}}
+Topic Title 3 {{S02}}
+... (continue for all {len(topics)} topics)
 
-MANDATORY OUTPUT FORMAT:
-Return exactly {len(topics)} lines in this format:
-S01: Topic Title
-S02: Topic Title
-S03: Topic Title
-... (exactly {len(topics)} lines total)
+RULES:
+1. Keep topics in the EXACT same order as provided
+2. Append the most appropriate section code in curly braces {{S01}}, {{S02}}, etc.
+3. Each topic goes to exactly ONE section
+4. Consider thematic fit, not rotation
+5. Return exactly {len(topics)} lines
 
-CRITICAL INSTRUCTIONS:
-1. Return ONLY the allocation lines above
-2. Do NOT include any explanatory text, comments, or additional content
-3. Do NOT generate multiple allocation attempts
-4. Do NOT leave any sections empty (S07: with nothing after colon)
-5. Each line must have a topic title after the colon
-6. Return exactly {len(topics)} lines, no more, no less
-
-VALIDATION CHECKLIST:
-- All {len(topics)} topics are allocated exactly once
-- No empty sections (S07: with nothing after colon)
-- No duplicate topic assignments
-- Exactly {len(topics)} lines returned"""
+EXAMPLE:
+Celtic Roots of Samhain Traditions {{S01}}
+Crop Rotation Practices in Ancient Scotland {{S02}}
+Hogmanay Traditions in Modern Scotland {{S07}}"""
         
         # Execute LLM request
         messages = [
@@ -2434,7 +2426,7 @@ VALIDATION CHECKLIST:
             content = result['content'].strip()
             logger.info(f"Raw LLM response: {content}")
             
-            # Parse the simple format: S01: Topic Title
+            # Parse the new format: Topic Title {S01}
             allocations = {}
             lines = content.split('\n')
             
@@ -2445,12 +2437,15 @@ VALIDATION CHECKLIST:
                 if not line:
                     continue
                     
-                # Parse format: S01: Topic Title
-                if ':' in line:
-                    parts = line.split(':', 1)
-                    if len(parts) == 2:
-                        section_code = parts[0].strip()
-                        topic_title = parts[1].strip()
+                # Parse format: Topic Title {S01}
+                if '{' in line and '}' in line:
+                    # Extract section code from curly braces
+                    start_brace = line.rfind('{')
+                    end_brace = line.rfind('}')
+                    
+                    if start_brace != -1 and end_brace != -1 and end_brace > start_brace:
+                        section_code = line[start_brace + 1:end_brace].strip()
+                        topic_title = line[:start_brace].strip()
                         
                         # Validate section code format
                         if section_code.startswith('S') and len(section_code) == 3:
