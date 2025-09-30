@@ -153,12 +153,18 @@ def planning_structure(post_id):
 @bp.route('/posts/<int:post_id>/calendar')
 def planning_calendar(post_id):
     """Content Calendar main stage"""
-    return render_template('planning/calendar.html', post_id=post_id, blueprint_name='planning')
+    return render_template('planning/calendar.html', 
+                         post_id=post_id, 
+                         page_title='Content Calendar',
+                         blueprint_name='planning')
 
 @bp.route('/posts/<int:post_id>/calendar/view')
 def planning_calendar_view(post_id):
     """Calendar View sub-stage"""
-    return render_template('planning/calendar/view.html', post_id=post_id, blueprint_name='planning')
+    return render_template('planning/calendar/view.html', 
+                         post_id=post_id, 
+                         page_title='Calendar View',
+                         blueprint_name='planning')
 
 @bp.route('/categories/manage')
 def categories_manage():

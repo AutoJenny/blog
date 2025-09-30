@@ -19858,3 +19858,8 @@ LINE 4:                 LEFT JOIN calendar_ideas ci ON cs.idea_id = ...
 2025-09-30 08:35:25,110 - werkzeug - INFO -  * Debugger PIN: 102-335-875
 2025-09-30 08:35:26,624 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 08:35:26] "GET /planning/posts/60/concept/brainstorm HTTP/1.1" 200 -
 2025-09-30 08:35:28,946 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 08:35:28] "GET /planning/posts/60/concept/sections HTTP/1.1" 200 -
+2025-09-30 08:36:04,345 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 08:36:04,378 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 08:36:04,597 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 08:36:04,604 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 08:36:08,188 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 08:36:08] "GET /planning/posts/60/calendar/view HTTP/1.1" 200 -
