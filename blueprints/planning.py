@@ -2558,6 +2558,281 @@ def api_get_topic_allocation(post_id):
             'error': str(e)
         }), 500
 
+@bp.route('/api/sections/refine-topics', methods=['POST'])
+def api_refine_topics():
+    """Step 3: Refine topics per section (optional)"""
+    try:
+        data = request.get_json()
+        allocations = data.get('allocations', {})
+        section_structure = data.get('section_structure', {})
+        post_id = data.get('post_id')
+        
+        if not post_id:
+            return jsonify({
+                'success': False,
+                'error': 'Post ID is required'
+            }), 400
+        
+        # Get allocations if not provided
+        if not allocations:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT topic_allocation 
+                    FROM post_development 
+                    WHERE post_id = %s
+                """, (post_id,))
+                result = cursor.fetchone()
+                if result and result['topic_allocation']:
+                    if isinstance(result['topic_allocation'], str):
+                        allocations = json.loads(result['topic_allocation'])
+                    else:
+                        allocations = result['topic_allocation']
+        
+        if not allocations or not allocations.get('allocations'):
+            return jsonify({
+                'success': False,
+                'error': 'Topic allocation not found. Please complete Step 2 first.'
+            }), 400
+        
+        # Get section structure if not provided
+        if not section_structure:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT section_structure 
+                    FROM post_development 
+                    WHERE post_id = %s
+                """, (post_id,))
+                result = cursor.fetchone()
+                if result and result['section_structure']:
+                    if isinstance(result['section_structure'], str):
+                        section_structure = json.loads(result['section_structure'])
+                    else:
+                        section_structure = result['section_structure']
+        
+        # Identify sections with too many topics (>7)
+        sections_to_refine = []
+        for allocation in allocations['allocations']:
+            topic_count = len(allocation.get('topics', []))
+            if topic_count > 7:
+                sections_to_refine.append({
+                    'allocation': allocation,
+                    'topic_count': topic_count
+                })
+        
+        if not sections_to_refine:
+            return jsonify({
+                'success': True,
+                'message': 'No sections need refinement (all sections have ≤7 topics)',
+                'refined_sections': allocations['allocations']
+            })
+        
+        # Refine each overloaded section
+        refined_sections = []
+        for section_info in sections_to_refine:
+            allocation = section_info['allocation']
+            section_id = allocation['section_id']
+            
+            # Get section context from structure
+            section_context = ""
+            if section_structure and section_structure.get('sections'):
+                for section in section_structure['sections']:
+                    if section['id'] == section_id:
+                        section_context = f"Theme: {section['theme']}\nBoundaries: {section['boundaries']}\nExclusions: {section['exclusions']}"
+                        break
+            
+            # Create refinement prompt for this section
+            topics_list = '\n'.join([f"- {topic}" for topic in allocation['topics']])
+            
+            refinement_prompt = f"""Refine topics for section: {section_id}
+            
+SECTION CONTEXT:
+{section_context}
+
+CURRENT TOPICS ({len(allocation['topics'])} topics):
+{topics_list}
+
+REQUIREMENTS:
+- Select the 5-7 BEST topics for this section
+- Maintain thematic coherence with section boundaries
+- Ensure comprehensive coverage of the section theme
+- Prioritize most engaging and representative topics
+- Avoid topics that overlap with section exclusions
+- Explain why excluded topics were removed
+
+OUTPUT FORMAT: Return ONLY valid JSON:
+{{
+  "section_id": "{section_id}",
+  "final_topics": ["Selected Topic 1", "Selected Topic 2"],
+  "refinement_notes": "Why these topics were selected",
+  "excluded_topics": ["Removed Topic 1", "Removed Topic 2"],
+  "refinement_criteria": "Selection criteria used"
+}}"""
+            
+            # Execute LLM for this section
+            messages = [
+                {'role': 'system', 'content': 'You are a Scottish heritage content specialist and topic refinement expert. Your expertise lies in selecting the most engaging and representative topics for blog sections while maintaining thematic coherence and reader engagement.'},
+                {'role': 'user', 'content': refinement_prompt}
+            ]
+            
+            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+            
+            if 'error' in result:
+                logger.error(f"LLM refinement failed for {section_id}: {result['error']}")
+                # Keep original topics if refinement fails
+                refined_sections.append({
+                    'section_id': section_id,
+                    'final_topics': allocation['topics'],
+                    'refinement_notes': 'Refinement failed, keeping original topics',
+                    'excluded_topics': [],
+                    'refinement_criteria': 'Error fallback'
+                })
+                continue
+            
+            # Parse the refinement response
+            try:
+                import re
+                content = result['content'].strip()
+                
+                # Find JSON code block within text
+                json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', content, re.DOTALL)
+                if json_match:
+                    content = json_match.group(1).strip()
+                elif content.startswith('```') and content.endswith('```'):
+                    content = content[3:-3].strip()
+                elif content.startswith('```json'):
+                    content = content[7:].strip()
+                    if content.endswith('```'):
+                        content = content[:-3].strip()
+                
+                # Clean up common JSON issues
+                content = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', content)
+                content = content.replace('\n', ' ').replace('\r', ' ')
+                
+                refined_section = json.loads(content)
+                refined_sections.append(refined_section)
+                
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse refinement response for {section_id}: {e}")
+                # Keep original topics if parsing fails
+                refined_sections.append({
+                    'section_id': section_id,
+                    'final_topics': allocation['topics'],
+                    'refinement_notes': 'Parsing failed, keeping original topics',
+                    'excluded_topics': [],
+                    'refinement_criteria': 'Error fallback'
+                })
+        
+        # Create final refined allocations
+        final_allocations = []
+        for original_allocation in allocations['allocations']:
+            section_id = original_allocation['section_id']
+            
+            # Check if this section was refined
+            refined_section = None
+            for refined in refined_sections:
+                if refined['section_id'] == section_id:
+                    refined_section = refined
+                    break
+            
+            if refined_section:
+                # Use refined topics
+                final_allocation = original_allocation.copy()
+                final_allocation['topics'] = refined_section['final_topics']
+                final_allocation['refinement_notes'] = refined_section.get('refinement_notes', '')
+                final_allocation['excluded_topics'] = refined_section.get('excluded_topics', [])
+                final_allocations.append(final_allocation)
+            else:
+                # Keep original topics
+                final_allocations.append(original_allocation)
+        
+        # Create refined data structure
+        refined_data = {
+            'allocations': final_allocations,
+            'refined_sections': refined_sections,
+            'metadata': {
+                'total_sections_refined': len(sections_to_refine),
+                'refinement_completed_at': 'now',
+                'original_topic_count': sum(len(a.get('topics', [])) for a in allocations['allocations']),
+                'refined_topic_count': sum(len(a.get('topics', [])) for a in final_allocations)
+            }
+        }
+        
+        # Save refined results
+        save_refined_topics(post_id, refined_data)
+        
+        return jsonify({
+            'success': True,
+            'message': f'Refined {len(sections_to_refine)} overloaded sections',
+            'refined_data': refined_data
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in api_refine_topics: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+def save_refined_topics(post_id, refined_data):
+    """Save refined topics to database"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                UPDATE post_development 
+                SET refined_topics = %s, refinement_completed_at = NOW()
+                WHERE post_id = %s
+            """, (json.dumps(refined_data), post_id))
+            
+            if cursor.rowcount == 0:
+                # Create new record if it doesn't exist
+                cursor.execute("""
+                    INSERT INTO post_development (post_id, refined_topics, refinement_completed_at, created_at, updated_at)
+                    VALUES (%s, %s, NOW(), NOW(), NOW())
+                """, (post_id, json.dumps(refined_data)))
+            
+            cursor.connection.commit()
+    except Exception as e:
+        logger.error(f"Error saving refined topics: {e}")
+        raise
+
+@bp.route('/api/sections/refine-topics/<int:post_id>', methods=['GET'])
+def api_get_refined_topics(post_id):
+    """Get refined topics for a post"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT refined_topics, refinement_completed_at
+                FROM post_development 
+                WHERE post_id = %s
+            """, (post_id,))
+            
+            result = cursor.fetchone()
+            
+            if not result or not result['refined_topics']:
+                return jsonify({
+                    'success': False,
+                    'error': 'Refined topics not found'
+                }), 404
+            
+            # Handle both JSON string and dict formats
+            if isinstance(result['refined_topics'], str):
+                refined_data = json.loads(result['refined_topics'])
+            else:
+                refined_data = result['refined_topics']
+            
+            return jsonify({
+                'success': True,
+                'refined_data': refined_data,
+                'completed_at': result['refinement_completed_at']
+            })
+            
+    except Exception as e:
+        logger.error(f"Error in api_get_refined_topics: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @bp.route('/api/sections/group', methods=['POST'])
 def api_sections_group():
     """Stage 1: Group topics into thematic clusters"""
