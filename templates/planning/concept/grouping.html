@@ -482,7 +482,7 @@ async function loadBrainstormTopics() {
         const response = await fetch(`/planning/api/posts/${window.postId}`);
         const data = await response.json();
         
-        if (data.success && data.development && data.development.idea_scope) {
+        if (data.development && data.development.idea_scope) {
             const ideaScope = JSON.parse(data.development.idea_scope);
             if (ideaScope.generated_topics && Array.isArray(ideaScope.generated_topics)) {
                 topics = ideaScope.generated_topics.map(topic => topic.title);
