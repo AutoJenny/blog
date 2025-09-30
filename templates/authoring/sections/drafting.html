@@ -508,6 +508,9 @@
 }
 </style>
 
+<!-- Include LLM Module Script -->
+<script src="{{ url_for('static', filename='js/llm-module.js') }}"></script>
+
 <script>
 // Authoring Section Management
 class AuthoringManager {
@@ -742,7 +745,193 @@ class AuthoringManager {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    new AuthoringManager();
+    const authoringManager = new AuthoringManager();
+    
+    // Initialize LLM module for authoring
+    let llmModule = null;
+    
+    // Function to initialize LLM module for current section
+    function initializeLLMForSection(sectionId) {
+        if (llmModule) {
+            // Update the generate endpoint with current section ID
+            llmModule.config.generateEndpoint = `/authoring/api/posts/${window.postId}/sections/${sectionId}/generate`;
+        } else {
+            // Initialize new LLM module
+            llmModule = initializeLLMModule('author_draft', window.postId, sectionId);
+        }
+    }
+    
+    // Override the selectSection method to integrate with LLM module
+    const originalSelectSection = authoringManager.selectSection.bind(authoringManager);
+    authoringManager.selectSection = function(sectionId) {
+        // Call original method
+        originalSelectSection(sectionId);
+        
+        // Initialize LLM module for this section
+        initializeLLMForSection(sectionId);
+        
+        // Load existing draft content
+        loadSectionDraft(sectionId);
+    };
+    
+    // Function to load existing draft content
+    async function loadSectionDraft(sectionId) {
+        try {
+            const response = await fetch(`/authoring/api/posts/${window.postId}/sections/${sectionId}`);
+            const data = await response.json();
+            
+            if (data.success && data.section) {
+                const section = data.section;
+                
+                // Update input data display
+                document.getElementById('section-title-display').textContent = section.title || '-';
+                document.getElementById('section-subtitle-display').textContent = section.subtitle || '-';
+                
+                // Update topics display
+                const topicsDisplay = document.getElementById('section-topics-display');
+                if (section.topics && Array.isArray(section.topics)) {
+                    topicsDisplay.innerHTML = section.topics.map(topic => 
+                        `<span class="topic-tag">${topic}</span>`
+                    ).join('');
+                } else {
+                    topicsDisplay.textContent = '-';
+                }
+                
+                // Load expanded idea
+                loadExpandedIdea();
+                
+                // Load existing draft content
+                const contentEditor = document.getElementById('content-editor');
+                if (section.draft_content) {
+                    contentEditor.value = section.draft_content;
+                    contentEditor.disabled = false;
+                    updateWordCount();
+                } else {
+                    contentEditor.value = '';
+                    contentEditor.disabled = false;
+                }
+                
+                // Enable controls
+                document.getElementById('preview-btn').disabled = false;
+                document.getElementById('save-btn').disabled = false;
+                document.getElementById('regenerate-btn').disabled = false;
+            }
+        } catch (error) {
+            console.error('Error loading section draft:', error);
+        }
+    }
+    
+    // Function to load expanded idea
+    async function loadExpandedIdea() {
+        try {
+            const response = await fetch(`/planning/api/posts/${window.postId}/expanded-idea`);
+            const data = await response.json();
+            
+            if (data.success && data.expanded_idea) {
+                document.getElementById('expanded-idea-display').textContent = data.expanded_idea;
+            } else {
+                document.getElementById('expanded-idea-display').textContent = 'No expanded idea found';
+            }
+        } catch (error) {
+            console.error('Error loading expanded idea:', error);
+            document.getElementById('expanded-idea-display').textContent = 'Error loading expanded idea';
+        }
+    }
+    
+    // Function to update word count
+    function updateWordCount() {
+        const content = document.getElementById('content-editor').value;
+        const wordCount = content.trim().split(/\s+/).filter(word => word.length > 0).length;
+        document.getElementById('word-count').textContent = `${wordCount} words`;
+    }
+    
+    // Override saveSection method to integrate with LLM module
+    const originalSaveSection = authoringManager.saveSection.bind(authoringManager);
+    authoringManager.saveSection = async function() {
+        if (!this.currentSectionId) return;
+        
+        const content = document.getElementById('content-editor').value;
+        
+        try {
+            const response = await fetch(`/authoring/api/posts/${window.postId}/sections/${this.currentSectionId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    draft_content: content,
+                    status: 'complete'
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                document.getElementById('last-saved').textContent = 'Saved just now';
+                // Update section progress
+                this.updateSectionProgress(this.currentSectionId, 100);
+                
+                // Update section status in UI
+                const sectionItem = document.querySelector(`[data-section-id="${this.currentSectionId}"]`);
+                if (sectionItem) {
+                    sectionItem.setAttribute('data-status', 'complete');
+                    const statusElement = sectionItem.querySelector('.section-status');
+                    if (statusElement) {
+                        statusElement.textContent = 'Complete';
+                        statusElement.className = 'section-status complete';
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error saving section:', error);
+        }
+    };
+    
+    // Override regenerateSection method to use LLM module
+    const originalRegenerateSection = authoringManager.regenerateSection.bind(authoringManager);
+    authoringManager.regenerateSection = async function() {
+        if (!this.currentSectionId) return;
+        
+        // Use LLM module to regenerate content
+        if (llmModule) {
+            try {
+                // Show loading state
+                const contentEditor = document.getElementById('content-editor');
+                contentEditor.value = 'Regenerating content...';
+                contentEditor.disabled = true;
+                
+                // Call LLM generation
+                const response = await fetch(llmModule.config.generateEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    contentEditor.value = data.draft_content;
+                    contentEditor.disabled = false;
+                    updateWordCount();
+                    
+                    // Auto-save the generated content
+                    await this.saveSection();
+                } else {
+                    contentEditor.value = 'Error generating content: ' + (data.error || 'Unknown error');
+                    contentEditor.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error regenerating section:', error);
+                const contentEditor = document.getElementById('content-editor');
+                contentEditor.value = 'Error regenerating content';
+                contentEditor.disabled = false;
+            }
+        }
+    };
+    
+    // Add event listener for content editor changes
+    document.getElementById('content-editor').addEventListener('input', updateWordCount);
 });
 </script>
 

@@ -2,8 +2,90 @@
 from flask import Blueprint, render_template, jsonify, request
 from config.database import db_manager
 import logging
+import json
+import requests
 
 logger = logging.getLogger(__name__)
+
+class LLMService:
+    """Service for interacting with LLM providers."""
+    
+    def __init__(self):
+        self.providers = {
+            'openai': {
+                'name': 'OpenAI',
+                'base_url': 'https://api.openai.com/v1',
+                'models': ['gpt-4', 'gpt-3.5-turbo', 'gpt-4-turbo']
+            },
+            'ollama': {
+                'name': 'Ollama',
+                'base_url': 'http://localhost:11434',
+                'models': ['llama2', 'codellama', 'mistral']
+            }
+        }
+    
+    def get_available_models(self, provider='openai'):
+        """Get available models for a provider."""
+        try:
+            if provider == 'ollama':
+                response = requests.get(f"{self.providers[provider]['base_url']}/api/tags", timeout=5)
+                if response.status_code == 200:
+                    models = [model['name'] for model in response.json().get('models', [])]
+                    return models
+            return self.providers.get(provider, {}).get('models', [])
+        except Exception as e:
+            logger.error(f"Error getting models for {provider}: {e}")
+            return []
+    
+    def execute_llm_request(self, provider, model, messages, api_key=None):
+        """Execute LLM request."""
+        try:
+            if provider == 'openai':
+                headers = {
+                    'Authorization': f'Bearer {api_key}',
+                    'Content-Type': 'application/json'
+                }
+                data = {
+                    'model': model,
+                    'messages': messages,
+                    'temperature': 0.7,
+                    'max_tokens': 2000
+                }
+                response = requests.post(
+                    f"{self.providers[provider]['base_url']}/chat/completions",
+                    headers=headers,
+                    json=data,
+                    timeout=30
+                )
+            elif provider == 'ollama':
+                data = {
+                    'model': model,
+                    'messages': messages,
+                    'stream': False
+                }
+                response = requests.post(
+                    f"{self.providers[provider]['base_url']}/api/chat",
+                    json=data,
+                    timeout=60
+                )
+            else:
+                return {'error': f'Unknown provider: {provider}'}
+            
+            if response.status_code == 200:
+                result = response.json()
+                if provider == 'openai':
+                    return {'content': result['choices'][0]['message']['content']}
+                elif provider == 'ollama':
+                    return {'content': result['message']['content']}
+            else:
+                return {'error': f'API request failed: {response.status_code} - {response.text}'}
+                
+        except Exception as e:
+            logger.error(f"Error executing LLM request: {e}")
+            return {'error': str(e)}
+
+# Initialize LLM service
+llm_service = LLMService()
 
 bp = Blueprint('authoring', __name__, url_prefix='/authoring')
 
@@ -31,6 +113,32 @@ def authoring_post_overview(post_id):
             
     except Exception as e:
         logger.error(f"Error in authoring_post_overview: {e}")
+        return f"Error: {e}", 500
+
+@bp.route('/posts/<int:post_id>/sections/author-first-drafts')
+def authoring_sections_author_first_drafts(post_id):
+    """Author First Drafts - generate initial content for each section"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get post details
+            cursor.execute("""
+                SELECT id, title, status, created_at, updated_at
+                FROM post 
+                WHERE id = %s
+            """, (post_id,))
+            post = cursor.fetchone()
+            
+            if not post:
+                return "Post not found", 404
+            
+            return render_template('authoring/sections/drafting.html', 
+                                 post_id=post_id,
+                                 post=post,
+                                 page_title="Author First Drafts",
+                                 blueprint_name='authoring')
+            
+    except Exception as e:
+        logger.error(f"Error in authoring_sections_author_first_drafts: {e}")
         return f"Error: {e}", 500
 
 @bp.route('/posts/<int:post_id>/sections')
@@ -85,31 +193,6 @@ def authoring_sections_ideas_to_include(post_id):
         logger.error(f"Error in authoring_sections_ideas_to_include: {e}")
         return f"Error: {e}", 500
 
-@bp.route('/posts/<int:post_id>/sections/author_first_drafts')
-def authoring_sections_author_first_drafts(post_id):
-    """Author First Drafts step - Step 16"""
-    try:
-        with db_manager.get_cursor() as cursor:
-            # Get post details
-            cursor.execute("""
-                SELECT id, title, status, created_at, updated_at
-                FROM post 
-                WHERE id = %s
-            """, (post_id,))
-            post = cursor.fetchone()
-            
-            if not post:
-                return "Post not found", 404
-            
-            return render_template('authoring/sections/author_first_drafts.html', 
-                                 post_id=post_id,
-                                 post=post,
-                                 page_title="Author First Drafts",
-                                 blueprint_name='authoring')
-            
-    except Exception as e:
-        logger.error(f"Error in authoring_sections_author_first_drafts: {e}")
-        return f"Error: {e}", 500
 
 @bp.route('/posts/<int:post_id>/sections/fix_language')
 def authoring_sections_fix_language(post_id):
@@ -371,6 +454,191 @@ def api_save_section_content(post_id, section_id):
             
     except Exception as e:
         logger.error(f"Error in api_save_section_content: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@bp.route('/api/posts/<int:post_id>/sections/<int:section_id>/generate', methods=['POST'])
+def api_generate_section_draft(post_id, section_id):
+    """Generate draft content for a specific section using LLM"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get section details
+            cursor.execute("""
+                SELECT id, section_order, section_heading, section_description, 
+                       status, draft, polished
+                FROM post_section
+                WHERE post_id = %s AND id = %s
+            """, (post_id, section_id))
+            section = cursor.fetchone()
+            
+            if not section:
+                return jsonify({
+                    'success': False,
+                    'error': 'Section not found'
+                }), 404
+            
+            # Get post details and sections data from planning
+            cursor.execute("""
+                SELECT title, summary
+                FROM post 
+                WHERE id = %s
+            """, (post_id,))
+            post = cursor.fetchone()
+            
+            if not post:
+                return jsonify({
+                    'success': False,
+                    'error': 'Post not found'
+                }), 404
+            
+            # Get sections data from post_development
+            cursor.execute("""
+                SELECT expanded_idea, sections
+                FROM post_development
+                WHERE post_id = %s
+            """, (post_id,))
+            dev_data = cursor.fetchone()
+            
+            if not dev_data or not dev_data['expanded_idea']:
+                return jsonify({
+                    'success': False,
+                    'error': 'No expanded idea found. Please complete the planning phase first.'
+                }), 400
+            
+            # Parse sections data to get current section details
+            import json
+            sections_data = []
+            if dev_data['sections']:
+                try:
+                    sections_json = json.loads(dev_data['sections'])
+                    # Handle nested structure: sections_json.sections
+                    if isinstance(sections_json, dict) and 'sections' in sections_json:
+                        sections_data = sections_json['sections']
+                    elif isinstance(sections_json, list):
+                        sections_data = sections_json
+                except:
+                    sections_data = []
+            
+            # Find current section in sections data
+            current_section_data = None
+            for section_data in sections_data:
+                if section_data.get('order') == section['section_order']:
+                    current_section_data = section_data
+                    break
+            
+            if not current_section_data:
+                return jsonify({
+                    'success': False,
+                    'error': 'Section planning data not found'
+                }), 400
+            
+            # Get all other sections to build "avoid topics" list
+            avoid_topics = []
+            for section_data in sections_data:
+                if section_data.get('order') != section['section_order']:
+                    topics = section_data.get('topics', [])
+                    if isinstance(topics, list):
+                        avoid_topics.extend(topics)
+            
+            # Get Section Drafting prompt
+            cursor.execute("""
+                SELECT system_prompt, prompt_text
+                FROM llm_prompt
+                WHERE name = 'Section Drafting'
+            """)
+            prompt_data = cursor.fetchone()
+            
+            if not prompt_data:
+                return jsonify({
+                    'success': False,
+                    'error': 'Section Drafting prompt not found'
+                }), 500
+            
+            # Prepare prompt variables
+            prompt_vars = {
+                'EXPANDED_IDEA': dev_data['expanded_idea'],
+                'POST_TITLE': post['title'],
+                'POST_DESCRIPTION': post['summary'] or 'A comprehensive guide to Scottish heritage and traditions',
+                'SECTION_TITLE': current_section_data.get('title', section['section_heading']),
+                'SECTION_SUBTITLE': current_section_data.get('subtitle', ''),
+                'SECTION_TOPICS': json.dumps(current_section_data.get('topics', [])),
+                'CULTURAL_SIGNIFICANCE': current_section_data.get('cultural_significance', ''),
+                'OTHER_SECTIONS_TOPICS': json.dumps(avoid_topics) if avoid_topics else '[]'
+            }
+            
+            # Replace placeholders in prompt
+            prompt_text = prompt_data['prompt_text']
+            for key, value in prompt_vars.items():
+                prompt_text = prompt_text.replace(f'[{key}]', str(value))
+            
+            # Call LLM service
+            messages = [
+                {'role': 'system', 'content': prompt_data['system_prompt']},
+                {'role': 'user', 'content': prompt_text}
+            ]
+            
+            logger.info(f"Generating draft for section {section_id} of post {post_id}")
+            llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+            
+            if 'error' in llm_response:
+                return jsonify({
+                    'success': False,
+                    'error': f"LLM generation failed: {llm_response['error']}"
+                }), 500
+            
+            # Save generated content to database
+            cursor.execute("""
+                UPDATE post_section 
+                SET draft = %s, status = 'complete'
+                WHERE post_id = %s AND id = %s
+            """, (llm_response['content'], post_id, section_id))
+            
+            cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'draft_content': llm_response['content'],
+                'message': 'Draft generated successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error in api_generate_section_draft: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@bp.route('/api/llm/prompts/section-drafting')
+def api_get_section_drafting_prompt():
+    """Get the Section Drafting prompt"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT name, system_prompt, prompt_text
+                FROM llm_prompt
+                WHERE name = 'Section Drafting'
+            """)
+            prompt = cursor.fetchone()
+            
+            if not prompt:
+                return jsonify({
+                    'success': False,
+                    'error': 'Section Drafting prompt not found'
+                }), 404
+            
+            return jsonify({
+                'success': True,
+                'prompt': {
+                    'name': prompt['name'],
+                    'system_prompt': prompt['system_prompt'],
+                    'prompt_text': prompt['prompt_text']
+                }
+            })
+            
+    except Exception as e:
+        logger.error(f"Error in api_get_section_drafting_prompt: {e}")
         return jsonify({
             'success': False,
             'error': str(e)
