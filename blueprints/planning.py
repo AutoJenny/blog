@@ -2374,7 +2374,7 @@ def api_allocate_topics():
         topics_text = '\n'.join([f"{i+1}. {topic.get('title', topic) if isinstance(topic, dict) else topic}" for i, topic in enumerate(topics)])
         
         # Create allocation prompt
-        allocation_prompt = f"""TASK: Allocate {len(topics)} topics to sections. Return each topic in the SAME ORDER as provided (1-{len(topics)}), with section code in curly braces.
+        allocation_prompt = f"""TASK: Allocate {len(topics)} topics to sections based on THEMATIC COHERENCE. Each topic must go to its BEST FIT section based on content and theme.
 
 SECTION STRUCTURE:
 {sections_text}
@@ -2382,10 +2382,19 @@ SECTION STRUCTURE:
 TOPICS TO ALLOCATE (process these in numbered order 1-{len(topics)}):
 {topics_text}
 
+THEMATIC MATCHING GUIDELINES:
+- S01 (Celtic Roots): Ancient Celtic traditions, Samhain origins, Celtic calendar
+- S02 (Harvest Festivals): Historical harvest celebrations, festival traditions
+- S03 (Agriculture): Farming practices, crop rotation, agricultural cycles
+- S04 (Folk Remedies): Traditional medicine, turnip uses, folk practices
+- S05 (Christianity): Christian influence on traditions, religious aspects
+- S06 (Modern Celebrations): Contemporary festivals, modern adaptations
+- S07 (Cultural Identity): Scottish identity, cultural significance, symbolism
+
 REQUIRED OUTPUT FORMAT - return exactly {len(topics)} lines like this:
 Celtic Roots of Samhain Traditions {{S01}}
-Crop Rotation Practices in Ancient Scotland {{S02}}
-Hogmanay Traditions in Modern Scotland {{S07}}
+Crop Rotation Practices in Ancient Scotland {{S03}}
+Hogmanay Traditions in Modern Scotland {{S06}}
 
 CRITICAL RULES:
 1. Return EXACTLY {len(topics)} lines
@@ -2394,7 +2403,8 @@ CRITICAL RULES:
 4. Use section codes S01, S02, S03, S04, S05, S06, S07
 5. NO JSON format, NO quotes, NO commas
 6. Each topic appears exactly once
-7. Process topics in order: 1, 2, 3, 4, 5... up to {len(topics)}
+7. Match topics to their THEMATICALLY MOST APPROPRIATE section
+8. Process topics in order: 1, 2, 3, 4, 5... up to {len(topics)}
 
 DO NOT return JSON format. Return simple text lines only."""
         
