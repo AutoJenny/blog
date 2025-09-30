@@ -103,12 +103,8 @@
                 <div class="input-data-panel">
                     <h5>Post Context</h5>
                     <div class="context-item">
-                        <label>Post Title:</label>
-                        <span id="post-title-display">-</span>
-                    </div>
-                    <div class="context-item">
-                        <label>Post Summary:</label>
-                        <div id="post-summary-display">-</div>
+                        <label>Selected Idea:</label>
+                        <div id="selected-idea-display">-</div>
                     </div>
                     <div class="context-item">
                         <label>Expanded Idea:</label>
@@ -911,9 +907,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
             
             if (data) {
-                // Post title and summary
-                document.getElementById('post-title-display').textContent = data.title || '-';
-                document.getElementById('post-summary-display').textContent = data.summary || '-';
+                // Selected idea (idea_seed)
+                if (data.development && data.development.idea_seed) {
+                    document.getElementById('selected-idea-display').textContent = data.development.idea_seed;
+                } else {
+                    document.getElementById('selected-idea-display').textContent = 'No selected idea found';
+                }
                 
                 // Expanded idea
                 if (data.development && data.development.expanded_idea) {
@@ -924,8 +923,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             console.error('Error loading post context:', error);
-            document.getElementById('post-title-display').textContent = 'Error loading';
-            document.getElementById('post-summary-display').textContent = 'Error loading';
+            document.getElementById('selected-idea-display').textContent = 'Error loading';
             document.getElementById('expanded-idea-display').textContent = 'Error loading';
         }
     }
