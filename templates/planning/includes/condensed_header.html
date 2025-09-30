@@ -29,7 +29,7 @@
                 Concept Development
             </a>
             <a href="{{ url_for('planning.planning_research', post_id=post_id) }}" 
-               class="stage-btn" data-stage="research">
+               class="stage-btn disabled" data-stage="research">
                 <i class="fas fa-search"></i>
                 Research & Resources
             </a>
@@ -74,7 +74,7 @@
                     Section Titling
                 </a>
                 <a href="{{ url_for('planning.planning_concept_outline', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="outline">
+                   class="sub-stage-btn disabled" data-substage="outline">
                     Content Outline
                 </a>
             </div>
@@ -243,6 +243,19 @@
     color: white;
 }
 
+.stage-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    color: #64748b;
+    border-color: #475569;
+}
+
+.stage-btn.disabled:hover {
+    background: transparent;
+    border-color: #475569;
+    color: #64748b;
+}
+
 /* Sub-stages with Subtitle and Tabs */
 .sub-stages-line {
     display: flex;
@@ -289,6 +302,19 @@
     background: #06b6d4;
     border-color: #06b6d4;
     color: white;
+}
+
+.sub-stage-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    color: #64748b;
+    border-color: #475569;
+}
+
+.sub-stage-btn.disabled:hover {
+    background: transparent;
+    border-color: #475569;
+    color: #64748b;
 }
 
 /* Subtitle */
