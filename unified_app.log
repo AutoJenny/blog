@@ -20788,3 +20788,215 @@ LINE 4:                 LEFT JOIN calendar_ideas ci ON cs.idea_id = ...
 2025-09-30 09:18:16,783 - config.database - INFO - Database connection established
 2025-09-30 09:18:16,786 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:18:16] "GET /planning/api/llm/prompts/section-planning HTTP/1.1" 200 -
 2025-09-30 09:18:20,402 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:18:20] "GET /planning/posts/60/concept/sections HTTP/1.1" 200 -
+2025-09-30 09:19:24,225 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:19:24] "GET /planning/posts/60/concept/brainstorm HTTP/1.1" 200 -
+2025-09-30 09:19:24,305 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:19:24] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-30 09:19:24,306 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:19:24] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-30 09:19:24,307 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:19:24] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-30 09:19:24,308 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:19:24] "[36mGET /static/css/llm-module.css HTTP/1.1[0m" 304 -
+2025-09-30 09:19:24,308 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:19:24] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-09-30 09:19:24,309 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:19:24] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-30 09:19:24,310 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:19:24] "[36mGET /static/js/llm-module.js HTTP/1.1[0m" 304 -
+2025-09-30 09:19:24,311 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:19:24] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-30 09:19:24,312 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:19:24] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-30 09:19:24,313 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:19:24] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-30 09:19:24,320 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:19:24] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-30 09:19:24,331 - config.database - INFO - Database connection established
+2025-09-30 09:19:24,332 - config.database - INFO - Database connection established
+2025-09-30 09:19:24,333 - config.database - INFO - Database connection established
+2025-09-30 09:19:24,333 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:19:24] "GET /planning/api/llm/prompts/topic-brainstorming HTTP/1.1" 200 -
+2025-09-30 09:19:24,334 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:19:24] "GET /planning/api/posts/60/idea-scope HTTP/1.1" 200 -
+2025-09-30 09:19:24,335 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:19:24] "GET /planning/api/posts/60/expanded-idea HTTP/1.1" 200 -
+2025-09-30 09:19:24,431 - config.database - INFO - Database connection established
+2025-09-30 09:19:24,439 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
+2025-09-30 09:19:24,439 - blueprints.planning - INFO - Calendar schedule entry: {'id': 1, 'year': 2025, 'week_number': 39, 'post_id': 60, 'scheduled_date': datetime.date(2025, 9, 28), 'created_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660), 'updated_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660)}
+2025-09-30 09:19:24,439 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:19:24] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-09-30 09:19:27,720 - config.database - INFO - Database connection established
+2025-09-30 09:19:27,721 - config.database - INFO - Database connection established
+2025-09-30 09:19:27,724 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-30 09:19:27,725 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-30 09:19:31,396 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-30 09:19:31,398 - blueprints.planning - INFO - Successfully parsed 37 topics from JSON format
+2025-09-30 09:19:31,399 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:19:31] "POST /planning/api/brainstorm/topics HTTP/1.1" 200 -
+2025-09-30 09:19:31,412 - config.database - INFO - Database connection established
+2025-09-30 09:19:31,421 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:19:31] "POST /planning/api/posts/60/idea-scope HTTP/1.1" 200 -
+2025-09-30 09:19:34,374 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-30 09:19:34,376 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:19:34] "POST /planning/api/brainstorm/topics HTTP/1.1" 200 -
+2025-09-30 09:19:34,392 - config.database - INFO - Database connection established
+2025-09-30 09:19:34,400 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:19:34] "POST /planning/api/posts/60/idea-scope HTTP/1.1" 200 -
+2025-09-30 09:20:14,303 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:20:14] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-30 09:20:14,304 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:20:14] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-30 09:20:14,305 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:20:14] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-30 09:20:14,310 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:20:14] "[33mGET /static/images/site/apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-30 09:20:14,311 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:20:14] "[33mGET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1[0m" 404 -
+2025-09-30 09:20:14,311 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:20:14] "[33mGET /static/images/site/favicon.ico HTTP/1.1[0m" 404 -
+2025-09-30 09:21:25,686 - config.database - INFO - Database connection established
+2025-09-30 09:21:25,688 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:21:25] "GET /planning/api/llm/prompts/topic-brainstorming HTTP/1.1" 200 -
+2025-09-30 09:21:30,892 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 09:21:30,926 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 09:21:31,171 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 09:21:31,177 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 09:21:38,997 - config.database - INFO - Database connection established
+2025-09-30 09:21:39,001 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-30 09:21:44,121 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-30 09:21:44,121 - blueprints.planning - INFO - Successfully parsed 49 topics from JSON format
+2025-09-30 09:21:44,122 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:21:44] "POST /planning/api/brainstorm/topics HTTP/1.1" 200 -
+2025-09-30 09:21:51,164 - config.database - INFO - Database connection established
+2025-09-30 09:21:51,167 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-30 09:21:55,535 - config.database - INFO - Database connection established
+2025-09-30 09:21:55,536 - config.database - INFO - Database connection established
+2025-09-30 09:21:55,538 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-30 09:21:55,538 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-30 09:21:58,873 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-30 09:21:58,873 - blueprints.planning - INFO - Successfully parsed 69 topics from JSON format
+2025-09-30 09:21:58,874 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:21:58] "POST /planning/api/brainstorm/topics HTTP/1.1" 200 -
+2025-09-30 09:22:05,326 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-30 09:22:05,326 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:22:05] "POST /planning/api/brainstorm/topics HTTP/1.1" 200 -
+2025-09-30 09:22:05,339 - config.database - INFO - Database connection established
+2025-09-30 09:22:05,344 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:22:05] "POST /planning/api/posts/60/idea-scope HTTP/1.1" 200 -
+2025-09-30 09:22:08,598 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 2023
+2025-09-30 09:22:08,599 - blueprints.planning - INFO - Successfully parsed 32 topics from JSON format
+2025-09-30 09:22:08,601 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:22:08] "POST /planning/api/brainstorm/topics HTTP/1.1" 200 -
+2025-09-30 09:22:08,618 - config.database - INFO - Database connection established
+2025-09-30 09:22:08,625 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:22:08] "POST /planning/api/posts/60/idea-scope HTTP/1.1" 200 -
+2025-09-30 09:23:15,926 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:15] "GET /planning/posts/60/concept/sections HTTP/1.1" 200 -
+2025-09-30 09:23:16,012 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:16] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-30 09:23:16,014 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:16] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-30 09:23:16,016 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:16] "[36mGET /static/css/llm-module.css HTTP/1.1[0m" 304 -
+2025-09-30 09:23:16,017 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:16] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:16,017 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:16] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:16,017 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:16] "[36mGET /static/js/llm-module.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:16,018 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:16] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-30 09:23:16,019 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:16] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:16,020 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:16] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:16,020 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:16] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-30 09:23:16,032 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:16] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:16,046 - config.database - INFO - Database connection established
+2025-09-30 09:23:16,046 - config.database - INFO - Database connection established
+2025-09-30 09:23:16,048 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:16] "GET /planning/api/llm/prompts/section-planning HTTP/1.1" 200 -
+2025-09-30 09:23:16,048 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:16] "GET /planning/api/posts/60/idea-scope HTTP/1.1" 200 -
+2025-09-30 09:23:16,147 - config.database - INFO - Database connection established
+2025-09-30 09:23:16,151 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
+2025-09-30 09:23:16,151 - blueprints.planning - INFO - Calendar schedule entry: {'id': 1, 'year': 2025, 'week_number': 39, 'post_id': 60, 'scheduled_date': datetime.date(2025, 9, 28), 'created_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660), 'updated_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660)}
+2025-09-30 09:23:16,151 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:16] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-09-30 09:23:20,170 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:20] "GET /planning/posts/60/concept/sections HTTP/1.1" 200 -
+2025-09-30 09:23:20,261 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:20] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-30 09:23:20,264 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:20] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-30 09:23:20,265 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:20] "[36mGET /static/css/llm-module.css HTTP/1.1[0m" 304 -
+2025-09-30 09:23:20,265 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:20] "[36mGET /static/js/llm-module.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:20,265 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:20] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-30 09:23:20,266 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:20] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:20,266 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:20] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:20,270 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:20] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-30 09:23:20,270 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:20] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:20,270 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:20] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:20,278 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:20] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:20,292 - config.database - INFO - Database connection established
+2025-09-30 09:23:20,292 - config.database - INFO - Database connection established
+2025-09-30 09:23:20,294 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:20] "GET /planning/api/llm/prompts/section-planning HTTP/1.1" 200 -
+2025-09-30 09:23:20,295 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:20] "GET /planning/api/posts/60/idea-scope HTTP/1.1" 200 -
+2025-09-30 09:23:20,392 - config.database - INFO - Database connection established
+2025-09-30 09:23:20,396 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
+2025-09-30 09:23:20,396 - blueprints.planning - INFO - Calendar schedule entry: {'id': 1, 'year': 2025, 'week_number': 39, 'post_id': 60, 'scheduled_date': datetime.date(2025, 9, 28), 'created_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660), 'updated_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660)}
+2025-09-30 09:23:20,396 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:20] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-09-30 09:23:24,020 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:24] "GET /planning/posts/60/concept/brainstorm HTTP/1.1" 200 -
+2025-09-30 09:23:24,114 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:24] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-30 09:23:24,116 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:24] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-30 09:23:24,117 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:24] "[36mGET /static/css/llm-module.css HTTP/1.1[0m" 304 -
+2025-09-30 09:23:24,117 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:24] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-30 09:23:24,118 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:24] "[36mGET /static/js/llm-module.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:24,119 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:24] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:24,120 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:24] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:24,120 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:24] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:24,121 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:24] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:24,122 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:24] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-30 09:23:24,131 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:24] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:24,144 - config.database - INFO - Database connection established
+2025-09-30 09:23:24,145 - config.database - INFO - Database connection established
+2025-09-30 09:23:24,146 - config.database - INFO - Database connection established
+2025-09-30 09:23:24,146 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:24] "GET /planning/api/llm/prompts/topic-brainstorming HTTP/1.1" 200 -
+2025-09-30 09:23:24,147 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:24] "GET /planning/api/posts/60/expanded-idea HTTP/1.1" 200 -
+2025-09-30 09:23:24,147 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:24] "GET /planning/api/posts/60/idea-scope HTTP/1.1" 200 -
+2025-09-30 09:23:24,245 - config.database - INFO - Database connection established
+2025-09-30 09:23:24,251 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
+2025-09-30 09:23:24,251 - blueprints.planning - INFO - Calendar schedule entry: {'id': 1, 'year': 2025, 'week_number': 39, 'post_id': 60, 'scheduled_date': datetime.date(2025, 9, 28), 'created_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660), 'updated_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660)}
+2025-09-30 09:23:24,251 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:24] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-09-30 09:23:26,082 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:26] "GET /planning/posts/60/concept/sections HTTP/1.1" 200 -
+2025-09-30 09:23:26,179 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:26] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-30 09:23:26,181 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:26] "[36mGET /static/css/llm-module.css HTTP/1.1[0m" 304 -
+2025-09-30 09:23:26,181 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:26] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-30 09:23:26,181 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:26] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-30 09:23:26,183 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:26] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:26,184 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:26] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:26,184 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:26] "[36mGET /static/js/llm-module.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:26,184 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:26] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:26,185 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:26] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:26,187 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:26] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-30 09:23:26,197 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:26] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-30 09:23:26,210 - config.database - INFO - Database connection established
+2025-09-30 09:23:26,211 - config.database - INFO - Database connection established
+2025-09-30 09:23:26,213 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:26] "GET /planning/api/posts/60/idea-scope HTTP/1.1" 200 -
+2025-09-30 09:23:26,213 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:26] "GET /planning/api/llm/prompts/section-planning HTTP/1.1" 200 -
+2025-09-30 09:23:26,311 - config.database - INFO - Database connection established
+2025-09-30 09:23:26,315 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
+2025-09-30 09:23:26,315 - blueprints.planning - INFO - Calendar schedule entry: {'id': 1, 'year': 2025, 'week_number': 39, 'post_id': 60, 'scheduled_date': datetime.date(2025, 9, 28), 'created_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660), 'updated_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660)}
+2025-09-30 09:23:26,316 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:26] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-09-30 09:23:28,703 - config.database - INFO - Database connection established
+2025-09-30 09:23:28,705 - config.database - INFO - Database connection established
+2025-09-30 09:23:28,713 - config.database - INFO - Database connection established
+2025-09-30 09:23:28,715 - config.database - INFO - Database connection established
+2025-09-30 09:23:28,716 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-30 09:23:28,718 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-30 09:23:35,255 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-30 09:23:35,256 - blueprints.planning - INFO - Validation errors: ['Must have 6-8 sections, got 0', 'Topic count mismatch: 0 allocated vs 32 original', 'Unallocated topics: Harvest Festival Celebrations in Scottish History, Oats as a Crop in Medieval Scotland, Celtic Roots of Samhain Traditions, Crop Rotation Practices in Ancient Scotland, Scottish Turnips in Medicine and Magic...']
+2025-09-30 09:23:35,257 - blueprints.planning - INFO - LLM validation failed even after auto-correction, creating fallback allocation
+2025-09-30 09:23:35,257 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:35] "POST /planning/api/sections/plan HTTP/1.1" 200 -
+2025-09-30 09:23:35,271 - config.database - INFO - Database connection established
+2025-09-30 09:23:35,280 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:35] "POST /planning/api/posts/60/sections HTTP/1.1" 200 -
+2025-09-30 09:23:45,310 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-30 09:23:45,311 - blueprints.planning - INFO - Validation errors: ['Must have 6-8 sections, got 0', 'Topic count mismatch: 0 allocated vs 32 original', 'Unallocated topics: Harvest Festival Celebrations in Scottish History, Oats as a Crop in Medieval Scotland, Celtic Roots of Samhain Traditions, Crop Rotation Practices in Ancient Scotland, Scottish Turnips in Medicine and Magic...']
+2025-09-30 09:23:45,311 - blueprints.planning - INFO - LLM validation failed even after auto-correction, creating fallback allocation
+2025-09-30 09:23:45,312 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:45] "POST /planning/api/sections/plan HTTP/1.1" 200 -
+2025-09-30 09:23:45,327 - config.database - INFO - Database connection established
+2025-09-30 09:23:45,334 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:23:45] "POST /planning/api/posts/60/sections HTTP/1.1" 200 -
+2025-09-30 09:24:14,308 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 09:24:14,345 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 09:24:14,563 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 09:24:14,568 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 09:24:50,144 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:24:50] "GET /planning/posts/60/concept/sections HTTP/1.1" 200 -
+2025-09-30 09:24:50,229 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:24:50] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-30 09:24:50,231 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:24:50] "[36mGET /static/css/llm-module.css HTTP/1.1[0m" 304 -
+2025-09-30 09:24:50,231 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:24:50] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-30 09:24:50,232 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:24:50] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-30 09:24:50,233 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:24:50] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-09-30 09:24:50,234 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:24:50] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-30 09:24:50,234 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:24:50] "[36mGET /static/js/llm-module.js HTTP/1.1[0m" 304 -
+2025-09-30 09:24:50,236 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:24:50] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-30 09:24:50,236 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:24:50] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-30 09:24:50,236 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:24:50] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-30 09:24:50,245 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:24:50] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-30 09:24:50,269 - config.database - INFO - Database connection established
+2025-09-30 09:24:50,271 - config.database - INFO - Database connection established
+2025-09-30 09:24:50,272 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:24:50] "GET /planning/api/llm/prompts/section-planning HTTP/1.1" 200 -
+2025-09-30 09:24:50,273 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:24:50] "GET /planning/api/posts/60/idea-scope HTTP/1.1" 200 -
+2025-09-30 09:24:50,358 - config.database - INFO - Database connection established
+2025-09-30 09:24:50,363 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
+2025-09-30 09:24:50,363 - blueprints.planning - INFO - Calendar schedule entry: {'id': 1, 'year': 2025, 'week_number': 39, 'post_id': 60, 'scheduled_date': datetime.date(2025, 9, 28), 'created_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660), 'updated_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660)}
+2025-09-30 09:24:50,363 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:24:50] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-09-30 09:28:12,077 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 09:28:12,120 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 09:28:12,350 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 09:28:12,356 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 09:28:30,491 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 09:28:30,526 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 09:28:30,760 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 09:28:30,766 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 09:29:45,716 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 09:29:45,746 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 09:29:45,981 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 09:29:45,986 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 09:30:18,772 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:30:18] "GET /planning/posts/60/concept/grouping HTTP/1.1" 200 -
+2025-09-30 09:30:20,608 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:30:20] "GET /planning/posts/60/concept/titling HTTP/1.1" 200 -
+2025-09-30 09:30:26,440 - config.database - INFO - Database connection established
+2025-09-30 09:30:26,444 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-30 09:30:29,077 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1031
+2025-09-30 09:30:29,078 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 09:30:29] "POST /planning/api/sections/group HTTP/1.1" 200 -

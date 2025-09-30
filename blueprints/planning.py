@@ -229,6 +229,22 @@ def planning_concept_brainstorm(post_id):
                          page_title='Topic Brainstorming',
                          blueprint_name='planning')
 
+@bp.route('/posts/<int:post_id>/concept/grouping')
+def planning_concept_grouping(post_id):
+    """Section Grouping sub-stage - groups topics into thematic clusters"""
+    return render_template('planning/concept/grouping.html', 
+                         post_id=post_id, 
+                         page_title='Section Grouping',
+                         blueprint_name='planning')
+
+@bp.route('/posts/<int:post_id>/concept/titling')
+def planning_concept_titling(post_id):
+    """Section Titling sub-stage - creates titles and descriptions for grouped sections"""
+    return render_template('planning/concept/titling.html', 
+                         post_id=post_id, 
+                         page_title='Section Titling',
+                         blueprint_name='planning')
+
 @bp.route('/posts/<int:post_id>/concept/sections')
 def planning_concept_sections(post_id):
     """Section Planning sub-stage"""
@@ -1989,6 +2005,318 @@ def api_get_section_planning_prompt():
             
     except Exception as e:
         logger.error(f"Error getting section planning prompt: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@bp.route('/api/sections/group', methods=['POST'])
+def api_sections_group():
+    """Stage 1: Group topics into thematic clusters"""
+    try:
+        data = request.get_json()
+        topics = data.get('topics', [])
+        group_count = data.get('group_count', 6)
+        post_id = data.get('post_id')
+        
+        if not topics:
+            return jsonify({
+                'success': False,
+                'error': 'No topics provided'
+            }), 400
+        
+        # Get the expanded idea for context
+        expanded_idea = ""
+        if post_id:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT expanded_idea 
+                    FROM post_development 
+                    WHERE post_id = %s
+                """, (post_id,))
+                result = cursor.fetchone()
+                if result and result['expanded_idea']:
+                    expanded_idea = result['expanded_idea']
+        
+        # Create grouping prompt
+        topics_text = '\n'.join([f"- {topic['title']}" for topic in topics])
+        
+        grouping_prompt = f"""Given these topics about {expanded_idea}, group them into exactly {group_count} thematic clusters.
+
+TOPICS TO GROUP:
+{topics_text}
+
+REQUIREMENTS:
+- Create exactly {group_count} groups
+- Each topic must be in exactly one group
+- Groups should be thematically related
+- Balance group sizes as much as possible
+
+OUTPUT FORMAT: Return ONLY valid JSON:
+{{
+  "groups": [
+    {{
+      "id": "group_1",
+      "theme": "Brief theme description",
+      "topics": ["Topic 1", "Topic 2", ...],
+      "order": 1
+    }}
+  ],
+  "metadata": {{
+    "total_groups": {group_count},
+    "total_topics": {len(topics)},
+    "allocated_topics": {len(topics)}
+  }}
+}}"""
+        
+        # Call LLM
+        messages = [
+            {'role': 'system', 'content': 'You are an expert content organizer specializing in thematic grouping of topics.'},
+            {'role': 'user', 'content': grouping_prompt}
+        ]
+        
+        llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+        
+        if 'error' in llm_response:
+            return jsonify({
+                'success': False,
+                'error': f"LLM generation failed: {llm_response['error']}"
+            }), 500
+        
+        # Parse response
+        try:
+            import json
+            groups_data = json.loads(llm_response['content'])
+        except json.JSONDecodeError:
+            # Fallback: create simple groups
+            groups_data = create_fallback_groups(topics, group_count)
+        
+        return jsonify({
+            'success': True,
+            'groups': groups_data
+        })
+        
+    except Exception as e:
+        logger.error(f"Error grouping topics: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@bp.route('/api/sections/title', methods=['POST'])
+def api_sections_title():
+    """Stage 2: Create titles and descriptions for grouped sections"""
+    try:
+        data = request.get_json()
+        groups = data.get('groups', [])
+        expanded_idea = data.get('expanded_idea', '')
+        post_id = data.get('post_id')
+        
+        if not groups:
+            return jsonify({
+                'success': False,
+                'error': 'No groups provided'
+            }), 400
+        
+        # Create titling prompt
+        groups_text = ""
+        for group in groups:
+            topics_list = '\n  '.join(group.get('topics', []))
+            groups_text += f"\nGroup {group.get('order', 1)}: {group.get('theme', 'Untitled')}\n  {topics_list}\n"
+        
+        titling_prompt = f"""Given these grouped topics about {expanded_idea}, create compelling titles and descriptions for each section.
+
+GROUPED TOPICS:
+{groups_text}
+
+REQUIREMENTS:
+- Create compelling section titles (5-10 words)
+- Write clear descriptions (1-2 sentences) explaining what each section covers
+- Define what should NOT be included to avoid overlap with other sections
+- Ensure logical flow between sections
+
+OUTPUT FORMAT: Return ONLY valid JSON:
+{{
+  "sections": [
+    {{
+      "id": "section_1",
+      "title": "Compelling Section Title",
+      "description": "Clear description of what this section covers and its purpose.",
+      "boundaries": "What this section should NOT include to avoid overlap.",
+      "topics": ["Topic 1", "Topic 2", ...],
+      "order": 1
+    }}
+  ],
+  "metadata": {{
+    "total_sections": {len(groups)},
+    "total_topics": {sum(len(group.get('topics', [])) for group in groups)},
+    "flow_type": "logical"
+  }}
+}}"""
+        
+        # Call LLM
+        messages = [
+            {'role': 'system', 'content': 'You are an expert content strategist specializing in creating compelling section titles and clear boundaries.'},
+            {'role': 'user', 'content': titling_prompt}
+        ]
+        
+        llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+        
+        if 'error' in llm_response:
+            return jsonify({
+                'success': False,
+                'error': f"LLM generation failed: {llm_response['error']}"
+            }), 500
+        
+        # Parse response
+        try:
+            import json
+            sections_data = json.loads(llm_response['content'])
+        except json.JSONDecodeError:
+            # Fallback: create simple sections
+            sections_data = create_fallback_sections_from_groups(groups)
+        
+        return jsonify({
+            'success': True,
+            'sections': sections_data
+        })
+        
+    except Exception as e:
+        logger.error(f"Error creating section titles: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+def create_fallback_groups(topics, group_count):
+    """Create simple fallback groups when LLM fails"""
+    topic_titles = [topic['title'] for topic in topics]
+    
+    # Distribute topics evenly
+    topics_per_group = len(topics) // group_count
+    remainder = len(topics) % group_count
+    
+    groups = []
+    topic_index = 0
+    
+    for i in range(group_count):
+        group_topic_count = topics_per_group + (1 if i < remainder else 0)
+        group_topics = topic_titles[topic_index:topic_index + group_topic_count]
+        topic_index += group_topic_count
+        
+        groups.append({
+            'id': f'group_{i+1}',
+            'theme': f'Thematic Group {i+1}',
+            'topics': group_topics,
+            'order': i + 1
+        })
+    
+    return {
+        'groups': groups,
+        'metadata': {
+            'total_groups': len(groups),
+            'total_topics': len(topics),
+            'allocated_topics': len(topics)
+        }
+    }
+
+def create_fallback_sections_from_groups(groups):
+    """Create simple fallback sections from groups"""
+    sections = []
+    
+    for group in groups:
+        sections.append({
+            'id': group.get('id', f'section_{group.get("order", 1)}'),
+            'title': f"Section {group.get('order', 1)}: {group.get('theme', 'Untitled')}",
+            'description': f"This section covers topics related to {group.get('theme', 'the main theme').lower()}.",
+            'boundaries': "Focus on the specific topics listed, avoiding overlap with other sections.",
+            'topics': group.get('topics', []),
+            'order': group.get('order', 1)
+        })
+    
+    return {
+        'sections': sections,
+        'metadata': {
+            'total_sections': len(sections),
+            'total_topics': sum(len(section['topics']) for section in sections),
+            'flow_type': 'logical'
+        }
+    }
+
+@bp.route('/api/posts/<int:post_id>/groups', methods=['GET'])
+def api_get_groups(post_id):
+    """Get the groups from post_development"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT groups 
+                FROM post_development 
+                WHERE post_id = %s
+            """, (post_id,))
+            
+            result = cursor.fetchone()
+            groups_raw = result['groups'] if result else None
+            
+            # Parse the JSON string if it exists
+            groups = None
+            if groups_raw:
+                try:
+                    groups = json.loads(groups_raw)
+                except json.JSONDecodeError:
+                    logger.error(f"Failed to parse groups JSON for post {post_id}")
+                    groups = None
+            
+            return jsonify({
+                'success': True,
+                'post_id': post_id,
+                'groups': groups
+            })
+            
+    except Exception as e:
+        logger.error(f"Error fetching groups for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/groups', methods=['POST'])
+def api_save_groups(post_id):
+    """Save generated groups to post_development table"""
+    try:
+        data = request.get_json()
+        groups_data = data.get('groups', {})
+        
+        if not groups_data:
+            return jsonify({
+                'success': False,
+                'error': 'No groups data provided'
+            }), 400
+        
+        # Convert to JSON string for database storage
+        groups_json = json.dumps(groups_data)
+        
+        with db_manager.get_cursor() as cursor:
+            # Save groups to post_development table
+            cursor.execute("""
+                UPDATE post_development 
+                SET groups = %s, updated_at = NOW()
+                WHERE post_id = %s
+            """, (groups_json, post_id))
+            
+            if cursor.rowcount == 0:
+                # Create new record if it doesn't exist
+                cursor.execute("""
+                    INSERT INTO post_development (post_id, groups, created_at, updated_at)
+                    VALUES (%s, %s, NOW(), NOW())
+                """, (post_id, groups_json))
+        
+            # Commit the transaction
+            cursor.connection.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Groups saved successfully'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error saving groups: {e}")
         return jsonify({
             'success': False,
             'error': str(e)
