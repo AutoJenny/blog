@@ -2515,13 +2515,42 @@ DO NOT return JSON format. Return simple text lines only."""
                 logger.error(f"Valid lines found: {len(valid_lines)}")
                 logger.error(f"Sample valid lines: {valid_lines[:3]}")
                 
-                # Get missing topics for better error message
+                # Get missing topics for automatic retry
                 allocated_topics = []
                 for allocation in allocation_data.get('allocations', []):
                     allocated_topics.extend(allocation.get('topics', []))
                 original_titles = [topic.get('title', topic) if isinstance(topic, dict) else topic for topic in topics]
                 missing_topics = set(original_titles) - set(allocated_topics)
                 
+                logger.info(f"Attempting automatic retry for {len(missing_topics)} missing topics: {list(missing_topics)}")
+                
+                # Automatic retry for missing topics
+                try:
+                    retry_result = allocate_missing_topics(list(missing_topics), section_structure, post_id)
+                    if retry_result['success']:
+                        # Merge the retry results with existing allocation
+                        merged_allocation = merge_allocations(allocation_data, retry_result['allocations'])
+                        
+                        # Validate the merged result
+                        if validate_topic_allocation(merged_allocation, topics):
+                            logger.info(f"Automatic retry successful! All {len(original_titles)} topics now allocated.")
+                            
+                            # Save merged allocation to database
+                            save_topic_allocation(post_id, merged_allocation)
+                            
+                            return jsonify({
+                                'success': True,
+                                'message': f'Topics allocated successfully (with automatic retry for {len(missing_topics)} missing topics)',
+                                'allocations': merged_allocation
+                            })
+                        else:
+                            logger.error("Merged allocation still failed validation")
+                    else:
+                        logger.error(f"Automatic retry failed: {retry_result.get('error', 'Unknown error')}")
+                except Exception as retry_error:
+                    logger.error(f"Automatic retry exception: {retry_error}")
+                
+                # If automatic retry fails, return the original error
                 return jsonify({
                     'success': False,
                     'error': f'Invalid allocation count: expected {len(original_titles)}, got {len(set(allocated_topics))}. Missing topics: {list(missing_topics)}',
@@ -2565,6 +2594,125 @@ DO NOT return JSON format. Return simple text lines only."""
                 'post_id': post_id if 'post_id' in locals() else 'unknown'
             }
         }), 500
+
+def allocate_missing_topics(missing_topics, section_structure, post_id):
+    """Allocate missing topics using LLM with simplified prompt"""
+    try:
+        from modules.llm_service import generate_content
+        
+        # Create section codes mapping
+        section_codes = {}
+        for i, section in enumerate(section_structure.get('sections', []), 1):
+            section_codes[f'S{i:02d}'] = section.get('theme', f'Section {i}')
+        
+        # Simplified prompt for missing topics only
+        prompt = f"""You are a Scottish heritage content specialist. Allocate these {len(missing_topics)} missing topics to the most appropriate sections.
+
+SECTION STRUCTURE:
+{chr(10).join([f"S{i:02d}: {section.get('theme', f'Section {i}')} - {section.get('boundaries', 'No boundaries specified')}" for i, section in enumerate(section_structure.get('sections', []), 1)])}
+
+MISSING TOPICS TO ALLOCATE:
+{chr(10).join([f"{i+1}. {topic}" for i, topic in enumerate(missing_topics)])}
+
+CRITICAL REQUIREMENTS:
+- Return EXACTLY {len(missing_topics)} lines
+- Use format: Topic Title {{SXX}}
+- Use section codes: {', '.join(section_codes.keys())}
+- Allocate each topic to its BEST FIT section
+- Do NOT skip any topics
+
+OUTPUT FORMAT:
+Topic Title {{S01}}
+Topic Title {{S02}}
+..."""
+
+        logger.info(f"Retry prompt for {len(missing_topics)} missing topics")
+        
+        result = generate_content(
+            prompt=prompt,
+            system_message="You are a Scottish heritage content specialist and topic allocation expert. You MUST follow instructions exactly and return ONLY the requested format without any additional text.",
+            config={'provider': 'openai', 'model': 'gpt-4o-mini', 'temperature': 0.3}
+        )
+        
+        if not result or not result.get('content'):
+            return {'success': False, 'error': 'LLM returned empty response for retry'}
+        
+        # Parse the retry response
+        content = result['content'].strip()
+        lines = content.split('\n')
+        
+        retry_allocations = {}
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            
+            # Parse format: Topic Title {S01}
+            if '{' in line and '}' in line:
+                topic_part = line[:line.rfind('{')].strip()
+                section_part = line[line.rfind('{')+1:line.rfind('}')].strip()
+                
+                if section_part in section_codes:
+                    if section_part not in retry_allocations:
+                        retry_allocations[section_part] = []
+                    retry_allocations[section_part].append(topic_part)
+        
+        # Convert to allocation format
+        allocation_data = {
+            'allocations': [],
+            'total_topics': len(missing_topics),
+            'allocated_topics': sum(len(topics) for topics in retry_allocations.values()),
+            'style': 'retry',
+            'generated_at': datetime.now().isoformat()
+        }
+        
+        for section_code, topics in retry_allocations.items():
+            section_order = int(section_code[1:])  # Extract number from S01, S02, etc.
+            allocation_data['allocations'].append({
+                'section_id': f'section_{section_order}',
+                'section_theme': section_codes[section_code],
+                'topics': topics,
+                'allocation_reason': f'Missing topics allocated to {section_codes[section_code]} via automatic retry'
+            })
+        
+        logger.info(f"Retry allocation successful: {allocation_data}")
+        return {'success': True, 'allocations': allocation_data}
+        
+    except Exception as e:
+        logger.error(f"Error in allocate_missing_topics: {e}")
+        return {'success': False, 'error': str(e)}
+
+def merge_allocations(original_allocation, retry_allocation):
+    """Merge original allocation with retry allocation"""
+    try:
+        merged = original_allocation.copy()
+        
+        # Create a map of section_id to allocation for easy lookup
+        section_map = {}
+        for allocation in merged['allocations']:
+            section_map[allocation['section_id']] = allocation
+        
+        # Add retry topics to existing sections
+        for retry_alloc in retry_allocation['allocations']:
+            section_id = retry_alloc['section_id']
+            if section_id in section_map:
+                # Add topics to existing section
+                section_map[section_id]['topics'].extend(retry_alloc['topics'])
+            else:
+                # Add new section
+                merged['allocations'].append(retry_alloc)
+        
+        # Update totals
+        merged['total_topics'] = sum(len(alloc['topics']) for alloc in merged['allocations'])
+        merged['allocated_topics'] = merged['total_topics']
+        merged['style'] = 'merged'
+        
+        logger.info(f"Merged allocation: {merged}")
+        return merged
+        
+    except Exception as e:
+        logger.error(f"Error merging allocations: {e}")
+        return original_allocation
 
 def validate_topic_allocation(allocation_data, original_topics):
     """Validate topic allocation format"""
