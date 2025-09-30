@@ -2369,7 +2369,7 @@ def api_allocate_topics():
         topics_text = '\n'.join([f"- {topic.get('title', topic) if isinstance(topic, dict) else topic}" for topic in topics])
         
         # Create allocation prompt
-        allocation_prompt = f"""You are a content strategist allocating {len(topics)} topics into {len(sections)} blog sections about Scottish autumn traditions.
+        allocation_prompt = f"""You are a content strategist allocating {len(topics)} topics into {len(section_structure.get('sections', []))} blog sections about Scottish autumn traditions.
 
 CRITICAL INSTRUCTION: Return each topic in EXACTLY the same order as provided, with the most appropriate section code appended in curly braces.
 
