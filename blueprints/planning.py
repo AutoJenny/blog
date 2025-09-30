@@ -2184,49 +2184,99 @@ def api_sections_title():
                 'error': 'No groups provided'
             }), 400
         
-        # Create titling prompt
+        # Use hardcoded Section Titling prompt for now (to avoid database issue)
+        logger.info("Using hardcoded Section Titling prompt")
+        system_prompt = """You are a Scottish heritage content specialist and engaging blog writer. Your expertise lies in creating compelling, authentic titles and descriptions that resonate with audiences interested in Scottish culture, history, and traditions.
+
+EXPERTISE:
+- Scottish heritage and cultural authenticity
+- Engaging title creation for heritage audiences
+- Compelling descriptions that capture Scottish essence
+- Historical accuracy and cultural sensitivity
+- Reader engagement through evocative language
+
+CRITICAL REQUIREMENTS:
+- Create titles that evoke Scottish heritage and cultural pride
+- Use authentic Scottish terminology and references where appropriate
+- Ensure descriptions capture the essence and importance of each section
+- Make content accessible to both Scottish and international audiences
+- Focus on engagement, authenticity, and cultural significance"""
+        
+        # Prepare groups data for the prompt
+        logger.info("Preparing groups data for prompt")
+        groups_data = {
+            "groups": groups,
+            "metadata": {
+                "total_groups": len(groups),
+                "total_topics": sum(len(group.get('topics', [])) for group in groups)
+            }
+        }
+        
+        # Create the titling prompt
+        logger.info("Creating titling prompt")
         groups_text = ""
         for group in groups:
             topics_list = '\n  '.join(group.get('topics', []))
             groups_text += f"\nGroup {group.get('order', 1)}: {group.get('theme', 'Untitled')}\n  {topics_list}\n"
         
-        titling_prompt = f"""Given these grouped topics about {expanded_idea}, create compelling titles and descriptions for each section.
+        titling_prompt = f"""Given these thematic groups about {expanded_idea}, create engaging titles and descriptions for each section that will captivate Scottish heritage enthusiasts and general readers interested in Scottish culture.
 
-GROUPED TOPICS:
+THEMATIC GROUPS TO TITLE:
 {groups_text}
 
 REQUIREMENTS:
-- Create compelling section titles (5-10 words)
-- Write clear descriptions (1-2 sentences) explaining what each section covers
-- Define what should NOT be included to avoid overlap with other sections
-- Ensure logical flow between sections
+- Create compelling titles that evoke Scottish heritage and cultural significance
+- Write descriptions that explain what each section covers and why it matters
+- Use authentic Scottish terminology and cultural references where appropriate
+- Make content accessible to both Scottish and international audiences
+- Focus on the cultural importance and historical significance of each theme
 
 OUTPUT FORMAT: Return ONLY valid JSON:
 {{
   "sections": [
     {{
       "id": "section_1",
-      "title": "Compelling Section Title",
-      "description": "Clear description of what this section covers and its purpose.",
-      "boundaries": "What this section should NOT include to avoid overlap.",
+      "title": "Engaging Scottish Heritage Title",
+      "subtitle": "Compelling subtitle that adds depth",
+      "description": "Detailed description of what this section covers and its cultural significance",
       "topics": ["Topic 1", "Topic 2", ...],
-      "order": 1
+      "order": 1,
+      "cultural_significance": "Brief explanation of why this theme matters to Scottish heritage"
     }}
   ],
   "metadata": {{
     "total_sections": {len(groups)},
     "total_topics": {sum(len(group.get('topics', [])) for group in groups)},
-    "flow_type": "logical"
+    "allocated_topics": {sum(len(group.get('topics', [])) for group in groups)},
+    "audience_focus": "Scottish heritage enthusiasts and cultural readers"
   }}
-}}"""
+}}
+
+TITLE GUIDELINES:
+- Use evocative language that captures Scottish spirit
+- Include cultural references where appropriate (e.g., "Celtic", "Highland", "Ancient Scottish")
+- Make titles accessible to international audiences
+- Avoid overly academic or dry language
+- Focus on emotional connection and cultural pride
+
+DESCRIPTION GUIDELINES:
+- Explain what readers will learn in this section
+- Highlight the cultural and historical significance
+- Connect themes to broader Scottish heritage
+- Use engaging, accessible language
+- Include why this content matters to Scottish culture"""
+        
+        logger.info(f"Prompt prepared, length: {len(titling_prompt)}")
         
         # Call LLM
         messages = [
-            {'role': 'system', 'content': 'You are an expert content strategist specializing in creating compelling section titles and clear boundaries.'},
+            {'role': 'system', 'content': system_prompt},
             {'role': 'user', 'content': titling_prompt}
         ]
         
+        logger.info(f"Calling LLM for titling with {len(groups)} groups")
         llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+        logger.info(f"LLM response: {llm_response}")
         
         if 'error' in llm_response:
             return jsonify({
@@ -2237,8 +2287,34 @@ OUTPUT FORMAT: Return ONLY valid JSON:
         # Parse response
         try:
             import json
-            sections_data = json.loads(llm_response['content'])
-        except json.JSONDecodeError:
+            content = llm_response['content'].strip()
+            
+            # Remove markdown code blocks if present
+            if content.startswith('```'):
+                lines = content.split('\n')
+                # Find the JSON part between code blocks
+                json_lines = []
+                in_json = False
+                for line in lines:
+                    if line.strip().startswith('```') and not in_json:
+                        in_json = True
+                        continue
+                    elif line.strip() == '```' and in_json:
+                        break
+                    elif in_json:
+                        json_lines.append(line)
+                content = '\n'.join(json_lines)
+            
+            # Remove any text before the JSON (like "Here is the JSON output:")
+            if '{' in content:
+                json_start = content.find('{')
+                content = content[json_start:]
+            
+            sections_data = json.loads(content)
+            logger.info(f"Successfully parsed LLM response for titling")
+        except json.JSONDecodeError as e:
+            logger.warning(f"LLM JSON parsing failed: {e}")
+            logger.warning(f"LLM response content: {llm_response['content'][:500]}...")
             # Fallback: create simple sections
             sections_data = create_fallback_sections_from_groups(groups)
         

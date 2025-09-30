@@ -490,10 +490,189 @@
 2025-09-30 10:15:42,437 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:15:42] "GET /planning/posts/60/concept/titling HTTP/1.1" 200 -
 2025-09-30 10:15:44,205 - config.database - INFO - Database connection established
 2025-09-30 10:15:44,207 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:15:44] "GET /planning/api/llm/prompts/section-titling HTTP/1.1" 200 -
-eloading
-2025-09-30 10:15:41,532 - werkzeug - INFO -  * Restarting with stat
-2025-09-30 10:15:41,766 - werkzeug - WARNING -  * Debugger is active!
-2025-09-30 10:15:41,771 - werkzeug - INFO -  * Debugger PIN: 102-335-875
-2025-09-30 10:15:42,437 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:15:42] "GET /planning/posts/60/concept/titling HTTP/1.1" 200 -
-2025-09-30 10:15:44,205 - config.database - INFO - Database connection established
-2025-09-30 10:15:44,207 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:15:44] "GET /planning/api/llm/prompts/section-titling HTTP/1.1" 200 -
+2025-09-30 10:15:55,602 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:15:55] "GET /planning/posts/60/concept/titling HTTP/1.1" 200 -
+2025-09-30 10:15:58,616 - config.database - INFO - Database connection established
+2025-09-30 10:15:58,618 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:15:58] "GET /planning/api/posts/60/groups HTTP/1.1" 200 -
+2025-09-30 10:16:24,730 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:16:24] "GET /planning/posts/60/concept/titling HTTP/1.1" 200 -
+2025-09-30 10:16:24,774 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:16:24] "[36mGET /static/css/llm-module.css HTTP/1.1[0m" 304 -
+2025-09-30 10:16:24,774 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:16:24] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-30 10:16:24,775 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:16:24] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-30 10:16:24,775 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:16:24] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-09-30 10:16:24,775 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:16:24] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-09-30 10:16:24,775 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:16:24] "GET /static/js/llm-module.js HTTP/1.1" 200 -
+2025-09-30 10:16:24,780 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:16:24] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-30 10:16:24,780 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:16:24] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-30 10:16:24,780 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:16:24] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-30 10:16:24,781 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:16:24] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-09-30 10:16:24,789 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:16:24] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-30 10:16:24,801 - config.database - INFO - Database connection established
+2025-09-30 10:16:24,801 - config.database - INFO - Database connection established
+2025-09-30 10:16:24,803 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:16:24] "GET /planning/api/posts/60/groups HTTP/1.1" 200 -
+2025-09-30 10:16:24,803 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:16:24] "GET /planning/api/llm/prompts/section-titling HTTP/1.1" 200 -
+2025-09-30 10:16:24,903 - config.database - INFO - Database connection established
+2025-09-30 10:16:24,908 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
+2025-09-30 10:16:24,908 - blueprints.planning - INFO - Calendar schedule entry: {'id': 1, 'year': 2025, 'week_number': 39, 'post_id': 60, 'scheduled_date': datetime.date(2025, 9, 28), 'created_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660), 'updated_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660)}
+2025-09-30 10:16:24,909 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:16:24] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-09-30 10:16:38,911 - config.database - INFO - Database connection established
+2025-09-30 10:16:38,912 - config.database - INFO - Database connection established
+2025-09-30 10:16:38,913 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:16:38] "GET /planning/api/posts/60/expanded-idea HTTP/1.1" 200 -
+2025-09-30 10:16:38,914 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:16:38] "GET /planning/api/posts/60/expanded-idea HTTP/1.1" 200 -
+2025-09-30 10:16:38,926 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-30 10:16:38,926 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-30 10:16:47,372 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-30 10:16:47,374 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:16:47] "POST /planning/api/sections/title HTTP/1.1" 200 -
+2025-09-30 10:16:47,389 - config.database - INFO - Database connection established
+2025-09-30 10:16:47,402 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:16:47] "POST /planning/api/posts/60/sections HTTP/1.1" 200 -
+2025-09-30 10:16:54,382 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-30 10:16:54,383 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:16:54] "POST /planning/api/sections/title HTTP/1.1" 200 -
+2025-09-30 10:16:54,400 - config.database - INFO - Database connection established
+2025-09-30 10:16:54,405 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:16:54] "POST /planning/api/posts/60/sections HTTP/1.1" 200 -
+2025-09-30 10:18:25,609 - config.database - INFO - Database connection established
+2025-09-30 10:18:25,610 - config.database - INFO - Database connection established
+2025-09-30 10:18:25,611 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:18:25] "GET /planning/api/posts/60/expanded-idea HTTP/1.1" 200 -
+2025-09-30 10:18:25,611 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:18:25] "GET /planning/api/posts/60/expanded-idea HTTP/1.1" 200 -
+2025-09-30 10:18:25,619 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-30 10:18:25,619 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-30 10:18:33,071 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-30 10:18:33,072 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:18:33] "POST /planning/api/sections/title HTTP/1.1" 200 -
+2025-09-30 10:18:33,084 - config.database - INFO - Database connection established
+2025-09-30 10:18:33,091 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:18:33] "POST /planning/api/posts/60/sections HTTP/1.1" 200 -
+2025-09-30 10:18:39,844 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-30 10:18:39,846 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:18:39] "POST /planning/api/sections/title HTTP/1.1" 200 -
+2025-09-30 10:18:39,869 - config.database - INFO - Database connection established
+2025-09-30 10:18:39,877 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:18:39] "POST /planning/api/posts/60/sections HTTP/1.1" 200 -
+2025-09-30 10:20:12,401 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 10:20:12,428 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 10:20:12,654 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 10:20:12,659 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 10:20:15,900 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 10:20:15,926 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 10:20:16,156 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 10:20:16,162 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 10:20:23,648 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 10:20:23,678 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 10:20:23,911 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 10:20:23,916 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 10:20:25,038 - config.database - INFO - Database connection established
+2025-09-30 10:20:25,042 - blueprints.planning - ERROR - Error creating section titles: 0
+2025-09-30 10:20:25,042 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:20:25] "[35m[1mPOST /planning/api/sections/title HTTP/1.1[0m" 500 -
+2025-09-30 10:20:27,393 - config.database - INFO - Database connection established
+2025-09-30 10:20:27,397 - blueprints.planning - ERROR - Error creating section titles: 0
+2025-09-30 10:20:27,397 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:20:27] "[35m[1mPOST /planning/api/sections/title HTTP/1.1[0m" 500 -
+2025-09-30 10:20:38,917 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-30 10:20:38,920 - urllib3.connectionpool - DEBUG - http://localhost:11434 "GET /api/tags HTTP/1.1" 200 684
+2025-09-30 10:20:38,921 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:20:38] "GET /planning/api/llm/providers HTTP/1.1" 200 -
+2025-09-30 10:20:51,612 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 10:20:51,649 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 10:20:51,884 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 10:20:51,889 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 10:20:54,248 - config.database - INFO - Database connection established
+2025-09-30 10:20:54,251 - blueprints.planning - ERROR - Error creating section titles: 0
+2025-09-30 10:20:54,251 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:20:54] "[35m[1mPOST /planning/api/sections/title HTTP/1.1[0m" 500 -
+2025-09-30 10:21:01,512 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 10:21:01,541 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 10:21:01,780 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 10:21:01,786 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 10:21:03,946 - blueprints.planning - INFO - Fetching Section Titling prompt from database
+2025-09-30 10:21:03,965 - config.database - INFO - Database connection established
+2025-09-30 10:21:03,967 - blueprints.planning - ERROR - Error creating section titles: 0
+2025-09-30 10:21:03,967 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:21:03] "[35m[1mPOST /planning/api/sections/title HTTP/1.1[0m" 500 -
+2025-09-30 10:21:13,537 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 10:21:13,569 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 10:21:13,798 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 10:21:13,803 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 10:21:15,361 - blueprints.planning - INFO - Fetching Section Titling prompt from database
+2025-09-30 10:21:15,379 - config.database - INFO - Database connection established
+2025-09-30 10:21:15,383 - blueprints.planning - ERROR - Error creating section titles: 0
+2025-09-30 10:21:15,383 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:21:15] "[35m[1mPOST /planning/api/sections/title HTTP/1.1[0m" 500 -
+2025-09-30 10:21:22,334 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 10:21:22,373 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 10:21:22,616 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 10:21:22,621 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 10:21:24,351 - blueprints.planning - INFO - Fetching Section Titling prompt from database
+2025-09-30 10:21:24,368 - config.database - INFO - Database connection established
+2025-09-30 10:21:24,370 - blueprints.planning - ERROR - Database error: 0
+2025-09-30 10:21:24,371 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:21:24] "[35m[1mPOST /planning/api/sections/title HTTP/1.1[0m" 500 -
+2025-09-30 10:21:35,382 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 10:21:35,412 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 10:21:35,639 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 10:21:35,644 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 10:21:37,803 - blueprints.planning - INFO - Fetching Section Titling prompt from database
+2025-09-30 10:21:37,820 - config.database - INFO - Database connection established
+2025-09-30 10:21:37,822 - blueprints.planning - ERROR - Error creating section titles: 0
+2025-09-30 10:21:37,822 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:21:37] "[35m[1mPOST /planning/api/sections/title HTTP/1.1[0m" 500 -
+2025-09-30 10:21:47,379 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 10:21:47,408 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 10:21:47,650 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 10:21:47,655 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 10:21:50,032 - blueprints.planning - INFO - Fetching Section Titling prompt from database
+2025-09-30 10:21:50,050 - config.database - INFO - Database connection established
+2025-09-30 10:21:50,052 - blueprints.planning - ERROR - Database error in titling: 0
+2025-09-30 10:21:50,053 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:21:50] "[35m[1mPOST /planning/api/sections/title HTTP/1.1[0m" 500 -
+2025-09-30 10:21:57,277 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 10:21:57,304 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 10:21:57,530 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 10:21:57,536 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 10:22:03,957 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 10:22:03,985 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 10:22:04,228 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 10:22:04,234 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 10:22:07,550 - blueprints.planning - INFO - Using hardcoded Section Titling prompt
+2025-09-30 10:22:07,550 - blueprints.planning - INFO - Preparing groups data for prompt
+2025-09-30 10:22:07,550 - blueprints.planning - INFO - Creating titling prompt
+2025-09-30 10:22:07,550 - blueprints.planning - INFO - Prompt prepared, length: 2030
+2025-09-30 10:22:07,550 - blueprints.planning - INFO - Calling LLM for titling with 1 groups
+2025-09-30 10:22:07,553 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-30 10:22:11,827 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-30 10:22:11,828 - blueprints.planning - INFO - LLM response: {'content': 'Here is the JSON output for each thematic group:\n\n```\n{\n  "sections": [\n    {\n      "id": "section_1",\n      "title": "Unveiling the Ancient Heart of Samhain: Celtic Roots and Traditions",\n      "subtitle": "Exploring the mystical connections between Scotland\'s ancient past and the modern celebration of autumnal equinox",\n      "description": "Delve into the rich history of Samhain, a festival that predates Christianity and has shaped Scotland\'s cultural identity. From the Celts\' reverence for life and death to the symbolism of bonfires and apple cider, this section reveals the authentic roots of Scotland\'s most iconic autumnal tradition.",\n      "topics": ["Celtic mythology", "Samhain traditions", "Ancient Scottish festivals"],\n      "order": 1,\n      "cultural_significance": "Uncover the enduring legacy of Scotland\'s ancient heritage and its profound impact on modern culture."\n    },\n    {\n      "id": "section_2",\n      "title": "Reviving the Ancient Ceres Festival in Modern Scotland",\n      "subtitle": "Rediscovering the medieval roots of autumnal celebration and their significance to Scottish identity",\n      "description": "Join us as we explore the fascinating history of the Ceres festival, a medieval celebration that has been largely forgotten but remains an integral part of Scotland\'s cultural heritage. Discover how this ancient tradition has influenced modern Scottish festivals and its continued relevance in contemporary Scottish culture.",\n      "topics": ["Ceres festival", "Medieval Scottish festivals", "Autumnal traditions"],\n      "order": 2,\n      "cultural_significance": "Revive the spirit of Scotland\'s medieval past and uncover the timeless significance of autumnal celebration."\n    }\n  ],\n  "metadata": {\n    "total_sections": 2,\n    "total_topics": 4,\n    "allocated_topics": 4,\n    "audience_focus": "Scottish heritage enthusiasts and cultural readers"\n  }\n}\n```\nNote that I\'ve written the titles, subtitles, descriptions, and topics for each section to meet the guidelines provided. The metadata has also been updated accordingly.'}
+2025-09-30 10:22:11,828 - blueprints.planning - WARNING - LLM JSON parsing failed: Expecting value: line 1 column 1 (char 0)
+2025-09-30 10:22:11,828 - blueprints.planning - WARNING - LLM response content: Here is the JSON output for each thematic group:
+
+```
+{
+  "sections": [
+    {
+      "id": "section_1",
+      "title": "Unveiling the Ancient Heart of Samhain: Celtic Roots and Traditions",
+      "subtitle": "Exploring the mystical connections between Scotland's ancient past and the modern celebration of autumnal equinox",
+      "description": "Delve into the rich history of Samhain, a festival that predates Christianity and has shaped Scotland's cultural identity. From the Celts' reverence for l...
+2025-09-30 10:22:11,828 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:22:11] "POST /planning/api/sections/title HTTP/1.1" 200 -
+2025-09-30 10:22:26,532 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 10:22:26,567 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 10:22:26,807 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 10:22:26,813 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 10:22:29,674 - blueprints.planning - INFO - Using hardcoded Section Titling prompt
+2025-09-30 10:22:29,674 - blueprints.planning - INFO - Preparing groups data for prompt
+2025-09-30 10:22:29,674 - blueprints.planning - INFO - Creating titling prompt
+2025-09-30 10:22:29,674 - blueprints.planning - INFO - Prompt prepared, length: 2030
+2025-09-30 10:22:29,674 - blueprints.planning - INFO - Calling LLM for titling with 1 groups
+2025-09-30 10:22:29,678 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-30 10:22:34,527 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-30 10:22:34,528 - blueprints.planning - INFO - LLM response: {'content': '```json\n{\n  "sections": [\n    {\n      "id": "section_1",\n      "title": "Beyond the Veil: Unveiling Celtic Roots of Samhain Traditions",\n      "subtitle": "Exploring the Ancient Spirituality that Shaped Scotland\'s Autumn Festivals",\n      "description": "Join us on a journey through the misty hills and mystical landscapes of ancient Scotland, where we\'ll uncover the forgotten roots of Samhain traditions. From the Celtic Otherworld to the Highland harvest festivals, discover how these timeless customs continue to weave their magic in modern-day Scotland.",\n      "topics": ["Celtic mythology", "Samhain history", "Highland folklore"],\n      "order": 1,\n      "cultural_significance": "Samhain marks a pivotal moment in Scottish cultural heritage, bridging the veil between the worlds of the living and the dead. By exploring its Celtic roots, we can deepen our understanding of Scotland\'s ancient traditions and their enduring impact on modern life."\n    },\n    {\n      "id": "section_2",\n      "title": "Festivals of Ceres: Reviving Ancient Scottish Traditions in Modern Times",\n      "subtitle": "Rediscovering the Forgotten Festivals that Celebrated the Harvest Season",\n      "description": "Immerse yourself in the vibrant colors and warm aromas of Scotland\'s ancient harvest festivals, where we\'ll revive the forgotten traditions of Ceres. From the bonfires to the brawls, experience the untold story of how these celebrations were revived and reimagined for a modern audience.",\n      "topics": ["Ceres festival history", "Scottish harvest festivals", "Revival of ancient traditions"],\n      "order": 2,\n      "cultural_significance": "The Ceres festival represents a unique chapter in Scotland\'s cultural narrative, where ancient practices meet modern innovation. By exploring its revival, we can gain insight into the power of tradition and community to shape our shared heritage."\n    }\n  ],\n  "metadata": {\n    "total_sections": 2,\n    "total_topics": 4,\n    "allocated_topics": 4,\n    "audience_focus": "Scottish heritage enthusiasts and cultural readers"\n  }\n}\n```\n\nThese titles and descriptions are designed to evoke the essence of Scottish autumn traditions, while also making them accessible to international audiences. The language used aims to capture the spirit of Scotland\'s rich cultural heritage, with a focus on emotional connection and cultural pride. By highlighting the historical significance and cultural importance of each theme, we hope to inspire readers to delve deeper into the world of Scottish autumn traditions.'}
+2025-09-30 10:22:34,529 - blueprints.planning - WARNING - LLM JSON parsing failed: Expecting value: line 2 column 1 (char 1)
+2025-09-30 10:22:34,529 - blueprints.planning - WARNING - LLM response content: ```json
+{
+  "sections": [
+    {
+      "id": "section_1",
+      "title": "Beyond the Veil: Unveiling Celtic Roots of Samhain Traditions",
+      "subtitle": "Exploring the Ancient Spirituality that Shaped Scotland's Autumn Festivals",
+      "description": "Join us on a journey through the misty hills and mystical landscapes of ancient Scotland, where we'll uncover the forgotten roots of Samhain traditions. From the Celtic Otherworld to the Highland harvest festivals, discover how these timeless cu...
+2025-09-30 10:22:34,529 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:22:34] "POST /planning/api/sections/title HTTP/1.1" 200 -
+2025-09-30 10:22:45,998 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-09-30 10:22:46,029 - werkzeug - INFO -  * Restarting with stat
+2025-09-30 10:22:46,263 - werkzeug - WARNING -  * Debugger is active!
+2025-09-30 10:22:46,268 - werkzeug - INFO -  * Debugger PIN: 102-335-875
+2025-09-30 10:22:50,657 - blueprints.planning - INFO - Using hardcoded Section Titling prompt
+2025-09-30 10:22:50,657 - blueprints.planning - INFO - Preparing groups data for prompt
+2025-09-30 10:22:50,657 - blueprints.planning - INFO - Creating titling prompt
+2025-09-30 10:22:50,658 - blueprints.planning - INFO - Prompt prepared, length: 2030
+2025-09-30 10:22:50,658 - blueprints.planning - INFO - Calling LLM for titling with 1 groups
+2025-09-30 10:22:50,661 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-09-30 10:22:55,687 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-09-30 10:22:55,687 - blueprints.planning - INFO - LLM response: {'content': '```json\n{\n  "sections": [\n    {\n      "id": "section_1",\n      "title": "Unveiling the Ancient Celtic Roots of Samhain: A Scottish Heritage Tradition",\n      "subtitle": "Delving into the mystique of the ancient Celtic festival that shaped Scotland\'s autumnal celebrations",\n      "description": "Discover the rich history and cultural significance of Samhain, an ancient Celtic festival that marks the end of the harvest season. Explore how this traditional celebration has evolved over time, influencing modern Scottish autumn traditions. Learn about the symbolism, rituals, and superstitions associated with Samhain, and gain a deeper understanding of Scotland\'s unique cultural heritage.",\n      "topics": ["Celtic roots", "Samhain tradition", "Scottish harvest celebrations"],\n      "order": 1,\n      "cultural_significance": "Samhain is an integral part of Scottish cultural identity, reflecting the country\'s deep connection to its Celtic past. By understanding this ancient festival, readers can gain a deeper appreciation for Scotland\'s rich heritage and traditions."\n    },\n    {\n      "id": "section_2",\n      "title": "The Forgotten History of Ceres Festival in Modern Scotland",\n      "subtitle": "Uncovering the stories behind a beloved Scottish tradition that has been lost to time",\n      "description": "Explore the fascinating history of Ceres Festival, a traditional celebration that was once a cornerstone of Scottish autumnal traditions. Learn about its origins, evolution, and eventual decline, and discover why this festival remains an important part of Scotland\'s cultural narrative. Gain insight into the cultural significance of Ceres Festival and how it continues to shape modern Scottish celebrations.",\n      "topics": ["Ceres Festival", "Scottish harvest tradition", "Forgotten history"],\n      "order": 2,\n      "cultural_significance": "The story of Ceres Festival serves as a reminder of Scotland\'s rich cultural heritage and the importance of preserving traditional celebrations. By uncovering this forgotten history, readers can gain a deeper understanding of Scotland\'s unique identity and its connection to the past."\n    }\n  ],\n  "metadata": {\n    "total_sections": 2,\n    "total_topics": 4,\n    "allocated_topics": 4,\n    "audience_focus": "Scottish heritage enthusiasts and cultural readers"\n  }\n}\n```\nThis output meets the requirements, providing engaging titles, descriptions, and metadata that cater to Scottish heritage enthusiasts and general readers interested in Scottish culture. The titles use evocative language, include cultural references, and make content accessible to international audiences. The descriptions explain what readers will learn in each section, highlighting the cultural and historical significance of each theme, while emphasizing the importance of these traditions to Scottish heritage.'}
+2025-09-30 10:22:55,687 - blueprints.planning - INFO - Successfully parsed LLM response for titling
+2025-09-30 10:22:55,687 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:22:55] "POST /planning/api/sections/title HTTP/1.1" 200 -
+tion",\n      "subtitle": "Delving into the mystique of the ancient Celtic festival that shaped Scotland\'s autumnal celebrations",\n      "description": "Discover the rich history and cultural significance of Samhain, an ancient Celtic festival that marks the end of the harvest season. Explore how this traditional celebration has evolved over time, influencing modern Scottish autumn traditions. Learn about the symbolism, rituals, and superstitions associated with Samhain, and gain a deeper understanding of Scotland\'s unique cultural heritage.",\n      "topics": ["Celtic roots", "Samhain tradition", "Scottish harvest celebrations"],\n      "order": 1,\n      "cultural_significance": "Samhain is an integral part of Scottish cultural identity, reflecting the country\'s deep connection to its Celtic past. By understanding this ancient festival, readers can gain a deeper appreciation for Scotland\'s rich heritage and traditions."\n    },\n    {\n      "id": "section_2",\n      "title": "The Forgotten History of Ceres Festival in Modern Scotland",\n      "subtitle": "Uncovering the stories behind a beloved Scottish tradition that has been lost to time",\n      "description": "Explore the fascinating history of Ceres Festival, a traditional celebration that was once a cornerstone of Scottish autumnal traditions. Learn about its origins, evolution, and eventual decline, and discover why this festival remains an important part of Scotland\'s cultural narrative. Gain insight into the cultural significance of Ceres Festival and how it continues to shape modern Scottish celebrations.",\n      "topics": ["Ceres Festival", "Scottish harvest tradition", "Forgotten history"],\n      "order": 2,\n      "cultural_significance": "The story of Ceres Festival serves as a reminder of Scotland\'s rich cultural heritage and the importance of preserving traditional celebrations. By uncovering this forgotten history, readers can gain a deeper understanding of Scotland\'s unique identity and its connection to the past."\n    }\n  ],\n  "metadata": {\n    "total_sections": 2,\n    "total_topics": 4,\n    "allocated_topics": 4,\n    "audience_focus": "Scottish heritage enthusiasts and cultural readers"\n  }\n}\n```\nThis output meets the requirements, providing engaging titles, descriptions, and metadata that cater to Scottish heritage enthusiasts and general readers interested in Scottish culture. The titles use evocative language, include cultural references, and make content accessible to international audiences. The descriptions explain what readers will learn in each section, highlighting the cultural and historical significance of each theme, while emphasizing the importance of these traditions to Scottish heritage.'}
+2025-09-30 10:22:55,687 - blueprints.planning - INFO - Successfully parsed LLM response for titling
+2025-09-30 10:22:55,687 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 10:22:55] "POST /planning/api/sections/title HTTP/1.1" 200 -
