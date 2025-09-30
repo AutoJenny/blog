@@ -352,6 +352,29 @@ class LLMUIManager {
     }
 
     /**
+     * Setup edit buttons for prompt editing
+     * @param {Object} module - Reference to the LLM module
+     */
+    setupEditButtons(module) {
+        if (!module.config.allowEdit) return;
+        
+        const promptActions = document.getElementById('prompt-actions');
+        if (promptActions) {
+            promptActions.innerHTML = `
+                <button class="btn btn-secondary" id="edit-prompt-btn">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="btn btn-success" id="save-prompt-btn" style="display: none;">
+                    <i class="fas fa-save"></i> Save
+                </button>
+                <button class="btn btn-secondary" id="cancel-prompt-btn" style="display: none;">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            `;
+        }
+    }
+
+    /**
      * Escape HTML to prevent XSS attacks
      * @param {string} text - Text to escape
      * @returns {string} Escaped HTML
