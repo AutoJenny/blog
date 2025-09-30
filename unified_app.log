@@ -85,7 +85,42 @@
 2025-09-30 12:57:51,895 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:57:51] "GET /authoring/api/llm/prompts/section-drafting HTTP/1.1" 200 -
 2025-09-30 13:01:20,541 - config.database - INFO - Database connection established
 2025-09-30 13:01:20,543 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:20] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
-- Database connection established
-2025-09-30 12:57:51,895 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 12:57:51] "GET /authoring/api/llm/prompts/section-drafting HTTP/1.1" 200 -
-2025-09-30 13:01:20,541 - config.database - INFO - Database connection established
-2025-09-30 13:01:20,543 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:20] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+2025-09-30 13:01:34,586 - config.database - INFO - Database connection established
+2025-09-30 13:01:34,591 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:34] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+2025-09-30 13:01:34,593 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:34] "GET /static/js/llm-module.js HTTP/1.1" 200 -
+2025-09-30 13:01:34,604 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:34] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-30 13:01:34,606 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:34] "GET /static/js/llm-module.js HTTP/1.1" 200 -
+2025-09-30 13:01:34,606 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:34] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-30 13:01:34,607 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:34] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-09-30 13:01:34,607 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:34] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-30 13:01:34,607 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:34] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-30 13:01:34,608 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:34] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-30 13:01:34,618 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:34] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-30 13:01:34,628 - config.database - INFO - Database connection established
+2025-09-30 13:01:34,630 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:34] "GET /authoring/api/posts/60/sections HTTP/1.1" 200 -
+2025-09-30 13:01:34,729 - config.database - INFO - Database connection established
+2025-09-30 13:01:34,734 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
+2025-09-30 13:01:34,734 - blueprints.planning - INFO - Calendar schedule entry: {'id': 1, 'year': 2025, 'week_number': 39, 'post_id': 60, 'scheduled_date': datetime.date(2025, 9, 28), 'created_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660), 'updated_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660)}
+2025-09-30 13:01:34,734 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:34] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-09-30 13:01:36,728 - config.database - INFO - Database connection established
+2025-09-30 13:01:36,729 - config.database - INFO - Database connection established
+2025-09-30 13:01:36,730 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:36] "GET /authoring/api/llm/prompts/section-drafting HTTP/1.1" 200 -
+2025-09-30 13:01:36,731 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:36] "GET /authoring/api/posts/60/sections/762 HTTP/1.1" 200 -
+2025-09-30 13:01:36,737 - config.database - INFO - Database connection established
+2025-09-30 13:01:36,738 - config.database - INFO - Database connection established
+2025-09-30 13:01:36,739 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:36] "GET /authoring/api/posts/60/sections/762 HTTP/1.1" 200 -
+2025-09-30 13:01:36,740 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:36] "GET /planning/api/posts/60/expanded-idea HTTP/1.1" 200 -
+2025-09-30 13:01:36,745 - config.database - INFO - Database connection established
+2025-09-30 13:01:36,747 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:36] "GET /planning/api/posts/60/sections HTTP/1.1" 200 -
+2025-09-30 13:01:41,528 - config.database - INFO - Database connection established
+2025-09-30 13:01:41,531 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:41] "GET /authoring/api/posts/60/sections/763 HTTP/1.1" 200 -
+2025-09-30 13:01:41,540 - config.database - INFO - Database connection established
+2025-09-30 13:01:41,541 - config.database - INFO - Database connection established
+2025-09-30 13:01:41,542 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:41] "GET /authoring/api/posts/60/sections/763 HTTP/1.1" 200 -
+2025-09-30 13:01:41,543 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:41] "GET /planning/api/posts/60/expanded-idea HTTP/1.1" 200 -
+2025-09-30 13:01:41,551 - config.database - INFO - Database connection established
+2025-09-30 13:01:41,553 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:41] "GET /planning/api/posts/60/sections HTTP/1.1" 200 -
+ 13:01:41] "GET /authoring/api/posts/60/sections/763 HTTP/1.1" 200 -
+2025-09-30 13:01:41,543 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:41] "GET /planning/api/posts/60/expanded-idea HTTP/1.1" 200 -
+2025-09-30 13:01:41,551 - config.database - INFO - Database connection established
+2025-09-30 13:01:41,553 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:41] "GET /planning/api/posts/60/sections HTTP/1.1" 200 -
