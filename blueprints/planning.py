@@ -2466,7 +2466,8 @@ CRITICAL:
                 logger.error(f"Validation failed for allocation: {allocation_data}")
                 return jsonify({
                     'success': False,
-                    'error': 'Invalid topic allocation format'
+                    'error': 'Invalid topic allocation format',
+                    'llm_response': content
                 }), 400
             
             # Save to database
