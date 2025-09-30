@@ -949,5 +949,37 @@ function hideLLMResponse() {
         display.style.display = 'none';
     }
 }
+
+// Load existing allocation data on page load
+async function loadExistingAllocation() {
+    try {
+        console.log('Loading existing allocation data...');
+        const response = await fetch(`/planning/api/sections/allocate-topics/${window.postId}`);
+        const data = await response.json();
+        
+        if (data.success && data.allocation) {
+            console.log('Found existing allocation:', data.allocation);
+            topicAllocation = data.allocation;
+            displayFinalResults();
+            
+            // Mark steps as completed
+            completeStep(1);
+            completeStep(2);
+            showStep(3);
+            
+            console.log('Existing allocation loaded successfully');
+        } else {
+            console.log('No existing allocation found');
+        }
+    } catch (error) {
+        console.error('Error loading existing allocation:', error);
+    }
+}
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    loadBrainstormTopics();
+    loadExistingAllocation();
+});
 </script>
 {% endblock %}
