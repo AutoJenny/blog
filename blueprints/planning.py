@@ -2366,7 +2366,7 @@ def api_allocate_topics():
         topics_text = '\n'.join([f"- {topic.get('title', topic) if isinstance(topic, dict) else topic}" for topic in topics])
         
         # Create allocation prompt
-        allocation_prompt = f"""CRITICAL: You must allocate ALL {len(topics)} topics to sections. Every single topic must be assigned.
+        allocation_prompt = f"""TASK: Allocate ALL {len(topics)} topics to sections.
 
 SECTION STRUCTURE:
 {sections_text}
@@ -2374,7 +2374,7 @@ SECTION STRUCTURE:
 TOPICS TO ALLOCATE ({len(topics)} topics):
 {topics_text}
 
-MANDATORY REQUIREMENTS:
+REQUIREMENTS:
 - ALL {len(topics)} topics MUST be allocated to exactly ONE section each
 - NO topics can be left unallocated
 - Each topic must appear in exactly ONE section's topics list
@@ -2383,12 +2383,8 @@ MANDATORY REQUIREMENTS:
 - Ensure balanced distribution across sections
 - Respect the section boundaries and exclusions
 
-VALIDATION: Before submitting, verify that:
-1. You have allocated exactly {len(topics)} topics
-2. No topic appears in multiple sections
-3. Every topic from the input list is included
+CRITICAL: Return ONLY the JSON object below. Do NOT include any explanatory text, comments, or additional content before or after the JSON.
 
-OUTPUT FORMAT: Return ONLY valid JSON:
 {{
   "allocations": [
     {{
@@ -2407,7 +2403,7 @@ OUTPUT FORMAT: Return ONLY valid JSON:
         
         # Execute LLM request
         messages = [
-            {'role': 'system', 'content': 'You are a Scottish heritage content specialist and topic allocation expert. Your expertise lies in matching topics to appropriate sections based on thematic boundaries and ensuring comprehensive coverage without overlap.'},
+            {'role': 'system', 'content': 'You are a Scottish heritage content specialist and topic allocation expert. Your expertise lies in matching topics to appropriate sections based on thematic boundaries and ensuring comprehensive coverage without overlap. You MUST follow instructions exactly and return ONLY the requested JSON format without any additional text or explanations.'},
             {'role': 'user', 'content': allocation_prompt}
         ]
         
@@ -2438,17 +2434,20 @@ OUTPUT FORMAT: Return ONLY valid JSON:
                     content = content[:-3].strip()
             else:
                 # Try to find JSON object without code blocks
-                json_match = re.search(r'(\{.*?\})', content, re.DOTALL)
+                json_match = re.search(r'(\{.*\})', content, re.DOTALL)
                 if json_match:
                     content = json_match.group(1).strip()
             
-            # Clean up common JSON issues
-            content = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', content)  # Remove control characters
-            content = content.replace('\n', ' ').replace('\r', ' ')  # Replace newlines with spaces
+            # Parse JSON directly without cleaning
+            logger.info(f"Raw allocation content length: {len(content)}")
+            logger.info(f"Raw allocation content: {content}")
             
-            logger.info(f"Cleaned allocation content: {content[:200]}...")
-            
-            allocation_data = json.loads(content)
+            try:
+                allocation_data = json.loads(content)
+            except json.JSONDecodeError as e:
+                logger.error(f"JSON decode error: {e}")
+                logger.error(f"Content at error position: {content[max(0, e.pos-50):e.pos+50]}")
+                raise
             
             # Validate the allocation
             logger.info(f"Allocation data to validate: {allocation_data}")
