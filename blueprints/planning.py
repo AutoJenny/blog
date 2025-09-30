@@ -2424,17 +2424,21 @@ OUTPUT FORMAT: Return ONLY valid JSON:
         # Parse the response
         try:
             import re
-            # Remove markdown code blocks if present
             content = result['content'].strip()
-            if content.startswith('```') and content.endswith('```'):
+            
+            # Find the first complete JSON object in the response
+            json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', content, re.DOTALL)
+            if json_match:
+                content = json_match.group(1).strip()
+            elif content.startswith('```') and content.endswith('```'):
                 content = content[3:-3].strip()
             elif content.startswith('```json'):
                 content = content[7:].strip()
                 if content.endswith('```'):
                     content = content[:-3].strip()
             else:
-                # Find JSON code block within text
-                json_match = re.search(r'```(?:json)?\s*(\{.*\})\s*```', content, re.DOTALL)
+                # Try to find JSON object without code blocks
+                json_match = re.search(r'(\{.*?\})', content, re.DOTALL)
                 if json_match:
                     content = json_match.group(1).strip()
             
