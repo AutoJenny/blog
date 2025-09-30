@@ -2877,11 +2877,11 @@ def api_refine_topics():
                     else:
                         section_structure = result['section_structure']
         
-        # Identify sections with too many topics (>7)
+        # Identify sections with too many topics (>5)
         sections_to_refine = []
         for allocation in allocations['allocations']:
             topic_count = len(allocation.get('topics', []))
-            if topic_count > 7:
+            if topic_count > 5:
                 sections_to_refine.append({
                     'allocation': allocation,
                     'topic_count': topic_count
@@ -2890,7 +2890,7 @@ def api_refine_topics():
         if not sections_to_refine:
             return jsonify({
                 'success': True,
-                'message': 'No sections need refinement (all sections have ≤7 topics)',
+                'message': 'No sections need refinement (all sections have ≤5 topics)',
                 'refined_sections': allocations['allocations']
             })
         
@@ -2902,39 +2902,53 @@ def api_refine_topics():
             
             # Get section context from structure
             section_context = ""
+            section_order = int(section_id.replace('section_', ''))
             if section_structure and section_structure.get('sections'):
                 for section in section_structure['sections']:
-                    if section['id'] == section_id:
-                        section_context = f"Theme: {section['theme']}\nBoundaries: {section['boundaries']}\nExclusions: {section['exclusions']}"
+                    if section.get('order') == section_order:
+                        section_context = f"Theme: {section.get('theme', 'Unknown')}\nBoundaries: {section.get('boundaries', 'No boundaries specified')}\nExclusions: {section.get('exclusions', 'No exclusions specified')}"
                         break
             
             # Create refinement prompt for this section
             topics_list = '\n'.join([f"- {topic}" for topic in allocation['topics']])
             
-            refinement_prompt = f"""Refine topics for section: {section_id}
-            
+            refinement_prompt = f"""You are a Scottish heritage content specialist. Rewrite and compile topics for this section to create 5-6 comprehensive, engaging topics.
+
 SECTION CONTEXT:
 {section_context}
 
-CURRENT TOPICS ({len(allocation['topics'])} topics):
+CURRENT TOPICS ({len(allocation['topics'])} topics - TOO MANY):
 {topics_list}
 
-REQUIREMENTS:
-- Select the 5-7 BEST topics for this section
+CRITICAL REQUIREMENTS:
+- Create EXACTLY 5-6 NEW topics (not just selecting from existing ones)
+- COMPILE similar topics into comprehensive, engaging topics
+- REWRITE topics to be more engaging and specific
+- Ensure each new topic covers multiple aspects from the original list
 - Maintain thematic coherence with section boundaries
-- Ensure comprehensive coverage of the section theme
-- Prioritize most engaging and representative topics
-- Avoid topics that overlap with section exclusions
-- Explain why excluded topics were removed
+- Make topics more specific and engaging for readers
+- Avoid generic or repetitive topics
 
-OUTPUT FORMAT: Return ONLY valid JSON:
-{{
-  "section_id": "{section_id}",
-  "final_topics": ["Selected Topic 1", "Selected Topic 2"],
-  "refinement_notes": "Why these topics were selected",
-  "excluded_topics": ["Removed Topic 1", "Removed Topic 2"],
-  "refinement_criteria": "Selection criteria used"
-}}"""
+OUTPUT FORMAT:
+Return exactly 5-6 lines, each with a new, comprehensive topic title:
+New Comprehensive Topic Title 1
+New Comprehensive Topic Title 2
+New Comprehensive Topic Title 3
+New Comprehensive Topic Title 4
+New Comprehensive Topic Title 5
+New Comprehensive Topic Title 6
+
+EXAMPLE TRANSFORMATION:
+Instead of: "Scottish Turnips as Medicine", "Scottish Turnips as Magic", "Scottish Turnips as Symbol"
+Create: "The Sacred Turnip: Medicine, Magic, and Symbolism in Scottish Folk Traditions"
+
+OUTPUT FORMAT: Return ONLY the topic titles, one per line:
+New Comprehensive Topic Title 1
+New Comprehensive Topic Title 2
+New Comprehensive Topic Title 3
+New Comprehensive Topic Title 4
+New Comprehensive Topic Title 5
+New Comprehensive Topic Title 6"""
             
             # Execute LLM for this section
             messages = [
@@ -2958,36 +2972,37 @@ OUTPUT FORMAT: Return ONLY valid JSON:
             
             # Parse the refinement response
             try:
-                import re
                 content = result['content'].strip()
+                lines = content.split('\n')
                 
-                # Find JSON code block within text
-                json_match = re.search(r'```(?:json)?\s*(\{.*\})\s*```', content, re.DOTALL)
-                if json_match:
-                    content = json_match.group(1).strip()
-                elif content.startswith('```') and content.endswith('```'):
-                    content = content[3:-3].strip()
-                elif content.startswith('```json'):
-                    content = content[7:].strip()
-                    if content.endswith('```'):
-                        content = content[:-3].strip()
+                # Filter out empty lines and extract topic titles
+                refined_topics = []
+                for line in lines:
+                    line = line.strip()
+                    if line and not line.startswith('#') and not line.startswith('-'):
+                        refined_topics.append(line)
                 
-                # Clean up common JSON issues
-                content = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', content)
-                content = content.replace('\n', ' ').replace('\r', ' ')
+                # Ensure we have 5-6 topics
+                if len(refined_topics) < 5 or len(refined_topics) > 6:
+                    logger.warning(f"Refinement returned {len(refined_topics)} topics, expected 5-6")
                 
-                refined_section = json.loads(content)
-                refined_sections.append(refined_section)
+                refined_sections.append({
+                    'section_id': section_id,
+                    'final_topics': refined_topics[:6],  # Limit to 6 max
+                    'refinement_notes': f'Compiled {len(allocation["topics"])} original topics into {len(refined_topics)} comprehensive topics',
+                    'original_topic_count': len(allocation['topics']),
+                    'refined_topic_count': len(refined_topics)
+                })
                 
-            except json.JSONDecodeError as e:
+            except Exception as e:
                 logger.error(f"Failed to parse refinement response for {section_id}: {e}")
                 # Keep original topics if parsing fails
                 refined_sections.append({
                     'section_id': section_id,
                     'final_topics': allocation['topics'],
                     'refinement_notes': 'Parsing failed, keeping original topics',
-                    'excluded_topics': [],
-                    'refinement_criteria': 'Error fallback'
+                    'original_topic_count': len(allocation['topics']),
+                    'refined_topic_count': len(allocation['topics'])
                 })
         
         # Create final refined allocations

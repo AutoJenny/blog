@@ -824,7 +824,14 @@ function displayFinalResults() {
         return;
     }
     
-    finalData.allocations.forEach(allocation => {
+    // Sort allocations by section order
+    const sortedAllocations = finalData.allocations.sort((a, b) => {
+        const aOrder = parseInt(a.section_id.replace('section_', ''));
+        const bOrder = parseInt(b.section_id.replace('section_', ''));
+        return aOrder - bOrder;
+    });
+    
+    sortedAllocations.forEach(allocation => {
         const sectionDiv = document.createElement('div');
         sectionDiv.className = 'section-group';
         
