@@ -2365,16 +2365,16 @@ def api_allocate_topics():
             sections_text += f"  Boundaries: {section['boundaries']}\n"
             sections_text += f"  Exclusions: {section['exclusions']}\n"
         
-        # Format topics for prompt
-        topics_text = '\n'.join([f"- {topic.get('title', topic) if isinstance(topic, dict) else topic}" for topic in topics])
+        # Format topics for prompt with explicit numbering
+        topics_text = '\n'.join([f"{i+1}. {topic.get('title', topic) if isinstance(topic, dict) else topic}" for i, topic in enumerate(topics)])
         
         # Create allocation prompt
-        allocation_prompt = f"""TASK: Allocate {len(topics)} topics to sections. Return each topic in the SAME ORDER as provided, with section code in curly braces.
+        allocation_prompt = f"""TASK: Allocate {len(topics)} topics to sections. Return each topic in the SAME ORDER as provided (1-{len(topics)}), with section code in curly braces.
 
 SECTION STRUCTURE:
 {sections_text}
 
-TOPICS TO ALLOCATE (process these in order):
+TOPICS TO ALLOCATE (process these in numbered order 1-{len(topics)}):
 {topics_text}
 
 REQUIRED OUTPUT FORMAT - return exactly {len(topics)} lines like this:
@@ -2384,11 +2384,12 @@ Hogmanay Traditions in Modern Scotland {{S07}}
 
 CRITICAL RULES:
 1. Return EXACTLY {len(topics)} lines
-2. Keep topics in the SAME ORDER as provided above
+2. Keep topics in the SAME ORDER as numbered above (1-{len(topics)})
 3. Each line format: Topic Title {{S01}}
 4. Use section codes S01, S02, S03, S04, S05, S06, S07
 5. NO JSON format, NO quotes, NO commas
 6. Each topic appears exactly once
+7. Process topics in order: 1, 2, 3, 4, 5... up to {len(topics)}
 
 DO NOT return JSON format. Return simple text lines only."""
         
