@@ -339,10 +339,20 @@ async function loadExistingGroups() {
         const response = await fetch(`/planning/api/posts/${window.postId}/groups`);
         const data = await response.json();
         
-        if (data.success && data.groups && data.groups.length > 0) {
-            generatedGroups = data.groups;
-            displayGroups(generatedGroups);
-            console.log('Loaded existing groups:', data.groups.length);
+        if (data.success && data.groups) {
+            // Handle nested structure: data.groups.groups
+            let groups = data.groups;
+            if (groups.groups && Array.isArray(groups.groups)) {
+                groups = groups.groups;
+            }
+            
+            if (groups.length > 0) {
+                generatedGroups = groups;
+                displayGroups(generatedGroups);
+                console.log('Loaded existing groups:', groups.length);
+            } else {
+                console.log('No existing groups found');
+            }
         } else {
             console.log('No existing groups found');
         }
