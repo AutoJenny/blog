@@ -591,6 +591,7 @@ async function runSectionGrouping() {
 // Step 1: Design Section Structure
 async function designSectionStructure() {
     try {
+        console.log('designSectionStructure: Starting');
         showLoading('step-1-loading');
         disableButton('step-1-btn');
         
@@ -603,24 +604,30 @@ async function designSectionStructure() {
             })
         });
         
+        console.log('designSectionStructure: Response received', response.status);
         const result = await response.json();
+        console.log('designSectionStructure: Result', result);
         
         if (result.success) {
             sectionStructure = result.structure;
+            console.log('designSectionStructure: Structure set', sectionStructure);
             displaySectionStructure();
             completeStep(1);
             showStep(2);
         } else {
-            showError('structure-display', result.error);
+            console.error('designSectionStructure: Failed', result.error);
+            throw new Error(result.error || 'Step 1 failed');
         }
         
         hideLoading('step-1-loading');
         enableButton('step-1-btn');
+        console.log('designSectionStructure: Completed successfully');
     } catch (error) {
-        console.error('Error designing structure:', error);
+        console.error('designSectionStructure: Error', error);
         showError('structure-display', 'Error designing section structure.');
         hideLoading('step-1-loading');
         enableButton('step-1-btn');
+        throw error; // Re-throw to stop the sequence
     }
 }
 
@@ -653,11 +660,18 @@ function displaySectionStructure() {
 // Step 2: Allocate Topics
 async function allocateTopics() {
     try {
+        console.log('allocateTopics: Starting');
         showLoading('step-2-loading');
         disableButton('step-2-btn');
         
         // Clear previous LLM response
         hideLLMResponse();
+        
+        console.log('allocateTopics: Sending request with', {
+            topics: topics.length,
+            sectionStructure: sectionStructure,
+            postId: window.postId
+        });
         
         const response = await fetch('/planning/api/sections/allocate-topics', {
             method: 'POST',
@@ -669,14 +683,18 @@ async function allocateTopics() {
             })
         });
         
+        console.log('allocateTopics: Response received', response.status);
         const result = await response.json();
+        console.log('allocateTopics: Result', result);
         
         if (result.success) {
             topicAllocation = result.allocations;
+            console.log('allocateTopics: Allocation set', topicAllocation);
             displayTopicAllocation();
             completeStep(2);
             showStep(3);
         } else {
+            console.error('allocateTopics: Failed', result.error);
             let errorMsg = result.error;
             if (result.debug_info) {
                 errorMsg += `\n\nDebug Info:\n${JSON.stringify(result.debug_info, null, 2)}`;
@@ -686,15 +704,18 @@ async function allocateTopics() {
             if (result.llm_response) {
                 showLLMResponse(result.llm_response);
             }
+            throw new Error(result.error || 'Step 2 failed');
         }
         
         hideLoading('step-2-loading');
         enableButton('step-2-btn');
+        console.log('allocateTopics: Completed successfully');
     } catch (error) {
-        console.error('Error allocating topics:', error);
+        console.error('allocateTopics: Error', error);
         showError('allocation-display', `Network error: ${error.message}\n\nFull error: ${JSON.stringify(error, null, 2)}`);
         hideLoading('step-2-loading');
         enableButton('step-2-btn');
+        throw error; // Re-throw to stop the sequence
     }
 }
 
