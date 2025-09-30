@@ -229,9 +229,33 @@ def planning_concept_brainstorm(post_id):
                          page_title='Topic Brainstorming',
                          blueprint_name='planning')
 
+@bp.route('/posts/<int:post_id>/concept/section-structure')
+def planning_concept_section_structure(post_id):
+    """Section Structure Design - Step 1 of topic allocation"""
+    return render_template('planning/concept/section_structure.html', 
+                         post_id=post_id, 
+                         page_title='Section Structure Design',
+                         blueprint_name='planning')
+
+@bp.route('/posts/<int:post_id>/concept/topic-allocation')
+def planning_concept_topic_allocation(post_id):
+    """Topic Allocation - Step 2 of topic allocation"""
+    return render_template('planning/concept/topic_allocation.html', 
+                         post_id=post_id, 
+                         page_title='Topic Allocation',
+                         blueprint_name='planning')
+
+@bp.route('/posts/<int:post_id>/concept/topic-refinement')
+def planning_concept_topic_refinement(post_id):
+    """Topic Refinement - Step 3 of topic allocation"""
+    return render_template('planning/concept/topic_refinement.html', 
+                         post_id=post_id, 
+                         page_title='Topic Refinement',
+                         blueprint_name='planning')
+
 @bp.route('/posts/<int:post_id>/concept/grouping')
 def planning_concept_grouping(post_id):
-    """Section Grouping sub-stage - groups topics into thematic clusters"""
+    """Section Grouping sub-stage - groups topics into thematic clusters (DEPRECATED - use individual substages)"""
     return render_template('planning/concept/grouping.html', 
                          post_id=post_id, 
                          page_title='Section Grouping',

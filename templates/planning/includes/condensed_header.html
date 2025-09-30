@@ -70,9 +70,17 @@
                    class="sub-stage-btn" data-substage="brainstorm">
                     Topic Brainstorming
                 </a>
-                <a href="{{ url_for('planning.planning_concept_grouping', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="grouping">
-                    Section Grouping
+                <a href="{{ url_for('planning.planning_concept_section_structure', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="section-structure">
+                    Section Structure Design
+                </a>
+                <a href="{{ url_for('planning.planning_concept_topic_allocation', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="topic-allocation">
+                    Topic Allocation
+                </a>
+                <a href="{{ url_for('planning.planning_concept_topic_refinement', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="topic-refinement">
+                    Topic Refinement
                 </a>
                 <a href="{{ url_for('planning.planning_concept_titling', post_id=post_id) }}" 
                    class="sub-stage-btn" data-substage="titling">
