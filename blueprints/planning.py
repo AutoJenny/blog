@@ -2628,7 +2628,7 @@ def allocate_missing_topics(missing_topics, section_structure, post_id):
 SECTION STRUCTURE:
 {chr(10).join([f"S{i:02d}: {section.get('theme', f'Section {i}')} - {section.get('boundaries', 'No boundaries specified')}" for i, section in enumerate(section_structure.get('sections', []), 1)])}
 
-MISSING TOPICS TO ALLOCATE (ONLY THESE TOPICS):
+MISSING TOPICS TO ALLOCATE (COPY THESE EXACTLY):
 {chr(10).join([f"{i+1}. {topic}" for i, topic in enumerate(missing_topics)])}
 
 CRITICAL REQUIREMENTS:
@@ -2638,14 +2638,17 @@ CRITICAL REQUIREMENTS:
 - Copy the EXACT topic names from the list above (without numbers)
 - Do NOT include "1.", "2.", etc. in the topic names
 - Do NOT create new topics or use section themes
+- Do NOT modify topic names in any way
+- Do NOT add extra topics
 - ONLY allocate the topics listed above
 - Allocate each topic to its BEST FIT section
 - Do NOT skip any topics
 
-OUTPUT FORMAT:
-Topic Title {{S01}}
-Topic Title {{S02}}
-..."""
+OUTPUT FORMAT (example):
+Hogmanay in the 19th Century Scottish Literature {{S03}}
+Scottish Turnips as a Symbol of Fertility {{S04}}
+
+IMPORTANT: Copy the topic names EXACTLY as they appear above."""
 
         logger.info(f"Retry prompt for {len(missing_topics)} missing topics")
         
