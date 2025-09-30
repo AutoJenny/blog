@@ -360,8 +360,13 @@
 2025-09-30 13:41:36,100 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:41:36] "GET /planning/posts/60/concept/grouping HTTP/1.1" 200 -
 2025-09-30 13:41:40,891 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:41:40] "GET /planning/posts/60/concept/titling HTTP/1.1" 200 -
 2025-09-30 13:41:46,583 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:41:46] "GET /planning/posts/60/concept/sections HTTP/1.1" 200 -
-TTP/1.1" 200 -
-2025-09-30 13:41:34,356 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:41:34] "GET /planning/posts/60/concept/brainstorm HTTP/1.1" 200 -
-2025-09-30 13:41:36,100 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:41:36] "GET /planning/posts/60/concept/grouping HTTP/1.1" 200 -
-2025-09-30 13:41:40,891 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:41:40] "GET /planning/posts/60/concept/titling HTTP/1.1" 200 -
-2025-09-30 13:41:46,583 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:41:46] "GET /planning/posts/60/concept/sections HTTP/1.1" 200 -
+2025-09-30 13:44:15,934 - config.database - INFO - Database connection established
+2025-09-30 13:44:15,940 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:44:15] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+2025-09-30 13:44:19,731 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:44:19] "GET /planning/posts/60/concept/grouping HTTP/1.1" 200 -
+2025-09-30 13:44:19,743 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:44:19] "GET /planning/posts/60/concept/titling HTTP/1.1" 200 -
+2025-09-30 13:44:19,752 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:44:19] "GET /planning/posts/60/concept/sections HTTP/1.1" 200 -
+hed
+2025-09-30 13:44:15,940 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:44:15] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+2025-09-30 13:44:19,731 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:44:19] "GET /planning/posts/60/concept/grouping HTTP/1.1" 200 -
+2025-09-30 13:44:19,743 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:44:19] "GET /planning/posts/60/concept/titling HTTP/1.1" 200 -
+2025-09-30 13:44:19,752 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:44:19] "GET /planning/posts/60/concept/sections HTTP/1.1" 200 -

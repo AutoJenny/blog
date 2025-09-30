@@ -1,5 +1,13 @@
 /**
- * LLM Module - Reusable JavaScript class for LLM interactions
+ * LLM Module - Core orchestration class for LLM interactions
+ * 
+ * This class coordinates between specialized managers:
+ * - UI Manager: Handles all display and DOM manipulation
+ * - API Client: Manages all HTTP requests and API interactions  
+ * - Event Manager: Handles user interactions and event listeners
+ * 
+ * The main class focuses on business logic and orchestration,
+ * delegating specific concerns to appropriate managers.
  */
 
 class LLMModule {
@@ -18,7 +26,7 @@ class LLMModule {
     init() {
         this.setupEventListeners();
         if (this.config.allowEdit) {
-            this.setupEditButtons();
+            this.uiManager.setupEditButtons(this);
         }
         this.loadPrompt();
     }
@@ -27,24 +35,6 @@ class LLMModule {
         this.eventManager.setupEventListeners(this);
         this.eventManager.setupKeyboardShortcuts(this);
         this.eventManager.setupFormValidation(this);
-    }
-    
-    setupEditButtons() {
-        // Create edit buttons dynamically
-        const promptActions = document.getElementById('prompt-actions');
-        if (promptActions) {
-            promptActions.innerHTML = `
-                <button class="btn btn-secondary" id="edit-prompt-btn">
-                    <i class="fas fa-edit"></i> Edit
-                </button>
-                <button class="btn btn-success" id="save-prompt-btn" style="display: none;">
-                    <i class="fas fa-save"></i> Save
-                </button>
-                <button class="btn btn-secondary" id="cancel-prompt-btn" style="display: none;">
-                    <i class="fas fa-times"></i> Cancel
-                </button>
-            `;
-        }
     }
     
     async loadPrompt() {
@@ -57,22 +47,6 @@ class LLMModule {
         } else {
             this.uiManager.displayError(result.error);
         }
-    }
-    
-    displayPrompt(prompt) {
-        this.uiManager.displayPrompt(prompt);
-    }
-    
-    displayConfig(config) {
-        this.uiManager.displayConfig(config);
-    }
-    
-    displayError(message) {
-        this.uiManager.displayError(message);
-    }
-    
-    toggleEdit() {
-        this.eventManager.toggleEdit(this);
     }
     
     async savePrompt() {
@@ -91,14 +65,10 @@ class LLMModule {
         if (result.success) {
             this.currentPrompt = result.prompt;
             this.uiManager.displayPrompt(result.prompt);
-            this.cancelEdit();
+            this.eventManager.cancelEdit(this);
         } else {
             this.uiManager.displayError(result.error);
         }
-    }
-    
-    cancelEdit() {
-        this.eventManager.cancelEdit(this);
     }
     
     async generateContent() {
@@ -125,7 +95,7 @@ class LLMModule {
                 this.uiManager.displayAuthoringResults(result, this);
             } else {
                 // For other modules, use standard display
-                this.displayResults(result.results || result);
+                this.uiManager.displayResults(result.results || result);
             }
         } else {
             this.uiManager.displayError(result.error);
@@ -140,16 +110,16 @@ class LLMModule {
         this.postId = postId;
     }
     
-    escapeHtml(text) {
-        return window.escapeHtml ? window.escapeHtml(text) : escapeHtml(text);
+    toggleEdit() {
+        this.eventManager.toggleEdit(this);
+    }
+    
+    cancelEdit() {
+        this.eventManager.cancelEdit(this);
     }
     
     toggleAccordion() {
         toggleLLMAccordion();
-    }
-    
-    displayResults(data) {
-        this.uiManager.displayResults(data);
     }
     
     isCurrentSection() {
@@ -166,6 +136,10 @@ class LLMModule {
     }
 }
 
-// Note: Configuration and utilities are now in separate files:
-// - llm-config.js: Contains LLM_CONFIGS and initializeLLMModule()
-// - llm-utils.js: Contains utility functions like escapeHtml() and toggleLLMAccordion()
+// Note: LLM Module has been refactored into modular components:
+// - llm-config.js: Configuration and initialization functions
+// - llm-utils.js: Utility functions (escapeHtml, toggleLLMAccordion)
+// - llm-ui-manager.js: All display and DOM manipulation logic
+// - llm-api-client.js: All HTTP requests and API interactions
+// - llm-event-manager.js: All event handling and user interactions
+// - llm-module.js: Core orchestration and business logic (this file)
