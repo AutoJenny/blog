@@ -9,6 +9,7 @@ class LLMModule {
         this.isEditing = false;
         this.postId = null;
         this.uiManager = new LLMUIManager();
+        this.apiClient = new LLMAPIClient();
         
         this.init();
     }
@@ -55,20 +56,14 @@ class LLMModule {
     }
     
     async loadPrompt() {
-        try {
-            const response = await fetch(this.config.promptEndpoint);
-            const data = await response.json();
-            
-            if (data.success) {
-                this.currentPrompt = data.prompt;
-                this.uiManager.displayPrompt(data.prompt);
-                this.uiManager.displayConfig(data.llm_config);
-            } else {
-                this.uiManager.displayError('Failed to load prompt');
-            }
-        } catch (error) {
-            console.error('Error loading prompt:', error);
-            this.uiManager.displayError('Failed to load prompt');
+        const result = await this.apiClient.loadPrompt(this.config.promptEndpoint);
+        
+        if (result.success) {
+            this.currentPrompt = result.prompt;
+            this.uiManager.displayPrompt(result.prompt);
+            this.uiManager.displayConfig(result.llm_config);
+        } else {
+            this.uiManager.displayError(result.error);
         }
     }
     
@@ -122,30 +117,19 @@ class LLMModule {
         const systemPrompt = document.getElementById('system-prompt-edit').value;
         const userPrompt = document.getElementById('user-prompt-edit').value;
         
-        try {
-            const response = await fetch(this.config.promptEndpoint, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    system_prompt: systemPrompt,
-                    prompt_text: userPrompt
-                })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                this.currentPrompt = data.prompt;
-                this.displayPrompt(data.prompt);
-                this.cancelEdit();
-            } else {
-                this.displayError('Failed to save prompt');
-            }
-        } catch (error) {
-            console.error('Error saving prompt:', error);
-            this.displayError('Failed to save prompt');
+        const promptData = {
+            system_prompt: systemPrompt,
+            prompt_text: userPrompt
+        };
+        
+        const result = await this.apiClient.savePrompt(this.config.promptEndpoint, promptData);
+        
+        if (result.success) {
+            this.currentPrompt = result.prompt;
+            this.uiManager.displayPrompt(result.prompt);
+            this.cancelEdit();
+        } else {
+            this.uiManager.displayError(result.error);
         }
     }
     
@@ -178,39 +162,28 @@ class LLMModule {
         generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
         resultsDisplay.innerHTML = '<div class="loading">Generating content...</div>';
         
-        try {
-            const response = await fetch(this.config.generateEndpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    post_id: this.postId
-                })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                // Handle different response formats based on config
-                if (this.config.resultsField === 'draft_content') {
-                    // For authoring, put content directly in the editor
-                    this.uiManager.displayAuthoringResults(data, this);
-                } else {
-                    // For other modules, use standard display
-                    this.displayResults(data.results || data);
-                }
+        const requestData = {
+            post_id: this.postId
+        };
+        
+        const result = await this.apiClient.generateContent(this.config.generateEndpoint, requestData);
+        
+        if (result.success) {
+            // Handle different response formats based on config
+            if (this.config.resultsField === 'draft_content') {
+                // For authoring, put content directly in the editor
+                this.uiManager.displayAuthoringResults(result, this);
             } else {
-                this.displayError(data.error || 'Generation failed');
+                // For other modules, use standard display
+                this.displayResults(result.results || result);
             }
-        } catch (error) {
-            console.error('Error generating content:', error);
-            this.displayError('Generation failed');
-        } finally {
-            // Reset button state
-            generateBtn.disabled = false;
-            generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate';
+        } else {
+            this.uiManager.displayError(result.error);
         }
+        
+        // Reset button state
+        generateBtn.disabled = false;
+        generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate';
     }
     
     setPostId(postId) {
@@ -240,51 +213,6 @@ class LLMModule {
         
         const moduleSectionId = parseInt(endpointMatch[1]);
         return moduleSectionId === currentSectionId;
-    }
-    
-    async autoSaveContent(content) {
-        const currentSectionId = window.currentSelectedSectionId;
-        if (!currentSectionId) return;
-        
-        try {
-            const response = await fetch(`/authoring/api/posts/${this.postId}/sections/${currentSectionId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    draft_content: content,
-                    status: 'complete'
-                })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                // Update last saved indicator
-                const lastSavedElement = document.getElementById('last-saved');
-                if (lastSavedElement) {
-                    lastSavedElement.textContent = 'Auto-saved just now';
-                }
-                
-                // Update section status in UI
-                const sectionItem = document.querySelector(`[data-section-id="${currentSectionId}"]`);
-                if (sectionItem) {
-                    sectionItem.setAttribute('data-status', 'complete');
-                    const statusElement = sectionItem.querySelector('.section-status');
-                    if (statusElement) {
-                        statusElement.textContent = 'Complete';
-                        statusElement.className = 'section-status complete';
-                    }
-                }
-                
-                console.log('Content auto-saved successfully');
-            } else {
-                console.error('Auto-save failed:', data.error);
-            }
-        } catch (error) {
-            console.error('Error auto-saving content:', error);
-        }
     }
 }
 
