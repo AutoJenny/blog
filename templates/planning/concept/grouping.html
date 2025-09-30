@@ -4,7 +4,7 @@
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/llm-module.css') }}">
 <style>
-/* Orthodox Layout Styles */
+/* Orthodox Layout Styles - Dark Theme */
 .grouping-main {
     display: flex;
     gap: 30px;
@@ -13,22 +13,23 @@
 
 .input-panel, .output-panel {
     flex: 1;
-    background: #fff;
+    background: #2d3748;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     padding: 20px;
+    border: 1px solid #4a5568;
 }
 
 .input-panel h4, .output-panel h4 {
     margin: 0 0 15px 0;
-    color: #495057;
-    border-bottom: 2px solid #007bff;
+    color: #e2e8f0;
+    border-bottom: 2px solid #4299e1;
     padding-bottom: 8px;
 }
 
 .topics-display, .final-results-display {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
+    background: #1a202c;
+    border: 1px solid #4a5568;
     border-radius: 4px;
     padding: 15px;
     min-height: 200px;
@@ -36,24 +37,25 @@
 }
 
 .topic-item {
-    background: #fff;
-    border: 1px solid #e9ecef;
+    background: #2d3748;
+    border: 1px solid #4a5568;
     border-radius: 4px;
     padding: 8px 12px;
     margin: 5px 0;
     font-size: 14px;
+    color: #e2e8f0;
 }
 
 .section-group {
-    background: #fff;
-    border: 1px solid #e9ecef;
+    background: #2d3748;
+    border: 1px solid #4a5568;
     border-radius: 4px;
     margin: 10px 0;
     overflow: hidden;
 }
 
 .section-header {
-    background: #007bff;
+    background: #4299e1;
     color: white;
     padding: 10px 15px;
     font-weight: bold;
@@ -61,71 +63,82 @@
 
 .section-topics {
     padding: 15px;
+    background: #1a202c;
 }
 
 .section-topic {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
+    background: #2d3748;
+    border: 1px solid #4a5568;
     border-radius: 4px;
     padding: 8px 12px;
     margin: 5px 0;
     font-size: 14px;
+    color: #e2e8f0;
 }
 
-/* Accordion Styles */
+/* Accordion Styles - Dark Theme */
 .process-accordion {
     margin-top: 20px;
-    background: #fff;
+    background: #2d3748;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     overflow: hidden;
+    border: 1px solid #4a5568;
 }
 
 .accordion-header {
-    background: #f8f9fa;
+    background: #1a202c;
     padding: 15px 20px;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid #4a5568;
     display: flex;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
+    color: #e2e8f0;
 }
 
 .accordion-header:hover {
-    background: #e9ecef;
+    background: #2d3748;
+}
+
+.accordion-header h4 {
+    margin: 0;
+    color: #e2e8f0;
 }
 
 .accordion-content {
     padding: 20px;
+    background: #2d3748;
 }
 
-/* 3-Step Process Styles (when accordion is open) */
+/* 3-Step Process Styles (when accordion is open) - Dark Theme */
 .three-step-process {
     max-width: 1200px;
     margin: 0 auto;
 }
 
 .step-container {
-    background: #fff;
+    background: #1a202c;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     margin-bottom: 30px;
     overflow: hidden;
+    border: 1px solid #4a5568;
 }
 
 .step-container.active {
-    border: 2px solid #007bff;
+    border: 2px solid #4299e1;
 }
 
 .step-container.completed {
-    border: 2px solid #28a745;
-    background: #f8fff9;
+    border: 2px solid #48bb78;
+    background: #1a202c;
 }
 
 .step-header {
-    background: #f8f9fa;
+    background: #2d3748;
     padding: 20px;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid #4a5568;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -133,7 +146,7 @@
 
 .step-header h3 {
     margin: 0;
-    color: #495057;
+    color: #e2e8f0;
 }
 
 .step-status {
