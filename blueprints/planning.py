@@ -261,6 +261,32 @@ def planning_concept_outline(post_id):
                          page_title='Content Outline',
                          blueprint_name='planning')
 
+# TEMPORARY: Test route for Authoring template preview
+@bp.route('/test-authoring/<int:post_id>')
+def test_authoring_preview(post_id):
+    """Temporary route to preview the Authoring template"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get post details
+            cursor.execute("""
+                SELECT id, title, status, created_at, updated_at
+                FROM post 
+                WHERE id = %s
+            """, (post_id,))
+            post = cursor.fetchone()
+            
+            if not post:
+                return "Post not found", 404
+            
+            return render_template('authoring/sections/drafting.html', 
+                                 post_id=post_id,
+                                 post=post,
+                                 page_title="Authoring Preview")
+            
+    except Exception as e:
+        logger.error(f"Error in test_authoring_preview: {e}")
+        return f"Error: {e}", 500
+
 # Research & Resources Stage (updated)
 @bp.route('/posts/<int:post_id>/research/sources')
 def planning_research_sources(post_id):
