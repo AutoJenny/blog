@@ -2383,18 +2383,18 @@ TOPICS TO ALLOCATE (process these in numbered order 1-{len(topics)}):
 {topics_text}
 
 THEMATIC MATCHING GUIDELINES:
-- S01 (Celtic Roots): Ancient Celtic traditions, Samhain origins, Celtic calendar
-- S02 (Harvest Festivals): Historical harvest celebrations, festival traditions
-- S03 (Agriculture): Farming practices, crop rotation, agricultural cycles
-- S04 (Folk Remedies): Traditional medicine, turnip uses, folk practices
-- S05 (Christianity): Christian influence on traditions, religious aspects
-- S06 (Modern Celebrations): Contemporary festivals, modern adaptations
-- S07 (Cultural Identity): Scottish identity, cultural significance, symbolism
+- S01 (Celtic Roots): Ancient Celtic traditions, Samhain origins, Celtic calendar, early harvest traditions
+- S02 (Agriculture): Agricultural practices, farming techniques, crop cycles, land relationships
+- S03 (Festivals): Major autumnal festivals, Samhain, Hogmanay, Ceres Festival events
+- S04 (Christianity): Christian influence, Reformation impact, religious transformation of customs
+- S05 (Modern Revival): Contemporary interpretations, modern Scottish culture, cultural revival
+- S06 (Folklore): Autumnal folklore, community identity, cultural practices, symbolism
+- S07 (Conclusion): Heritage synthesis, contemporary relevance, Scottish identity
 
 REQUIRED OUTPUT FORMAT - return exactly {len(topics)} lines like this:
 Celtic Roots of Samhain Traditions {{S01}}
-Crop Rotation Practices in Ancient Scotland {{S03}}
-Hogmanay Traditions in Modern Scotland {{S06}}
+Crop Rotation Practices in Ancient Scotland {{S02}}
+Hogmanay Traditions in Modern Scotland {{S03}}
 
 CRITICAL RULES:
 1. Return EXACTLY {len(topics)} lines
