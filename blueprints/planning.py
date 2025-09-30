@@ -428,8 +428,8 @@ def api_update_field(post_id):
             return jsonify({'error': 'Missing field_name or table_type'}), 400
         
         # Validate table type
-        if table_type not in ['post', 'post_development']:
-            return jsonify({'error': 'Invalid table_type. Must be "post" or "post_development"'}), 400
+        if table_type not in ['post', 'post_development', 'post_section']:
+            return jsonify({'error': 'Invalid table_type. Must be "post", "post_development", or "post_section"'}), 400
         
         # Convert empty string to None for database
         if new_value == '':
