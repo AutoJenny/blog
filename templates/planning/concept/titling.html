@@ -304,10 +304,28 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Load generated groups
     loadGeneratedGroups();
+
+    // Load existing sections (persistence)
+    loadExistingSections();
     
     // Initialize titling functionality
     initializeTitling();
 });
+async function loadExistingSections() {
+    try {
+        const response = await fetch(`/planning/api/posts/${window.postId}/sections`);
+        const data = await response.json();
+        if (data.success && data.sections && data.sections.sections && data.sections.sections.length > 0) {
+            generatedSections = data.sections;
+            displaySections(generatedSections);
+            console.log('Loaded existing sections:', data.sections.sections.length);
+        } else {
+            console.log('No existing sections found');
+        }
+    } catch (err) {
+        console.error('Error loading existing sections:', err);
+    }
+}
 
 async function loadGeneratedGroups() {
     try {
@@ -485,6 +503,7 @@ function displaySections(sectionsData) {
                         <span class="section-order">${section.order || index + 1}</span>
                     </div>
                 </div>
+                ${section.subtitle ? `<div class="section-subtitle">${section.subtitle}</div>` : ''}
                 <div class="section-description">${section.description || 'No description provided'}</div>
                 ${section.boundaries ? `
                     <div class="section-boundaries">

@@ -2425,15 +2425,23 @@ def _clean_description(text: str) -> str:
     if not text:
         return text
     banned_openers = [
-        'this section', 'in this section', 'we will', 'join us', 'discover how', 'explore how',
-        'delve into', 'unveil', 'unlock'
+        'this section', 'in this section', 'we will', 'join us',
+        'discover how', 'explore how', 'delve into', 'unveil', 'unlock',
+        # Third-person fluff verbs
+        'explores', 'examines', 'investigates', 'delves', 'highlights', 'showcases', 'reveals', 'uncovers'
     ]
     t = text.strip()
     tl = t.lower()
-    for phrase in banned_openers:
-        if tl.startswith(phrase):
-            t = t[len(phrase):].lstrip(' :,-')
-            break
+    changed = True
+    # Iteratively strip any leading banned phrases
+    while changed:
+        changed = False
+        tl = t.lower()
+        for phrase in banned_openers:
+            if tl.startswith(phrase):
+                t = t[len(phrase):].lstrip(' :,-')
+                changed = True
+                break
     return t.strip()
 
 def sanitize_sections_text(sections_payload: dict) -> dict:
