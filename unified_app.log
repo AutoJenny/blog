@@ -120,7 +120,15 @@
 2025-09-30 13:01:41,543 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:41] "GET /planning/api/posts/60/expanded-idea HTTP/1.1" 200 -
 2025-09-30 13:01:41,551 - config.database - INFO - Database connection established
 2025-09-30 13:01:41,553 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:41] "GET /planning/api/posts/60/sections HTTP/1.1" 200 -
- 13:01:41] "GET /authoring/api/posts/60/sections/763 HTTP/1.1" 200 -
-2025-09-30 13:01:41,543 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:41] "GET /planning/api/posts/60/expanded-idea HTTP/1.1" 200 -
-2025-09-30 13:01:41,551 - config.database - INFO - Database connection established
-2025-09-30 13:01:41,553 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:01:41] "GET /planning/api/posts/60/sections HTTP/1.1" 200 -
+2025-09-30 13:12:04,609 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:12:04] "[31m[1mPOST /planning/api/brainstorm/topics HTTP/1.1[0m" 400 -
+2025-09-30 13:12:06,456 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:12:06] "[31m[1mPOST /planning/api/brainstorm/topics HTTP/1.1[0m" 400 -
+2025-09-30 13:12:08,506 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:12:08] "[31m[1mPOST /planning/api/sections/plan HTTP/1.1[0m" 400 -
+2025-09-30 13:12:10,159 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:12:10] "[31m[1mPOST /planning/api/sections/plan HTTP/1.1[0m" 400 -
+2025-09-30 13:12:31,897 - config.database - INFO - Database connection established
+2025-09-30 13:12:31,899 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:12:31] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+2025-09-30 13:13:49,957 - config.database - INFO - Database connection established
+2025-09-30 13:13:49,963 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:13:49] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+ INFO - Database connection established
+2025-09-30 13:12:31,899 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:12:31] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+2025-09-30 13:13:49,957 - config.database - INFO - Database connection established
+2025-09-30 13:13:49,963 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:13:49] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
