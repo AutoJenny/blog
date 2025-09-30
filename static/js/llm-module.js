@@ -8,6 +8,7 @@ class LLMModule {
         this.currentPrompt = null;
         this.isEditing = false;
         this.postId = null;
+        this.uiManager = new LLMUIManager();
         
         this.init();
     }
@@ -60,78 +61,27 @@ class LLMModule {
             
             if (data.success) {
                 this.currentPrompt = data.prompt;
-                this.displayPrompt(data.prompt);
-                this.displayConfig(data.llm_config);
+                this.uiManager.displayPrompt(data.prompt);
+                this.uiManager.displayConfig(data.llm_config);
             } else {
-                this.displayError('Failed to load prompt');
+                this.uiManager.displayError('Failed to load prompt');
             }
         } catch (error) {
             console.error('Error loading prompt:', error);
-            this.displayError('Failed to load prompt');
+            this.uiManager.displayError('Failed to load prompt');
         }
     }
     
     displayPrompt(prompt) {
-        const promptDisplay = document.getElementById('llm-prompt-display');
-        if (!promptDisplay) return;
-        
-        // Update the prompt header with the prompt name
-        const promptTitle = document.getElementById('prompt-title');
-        if (promptTitle && prompt.name) {
-            promptTitle.textContent = `Prompt: ${prompt.name}`;
-        }
-        
-        let promptHTML = '';
-        
-        // If there's a separate system prompt, display it first
-        if (prompt.system_prompt) {
-            promptHTML += `<div class="system-prompt">${this.escapeHtml(prompt.system_prompt)}</div>`;
-        }
-        
-        // Display the main prompt text
-        if (prompt.prompt_text) {
-            // Highlight placeholders like [TOPIC], [IDEA], etc.
-            let highlightedText = prompt.prompt_text.replace(/\[([^\]]+)\]/g, '<span class="placeholder">[$1]</span>');
-            promptHTML += `<div class="prompt-text">${this.escapeHtml(highlightedText)}</div>`;
-        }
-        
-        promptDisplay.innerHTML = promptHTML;
+        this.uiManager.displayPrompt(prompt);
     }
     
     displayConfig(config) {
-        const providerInfo = document.getElementById('llm-provider-info');
-        if (!providerInfo) return;
-        
-        providerInfo.innerHTML = `
-            <div class="provider-item">
-                <div class="provider-label">Provider</div>
-                <div class="provider-value">${config.provider}</div>
-            </div>
-            <div class="provider-item">
-                <div class="provider-label">Model</div>
-                <div class="provider-value">${config.model}</div>
-            </div>
-            <div class="provider-item">
-                <div class="provider-label">Temperature</div>
-                <div class="provider-value">${config.temperature}</div>
-            </div>
-            <div class="provider-item">
-                <div class="provider-label">Max Tokens</div>
-                <div class="provider-value">${config.max_tokens}</div>
-            </div>
-        `;
+        this.uiManager.displayConfig(config);
     }
     
     displayError(message) {
-        const promptDisplay = document.getElementById('llm-prompt-display');
-        if (promptDisplay) {
-            promptDisplay.innerHTML = `<div class="error">Error: ${message}</div>`;
-        }
-        
-        const resultsDisplay = document.getElementById('llm-results-display');
-        if (resultsDisplay) {
-            resultsDisplay.innerHTML = `<div class="error">Error: ${message}</div>`;
-        }
+        this.uiManager.displayError(message);
     }
     
     toggleEdit() {
@@ -245,7 +195,7 @@ class LLMModule {
                 // Handle different response formats based on config
                 if (this.config.resultsField === 'draft_content') {
                     // For authoring, put content directly in the editor
-                    this.displayAuthoringResults(data);
+                    this.uiManager.displayAuthoringResults(data, this);
                 } else {
                     // For other modules, use standard display
                     this.displayResults(data.results || data);
@@ -263,39 +213,6 @@ class LLMModule {
         }
     }
     
-    displayAuthoringResults(data) {
-        const resultsDisplay = document.getElementById('llm-results-display');
-        const contentEditor = document.getElementById('content-editor');
-        
-        if (data.draft_content) {
-            // Display in results area
-            if (resultsDisplay) {
-                resultsDisplay.innerHTML = `<div class="generated-content">${data.draft_content}</div>`;
-            }
-            
-            // Also put in content editor
-            if (contentEditor) {
-                contentEditor.value = data.draft_content;
-                contentEditor.disabled = false;
-                
-                // Update word count
-                const wordCount = data.draft_content.trim().split(/\s+/).filter(word => word.length > 0).length;
-                const wordCountElement = document.getElementById('word-count');
-                if (wordCountElement) {
-                    wordCountElement.textContent = `${wordCount} words`;
-                }
-                
-                // Enable save button
-                const saveBtn = document.getElementById('save-btn');
-                if (saveBtn) {
-                    saveBtn.disabled = false;
-                }
-            }
-        } else {
-            this.displayError('No content generated');
-        }
-    }
-    
     setPostId(postId) {
         this.postId = postId;
     }
@@ -309,169 +226,7 @@ class LLMModule {
     }
     
     displayResults(data) {
-        const resultsDisplay = document.getElementById('llm-results-display');
-        if (!resultsDisplay) return;
-        
-        // Handle different types of results based on the data structure
-        if (Array.isArray(data)) {
-            // Handle array results (topics, sections, etc.)
-            this.displayArrayResults(data, resultsDisplay);
-        } else if (typeof data === 'object' && data !== null) {
-            // Handle object results
-            this.displayObjectResults(data, resultsDisplay);
-        } else if (typeof data === 'string') {
-            // Handle string results
-            resultsDisplay.innerHTML = `<div class="generated-content">${this.escapeHtml(data)}</div>`;
-        } else {
-            this.displayError('No valid results to display');
-        }
-    }
-    
-    displayArrayResults(data, resultsDisplay) {
-        if (data.length === 0) {
-            resultsDisplay.innerHTML = '<div class="no-results">No results generated. Try again with different settings.</div>';
-            return;
-        }
-        
-        // Check if it's topics (has title property)
-        if (data[0] && data[0].title) {
-            this.displayTopics(data, resultsDisplay);
-        } else if (data[0] && data[0].theme) {
-            // Check if it's groups (has theme property)
-            this.displayGroups(data, resultsDisplay);
-        } else if (data[0] && data[0].section_title) {
-            // Check if it's sections (has section_title property)
-            this.displaySections(data, resultsDisplay);
-        } else {
-            // Generic array display
-            let html = '<div class="results-list">';
-            data.forEach((item, index) => {
-                html += `<div class="result-item" data-index="${index}">${this.escapeHtml(item)}</div>`;
-            });
-            html += '</div>';
-            resultsDisplay.innerHTML = html;
-        }
-    }
-    
-    displayObjectResults(data, resultsDisplay) {
-        // Handle nested results structure
-        if (data.sections) {
-            this.displaySections(data.sections, resultsDisplay);
-        } else if (data.groups) {
-            this.displayGroups(data.groups, resultsDisplay);
-        } else if (data.topics) {
-            this.displayTopics(data.topics, resultsDisplay);
-        } else {
-            // Generic object display
-            resultsDisplay.innerHTML = `<div class="generated-content">${this.escapeHtml(JSON.stringify(data, null, 2))}</div>`;
-        }
-    }
-    
-    displayTopics(topics, resultsDisplay) {
-        let topicsHTML = '<div class="topics-list">';
-        
-        topics.forEach((topic, index) => {
-            const topicText = typeof topic === 'string' ? topic : (topic.title || topic);
-            const category = topic.category || 'general';
-            
-            topicsHTML += `
-                <div class="topic-item" data-topic-id="${index}" data-category="${category}">
-                    <div class="topic-content">${this.escapeHtml(topicText)}</div>
-                </div>
-            `;
-        });
-        
-        topicsHTML += '</div>';
-        resultsDisplay.innerHTML = topicsHTML;
-    }
-    
-    displayGroups(groups, resultsDisplay) {
-        let groupsHTML = '<div class="groups-list">';
-        
-        groups.forEach((group, index) => {
-            groupsHTML += `
-                <div class="group-item" data-group-id="${group.id || group.order || index}">
-                    <h5 class="group-theme">${this.escapeHtml(group.theme || `Group ${index + 1}`)}</h5>
-                    <p class="group-explanation">${this.escapeHtml(group.explanation || 'No explanation provided.')}</p>
-                    <div class="group-topics">
-                        ${(group.topics || []).map(topic => 
-                            `<div class="group-topic-item">${this.escapeHtml(topic)}</div>`
-                        ).join('')}
-                    </div>
-                </div>
-            `;
-        });
-        
-        groupsHTML += '</div>';
-        resultsDisplay.innerHTML = groupsHTML;
-    }
-    
-    displaySections(sections, resultsDisplay) {
-        let sectionsHTML = '<div class="sections-list">';
-        
-        sections.forEach((section, index) => {
-            const topicCount = section.topics ? section.topics.length : 0;
-            
-            sectionsHTML += `
-                <div class="section-item" data-section-id="${section.id || index}">
-                    <div class="section-header">
-                        <h4 class="section-title">${this.escapeHtml(section.title || section.section_title || `Section ${index + 1}`)}</h4>
-                        <div class="section-meta">
-                            <span class="topic-count">${topicCount} topics</span>
-                            <span class="section-order">${section.order || index + 1}</span>
-                        </div>
-                    </div>
-                    ${section.subtitle ? `<div class="section-subtitle">${this.escapeHtml(section.subtitle)}</div>` : ''}
-                    ${section.description ? `<div class="section-description">${this.escapeHtml(section.description)}</div>` : ''}
-                    <div class="section-topics">
-                        ${(section.topics || []).map(topic => 
-                            `<div class="section-topic-item" data-topic="${this.escapeHtml(topic)}">
-                                <span class="topic-text">${this.escapeHtml(topic)}</span>
-                            </div>`
-                        ).join('')}
-                    </div>
-                </div>
-            `;
-        });
-        
-        sectionsHTML += '</div>';
-        resultsDisplay.innerHTML = sectionsHTML;
-    }
-    
-    displayAuthoringResults(data) {
-        const resultsDisplay = document.getElementById('llm-results-display');
-        const contentEditor = document.getElementById('content-editor');
-        
-        if (data.draft_content) {
-            // Display in results area
-            if (resultsDisplay) {
-                resultsDisplay.innerHTML = `<div class="generated-content">${data.draft_content}</div>`;
-            }
-            
-            // Only update content editor if this is the currently selected section
-            if (contentEditor && this.isCurrentSection()) {
-                contentEditor.value = data.draft_content;
-                contentEditor.disabled = false;
-                
-                // Update word count
-                const wordCount = data.draft_content.trim().split(/\s+/).filter(word => word.length > 0).length;
-                const wordCountElement = document.getElementById('word-count');
-                if (wordCountElement) {
-                    wordCountElement.textContent = `${wordCount} words`;
-                }
-                
-                // Enable save button
-                const saveBtn = document.getElementById('save-btn');
-                if (saveBtn) {
-                    saveBtn.disabled = false;
-                }
-                
-                // Auto-save the generated content
-                this.autoSaveContent(data.draft_content);
-            }
-        } else {
-            this.displayError('No content generated');
-        }
+        this.uiManager.displayResults(data);
     }
     
     isCurrentSection() {
