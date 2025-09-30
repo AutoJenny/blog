@@ -19,24 +19,12 @@
             <div class="idea-generator">
                 <div class="input-data">
                     <h4>Input Data</h4>
-                    <div class="data-section">
-                        <h5>Generated Topics</h5>
-                        <div id="topics-display" class="data-display">
-                            <p class="loading">Loading topics from brainstorming...</p>
-                        </div>
+                    <div id="section-structure-display" class="expanded-idea-content">
+                        <!-- Section structure from previous page will appear here -->
                     </div>
-                    
-                    <div class="data-section">
-                        <h5>Section Structure</h5>
-                        <div id="structure-display" class="data-display">
-                            <p class="loading">Loading section structure...</p>
-                        </div>
-                    </div>
-                    
                     <div class="input-actions">
-                        <button id="allocate-topics-btn" class="btn btn-primary" onclick="allocateTopics()">
-                            <i class="fas fa-share-alt"></i>
-                            Allocate Topics to Sections
+                        <button class="btn btn-primary" onclick="allocateTopics()" id="custom-allocate-btn">
+                            <i class="fas fa-tasks"></i> Allocate All Topics
                         </button>
                     </div>
                 </div>
@@ -89,48 +77,51 @@ window.currentSubstage = 'topic-allocation';
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
-    loadBrainstormTopics();
     loadSectionStructure();
     loadExistingAllocation();
     initializeLLMModule('topic_allocation', window.postId);
 });
 
-// Load topics from brainstorming
-async function loadBrainstormTopics() {
-    try {
-        const response = await fetch(`/planning/api/posts/${window.postId}`);
-        const data = await response.json();
-        
-        if (data.success && data.development.idea_scope) {
-            const ideaScopeData = JSON.parse(data.development.idea_scope);
-            // Extract topic titles from the brainstorming results
-            topics = ideaScopeData.generated_topics.map(topic => topic.title);
-            displayTopics();
-        } else {
-            document.getElementById('topics-display').innerHTML = '<p class="error">No topics found from brainstorming</p>';
-        }
-    } catch (error) {
-        console.error('Error loading topics:', error);
-        document.getElementById('topics-display').innerHTML = '<p class="error">Error loading topics</p>';
-    }
-}
-
-// Load section structure
+// Load section structure from previous page
 async function loadSectionStructure() {
     try {
         const response = await fetch(`/planning/api/sections/design-structure/${window.postId}`);
         const data = await response.json();
         
-        if (data.success && data.structure) {
-            sectionStructure = data.structure;
+        if (data.success && data.section_structure) {
+            sectionStructure = data.section_structure;
             displaySectionStructure();
         } else {
-            document.getElementById('structure-display').innerHTML = '<p class="error">No section structure found. Please complete Section Structure Design first.</p>';
+            document.getElementById('section-structure-display').innerHTML = '<p class="error">No section structure found from previous page</p>';
         }
     } catch (error) {
         console.error('Error loading section structure:', error);
-        document.getElementById('structure-display').innerHTML = '<p class="error">Error loading section structure</p>';
+        document.getElementById('section-structure-display').innerHTML = '<p class="error">Error loading section structure</p>';
     }
+}
+
+// Display section structure from previous page
+function displaySectionStructure() {
+    const container = document.getElementById('section-structure-display');
+    if (!container || !sectionStructure) return;
+    
+    let html = '<div class="section-structure-results">';
+    
+    if (sectionStructure.sections) {
+        sectionStructure.sections.forEach((section, index) => {
+            const sectionCode = `S${String(index + 1).padStart(2, '0')}`;
+            html += `
+                <div class="section-item">
+                    <h5>{${sectionCode}} ${section.theme}</h5>
+                    <p><strong>Description:</strong> ${section.description}</p>
+                    <p><strong>Boundaries:</strong> ${section.boundaries}</p>
+                </div>
+            `;
+        });
+    }
+    
+    html += '</div>';
+    container.innerHTML = html;
 }
 
 // Display topics
@@ -181,7 +172,7 @@ function displaySectionStructure() {
 
 // Allocate topics to sections
 async function allocateTopics() {
-    const btn = document.getElementById('allocate-topics-btn');
+    const btn = document.getElementById('custom-allocate-btn');
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Allocating Topics...';
     
@@ -210,7 +201,7 @@ async function allocateTopics() {
         alert('Error allocating topics: ' + error.message);
     } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-share-alt"></i> Allocate Topics to Sections';
+        btn.innerHTML = '<i class="fas fa-tasks"></i> Allocate All Topics';
     }
 }
 
@@ -342,6 +333,37 @@ async function loadExistingAllocation() {
 
 .error {
     color: #ff6b6b;
+}
+
+.section-structure-results {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.section-item {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.section-item h5 {
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.section-item p {
+    color: #cbd5e1;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.section-item strong {
+    color: #e2e8f0;
 }
 </style>
 
