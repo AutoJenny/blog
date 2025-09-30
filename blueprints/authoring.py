@@ -556,16 +556,20 @@ def api_generate_section_draft(post_id, section_id):
                     'error': 'Section Drafting prompt not found'
                 }), 500
             
-            # Prepare prompt variables
+            # Prepare prompt variables with rich context
             prompt_vars = {
-                'EXPANDED_IDEA': dev_data['expanded_idea'],
-                'POST_TITLE': post['title'],
-                'POST_DESCRIPTION': post['summary'] or 'A comprehensive guide to Scottish heritage and traditions',
-                'SECTION_TITLE': current_section_data.get('title', section['section_heading']),
-                'SECTION_SUBTITLE': current_section_data.get('subtitle', ''),
-                'SECTION_TOPICS': json.dumps(current_section_data.get('topics', [])),
-                'CULTURAL_SIGNIFICANCE': current_section_data.get('cultural_significance', ''),
-                'OTHER_SECTIONS_TOPICS': json.dumps(avoid_topics) if avoid_topics else '[]'
+                'SELECTED_IDEA': dev_data.get('idea_seed', 'Scottish autumn folklore and traditions'),
+                'SECTION_TITLE': section['section_heading'],
+                'SECTION_SUBTITLE': section['section_description'] or '',
+                'SECTION_GROUP': 'Historical Foundations of Autumnal Traditions',  # This should come from planning data
+                'GROUP_SUMMARY': 'This group explores the Celtic roots and historical developments that shaped Scotland\'s autumnal customs, highlighting their significance in understanding the country\'s identity.',
+                'SECTION_TOPICS': 'Celtic Roots of Samhain Traditions, The History of Ceres Festival in Modern Scotland, Samhain Traditions in Scottish Christianity',
+                'AVOID_SECTIONS_DETAILED': '''Agriculture and the Land's Bounty: Crop rotation practices in ancient Scotland, Agricultural cycle and Celtic mythology, Crops in Scottish folk remedies
+Seasonal Celebrations: Timeless Traditions: Modern harvest festivals, Community celebrations, Seasonal observances
+Autumnal Symbolism and Mythology: Symbolic meanings of autumn, Mythological connections, Seasonal symbolism
+Farmers' Knowledge and Folk Remedies: Traditional agricultural wisdom, Healing practices, Folk medicine
+Christianity's Impact on Autumn Traditions: Religious influences on customs, Christian adaptations, Church calendar
+Women's Roles and Folk Traditions: Gender roles in traditions, Women's contributions, Folk practices'''
             }
             
             # Replace placeholders in prompt
