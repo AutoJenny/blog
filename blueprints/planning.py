@@ -2355,10 +2355,13 @@ def api_allocate_topics():
                 'error': 'Section structure not found. Please complete Step 1 first.'
             }), 400
         
-        # Format section structure for prompt
+        # Format section structure for prompt with unique codes
         sections_text = ""
+        section_codes = {}
         for section in section_structure['sections']:
-            sections_text += f"\nSection {section['order']}: {section['theme']}\n"
+            section_code = f"S{section['order']:02d}"
+            section_codes[section_code] = section['theme']
+            sections_text += f"\n{section_code}: {section['theme']}\n"
             sections_text += f"  Boundaries: {section['boundaries']}\n"
             sections_text += f"  Exclusions: {section['exclusions']}\n"
         
@@ -2366,7 +2369,7 @@ def api_allocate_topics():
         topics_text = '\n'.join([f"- {topic.get('title', topic) if isinstance(topic, dict) else topic}" for topic in topics])
         
         # Create allocation prompt
-        allocation_prompt = f"""TASK: Allocate ALL {len(topics)} topics to sections.
+        allocation_prompt = f"""TASK: Allocate ALL {len(topics)} topics to sections using the exact format below.
 
 SECTION STRUCTURE:
 {sections_text}
@@ -2376,30 +2379,21 @@ TOPICS TO ALLOCATE ({len(topics)} topics):
 
 REQUIREMENTS:
 - ALL {len(topics)} topics MUST be allocated to exactly ONE section each
-- NO topics can be left unallocated
+- Use the EXACT section codes (S01, S02, etc.) provided above
 - Each topic must appear in exactly ONE section's topics list
 - Choose the section where each topic fits BEST
-- Consider thematic boundaries and exclusions
-- Ensure balanced distribution across sections
-- Respect the section boundaries and exclusions
 
-CRITICAL: Return ONLY the JSON object below. Do NOT include any explanatory text, comments, or additional content before or after the JSON.
+OUTPUT FORMAT: Return ONLY this exact format, one line per topic:
+S01: Topic Title 1
+S02: Topic Title 2
+S03: Topic Title 3
+... (continue for all {len(topics)} topics)
 
-{{
-  "allocations": [
-    {{
-      "section_id": "section_1",
-      "section_theme": "Section theme name",
-      "topics": ["Topic 1", "Topic 2", "Topic 3"],
-      "allocation_reason": "Why these topics belong here"
-    }}
-  ],
-  "metadata": {{
-    "total_topics_allocated": {len(topics)},
-    "unallocated_topics": [],
-    "allocation_method": "semantic_matching_with_validation"
-  }}
-}}"""
+CRITICAL: 
+- Use ONLY the section codes S01-S07
+- Include ALL {len(topics)} topics
+- One topic per line
+- No additional text or explanations"""
         
         # Execute LLM request
         messages = [
@@ -2419,35 +2413,50 @@ CRITICAL: Return ONLY the JSON object below. Do NOT include any explanatory text
         
         # Parse the response
         try:
-            import re
             content = result['content'].strip()
+            logger.info(f"Raw LLM response: {content}")
             
-            # Find the first complete JSON object in the response
-            json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', content, re.DOTALL)
-            if json_match:
-                content = json_match.group(1).strip()
-            elif content.startswith('```') and content.endswith('```'):
-                content = content[3:-3].strip()
-            elif content.startswith('```json'):
-                content = content[7:].strip()
-                if content.endswith('```'):
-                    content = content[:-3].strip()
-            else:
-                # Try to find JSON object without code blocks
-                json_match = re.search(r'(\{.*\})', content, re.DOTALL)
-                if json_match:
-                    content = json_match.group(1).strip()
+            # Parse the simple format: S01: Topic Title
+            allocations = {}
+            lines = content.split('\n')
             
-            # Parse JSON directly without cleaning
-            logger.info(f"Raw allocation content length: {len(content)}")
-            logger.info(f"Raw allocation content: {content}")
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    continue
+                    
+                # Parse format: S01: Topic Title
+                if ':' in line:
+                    parts = line.split(':', 1)
+                    if len(parts) == 2:
+                        section_code = parts[0].strip()
+                        topic_title = parts[1].strip()
+                        
+                        if section_code in section_codes:
+                            if section_code not in allocations:
+                                allocations[section_code] = []
+                            allocations[section_code].append(topic_title)
             
-            try:
-                allocation_data = json.loads(content)
-            except json.JSONDecodeError as e:
-                logger.error(f"JSON decode error: {e}")
-                logger.error(f"Content at error position: {content[max(0, e.pos-50):e.pos+50]}")
-                raise
+            # Convert to expected format
+            allocation_data = {
+                'allocations': [],
+                'metadata': {
+                    'total_topics_allocated': len(topics),
+                    'unallocated_topics': [],
+                    'allocation_method': 'section_code_matching'
+                }
+            }
+            
+            for section_code, topic_list in allocations.items():
+                section_order = int(section_code[1:])  # Extract number from S01, S02, etc.
+                allocation_data['allocations'].append({
+                    'section_id': f'section_{section_order}',
+                    'section_theme': section_codes[section_code],
+                    'topics': topic_list,
+                    'allocation_reason': f'Topics allocated to {section_codes[section_code]} based on thematic fit'
+                })
+            
+            logger.info(f"Parsed allocation data: {allocation_data}")
             
             # Validate the allocation
             logger.info(f"Allocation data to validate: {allocation_data}")
