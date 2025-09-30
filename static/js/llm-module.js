@@ -301,7 +301,7 @@ class LLMModule {
     }
     
     escapeHtml(text) {
-        return escapeHtml(text);
+        return window.escapeHtml ? window.escapeHtml(text) : escapeHtml(text);
     }
     
     toggleAccordion() {

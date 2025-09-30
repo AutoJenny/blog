@@ -128,7 +128,40 @@
 2025-09-30 13:12:31,899 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:12:31] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
 2025-09-30 13:13:49,957 - config.database - INFO - Database connection established
 2025-09-30 13:13:49,963 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:13:49] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
- INFO - Database connection established
-2025-09-30 13:12:31,899 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:12:31] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
-2025-09-30 13:13:49,957 - config.database - INFO - Database connection established
-2025-09-30 13:13:49,963 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:13:49] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+2025-09-30 13:13:56,011 - config.database - INFO - Database connection established
+2025-09-30 13:13:56,015 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:13:56] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+2025-09-30 13:13:56,036 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:13:56] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-09-30 13:13:56,039 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:13:56] "GET /static/js/llm-utils.js HTTP/1.1" 200 -
+2025-09-30 13:13:56,041 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:13:56] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-09-30 13:13:56,041 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:13:56] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-09-30 13:13:56,041 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:13:56] "GET /static/js/llm-config.js HTTP/1.1" 200 -
+2025-09-30 13:13:56,042 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:13:56] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-09-30 13:13:56,042 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:13:56] "GET /static/js/llm-module.js HTTP/1.1" 200 -
+2025-09-30 13:13:56,044 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:13:56] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-09-30 13:13:56,044 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:13:56] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-09-30 13:13:56,059 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:13:56] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-09-30 13:13:56,071 - config.database - INFO - Database connection established
+2025-09-30 13:13:56,074 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:13:56] "GET /authoring/api/posts/60/sections HTTP/1.1" 200 -
+2025-09-30 13:13:56,171 - config.database - INFO - Database connection established
+2025-09-30 13:13:56,175 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
+2025-09-30 13:13:56,175 - blueprints.planning - INFO - Calendar schedule entry: {'id': 1, 'year': 2025, 'week_number': 39, 'post_id': 60, 'scheduled_date': datetime.date(2025, 9, 28), 'created_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660), 'updated_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660)}
+2025-09-30 13:13:56,176 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:13:56] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-09-30 13:14:10,825 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:14:10] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-09-30 13:14:10,827 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:14:10] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-30 13:14:10,829 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:14:10] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-30 13:14:10,832 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:14:10] "[33mGET /static/images/site/favicon.ico HTTP/1.1[0m" 404 -
+2025-09-30 13:14:10,833 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:14:10] "[33mGET /static/images/site/apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-09-30 13:14:10,834 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:14:10] "[33mGET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1[0m" 404 -
+2025-09-30 13:14:23,901 - config.database - INFO - Database connection established
+2025-09-30 13:14:23,908 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:14:23] "HEAD /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+2025-09-30 13:14:27,233 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:14:27] "HEAD /static/js/llm-utils.js HTTP/1.1" 200 -
+2025-09-30 13:14:29,481 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:14:29] "HEAD /static/js/llm-config.js HTTP/1.1" 200 -
+2025-09-30 13:14:37,627 - config.database - INFO - Database connection established
+2025-09-30 13:14:37,630 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:14:37] "GET /authoring/api/posts/60/sections HTTP/1.1" 200 -
+2025-09-30 13:14:50,515 - config.database - INFO - Database connection established
+2025-09-30 13:14:50,518 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:14:50] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+3:14:29,481 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:14:29] "HEAD /static/js/llm-config.js HTTP/1.1" 200 -
+2025-09-30 13:14:37,627 - config.database - INFO - Database connection established
+2025-09-30 13:14:37,630 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:14:37] "GET /authoring/api/posts/60/sections HTTP/1.1" 200 -
+2025-09-30 13:14:50,515 - config.database - INFO - Database connection established
+2025-09-30 13:14:50,518 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 13:14:50] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
