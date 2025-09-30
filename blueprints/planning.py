@@ -2099,6 +2099,220 @@ def api_get_section_titling_prompt():
             'error': str(e)
         }), 500
 
+@bp.route('/api/sections/design-structure', methods=['POST'])
+def api_design_section_structure():
+    """Step 1: Design 7-section blog structure"""
+    try:
+        data = request.get_json()
+        topics = data.get('topics', [])
+        expanded_idea = data.get('expanded_idea', '')
+        post_id = data.get('post_id')
+        
+        if not topics:
+            return jsonify({
+                'success': False,
+                'error': 'No topics provided'
+            }), 400
+        
+        if not post_id:
+            return jsonify({
+                'success': False,
+                'error': 'Post ID is required'
+            }), 400
+        
+        # Get expanded idea if not provided
+        if not expanded_idea:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT expanded_idea 
+                    FROM post_development 
+                    WHERE post_id = %s
+                """, (post_id,))
+                result = cursor.fetchone()
+                if result and result['expanded_idea']:
+                    expanded_idea = result['expanded_idea']
+        
+        # Format topics for prompt
+        topics_text = '\n'.join([f"- {topic.get('title', topic) if isinstance(topic, dict) else topic}" for topic in topics])
+        
+        # Create structure design prompt
+        structure_prompt = f"""Design a 7-section blog structure for: {expanded_idea}
+
+TOPICS TO ENCOMPASS ({len(topics)} topics):
+{topics_text}
+
+REQUIREMENTS:
+- Create exactly 7 sections that together cover all topics
+- Each section should have clear thematic boundaries
+- Sections should flow logically from ancient to modern
+- Each section should be engaging for Scottish heritage audience
+- Specify what each section includes and excludes
+- Ensure comprehensive coverage without overlap
+
+OUTPUT FORMAT: Return ONLY valid JSON:
+{{
+  "sections": [
+    {{
+      "id": "section_1",
+      "theme": "Clear thematic focus",
+      "boundaries": "What this section covers",
+      "exclusions": "What this section does NOT cover",
+      "order": 1,
+      "description": "Engaging description for readers"
+    }}
+  ],
+  "metadata": {{
+    "total_sections": 7,
+    "design_principles": "How sections relate to each other",
+    "audience_focus": "Target audience description"
+  }}
+}}"""
+        
+        # Execute LLM request
+        messages = [
+            {'role': 'system', 'content': 'You are a Scottish heritage content specialist and blog structure designer. Your expertise lies in creating engaging, logical blog structures that comprehensively cover Scottish cultural topics while maintaining reader engagement.'},
+            {'role': 'user', 'content': structure_prompt}
+        ]
+        
+        result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+        
+        logger.info(f"LLM result: {result}")
+        
+        if 'error' in result:
+            return jsonify({
+                'success': False,
+                'error': f'LLM generation failed: {result["error"]}'
+            }), 500
+        
+        # Parse the response
+        try:
+            import json
+            import re
+            # Remove markdown code blocks if present
+            content = result['content'].strip()
+            if content.startswith('```') and content.endswith('```'):
+                content = content[3:-3].strip()
+            elif content.startswith('```json'):
+                content = content[7:].strip()
+                if content.endswith('```'):
+                    content = content[:-3].strip()
+            
+            # Clean up common JSON issues
+            content = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', content)  # Remove control characters
+            content = content.replace('\n', ' ').replace('\r', ' ')  # Replace newlines with spaces
+            
+            logger.info(f"Cleaned content: {content[:200]}...")
+            
+            structure_data = json.loads(content)
+            
+            # Validate the structure
+            if not validate_section_structure(structure_data):
+                return jsonify({
+                    'success': False,
+                    'error': 'Invalid section structure format'
+                }), 400
+            
+            # Save to database
+            save_section_structure(post_id, structure_data)
+            
+            return jsonify({
+                'success': True,
+                'message': 'Section structure designed successfully',
+                'section_structure': structure_data
+            })
+            
+        except json.JSONDecodeError as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to parse LLM response: {str(e)}'
+            }), 500
+        
+    except Exception as e:
+        logger.error(f"Error in api_design_section_structure: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+def validate_section_structure(structure_data):
+    """Validate section structure format"""
+    try:
+        if not isinstance(structure_data, dict):
+            return False
+        
+        sections = structure_data.get('sections', [])
+        if len(sections) != 7:
+            return False
+        
+        for section in sections:
+            required_fields = ['id', 'theme', 'boundaries', 'exclusions', 'order', 'description']
+            if not all(field in section for field in required_fields):
+                return False
+        
+        return True
+    except:
+        return False
+
+def save_section_structure(post_id, structure_data):
+    """Save section structure design to database"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                UPDATE post_development 
+                SET section_structure = %s, structure_design_at = NOW()
+                WHERE post_id = %s
+            """, (json.dumps(structure_data), post_id))
+            
+            if cursor.rowcount == 0:
+                # Create new record if it doesn't exist
+                cursor.execute("""
+                    INSERT INTO post_development (post_id, section_structure, structure_design_at, created_at, updated_at)
+                    VALUES (%s, %s, NOW(), NOW(), NOW())
+                """, (post_id, json.dumps(structure_data)))
+            
+            cursor.connection.commit()
+    except Exception as e:
+        logger.error(f"Error saving section structure: {e}")
+        raise
+
+@bp.route('/api/sections/design-structure/<int:post_id>', methods=['GET'])
+def api_get_section_structure(post_id):
+    """Get section structure design for a post"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT section_structure, structure_design_at
+                FROM post_development 
+                WHERE post_id = %s
+            """, (post_id,))
+            
+            result = cursor.fetchone()
+            
+            if not result or not result['section_structure']:
+                return jsonify({
+                    'success': False,
+                    'error': 'Section structure not found'
+                }), 404
+            
+            # Handle both JSON string and dict formats
+            if isinstance(result['section_structure'], str):
+                structure_data = json.loads(result['section_structure'])
+            else:
+                structure_data = result['section_structure']
+            
+            return jsonify({
+                'success': True,
+                'section_structure': structure_data,
+                'design_at': result['structure_design_at']
+            })
+            
+    except Exception as e:
+        logger.error(f"Error in api_get_section_structure: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @bp.route('/api/sections/group', methods=['POST'])
 def api_sections_group():
     """Stage 1: Group topics into thematic clusters"""
