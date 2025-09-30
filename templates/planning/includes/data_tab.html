@@ -19,6 +19,10 @@
                         <input type="radio" id="table-calendar-schedule" name="table-selection" value="calendar_schedule">
                         <label for="table-calendar-schedule">Calendar Schedule Table</label>
                     </div>
+                    <div class="radio-group">
+                        <input type="radio" id="table-post-section" name="table-selection" value="post_section">
+                        <label for="table-post-section">Post Section Table</label>
+                    </div>
                 </div>
 
                 <!-- Post Development Table Display -->
@@ -45,6 +49,14 @@
                     <h4>Calendar Schedule Table (ID: <span id="calendar-schedule-table-id">Loading...</span>)</h4>
                     <div id="calendar-schedule-fields-container" class="fields-container">
                         <div class="loading">Loading calendar schedule data...</div>
+                    </div>
+                </div>
+
+                <!-- Post Section Table Display -->
+                <div id="post-section-table-display" class="table-display">
+                    <h4>Post Section Table (ID: <span id="post-section-table-id">Loading...</span>)</h4>
+                    <div id="post-section-fields-container" class="fields-container">
+                        <div class="loading">Loading post section data...</div>
                     </div>
                 </div>
             </div>
@@ -637,6 +649,7 @@ function populateDatabaseTables(data) {
     document.getElementById('post-table-id').textContent = data.id || 'Unknown';
     document.getElementById('post-development-table-id').textContent = data.id || 'Unknown';
     document.getElementById('calendar-schedule-table-id').textContent = data.id || 'Unknown';
+    document.getElementById('post-section-table-id').textContent = data.id || 'Unknown';
     
     // Populate Post table
     populateTableFields('post-fields-container', data, 'post');
@@ -658,6 +671,30 @@ function populateDatabaseTables(data) {
     } else {
         console.log('[Data Tab] No calendar schedule data, showing empty message');
         document.getElementById('calendar-schedule-fields-container').innerHTML = '<div class="loading">No calendar schedule data found</div>';
+    }
+    
+    // Populate Post Section table
+    console.log('[Data Tab] Post section data:', data.post_sections);
+    if (data.post_sections && data.post_sections.length > 0) {
+        // Show all sections in a summary format, or the first section for detailed view
+        const sectionsData = data.post_sections;
+        console.log('[Data Tab] Populating post sections with data:', sectionsData);
+        
+        // Create a summary object showing all sections
+        const sectionsSummary = {
+            total_sections: sectionsData.length,
+            sections: sectionsData.map(section => ({
+                id: section.id,
+                section_order: section.section_order,
+                section_heading: section.section_heading,
+                status: section.status || 'draft'
+            }))
+        };
+        
+        populateTableFields('post-section-fields-container', sectionsSummary, 'post_section');
+    } else {
+        console.log('[Data Tab] No post section data, showing empty message');
+        document.getElementById('post-section-fields-container').innerHTML = '<div class="loading">No post section data found</div>';
     }
 }
 
