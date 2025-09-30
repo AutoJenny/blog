@@ -49,19 +49,19 @@ class LLMUIManager {
 
         let configHTML = '';
 
-        if (config.provider) {
+        if (config && config.provider) {
             configHTML += `<div class="provider-info">
                 <strong>Provider:</strong> ${this.escapeHtml(config.provider)}
             </div>`;
         }
 
-        if (config.model) {
+        if (config && config.model) {
             configHTML += `<div class="model-info">
                 <strong>Model:</strong> ${this.escapeHtml(config.model)}
             </div>`;
         }
 
-        if (config.temperature !== undefined) {
+        if (config && config.temperature !== undefined) {
             configHTML += `<div class="temperature-info">
                 <strong>Temperature:</strong> ${config.temperature}
             </div>`;

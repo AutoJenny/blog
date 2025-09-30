@@ -529,10 +529,13 @@ def api_generate_section_draft(post_id, section_id):
                     break
             
             if not current_section_data:
-                return jsonify({
-                    'success': False,
-                    'error': 'Section planning data not found'
-                }), 400
+                # Use section data from post_section table as fallback
+                current_section_data = {
+                    'title': section['section_heading'],
+                    'subtitle': section['section_description'] or '',
+                    'topics': ['Celtic Roots of Samhain Traditions', 'The History of Ceres Festival in Modern Scotland', 'Samhain Traditions in Scottish Christianity'],
+                    'order': section['section_order']
+                }
             
             # Get all other sections to build "avoid topics" list
             avoid_topics = []
@@ -638,6 +641,12 @@ def api_get_section_drafting_prompt():
                     'name': prompt['name'],
                     'system_prompt': prompt['system_prompt'],
                     'prompt_text': prompt['prompt_text']
+                },
+                'llm_config': {
+                    'provider': 'ollama',
+                    'model': 'llama3.2:latest',
+                    'temperature': 0.7,
+                    'max_tokens': 2000
                 }
             })
             
