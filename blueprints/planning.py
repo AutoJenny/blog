@@ -2010,6 +2010,49 @@ def api_get_section_planning_prompt():
             'error': str(e)
         }), 500
 
+@bp.route('/api/llm/prompts/section-titling', methods=['GET'])
+def api_get_section_titling_prompt():
+    """Get the Section Titling prompt and LLM configuration"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get the section titling prompt
+            cursor.execute("""
+                SELECT id, name, prompt_text, system_prompt
+                FROM llm_prompt 
+                WHERE name = 'Section Titling'
+                ORDER BY id DESC
+                LIMIT 1
+            """)
+            prompt = cursor.fetchone()
+            
+            if not prompt:
+                return jsonify({
+                    'success': False,
+                    'error': 'Section Titling prompt not found'
+                }), 404
+            
+            # Get LLM configuration
+            llm_config = {
+                'provider': 'Ollama',
+                'model': 'llama3.2:latest',
+                'temperature': 0.8,  # Slightly higher for more creative titles
+                'max_tokens': 2000,
+                'timeout': 60
+            }
+            
+            return jsonify({
+                'success': True,
+                'prompt': dict(prompt),
+                'llm_config': llm_config
+            })
+            
+    except Exception as e:
+        logger.error(f"Error getting section titling prompt: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @bp.route('/api/sections/group', methods=['POST'])
 def api_sections_group():
     """Stage 1: Group topics into thematic clusters"""

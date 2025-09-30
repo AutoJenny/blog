@@ -323,7 +323,7 @@ const LLM_CONFIGS = {
         allowEdit: true
     },
     'titling': {
-        promptEndpoint: '/planning/api/llm/prompts/section-planning',
+        promptEndpoint: '/planning/api/llm/prompts/section-titling',
         generateEndpoint: '/planning/api/sections/title',
         resultsField: 'sections',
         resultsTitle: 'Generated Sections',

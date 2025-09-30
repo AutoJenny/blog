@@ -315,8 +315,20 @@ async function loadGeneratedGroups() {
         const data = await response.json();
         
         if (data.success && data.groups) {
-            generatedGroups = data.groups;
-            displayGeneratedGroups(generatedGroups);
+            // Handle nested structure: data.groups.groups
+            let groups = data.groups;
+            if (groups.groups && Array.isArray(groups.groups)) {
+                groups = groups.groups;
+            }
+            
+            if (groups.length > 0) {
+                generatedGroups = groups;
+                displayGeneratedGroups(generatedGroups);
+                console.log('Loaded existing groups for titling:', groups.length);
+            } else {
+                console.log('No existing groups found');
+                displayGeneratedGroupsError('No groups found. Please go back to Section Grouping to create groups first.');
+            }
         } else {
             console.error('Error loading groups:', data.error);
             displayGeneratedGroupsError('No groups found. Please go back to Section Grouping to create groups first.');
