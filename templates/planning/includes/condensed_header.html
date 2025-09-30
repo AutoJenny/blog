@@ -33,6 +33,11 @@
                 <i class="fas fa-search"></i>
                 Research & Resources
             </a>
+            <a href="{{ url_for('authoring.authoring_sections', post_id=post_id) }}" 
+               class="stage-btn" data-stage="authoring">
+                <i class="fas fa-pen-nib"></i>
+                Authoring
+            </a>
         </div>
         <div class="main-stages-right">
             <a href="{{ url_for('planning.planning_old_interface', post_id=post_id) }}" 
@@ -82,20 +87,48 @@
             <!-- Research sub-stages -->
             <div class="sub-stage-group" data-stage="research">
                 <a href="{{ url_for('planning.planning_research_sources', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="sources">
+                   class="sub-stage-btn disabled" data-substage="sources">
                     Source Research
                 </a>
                 <a href="{{ url_for('planning.planning_research_visuals', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="visuals">
+                   class="sub-stage-btn disabled" data-substage="visuals">
                     Visual Planning
                 </a>
                 <a href="{{ url_for('planning.planning_research_prompts', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="prompts">
+                   class="sub-stage-btn disabled" data-substage="prompts">
                     Image Prompts
                 </a>
                 <a href="{{ url_for('planning.planning_research_verification', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="verification">
+                   class="sub-stage-btn disabled" data-substage="verification">
                     Fact Verification
+                </a>
+            </div>
+            
+            <!-- Authoring sub-stages -->
+            <div class="sub-stage-group" data-stage="authoring">
+                <a href="{{ url_for('authoring.authoring_sections_ideas_to_include', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="ideas-to-include">
+                    Ideas to Include
+                </a>
+                <a href="{{ url_for('authoring.authoring_sections_author_first_drafts', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="author-first-drafts">
+                    Author First Drafts
+                </a>
+                <a href="{{ url_for('authoring.authoring_sections_fix_language', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="fix-language">
+                    Fix Language
+                </a>
+                <a href="{{ url_for('authoring.authoring_sections_image_concepts', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="image-concepts">
+                    Image Concepts
+                </a>
+                <a href="{{ url_for('authoring.authoring_sections_image_prompts', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="image-prompts">
+                    Image Prompts
+                </a>
+                <a href="{{ url_for('authoring.authoring_sections_image_captions', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="image-captions">
+                    Image Captions
                 </a>
             </div>
         </div>
@@ -433,6 +466,14 @@ const subtitles = {
         'visuals': 'Plan visual elements and image requirements for your content.',
         'prompts': 'Generate detailed prompts for AI image creation.',
         'verification': 'Verify facts and ensure content accuracy.'
+    },
+    'authoring': {
+        'ideas-to-include': 'Generate specific ideas and key points for each section.',
+        'author-first-drafts': 'Create initial draft content for each section.',
+        'fix-language': 'Refine and improve language, flow, and readability.',
+        'image-concepts': 'Develop visual concepts and image requirements.',
+        'image-prompts': 'Generate detailed prompts for AI image creation.',
+        'image-captions': 'Create engaging captions and alt text for images.'
     }
 };
 

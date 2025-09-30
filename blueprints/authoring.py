@@ -1,21 +1,11 @@
-"""
-Authoring Blueprint - Dedicated content creation workspace
-Handles Sections, Post Info, and Images authoring phases
-"""
-
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify
+# Authoring Blueprint - Real workflow integration
+from flask import Blueprint, render_template, jsonify, request
 from config.database import db_manager
 import logging
 
 logger = logging.getLogger(__name__)
 
-# Create authoring blueprint
 bp = Blueprint('authoring', __name__, url_prefix='/authoring')
-
-@bp.route('/')
-def authoring_dashboard():
-    """Main authoring dashboard"""
-    return render_template('authoring/dashboard.html', blueprint_name='authoring')
 
 @bp.route('/posts/<int:post_id>')
 def authoring_post_overview(post_id):
@@ -33,19 +23,11 @@ def authoring_post_overview(post_id):
             if not post:
                 return "Post not found", 404
             
-            # Get authoring progress
-            cursor.execute("""
-                SELECT stage_id, sub_stage_id, status, updated_at
-                FROM post_workflow_stage 
-                WHERE post_id = %s AND stage_id IN (
-                    SELECT id FROM workflow_stage_entity WHERE name = 'writing'
-                )
-                ORDER BY stage_id, sub_stage_id
-            """, (post_id,))
-            progress = cursor.fetchall()
-            
             return render_template('authoring/post_overview.html', 
-                                 post=post, progress=progress, blueprint_name='authoring')
+                                 post_id=post_id,
+                                 post=post,
+                                 page_title="Authoring Overview",
+                                 blueprint_name='authoring')
             
     except Exception as e:
         logger.error(f"Error in authoring_post_overview: {e}")
@@ -53,71 +35,265 @@ def authoring_post_overview(post_id):
 
 @bp.route('/posts/<int:post_id>/sections')
 def authoring_sections(post_id):
-    """Sections authoring phase"""
-    return render_template('authoring/sections.html', post_id=post_id, blueprint_name='authoring')
-
-@bp.route('/posts/<int:post_id>/post-info')
-def authoring_post_info(post_id):
-    """Post info authoring phase"""
-    return render_template('authoring/post_info.html', post_id=post_id, blueprint_name='authoring')
-
-@bp.route('/posts/<int:post_id>/images')
-def authoring_images(post_id):
-    """Images authoring phase"""
-    return render_template('authoring/images.html', post_id=post_id, blueprint_name='authoring')
-
-@bp.route('/api/posts')
-def api_posts():
-    """API endpoint to get posts for authoring"""
+    """Sections authoring phase - main entry point"""
     try:
         with db_manager.get_cursor() as cursor:
+            # Get post details
             cursor.execute("""
                 SELECT id, title, status, created_at, updated_at
                 FROM post 
-                WHERE status IN ('draft', 'in_process', 'published')
-                ORDER BY updated_at DESC
-                LIMIT 20
-            """)
-            posts = cursor.fetchall()
+                WHERE id = %s
+            """, (post_id,))
+            post = cursor.fetchone()
+            
+            if not post:
+                return "Post not found", 404
+            
+            return render_template('authoring/sections/overview.html', 
+                                 post_id=post_id,
+                                 post=post,
+                                 page_title="Section Authoring",
+                                 blueprint_name='authoring')
+            
+    except Exception as e:
+        logger.error(f"Error in authoring_sections: {e}")
+        return f"Error: {e}", 500
+
+@bp.route('/posts/<int:post_id>/sections/ideas_to_include')
+def authoring_sections_ideas_to_include(post_id):
+    """Ideas to include step - Step 43"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get post details
+            cursor.execute("""
+                SELECT id, title, status, created_at, updated_at
+                FROM post 
+                WHERE id = %s
+            """, (post_id,))
+            post = cursor.fetchone()
+            
+            if not post:
+                return "Post not found", 404
+            
+            return render_template('authoring/sections/ideas_to_include.html', 
+                                 post_id=post_id,
+                                 post=post,
+                                 page_title="Ideas to Include",
+                                 blueprint_name='authoring')
+            
+    except Exception as e:
+        logger.error(f"Error in authoring_sections_ideas_to_include: {e}")
+        return f"Error: {e}", 500
+
+@bp.route('/posts/<int:post_id>/sections/author_first_drafts')
+def authoring_sections_author_first_drafts(post_id):
+    """Author First Drafts step - Step 16"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get post details
+            cursor.execute("""
+                SELECT id, title, status, created_at, updated_at
+                FROM post 
+                WHERE id = %s
+            """, (post_id,))
+            post = cursor.fetchone()
+            
+            if not post:
+                return "Post not found", 404
+            
+            return render_template('authoring/sections/author_first_drafts.html', 
+                                 post_id=post_id,
+                                 post=post,
+                                 page_title="Author First Drafts",
+                                 blueprint_name='authoring')
+            
+    except Exception as e:
+        logger.error(f"Error in authoring_sections_author_first_drafts: {e}")
+        return f"Error: {e}", 500
+
+@bp.route('/posts/<int:post_id>/sections/fix_language')
+def authoring_sections_fix_language(post_id):
+    """FIX language step - Step 49"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get post details
+            cursor.execute("""
+                SELECT id, title, status, created_at, updated_at
+                FROM post 
+                WHERE id = %s
+            """, (post_id,))
+            post = cursor.fetchone()
+            
+            if not post:
+                return "Post not found", 404
+            
+            return render_template('authoring/sections/fix_language.html', 
+                                 post_id=post_id,
+                                 post=post,
+                                 page_title="Fix Language",
+                                 blueprint_name='authoring')
+            
+    except Exception as e:
+        logger.error(f"Error in authoring_sections_fix_language: {e}")
+        return f"Error: {e}", 500
+
+@bp.route('/posts/<int:post_id>/sections/image_concepts')
+def authoring_sections_image_concepts(post_id):
+    """Image concepts step - Step 53"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get post details
+            cursor.execute("""
+                SELECT id, title, status, created_at, updated_at
+                FROM post 
+                WHERE id = %s
+            """, (post_id,))
+            post = cursor.fetchone()
+            
+            if not post:
+                return "Post not found", 404
+            
+            return render_template('authoring/sections/image_concepts.html', 
+                                 post_id=post_id,
+                                 post=post,
+                                 page_title="Image Concepts",
+                                 blueprint_name='authoring')
+            
+    except Exception as e:
+        logger.error(f"Error in authoring_sections_image_concepts: {e}")
+        return f"Error: {e}", 500
+
+@bp.route('/posts/<int:post_id>/sections/image_prompts')
+def authoring_sections_image_prompts(post_id):
+    """Image prompts step - Step 54"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get post details
+            cursor.execute("""
+                SELECT id, title, status, created_at, updated_at
+                FROM post 
+                WHERE id = %s
+            """, (post_id,))
+            post = cursor.fetchone()
+            
+            if not post:
+                return "Post not found", 404
+            
+            return render_template('authoring/sections/image_prompts.html', 
+                                 post_id=post_id,
+                                 post=post,
+                                 page_title="Image Prompts",
+                                 blueprint_name='authoring')
+            
+    except Exception as e:
+        logger.error(f"Error in authoring_sections_image_prompts: {e}")
+        return f"Error: {e}", 500
+
+@bp.route('/posts/<int:post_id>/sections/image_captions')
+def authoring_sections_image_captions(post_id):
+    """Image captions step - Step 58"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get post details
+            cursor.execute("""
+                SELECT id, title, status, created_at, updated_at
+                FROM post 
+                WHERE id = %s
+            """, (post_id,))
+            post = cursor.fetchone()
+            
+            if not post:
+                return "Post not found", 404
+            
+            return render_template('authoring/sections/image_captions.html', 
+                                 post_id=post_id,
+                                 post=post,
+                                 page_title="Image Captions",
+                                 blueprint_name='authoring')
+            
+    except Exception as e:
+        logger.error(f"Error in authoring_sections_image_captions: {e}")
+        return f"Error: {e}", 500
+
+# API endpoints for section data
+@bp.route('/api/posts/<int:post_id>/sections')
+def api_get_sections(post_id):
+    """Get all sections for a post"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get sections from post.sections JSONB field
+            cursor.execute("""
+                SELECT sections
+                FROM post 
+                WHERE id = %s
+            """, (post_id,))
+            result = cursor.fetchone()
+            
+            if not result or not result['sections']:
+                return jsonify({
+                    'success': True,
+                    'sections': []
+                })
+            
+            sections = result['sections']
+            if isinstance(sections, dict) and 'sections' in sections:
+                sections = sections['sections']
             
             return jsonify({
                 'success': True,
-                'posts': [dict(post) for post in posts]
+                'sections': sections
             })
             
     except Exception as e:
-        logger.error(f"Error in api_posts: {e}")
+        logger.error(f"Error in api_get_sections: {e}")
         return jsonify({
             'success': False,
             'error': str(e)
         }), 500
 
-@bp.route('/api/posts/<int:post_id>/progress')
-def api_post_progress(post_id):
-    """API endpoint to get authoring progress for a post"""
+@bp.route('/api/posts/<int:post_id>/sections/<int:section_id>')
+def api_get_section_detail(post_id, section_id):
+    """Get details for a specific section"""
     try:
         with db_manager.get_cursor() as cursor:
+            # Get sections from post.sections JSONB field
             cursor.execute("""
-                SELECT 
-                    wse.name as stage_name,
-                    wsse.name as sub_stage_name,
-                    pws.status,
-                    pws.updated_at
-                FROM post_workflow_stage pws
-                JOIN workflow_stage_entity wse ON pws.stage_id = wse.id
-                LEFT JOIN workflow_sub_stage_entity wsse ON pws.sub_stage_id = wsse.id
-                WHERE pws.post_id = %s AND wse.name = 'writing'
-                ORDER BY wse.stage_order, wsse.sub_stage_order
+                SELECT sections
+                FROM post 
+                WHERE id = %s
             """, (post_id,))
-            progress = cursor.fetchall()
+            result = cursor.fetchone()
+            
+            if not result or not result['sections']:
+                return jsonify({
+                    'success': False,
+                    'error': 'No sections found'
+                }), 404
+            
+            sections = result['sections']
+            if isinstance(sections, dict) and 'sections' in sections:
+                sections = sections['sections']
+            
+            # Find the specific section
+            section = None
+            for s in sections:
+                if s.get('id') == section_id or s.get('order') == section_id:
+                    section = s
+                    break
+            
+            if not section:
+                return jsonify({
+                    'success': False,
+                    'error': 'Section not found'
+                }), 404
             
             return jsonify({
                 'success': True,
-                'progress': [dict(p) for p in progress]
+                'section': section
             })
             
     except Exception as e:
-        logger.error(f"Error in api_post_progress: {e}")
+        logger.error(f"Error in api_get_section_detail: {e}")
         return jsonify({
             'success': False,
             'error': str(e)
