@@ -157,7 +157,7 @@ def authoring_sections(post_id):
             if not post:
                 return "Post not found", 404
             
-            return render_template('authoring/sections/overview.html', 
+            return render_template('authoring/sections/author_first_drafts.html', 
                                  post_id=post_id,
                                  post=post,
                                  page_title="Section Authoring",
