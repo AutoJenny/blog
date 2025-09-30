@@ -2510,6 +2510,7 @@ DO NOT return JSON format. Return simple text lines only."""
             logger.info(f"Original topics: {topics}")
             
             validation_result = validate_topic_allocation(allocation_data, topics)
+            logger.info(f"Validation result: {validation_result}")
             if not validation_result:
                 logger.error(f"Validation failed for allocation: {allocation_data}")
                 logger.error(f"Valid lines found: {len(valid_lines)}")
@@ -2598,8 +2599,6 @@ DO NOT return JSON format. Return simple text lines only."""
 def allocate_missing_topics(missing_topics, section_structure, post_id):
     """Allocate missing topics using LLM with simplified prompt"""
     try:
-        from modules.llm_service import generate_content
-        
         # Create section codes mapping
         section_codes = {}
         for i, section in enumerate(section_structure.get('sections', []), 1):
@@ -2628,11 +2627,13 @@ Topic Title {{S02}}
 
         logger.info(f"Retry prompt for {len(missing_topics)} missing topics")
         
-        result = generate_content(
-            prompt=prompt,
-            system_message="You are a Scottish heritage content specialist and topic allocation expert. You MUST follow instructions exactly and return ONLY the requested format without any additional text.",
-            config={'provider': 'openai', 'model': 'gpt-4o-mini', 'temperature': 0.3}
-        )
+        # Use the same LLM service as the main function
+        messages = [
+            {'role': 'system', 'content': "You are a Scottish heritage content specialist and topic allocation expert. You MUST follow instructions exactly and return ONLY the requested format without any additional text."},
+            {'role': 'user', 'content': prompt}
+        ]
+        
+        result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
         
         if not result or not result.get('content'):
             return {'success': False, 'error': 'LLM returned empty response for retry'}
