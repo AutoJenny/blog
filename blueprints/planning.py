@@ -2132,7 +2132,7 @@ def api_get_section_structure_prompt():
             cursor.execute("""
                 SELECT id, name, prompt_text, system_prompt
                 FROM llm_prompt 
-                WHERE name = 'Section Planning'
+                WHERE name = 'Section Structure Design'
                 ORDER BY id DESC
                 LIMIT 1
             """)
