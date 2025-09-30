@@ -2483,9 +2483,9 @@ DO NOT return JSON format. Return simple text lines only."""
                 section_order = int(section_code[1:])  # Extract number from S01, S02, etc.
                 allocation_data['allocations'].append({
                     'section_id': f'section_{section_order}',
-                    'section_theme': section_codes[section_code],
+                    'section_theme': section_codes.get(section_code, f"Unknown Section {section_code}"),
                     'topics': topic_list,
-                    'allocation_reason': f'Topics allocated to {section_codes[section_code]} based on thematic fit'
+                    'allocation_reason': f'Topics allocated to {section_codes.get(section_code, f"Unknown Section {section_code}")} based on thematic fit'
                 })
             
             logger.info(f"Parsed allocation data: {allocation_data}")
