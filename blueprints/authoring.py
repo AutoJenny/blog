@@ -529,11 +529,37 @@ def api_generate_section_draft(post_id, section_id):
                     break
             
             if not current_section_data:
+                # Get topics from idea_scope and assign to section based on semantic matching
+                topics_for_section = []
+                if dev_data and dev_data.get('idea_scope'):
+                    try:
+                        import json
+                        idea_scope = json.loads(dev_data['idea_scope'])
+                        all_topics = idea_scope.get('generated_topics', [])
+                        
+                        # Simple semantic matching based on section heading/description
+                        section_text = f"{section['section_heading']} {section['section_description'] or ''}".lower()
+                        
+                        for topic in all_topics:
+                            topic_title = topic.get('title', '').lower()
+                            # Match topics that contain keywords from section
+                            if any(keyword in topic_title for keyword in ['samhain', 'celtic', 'ceres', 'festival', 'harvest', 'agriculture', 'crop', 'autumn', 'folklore', 'tradition', 'christianity', 'women', 'farmer', 'remedy']):
+                                if any(keyword in section_text for keyword in topic_title.split()):
+                                    topics_for_section.append(topic['title'])
+                        
+                        # If no matches found, assign first 3 topics as fallback
+                        if not topics_for_section and all_topics:
+                            topics_for_section = [topic['title'] for topic in all_topics[:3]]
+                            
+                    except (json.JSONDecodeError, KeyError, TypeError):
+                        # If parsing fails, use empty list
+                        topics_for_section = []
+                
                 # Use section data from post_section table as fallback
                 current_section_data = {
                     'title': section['section_heading'],
                     'subtitle': section['section_description'] or '',
-                    'topics': ['Celtic Roots of Samhain Traditions', 'The History of Ceres Festival in Modern Scotland', 'Samhain Traditions in Scottish Christianity'],
+                    'topics': topics_for_section,
                     'order': section['section_order']
                 }
             
@@ -566,7 +592,7 @@ def api_generate_section_draft(post_id, section_id):
                 'SECTION_SUBTITLE': section['section_description'] or '',
                 'SECTION_GROUP': 'Historical Foundations of Autumnal Traditions',  # This should come from planning data
                 'GROUP_SUMMARY': 'This group explores the Celtic roots and historical developments that shaped Scotland\'s autumnal customs, highlighting their significance in understanding the country\'s identity.',
-                'SECTION_TOPICS': 'Celtic Roots of Samhain Traditions, The History of Ceres Festival in Modern Scotland, Samhain Traditions in Scottish Christianity',
+                'SECTION_TOPICS': ', '.join(current_section_data.get('topics', [])),
                 'AVOID_SECTIONS_DETAILED': '''Agriculture and the Land's Bounty: Crop rotation practices in ancient Scotland, Agricultural cycle and Celtic mythology, Crops in Scottish folk remedies
 Seasonal Celebrations: Timeless Traditions: Modern harvest festivals, Community celebrations, Seasonal observances
 Autumnal Symbolism and Mythology: Symbolic meanings of autumn, Mythological connections, Seasonal symbolism
