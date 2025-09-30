@@ -2458,6 +2458,10 @@ DO NOT return JSON format. Return simple text lines only."""
                         section_code = line[start_brace + 1:end_brace].strip()
                         topic_title = line[:start_brace].strip()
                         
+                        # Strip numbered prefixes (e.g., "1. Topic Title" -> "Topic Title")
+                        if topic_title and topic_title[0].isdigit() and '. ' in topic_title:
+                            topic_title = topic_title.split('. ', 1)[1]
+                        
                         # Validate section code format
                         if section_code.startswith('S') and len(section_code) == 3:
                             try:
