@@ -217,6 +217,8 @@ class LLMModule {
         this.isEditing = false;
     }
     
+    }
+    
     async generateContent() {
         const generateBtn = document.getElementById('generate-btn');
         const resultsDisplay = document.getElementById('llm-results-display');
@@ -242,7 +244,14 @@ class LLMModule {
             const data = await response.json();
             
             if (data.success) {
-                this.displayResults(data.results);
+                // Handle different response formats based on config
+                if (this.config.resultsField === 'draft_content') {
+                    // For authoring, put content directly in the editor
+                    this.displayAuthoringResults(data);
+                } else {
+                    // For other modules, use standard display
+                    this.displayResults(data.results || data);
+                }
             } else {
                 this.displayError(data.error || 'Generation failed');
             }
@@ -256,12 +265,37 @@ class LLMModule {
         }
     }
     
-    displayResults(results) {
+    displayAuthoringResults(data) {
         const resultsDisplay = document.getElementById('llm-results-display');
-        if (!resultsDisplay) return;
+        const contentEditor = document.getElementById('content-editor');
         
-        // This will be overridden by page-specific display functions
-        resultsDisplay.innerHTML = `<div class="no-results">Results generated successfully</div>`;
+        if (data.draft_content) {
+            // Display in results area
+            if (resultsDisplay) {
+                resultsDisplay.innerHTML = `<div class="generated-content">${data.draft_content}</div>`;
+            }
+            
+            // Also put in content editor
+            if (contentEditor) {
+                contentEditor.value = data.draft_content;
+                contentEditor.disabled = false;
+                
+                // Update word count
+                const wordCount = data.draft_content.trim().split(/\s+/).filter(word => word.length > 0).length;
+                const wordCountElement = document.getElementById('word-count');
+                if (wordCountElement) {
+                    wordCountElement.textContent = `${wordCount} words`;
+                }
+                
+                // Enable save button
+                const saveBtn = document.getElementById('save-btn');
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                }
+            }
+        } else {
+            this.displayError('No content generated');
+        }
     }
     
     setPostId(postId) {
@@ -296,6 +330,39 @@ function toggleLLMAccordion() {
         accordionIcon.style.transform = 'rotate(180deg)';
         accordionContent.classList.remove('closed');
         accordionContent.classList.add('open');
+    }
+    
+    displayAuthoringResults(data) {
+        const resultsDisplay = document.getElementById('llm-results-display');
+        const contentEditor = document.getElementById('content-editor');
+        
+        if (data.draft_content) {
+            // Display in results area
+            if (resultsDisplay) {
+                resultsDisplay.innerHTML = `<div class="generated-content">${data.draft_content}</div>`;
+            }
+            
+            // Also put in content editor
+            if (contentEditor) {
+                contentEditor.value = data.draft_content;
+                contentEditor.disabled = false;
+                
+                // Update word count
+                const wordCount = data.draft_content.trim().split(/\s+/).filter(word => word.length > 0).length;
+                const wordCountElement = document.getElementById('word-count');
+                if (wordCountElement) {
+                    wordCountElement.textContent = `${wordCount} words`;
+                }
+                
+                // Enable save button
+                const saveBtn = document.getElementById('save-btn');
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                }
+            }
+        } else {
+            this.displayError('No content generated');
+        }
     }
 }
 
@@ -335,11 +402,18 @@ const LLM_CONFIGS = {
         resultsField: 'sections',
         resultsTitle: 'Generated Sections',
         allowEdit: true
+    },
+    'author_draft': { // Config for authoring section drafts
+        promptEndpoint: '/authoring/api/llm/prompts/section-drafting',
+        generateEndpoint: '/authoring/api/posts/{id}/sections/{section_id}/generate',
+        resultsField: 'draft_content',
+        resultsTitle: 'Generated Draft',
+        allowEdit: true
     }
 };
 
 // Initialize LLM module for a specific page type
-function initializeLLMModule(pageType, postId) {
+function initializeLLMModule(pageType, postId, sectionId = null) {
     const config = LLM_CONFIGS[pageType];
     if (!config) {
         console.error(`Unknown page type: ${pageType}`);
@@ -348,6 +422,11 @@ function initializeLLMModule(pageType, postId) {
     
     // Replace {id} placeholder in generate endpoint
     config.generateEndpoint = config.generateEndpoint.replace('{id}', postId);
+    
+    // Replace {section_id} placeholder if present and sectionId provided
+    if (sectionId && config.generateEndpoint.includes('{section_id}')) {
+        config.generateEndpoint = config.generateEndpoint.replace('{section_id}', sectionId);
+    }
     
     const module = new LLMModule(config);
     module.setPostId(postId);
