@@ -5,45 +5,42 @@
         <h1 class="planning-title" id="planning-title">{{ page_title }}: ID: {{ post_id }}</h1>
     </div>
     
-    <!-- Combined Navigation and Status Line -->
-    <div class="combined-nav-status">
-        <!-- Main Stage Navigation -->
-        <div class="main-stages">
-            <a href="{{ url_for('planning.planning_calendar', post_id=post_id) }}" 
-               class="stage-btn" data-stage="calendar">
-                <i class="fas fa-calendar-alt"></i>
-                Content Calendar
-            </a>
-            <a href="{{ url_for('planning.planning_concept', post_id=post_id) }}" 
-               class="stage-btn" data-stage="concept">
-                <i class="fas fa-lightbulb"></i>
-                Concept Development
-            </a>
-            <a href="{{ url_for('planning.planning_research', post_id=post_id) }}" 
-               class="stage-btn" data-stage="research">
-                <i class="fas fa-search"></i>
-                Research & Resources
-            </a>
-            <a href="{{ url_for('planning.planning_old_interface', post_id=post_id) }}" 
-               class="stage-btn old-interface" data-stage="old-interface">
-                <i class="fas fa-history"></i>
-                Old Interface
-            </a>
-        </div>
-        
-        <!-- Status Info -->
-        <div class="status-info">
-            <span class="status-label">Status:</span>
-            <span class="status-value" id="post-status">{{ post_status or 'Unknown' }}</span>
-            <span class="date-label">Created:</span>
-            <span class="date-value" id="post-created">{{ post_created or 'Unknown' }}</span>
-            <span class="date-label">Updated:</span>
-            <span class="date-value" id="post-updated">{{ post_updated or 'Unknown' }}</span>
-        </div>
+    <!-- Post Details Line -->
+    <div class="post-details-line">
+        <span class="status-label">Status:</span>
+        <span class="status-value" id="post-status">{{ post_status or 'Unknown' }}</span>
+        <span class="date-label">Created:</span>
+        <span class="date-value" id="post-created">{{ post_created or 'Unknown' }}</span>
+        <span class="date-label">Updated:</span>
+        <span class="date-value" id="post-updated">{{ post_updated or 'Unknown' }}</span>
     </div>
     
-    <!-- Sub-stages and Tabs Combined -->
-    <div class="sub-stages-tabs" id="sub-stages-tabs">
+    <!-- Main Stage Navigation -->
+    <div class="main-stages-line">
+        <a href="{{ url_for('planning.planning_calendar', post_id=post_id) }}" 
+           class="stage-btn" data-stage="calendar">
+            <i class="fas fa-calendar-alt"></i>
+            Content Calendar
+        </a>
+        <a href="{{ url_for('planning.planning_concept', post_id=post_id) }}" 
+           class="stage-btn" data-stage="concept">
+            <i class="fas fa-lightbulb"></i>
+            Concept Development
+        </a>
+        <a href="{{ url_for('planning.planning_research', post_id=post_id) }}" 
+           class="stage-btn" data-stage="research">
+            <i class="fas fa-search"></i>
+            Research & Resources
+        </a>
+        <a href="{{ url_for('planning.planning_old_interface', post_id=post_id) }}" 
+           class="stage-btn old-interface" data-stage="old-interface">
+            <i class="fas fa-history"></i>
+            Old Interface
+        </a>
+    </div>
+    
+    <!-- Sub-stages with Subtitle and Tabs -->
+    <div class="sub-stages-line" id="sub-stages-line">
         <!-- Sub-stage Navigation -->
         <div class="sub-stages" id="sub-stages">
             <!-- Calendar sub-stages -->
@@ -95,6 +92,11 @@
             </div>
         </div>
         
+        <!-- Subtitle -->
+        <div class="subtitle" id="subtitle">
+            <!-- Subtitle will be dynamically inserted here based on current substage -->
+        </div>
+        
         <!-- Process/Data Tabs -->
         <div class="tab-buttons">
             <button class="tab-btn active" data-tab="process">
@@ -129,7 +131,7 @@
 }
 
 .main-title-line {
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
 }
 
 .planning-title {
@@ -140,23 +142,49 @@
     text-align: center;
 }
 
-/* Combined Navigation and Status */
-.combined-nav-status {
+/* Post Details Line */
+.post-details-line {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
+    gap: 1rem;
     margin-bottom: 0.5rem;
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 1rem;
     background: #1e293b;
-    border-radius: 8px;
+    border-radius: 6px;
     border: 1px solid #334155;
     flex-wrap: wrap;
-    gap: 1rem;
 }
 
-.main-stages {
+.status-label, .date-label {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-value, .date-value {
+    color: #e2e8f0;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.status-value {
+    padding: 0.2rem 0.5rem;
+    background: #0f172a;
+    border-radius: 4px;
+    border: 1px solid #334155;
+}
+
+/* Main Stage Navigation */
+.main-stages-line {
     display: flex;
+    justify-content: center;
     gap: 0.75rem;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #1e293b;
+    border-radius: 6px;
+    border: 1px solid #334155;
     flex-wrap: wrap;
 }
 
@@ -197,34 +225,8 @@
     color: white;
 }
 
-.status-info {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-}
-
-.status-label, .date-label {
-    color: #94a3b8;
-    font-size: 0.8rem;
-    font-weight: 500;
-}
-
-.status-value, .date-value {
-    color: #e2e8f0;
-    font-weight: 600;
-    font-size: 0.8rem;
-}
-
-.status-value {
-    padding: 0.2rem 0.5rem;
-    background: #1e293b;
-    border-radius: 4px;
-    border: 1px solid #334155;
-}
-
-/* Sub-stages and Tabs Combined */
-.sub-stages-tabs {
+/* Sub-stages with Subtitle and Tabs */
+.sub-stages-line {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -269,6 +271,16 @@
     background: #06b6d4;
     border-color: #06b6d4;
     color: white;
+}
+
+/* Subtitle */
+.subtitle {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    font-style: italic;
+    text-align: center;
+    flex: 1;
+    min-width: 200px;
 }
 
 .tab-buttons {
@@ -318,26 +330,28 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .combined-nav-status {
+    .post-details-line {
         flex-direction: column;
-        align-items: stretch;
+        gap: 0.5rem;
     }
     
-    .main-stages {
-        justify-content: center;
+    .main-stages-line {
+        flex-direction: column;
+        align-items: center;
     }
     
-    .status-info {
-        justify-content: center;
-    }
-    
-    .sub-stages-tabs {
+    .sub-stages-line {
         flex-direction: column;
         align-items: stretch;
     }
     
     .sub-stages {
         justify-content: center;
+    }
+    
+    .subtitle {
+        min-width: auto;
+        margin: 0.5rem 0;
     }
     
     .tab-buttons {
@@ -349,6 +363,25 @@
 <script type="module" src="/static/js/planning/planning-header-updater.js"></script>
 
 <script>
+// Subtitle definitions for each substage
+const subtitles = {
+    'calendar': {
+        'view': 'Weekly view of your content schedule - 52 weeks organized by month',
+        'ideas': 'AI-powered suggestions based on seasons, trends, and content gaps.'
+    },
+    'concept': {
+        'brainstorm': 'Generate 50+ topic ideas and curate the best ones for your content.',
+        'sections': 'Organize your generated topics into thematic sections with clear themes and flow.',
+        'outline': 'Create a detailed content outline with logical flow and structure.'
+    },
+    'research': {
+        'sources': 'Research and gather credible sources for your content topics.',
+        'visuals': 'Plan visual elements and image requirements for your content.',
+        'prompts': 'Generate detailed prompts for AI image creation.',
+        'verification': 'Verify facts and ensure content accuracy.'
+    }
+};
+
 // Navigation highlighting based on current page
 function updateNavigationHighlighting() {
     // Get current stage and substage from window object (set by each page)
@@ -374,9 +407,9 @@ function updateNavigationHighlighting() {
     }
     
     // Show/hide sub-stages based on current stage
-    const subStagesTabs = document.querySelector('.sub-stages-tabs');
-    if (currentStage && currentStage !== 'old-interface' && subStagesTabs) {
-        subStagesTabs.style.display = 'flex';
+    const subStagesLine = document.querySelector('.sub-stages-line');
+    if (currentStage && currentStage !== 'old-interface' && subStagesLine) {
+        subStagesLine.style.display = 'flex';
         
         // Show only the relevant sub-stage group
         const subStageGroups = document.querySelectorAll('.sub-stage-group');
@@ -387,7 +420,7 @@ function updateNavigationHighlighting() {
             }
         });
         
-        // Highlight current substage
+        // Highlight current substage and update subtitle
         if (currentSubstage) {
             const subStageButtons = document.querySelectorAll('.sub-stage-btn');
             subStageButtons.forEach(btn => {
@@ -396,9 +429,15 @@ function updateNavigationHighlighting() {
                     btn.classList.add('active');
                 }
             });
+            
+            // Update subtitle
+            const subtitleElement = document.getElementById('subtitle');
+            if (subtitleElement && subtitles[currentStage] && subtitles[currentStage][currentSubstage]) {
+                subtitleElement.textContent = subtitles[currentStage][currentSubstage];
+            }
         }
-    } else if (subStagesTabs) {
-        subStagesTabs.style.display = 'none';
+    } else if (subStagesLine) {
+        subStagesLine.style.display = 'none';
     }
 }
 
