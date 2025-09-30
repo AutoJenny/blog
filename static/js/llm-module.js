@@ -315,6 +315,20 @@ const LLM_CONFIGS = {
         resultsTitle: 'Generated Topics',
         allowEdit: true
     },
+    'grouping': {
+        promptEndpoint: '/planning/api/llm/prompts/section-planning',
+        generateEndpoint: '/planning/api/sections/group',
+        resultsField: 'groups',
+        resultsTitle: 'Generated Groups',
+        allowEdit: true
+    },
+    'titling': {
+        promptEndpoint: '/planning/api/llm/prompts/section-planning',
+        generateEndpoint: '/planning/api/sections/title',
+        resultsField: 'sections',
+        resultsTitle: 'Generated Sections',
+        allowEdit: true
+    },
     'sections': {
         promptEndpoint: '/planning/api/llm/prompts/section-planning',
         generateEndpoint: '/planning/api/sections/plan',

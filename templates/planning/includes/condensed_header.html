@@ -65,9 +65,13 @@
                    class="sub-stage-btn" data-substage="brainstorm">
                     Topic Brainstorming
                 </a>
-                <a href="{{ url_for('planning.planning_concept_sections', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="sections">
-                    Section Planning
+                <a href="{{ url_for('planning.planning_concept_grouping', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="grouping">
+                    Section Grouping
+                </a>
+                <a href="{{ url_for('planning.planning_concept_titling', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="titling">
+                    Section Titling
                 </a>
                 <a href="{{ url_for('planning.planning_concept_outline', post_id=post_id) }}" 
                    class="sub-stage-btn" data-substage="outline">
@@ -394,7 +398,8 @@ const subtitles = {
     },
     'concept': {
         'brainstorm': 'Generate 50+ topic ideas and curate the best ones for your content.',
-        'sections': 'Organize your generated topics into thematic sections with clear themes and flow.',
+        'grouping': 'Group your generated topics into 6-8 thematic clusters for logical organization.',
+        'titling': 'Create compelling titles and descriptions for each section, defining scope and boundaries.',
         'outline': 'Create a detailed content outline with logical flow and structure.'
     },
     'research': {
