@@ -2369,37 +2369,32 @@ def api_allocate_topics():
         topics_text = '\n'.join([f"- {topic.get('title', topic) if isinstance(topic, dict) else topic}" for topic in topics])
         
         # Create allocation prompt
-        allocation_prompt = f"""You are a content strategist allocating {len(topics)} topics into {len(section_structure.get('sections', []))} blog sections about Scottish autumn traditions.
-
-CRITICAL INSTRUCTION: Return each topic in EXACTLY the same order as provided, with the most appropriate section code appended in curly braces.
+        allocation_prompt = f"""TASK: Allocate {len(topics)} topics to sections. Return each topic in the SAME ORDER as provided, with section code in curly braces.
 
 SECTION STRUCTURE:
 {sections_text}
 
-TOPICS TO ALLOCATE (in this exact order):
+TOPICS TO ALLOCATE (process these in order):
 {topics_text}
 
-OUTPUT FORMAT: Return each topic in the same order, with section code suffix:
-Topic Title 1 {{S01}}
-Topic Title 2 {{S03}}
-Topic Title 3 {{S02}}
-... (continue for all {len(topics)} topics)
-
-RULES:
-1. Keep topics in the EXACT same order as provided
-2. Append the most appropriate section code in curly braces {{S01}}, {{S02}}, etc.
-3. Each topic goes to exactly ONE section
-4. Consider thematic fit, not rotation
-5. Return exactly {len(topics)} lines
-
-EXAMPLE:
+REQUIRED OUTPUT FORMAT - return exactly {len(topics)} lines like this:
 Celtic Roots of Samhain Traditions {{S01}}
 Crop Rotation Practices in Ancient Scotland {{S02}}
-Hogmanay Traditions in Modern Scotland {{S07}}"""
+Hogmanay Traditions in Modern Scotland {{S07}}
+
+CRITICAL RULES:
+1. Return EXACTLY {len(topics)} lines
+2. Keep topics in the SAME ORDER as provided above
+3. Each line format: Topic Title {{S01}}
+4. Use section codes S01, S02, S03, S04, S05, S06, S07
+5. NO JSON format, NO quotes, NO commas
+6. Each topic appears exactly once
+
+DO NOT return JSON format. Return simple text lines only."""
         
         # Execute LLM request
         messages = [
-            {'role': 'system', 'content': 'You are a Scottish heritage content specialist and topic allocation expert. Your expertise lies in matching topics to appropriate sections based on thematic boundaries and ensuring comprehensive coverage without overlap. You MUST follow instructions exactly and return ONLY the requested JSON format without any additional text or explanations.'},
+            {'role': 'system', 'content': 'You are a Scottish heritage content specialist and topic allocation expert. Your expertise lies in matching topics to appropriate sections based on thematic boundaries and ensuring comprehensive coverage without overlap. You MUST follow instructions exactly and return ONLY the requested text format without any additional text, explanations, or JSON.'},
             {'role': 'user', 'content': allocation_prompt}
         ]
         
