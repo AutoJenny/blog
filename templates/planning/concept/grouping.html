@@ -297,6 +297,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load generated topics
     loadGeneratedTopics();
     
+    // Load existing groups
+    loadExistingGroups();
+    
     // Initialize grouping functionality
     initializeGrouping();
 });
@@ -328,6 +331,23 @@ async function loadGeneratedTopics() {
     } catch (error) {
         console.error('Error loading topics:', error);
         displayGeneratedTopicsError('Failed to load topics');
+    }
+}
+
+async function loadExistingGroups() {
+    try {
+        const response = await fetch(`/planning/api/posts/${window.postId}/groups`);
+        const data = await response.json();
+        
+        if (data.success && data.groups && data.groups.length > 0) {
+            generatedGroups = data.groups;
+            displayGroups(generatedGroups);
+            console.log('Loaded existing groups:', data.groups.length);
+        } else {
+            console.log('No existing groups found');
+        }
+    } catch (error) {
+        console.error('Error loading existing groups:', error);
     }
 }
 
