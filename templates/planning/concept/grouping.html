@@ -791,9 +791,14 @@ function displayFinalResults() {
 
 // Toggle process details accordion
 function toggleProcessDetails() {
+    console.log('toggleProcessDetails called');
     const accordion = document.getElementById('process-accordion');
     const toggleBtn = document.getElementById('toggle-process-btn');
     const icon = document.getElementById('accordion-icon');
+    
+    console.log('accordion:', accordion);
+    console.log('toggleBtn:', toggleBtn);
+    console.log('icon:', icon);
     
     if (accordion.style.display === 'none') {
         accordion.style.display = 'block';
