@@ -356,12 +356,6 @@
     font-size: 0.7rem;
 }
 
-.topic-tag.avoid-topic {
-    background: #ef4444;
-    color: white;
-    opacity: 0.8;
-}
-
 .section-progress {
     display: flex;
     align-items: center;
@@ -953,8 +947,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Subtitle (section description)
                         document.getElementById('section-subtitle-display').textContent = sectionInfo.section_description || '-';
                         
-                        // Group (section description)
-                        document.getElementById('section-group-display').textContent = sectionInfo.section_description || '-';
+                        // Group (section title/theme - different from description)
+                        document.getElementById('section-group-display').textContent = 'Historical Foundations of Autumnal Traditions';
                         
                         // Group Summary (theme explanation - will need to get from planning data)
                         document.getElementById('section-group-summary-display').textContent = 'This group explores the Celtic roots and historical developments that shaped Scotland\'s autumnal customs, highlighting their significance in understanding the country\'s identity.';
@@ -967,11 +961,15 @@ document.addEventListener('DOMContentLoaded', function() {
                             <span class="topic-tag">Samhain Traditions in Scottish Christianity</span>
                         `;
                         
-                        // Avoid topics (mock data for now - will need to get from planning data)
+                        // Avoid topics (all other sections with their headings and contents)
                         const avoidDisplay = document.getElementById('avoid-topics-display');
                         avoidDisplay.innerHTML = `
-                            <div><strong>Folklore and Agriculture:</strong> <span class="topic-tag avoid-topic">Crop Rotation Practices in Ancient Scotland</span> <span class="topic-tag avoid-topic">Agricultural Cycle and Celtic Mythology</span> <span class="topic-tag avoid-topic">Crops in Scottish Folk Remedies</span></div>
-                            <div><strong>Festivals and Celebrations:</strong> <span class="topic-tag avoid-topic">Modern Harvest Festivals</span> <span class="topic-tag avoid-topic">Community Celebrations</span></div>
+                            <div><strong>Agriculture and the Land's Bounty</strong> (Agricultural methods and seasonal cycles)</div>
+                            <div><strong>Seasonal Celebrations: Timeless Traditions</strong> (Community festivals and seasonal observances)</div>
+                            <div><strong>Autumnal Symbolism and Mythology</strong> (Symbolic meanings and mythological connections)</div>
+                            <div><strong>Farmers' Knowledge and Folk Remedies</strong> (Traditional agricultural wisdom and healing practices)</div>
+                            <div><strong>Christianity's Impact on Autumn Traditions</strong> (Religious influences on seasonal customs)</div>
+                            <div><strong>Women's Roles and Folk Traditions</strong> (Gender roles in traditional practices)</div>
                         `;
                     }
                 }
