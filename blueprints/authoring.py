@@ -537,19 +537,31 @@ def api_generate_section_draft(post_id, section_id):
                         idea_scope = json.loads(dev_data['idea_scope'])
                         all_topics = idea_scope.get('generated_topics', [])
                         
-                        # Simple semantic matching based on section heading/description
+                        # Improved semantic matching based on section heading/description
                         section_text = f"{section['section_heading']} {section['section_description'] or ''}".lower()
+                        
+                        # Define section-specific keywords for better matching
+                        section_keywords = {
+                            1: ['samhain', 'celtic', 'ancient', 'roots', 'ceres', 'festival'],
+                            2: ['agriculture', 'crop', 'farming', 'land', 'bounty', 'rotation'],
+                            3: ['celebration', 'tradition', 'timeless', 'seasonal', 'hogmanay'],
+                            4: ['symbolism', 'mythology', 'autumn', 'folklore', 'symbolic'],
+                            5: ['farmer', 'knowledge', 'folk', 'remedy', 'medicine', 'healing'],
+                            6: ['christianity', 'christian', 'religion', 'church', 'reformation'],
+                            7: ['women', 'female', 'gender', 'role', 'folk']
+                        }
+                        
+                        # Get keywords for this section
+                        keywords = section_keywords.get(section['section_order'], [])
                         
                         for topic in all_topics:
                             topic_title = topic.get('title', '').lower()
-                            # Match topics that contain keywords from section
-                            if any(keyword in topic_title for keyword in ['samhain', 'celtic', 'ceres', 'festival', 'harvest', 'agriculture', 'crop', 'autumn', 'folklore', 'tradition', 'christianity', 'women', 'farmer', 'remedy']):
-                                if any(keyword in section_text for keyword in topic_title.split()):
-                                    topics_for_section.append(topic['title'])
+                            # Match topics that contain section-specific keywords
+                            if any(keyword in topic_title for keyword in keywords):
+                                topics_for_section.append(topic['title'])
                         
-                        # If no matches found, assign first 3 topics as fallback
-                        if not topics_for_section and all_topics:
-                            topics_for_section = [topic['title'] for topic in all_topics[:3]]
+                        # Limit to 3-5 topics per section
+                        topics_for_section = topics_for_section[:5]
                             
                     except (json.JSONDecodeError, KeyError, TypeError):
                         # If parsing fails, use empty list
