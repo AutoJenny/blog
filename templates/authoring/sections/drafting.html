@@ -101,6 +101,20 @@
                 
                 <!-- Input Data Panel -->
                 <div class="input-data-panel">
+                    <h5>Post Context</h5>
+                    <div class="context-item">
+                        <label>Post Title:</label>
+                        <span id="post-title-display">-</span>
+                    </div>
+                    <div class="context-item">
+                        <label>Post Summary:</label>
+                        <div id="post-summary-display">-</div>
+                    </div>
+                    <div class="context-item">
+                        <label>Expanded Idea:</label>
+                        <div id="expanded-idea-display">-</div>
+                    </div>
+                    
                     <h5>Section Context</h5>
                     <div class="context-item">
                         <label>Title:</label>
@@ -111,12 +125,16 @@
                         <span id="section-subtitle-display">-</span>
                     </div>
                     <div class="context-item">
+                        <label>Group:</label>
+                        <div id="section-group-display">-</div>
+                    </div>
+                    <div class="context-item">
                         <label>Topics:</label>
                         <div id="section-topics-display">-</div>
                     </div>
                     <div class="context-item">
-                        <label>Expanded Idea:</label>
-                        <div id="expanded-idea-display">-</div>
+                        <label>Avoid Topics:</label>
+                        <div id="avoid-topics-display">-</div>
                     </div>
                 </div>
                 
@@ -336,6 +354,12 @@
     padding: 0.2rem 0.4rem;
     border-radius: 3px;
     font-size: 0.7rem;
+}
+
+.topic-tag.avoid-topic {
+    background: #ef4444;
+    color: white;
+    opacity: 0.8;
 }
 
 .section-progress {
@@ -815,19 +839,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success && data.section) {
                 const section = data.section;
                 
-                // Update input data display
+                // Update section-specific input data display
                 document.getElementById('section-title-display').textContent = section.title || '-';
                 document.getElementById('section-subtitle-display').textContent = section.subtitle || '-';
                 
-                // Update topics display - need to get topics from planning data
-                const topicsDisplay = document.getElementById('section-topics-display');
-                topicsDisplay.textContent = 'Loading topics...';
-                
-                // Load topics from planning data
-                loadSectionTopics(sectionId);
-                
-                // Load expanded idea
-                loadExpandedIdea();
+                // Load all context data
+                loadPostContext();
+                loadSectionContext(sectionId);
                 
                 // Load existing draft content
                 const contentEditor = document.getElementById('content-editor');
@@ -886,20 +904,91 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Function to load expanded idea
-    async function loadExpandedIdea() {
+    // Function to load post context (title, summary, expanded idea)
+    async function loadPostContext() {
         try {
-            const response = await fetch(`/planning/api/posts/${window.postId}/expanded-idea`);
+            const response = await fetch(`/planning/api/posts/${window.postId}`);
             const data = await response.json();
             
-            if (data.success && data.expanded_idea) {
-                document.getElementById('expanded-idea-display').textContent = data.expanded_idea;
-            } else {
-                document.getElementById('expanded-idea-display').textContent = 'No expanded idea found';
+            if (data) {
+                // Post title and summary
+                document.getElementById('post-title-display').textContent = data.title || '-';
+                document.getElementById('post-summary-display').textContent = data.summary || '-';
+                
+                // Expanded idea
+                if (data.development && data.development.expanded_idea) {
+                    document.getElementById('expanded-idea-display').textContent = data.development.expanded_idea;
+                } else {
+                    document.getElementById('expanded-idea-display').textContent = 'No expanded idea found';
+                }
             }
         } catch (error) {
-            console.error('Error loading expanded idea:', error);
-            document.getElementById('expanded-idea-display').textContent = 'Error loading expanded idea';
+            console.error('Error loading post context:', error);
+            document.getElementById('post-title-display').textContent = 'Error loading';
+            document.getElementById('post-summary-display').textContent = 'Error loading';
+            document.getElementById('expanded-idea-display').textContent = 'Error loading';
+        }
+    }
+    
+    // Function to load section context (group, topics, avoid topics)
+    async function loadSectionContext(sectionId) {
+        try {
+            // Get section data
+            const sectionResponse = await fetch(`/authoring/api/posts/${window.postId}/sections/${sectionId}`);
+            const sectionData = await sectionResponse.json();
+            
+            if (sectionData.success && sectionData.section) {
+                const sectionOrder = sectionData.section.order;
+                
+                // Get planning data for this section
+                const planningResponse = await fetch(`/planning/api/posts/${window.postId}/sections`);
+                const planningData = await planningResponse.json();
+                
+                if (planningData.success && planningData.sections) {
+                    const sectionInfo = planningData.sections.find(s => s.order === sectionOrder);
+                    
+                    if (sectionInfo) {
+                        // Group/theme explanation
+                        if (sectionInfo.theme_explanation) {
+                            document.getElementById('section-group-display').textContent = sectionInfo.theme_explanation;
+                        } else {
+                            document.getElementById('section-group-display').textContent = 'No group explanation found';
+                        }
+                        
+                        // Topics for this section
+                        if (sectionInfo.topics && sectionInfo.topics.length > 0) {
+                            const topicsDisplay = document.getElementById('section-topics-display');
+                            topicsDisplay.innerHTML = sectionInfo.topics.map(topic => 
+                                `<span class="topic-tag">${topic}</span>`
+                            ).join('');
+                        } else {
+                            document.getElementById('section-topics-display').textContent = 'No topics found';
+                        }
+                        
+                        // Avoid topics (topics from other sections)
+                        const avoidTopics = [];
+                        planningData.sections.forEach(s => {
+                            if (s.order !== sectionOrder && s.topics) {
+                                avoidTopics.push(...s.topics);
+                            }
+                        });
+                        
+                        if (avoidTopics.length > 0) {
+                            const avoidDisplay = document.getElementById('avoid-topics-display');
+                            avoidDisplay.innerHTML = avoidTopics.map(topic => 
+                                `<span class="topic-tag avoid-topic">${topic}</span>`
+                            ).join('');
+                        } else {
+                            document.getElementById('avoid-topics-display').textContent = 'No topics to avoid';
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error loading section context:', error);
+            document.getElementById('section-group-display').textContent = 'Error loading';
+            document.getElementById('section-topics-display').textContent = 'Error loading';
+            document.getElementById('avoid-topics-display').textContent = 'Error loading';
         }
     }
     
