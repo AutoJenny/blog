@@ -2261,10 +2261,13 @@ TITLE GUIDELINES:
 
 SUBTITLE GUIDELINES:
 - Keep subtitles snappy and direct
-- NO fluff phrases like "This section delves into", "Join us as we explore", "Discover the fascinating"
-- Start with action words or direct statements
-- Maximum 8-10 words
-- Focus on the core essence of the group
+- NO fluff phrases like "This section delves into", "Join us as we explore", "Discover the fascinating", "Delving into", "Unveiling", "Exploring", "Unlocking"
+- NO action verbs that add no meaning: "Discover", "Explore", "Unveil", "Delve", "Unlock", "Reveal"
+- Start with concrete nouns or direct statements about the content
+- Maximum 6-8 words
+- Focus on WHAT the content covers, not HOW to approach it
+- Examples of GOOD subtitles: "Celtic festivals and harvest traditions", "Medieval crops and farming practices"
+- Examples of BAD subtitles: "Delving into the mysteries of", "Unveiling Scotland's ancient secrets", "Exploring the rich history of"
 
 DESCRIPTION GUIDELINES:
 - Brief, direct description of what readers will learn
