@@ -2313,6 +2313,251 @@ def api_get_section_structure(post_id):
             'error': str(e)
         }), 500
 
+@bp.route('/api/sections/allocate-topics', methods=['POST'])
+def api_allocate_topics():
+    """Step 2: Allocate topics to sections"""
+    try:
+        data = request.get_json()
+        topics = data.get('topics', [])
+        section_structure = data.get('section_structure', {})
+        post_id = data.get('post_id')
+        
+        if not topics:
+            return jsonify({
+                'success': False,
+                'error': 'No topics provided'
+            }), 400
+        
+        if not post_id:
+            return jsonify({
+                'success': False,
+                'error': 'Post ID is required'
+            }), 400
+        
+        # Get section structure if not provided
+        if not section_structure:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT section_structure 
+                    FROM post_development 
+                    WHERE post_id = %s
+                """, (post_id,))
+                result = cursor.fetchone()
+                if result and result['section_structure']:
+                    if isinstance(result['section_structure'], str):
+                        section_structure = json.loads(result['section_structure'])
+                    else:
+                        section_structure = result['section_structure']
+        
+        if not section_structure or not section_structure.get('sections'):
+            return jsonify({
+                'success': False,
+                'error': 'Section structure not found. Please complete Step 1 first.'
+            }), 400
+        
+        # Format section structure for prompt
+        sections_text = ""
+        for section in section_structure['sections']:
+            sections_text += f"\nSection {section['order']}: {section['theme']}\n"
+            sections_text += f"  Boundaries: {section['boundaries']}\n"
+            sections_text += f"  Exclusions: {section['exclusions']}\n"
+        
+        # Format topics for prompt
+        topics_text = '\n'.join([f"- {topic.get('title', topic) if isinstance(topic, dict) else topic}" for topic in topics])
+        
+        # Create allocation prompt
+        allocation_prompt = f"""Allocate each topic to its most appropriate section.
+
+SECTION STRUCTURE:
+{sections_text}
+
+TOPICS TO ALLOCATE ({len(topics)} topics):
+{topics_text}
+
+REQUIREMENTS:
+- Each topic must be allocated to exactly ONE section
+- All topics must be allocated (no unallocated topics)
+- Choose the section where each topic fits BEST
+- Consider thematic boundaries and exclusions
+- Ensure balanced distribution across sections
+- Respect the section boundaries and exclusions
+
+OUTPUT FORMAT: Return ONLY valid JSON:
+{{
+  "allocations": [
+    {{
+      "section_id": "section_1",
+      "section_theme": "Section theme name",
+      "topics": ["Topic 1", "Topic 2", "Topic 3"],
+      "allocation_reason": "Why these topics belong here"
+    }}
+  ],
+  "metadata": {{
+    "total_topics_allocated": {len(topics)},
+    "unallocated_topics": [],
+    "allocation_method": "semantic_matching_with_validation"
+  }}
+}}"""
+        
+        # Execute LLM request
+        messages = [
+            {'role': 'system', 'content': 'You are a Scottish heritage content specialist and topic allocation expert. Your expertise lies in matching topics to appropriate sections based on thematic boundaries and ensuring comprehensive coverage without overlap.'},
+            {'role': 'user', 'content': allocation_prompt}
+        ]
+        
+        result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+        
+        logger.info(f"LLM allocation result: {result}")
+        
+        if 'error' in result:
+            return jsonify({
+                'success': False,
+                'error': f'LLM generation failed: {result["error"]}'
+            }), 500
+        
+        # Parse the response
+        try:
+            import re
+            # Remove markdown code blocks if present
+            content = result['content'].strip()
+            if content.startswith('```') and content.endswith('```'):
+                content = content[3:-3].strip()
+            elif content.startswith('```json'):
+                content = content[7:].strip()
+                if content.endswith('```'):
+                    content = content[:-3].strip()
+            else:
+                # Find JSON code block within text
+                json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', content, re.DOTALL)
+                if json_match:
+                    content = json_match.group(1).strip()
+            
+            # Clean up common JSON issues
+            content = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', content)  # Remove control characters
+            content = content.replace('\n', ' ').replace('\r', ' ')  # Replace newlines with spaces
+            
+            logger.info(f"Cleaned allocation content: {content[:200]}...")
+            
+            allocation_data = json.loads(content)
+            
+            # Validate the allocation
+            if not validate_topic_allocation(allocation_data, topics):
+                return jsonify({
+                    'success': False,
+                    'error': 'Invalid topic allocation format'
+                }), 400
+            
+            # Save to database
+            save_topic_allocation(post_id, allocation_data)
+            
+            return jsonify({
+                'success': True,
+                'message': 'Topics allocated successfully',
+                'allocations': allocation_data
+            })
+            
+        except json.JSONDecodeError as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to parse LLM response: {str(e)}'
+            }), 500
+        
+    except Exception as e:
+        logger.error(f"Error in api_allocate_topics: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+def validate_topic_allocation(allocation_data, original_topics):
+    """Validate topic allocation format"""
+    try:
+        if not isinstance(allocation_data, dict):
+            return False
+        
+        allocations = allocation_data.get('allocations', [])
+        if not allocations:
+            return False
+        
+        # Check that all topics are allocated
+        allocated_topics = []
+        for allocation in allocations:
+            if not isinstance(allocation, dict):
+                return False
+            required_fields = ['section_id', 'section_theme', 'topics', 'allocation_reason']
+            if not all(field in allocation for field in required_fields):
+                return False
+            allocated_topics.extend(allocation.get('topics', []))
+        
+        # Verify all original topics are allocated
+        original_titles = [topic.get('title', topic) if isinstance(topic, dict) else topic for topic in original_topics]
+        if len(set(allocated_topics)) != len(original_titles):
+            return False
+        
+        return True
+    except:
+        return False
+
+def save_topic_allocation(post_id, allocation_data):
+    """Save topic allocation to database"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                UPDATE post_development 
+                SET topic_allocation = %s, allocation_completed_at = NOW()
+                WHERE post_id = %s
+            """, (json.dumps(allocation_data), post_id))
+            
+            if cursor.rowcount == 0:
+                # Create new record if it doesn't exist
+                cursor.execute("""
+                    INSERT INTO post_development (post_id, topic_allocation, allocation_completed_at, created_at, updated_at)
+                    VALUES (%s, %s, NOW(), NOW(), NOW())
+                """, (post_id, json.dumps(allocation_data)))
+            
+            cursor.connection.commit()
+    except Exception as e:
+        logger.error(f"Error saving topic allocation: {e}")
+        raise
+
+@bp.route('/api/sections/allocate-topics/<int:post_id>', methods=['GET'])
+def api_get_topic_allocation(post_id):
+    """Get topic allocation for a post"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT topic_allocation, allocation_completed_at
+                FROM post_development 
+                WHERE post_id = %s
+            """, (post_id,))
+            
+            result = cursor.fetchone()
+            
+            if not result or not result['topic_allocation']:
+                return jsonify({
+                    'success': False,
+                    'error': 'Topic allocation not found'
+                }), 404
+            
+            # Handle both JSON string and dict formats
+            if isinstance(result['topic_allocation'], str):
+                allocation_data = json.loads(result['topic_allocation'])
+            else:
+                allocation_data = result['topic_allocation']
+            
+            return jsonify({
+                'success': True,
+                'allocations': allocation_data,
+                'completed_at': result['allocation_completed_at']
+            })
+            
+    except Exception as e:
+        logger.error(f"Error in api_get_topic_allocation: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @bp.route('/api/sections/group', methods=['POST'])
 def api_sections_group():
     """Stage 1: Group topics into thematic clusters"""
