@@ -325,44 +325,29 @@ class LLMUIManager {
         const currentSectionId = window.currentSelectedSectionId;
         if (!currentSectionId) return;
         
-        try {
-            const response = await fetch(`/authoring/api/posts/${module.postId}/sections/${currentSectionId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    draft_content: content,
-                    status: 'complete'
-                })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                // Update last saved indicator
-                const lastSavedElement = document.getElementById('last-saved');
-                if (lastSavedElement) {
-                    lastSavedElement.textContent = 'Auto-saved just now';
-                }
-                
-                // Update section status in UI
-                const sectionItem = document.querySelector(`[data-section-id="${currentSectionId}"]`);
-                if (sectionItem) {
-                    sectionItem.setAttribute('data-status', 'complete');
-                    const statusElement = sectionItem.querySelector('.section-status');
-                    if (statusElement) {
-                        statusElement.textContent = 'Complete';
-                        statusElement.className = 'section-status complete';
-                    }
-                }
-                
-                console.log('Content auto-saved successfully');
-            } else {
-                console.error('Auto-save failed:', data.error);
+        const result = await module.apiClient.autoSaveContent(content, module.postId, currentSectionId);
+        
+        if (result.success) {
+            // Update last saved indicator
+            const lastSavedElement = document.getElementById('last-saved');
+            if (lastSavedElement) {
+                lastSavedElement.textContent = 'Auto-saved just now';
             }
-        } catch (error) {
-            console.error('Error auto-saving content:', error);
+            
+            // Update section status in UI
+            const sectionItem = document.querySelector(`[data-section-id="${currentSectionId}"]`);
+            if (sectionItem) {
+                sectionItem.setAttribute('data-status', 'complete');
+                const statusElement = sectionItem.querySelector('.section-status');
+                if (statusElement) {
+                    statusElement.textContent = 'Complete';
+                    statusElement.className = 'section-status complete';
+                }
+            }
+            
+            console.log('Content auto-saved successfully');
+        } else {
+            console.error('Auto-save failed:', result.error);
         }
     }
 
