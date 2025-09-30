@@ -767,6 +767,33 @@ document.addEventListener('DOMContentLoaded', function() {
         // Call original method
         originalSelectSection(sectionId);
         
+        // Track currently selected section globally
+        window.currentSelectedSectionId = sectionId;
+        
+        // Clear previous content from editor
+        const contentEditor = document.getElementById('content-editor');
+        if (contentEditor) {
+            contentEditor.value = '';
+            contentEditor.disabled = true;
+        }
+        
+        // Clear results display
+        const resultsDisplay = document.getElementById('llm-results-display');
+        if (resultsDisplay) {
+            resultsDisplay.innerHTML = '';
+        }
+        
+        // Reset word count
+        const wordCountElement = document.getElementById('word-count');
+        if (wordCountElement) {
+            wordCountElement.textContent = '0 words';
+        }
+        
+        // Disable controls initially
+        document.getElementById('preview-btn').disabled = true;
+        document.getElementById('save-btn').disabled = true;
+        document.getElementById('regenerate-btn').disabled = true;
+        
         // Initialize LLM module for this section
         initializeLLMForSection(sectionId);
         
@@ -787,15 +814,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('section-title-display').textContent = section.title || '-';
                 document.getElementById('section-subtitle-display').textContent = section.subtitle || '-';
                 
-                // Update topics display
+                // Update topics display - need to get topics from planning data
                 const topicsDisplay = document.getElementById('section-topics-display');
-                if (section.topics && Array.isArray(section.topics)) {
-                    topicsDisplay.innerHTML = section.topics.map(topic => 
-                        `<span class="topic-tag">${topic}</span>`
-                    ).join('');
-                } else {
-                    topicsDisplay.textContent = '-';
-                }
+                topicsDisplay.textContent = 'Loading topics...';
+                
+                // Load topics from planning data
+                loadSectionTopics(sectionId);
                 
                 // Load expanded idea
                 loadExpandedIdea();
@@ -818,6 +842,42 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             console.error('Error loading section draft:', error);
+        }
+    }
+    
+    // Function to load section topics from planning data
+    async function loadSectionTopics(sectionId) {
+        try {
+            // Get section order from the section data
+            const response = await fetch(`/authoring/api/posts/${window.postId}/sections/${sectionId}`);
+            const data = await response.json();
+            
+            if (data.success && data.section) {
+                const sectionOrder = data.section.order;
+                
+                // Get sections data from post_development
+                const devResponse = await fetch(`/planning/api/posts/${window.postId}/sections`);
+                const devData = await devResponse.json();
+                
+                if (devData.success && devData.sections) {
+                    // Find the section with matching order
+                    const sectionData = devData.sections.find(s => s.order === sectionOrder);
+                    
+                    if (sectionData && sectionData.topics) {
+                        const topicsDisplay = document.getElementById('section-topics-display');
+                        topicsDisplay.innerHTML = sectionData.topics.map(topic => 
+                            `<span class="topic-tag">${topic}</span>`
+                        ).join('');
+                    } else {
+                        document.getElementById('section-topics-display').textContent = 'No topics found';
+                    }
+                } else {
+                    document.getElementById('section-topics-display').textContent = 'Error loading topics';
+                }
+            }
+        } catch (error) {
+            console.error('Error loading section topics:', error);
+            document.getElementById('section-topics-display').textContent = 'Error loading topics';
         }
     }
     

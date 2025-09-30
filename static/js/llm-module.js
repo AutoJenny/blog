@@ -217,8 +217,6 @@ class LLMModule {
         this.isEditing = false;
     }
     
-    }
-    
     async generateContent() {
         const generateBtn = document.getElementById('generate-btn');
         const resultsDisplay = document.getElementById('llm-results-display');
@@ -307,6 +305,121 @@ class LLMModule {
         div.textContent = text;
         return div.innerHTML;
     }
+    
+    toggleAccordion() {
+        const accordionContent = document.getElementById('llm-accordion-content');
+        const accordionIcon = document.getElementById('accordion-icon');
+        
+        if (!accordionContent || !accordionIcon) return;
+        
+        if (accordionContent.classList.contains('open')) {
+            // Close accordion
+            accordionContent.style.display = 'none';
+            accordionIcon.style.transform = 'rotate(0deg)';
+            accordionContent.classList.remove('open');
+            accordionContent.classList.add('closed');
+        } else {
+            // Open accordion
+            accordionContent.style.display = 'block';
+            accordionIcon.style.transform = 'rotate(180deg)';
+            accordionContent.classList.remove('closed');
+            accordionContent.classList.add('open');
+        }
+    }
+    
+    displayAuthoringResults(data) {
+        const resultsDisplay = document.getElementById('llm-results-display');
+        const contentEditor = document.getElementById('content-editor');
+        
+        if (data.draft_content) {
+            // Display in results area
+            if (resultsDisplay) {
+                resultsDisplay.innerHTML = `<div class="generated-content">${data.draft_content}</div>`;
+            }
+            
+            // Only update content editor if this is the currently selected section
+            if (contentEditor && this.isCurrentSection()) {
+                contentEditor.value = data.draft_content;
+                contentEditor.disabled = false;
+                
+                // Update word count
+                const wordCount = data.draft_content.trim().split(/\s+/).filter(word => word.length > 0).length;
+                const wordCountElement = document.getElementById('word-count');
+                if (wordCountElement) {
+                    wordCountElement.textContent = `${wordCount} words`;
+                }
+                
+                // Enable save button
+                const saveBtn = document.getElementById('save-btn');
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                }
+                
+                // Auto-save the generated content
+                this.autoSaveContent(data.draft_content);
+            }
+        } else {
+            this.displayError('No content generated');
+        }
+    }
+    
+    isCurrentSection() {
+        // Check if this LLM module is for the currently selected section
+        const currentSectionId = window.currentSelectedSectionId;
+        if (!currentSectionId) return false;
+        
+        // Extract section ID from the generate endpoint
+        const endpointMatch = this.config.generateEndpoint.match(/\/sections\/(\d+)\/generate/);
+        if (!endpointMatch) return false;
+        
+        const moduleSectionId = parseInt(endpointMatch[1]);
+        return moduleSectionId === currentSectionId;
+    }
+    
+    async autoSaveContent(content) {
+        const currentSectionId = window.currentSelectedSectionId;
+        if (!currentSectionId) return;
+        
+        try {
+            const response = await fetch(`/authoring/api/posts/${this.postId}/sections/${currentSectionId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    draft_content: content,
+                    status: 'complete'
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Update last saved indicator
+                const lastSavedElement = document.getElementById('last-saved');
+                if (lastSavedElement) {
+                    lastSavedElement.textContent = 'Auto-saved just now';
+                }
+                
+                // Update section status in UI
+                const sectionItem = document.querySelector(`[data-section-id="${currentSectionId}"]`);
+                if (sectionItem) {
+                    sectionItem.setAttribute('data-status', 'complete');
+                    const statusElement = sectionItem.querySelector('.section-status');
+                    if (statusElement) {
+                        statusElement.textContent = 'Complete';
+                        statusElement.className = 'section-status complete';
+                    }
+                }
+                
+                console.log('Content auto-saved successfully');
+            } else {
+                console.error('Auto-save failed:', data.error);
+            }
+        } catch (error) {
+            console.error('Error auto-saving content:', error);
+        }
+    }
 }
 
 // Global accordion toggle function
@@ -330,39 +443,6 @@ function toggleLLMAccordion() {
         accordionIcon.style.transform = 'rotate(180deg)';
         accordionContent.classList.remove('closed');
         accordionContent.classList.add('open');
-    }
-    
-    displayAuthoringResults(data) {
-        const resultsDisplay = document.getElementById('llm-results-display');
-        const contentEditor = document.getElementById('content-editor');
-        
-        if (data.draft_content) {
-            // Display in results area
-            if (resultsDisplay) {
-                resultsDisplay.innerHTML = `<div class="generated-content">${data.draft_content}</div>`;
-            }
-            
-            // Also put in content editor
-            if (contentEditor) {
-                contentEditor.value = data.draft_content;
-                contentEditor.disabled = false;
-                
-                // Update word count
-                const wordCount = data.draft_content.trim().split(/\s+/).filter(word => word.length > 0).length;
-                const wordCountElement = document.getElementById('word-count');
-                if (wordCountElement) {
-                    wordCountElement.textContent = `${wordCount} words`;
-                }
-                
-                // Enable save button
-                const saveBtn = document.getElementById('save-btn');
-                if (saveBtn) {
-                    saveBtn.disabled = false;
-                }
-            }
-        } else {
-            this.displayError('No content generated');
-        }
     }
 }
 
