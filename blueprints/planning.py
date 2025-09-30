@@ -2511,6 +2511,8 @@ DO NOT return JSON format. Return simple text lines only."""
             
             validation_result = validate_topic_allocation(allocation_data, topics)
             logger.info(f"Validation result: {validation_result}")
+            logger.info(f"Allocation data keys: {list(allocation_data.keys())}")
+            logger.info(f"Allocations count: {len(allocation_data.get('allocations', []))}")
             if not validation_result:
                 logger.error(f"Validation failed for allocation: {allocation_data}")
                 logger.error(f"Valid lines found: {len(valid_lines)}")
