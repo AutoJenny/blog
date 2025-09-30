@@ -2422,6 +2422,15 @@ DO NOT return JSON format. Return simple text lines only."""
             content = result['content'].strip()
             logger.info(f"Raw LLM response: {content}")
             
+            # Check if response is empty
+            if not content:
+                logger.error("LLM returned empty response")
+                return jsonify({
+                    'success': False,
+                    'error': 'LLM returned empty response. Please try again.',
+                    'llm_response': content
+                }), 400
+            
             # Parse the new format: Topic Title {S01}
             allocations = {}
             lines = content.split('\n')
@@ -2511,10 +2520,12 @@ DO NOT return JSON format. Return simple text lines only."""
                 'allocations': allocation_data
             })
             
-        except json.JSONDecodeError as e:
+        except Exception as e:
+            logger.error(f"Error in topic allocation: {e}")
             return jsonify({
                 'success': False,
-                'error': f'Failed to parse LLM response: {str(e)}'
+                'error': f'Topic allocation failed: {str(e)}',
+                'llm_response': content if 'content' in locals() else 'No response'
             }), 500
         
     except Exception as e:
