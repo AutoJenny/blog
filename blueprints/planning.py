@@ -2623,8 +2623,9 @@ MISSING TOPICS TO ALLOCATE:
 
 CRITICAL REQUIREMENTS:
 - Return EXACTLY {len(missing_topics)} lines
-- Use format: Topic Title {{SXX}}
+- Use format: [EXACT TOPIC NAME] {{SXX}}
 - Use section codes: {', '.join(section_codes.keys())}
+- Copy the EXACT topic names from the list above
 - Allocate each topic to its BEST FIT section
 - Do NOT skip any topics
 
