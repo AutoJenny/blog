@@ -53,6 +53,31 @@ def create_app(config_name=None):
     from blueprints.planning import bp as planning_bp
     app.register_blueprint(planning_bp)
     
+    # TEMPORARY: Test route for Authoring template preview
+    @app.route('/test-authoring/<int:post_id>')
+    def test_authoring_preview(post_id):
+        """Temporary route to preview the Authoring template"""
+        try:
+            with db_manager.get_cursor() as cursor:
+                # Get post details
+                cursor.execute("""
+                    SELECT id, title, status, created_at, updated_at
+                    FROM post 
+                    WHERE id = %s
+                """, (post_id,))
+                post = cursor.fetchone()
+                
+                if not post:
+                    return "Post not found", 404
+                
+                return render_template('authoring/sections/drafting.html', 
+                                     post_id=post_id,
+                                     post=post,
+                                     page_title="Authoring Preview")
+                
+        except Exception as e:
+            return f"Error: {e}", 500
+    
     from blueprints.authoring import bp as authoring_bp
     app.register_blueprint(authoring_bp)
     
