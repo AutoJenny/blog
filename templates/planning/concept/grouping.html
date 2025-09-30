@@ -747,6 +747,11 @@ function displayFinalResults() {
     
     const finalData = refinedTopics || topicAllocation;
     
+    if (!finalData || !finalData.allocations) {
+        showError('final-results-display', 'No allocation data available. Please run the section grouping process first.');
+        return;
+    }
+    
     finalData.allocations.forEach(allocation => {
         const sectionDiv = document.createElement('div');
         sectionDiv.className = 'section-group';
