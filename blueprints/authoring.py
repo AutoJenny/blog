@@ -218,14 +218,14 @@ def authoring_sections_image_captions(post_id):
 # API endpoints for section data
 @bp.route('/api/posts/<int:post_id>/sections')
 def api_get_sections(post_id):
-    """Get all sections for a post"""
+    """Get all sections for a post from post_development"""
     try:
         with db_manager.get_cursor() as cursor:
-            # Get sections from post.sections JSONB field
+            # Get sections from post_development.sections JSONB field
             cursor.execute("""
                 SELECT sections
-                FROM post 
-                WHERE id = %s
+                FROM post_development
+                WHERE post_id = %s
             """, (post_id,))
             result = cursor.fetchone()
             
@@ -236,6 +236,10 @@ def api_get_sections(post_id):
                 })
             
             sections = result['sections']
+            if isinstance(sections, str):
+                import json
+                sections = json.loads(sections)
+            
             if isinstance(sections, dict) and 'sections' in sections:
                 sections = sections['sections']
             
@@ -251,16 +255,16 @@ def api_get_sections(post_id):
             'error': str(e)
         }), 500
 
-@bp.route('/api/posts/<int:post_id>/sections/<int:section_id>')
+@bp.route('/api/posts/<int:post_id>/sections/<section_id>')
 def api_get_section_detail(post_id, section_id):
     """Get details for a specific section"""
     try:
         with db_manager.get_cursor() as cursor:
-            # Get sections from post.sections JSONB field
+            # Get sections from post_development.sections JSONB field
             cursor.execute("""
                 SELECT sections
-                FROM post 
-                WHERE id = %s
+                FROM post_development
+                WHERE post_id = %s
             """, (post_id,))
             result = cursor.fetchone()
             
@@ -271,13 +275,17 @@ def api_get_section_detail(post_id, section_id):
                 }), 404
             
             sections = result['sections']
+            if isinstance(sections, str):
+                import json
+                sections = json.loads(sections)
+            
             if isinstance(sections, dict) and 'sections' in sections:
                 sections = sections['sections']
             
             # Find the specific section
             section = None
             for s in sections:
-                if s.get('id') == section_id or s.get('order') == section_id:
+                if s.get('id') == section_id or s.get('order') == int(section_id):
                     section = s
                     break
             
