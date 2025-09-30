@@ -2054,21 +2054,21 @@ REQUIREMENTS:
 +- For each group, include a concise thematic explanation (1-2 sentences) describing the unifying idea and how the topics fit together
 
 OUTPUT FORMAT: Return ONLY valid JSON:
-{
+{{
   "groups": [
-    {
+    {{
       "id": "group_1",
       "theme": "Brief theme description",
       "explanation": "1-2 sentence thematic explanation in neutral terms",
       "topics": ["Topic 1", "Topic 2", ...],
       "order": 1
-    }
+    }}
   ],
-  "metadata": {
+  "metadata": {{
     "total_groups": {group_count},
     "total_topics": {len(topics)},
     "allocated_topics": {len(topics)}
-  }
+  }}
 }"""
         
         # Call LLM
