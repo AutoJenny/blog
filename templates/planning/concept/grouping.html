@@ -631,7 +631,11 @@ async function allocateTopics() {
             completeStep(2);
             showStep(3);
         } else {
-            showError('allocation-display', result.error);
+            let errorMsg = result.error;
+            if (result.debug_info) {
+                errorMsg += `\n\nDebug Info:\n${JSON.stringify(result.debug_info, null, 2)}`;
+            }
+            showError('allocation-display', errorMsg);
             // Show LLM response for debugging
             if (result.llm_response) {
                 showLLMResponse(result.llm_response);
@@ -642,7 +646,7 @@ async function allocateTopics() {
         enableButton('step-2-btn');
     } catch (error) {
         console.error('Error allocating topics:', error);
-        showError('allocation-display', `Error allocating topics: ${error.message}`);
+        showError('allocation-display', `Network error: ${error.message}\n\nFull error: ${JSON.stringify(error, null, 2)}`);
         hideLoading('step-2-loading');
         enableButton('step-2-btn');
     }

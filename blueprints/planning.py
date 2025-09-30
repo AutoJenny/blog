@@ -2416,9 +2416,17 @@ VALIDATION CHECKLIST:
         logger.info(f"LLM allocation result: {result}")
         
         if 'error' in result:
+            logger.error(f"LLM error details: {result}")
             return jsonify({
                 'success': False,
-                'error': f'LLM generation failed: {result["error"]}'
+                'error': f'LLM generation failed: {result["error"]}',
+                'llm_response': str(result),
+                'debug_info': {
+                    'prompt_length': len(allocation_prompt),
+                    'topics_count': len(topics),
+                    'sections_count': len(section_structure.get('sections', [])),
+                    'llm_service_result': result
+                }
             }), 500
         
         # Parse the response
@@ -2519,10 +2527,16 @@ VALIDATION CHECKLIST:
             }), 500
         
     except Exception as e:
-        logger.error(f"Error in api_allocate_topics: {e}")
+        logger.error(f"Error in api_allocate_topics: {e}", exc_info=True)
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': f'Server error: {str(e)}',
+            'debug_info': {
+                'error_type': type(e).__name__,
+                'error_message': str(e),
+                'topics_count': len(topics) if 'topics' in locals() else 'unknown',
+                'post_id': post_id if 'post_id' in locals() else 'unknown'
+            }
         }), 500
 
 def validate_topic_allocation(allocation_data, original_topics):
