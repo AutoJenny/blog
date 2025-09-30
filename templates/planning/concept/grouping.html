@@ -459,12 +459,16 @@ async function loadBrainstormTopics() {
         showLoading('topics-loading');
         
         const response = await fetch(`/planning/api/posts/${window.postId}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
         
         if (data.development && data.development.idea_scope) {
             const ideaScope = JSON.parse(data.development.idea_scope);
             topics = ideaScope.generated_topics || [];
-            
             displayTopics();
         } else {
             showError('topics-display', 'No topics found. Please complete brainstorming first.');
@@ -473,7 +477,7 @@ async function loadBrainstormTopics() {
         hideLoading('topics-loading');
     } catch (error) {
         console.error('Error loading topics:', error);
-        showError('topics-display', 'Error loading topics from brainstorming.');
+        showError('topics-display', `Error loading topics from brainstorming: ${error.message}`);
         hideLoading('topics-loading');
     }
 }
@@ -481,6 +485,11 @@ async function loadBrainstormTopics() {
 // Display topics
 function displayTopics() {
     const container = document.getElementById('topics-display');
+    
+    if (!container) {
+        console.error('topics-display container not found');
+        return;
+    }
     
     if (topics.length === 0) {
         container.innerHTML = '<div class="text-muted">No topics available</div>';
@@ -758,16 +767,24 @@ function updateProgressIndicator(activeStep = currentStep, completed = false) {
 
 // Utility functions
 function showLoading(elementId) {
-    document.getElementById(elementId).classList.add('active');
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.classList.add('active');
+    }
 }
 
 function hideLoading(elementId) {
-    document.getElementById(elementId).classList.remove('active');
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.classList.remove('active');
+    }
 }
 
 function showError(containerId, message) {
     const container = document.getElementById(containerId);
-    container.innerHTML = `<div class="error-message">${message}</div>`;
+    if (container) {
+        container.innerHTML = `<div class="error-message">${message}</div>`;
+    }
 }
 
 function disableButton(buttonId) {
