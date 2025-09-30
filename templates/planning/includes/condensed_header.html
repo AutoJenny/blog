@@ -17,26 +17,30 @@
     
     <!-- Main Stage Navigation -->
     <div class="main-stages-line">
-        <a href="{{ url_for('planning.planning_calendar', post_id=post_id) }}" 
-           class="stage-btn" data-stage="calendar">
-            <i class="fas fa-calendar-alt"></i>
-            Content Calendar
-        </a>
-        <a href="{{ url_for('planning.planning_concept', post_id=post_id) }}" 
-           class="stage-btn" data-stage="concept">
-            <i class="fas fa-lightbulb"></i>
-            Concept Development
-        </a>
-        <a href="{{ url_for('planning.planning_research', post_id=post_id) }}" 
-           class="stage-btn" data-stage="research">
-            <i class="fas fa-search"></i>
-            Research & Resources
-        </a>
-        <a href="{{ url_for('planning.planning_old_interface', post_id=post_id) }}" 
-           class="stage-btn old-interface" data-stage="old-interface">
-            <i class="fas fa-history"></i>
-            Old Interface
-        </a>
+        <div class="main-stages-left">
+            <a href="{{ url_for('planning.planning_calendar', post_id=post_id) }}" 
+               class="stage-btn" data-stage="calendar">
+                <i class="fas fa-calendar-alt"></i>
+                Content Calendar
+            </a>
+            <a href="{{ url_for('planning.planning_concept', post_id=post_id) }}" 
+               class="stage-btn" data-stage="concept">
+                <i class="fas fa-lightbulb"></i>
+                Concept Development
+            </a>
+            <a href="{{ url_for('planning.planning_research', post_id=post_id) }}" 
+               class="stage-btn" data-stage="research">
+                <i class="fas fa-search"></i>
+                Research & Resources
+            </a>
+        </div>
+        <div class="main-stages-right">
+            <a href="{{ url_for('planning.planning_old_interface', post_id=post_id) }}" 
+               class="stage-btn old-interface" data-stage="old-interface">
+                <i class="fas fa-history"></i>
+                Old Interface
+            </a>
+        </div>
     </div>
     
     <!-- Sub-stages with Subtitle and Tabs -->
@@ -175,13 +179,26 @@
 /* Main Stage Navigation */
 .main-stages-line {
     display: flex;
-    justify-content: center;
-    gap: 0.75rem;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 0.5rem;
     padding: 0.5rem 1rem;
     background: #1e293b;
     border-radius: 6px;
     border: 1px solid #334155;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.main-stages-left {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.main-stages-right {
+    display: flex;
+    gap: 0.75rem;
     flex-wrap: wrap;
 }
 
@@ -334,7 +351,16 @@
     
     .main-stages-line {
         flex-direction: column;
-        align-items: center;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .main-stages-left {
+        justify-content: center;
+    }
+    
+    .main-stages-right {
+        justify-content: center;
     }
     
     .sub-stages-line {
