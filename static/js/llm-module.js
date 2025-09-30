@@ -10,26 +10,23 @@ class LLMModule {
         this.postId = null;
         this.uiManager = new LLMUIManager();
         this.apiClient = new LLMAPIClient();
+        this.eventManager = new LLMEventManager();
         
         this.init();
     }
     
     init() {
         this.setupEventListeners();
+        if (this.config.allowEdit) {
+            this.setupEditButtons();
+        }
         this.loadPrompt();
     }
     
     setupEventListeners() {
-        // Generate button
-        const generateBtn = document.getElementById('generate-btn');
-        if (generateBtn) {
-            generateBtn.addEventListener('click', () => this.generateContent());
-        }
-        
-        // Edit buttons (if editing is enabled)
-        if (this.config.allowEdit) {
-            this.setupEditButtons();
-        }
+        this.eventManager.setupEventListeners(this);
+        this.eventManager.setupKeyboardShortcuts(this);
+        this.eventManager.setupFormValidation(this);
     }
     
     setupEditButtons() {
@@ -47,11 +44,6 @@ class LLMModule {
                     <i class="fas fa-times"></i> Cancel
                 </button>
             `;
-            
-            // Add event listeners
-            document.getElementById('edit-prompt-btn').addEventListener('click', () => this.toggleEdit());
-            document.getElementById('save-prompt-btn').addEventListener('click', () => this.savePrompt());
-            document.getElementById('cancel-prompt-btn').addEventListener('click', () => this.cancelEdit());
         }
     }
     
@@ -80,35 +72,7 @@ class LLMModule {
     }
     
     toggleEdit() {
-        if (!this.config.allowEdit) return;
-        
-        const promptDisplay = document.getElementById('llm-prompt-display');
-        const promptEdit = document.getElementById('llm-prompt-edit');
-        const editBtn = document.getElementById('edit-prompt-btn');
-        const saveBtn = document.getElementById('save-prompt-btn');
-        const cancelBtn = document.getElementById('cancel-prompt-btn');
-        
-        if (this.isEditing) {
-            // Hide edit mode
-            promptDisplay.style.display = 'block';
-            promptEdit.style.display = 'none';
-            editBtn.style.display = 'inline-block';
-            saveBtn.style.display = 'none';
-            cancelBtn.style.display = 'none';
-            this.isEditing = false;
-        } else {
-            // Show edit mode
-            promptDisplay.style.display = 'none';
-            promptEdit.style.display = 'block';
-            editBtn.style.display = 'none';
-            saveBtn.style.display = 'inline-block';
-            cancelBtn.style.display = 'inline-block';
-            this.isEditing = true;
-            
-            // Populate edit fields
-            document.getElementById('system-prompt-edit').value = this.currentPrompt?.system_prompt || '';
-            document.getElementById('user-prompt-edit').value = this.currentPrompt?.prompt_text || '';
-        }
+        this.eventManager.toggleEdit(this);
     }
     
     async savePrompt() {
@@ -134,21 +98,7 @@ class LLMModule {
     }
     
     cancelEdit() {
-        if (!this.config.allowEdit) return;
-        
-        const promptDisplay = document.getElementById('llm-prompt-display');
-        const promptEdit = document.getElementById('llm-prompt-edit');
-        const editBtn = document.getElementById('edit-prompt-btn');
-        const saveBtn = document.getElementById('save-prompt-btn');
-        const cancelBtn = document.getElementById('cancel-prompt-btn');
-        
-        // Hide edit mode
-        promptDisplay.style.display = 'block';
-        promptEdit.style.display = 'none';
-        editBtn.style.display = 'inline-block';
-        saveBtn.style.display = 'none';
-        cancelBtn.style.display = 'none';
-        this.isEditing = false;
+        this.eventManager.cancelEdit(this);
     }
     
     async generateContent() {
