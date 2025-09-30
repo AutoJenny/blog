@@ -2428,7 +2428,7 @@ OUTPUT FORMAT: Return ONLY valid JSON:
                     content = content[:-3].strip()
             else:
                 # Find JSON code block within text
-                json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', content, re.DOTALL)
+                json_match = re.search(r'```(?:json)?\s*(\{.*\})\s*```', content, re.DOTALL)
                 if json_match:
                     content = json_match.group(1).strip()
             
@@ -2441,7 +2441,11 @@ OUTPUT FORMAT: Return ONLY valid JSON:
             allocation_data = json.loads(content)
             
             # Validate the allocation
+            logger.info(f"Allocation data to validate: {allocation_data}")
+            logger.info(f"Original topics: {topics}")
+            
             if not validate_topic_allocation(allocation_data, topics):
+                logger.error(f"Validation failed for allocation: {allocation_data}")
                 return jsonify({
                     'success': False,
                     'error': 'Invalid topic allocation format'
@@ -2473,25 +2477,41 @@ def validate_topic_allocation(allocation_data, original_topics):
     """Validate topic allocation format"""
     try:
         if not isinstance(allocation_data, dict):
+            logger.error("Allocation data is not a dict")
             return False
         
         allocations = allocation_data.get('allocations', [])
         if not allocations:
+            logger.error("No allocations found in data")
             return False
         
         # Check that all topics are allocated
         allocated_topics = []
         for allocation in allocations:
             if not isinstance(allocation, dict):
+                logger.error(f"Allocation is not a dict: {allocation}")
                 return False
             required_fields = ['section_id', 'section_theme', 'topics', 'allocation_reason']
             if not all(field in allocation for field in required_fields):
+                logger.error(f"Missing required fields in allocation: {allocation}")
                 return False
             allocated_topics.extend(allocation.get('topics', []))
         
         # Verify all original topics are allocated
         original_titles = [topic.get('title', topic) if isinstance(topic, dict) else topic for topic in original_topics]
+        
+        # Check that we have the right number of topics
         if len(set(allocated_topics)) != len(original_titles):
+            logger.error(f"Topic count mismatch: allocated={len(set(allocated_topics))}, original={len(original_titles)}")
+            logger.error(f"Allocated topics: {set(allocated_topics)}")
+            logger.error(f"Original topics: {original_titles}")
+            return False
+        
+        # Check that all original topics are present in allocated topics
+        allocated_set = set(allocated_topics)
+        original_set = set(original_titles)
+        if allocated_set != original_set:
+            logger.error(f"Topic mismatch: allocated={allocated_set}, original={original_set}")
             return False
         
         return True
@@ -2694,7 +2714,7 @@ OUTPUT FORMAT: Return ONLY valid JSON:
                 content = result['content'].strip()
                 
                 # Find JSON code block within text
-                json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', content, re.DOTALL)
+                json_match = re.search(r'```(?:json)?\s*(\{.*\})\s*```', content, re.DOTALL)
                 if json_match:
                     content = json_match.group(1).strip()
                 elif content.startswith('```') and content.endswith('```'):
