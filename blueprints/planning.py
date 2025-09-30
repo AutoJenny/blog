@@ -2320,6 +2320,8 @@ DESCRIPTION GUIDELINES:
                 content = content[json_start:]
             
             sections_data = json.loads(content)
+            # Sanitize subtitles/descriptions and enforce constraints
+            sections_data = sanitize_sections_text(sections_data)
             logger.info(f"Successfully parsed LLM response for titling")
         except json.JSONDecodeError as e:
             logger.warning(f"LLM JSON parsing failed: {e}")
@@ -2394,6 +2396,65 @@ def create_fallback_sections_from_groups(groups):
             'flow_type': 'logical'
         }
     }
+
+# -----------------------------
+# Sanitization helpers
+# -----------------------------
+def _clean_subtitle(text: str) -> str:
+    if not text:
+        return text
+    banned_starts = [
+        'delving into', 'exploring', 'unveiling', 'unlocking', 'discovering', 'discover',
+        'explore', 'unveil', 'delve', 'unlock', 'reveal', 'revealing', 'learn about',
+        'join us as we explore', 'here we explore', 'this section', 'in this section'
+    ]
+    t = text.strip()
+    tl = t.lower()
+    for phrase in banned_starts:
+        if tl.startswith(phrase):
+            t = t[len(phrase):].lstrip(' :,-')
+            tl = t.lower()
+            break
+    words = t.split()
+    max_words = 8
+    if len(words) > max_words:
+        t = ' '.join(words[:max_words])
+    return t.strip(' .')
+
+def _clean_description(text: str) -> str:
+    if not text:
+        return text
+    banned_openers = [
+        'this section', 'in this section', 'we will', 'join us', 'discover how', 'explore how',
+        'delve into', 'unveil', 'unlock'
+    ]
+    t = text.strip()
+    tl = t.lower()
+    for phrase in banned_openers:
+        if tl.startswith(phrase):
+            t = t[len(phrase):].lstrip(' :,-')
+            break
+    return t.strip()
+
+def sanitize_sections_text(sections_payload: dict) -> dict:
+    """Sanitize subtitles/descriptions in sections payload returned by LLM or before saving.
+    Expects a dict with key 'sections' which is a list.
+    """
+    try:
+        sections_list = sections_payload.get('sections', [])
+        cleaned = []
+        for section in sections_list:
+            sec = dict(section)
+            if 'subtitle' in sec:
+                sec['subtitle'] = _clean_subtitle(sec.get('subtitle') or '')
+            if 'description' in sec:
+                sec['description'] = _clean_description(sec.get('description') or '')
+            cleaned.append(sec)
+        sections_payload['sections'] = cleaned
+        return sections_payload
+    except Exception as e:
+        logger.warning(f"sanitize_sections_text failed: {e}")
+        return sections_payload
 
 @bp.route('/api/posts/<int:post_id>/groups', methods=['GET'])
 def api_get_groups(post_id):
@@ -2603,6 +2664,12 @@ def api_save_sections(post_id):
         section_headings = sections_data.get('section_headings', [])
         metadata = sections_data.get('metadata', {})
         
+        # Sanitize before saving
+        try:
+            sections_data = sanitize_sections_text(sections_data)
+        except Exception as _e:
+            logger.warning(f"Sanitization failed, proceeding without changes: {_e}")
+
         # Convert to JSON strings for database storage
         sections_json = json.dumps(sections_data)
         headings_json = json.dumps(section_headings)
@@ -2641,6 +2708,37 @@ def api_save_sections(post_id):
             'success': False,
             'error': str(e)
         }), 500
+
+@bp.route('/api/posts/<int:post_id>/sections', methods=['GET'])
+def api_get_sections(post_id):
+    """Get saved sections for a post from post_development."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT sections
+                FROM post_development
+                WHERE post_id = %s
+                """,
+                (post_id,)
+            )
+            row = cursor.fetchone()
+            if not row or not row['sections']:
+                return jsonify({'success': True, 'sections': {}})
+
+            stored = row['sections']
+            try:
+                if isinstance(stored, str):
+                    sections = json.loads(stored)
+                else:
+                    sections = stored
+            except Exception:
+                sections = {}
+
+            return jsonify({'success': True, 'sections': sections})
+    except Exception as e:
+        logger.error(f"Error fetching sections for post {post_id}: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 def parse_sections_response(response_text):
     """Parse LLM response to extract sections"""
