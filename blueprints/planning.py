@@ -2481,11 +2481,8 @@ DO NOT return JSON format. Return simple text lines only."""
             if len(valid_lines) != len(topics):
                 logger.error(f"Expected {len(topics)} allocations, got {len(valid_lines)}")
                 logger.error(f"Valid lines: {valid_lines}")
-                return jsonify({
-                    'success': False,
-                    'error': f'Invalid allocation count: expected {len(topics)}, got {len(valid_lines)}',
-                    'llm_response': content
-                }), 400
+                logger.warning(f"Continuing to main validation - automatic retry will handle missing topics")
+                # Don't return error here - let the main validation handle it with automatic retry
             
             # Convert to allocation format
             for section_code, topic_title in valid_lines:
