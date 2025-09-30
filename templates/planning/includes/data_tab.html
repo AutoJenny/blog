@@ -676,19 +676,18 @@ function populateDatabaseTables(data) {
     // Populate Post Section table
     console.log('[Data Tab] Post section data:', data.post_sections);
     if (data.post_sections && data.post_sections.length > 0) {
-        // Show all sections in a summary format, or the first section for detailed view
         const sectionsData = data.post_sections;
         console.log('[Data Tab] Populating post sections with data:', sectionsData);
         
-        // Create a summary object showing all sections
+        // Show the first section in detail, with a summary of all sections
+        const firstSection = sectionsData[0];
         const sectionsSummary = {
             total_sections: sectionsData.length,
-            sections: sectionsData.map(section => ({
-                id: section.id,
-                section_order: section.section_order,
-                section_heading: section.section_heading,
-                status: section.status || 'draft'
-            }))
+            section_list: sectionsData.map(section => 
+                `${section.section_order}. ${section.section_heading} (${section.status || 'draft'})`
+            ).join(', '),
+            // Include all fields from the first section for detailed view
+            ...firstSection
         };
         
         populateTableFields('post-section-fields-container', sectionsSummary, 'post_section');
