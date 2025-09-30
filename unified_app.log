@@ -19932,3 +19932,5 @@ LINE 4:                 LEFT JOIN calendar_ideas ci ON cs.idea_id = ...
 2025-09-30 08:43:11,264 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
 2025-09-30 08:43:11,264 - blueprints.planning - INFO - Calendar schedule entry: {'id': 1, 'year': 2025, 'week_number': 39, 'post_id': 60, 'scheduled_date': datetime.date(2025, 9, 28), 'created_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660), 'updated_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660)}
 2025-09-30 08:43:11,264 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 08:43:11] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-09-30 08:44:10,015 - config.database - INFO - Database connection established
+2025-09-30 08:44:10,021 - werkzeug - INFO - 127.0.0.1 - - [30/Sep/2025 08:44:10] "GET /planning/posts/60/calendar/ideas HTTP/1.1" 200 -
