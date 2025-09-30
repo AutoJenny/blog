@@ -2366,7 +2366,7 @@ def api_allocate_topics():
         topics_text = '\n'.join([f"- {topic.get('title', topic) if isinstance(topic, dict) else topic}" for topic in topics])
         
         # Create allocation prompt
-        allocation_prompt = f"""Allocate each topic to its most appropriate section.
+        allocation_prompt = f"""CRITICAL: You must allocate ALL {len(topics)} topics to sections. Every single topic must be assigned.
 
 SECTION STRUCTURE:
 {sections_text}
@@ -2374,13 +2374,19 @@ SECTION STRUCTURE:
 TOPICS TO ALLOCATE ({len(topics)} topics):
 {topics_text}
 
-REQUIREMENTS:
-- Each topic must be allocated to exactly ONE section
-- All topics must be allocated (no unallocated topics)
+MANDATORY REQUIREMENTS:
+- ALL {len(topics)} topics MUST be allocated to exactly ONE section each
+- NO topics can be left unallocated
+- Each topic must appear in exactly ONE section's topics list
 - Choose the section where each topic fits BEST
 - Consider thematic boundaries and exclusions
 - Ensure balanced distribution across sections
 - Respect the section boundaries and exclusions
+
+VALIDATION: Before submitting, verify that:
+1. You have allocated exactly {len(topics)} topics
+2. No topic appears in multiple sections
+3. Every topic from the input list is included
 
 OUTPUT FORMAT: Return ONLY valid JSON:
 {{
