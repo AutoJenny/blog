@@ -480,8 +480,13 @@ async function loadBrainstormTopics() {
         const data = await response.json();
         
         if (data.success && data.development && data.development.idea_scope) {
-            topics = JSON.parse(data.development.idea_scope);
-            displayTopics();
+            const ideaScope = JSON.parse(data.development.idea_scope);
+            if (ideaScope.generated_topics && Array.isArray(ideaScope.generated_topics)) {
+                topics = ideaScope.generated_topics.map(topic => topic.title);
+                displayTopics();
+            } else {
+                showError('topics-display', 'No generated topics found in brainstorming data');
+            }
         } else {
             showError('topics-display', 'Error loading topics from brainstorming');
         }
