@@ -2132,7 +2132,7 @@ def api_get_section_structure_prompt():
             cursor.execute("""
                 SELECT id, name, prompt_text, system_prompt
                 FROM llm_prompt 
-                WHERE name = 'Section Structure Design'
+                WHERE name = 'Section Planning'
                 ORDER BY id DESC
                 LIMIT 1
             """)
@@ -2175,7 +2175,7 @@ def api_get_topic_allocation_prompt():
             cursor.execute("""
                 SELECT id, name, prompt_text, system_prompt
                 FROM llm_prompt 
-                WHERE name = 'Topic Allocation'
+                WHERE name = 'Section Planning'
                 ORDER BY id DESC
                 LIMIT 1
             """)
@@ -2218,7 +2218,7 @@ def api_get_topic_refinement_prompt():
             cursor.execute("""
                 SELECT id, name, prompt_text, system_prompt
                 FROM llm_prompt 
-                WHERE name = 'Topic Refinement'
+                WHERE name = 'Section Creator'
                 ORDER BY id DESC
                 LIMIT 1
             """)
