@@ -386,10 +386,30 @@ def get_post_data(post_id):
                 calendar_schedule_list.append(schedule_dict)
                 logger.info(f"Calendar schedule entry: {schedule_dict}")
             
+            # Get post sections data
+            cursor.execute("""
+                SELECT ps.*
+                FROM post_section ps
+                WHERE ps.post_id = %s
+                ORDER BY ps.section_order
+            """, (post_id,))
+            post_sections_data = cursor.fetchall()
+            
+            # Debug logging
+            logger.info(f"Post sections query for post_id={post_id} returned {len(post_sections_data)} results")
+            
+            # Convert post sections data to list of dicts
+            post_sections_list = []
+            for row in post_sections_data:
+                section_dict = dict(row)
+                post_sections_list.append(section_dict)
+                logger.info(f"Post section entry: {section_dict}")
+            
             return jsonify({
                 **post_info,
                 'development': development_info,
-                'calendar_schedule': calendar_schedule_list
+                'calendar_schedule': calendar_schedule_list,
+                'post_sections': post_sections_list
             })
     except Exception as e:
         logger.error(f"Error fetching post data: {e}")
