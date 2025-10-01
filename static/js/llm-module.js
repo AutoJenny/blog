@@ -24,10 +24,10 @@ class LLMModule {
     }
     
     init() {
-        this.setupEventListeners();
         if (this.config.allowEdit) {
             this.uiManager.setupEditButtons(this);
         }
+        this.setupEventListeners();
         this.loadPrompt();
     }
     
