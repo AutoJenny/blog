@@ -4638,17 +4638,21 @@ def api_save_sections(post_id):
                 """, (post_id, sections_json, headings_json, order_json))
             
             # Save titles and subtitles to post_section table
-            for section in sections:
-                section_id = section.get('id', f"section_{sections.index(section)+1}")
+            for i, section in enumerate(sections):
+                section_id = section.get('id', f"section_{i+1}")
                 title = section.get('title', '')
                 subtitle = section.get('subtitle', '')
                 
-                # Update post_section table with titles and subtitles
+                # Insert or update post_section table with titles and subtitles
                 cursor.execute("""
-                    UPDATE post_section 
-                    SET section_heading = %s, section_description = %s
-                    WHERE post_id = %s AND section_order = %s
-                """, (title, subtitle, post_id, sections.index(section) + 1))
+                    INSERT INTO post_section (post_id, section_order, section_heading, section_description, status, created_at, updated_at)
+                    VALUES (%s, %s, %s, %s, 'draft', NOW(), NOW())
+                    ON CONFLICT (post_id, section_order) 
+                    DO UPDATE SET 
+                        section_heading = EXCLUDED.section_heading,
+                        section_description = EXCLUDED.section_description,
+                        updated_at = NOW()
+                """, (post_id, i + 1, title, subtitle))
             
             # Commit the transaction
             cursor.connection.commit()
