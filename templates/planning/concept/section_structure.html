@@ -464,12 +464,12 @@ function displaySectionStructure(structure) {
     
     sections.forEach((section, index) => {
         const sectionCode = section.section_code || `S${String(index + 1).padStart(2, '0')}`;
-        const theme = section.theme || 'Untitled Section';
+        const title = section.title || section.theme || 'Untitled Section'; // Support both new and old format
         const description = section.description || 'No description available';
         
         html += `
             <div class="section-item">
-                <h5>{${sectionCode}} ${escapeHtml(theme)}</h5>
+                <h5>{${sectionCode}} ${escapeHtml(title)}</h5>
                 <p><strong>Description:</strong> ${escapeHtml(description)}</p>
         `;
         
