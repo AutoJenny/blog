@@ -593,9 +593,13 @@ class AuthorFirstDraftsManager {
         });
         
         // Auto-load the first section if available
+        console.log('Auto-loading sections. Total sections:', this.sections.length);
         if (this.sections.length > 0) {
             const firstSection = this.sections[0];
+            console.log('Auto-loading first section:', firstSection);
             this.selectSection(firstSection.id);
+        } else {
+            console.log('No sections available for auto-loading');
         }
     }
     
@@ -637,12 +641,17 @@ class AuthorFirstDraftsManager {
     }
     
     selectSection(sectionId) {
+        console.log('selectSection called with ID:', sectionId);
         this.currentSectionId = sectionId;
         const section = this.sections.find(s => s.id === sectionId);
+        console.log('Found section:', section);
         
         if (section) {
+            console.log('Loading section content...');
             this.loadSectionContent(section);
             this.updateSectionSelection();
+        } else {
+            console.log('Section not found for ID:', sectionId);
         }
     }
     
