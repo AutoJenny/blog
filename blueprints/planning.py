@@ -3169,57 +3169,78 @@ RESPONSE_RULES:
     
     return canonicalize_prompt
 
-def build_scoring_prompt(idea_code, topic_title, topic_data, sections_data):
-    """Build scoring-only prompt per expert's v2 recommendation"""
+def build_section_specific_prompt(post_title, section_title, section_description, all_sections, expanded_idea=None):
+    """Build prompt for generating section-specific topics"""
     
-    # Build topic data
-    topic_description = topic_data.get('description', topic_title) if topic_data else topic_title
-    topic_category = topic_data.get('category', 'general') if topic_data else 'general'
+    # Build other sections context for negative instructions
+    other_sections = []
+    for i, section in enumerate(all_sections):
+        other_title = section.get('title') or section.get('theme', f'Section {i+1}')
+        other_desc = section.get('description', '')
+        if other_title != section_title:  # Exclude current section
+            other_sections.append(f"- {other_title}: {other_desc}")
     
-    # Build sections text
-    sections_text = []
-    for section in sections_data:
-        section_id = section.get('id', f"S{len(sections_text)+1:02d}")
-        section_title = section.get('title') or section.get('theme', f'Section {len(sections_text)+1}')
-        section_description = section.get('description', 'No description available')
-        sections_text.append(f"{section_id} {section_title}\nDescription: {section_description}")
+    other_sections_text = "\n".join(other_sections) if other_sections else "None"
     
-    sections_block = "\n".join(sections_text)
+    # Build expanded idea context
+    idea_context = ""
+    if expanded_idea:
+        try:
+            if isinstance(expanded_idea, str):
+                idea_data = json.loads(expanded_idea)
+            else:
+                idea_data = expanded_idea
+            
+            idea_context = f"""
+EXPANDED IDEA CONTEXT:
+{idea_data.get('expanded_content', '')}
+"""
+        except:
+            idea_context = ""
     
-    # Extract idea ID without braces for cleaner output
-    idea_id = idea_code.replace('{', '').replace('}', '')
-    
-    scoring_prompt = f"""Score the IDEA against ALL sections. Return exactly 7 integer scores (0–100). Do not choose a section.
+    section_prompt = f"""Generate exactly 6 diverse, specific topics for this blog section. Each topic must fit perfectly within the section's scope and avoid overlap with other sections.
 
-IDEA:
-{idea_id} {topic_title}
-Description: {topic_description}
-Category: {topic_category}
+BLOG POST: {post_title}
 
-SECTIONS:
-{sections_block}
+TARGET SECTION:
+Title: {section_title}
+Description: {section_description}
 
-OUTPUT_SCHEMA:
+OTHER SECTIONS TO AVOID OVERLAPPING WITH:
+{other_sections_text}
+{idea_context}
+REQUIREMENTS:
+- Generate exactly 6 topics
+- Each topic must fit perfectly within "{section_title}" scope
+- Avoid any overlap with the other sections listed above
+- Make topics specific and actionable
+- Ensure thematic coherence within the section
+- Topics should complement each other
+
+OUTPUT FORMAT:
 {{
-  "idea_id":"{idea_id}",
-  "scores":[
-    {{"section_id":"S01","fit_score":N}},
-    {{"section_id":"S02","fit_score":N}},
-    {{"section_id":"S03","fit_score":N}},
-    {{"section_id":"S04","fit_score":N}},
-    {{"section_id":"S05","fit_score":N}},
-    {{"section_id":"S06","fit_score":N}},
-    {{"section_id":"S07","fit_score":N}}
+  "topics": [
+    {{
+      "title": "Specific topic title",
+      "description": "Brief description of what this topic covers",
+      "category": "topic category"
+    }},
+    {{
+      "title": "Another specific topic title", 
+      "description": "Brief description of what this topic covers",
+      "category": "topic category"
+    }}
   ]
 }}
 
-RULES:
-- JSON only
-- Exactly 7 score objects
-- fit_score is integer 0..100
-- No allocation field"""
+CRITICAL RULES:
+- Generate exactly 6 topics
+- Each topic must be clearly within "{section_title}" scope
+- Do NOT create topics that belong to other sections
+- Make topics specific and detailed
+- JSON format only"""
     
-    return scoring_prompt
+    return section_prompt
 
 def validate_scores(scoring_data, expected_idea_id):
     """Validate LLM scores and return clean score dictionary"""
@@ -3376,16 +3397,15 @@ def build_allocation_data(all_allocations, section_structure):
         }
     }
     
-    # Sort sections by section code to ensure proper ordering
-    sorted_sections = sorted(section_groups.items(), key=lambda x: int(x[0].replace('{', '').replace('}', '')[1:]))
-    
-    for section_code, topic_list in sorted_sections:
-        # Clean section code (remove braces if present)
-        clean_section_code = section_code.replace('{', '').replace('}', '')
-        section_order = int(clean_section_code[1:])  # Extract number from S01, S02, etc.
+    # Process all sections from structure, not just those with topics
+    for i, section_data in enumerate(section_structure['sections']):
+        section_order = i + 1
+        section_code = f"{{S{str(section_order).zfill(2)}}}"
+        
+        # Get topics for this section (empty list if none)
+        topic_list = section_groups.get(section_code, [])
         
         # Handle both new format (title) and old format (theme)
-        section_data = section_structure['sections'][section_order - 1]
         section_theme = section_data.get('title') or section_data.get('theme', f'Section {section_order}')
         
         allocation_data['allocations'].append({
@@ -3397,9 +3417,9 @@ def build_allocation_data(all_allocations, section_structure):
     
     return allocation_data
 
-@bp.route('/api/sections/allocate-topics-iterative', methods=['POST'])
-def api_allocate_topics_iterative():
-    """Allocate topics to sections using the new scoring approach"""
+@bp.route('/api/sections/generate-section-specific-topics', methods=['POST'])
+def api_generate_section_specific_topics():
+    """Generate section-specific topics instead of forcing existing ideas into sections"""
     try:
         data = request.get_json()
         post_id = data.get('post_id')
@@ -3410,7 +3430,7 @@ def api_allocate_topics_iterative():
         # Get post data
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
-                SELECT p.title, pd.idea_scope, pd.section_structure, pd.expanded_idea
+                SELECT p.title, pd.section_structure, pd.expanded_idea
                 FROM post p
                 LEFT JOIN post_development pd ON p.id = pd.post_id
                 WHERE p.id = %s
@@ -3421,23 +3441,9 @@ def api_allocate_topics_iterative():
                 return jsonify({'success': False, 'error': 'Post not found'}), 404
             
             title = result['title']
-            idea_scope = result['idea_scope']
             section_structure = result['section_structure']
             expanded_idea = result['expanded_idea']
-            logger.info(f"Database query result - idea_scope: {idea_scope is not None}, section_structure: {section_structure is not None}")
-        
-        # Parse topics from idea_scope
-        if not idea_scope:
-            return jsonify({'success': False, 'error': 'No topics found from brainstorming'}), 400
-        
-        try:
-            idea_scope_data = json.loads(idea_scope) if isinstance(idea_scope, str) else idea_scope
-            topics = idea_scope_data.get('generated_topics', [])
-            logger.info(f"Parsed {len(topics)} topics from idea_scope")
-        except json.JSONDecodeError as e:
-            logger.error(f"JSON decode error: {e}")
-            logger.error(f"idea_scope content: {idea_scope[:200]}...")
-            return jsonify({'success': False, 'error': 'Invalid topics format'}), 400
+            logger.info(f"Database query result - section_structure: {section_structure is not None}")
         
         # Parse section structure
         if not section_structure:
@@ -3454,142 +3460,105 @@ def api_allocate_topics_iterative():
         else:
             sections_data = section_structure.get('sections', [])
         
-        structured_sections = {'sections': sections_data}
+        if not sections_data:
+            return jsonify({'success': False, 'error': 'No sections found in structure'}), 400
         
-        # Phase 1: LLM scoring only (no allocation, no loads shown)
-        logger.info("Phase 1: LLM scoring all topics against all sections")
-        scores_matrix = {}  # idea_id -> {section_id: score}
+        logger.info(f"Generating section-specific topics for {len(sections_data)} sections")
         
-        # Get topics with rich data
-        topics_with_data = []
-        for topic in topics:
-            if isinstance(topic, dict):
-                topics_with_data.append(topic)
-            else:
-                topics_with_data.append({'title': topic, 'description': 'No description available', 'category': 'general'})
+        # Generate topics for each section
+        all_section_topics = {}
+        total_topics = 0
         
-        for i, topic_data in enumerate(topics_with_data):
-            topic_title = topic_data.get('title', f'Topic {i+1}')
+        for i, section in enumerate(sections_data):
+            section_id = f"S{str(i+1).zfill(2)}"
+            section_title = section.get('title') or section.get('theme', f'Section {i+1}')
+            section_description = section.get('description', 'No description available')
             
-            # Extract idea code from topic title if present
-            idea_code = None
-            actual_title = topic_title
+            logger.info(f"Generating topics for {section_id}: {section_title}")
             
-            if '{' in topic_title and '}' in topic_title:
-                import re
-                idea_match = re.search(r'\{([^}]+)\}', topic_title)
-                if idea_match:
-                    idea_code = f"{{{idea_match.group(1)}}}"
-                    actual_title = topic_title.replace(idea_code, '').strip()
-            else:
-                idea_code = f"{{IDEA{str(i+1).zfill(2)}}}"
+            # Build section-specific brainstorming prompt
+            section_prompt = build_section_specific_prompt(
+                title, section_title, section_description, sections_data, expanded_idea
+            )
             
-            idea_id = idea_code.replace('{', '').replace('}', '')
-            
-            # Build scoring-only prompt
-            scoring_prompt = build_scoring_prompt(idea_code, actual_title, topic_data, sections_data)
-            
-            scoring_messages = [
-                {'role': 'system', 'content': 'You are a strict classifier. Score ONE IDEA against ALL SECTIONS. Do not allocate. Output JSON only. No prose. Do not rely on list order.'},
-                {'role': 'user', 'content': scoring_prompt}
+            brainstorming_messages = [
+                {'role': 'system', 'content': 'You are a creative content strategist specializing in generating focused, thematic blog topics. Generate exactly 6 diverse, specific topics that fit perfectly within the target section while avoiding overlap with other sections.'},
+                {'role': 'user', 'content': section_prompt}
             ]
             
-            logger.info(f"Scoring topic {i+1}/{len(topics_with_data)}: {idea_code}")
-            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', scoring_messages, max_tokens=2000)
+            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', brainstorming_messages, max_tokens=3000)
             
             if 'error' in result:
-                logger.error(f"LLM error for topic {idea_code}: {result['error']}")
+                logger.error(f"LLM error for section {section_id}: {result['error']}")
                 continue
             
             content = result.get('content', '').strip()
             
-            # Parse JSON response - handle markdown code blocks
+            # Parse topics from response
             try:
-                # Strip markdown code blocks if present
-                if content.startswith('```json') and content.endswith('```'):
-                    content = content[7:-3].strip()
-                elif content.startswith('```') and content.endswith('```'):
-                    content = content[3:-3].strip()
+                # Extract JSON from response (handle prose + JSON format)
+                json_start = content.find('{')
+                json_end = content.rfind('}') + 1
                 
-                scoring_data = json.loads(content)
+                if json_start != -1 and json_end > json_start:
+                    json_content = content[json_start:json_end]
+                else:
+                    # Fallback: try markdown code blocks
+                    if content.startswith('```json') and content.endswith('```'):
+                        json_content = content[7:-3].strip()
+                    elif content.startswith('```') and content.endswith('```'):
+                        json_content = content[3:-3].strip()
+                    else:
+                        json_content = content
                 
-                # Validate scores
-                per_section_scores = validate_scores(scoring_data, idea_id)
-                if per_section_scores is None:
-                    logger.error(f"Invalid scores for {idea_code}")
-                    continue
+                topics_data = json.loads(json_content)
+                section_topics = topics_data.get('topics', [])
                 
-                scores_matrix[idea_id] = per_section_scores
-                logger.info(f"Scored {idea_code} against all sections")
+                # Add idea codes and section assignment
+                formatted_topics = []
+                for j, topic in enumerate(section_topics):
+                    idea_code = f"{{{section_id}{str(j+1).zfill(2)}}}"
+                    formatted_topics.append({
+                        'idea_code': idea_code,
+                        'topic_title': topic.get('title', f'Topic {j+1}'),
+                        'section_code': f"{{{section_id}}}",
+                        'description': topic.get('description', ''),
+                        'category': topic.get('category', 'general')
+                    })
+                
+                all_section_topics[section_id] = formatted_topics
+                total_topics += len(formatted_topics)
+                
+                logger.info(f"Generated {len(formatted_topics)} topics for {section_id}")
                 
             except json.JSONDecodeError as e:
-                logger.error(f"JSON parsing error for {idea_code}: {e}")
+                logger.error(f"JSON parsing error for section {section_id}: {e}")
                 logger.error(f"Response content: {content[:200]}...")
                 continue
         
-        # Phase 2: Global balanced assignment
-        logger.info(f"Phase 2: Global assignment for {len(scores_matrix)} topics")
-        
-        # Compute balanced capacities
-        capacities = compute_capacities(len(scores_matrix), sections_data)
-        logger.info(f"Section capacities: {capacities}")
-        
-        # Global assignment
-        assignment = allocate_global(scores_matrix, sections_data, capacities)
-        
-        # Build final allocations
-        all_allocations = []
-        for idea_id, section_id in assignment.items():
-            # Find the original topic data
-            topic_data = None
-            for topic in topics_with_data:
-                topic_title = topic.get('title', '')
-                if '{' in topic_title and '}' in topic_title:
-                    import re
-                    idea_match = re.search(r'\{([^}]+)\}', topic_title)
-                    if idea_match and idea_match.group(1) == idea_id:
-                        topic_data = topic
-                        break
-            
-            if topic_data:
-                actual_title = topic_data.get('title', '').replace(f"{{{idea_id}}}", '').strip()
-            else:
-                actual_title = f"Topic {idea_id}"
-            
-            all_allocations.append({
-                'idea_code': f"{{{idea_id}}}",
-                'topic_title': actual_title,
-                'section_code': f"{{{section_id}}}",
-                'scores': [{"section_id": sid, "fit_score": scores_matrix[idea_id][sid]} for sid in ['S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07']]
-            })
-        
-        logger.info(f"Global assignment completed: {len(all_allocations)} topics assigned")
-        
-        # Debug: Log section code distribution
-        section_counts = {}
-        for allocation in all_allocations:
-            section_code = allocation['section_code']
-            section_counts[section_code] = section_counts.get(section_code, 0) + 1
-        
-        logger.info(f"Section allocation counts: {section_counts}")
-        logger.info(f"Total allocations: {len(all_allocations)}")
-        
         # Build final allocation data
+        all_allocations = []
+        for section_id, topics in all_section_topics.items():
+            all_allocations.extend(topics)
+        
+        structured_sections = {'sections': sections_data}
         allocation_data = build_allocation_data(all_allocations, structured_sections)
         
         # Save to database
         save_topic_allocation(post_id, allocation_data)
         
+        logger.info(f"Section-specific generation completed: {total_topics} topics across {len(sections_data)} sections")
+        
         return jsonify({
             'success': True,
-            'message': f'Scoring-based allocations completed ({len(all_allocations)}/{len(topics_with_data)} topics)',
+            'message': f'Section-specific topics generated ({total_topics} topics across {len(sections_data)} sections)',
             'allocations': allocation_data,
             'results': allocation_data,
-            'raw_response': f'Scoring-based allocations completed - {len(all_allocations)} topics processed with canonicalized sections'
+            'raw_response': f'Section-specific generation completed - {total_topics} topics generated with thematic coherence'
         })
         
     except Exception as e:
-        logger.error(f"Error in api_allocate_topics_iterative: {e}")
+        logger.error(f"Error in api_generate_section_specific_topics: {e}")
         return jsonify({
             'success': False,
             'error': f'Server error: {str(e)}'

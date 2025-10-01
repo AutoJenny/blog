@@ -20,8 +20,8 @@
                 <div class="input-data">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                         <h4 style="margin: 0;">Input Data</h4>
-                        <button class="btn btn-primary" id="custom-allocate-btn" onclick="allocateTopics()" style="margin: 0;">
-                            <i class="fas fa-magic"></i> Allocate All Topics
+                        <button class="btn btn-primary" id="custom-allocate-btn" onclick="generateSectionSpecificTopics()" style="margin: 0;">
+                            <i class="fas fa-magic"></i> Generate Section-Specific Topics
                         </button>
                     </div>
                     
@@ -491,31 +491,18 @@ function displayBrainstormTopics(topics) {
     container.innerHTML = topicsHTML;
 }
 
-// Allocate topics
-async function allocateTopics() {
+// Generate section-specific topics
+async function generateSectionSpecificTopics() {
     const btn = document.getElementById('custom-allocate-btn');
     btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Allocating Topics...';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating Topics...';
     
     try {
-        // First get the topics from brainstorming
-        const topicsResponse = await fetch(`/planning/api/posts/${window.postId}`);
-        const topicsData = await topicsResponse.json();
-        
-        if (!topicsData.development || !topicsData.development.idea_scope) {
-            throw new Error('No topics found from brainstorming');
-        }
-        
-        const ideaScopeData = JSON.parse(topicsData.development.idea_scope);
-        const topics = ideaScopeData.generated_topics.map(topic => topic.title);
-        
-        // Then allocate topics using the iterative approach
-        const response = await fetch('/planning/api/sections/allocate-topics-iterative', {
+        // Generate section-specific topics
+        const response = await fetch('/planning/api/sections/generate-section-specific-topics', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                topics: topics,
-                section_structure: sectionStructure,
                 post_id: window.postId
             })
         });
@@ -524,7 +511,7 @@ async function allocateTopics() {
         
         if (result.success) {
             // Display the results in the LLM module
-            console.log('Topics allocated successfully');
+            console.log('Section-specific topics generated successfully');
             displayAllocationResults(result);
             
             // Display the raw LLM response
@@ -535,11 +522,11 @@ async function allocateTopics() {
             alert('Error: ' + result.error);
         }
     } catch (error) {
-        console.error('Error allocating topics:', error);
-        alert('Error allocating topics: ' + error.message);
+        console.error('Error generating section-specific topics:', error);
+        alert('Error generating topics: ' + error.message);
     } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-tasks"></i> Allocate All Topics';
+        btn.innerHTML = '<i class="fas fa-magic"></i> Generate Section-Specific Topics';
     }
 }
 
