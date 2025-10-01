@@ -1,5 +1,5 @@
 # Authoring Blueprint - Real workflow integration
-from flask import Blueprint, render_template, jsonify, request
+from flask import Blueprint, render_template, jsonify, request, redirect, url_for
 from config.database import db_manager
 import logging
 import json
@@ -143,7 +143,7 @@ def authoring_sections_author_first_drafts(post_id):
 
 @bp.route('/posts/<int:post_id>/sections')
 def authoring_sections(post_id):
-    """Sections authoring phase - main entry point"""
+    """Sections authoring phase - redirect to author-first-drafts"""
     try:
         with db_manager.get_cursor() as cursor:
             # Get post details
@@ -157,11 +157,8 @@ def authoring_sections(post_id):
             if not post:
                 return "Post not found", 404
             
-            return render_template('authoring/sections/author_first_drafts.html', 
-                                 post_id=post_id,
-                                 post=post,
-                                 page_title="Section Authoring",
-                                 blueprint_name='authoring')
+            # Redirect to the proper author-first-drafts route
+            return redirect(url_for('authoring.authoring_sections_author_first_drafts', post_id=post_id))
             
     except Exception as e:
         logger.error(f"Error in authoring_sections: {e}")
