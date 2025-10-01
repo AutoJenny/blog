@@ -45,7 +45,7 @@ class LLMService:
             logger.error(f"Error getting models for {provider}: {e}")
             return []
     
-    def execute_llm_request(self, provider, model, messages, api_key=None):
+    def execute_llm_request(self, provider, model, messages, api_key=None, max_tokens=2000):
         """Execute LLM request."""
         try:
             if provider == 'openai':
@@ -57,7 +57,7 @@ class LLMService:
                     'model': model,
                     'messages': messages,
                     'temperature': 0.7,
-                    'max_tokens': 2000
+                    'max_tokens': max_tokens
                 }
                 response = requests.post(
                     f"{self.providers[provider]['base_url']}/chat/completions",
@@ -69,7 +69,10 @@ class LLMService:
                 data = {
                     'model': model,
                     'messages': messages,
-                    'stream': False
+                    'stream': False,
+                    'options': {
+                        'num_predict': max_tokens
+                    }
                 }
                 response = requests.post(
                     f"{self.providers[provider]['base_url']}/api/chat",
@@ -1662,7 +1665,7 @@ def api_generate_expanded_idea(post_id):
             messages.append({'role': 'user', 'content': prompt_text})
             
             # Execute LLM request
-            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages, max_tokens=4000)
             
             if 'error' in result:
                 return jsonify({'error': f'LLM generation failed: {result["error"]}'}), 500
@@ -1820,7 +1823,7 @@ def api_generate_brainstorm_topics():
             messages.append({'role': 'user', 'content': prompt_text})
             
             # Execute LLM request
-            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages, max_tokens=4000)
             
             if 'error' in result:
                 return jsonify({'error': f'LLM generation failed: {result["error"]}'}), 500
@@ -3309,7 +3312,7 @@ def api_allocate_topics_iterative():
             ]
             
             logger.info(f"Processing topic {i+1}/{len(topics)}: {idea_code}")
-            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages, max_tokens=4000)
             
             if 'error' in result:
                 logger.error(f"LLM error for {idea_code}: {result['error']}")
@@ -3541,7 +3544,7 @@ New Comprehensive Topic Title 6"""
                 {'role': 'user', 'content': refinement_prompt}
             ]
             
-            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages, max_tokens=4000)
             
             if 'error' in result:
                 logger.error(f"LLM refinement failed for {section_id}: {result['error']}")
