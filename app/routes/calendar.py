@@ -1,8 +1,38 @@
 """
+Calendar Api Routes module
+Auto-generated from blueprints/planning.py
+"""
 
-# Auto-generated from blueprints/planning.py
-# Module: routes/calendar.py
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for
+from config.database import db_manager
+import logging
+from datetime import datetime, date
+import json
+import requests
 
+logger = logging.getLogger(__name__)
+
+# Create calendar_bp blueprint
+calendar_bp = Blueprint('calendar_bp', __name__, url_prefix='/api/calendar')
+
+"""
+Calendar API routes
+Auto-generated from blueprints/planning.py
+"""
+
+from flask import Blueprint, request, jsonify, render_template
+from config.database import db_manager
+import logging
+from datetime import datetime, date
+import json
+
+logger = logging.getLogger(__name__)
+
+# Create calendar blueprint
+calendar_bp = Blueprint('calendar', __name__, url_prefix='/api/calendar')
+
+@calendar_bp.route('/weeks/<int:year>')
+@calendar_bp.route('/calendar-weeks')
 def api_calendar_weeks(year):
     """Get all calendar weeks for a given year"""
     try:
@@ -27,6 +57,7 @@ def api_calendar_weeks(year):
         return jsonify({'error': str(e)}), 500
 
 
+@calendar_bp.route('/calendar-ideas')
 def api_calendar_ideas(week_number):
     """Get perpetual ideas for a specific week number"""
     try:
@@ -65,6 +96,7 @@ def api_calendar_ideas(week_number):
         return jsonify({'error': str(e)}), 500
 
 
+@calendar_bp.route('/calendar-events')
 def api_calendar_events(year, week_number):
     """Get events for a specific year and week"""
     try:
@@ -104,6 +136,7 @@ def api_calendar_events(year, week_number):
         return jsonify({'error': str(e)}), 500
 
 
+@calendar_bp.route('/calendar-schedule')
 def api_calendar_schedule(year, week_number):
     """Get scheduled items for a specific year and week"""
     try:
@@ -131,6 +164,7 @@ def api_calendar_schedule(year, week_number):
         return jsonify({'error': str(e)}), 500
 
 
+@calendar_bp.route('/calendar-schedule-create')
 def api_calendar_schedule_create():
     """Create a new calendar schedule entry"""
     try:
@@ -168,6 +202,7 @@ def api_calendar_schedule_create():
         return jsonify({'error': str(e)}), 500
 
 
+@calendar_bp.route('/calendar-categories')
 def api_calendar_categories():
     """Get all calendar categories"""
     try:
@@ -191,6 +226,7 @@ def api_calendar_categories():
         return jsonify({'error': str(e)}), 500
 
 
+@calendar_bp.route('/calendar-category-create')
 def api_calendar_category_create():
     """Create a new calendar category"""
     try:
@@ -228,6 +264,7 @@ def api_calendar_category_create():
         return jsonify({'error': str(e)}), 500
 
 
+@calendar_bp.route('/calendar-category-update')
 def api_calendar_category_update(category_id):
     """Update a calendar category"""
     try:
@@ -269,6 +306,7 @@ def api_calendar_category_update(category_id):
         return jsonify({'error': str(e)}), 500
 
 
+@calendar_bp.route('/calendar-category-delete')
 def api_calendar_category_delete(category_id):
     """Delete a calendar category"""
     try:
@@ -292,6 +330,7 @@ def api_calendar_category_delete(category_id):
         return jsonify({'error': str(e)}), 500
 
 
+@calendar_bp.route('/calendar-evergreen')
 def api_calendar_evergreen(week_number):
     """Get available evergreen content for a specific week"""
     try:
@@ -351,6 +390,7 @@ def api_calendar_evergreen(week_number):
         return jsonify({'error': str(e)}), 500
 
 
+@calendar_bp.route('/calendar-evergreen-usage-report')
 def api_calendar_evergreen_usage_report():
     """Get evergreen content usage report"""
     try:
@@ -400,6 +440,7 @@ def api_calendar_evergreen_usage_report():
         return jsonify({'error': str(e)}), 500
 
 
+@calendar_bp.route('/calendar-ideas-for-week')
 def api_calendar_ideas_for_week(week_number):
     """Get all calendar ideas for a specific week number"""
     try:

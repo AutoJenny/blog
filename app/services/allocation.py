@@ -1,8 +1,26 @@
 """
+Allocation Services module
+Auto-generated from blueprints/planning.py
+"""
+
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for
+from config.database import db_manager
+import logging
+from datetime import datetime, date
+import json
+import requests
+
+logger = logging.getLogger(__name__)
+
+# Create allocation_bp blueprint
+allocation_bp = Blueprint('allocation_bp', __name__, url_prefix='/api/allocation')
+
+"""
 
 # Auto-generated from blueprints/planning.py
 # Module: services/allocation.py
 
+@allocation_bp.route('/allocate-missing-topics')
 def allocate_missing_topics(missing_topics, section_structure, post_id):
     """Allocate missing topics using LLM with simplified prompt"""
     try:
@@ -15,6 +33,7 @@ def allocate_missing_topics(missing_topics, section_structure, post_id):
         prompt = f"""You are a Scottish heritage content specialist. Allocate these {len(missing_topics)} missing topics to the most appropriate sections.
 
 
+@allocation_bp.route('/merge-allocations')
 def merge_allocations(original_allocation, retry_allocation):
     """Merge original allocation with retry allocation"""
     try:
@@ -48,6 +67,7 @@ def merge_allocations(original_allocation, retry_allocation):
         return original_allocation
 
 
+@allocation_bp.route('/allocate-global')
 def allocate_global(scores_matrix, sections_data, capacities):
     """
     Two-phase deterministic assignment:
@@ -59,6 +79,7 @@ def allocate_global(scores_matrix, sections_data, capacities):
     remaining_cap = capacities.copy()
     
     # Helper: pick best unassigned idea for a section
+@allocation_bp.route('/best-for-section')
     def best_for_section(section_id):
         best_i = None
         best_s = -1

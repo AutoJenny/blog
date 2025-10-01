@@ -1,8 +1,26 @@
 """
+Post Repository module
+Auto-generated from blueprints/planning.py
+"""
+
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for
+from config.database import db_manager
+import logging
+from datetime import datetime, date
+import json
+import requests
+
+logger = logging.getLogger(__name__)
+
+# Create posts_bp blueprint
+posts_bp = Blueprint('posts_bp', __name__, url_prefix='/api/posts')
+
+"""
 
 # Auto-generated from blueprints/planning.py
 # Module: repositories/posts.py
 
+@posts_bp.route('/get-post-data')
 def get_post_data(post_id):
     """Get detailed post data for data tab."""
     try:
@@ -78,6 +96,7 @@ def get_post_data(post_id):
         return jsonify({'error': str(e)}), 500
 
 
+@posts_bp.route('/save-section-structure')
 def save_section_structure(post_id, structure_data):
     """Save section structure design to database"""
     try:
@@ -101,6 +120,7 @@ def save_section_structure(post_id, structure_data):
         raise
 
 
+@posts_bp.route('/save-topic-allocation')
 def save_topic_allocation(post_id, allocation_data, raw_response=None):
     """Save topic allocation to database"""
     try:
@@ -123,6 +143,7 @@ def save_topic_allocation(post_id, allocation_data, raw_response=None):
         logger.error(f"Error saving topic allocation: {e}")
 
 
+@posts_bp.route('/load-topic-allocation')
 def load_topic_allocation(post_id):
     """Load existing topic allocation from database"""
     try:

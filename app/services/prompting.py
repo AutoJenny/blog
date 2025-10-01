@@ -1,8 +1,26 @@
 """
+Prompting Services module
+Auto-generated from blueprints/planning.py
+"""
+
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for
+from config.database import db_manager
+import logging
+from datetime import datetime, date
+import json
+import requests
+
+logger = logging.getLogger(__name__)
+
+# Create prompting_bp blueprint
+prompting_bp = Blueprint('prompting_bp', __name__, url_prefix='/api/prompting')
+
+"""
 
 # Auto-generated from blueprints/planning.py
 # Module: services/prompting.py
 
+@prompting_bp.route('/build-section-specific-prompt')
 def build_section_specific_prompt(post_title, section_title, section_description, all_sections, expanded_idea=None):
     """Build prompt for generating section-specific topics"""
     
@@ -27,6 +45,7 @@ def build_section_specific_prompt(post_title, section_title, section_description
             
             idea_context = f"""
 
+@prompting_bp.route('/build-allocation-data')
 def build_allocation_data(all_allocations, section_structure):
     """Build final allocation data structure"""
     

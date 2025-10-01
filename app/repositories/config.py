@@ -1,8 +1,26 @@
 """
+Config Repository module
+Auto-generated from blueprints/planning.py
+"""
+
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for
+from config.database import db_manager
+import logging
+from datetime import datetime, date
+import json
+import requests
+
+logger = logging.getLogger(__name__)
+
+# Create config_bp blueprint
+config_bp = Blueprint('config_bp', __name__, url_prefix='/api/config')
+
+"""
 
 # Auto-generated from blueprints/planning.py
 # Module: repositories/config.py
 
+@config_bp.route('/get-step-config')
 def get_step_config(stage, substage, step):
     """Get step configuration for LLM actions."""
     try:
@@ -47,6 +65,7 @@ def get_step_config(stage, substage, step):
         return jsonify({'error': str(e)}), 500
 
 
+@config_bp.route('/get-system-prompts')
 def get_system_prompts():
     """Get all system prompts."""
     try:
@@ -69,6 +88,7 @@ def get_system_prompts():
         return jsonify({'error': str(e)}), 500
 
 
+@config_bp.route('/get-providers')
 def get_providers():
     """Get available LLM providers."""
     try:
@@ -86,6 +106,7 @@ def get_providers():
         return jsonify({'error': str(e)}), 500
 
 
+@config_bp.route('/get-actions')
 def get_actions():
     """Get all LLM actions/prompts."""
     try:
@@ -108,6 +129,7 @@ def get_actions():
         return jsonify({'error': str(e)}), 500
 
 
+@config_bp.route('/get-section-keywords')
 def get_section_keywords(theme, description):
     """Extract relevant keywords for a section to help with topic matching"""
     # Convert to lowercase for matching
