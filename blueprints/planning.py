@@ -2135,6 +2135,50 @@ def api_get_section_titling_prompt():
             'error': str(e)
         }), 500
 
+@bp.route('/api/llm/prompts/section-titling', methods=['PUT'])
+def api_save_section_titling_prompt():
+    """Save the Section Titling prompt"""
+    try:
+        data = request.get_json()
+        system_prompt = data.get('system_prompt', '')
+        prompt_text = data.get('prompt_text', '')
+        
+        with db_manager.get_cursor() as cursor:
+            # Update the section titling prompt
+            cursor.execute("""
+                UPDATE llm_prompt 
+                SET system_prompt = %s, prompt_text = %s, updated_at = NOW()
+                WHERE name = 'Section Titling'
+            """, (system_prompt, prompt_text))
+            
+            if cursor.rowcount == 0:
+                return jsonify({
+                    'success': False,
+                    'error': 'Section Titling prompt not found'
+                }), 404
+            
+            # Get the updated prompt
+            cursor.execute("""
+                SELECT id, name, prompt_text, system_prompt
+                FROM llm_prompt 
+                WHERE name = 'Section Titling'
+                ORDER BY id DESC
+                LIMIT 1
+            """)
+            prompt = cursor.fetchone()
+            
+            return jsonify({
+                'success': True,
+                'prompt': dict(prompt)
+            })
+            
+    except Exception as e:
+        logger.error(f"Error saving section titling prompt: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @bp.route('/api/llm/prompts/section-structure', methods=['GET'])
 def api_get_section_structure_prompt():
     """Get the Section Structure Design prompt and LLM configuration"""
