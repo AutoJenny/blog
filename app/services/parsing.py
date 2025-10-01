@@ -1,8 +1,26 @@
 """
+Parsing Services module
+Auto-generated from blueprints/planning.py
+"""
+
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for
+from config.database import db_manager
+import logging
+from datetime import datetime, date
+import json
+import requests
+
+logger = logging.getLogger(__name__)
+
+# Create parsing_bp blueprint
+parsing_bp = Blueprint('parsing_bp', __name__, url_prefix='/api/parsing')
+
+"""
 
 # Auto-generated from blueprints/planning.py
 # Module: services/parsing.py
 
+@parsing_bp.route('/parse-brainstorm-topics')
 def parse_brainstorm_topics(content):
     """Enhanced topic parsing with validation and categorization"""
     topics = []
@@ -85,6 +103,7 @@ def parse_brainstorm_topics(content):
     return topics[:50]  # Limit to 50 topics
 
 
+@parsing_bp.route('/validate-topic')
 def validate_topic(topic):
     """Validate individual topic for length and content"""
     if not topic or not isinstance(topic, str):

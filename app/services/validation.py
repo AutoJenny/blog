@@ -1,8 +1,26 @@
 """
+Validation Services module
+Auto-generated from blueprints/planning.py
+"""
+
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for
+from config.database import db_manager
+import logging
+from datetime import datetime, date
+import json
+import requests
+
+logger = logging.getLogger(__name__)
+
+# Create validation_bp blueprint
+validation_bp = Blueprint('validation_bp', __name__, url_prefix='/api/validation')
+
+"""
 
 # Auto-generated from blueprints/planning.py
 # Module: services/validation.py
 
+@validation_bp.route('/validate-section-structure')
 def validate_section_structure(structure_data):
     """Validate section structure format"""
     try:
@@ -32,6 +50,7 @@ def validate_section_structure(structure_data):
         return False
 
 
+@validation_bp.route('/validate-topic-allocation')
 def validate_topic_allocation(allocation_data, original_topics):
     """Validate topic allocation format"""
     try:
@@ -84,6 +103,7 @@ def validate_topic_allocation(allocation_data, original_topics):
         return False
 
 
+@validation_bp.route('/canonicalize-sections')
 def canonicalize_sections(section_structure):
     """Step 1: Canonicalize sections into machine-ready criteria"""
     
@@ -102,6 +122,7 @@ def canonicalize_sections(section_structure):
     canonicalize_prompt = f"""Normalize these sections for allocation. For each section, create a compact classifier profile.
 
 
+@validation_bp.route('/validate-scores')
 def validate_scores(scoring_data, expected_idea_id):
     """Validate LLM scores and return clean score dictionary"""
     
@@ -141,6 +162,7 @@ def validate_scores(scoring_data, expected_idea_id):
     return by_id
 
 
+@validation_bp.route('/compute-capacities')
 def compute_capacities(n_ideas, sections_data):
     """Compute balanced capacities for each section"""
     base = n_ideas // 7

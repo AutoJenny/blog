@@ -1,10 +1,28 @@
 """
+Llm Services module
+Auto-generated from blueprints/planning.py
+"""
+
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for
+from config.database import db_manager
+import logging
+from datetime import datetime, date
+import json
+import requests
+
+logger = logging.getLogger(__name__)
+
+# Create llm_bp blueprint
+llm_bp = Blueprint('llm_bp', __name__, url_prefix='/api/llm')
+
+"""
 
 # Auto-generated from blueprints/planning.py
 # Module: services/llm.py
 
 # Function LLMService not found
 
+@llm_bp.route('/run-llm')
 def run_llm():
     """Execute LLM processing for planning steps."""
     try:

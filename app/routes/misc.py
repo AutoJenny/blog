@@ -1,8 +1,26 @@
 """
+Miscellaneous Api Routes module
+Auto-generated from blueprints/planning.py
+"""
+
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for
+from config.database import db_manager
+import logging
+from datetime import datetime, date
+import json
+import requests
+
+logger = logging.getLogger(__name__)
+
+# Create misc_bp blueprint
+misc_bp = Blueprint('misc_bp', __name__, url_prefix='/api')
+
+"""
 
 # Auto-generated from blueprints/planning.py
 # Module: routes/misc.py
 
+@misc_bp.route('/posts')
 def api_posts():
     """API endpoint to get posts for planning"""
     try:
@@ -29,6 +47,7 @@ def api_posts():
         }), 500
 
 
+@misc_bp.route('/get-post-data')
 def get_post_data(post_id):
     """Get detailed post data for data tab."""
     try:
@@ -104,6 +123,7 @@ def get_post_data(post_id):
         return jsonify({'error': str(e)}), 500
 
 
+@misc_bp.route('/update-field')
 def api_update_field(post_id):
     """API endpoint to update a field in post or post_development table"""
     try:
@@ -159,6 +179,7 @@ def api_update_field(post_id):
         return jsonify({'error': str(e)}), 500
 
 
+@misc_bp.route('/post-progress')
 def api_post_progress(post_id):
     """API endpoint to get planning progress for a post"""
     try:
@@ -190,6 +211,7 @@ def api_post_progress(post_id):
         }), 500
 
 
+@misc_bp.route('/get-step-config')
 def get_step_config(stage, substage, step):
     """Get step configuration for LLM actions."""
     try:
@@ -234,6 +256,7 @@ def get_step_config(stage, substage, step):
         return jsonify({'error': str(e)}), 500
 
 
+@misc_bp.route('/get-providers')
 def get_providers():
     """Get available LLM providers."""
     try:
@@ -251,6 +274,7 @@ def get_providers():
         return jsonify({'error': str(e)}), 500
 
 
+@misc_bp.route('/get-actions')
 def get_actions():
     """Get all LLM actions/prompts."""
     try:
@@ -273,6 +297,7 @@ def get_actions():
         return jsonify({'error': str(e)}), 500
 
 
+@misc_bp.route('/get-system-prompts')
 def get_system_prompts():
     """Get all system prompts."""
     try:
@@ -295,6 +320,7 @@ def get_system_prompts():
         return jsonify({'error': str(e)}), 500
 
 
+@misc_bp.route('/execute-action')
 def execute_action(action_id):
     """Execute a specific LLM action."""
     try:
@@ -339,6 +365,7 @@ def execute_action(action_id):
         return jsonify({'error': str(e)}), 500
 
 
+@misc_bp.route('/run-llm')
 def run_llm():
     """Execute LLM processing for planning steps."""
     try:
@@ -407,6 +434,7 @@ def run_llm():
         return jsonify({'error': str(e)}), 500
 
 
+@misc_bp.route('/start-ollama')
 def start_ollama():
     """Start Ollama service."""
     try:
@@ -422,6 +450,7 @@ def start_ollama():
         return jsonify({'success': False, 'error': 'Ollama is not running. Please start it manually with "ollama serve"'})
 
 
+@misc_bp.route('/calendar-idea-create')
 def api_calendar_idea_create():
     """Create a new calendar idea"""
     try:
@@ -468,6 +497,7 @@ def api_calendar_idea_create():
         return jsonify({'error': str(e)}), 500
 
 
+@misc_bp.route('/calendar-idea-update')
 def api_calendar_idea_update(idea_id):
     """Update a calendar idea"""
     try:
@@ -518,6 +548,7 @@ def api_calendar_idea_update(idea_id):
         return jsonify({'error': str(e)}), 500
 
 
+@misc_bp.route('/calendar-idea-delete')
 def api_calendar_idea_delete(idea_id):
     """Delete a calendar idea"""
     try:
@@ -541,6 +572,7 @@ def api_calendar_idea_delete(idea_id):
         return jsonify({'error': str(e)}), 500
 
 
+@misc_bp.route('/calendar-event-create')
 def api_calendar_event_create():
     """Create a new calendar event"""
     try:
@@ -587,6 +619,7 @@ def api_calendar_event_create():
         return jsonify({'error': str(e)}), 500
 
 
+@misc_bp.route('/calendar-event-update')
 def api_calendar_event_update(event_id):
     """Update a calendar event"""
     try:
@@ -637,6 +670,7 @@ def api_calendar_event_update(event_id):
         return jsonify({'error': str(e)}), 500
 
 
+@misc_bp.route('/calendar-event-delete')
 def api_calendar_event_delete(event_id):
     """Delete a calendar event"""
     try:
@@ -660,6 +694,7 @@ def api_calendar_event_delete(event_id):
         return jsonify({'error': str(e)}), 500
 
 
+@misc_bp.route('/calendar-schedule-update')
 def api_calendar_schedule_update(schedule_id):
     """Update a calendar schedule entry"""
     try:
@@ -705,6 +740,7 @@ def api_calendar_schedule_update(schedule_id):
         return jsonify({'error': str(e)}), 500
 
 
+@misc_bp.route('/calendar-schedule-delete')
 def api_calendar_schedule_delete(schedule_id):
     """Delete a calendar schedule entry"""
     try:
