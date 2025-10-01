@@ -789,6 +789,13 @@ class AuthorFirstDraftsManager {
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     new AuthorFirstDraftsManager();
+    
+    // Initialize LLM module for authoring
+    let llmModule = null;
+    
+    // Initialize LLM module
+    llmModule = initializeLLMModule('author_draft', window.postId);
+    console.log('LLM Module initialized for authoring:', llmModule);
 });
 </script>
 
