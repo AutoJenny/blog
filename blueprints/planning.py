@@ -2408,16 +2408,25 @@ def api_design_section_structure():
 def validate_section_structure(structure_data):
     """Validate section structure format"""
     try:
-        if not isinstance(structure_data, dict):
+        # Handle both array format (new) and object with sections (old)
+        if isinstance(structure_data, list):
+            sections = structure_data
+        elif isinstance(structure_data, dict):
+            sections = structure_data.get('sections', [])
+        else:
             return False
         
-        sections = structure_data.get('sections', [])
         if len(sections) != 7:
             return False
         
         for section in sections:
-            required_fields = ['id', 'theme', 'boundaries', 'exclusions', 'order', 'description']
+            # New format fields
+            required_fields = ['section_code', 'theme', 'description', 'boundaries', 'exclusions', 'topics']
             if not all(field in section for field in required_fields):
+                return False
+            
+            # Validate section codes
+            if not section['section_code'].startswith('S'):
                 return False
         
         return True
