@@ -430,8 +430,8 @@ async function allocateTopics() {
         const ideaScopeData = JSON.parse(topicsData.development.idea_scope);
         const topics = ideaScopeData.generated_topics.map(topic => topic.title);
         
-        // Then allocate topics using the section structure
-        const response = await fetch('/planning/api/sections/allocate-topics', {
+        // Then allocate topics using the iterative approach
+        const response = await fetch('/planning/api/sections/allocate-topics-iterative', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

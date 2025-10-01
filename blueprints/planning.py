@@ -3059,6 +3059,185 @@ def load_topic_allocation(post_id):
         return None
         raise
 
+def build_individual_topic_prompt(idea_code, topic_title, section_structure):
+    """Build prompt for individual topic allocation"""
+    
+    # Build section structure text
+    sections_text = ""
+    for i, section in enumerate(section_structure.get('sections', [])):
+        section_code = f"S{str(i+1).zfill(2)}"
+        sections_text += f"\n{section_code}: {section['theme']}\n  Boundaries: {section['description']}\n"
+    
+    prompt = f"""TASK: Allocate the following topic to ONE SECTION below based on THEMATIC COHERENCE. Each topic must go to its BEST FIT section based on content and theme.
+
+TOPIC TO ALLOCATE (ignore idea code {idea_code} for purpose of allocation):
+{{{idea_code}: "{topic_title}"}},
+
+SECTION STRUCTURE:{sections_text}
+
+REQUIRED OUTPUT FORMAT - return exactly like this with only ONE response:
+{idea_code} {{S02}} using the current IDEA code allocated to the most appropriate section code"""
+    
+    return prompt
+
+def build_allocation_data(all_allocations, section_structure):
+    """Build final allocation data structure"""
+    
+    # Group allocations by section
+    section_groups = {}
+    for allocation in all_allocations:
+        section_code = allocation['section_code']
+        if section_code not in section_groups:
+            section_groups[section_code] = []
+        section_groups[section_code].append(allocation['topic_title'])
+    
+    # Build allocation data
+    allocation_data = {
+        'allocations': [],
+        'metadata': {
+            'total_topics_allocated': len(all_allocations),
+            'unallocated_topics': [],
+            'allocation_method': 'individual_iterative'
+        }
+    }
+    
+    for section_code, topic_list in section_groups.items():
+        section_order = int(section_code[1:])  # Extract number from S01, S02, etc.
+        section_theme = section_structure['sections'][section_order - 1]['theme']
+        
+        allocation_data['allocations'].append({
+            'section_id': f'section_{section_order}',
+            'section_theme': section_theme,
+            'topics': topic_list,
+            'allocation_reason': f'Topics allocated to {section_theme} based on individual thematic analysis'
+        })
+    
+    return allocation_data
+
+@bp.route('/api/sections/allocate-topics-iterative', methods=['POST'])
+def api_allocate_topics_iterative():
+    """Allocate topics to sections using iterative LLM approach"""
+    try:
+        data = request.get_json()
+        post_id = data.get('post_id')
+        
+        # Get topics from request or from database
+        if 'topics' in data:
+            topics = data['topics']
+        else:
+            # Fetch topics from brainstorming
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT idea_scope FROM post_development 
+                    WHERE post_id = %s AND idea_scope IS NOT NULL
+                """, (post_id,))
+                result = cursor.fetchone()
+                if not result:
+                    return jsonify({'success': False, 'error': 'No topics found from brainstorming'}), 400
+                
+                idea_scope_data = json.loads(result['idea_scope'])
+                topics = [topic['title'] for topic in idea_scope_data.get('generated_topics', [])]
+        
+        # Get section structure from request or from database
+        if 'section_structure' in data:
+            section_structure = data['section_structure']
+        else:
+            # Fetch section structure from database
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT section_structure FROM post_development 
+                    WHERE post_id = %s AND section_structure IS NOT NULL
+                """, (post_id,))
+                result = cursor.fetchone()
+                if not result:
+                    return jsonify({'success': False, 'error': 'No section structure found'}), 400
+                
+                section_structure = json.loads(result['section_structure'])
+        
+        # Process each topic individually
+        all_allocations = []
+        raw_responses = []
+        
+        for i, topic in enumerate(topics):
+            topic_title = topic.get('title', topic) if isinstance(topic, dict) else topic
+            
+            # Extract idea code from topic title
+            import re
+            idea_match = re.search(r'\{IDEA\d+\}', topic_title)
+            if not idea_match:
+                logger.error(f"No idea code found in topic: {topic_title}")
+                continue
+            
+            idea_code = idea_match.group(0)
+            
+            # Extract actual title (remove JSON formatting)
+            if topic_title.startswith('{"') and topic_title.endswith('"}'):
+                try:
+                    topic_obj = json.loads(topic_title)
+                    actual_title = list(topic_obj.values())[0]
+                except json.JSONDecodeError:
+                    actual_title = topic_title
+            else:
+                actual_title = topic_title
+            
+            # Build individual topic prompt
+            individual_prompt = build_individual_topic_prompt(idea_code, actual_title, section_structure)
+            
+            # Execute LLM request for this single topic
+            messages = [
+                {'role': 'system', 'content': 'You are a Scottish heritage content specialist and topic allocation expert. Your expertise lies in matching topics to appropriate sections based on thematic boundaries. You MUST follow instructions exactly and return ONLY the requested format without any additional text, explanations, or JSON.'},
+                {'role': 'user', 'content': individual_prompt}
+            ]
+            
+            logger.info(f"Processing topic {i+1}/{len(topics)}: {idea_code}")
+            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+            
+            if 'error' in result:
+                logger.error(f"LLM error for {idea_code}: {result['error']}")
+                continue
+            
+            # Parse the response
+            content = result['content'].strip()
+            raw_responses.append(f"{idea_code}: {content}")
+            
+            # Extract section code from response
+            section_match = re.search(r'\{S\d+\}', content)
+            if section_match:
+                section_code = section_match.group(0)
+                all_allocations.append({
+                    'idea_code': idea_code,
+                    'topic_title': actual_title,
+                    'section_code': section_code,
+                    'raw_response': content
+                })
+                logger.info(f"Allocated {idea_code} to {section_code}")
+            else:
+                logger.error(f"No section code found in response for {idea_code}: {content}")
+        
+        # Build final allocation data
+        allocation_data = build_allocation_data(all_allocations, section_structure)
+        
+        # Save to database
+        save_topic_allocation(post_id, allocation_data)
+        
+        # Combine all raw responses
+        combined_raw_response = '\n'.join(raw_responses)
+        
+        return jsonify({
+            'success': True,
+            'message': f'Topics allocated successfully ({len(all_allocations)}/{len(topics)} topics)',
+            'allocations': allocation_data,
+            'results': allocation_data,
+            'raw_response': combined_raw_response
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in api_allocate_topics_iterative: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Server error: {str(e)}'
+        }), 500
+
 @bp.route('/api/sections/allocate-topics/<int:post_id>', methods=['GET'])
 def api_get_topic_allocation(post_id):
     """Get topic allocation for a post"""
