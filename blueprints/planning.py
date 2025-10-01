@@ -2175,7 +2175,7 @@ def api_get_topic_allocation_prompt():
             cursor.execute("""
                 SELECT id, name, prompt_text, system_prompt
                 FROM llm_prompt 
-                WHERE name = 'Section Planning'
+                WHERE name = 'Individual Topic Allocation'
                 ORDER BY id DESC
                 LIMIT 1
             """)
