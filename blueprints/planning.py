@@ -1849,7 +1849,6 @@ def parse_brainstorm_topics(content):
     
     # Step 1: Try JSON parsing (expected format)
     try:
-        import json
         # Clean up the content to extract JSON
         content_clean = content.strip()
         
@@ -2015,7 +2014,6 @@ def api_update_idea_scope(post_id):
             return jsonify({'error': 'No topics provided'}), 400
         
         # Format topics as JSON for storage
-        import json
         idea_scope_json = json.dumps({
             'generated_topics': topics,
             'generated_at': datetime.now().isoformat(),
@@ -2275,10 +2273,23 @@ def api_design_section_structure():
         expanded_idea = data.get('expanded_idea', '')
         post_id = data.get('post_id')
         
+        # Fetch topics from database if not provided
+        if not topics:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT idea_scope 
+                    FROM post_development 
+                    WHERE post_id = %s AND idea_scope IS NOT NULL
+                """, (post_id,))
+                result = cursor.fetchone()
+                if result:
+                    idea_scope_data = json.loads(result['idea_scope'])
+                    topics = idea_scope_data.get('generated_topics', [])
+        
         if not topics:
             return jsonify({
                 'success': False,
-                'error': 'No topics provided'
+                'error': 'No topics found in database'
             }), 400
         
         if not post_id:
@@ -2352,7 +2363,6 @@ def api_design_section_structure():
         
         # Parse the response
         try:
-            import json
             import re
             
             # Remove markdown code blocks if present
@@ -2497,7 +2507,6 @@ def api_get_section_structure(post_id):
 @bp.route('/api/sections/allocate-topics', methods=['POST'])
 def api_allocate_topics():
     """Step 2: Allocate topics to sections"""
-    import json
     try:
         data = request.get_json()
         topics = data.get('topics', [])
@@ -3790,7 +3799,6 @@ OUTPUT FORMAT: Return ONLY valid JSON:
         
         # Parse response
         try:
-            import json
             content = llm_response['content'].strip()
             
             # Remove markdown code blocks if present
@@ -3955,7 +3963,6 @@ DESCRIPTION GUIDELINES:
         
         # Parse response
         try:
-            import json
             content = llm_response['content'].strip()
             
             # Remove markdown code blocks if present
