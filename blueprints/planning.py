@@ -4088,13 +4088,15 @@ OUTPUT FORMAT: Return ONLY valid JSON with creative titles:
   ]
 }}
 
-CREATIVE TITLE EXAMPLES:
-- Instead of "Ancient Celtic Origins" → "Whispers from the Celtic Dawn"
-- Instead of "Agricultural Practices" → "The Land's Ancient Wisdom"
-- Instead of "Seasonal Celebrations" → "Festivals of the Golden Season"
-- Instead of "Christianity's Impact" → "When Cross Met Croft"
-- Instead of "Women's Roles" → "Keepers of the Sacred Flame"
-- Instead of "Folk Remedies" → "Healing Hands of the Highlands"
+CREATIVE TITLE EXAMPLES (SHORT AND SNAPPY):
+- Instead of "Ancient Celtic Origins" → "Celtic Whispers"
+- Instead of "Agricultural Practices" → "Land's Wisdom"
+- Instead of "Seasonal Celebrations" → "Golden Festivals"
+- Instead of "Christianity's Impact" → "Cross and Croft"
+- Instead of "Women's Roles" → "Sacred Keepers"
+- Instead of "Folk Remedies" → "Healing Hands"
+
+CRITICAL: Make titles SHORT, SNAPPY, and CREATIVE. NO colons, NO subtitles, NO long descriptions. Just evocative words that capture the essence.
 
 TITLE GUIDELINES:
 - Use evocative language that captures Scottish spirit
@@ -4181,7 +4183,7 @@ DESCRIPTION GUIDELINES:
                 merged_section = {
                     'id': f'section_{i+1}',
                     'title': llm_section.get('title', section.get('section_theme', f'Section {i+1}')) if llm_section else section.get('section_theme', f'Section {i+1}'),
-                    'subtitle': section.get('section_description', ''),
+                    'subtitle': section.get('section_theme', f'Section {i+1}'),  # Original section theme as subtitle
                     'description': section.get('section_description', ''),
                     'topics': section.get('topics', []),
                     'order': i + 1,
