@@ -9081,3 +9081,620 @@ DO NOT return JSON format. Return simple text lines only.
 2025-10-01 09:34:20,074 - werkzeug - INFO -  * Restarting with stat
 2025-10-01 09:34:20,320 - werkzeug - WARNING -  * Debugger is active!
 2025-10-01 09:34:20,326 - werkzeug - INFO -  * Debugger PIN: 842-147-207
+2025-10-01 09:34:27,249 - config.database - INFO - Database connection established
+2025-10-01 09:34:27,256 - config.database - INFO - Database connection established
+2025-10-01 09:34:27,262 - config.database - INFO - Database connection established
+2025-10-01 09:34:27,263 - blueprints.planning - INFO - Processing topic 1/36: {IDEA01}
+2025-10-01 09:34:27,265 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:27,786 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 09:34:27,823 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 09:34:28,070 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 09:34:28,075 - werkzeug - INFO -  * Debugger PIN: 842-147-207
+2025-10-01 09:34:29,758 - config.database - INFO - Database connection established
+2025-10-01 09:34:29,765 - config.database - INFO - Database connection established
+2025-10-01 09:34:29,772 - config.database - INFO - Database connection established
+2025-10-01 09:34:29,774 - blueprints.planning - INFO - Processing topic 1/36: {IDEA01}
+2025-10-01 09:34:29,776 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:29,983 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 311
+2025-10-01 09:34:29,983 - blueprints.planning - INFO - Allocated {IDEA01} to {S05}
+2025-10-01 09:34:29,983 - blueprints.planning - INFO - Processing topic 2/36: {IDEA02}
+2025-10-01 09:34:29,984 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:30,589 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:34:30,589 - blueprints.planning - INFO - Allocated {IDEA02} to {S01}
+2025-10-01 09:34:30,590 - blueprints.planning - INFO - Processing topic 3/36: {IDEA03}
+2025-10-01 09:34:30,591 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:31,177 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:34:31,177 - blueprints.planning - INFO - Allocated {IDEA03} to {S05}
+2025-10-01 09:34:31,177 - blueprints.planning - INFO - Processing topic 4/36: {IDEA04}
+2025-10-01 09:34:31,178 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:31,796 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:34:31,796 - blueprints.planning - INFO - Allocated {IDEA04} to {S03}
+2025-10-01 09:34:31,796 - blueprints.planning - INFO - Processing topic 5/36: {IDEA07}
+2025-10-01 09:34:31,797 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:32,402 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:34:32,402 - blueprints.planning - INFO - Allocated {IDEA07} to {S05}
+2025-10-01 09:34:32,402 - blueprints.planning - INFO - Processing topic 6/36: {IDEA09}
+2025-10-01 09:34:32,403 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:33,023 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:34:33,024 - blueprints.planning - INFO - Allocated {IDEA09} to {S04}
+2025-10-01 09:34:33,024 - blueprints.planning - INFO - Processing topic 7/36: {IDEA10}
+2025-10-01 09:34:33,026 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:33,644 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:34:33,644 - blueprints.planning - INFO - Allocated {IDEA10} to {S05}
+2025-10-01 09:34:33,645 - blueprints.planning - INFO - Processing topic 8/36: {IDEA11}
+2025-10-01 09:34:33,645 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:34,249 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:34:34,249 - blueprints.planning - INFO - Allocated {IDEA11} to {S05}
+2025-10-01 09:34:34,250 - blueprints.planning - INFO - Processing topic 9/36: {IDEA12}
+2025-10-01 09:34:34,251 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:34,853 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:34:34,853 - blueprints.planning - INFO - Allocated {IDEA12} to {S07}
+2025-10-01 09:34:34,853 - blueprints.planning - INFO - Processing topic 10/36: {IDEA13}
+2025-10-01 09:34:34,854 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:35,464 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:34:35,464 - blueprints.planning - INFO - Allocated {IDEA13} to {S06}
+2025-10-01 09:34:35,465 - blueprints.planning - INFO - Processing topic 11/36: {IDEA15}
+2025-10-01 09:34:35,465 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:36,068 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 311
+2025-10-01 09:34:36,069 - blueprints.planning - INFO - Allocated {IDEA15} to {S06}
+2025-10-01 09:34:36,069 - blueprints.planning - INFO - Processing topic 12/36: {IDEA16}
+2025-10-01 09:34:36,070 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:36,673 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:34:36,673 - blueprints.planning - INFO - Allocated {IDEA16} to {S05}
+2025-10-01 09:34:36,673 - blueprints.planning - INFO - Processing topic 13/36: {IDEA19}
+2025-10-01 09:34:36,674 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:37,276 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:34:37,277 - blueprints.planning - INFO - Allocated {IDEA19} to {S05}
+2025-10-01 09:34:37,277 - blueprints.planning - INFO - Processing topic 14/36: {IDEA20}
+2025-10-01 09:34:37,277 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:37,860 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:34:37,860 - blueprints.planning - INFO - Allocated {IDEA20} to {S05}
+2025-10-01 09:34:37,860 - blueprints.planning - INFO - Processing topic 15/36: {IDEA21}
+2025-10-01 09:34:37,861 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:38,465 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:34:38,466 - blueprints.planning - INFO - Allocated {IDEA21} to {S05}
+2025-10-01 09:34:38,466 - blueprints.planning - INFO - Processing topic 16/36: {IDEA22}
+2025-10-01 09:34:38,467 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:39,086 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:34:39,087 - blueprints.planning - INFO - Allocated {IDEA22} to {S05}
+2025-10-01 09:34:39,087 - blueprints.planning - INFO - Processing topic 17/36: {IDEA23}
+2025-10-01 09:34:39,089 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:39,707 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:34:39,708 - blueprints.planning - INFO - Allocated {IDEA23} to {S05}
+2025-10-01 09:34:39,708 - blueprints.planning - INFO - Processing topic 18/36: {IDEA24}
+2025-10-01 09:34:39,709 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:40,310 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:34:40,310 - blueprints.planning - INFO - Allocated {IDEA24} to {S05}
+2025-10-01 09:34:40,310 - blueprints.planning - INFO - Processing topic 19/36: {IDEA25}
+2025-10-01 09:34:40,312 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:40,915 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:34:40,916 - blueprints.planning - INFO - Allocated {IDEA25} to {S05}
+2025-10-01 09:34:40,916 - blueprints.planning - INFO - Processing topic 20/36: {IDEA27}
+2025-10-01 09:34:40,916 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:41,536 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:34:41,536 - blueprints.planning - INFO - Allocated {IDEA27} to {S05}
+2025-10-01 09:34:41,536 - blueprints.planning - INFO - Processing topic 21/36: {IDEA28}
+2025-10-01 09:34:41,537 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:42,157 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:34:42,157 - blueprints.planning - INFO - Allocated {IDEA28} to {S05}
+2025-10-01 09:34:42,157 - blueprints.planning - INFO - Processing topic 22/36: {IDEA31}
+2025-10-01 09:34:42,157 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:42,742 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:34:42,743 - blueprints.planning - INFO - Allocated {IDEA31} to {S02}
+2025-10-01 09:34:42,743 - blueprints.planning - INFO - Processing topic 23/36: {IDEA32}
+2025-10-01 09:34:42,744 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:43,345 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 308
+2025-10-01 09:34:43,345 - blueprints.planning - INFO - Allocated {IDEA32} to {S05}
+2025-10-01 09:34:43,345 - blueprints.planning - INFO - Processing topic 24/36: {IDEA34}
+2025-10-01 09:34:43,346 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:43,952 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:34:43,953 - blueprints.planning - INFO - Allocated {IDEA34} to {S05}
+2025-10-01 09:34:43,953 - blueprints.planning - INFO - Processing topic 25/36: {IDEA35}
+2025-10-01 09:34:43,954 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:44,577 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:34:44,577 - blueprints.planning - INFO - Allocated {IDEA35} to {S05}
+2025-10-01 09:34:44,577 - blueprints.planning - INFO - Processing topic 26/36: {IDEA36}
+2025-10-01 09:34:44,578 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:45,163 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:34:45,163 - blueprints.planning - INFO - Allocated {IDEA36} to {S02}
+2025-10-01 09:34:45,163 - blueprints.planning - INFO - Processing topic 27/36: {IDEA37}
+2025-10-01 09:34:45,164 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:45,767 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:34:45,768 - blueprints.planning - INFO - Allocated {IDEA37} to {S04}
+2025-10-01 09:34:45,768 - blueprints.planning - INFO - Processing topic 28/36: {IDEA38}
+2025-10-01 09:34:45,768 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:46,352 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:34:46,352 - blueprints.planning - INFO - Allocated {IDEA38} to {S02}
+2025-10-01 09:34:46,352 - blueprints.planning - INFO - Processing topic 29/36: {IDEA42}
+2025-10-01 09:34:46,353 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:46,955 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:34:46,956 - blueprints.planning - INFO - Allocated {IDEA42} to {S05}
+2025-10-01 09:34:46,956 - blueprints.planning - INFO - Processing topic 30/36: {IDEA43}
+2025-10-01 09:34:46,957 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:47,576 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:34:47,577 - blueprints.planning - INFO - Allocated {IDEA43} to {S05}
+2025-10-01 09:34:47,577 - blueprints.planning - INFO - Processing topic 31/36: {IDEA44}
+2025-10-01 09:34:47,577 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:48,178 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 308
+2025-10-01 09:34:48,178 - blueprints.planning - INFO - Allocated {IDEA44} to {S02}
+2025-10-01 09:34:48,178 - blueprints.planning - INFO - Processing topic 32/36: {IDEA45}
+2025-10-01 09:34:48,179 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:48,781 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:34:48,781 - blueprints.planning - INFO - Allocated {IDEA45} to {S05}
+2025-10-01 09:34:48,781 - blueprints.planning - INFO - Processing topic 33/36: {IDEA46}
+2025-10-01 09:34:48,782 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:49,383 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:34:49,383 - blueprints.planning - INFO - Allocated {IDEA46} to {S02}
+2025-10-01 09:34:49,383 - blueprints.planning - INFO - Processing topic 34/36: {IDEA47}
+2025-10-01 09:34:49,384 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:49,969 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:34:49,970 - blueprints.planning - INFO - Allocated {IDEA47} to {S05}
+2025-10-01 09:34:49,970 - blueprints.planning - INFO - Processing topic 35/36: {IDEA49}
+2025-10-01 09:34:49,972 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:50,557 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:34:50,558 - blueprints.planning - INFO - Allocated {IDEA49} to {S05}
+2025-10-01 09:34:50,558 - blueprints.planning - INFO - Processing topic 36/36: {IDEA50}
+2025-10-01 09:34:50,558 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:51,161 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:34:51,161 - blueprints.planning - INFO - Allocated {IDEA50} to {S07}
+2025-10-01 09:34:51,169 - config.database - INFO - Database connection established
+2025-10-01 09:34:51,176 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 09:34:51] "POST /planning/api/sections/allocate-topics-iterative HTTP/1.1" 200 -
+2025-10-01 09:34:55,493 - config.database - INFO - Database connection established
+2025-10-01 09:34:55,501 - config.database - INFO - Database connection established
+2025-10-01 09:34:55,507 - config.database - INFO - Database connection established
+2025-10-01 09:34:55,509 - blueprints.planning - INFO - Processing topic 1/36: {IDEA01}
+2025-10-01 09:34:55,510 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:56,175 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 311
+2025-10-01 09:34:56,176 - blueprints.planning - INFO - Allocated {IDEA01} to {S05}
+2025-10-01 09:34:56,176 - blueprints.planning - INFO - Processing topic 2/36: {IDEA02}
+2025-10-01 09:34:56,177 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:56,781 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:34:56,781 - blueprints.planning - INFO - Allocated {IDEA02} to {S01}
+2025-10-01 09:34:56,781 - blueprints.planning - INFO - Processing topic 3/36: {IDEA03}
+2025-10-01 09:34:56,782 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:57,367 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:34:57,367 - blueprints.planning - INFO - Allocated {IDEA03} to {S04}
+2025-10-01 09:34:57,367 - blueprints.planning - INFO - Processing topic 4/36: {IDEA04}
+2025-10-01 09:34:57,369 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:57,988 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:34:57,988 - blueprints.planning - INFO - Allocated {IDEA04} to {S03}
+2025-10-01 09:34:57,988 - blueprints.planning - INFO - Processing topic 5/36: {IDEA07}
+2025-10-01 09:34:57,989 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:58,610 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 311
+2025-10-01 09:34:58,610 - blueprints.planning - INFO - Allocated {IDEA07} to {S05}
+2025-10-01 09:34:58,610 - blueprints.planning - INFO - Processing topic 6/36: {IDEA09}
+2025-10-01 09:34:58,611 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:59,210 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:34:59,211 - blueprints.planning - INFO - Allocated {IDEA09} to {S04}
+2025-10-01 09:34:59,211 - blueprints.planning - INFO - Processing topic 7/36: {IDEA10}
+2025-10-01 09:34:59,212 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:34:59,831 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:34:59,831 - blueprints.planning - INFO - Allocated {IDEA10} to {S05}
+2025-10-01 09:34:59,831 - blueprints.planning - INFO - Processing topic 8/36: {IDEA11}
+2025-10-01 09:34:59,831 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:00,416 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 308
+2025-10-01 09:35:00,416 - blueprints.planning - INFO - Allocated {IDEA11} to {S05}
+2025-10-01 09:35:00,416 - blueprints.planning - INFO - Processing topic 9/36: {IDEA12}
+2025-10-01 09:35:00,417 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:01,019 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:01,019 - blueprints.planning - INFO - Allocated {IDEA12} to {S05}
+2025-10-01 09:35:01,019 - blueprints.planning - INFO - Processing topic 10/36: {IDEA13}
+2025-10-01 09:35:01,019 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:01,603 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:01,604 - blueprints.planning - INFO - Allocated {IDEA13} to {S06}
+2025-10-01 09:35:01,604 - blueprints.planning - INFO - Processing topic 11/36: {IDEA15}
+2025-10-01 09:35:01,605 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:02,207 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:02,208 - blueprints.planning - INFO - Allocated {IDEA15} to {S02}
+2025-10-01 09:35:02,208 - blueprints.planning - INFO - Processing topic 12/36: {IDEA16}
+2025-10-01 09:35:02,208 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:02,812 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:02,812 - blueprints.planning - INFO - Allocated {IDEA16} to {S07}
+2025-10-01 09:35:02,812 - blueprints.planning - INFO - Processing topic 13/36: {IDEA19}
+2025-10-01 09:35:02,813 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:03,396 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:03,397 - blueprints.planning - INFO - Allocated {IDEA19} to {S05}
+2025-10-01 09:35:03,397 - blueprints.planning - INFO - Processing topic 14/36: {IDEA20}
+2025-10-01 09:35:03,398 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:03,981 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:03,982 - blueprints.planning - INFO - Allocated {IDEA20} to {S05}
+2025-10-01 09:35:03,982 - blueprints.planning - INFO - Processing topic 15/36: {IDEA21}
+2025-10-01 09:35:03,983 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:04,577 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:04,577 - blueprints.planning - INFO - Allocated {IDEA21} to {S04}
+2025-10-01 09:35:04,578 - blueprints.planning - INFO - Processing topic 16/36: {IDEA22}
+2025-10-01 09:35:04,579 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:05,198 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:05,199 - blueprints.planning - INFO - Allocated {IDEA22} to {S05}
+2025-10-01 09:35:05,199 - blueprints.planning - INFO - Processing topic 17/36: {IDEA23}
+2025-10-01 09:35:05,200 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:05,920 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 366
+2025-10-01 09:35:05,920 - blueprints.planning - INFO - Allocated {IDEA23} to {S04}
+2025-10-01 09:35:05,920 - blueprints.planning - INFO - Processing topic 18/36: {IDEA24}
+2025-10-01 09:35:05,921 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:06,541 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:06,542 - blueprints.planning - INFO - Allocated {IDEA24} to {S05}
+2025-10-01 09:35:06,542 - blueprints.planning - INFO - Processing topic 19/36: {IDEA25}
+2025-10-01 09:35:06,542 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:07,147 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:07,148 - blueprints.planning - INFO - Allocated {IDEA25} to {S05}
+2025-10-01 09:35:07,148 - blueprints.planning - INFO - Processing topic 20/36: {IDEA27}
+2025-10-01 09:35:07,149 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:07,752 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:07,752 - blueprints.planning - INFO - Allocated {IDEA27} to {S05}
+2025-10-01 09:35:07,752 - blueprints.planning - INFO - Processing topic 21/36: {IDEA28}
+2025-10-01 09:35:07,753 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:08,374 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:08,375 - blueprints.planning - INFO - Allocated {IDEA28} to {S05}
+2025-10-01 09:35:08,375 - blueprints.planning - INFO - Processing topic 22/36: {IDEA31}
+2025-10-01 09:35:08,376 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:08,962 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 308
+2025-10-01 09:35:08,963 - blueprints.planning - INFO - Allocated {IDEA31} to {S04}
+2025-10-01 09:35:08,963 - blueprints.planning - INFO - Processing topic 23/36: {IDEA32}
+2025-10-01 09:35:08,964 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:09,565 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:09,566 - blueprints.planning - INFO - Allocated {IDEA32} to {S05}
+2025-10-01 09:35:09,566 - blueprints.planning - INFO - Processing topic 24/36: {IDEA34}
+2025-10-01 09:35:09,566 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:10,170 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:10,171 - blueprints.planning - INFO - Allocated {IDEA34} to {S05}
+2025-10-01 09:35:10,171 - blueprints.planning - INFO - Processing topic 25/36: {IDEA35}
+2025-10-01 09:35:10,172 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:10,775 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:10,775 - blueprints.planning - INFO - Allocated {IDEA35} to {S05}
+2025-10-01 09:35:10,775 - blueprints.planning - INFO - Processing topic 26/36: {IDEA36}
+2025-10-01 09:35:10,776 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:11,380 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:11,381 - blueprints.planning - INFO - Allocated {IDEA36} to {S05}
+2025-10-01 09:35:11,381 - blueprints.planning - INFO - Processing topic 27/36: {IDEA37}
+2025-10-01 09:35:11,382 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:11,983 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:11,983 - blueprints.planning - INFO - Allocated {IDEA37} to {S07}
+2025-10-01 09:35:11,983 - blueprints.planning - INFO - Processing topic 28/36: {IDEA38}
+2025-10-01 09:35:11,984 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:12,585 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:12,586 - blueprints.planning - INFO - Allocated {IDEA38} to {S05}
+2025-10-01 09:35:12,586 - blueprints.planning - INFO - Processing topic 29/36: {IDEA42}
+2025-10-01 09:35:12,586 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:13,190 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 308
+2025-10-01 09:35:13,190 - blueprints.planning - INFO - Allocated {IDEA42} to {S05}
+2025-10-01 09:35:13,190 - blueprints.planning - INFO - Processing topic 30/36: {IDEA43}
+2025-10-01 09:35:13,191 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:13,793 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:13,794 - blueprints.planning - INFO - Allocated {IDEA43} to {S04}
+2025-10-01 09:35:13,794 - blueprints.planning - INFO - Processing topic 31/36: {IDEA44}
+2025-10-01 09:35:13,794 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:14,397 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 308
+2025-10-01 09:35:14,397 - blueprints.planning - INFO - Allocated {IDEA44} to {S05}
+2025-10-01 09:35:14,397 - blueprints.planning - INFO - Processing topic 32/36: {IDEA45}
+2025-10-01 09:35:14,398 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:14,998 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 308
+2025-10-01 09:35:14,998 - blueprints.planning - INFO - Allocated {IDEA45} to {S05}
+2025-10-01 09:35:14,998 - blueprints.planning - INFO - Processing topic 33/36: {IDEA46}
+2025-10-01 09:35:14,999 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:15,584 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:15,584 - blueprints.planning - INFO - Allocated {IDEA46} to {S02}
+2025-10-01 09:35:15,584 - blueprints.planning - INFO - Processing topic 34/36: {IDEA47}
+2025-10-01 09:35:15,585 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:16,169 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 308
+2025-10-01 09:35:16,169 - blueprints.planning - INFO - Allocated {IDEA47} to {S05}
+2025-10-01 09:35:16,169 - blueprints.planning - INFO - Processing topic 35/36: {IDEA49}
+2025-10-01 09:35:16,169 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:16,754 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:16,755 - blueprints.planning - INFO - Allocated {IDEA49} to {S05}
+2025-10-01 09:35:16,755 - blueprints.planning - INFO - Processing topic 36/36: {IDEA50}
+2025-10-01 09:35:16,756 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:17,357 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:17,357 - blueprints.planning - INFO - Allocated {IDEA50} to {S07}
+2025-10-01 09:35:17,363 - config.database - INFO - Database connection established
+2025-10-01 09:35:17,372 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 09:35:17] "POST /planning/api/sections/allocate-topics-iterative HTTP/1.1" 200 -
+2025-10-01 09:35:22,278 - config.database - INFO - Database connection established
+2025-10-01 09:35:22,286 - config.database - INFO - Database connection established
+2025-10-01 09:35:22,293 - config.database - INFO - Database connection established
+2025-10-01 09:35:22,294 - blueprints.planning - INFO - Processing topic 1/36: {IDEA01}
+2025-10-01 09:35:22,295 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:22,953 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:22,953 - blueprints.planning - INFO - Allocated {IDEA01} to {S05}
+2025-10-01 09:35:22,954 - blueprints.planning - INFO - Processing topic 2/36: {IDEA02}
+2025-10-01 09:35:22,954 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:23,574 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:23,574 - blueprints.planning - INFO - Allocated {IDEA02} to {S01}
+2025-10-01 09:35:23,574 - blueprints.planning - INFO - Processing topic 3/36: {IDEA03}
+2025-10-01 09:35:23,574 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:24,178 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:24,178 - blueprints.planning - INFO - Allocated {IDEA03} to {S02}
+2025-10-01 09:35:24,179 - blueprints.planning - INFO - Processing topic 4/36: {IDEA04}
+2025-10-01 09:35:24,180 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:24,799 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:24,799 - blueprints.planning - INFO - Allocated {IDEA04} to {S03}
+2025-10-01 09:35:24,799 - blueprints.planning - INFO - Processing topic 5/36: {IDEA07}
+2025-10-01 09:35:24,800 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:25,420 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:25,421 - blueprints.planning - INFO - Allocated {IDEA07} to {S05}
+2025-10-01 09:35:25,421 - blueprints.planning - INFO - Processing topic 6/36: {IDEA09}
+2025-10-01 09:35:25,421 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:26,042 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:26,042 - blueprints.planning - INFO - Allocated {IDEA09} to {S04}
+2025-10-01 09:35:26,042 - blueprints.planning - INFO - Processing topic 7/36: {IDEA10}
+2025-10-01 09:35:26,043 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:26,646 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:26,646 - blueprints.planning - INFO - Allocated {IDEA10} to {S05}
+2025-10-01 09:35:26,646 - blueprints.planning - INFO - Processing topic 8/36: {IDEA11}
+2025-10-01 09:35:26,647 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:27,249 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:27,249 - blueprints.planning - INFO - Allocated {IDEA11} to {S05}
+2025-10-01 09:35:27,249 - blueprints.planning - INFO - Processing topic 9/36: {IDEA12}
+2025-10-01 09:35:27,250 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:27,854 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:27,854 - blueprints.planning - INFO - Allocated {IDEA12} to {S07}
+2025-10-01 09:35:27,854 - blueprints.planning - INFO - Processing topic 10/36: {IDEA13}
+2025-10-01 09:35:27,855 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:28,457 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:28,458 - blueprints.planning - INFO - Allocated {IDEA13} to {S06}
+2025-10-01 09:35:28,458 - blueprints.planning - INFO - Processing topic 11/36: {IDEA15}
+2025-10-01 09:35:28,460 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:29,046 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:29,047 - blueprints.planning - INFO - Allocated {IDEA15} to {S02}
+2025-10-01 09:35:29,047 - blueprints.planning - INFO - Processing topic 12/36: {IDEA16}
+2025-10-01 09:35:29,048 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:29,651 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:29,651 - blueprints.planning - INFO - Allocated {IDEA16} to {S05}
+2025-10-01 09:35:29,652 - blueprints.planning - INFO - Processing topic 13/36: {IDEA19}
+2025-10-01 09:35:29,652 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:30,238 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:30,238 - blueprints.planning - INFO - Allocated {IDEA19} to {S05}
+2025-10-01 09:35:30,238 - blueprints.planning - INFO - Processing topic 14/36: {IDEA20}
+2025-10-01 09:35:30,239 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:30,824 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:30,825 - blueprints.planning - INFO - Allocated {IDEA20} to {S02}
+2025-10-01 09:35:30,825 - blueprints.planning - INFO - Processing topic 15/36: {IDEA21}
+2025-10-01 09:35:30,825 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:31,428 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:31,428 - blueprints.planning - INFO - Allocated {IDEA21} to {S05}
+2025-10-01 09:35:31,428 - blueprints.planning - INFO - Processing topic 16/36: {IDEA22}
+2025-10-01 09:35:31,429 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:32,029 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:32,029 - blueprints.planning - INFO - Allocated {IDEA22} to {S05}
+2025-10-01 09:35:32,030 - blueprints.planning - INFO - Processing topic 17/36: {IDEA23}
+2025-10-01 09:35:32,030 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:32,634 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:32,635 - blueprints.planning - INFO - Allocated {IDEA23} to {S05}
+2025-10-01 09:35:32,635 - blueprints.planning - INFO - Processing topic 18/36: {IDEA24}
+2025-10-01 09:35:32,635 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:33,237 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:33,238 - blueprints.planning - INFO - Allocated {IDEA24} to {S05}
+2025-10-01 09:35:33,238 - blueprints.planning - INFO - Processing topic 19/36: {IDEA25}
+2025-10-01 09:35:33,239 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:33,839 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:33,840 - blueprints.planning - INFO - Allocated {IDEA25} to {S05}
+2025-10-01 09:35:33,840 - blueprints.planning - INFO - Processing topic 20/36: {IDEA27}
+2025-10-01 09:35:33,840 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:34,443 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:34,444 - blueprints.planning - INFO - Allocated {IDEA27} to {S05}
+2025-10-01 09:35:34,444 - blueprints.planning - INFO - Processing topic 21/36: {IDEA28}
+2025-10-01 09:35:34,444 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:35,064 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:35,064 - blueprints.planning - INFO - Allocated {IDEA28} to {S05}
+2025-10-01 09:35:35,064 - blueprints.planning - INFO - Processing topic 22/36: {IDEA31}
+2025-10-01 09:35:35,065 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:35,668 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 311
+2025-10-01 09:35:35,669 - blueprints.planning - INFO - Allocated {IDEA31} to {S07}
+2025-10-01 09:35:35,669 - blueprints.planning - INFO - Processing topic 23/36: {IDEA32}
+2025-10-01 09:35:35,670 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:36,276 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:36,276 - blueprints.planning - INFO - Allocated {IDEA32} to {S05}
+2025-10-01 09:35:36,276 - blueprints.planning - INFO - Processing topic 24/36: {IDEA34}
+2025-10-01 09:35:36,277 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:36,880 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:36,880 - blueprints.planning - INFO - Allocated {IDEA34} to {S05}
+2025-10-01 09:35:36,880 - blueprints.planning - INFO - Processing topic 25/36: {IDEA35}
+2025-10-01 09:35:36,881 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:37,484 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:37,485 - blueprints.planning - INFO - Allocated {IDEA35} to {S05}
+2025-10-01 09:35:37,485 - blueprints.planning - INFO - Processing topic 26/36: {IDEA36}
+2025-10-01 09:35:37,485 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:38,070 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:38,070 - blueprints.planning - INFO - Allocated {IDEA36} to {S05}
+2025-10-01 09:35:38,070 - blueprints.planning - INFO - Processing topic 27/36: {IDEA37}
+2025-10-01 09:35:38,071 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:38,690 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:38,690 - blueprints.planning - INFO - Allocated {IDEA37} to {S07}
+2025-10-01 09:35:38,690 - blueprints.planning - INFO - Processing topic 28/36: {IDEA38}
+2025-10-01 09:35:38,691 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:39,276 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:39,276 - blueprints.planning - INFO - Allocated {IDEA38} to {S02}
+2025-10-01 09:35:39,276 - blueprints.planning - INFO - Processing topic 29/36: {IDEA42}
+2025-10-01 09:35:39,277 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:39,897 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:39,897 - blueprints.planning - INFO - Allocated {IDEA42} to {S05}
+2025-10-01 09:35:39,897 - blueprints.planning - INFO - Processing topic 30/36: {IDEA43}
+2025-10-01 09:35:39,898 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:40,518 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:40,519 - blueprints.planning - INFO - Allocated {IDEA43} to {S05}
+2025-10-01 09:35:40,519 - blueprints.planning - INFO - Processing topic 31/36: {IDEA44}
+2025-10-01 09:35:40,519 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:41,123 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:41,123 - blueprints.planning - INFO - Allocated {IDEA44} to {S02}
+2025-10-01 09:35:41,123 - blueprints.planning - INFO - Processing topic 32/36: {IDEA45}
+2025-10-01 09:35:41,124 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:41,744 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:41,744 - blueprints.planning - INFO - Allocated {IDEA45} to {S05}
+2025-10-01 09:35:41,744 - blueprints.planning - INFO - Processing topic 33/36: {IDEA46}
+2025-10-01 09:35:41,745 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:42,348 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:42,349 - blueprints.planning - INFO - Allocated {IDEA46} to {S05}
+2025-10-01 09:35:42,349 - blueprints.planning - INFO - Processing topic 34/36: {IDEA47}
+2025-10-01 09:35:42,350 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:42,954 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:42,954 - blueprints.planning - INFO - Allocated {IDEA47} to {S05}
+2025-10-01 09:35:42,954 - blueprints.planning - INFO - Processing topic 35/36: {IDEA49}
+2025-10-01 09:35:42,954 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:43,538 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:43,538 - blueprints.planning - INFO - Allocated {IDEA49} to {S05}
+2025-10-01 09:35:43,538 - blueprints.planning - INFO - Processing topic 36/36: {IDEA50}
+2025-10-01 09:35:43,539 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:44,123 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:44,123 - blueprints.planning - INFO - Allocated {IDEA50} to {S07}
+2025-10-01 09:35:44,129 - config.database - INFO - Database connection established
+2025-10-01 09:35:44,135 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 09:35:44] "POST /planning/api/sections/allocate-topics-iterative HTTP/1.1" 200 -
+2025-10-01 09:35:46,416 - config.database - INFO - Database connection established
+2025-10-01 09:35:46,425 - config.database - INFO - Database connection established
+2025-10-01 09:35:46,433 - config.database - INFO - Database connection established
+2025-10-01 09:35:46,434 - blueprints.planning - INFO - Processing topic 1/36: {IDEA01}
+2025-10-01 09:35:46,435 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:47,101 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:47,101 - blueprints.planning - INFO - Allocated {IDEA01} to {S04}
+2025-10-01 09:35:47,101 - blueprints.planning - INFO - Processing topic 2/36: {IDEA02}
+2025-10-01 09:35:47,102 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:47,721 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:47,722 - blueprints.planning - INFO - Allocated {IDEA02} to {S01}
+2025-10-01 09:35:47,722 - blueprints.planning - INFO - Processing topic 3/36: {IDEA03}
+2025-10-01 09:35:47,723 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:48,308 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:48,308 - blueprints.planning - INFO - Allocated {IDEA03} to {S02}
+2025-10-01 09:35:48,308 - blueprints.planning - INFO - Processing topic 4/36: {IDEA04}
+2025-10-01 09:35:48,309 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:48,929 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:48,930 - blueprints.planning - INFO - Allocated {IDEA04} to {S03}
+2025-10-01 09:35:48,930 - blueprints.planning - INFO - Processing topic 5/36: {IDEA07}
+2025-10-01 09:35:48,930 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:49,550 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:49,551 - blueprints.planning - INFO - Allocated {IDEA07} to {S05}
+2025-10-01 09:35:49,551 - blueprints.planning - INFO - Processing topic 6/36: {IDEA09}
+2025-10-01 09:35:49,553 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:50,155 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:50,155 - blueprints.planning - INFO - Allocated {IDEA09} to {S04}
+2025-10-01 09:35:50,155 - blueprints.planning - INFO - Processing topic 7/36: {IDEA10}
+2025-10-01 09:35:50,156 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:50,775 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:50,776 - blueprints.planning - INFO - Allocated {IDEA10} to {S05}
+2025-10-01 09:35:50,776 - blueprints.planning - INFO - Processing topic 8/36: {IDEA11}
+2025-10-01 09:35:50,778 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:51,380 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:51,380 - blueprints.planning - INFO - Allocated {IDEA11} to {S05}
+2025-10-01 09:35:51,380 - blueprints.planning - INFO - Processing topic 9/36: {IDEA12}
+2025-10-01 09:35:51,381 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:51,980 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:51,981 - blueprints.planning - INFO - Allocated {IDEA12} to {S03}
+2025-10-01 09:35:51,981 - blueprints.planning - INFO - Processing topic 10/36: {IDEA13}
+2025-10-01 09:35:51,983 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:52,585 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:52,586 - blueprints.planning - INFO - Allocated {IDEA13} to {S06}
+2025-10-01 09:35:52,586 - blueprints.planning - INFO - Processing topic 11/36: {IDEA15}
+2025-10-01 09:35:52,587 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:53,188 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:53,188 - blueprints.planning - INFO - Allocated {IDEA15} to {S07}
+2025-10-01 09:35:53,188 - blueprints.planning - INFO - Processing topic 12/36: {IDEA16}
+2025-10-01 09:35:53,189 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:53,809 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:53,810 - blueprints.planning - INFO - Allocated {IDEA16} to {S05}
+2025-10-01 09:35:53,810 - blueprints.planning - INFO - Processing topic 13/36: {IDEA19}
+2025-10-01 09:35:53,810 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:54,413 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:54,413 - blueprints.planning - INFO - Allocated {IDEA19} to {S05}
+2025-10-01 09:35:54,414 - blueprints.planning - INFO - Processing topic 14/36: {IDEA20}
+2025-10-01 09:35:54,415 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:55,000 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 308
+2025-10-01 09:35:55,001 - blueprints.planning - INFO - Allocated {IDEA20} to {S05}
+2025-10-01 09:35:55,001 - blueprints.planning - INFO - Processing topic 15/36: {IDEA21}
+2025-10-01 09:35:55,002 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:55,603 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:55,604 - blueprints.planning - INFO - Allocated {IDEA21} to {S05}
+2025-10-01 09:35:55,604 - blueprints.planning - INFO - Processing topic 16/36: {IDEA22}
+2025-10-01 09:35:55,605 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:56,224 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 311
+2025-10-01 09:35:56,225 - blueprints.planning - INFO - Allocated {IDEA22} to {S05}
+2025-10-01 09:35:56,225 - blueprints.planning - INFO - Processing topic 17/36: {IDEA23}
+2025-10-01 09:35:56,227 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:56,828 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:56,829 - blueprints.planning - INFO - Allocated {IDEA23} to {S06}
+2025-10-01 09:35:56,829 - blueprints.planning - INFO - Processing topic 18/36: {IDEA24}
+2025-10-01 09:35:56,829 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:57,430 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:57,430 - blueprints.planning - INFO - Allocated {IDEA24} to {S05}
+2025-10-01 09:35:57,430 - blueprints.planning - INFO - Processing topic 19/36: {IDEA25}
+2025-10-01 09:35:57,431 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:58,015 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:35:58,016 - blueprints.planning - INFO - Allocated {IDEA25} to {S05}
+2025-10-01 09:35:58,016 - blueprints.planning - INFO - Processing topic 20/36: {IDEA27}
+2025-10-01 09:35:58,017 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:58,636 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:58,636 - blueprints.planning - INFO - Allocated {IDEA27} to {S05}
+2025-10-01 09:35:58,636 - blueprints.planning - INFO - Processing topic 21/36: {IDEA28}
+2025-10-01 09:35:58,637 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:59,256 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:35:59,257 - blueprints.planning - INFO - Allocated {IDEA28} to {S05}
+2025-10-01 09:35:59,257 - blueprints.planning - INFO - Processing topic 22/36: {IDEA31}
+2025-10-01 09:35:59,258 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:35:59,860 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 311
+2025-10-01 09:35:59,860 - blueprints.planning - INFO - Allocated {IDEA31} to {S05}
+2025-10-01 09:35:59,860 - blueprints.planning - INFO - Processing topic 23/36: {IDEA32}
+2025-10-01 09:35:59,861 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:36:00,481 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:36:00,481 - blueprints.planning - INFO - Allocated {IDEA32} to {S05}
+2025-10-01 09:36:00,481 - blueprints.planning - INFO - Processing topic 24/36: {IDEA34}
+2025-10-01 09:36:00,482 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:36:01,083 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:36:01,083 - blueprints.planning - INFO - Allocated {IDEA34} to {S05}
+2025-10-01 09:36:01,084 - blueprints.planning - INFO - Processing topic 25/36: {IDEA35}
+2025-10-01 09:36:01,085 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:36:01,686 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:36:01,686 - blueprints.planning - INFO - Allocated {IDEA35} to {S05}
+2025-10-01 09:36:01,686 - blueprints.planning - INFO - Processing topic 26/36: {IDEA36}
+2025-10-01 09:36:01,687 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:36:02,273 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:36:02,273 - blueprints.planning - INFO - Allocated {IDEA36} to {S02}
+2025-10-01 09:36:02,273 - blueprints.planning - INFO - Processing topic 27/36: {IDEA37}
+2025-10-01 09:36:02,274 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:36:02,894 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:36:02,895 - blueprints.planning - INFO - Allocated {IDEA37} to {S07}
+2025-10-01 09:36:02,895 - blueprints.planning - INFO - Processing topic 28/36: {IDEA38}
+2025-10-01 09:36:02,895 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:36:03,498 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:36:03,498 - blueprints.planning - INFO - Allocated {IDEA38} to {S05}
+2025-10-01 09:36:03,499 - blueprints.planning - INFO - Processing topic 29/36: {IDEA42}
+2025-10-01 09:36:03,499 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:36:04,119 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 311
+2025-10-01 09:36:04,120 - blueprints.planning - INFO - Allocated {IDEA42} to {S05}
+2025-10-01 09:36:04,120 - blueprints.planning - INFO - Processing topic 30/36: {IDEA43}
+2025-10-01 09:36:04,122 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:36:04,740 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 311
+2025-10-01 09:36:04,741 - blueprints.planning - INFO - Allocated {IDEA43} to {S02}
+2025-10-01 09:36:04,741 - blueprints.planning - INFO - Processing topic 31/36: {IDEA44}
+2025-10-01 09:36:04,742 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:36:05,346 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:36:05,347 - blueprints.planning - INFO - Allocated {IDEA44} to {S05}
+2025-10-01 09:36:05,347 - blueprints.planning - INFO - Processing topic 32/36: {IDEA45}
+2025-10-01 09:36:05,348 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:36:05,951 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:36:05,951 - blueprints.planning - INFO - Allocated {IDEA45} to {S05}
+2025-10-01 09:36:05,951 - blueprints.planning - INFO - Processing topic 33/36: {IDEA46}
+2025-10-01 09:36:05,952 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:36:06,536 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:36:06,536 - blueprints.planning - INFO - Allocated {IDEA46} to {S02}
+2025-10-01 09:36:06,536 - blueprints.planning - INFO - Processing topic 34/36: {IDEA47}
+2025-10-01 09:36:06,537 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:36:07,120 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:36:07,120 - blueprints.planning - INFO - Allocated {IDEA47} to {S05}
+2025-10-01 09:36:07,120 - blueprints.planning - INFO - Processing topic 35/36: {IDEA49}
+2025-10-01 09:36:07,121 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:36:07,723 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 312
+2025-10-01 09:36:07,724 - blueprints.planning - INFO - Allocated {IDEA49} to {S05}
+2025-10-01 09:36:07,724 - blueprints.planning - INFO - Processing topic 36/36: {IDEA50}
+2025-10-01 09:36:07,724 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:36:08,308 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 309
+2025-10-01 09:36:08,309 - blueprints.planning - INFO - Allocated {IDEA50} to {S07}
+2025-10-01 09:36:08,314 - config.database - INFO - Database connection established
+2025-10-01 09:36:08,320 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 09:36:08] "POST /planning/api/sections/allocate-topics-iterative HTTP/1.1" 200 -
+2025-10-01 09:36:21,817 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 09:36:21,844 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 09:36:22,078 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 09:36:22,082 - werkzeug - INFO -  * Debugger PIN: 842-147-207
+2025-10-01 09:40:06,837 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 09:40:06,878 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 09:40:07,132 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 09:40:07,138 - werkzeug - INFO -  * Debugger PIN: 842-147-207
+2025-10-01 09:40:13,517 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 09:40:13,558 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 09:40:13,817 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 09:40:13,822 - werkzeug - INFO -  * Debugger PIN: 842-147-207
