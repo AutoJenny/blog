@@ -4029,8 +4029,8 @@ def api_sections_title():
 CONSTRAINTS:
 - 2–4 words per title.
 - No colons, dashes, or sub-clauses.
-- Avoid literal echoes of the original (e.g., "Ancient," "Origins," "History," "Traditions," "Festival," "Harvest," "Samhain," "Hogmanay," "Symbolism") unless used metaphorically and sparingly.
-- Use evocative imagery, mood, and metaphor; keep it Scottish in tone without naming specific festivals unless present in bullets.
+- Avoid literal echoes of the original section titles unless used metaphorically and sparingly.
+- Use evocative imagery, mood, and metaphor; keep it culturally appropriate without naming specific festivals unless present in bullets.
 - Title Case or Small Caps casing acceptable; no emoji; ASCII only.
 
 OUTPUT:
