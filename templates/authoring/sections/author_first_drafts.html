@@ -495,14 +495,19 @@ class AuthorFirstDraftsManager {
     
     init() {
         console.log('AuthorFirstDraftsManager init() called');
+        console.log('window.postId:', window.postId);
         this.loadSections();
         this.bindEvents();
     }
     
     async loadSections() {
+        console.log('loadSections called');
         try {
+            console.log('Fetching sections from:', `/authoring/api/posts/${window.postId}/sections`);
             const response = await fetch(`/authoring/api/posts/${window.postId}/sections`);
+            console.log('Response received:', response);
             const data = await response.json();
+            console.log('Data received:', data);
             
             if (data.success) {
                 this.sections = data.sections;
