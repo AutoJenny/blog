@@ -4059,24 +4059,24 @@ CRITICAL REQUIREMENTS:
             topics_list = '\n  '.join(section.get('topics', []))
             sections_text += f"\nSection {i+1}: {section_theme}\n  {topics_list}\n"
         
-        titling_prompt = f"""You are tasked with creating engaging titles and snappy subtitles for these existing sections with allocated topics about {expanded_idea}. DO NOT reorganize, reorder, or change the topics - just add creative titles and subtitles.
+        titling_prompt = f"""You are tasked with creating engaging, creative titles and snappy subtitles for these existing sections with allocated topics about {expanded_idea}. Create NEW, CREATIVE titles that are more engaging than the current technical section names.
 
-EXISTING SECTIONS TO TITLE (PRESERVE EXACTLY AS IS):
+EXISTING SECTIONS TO TITLE (CREATE NEW CREATIVE TITLES):
 {sections_text}
 
 CRITICAL REQUIREMENTS:
-- Keep the EXACT same section structure, topics, and order
-- Only add creative titles and snappy subtitles
-- Do NOT reorganize or reallocate topics
-- Do NOT change the section themes or explanations
-- Do NOT modify the topic lists
+- Create NEW, CREATIVE titles that are more engaging than the current section names
+- Keep the EXACT same topics and order
+- Do NOT use the current section theme as the title - create something new and creative
+- Make titles evocative and engaging for Scottish heritage audiences
+- Use authentic Scottish terminology and cultural references where appropriate
 
 OUTPUT FORMAT: Return ONLY valid JSON:
 {{
   "sections": [
     {{
       "id": "section_1",
-      "title": "Engaging Scottish Heritage Title",
+      "title": "NEW CREATIVE TITLE (not the current section theme)",
       "subtitle": "Snappy subtitle - no fluff like 'This section delves into'",
       "description": "Brief description of what this section covers",
       "topics": ["EXACT SAME TOPICS AS INPUT"],
@@ -4096,6 +4096,11 @@ TITLE GUIDELINES:
 - Use evocative language that captures Scottish spirit
 - Include cultural references where appropriate (e.g., "Celtic", "Highland", "Ancient Scottish")
 - Make titles accessible to international audiences
+- Examples of creative titles:
+  * Instead of "Ancient Celtic Origins" → "Whispers from the Celtic Dawn"
+  * Instead of "Agricultural Practices" → "The Land's Ancient Wisdom"
+  * Instead of "Seasonal Celebrations" → "Festivals of the Golden Season"
+  * Instead of "Christianity's Impact" → "When Cross Met Croft"
 - Avoid overly academic or dry language
 - Focus on emotional connection and cultural pride
 
@@ -4156,7 +4161,9 @@ DESCRIPTION GUIDELINES:
             # Remove any text before the JSON (like "Here is the JSON output:")
             if '{' in content:
                 json_start = content.find('{')
-                content = content[json_start:]
+                json_end = content.rfind('}') + 1
+                if json_start != -1 and json_end > json_start:
+                    content = content[json_start:json_end]
             
             sections_data = json.loads(content)
             # Sanitize subtitles/descriptions and enforce constraints
