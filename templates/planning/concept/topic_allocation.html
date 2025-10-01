@@ -233,11 +233,11 @@ let llmModule = null;
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
     loadSectionStructure();
-    initializeLLMModule();
+    initializeTopicAllocationModule();
 });
 
 // Initialize LLM module
-function initializeLLMModule() {
+function initializeTopicAllocationModule() {
     if (typeof initializeLLMModule === 'function') {
         llmModule = initializeLLMModule('topic_allocation', window.postId);
     } else {
