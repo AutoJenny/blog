@@ -2535,8 +2535,8 @@ def api_allocate_topics():
             sections_text += f"  Boundaries: {section['boundaries']}\n"
             sections_text += f"  Exclusions: {section['exclusions']}\n"
         
-        # Format topics for prompt with unique codes
-        topics_text = '\n'.join([f"{i+1}. {topic.get('title', topic) if isinstance(topic, dict) else topic} {{IDEA{i+1:02d}}}" for i, topic in enumerate(topics)])
+        # Format topics for prompt (topics already have idea codes from brainstorming)
+        topics_text = '\n'.join([f"{topic.get('title', topic) if isinstance(topic, dict) else topic}" for topic in topics])
         
         # Create allocation prompt
         allocation_prompt = f"""TASK: Allocate {len(topics)} topics to sections based on THEMATIC COHERENCE. Each topic must go to its BEST FIT section based on content and theme.
@@ -2622,12 +2622,16 @@ DO NOT return JSON format. Return simple text lines only."""
             allocations = {}
             lines = content.split('\n')
             
-            # Create idea code to topic mapping
+            # Create idea code to topic mapping (extract idea codes from topic titles)
             idea_to_topic = {}
-            for i, topic in enumerate(topics):
-                idea_code = f"IDEA{i+1:02d}"
+            import re
+            for topic in topics:
                 topic_title = topic.get('title', topic) if isinstance(topic, dict) else topic
-                idea_to_topic[idea_code] = topic_title
+                # Extract idea code from topic title (e.g., "{IDEA01} Topic Title" -> "IDEA01")
+                idea_match = re.search(r'\{IDEA(\d+)\}', topic_title)
+                if idea_match:
+                    idea_code = f"IDEA{idea_match.group(1).zfill(2)}"
+                    idea_to_topic[idea_code] = topic_title
             
             # Filter out empty lines and invalid lines
             valid_lines = []
