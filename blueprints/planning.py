@@ -2547,14 +2547,6 @@ SECTION STRUCTURE:
 TOPICS TO ALLOCATE (process these in numbered order 1-{len(topics)}):
 {topics_text}
 
-THEMATIC MATCHING GUIDELINES:
-- S01 (Celtic Roots): Ancient Celtic traditions, Samhain origins, Celtic calendar, early harvest traditions
-- S02 (Agriculture): Agricultural practices, farming techniques, crop cycles, land relationships
-- S03 (Festivals): Major autumnal festivals, Samhain, Hogmanay, Ceres Festival events
-- S04 (Christianity): Christian influence, Reformation impact, religious transformation of customs
-- S05 (Modern Revival): Contemporary interpretations, modern Scottish culture, cultural revival
-- S06 (Folklore): Autumnal folklore, community identity, cultural practices, symbolism
-- S07 (Conclusion): Heritage synthesis, contemporary relevance, Scottish identity
 
 REQUIRED OUTPUT FORMAT - return exactly {len(topics)} lines like this:
 {{IDEA01}} {{S01}}
