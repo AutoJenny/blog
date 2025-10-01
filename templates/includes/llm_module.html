@@ -47,6 +47,21 @@
             </button>
         </div>
         
+        <!-- LLM Message Debug Display -->
+        <div class="llm-message-debug-section" style="margin-bottom: 1rem;">
+            <div class="debug-header accordion-header" onclick="toggleDebugAccordion()">
+                <h5 style="color: #f1f5f9; margin-bottom: 0.5rem;">🔍 LLM Message Debug</h5>
+                <div class="accordion-toggle">
+                    <i class="fas fa-chevron-down" id="debug-accordion-icon"></i>
+                </div>
+            </div>
+            <div class="accordion-content" id="debug-accordion-content" style="display: none;">
+                <div id="llm-message-debug" class="llm-message-debug" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1rem; font-family: monospace; font-size: 0.8rem; color: #cbd5e1; max-height: 300px; overflow-y: auto; white-space: pre-wrap;">
+                    <!-- Actual message sent to LLM will appear here -->
+                </div>
+            </div>
+        </div>
+        
         <!-- Raw LLM Response Display -->
         <div class="raw-response-section" style="margin-bottom: 1rem;">
             <h5 style="color: #f1f5f9; margin-bottom: 0.5rem;">Raw LLM Response</h5>

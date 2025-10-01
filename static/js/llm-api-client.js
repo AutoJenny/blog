@@ -85,6 +85,9 @@ class LLMAPIClient {
      */
     async generateContent(generateEndpoint, requestData) {
         try {
+            // Display the actual message being sent to LLM for debugging
+            this.displayLLMMessage(requestData);
+            
             const response = await fetch(generateEndpoint, {
                 method: 'POST',
                 headers: {
@@ -96,6 +99,11 @@ class LLMAPIClient {
             const data = await response.json();
             
             if (data.success) {
+                // Display the actual LLM message if provided
+                if (data.llm_message) {
+                    this.displayLLMMessageFromResponse(data.llm_message);
+                }
+                
                 return {
                     success: true,
                     results: data.results || data,
@@ -115,6 +123,64 @@ class LLMAPIClient {
                 error: 'Generation failed'
             };
         }
+    }
+
+    /**
+     * Display the actual message being sent to LLM for debugging
+     * @param {Object} requestData - The request data being sent
+     */
+    displayLLMMessage(requestData) {
+        const debugElement = document.getElementById('llm-message-debug');
+        if (!debugElement) return;
+
+        // Format the message for display
+        let debugMessage = '';
+        
+        if (requestData.system_prompt) {
+            debugMessage += '=== SYSTEM PROMPT ===\n';
+            debugMessage += requestData.system_prompt + '\n\n';
+        }
+        
+        if (requestData.user_prompt) {
+            debugMessage += '=== USER PROMPT ===\n';
+            debugMessage += requestData.user_prompt + '\n\n';
+        }
+        
+        if (requestData.messages) {
+            debugMessage += '=== MESSAGES ===\n';
+            requestData.messages.forEach((msg, index) => {
+                debugMessage += `Message ${index + 1} (${msg.role}):\n`;
+                debugMessage += msg.content + '\n\n';
+            });
+        }
+        
+        if (requestData.model) {
+            debugMessage += '=== MODEL ===\n';
+            debugMessage += requestData.model + '\n\n';
+        }
+        
+        if (requestData.temperature !== undefined) {
+            debugMessage += '=== TEMPERATURE ===\n';
+            debugMessage += requestData.temperature + '\n\n';
+        }
+        
+        if (requestData.max_tokens) {
+            debugMessage += '=== MAX TOKENS ===\n';
+            debugMessage += requestData.max_tokens + '\n\n';
+        }
+
+        debugElement.textContent = debugMessage || 'No message data available';
+    }
+
+    /**
+     * Display the actual constructed LLM message from API response
+     * @param {string} llmMessage - The full constructed message from the API
+     */
+    displayLLMMessageFromResponse(llmMessage) {
+        const debugElement = document.getElementById('llm-message-debug');
+        if (!debugElement) return;
+
+        debugElement.textContent = llmMessage;
     }
 
     /**
