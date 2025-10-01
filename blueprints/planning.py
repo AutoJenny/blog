@@ -3083,14 +3083,10 @@ def build_individual_topic_prompt(idea_code, topic_title, section_structure, top
     # Build article context
     article_context = ""
     if expanded_idea:
-        # Extract key themes from expanded_idea
+        # Extract key themes from expanded_idea dynamically
         article_context = f"\nARTICLE CONTEXT:\n"
-        article_context += f"This article explores Scottish autumn folklore through themes of:\n"
-        article_context += f"- Celtic roots and historical evolution\n"
-        article_context += f"- Traditional harvest practices and festivals\n"
-        article_context += f"- Cultural symbolism and mythology\n"
-        article_context += f"- Rural community traditions\n"
-        article_context += f"- Modern-day celebrations and revival\n"
+        article_context += f"Article Overview: {expanded_idea[:200]}...\n"
+        article_context += f"Key Themes: Historical evolution, cultural practices, symbolism, community traditions, modern adaptations\n"
     
     prompt = f"""TASK: Allocate the following topic to ONE SECTION below based on THEMATIC COHERENCE and CONTENT FIT. Each topic must go to its BEST FIT section based on content, theme, and category.
 
@@ -3100,12 +3096,12 @@ TOPIC TO ALLOCATE (ignore idea code {idea_code} for purpose of allocation):
 SECTION STRUCTURE:{sections_text}
 
 ALLOCATION GUIDELINES:
-- HISTORICAL topics (ancient roots, evolution, records) → S01 (Celtic Roots) or S04 (Christianity intersections)
-- CULTURAL topics (traditions, celebrations, symbolism) → S02 (Harvest Festivals), S03 (Ceres), S05 (Mythology), S06 (Rural Communities)
-- PRACTICAL topics (techniques, safety, preservation) → S02 (Harvest Festivals) or S06 (Rural Communities)
-- GENERAL topics (markets, creatures, art) → S05 (Mythology) or S07 (Modern Revival)
-- MODERN/URBAN topics → S07 (Modern Revival)
-- FESTIVAL-SPECIFIC topics → S02 (Harvest Festivals) or S03 (Ceres)
+- HISTORICAL topics (ancient roots, evolution, records) → Look for sections about origins, history, or evolution
+- CULTURAL topics (traditions, celebrations, symbolism) → Look for sections about traditions, festivals, or cultural practices
+- PRACTICAL topics (techniques, safety, preservation) → Look for sections about practical applications or community practices
+- GENERAL topics (markets, creatures, art) → Look for sections about general themes or modern adaptations
+- MODERN/URBAN topics → Look for sections about contemporary or urban contexts
+- FESTIVAL-SPECIFIC topics → Look for sections specifically about festivals or celebrations
 
 CRITICAL OUTPUT REQUIREMENTS:
 - Return EXACTLY ONE LINE
