@@ -11533,3 +11533,55 @@ DO NOT return JSON format. Return simple text lines only.
 2025-10-01 11:24:34,723 - config.database - INFO - Database connection established
 2025-10-01 11:24:34,729 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
 2025-10-01 11:24:34,729 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 11:25:01,529 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-10-01 11:25:01,530 - blueprints.planning - INFO - Successfully parsed 50 topics from JSON format
+2025-10-01 11:25:01,532 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 11:25:01] "POST /planning/api/brainstorm/topics HTTP/1.1" 200 -
+2025-10-01 11:25:01,546 - config.database - INFO - Database connection established
+2025-10-01 11:25:01,553 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 11:25:01] "POST /planning/api/posts/60/idea-scope HTTP/1.1" 200 -
+2025-10-01 11:25:26,355 - config.database - INFO - Database connection established
+2025-10-01 11:25:26,356 - config.database - INFO - Database connection established
+2025-10-01 11:25:26,357 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 11:25:26,358 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 11:25:27,921 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-10-01 11:25:27,922 - blueprints.planning - INFO - Successfully parsed 50 topics from JSON format
+2025-10-01 11:25:27,924 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 11:25:27] "POST /planning/api/brainstorm/topics HTTP/1.1" 200 -
+2025-10-01 11:25:27,938 - config.database - INFO - Database connection established
+2025-10-01 11:25:27,945 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 11:25:27] "POST /planning/api/posts/60/idea-scope HTTP/1.1" 200 -
+2025-10-01 11:25:41,642 - config.database - INFO - Database connection established
+2025-10-01 11:25:41,643 - config.database - INFO - Database connection established
+2025-10-01 11:25:41,645 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 11:25:41,645 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 11:25:57,290 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-10-01 11:25:57,291 - blueprints.planning - INFO - Successfully parsed 50 topics from JSON format
+2025-10-01 11:25:57,292 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 11:25:57] "POST /planning/api/brainstorm/topics HTTP/1.1" 200 -
+2025-10-01 11:25:57,306 - config.database - INFO - Database connection established
+2025-10-01 11:25:57,316 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 11:25:57] "POST /planning/api/posts/60/idea-scope HTTP/1.1" 200 -
+2025-10-01 11:26:14,976 - config.database - INFO - Database connection established
+2025-10-01 11:26:14,978 - config.database - INFO - Database connection established
+2025-10-01 11:26:14,980 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 11:26:14,982 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 11:26:24,343 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-10-01 11:26:24,344 - blueprints.planning - WARNING - JSON parsing failed: Invalid control character at: line 213 column 51 (char 7308), falling back to text parsing
+2025-10-01 11:26:24,346 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 11:26:24] "POST /planning/api/brainstorm/topics HTTP/1.1" 200 -
+2025-10-01 11:26:24,359 - config.database - INFO - Database connection established
+2025-10-01 11:26:24,366 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 11:26:24] "POST /planning/api/posts/60/idea-scope HTTP/1.1" 200 -
+2025-10-01 11:26:50,089 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-10-01 11:26:50,091 - blueprints.planning - INFO - Successfully parsed 50 topics from JSON format
+2025-10-01 11:26:50,092 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 11:26:50] "POST /planning/api/brainstorm/topics HTTP/1.1" 200 -
+2025-10-01 11:26:50,106 - config.database - INFO - Database connection established
+2025-10-01 11:26:50,113 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 11:26:50] "POST /planning/api/posts/60/idea-scope HTTP/1.1" 200 -
+2025-10-01 11:27:12,459 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-10-01 11:27:12,460 - blueprints.planning - WARNING - JSON parsing failed: Illegal trailing comma before end of object: line 231 column 54 (char 7746), falling back to text parsing
+2025-10-01 11:27:12,461 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 11:27:12] "POST /planning/api/brainstorm/topics HTTP/1.1" 200 -
+2025-10-01 11:27:12,473 - config.database - INFO - Database connection established
+2025-10-01 11:27:12,481 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 11:27:12] "POST /planning/api/posts/60/idea-scope HTTP/1.1" 200 -
+2025-10-01 11:27:37,842 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-10-01 11:27:37,843 - blueprints.planning - INFO - Successfully parsed 50 topics from JSON format
+2025-10-01 11:27:37,844 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 11:27:37] "POST /planning/api/brainstorm/topics HTTP/1.1" 200 -
+2025-10-01 11:27:37,859 - config.database - INFO - Database connection established
+2025-10-01 11:27:37,866 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 11:27:37] "POST /planning/api/posts/60/idea-scope HTTP/1.1" 200 -
+2025-10-01 11:28:04,433 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-10-01 11:28:04,433 - blueprints.planning - INFO - Successfully parsed 50 topics from JSON format
+2025-10-01 11:28:04,434 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 11:28:04] "POST /planning/api/brainstorm/topics HTTP/1.1" 200 -
+2025-10-01 11:28:04,449 - config.database - INFO - Database connection established
+2025-10-01 11:28:04,460 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 11:28:04] "POST /planning/api/posts/60/idea-scope HTTP/1.1" 200 -
