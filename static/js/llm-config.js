@@ -56,7 +56,7 @@ const LLM_CONFIGS = {
     'topic_allocation': { // New config for topic allocation
         promptEndpoint: '/planning/api/llm/prompts/topic-allocation',
         generateEndpoint: '/planning/api/sections/allocate-topics',
-        resultsField: 'topic_allocation',
+        resultsField: 'allocations',
         resultsTitle: 'Generated Topic Allocation',
         allowEdit: true
     },
