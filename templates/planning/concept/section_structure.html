@@ -343,17 +343,8 @@ let llmModule = null;
 document.addEventListener('DOMContentLoaded', function() {
     loadBrainstormTopics();
     loadExistingStructure();
-    initializeLLMModule();
+    initializeLLMModule('section_structure', window.postId);
 });
-
-// Initialize LLM module
-function initializeLLMModule() {
-    if (typeof initializeLLMModule === 'function') {
-        llmModule = initializeLLMModule('section_structure', window.postId);
-    } else {
-        console.error('initializeLLMModule function not found');
-    }
-}
 
 // Load topics from brainstorming
 async function loadBrainstormTopics() {
@@ -495,10 +486,4 @@ async function loadExistingStructure() {
 <script src="{{ url_for('static', filename='js/llm-event-manager.js') }}"></script>
 <script src="{{ url_for('static', filename='js/llm-module.js') }}"></script>
 
-<script>
-// Initialize LLM module for section structure
-document.addEventListener('DOMContentLoaded', function() {
-    initializeLLMModule('section_structure');
-});
-</script>
 {% endblock %}
