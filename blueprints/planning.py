@@ -3136,23 +3136,32 @@ def build_individual_topic_prompt(idea_code, topic_title, section_structure, top
     sections_text = ""
     for i, section in enumerate(section_structure.get('sections', [])):
         section_code = f"S{str(i+1).zfill(2)}"
-        sections_text += f"\n{section_code}: {section['theme']}\n"
-        sections_text += f"  Focus: {section['description']}\n"
-        sections_text += f"  Scope: {section['boundaries']}\n"
+        # Handle both new format (title) and old format (theme)
+        section_title = section.get('title') or section.get('theme', f'Section {i+1}')
+        section_description = section.get('description', 'No description available')
+        
+        sections_text += f"\n{section_code}: {section_title}\n"
+        sections_text += f"  Description: {section_description}\n"
+        
+        # Include boundaries and exclusions if they exist (old format compatibility)
+        if section.get('boundaries'):
+            sections_text += f"  Scope: {section['boundaries']}\n"
         if section.get('exclusions'):
             sections_text += f"  Excludes: {section['exclusions']}\n"
         
         # Add specific keywords for this section
-        keywords = get_section_keywords(section['theme'], section['description'])
+        keywords = get_section_keywords(section_title, section_description)
         if keywords:
             sections_text += f"  Keywords: {', '.join(keywords)}\n"
     
     # Build topic context
     topic_context = ""
     if topic_data:
+        topic_description = topic_data.get('description', topic_title)
         topic_context = f"\nTOPIC CONTEXT:\n"
+        topic_context += f"- Title: {topic_title}\n"
+        topic_context += f"- Description: {topic_description}\n"
         topic_context += f"- Category: {topic_data.get('category', 'general')}\n"
-        topic_context += f"- Description: {topic_data.get('description', topic_title)}\n"
         topic_context += f"- Word Count: {topic_data.get('word_count', 'unknown')}\n"
     
     # Build article context
@@ -3171,25 +3180,26 @@ TOPIC TO ALLOCATE (ignore idea code {idea_code} for purpose of allocation):
 SECTION STRUCTURE:{sections_text}
 
 STEP-BY-STEP ALLOCATION PROCESS:
-1. READ the topic title carefully: "{topic_title}"
-2. IDENTIFY key words in the topic (e.g., "music", "dance", "harvest", "christianity", "modern")
-3. SCAN each section's keywords to find matches
-4. CHOOSE the section with the most relevant keyword matches
+1. READ the topic title AND description carefully to understand its full scope
+2. IDENTIFY key themes and concepts from both title and description
+3. SCAN each section's title, description, and keywords to find the best thematic match
+4. CHOOSE the section whose content focus most closely aligns with the topic's themes
 
 ALLOCATION PROCESS:
-1. Read the topic title and identify its main themes
-2. Look at each section's keywords and find the best thematic match
-3. Choose the section whose keywords most closely align with the topic's themes
+1. Analyze the topic's title and description to understand its core themes
+2. Compare against each section's title, description, and keywords
+3. Choose the section whose thematic focus best matches the topic's content
 4. Consider the topic category (historical, cultural, practical, general) as additional guidance
+5. Ensure the topic fits within the section's scope and boundaries
 
 CRITICAL OUTPUT REQUIREMENTS:
-- First, explain your reasoning: "Topic contains [keywords], so I choose section [SXX] because it has [matching keywords]"
+- First, explain your reasoning: "Topic [title] covers [themes from description], so I choose section [SXX] because its description indicates [section focus]"
 - Then return the allocation in this format: {idea_code} {{SXX}}
 - Replace XX with the section number (01, 02, 03, etc.)
 
 EXAMPLE OUTPUT:
-Topic contains [main themes], so I choose section SXX because it has [matching keywords]
-{idea_code} {{SXX}}
+Topic "Scottish Folk Music Traditions" covers traditional music and cultural practices, so I choose section S03 because its description indicates focus on cultural celebrations and traditions
+{idea_code} {{S03}}
 
 RETURN YOUR REASONING FOLLOWED BY THE ALLOCATION LINE:"""
     
