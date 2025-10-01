@@ -2070,7 +2070,19 @@ jinja2.exceptions.TemplateNotFound: planning/concept/topic_refinement.html
 2025-10-01 08:20:57,055 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 08:20:57] "GET /planning/api/llm/prompts/topic-allocation HTTP/1.1" 200 -
 2025-10-01 08:21:29,876 - config.database - INFO - Database connection established
 2025-10-01 08:21:29,877 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 08:21:29] "GET /planning/api/llm/prompts/topic-allocation HTTP/1.1" 200 -
- Scots would carve out faces from turnips, place a candle within, and display them in their windows. This practice, known as "guising," was said to offer protection from any mischievous spirits that might be lurking about.</p>\n\n<p>In 19th-century Scottish literature, Samhain is often depicted as a time of eerie magic and supernatural wonder. Authors such as Robert Burns and Sir Walter Scott wove tales of ghosts, goblins, and otherworldly creatures into their works, capturing the essence of this fascinating season. For example, in "The Tales of the Heather," Burns writes of the "fairy mounds" that dot Scotland\'s countryside, said to be inhabited by spirits who linger on the edge of the mortal world.</p>\n\n<p>Today, Samhain traditions continue to thrive in Scotland, albeit in a more secularized form. Communities gather for harvest festivals, sharing food, drink, and stories of their ancestors\' experiences with this ancient holiday. These events serve as a poignant reminder of Scotland\'s rich cultural heritage, one that continues to nourish and inspire us today.</p>', 'image_filename': None, 'image_generated_at': None, 'image_title': None, 'image_width': None, 'image_height': None}
+2025-10-01 08:21:36,244 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 08:21:36,274 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 08:21:36,517 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 08:21:36,522 - werkzeug - INFO -  * Debugger PIN: 842-147-207
+2025-10-01 08:23:07,178 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 08:23:07,218 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 08:23:07,473 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 08:23:07,479 - werkzeug - INFO -  * Debugger PIN: 842-147-207
+2025-10-01 08:23:12,829 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 08:23:12,859 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 08:23:13,081 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 08:23:13,086 - werkzeug - INFO -  * Debugger PIN: 842-147-207
+d inspire us today.</p>', 'image_filename': None, 'image_generated_at': None, 'image_title': None, 'image_width': None, 'image_height': None}
 2025-10-01 08:19:41,194 - blueprints.planning - INFO - Post section entry: {'id': 765, 'post_id': 60, 'section_order': 4, 'section_heading': 'Autumnal Symbolism and Mythology', 'ideas_to_include': None, 'facts_to_include': None, 'highlighting': None, 'image_concepts': None, 'image_prompts': None, 'image_meta_descriptions': None, 'image_captions': None, 'section_description': 'Unravel the symbolic meanings behind autumn leaves, equinoxes, and harvest festivals in Scottish folklore.', 'status': 'draft', 'polished': None, 'draft': None, 'image_filename': None, 'image_generated_at': None, 'image_title': None, 'image_width': None, 'image_height': None}
 2025-10-01 08:19:41,194 - blueprints.planning - INFO - Post section entry: {'id': 766, 'post_id': 60, 'section_order': 5, 'section_heading': "Farmers' Knowledge and Folk Remedies", 'ideas_to_include': None, 'facts_to_include': None, 'highlighting': None, 'image_concepts': None, 'image_prompts': None, 'image_meta_descriptions': None, 'image_captions': None, 'section_description': "Investigate how Scottish farmers' knowledge influenced folk remedies and traditional practices.", 'status': 'draft', 'polished': None, 'draft': None, 'image_filename': None, 'image_generated_at': None, 'image_title': None, 'image_width': None, 'image_height': None}
 2025-10-01 08:19:41,195 - blueprints.planning - INFO - Post section entry: {'id': 767, 'post_id': 60, 'section_order': 6, 'section_heading': "Christianity's Impact on Autumn Traditions", 'ideas_to_include': None, 'facts_to_include': None, 'highlighting': None, 'image_concepts': None, 'image_prompts': None, 'image_meta_descriptions': None, 'image_captions': None, 'section_description': "Analyze how Christianity influenced and shaped Scotland's autumnal customs, particularly during the Reformation.", 'status': 'draft', 'polished': None, 'draft': None, 'image_filename': None, 'image_generated_at': None, 'image_title': None, 'image_width': None, 'image_height': None}
@@ -2080,3 +2092,15 @@ jinja2.exceptions.TemplateNotFound: planning/concept/topic_refinement.html
 2025-10-01 08:20:57,055 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 08:20:57] "GET /planning/api/llm/prompts/topic-allocation HTTP/1.1" 200 -
 2025-10-01 08:21:29,876 - config.database - INFO - Database connection established
 2025-10-01 08:21:29,877 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 08:21:29] "GET /planning/api/llm/prompts/topic-allocation HTTP/1.1" 200 -
+2025-10-01 08:21:36,244 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 08:21:36,274 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 08:21:36,517 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 08:21:36,522 - werkzeug - INFO -  * Debugger PIN: 842-147-207
+2025-10-01 08:23:07,178 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 08:23:07,218 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 08:23:07,473 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 08:23:07,479 - werkzeug - INFO -  * Debugger PIN: 842-147-207
+2025-10-01 08:23:12,829 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 08:23:12,859 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 08:23:13,081 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 08:23:13,086 - werkzeug - INFO -  * Debugger PIN: 842-147-207
