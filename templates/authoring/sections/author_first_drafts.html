@@ -829,6 +829,19 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Simplified LLM Actions will auto-initialize
     console.log('Authoring page initialized');
+    
+    // Simple auto-load first section after a short delay
+    setTimeout(function() {
+        console.log('Attempting to auto-load first section...');
+        const firstSection = document.querySelector('.section-item[data-section-id]');
+        if (firstSection) {
+            const sectionId = firstSection.dataset.sectionId;
+            console.log('Auto-loading section:', sectionId);
+            firstSection.click();
+        } else {
+            console.log('No sections found for auto-loading');
+        }
+    }, 1000);
 });
 </script>
 
