@@ -7,6 +7,28 @@ import requests
 
 logger = logging.getLogger(__name__)
 
+def build_avoid_topics_text(topic_allocation, current_section_data):
+    """Build the avoid topics text from topic allocation data"""
+    if not topic_allocation or not topic_allocation.get('allocations'):
+        return 'No avoid topics available'
+    
+    avoid_sections = []
+    current_section_id = current_section_data.get('section_id', '')
+    
+    for allocation in topic_allocation['allocations']:
+        # Skip the current section
+        if allocation.get('section_id') == current_section_id:
+            continue
+            
+        section_theme = allocation.get('section_theme', 'Untitled Section')
+        topics = allocation.get('topics', [])
+        
+        if topics:
+            topics_text = ', '.join(topics)
+            avoid_sections.append(f"{section_theme}: {topics_text}")
+    
+    return '\n'.join(avoid_sections) if avoid_sections else 'No avoid topics available'
+
 class LLMService:
     """Service for interacting with LLM providers."""
     
@@ -492,7 +514,7 @@ def api_generate_section_draft(post_id, section_id):
             
             # Get sections data from post_development
             cursor.execute("""
-                SELECT expanded_idea, sections
+                SELECT expanded_idea, sections, topic_allocation
                 FROM post_development
                 WHERE post_id = %s
             """, (post_id,))
@@ -517,6 +539,19 @@ def api_generate_section_draft(post_id, section_id):
                         sections_data = sections_json
                 except:
                     sections_data = []
+            
+            # Parse topic allocation data
+            topic_allocation = None
+            if dev_data['topic_allocation']:
+                try:
+                    # Check if it's already a dict (parsed by DB driver) or needs JSON parsing
+                    if isinstance(dev_data['topic_allocation'], dict):
+                        topic_allocation = dev_data['topic_allocation']
+                    else:
+                        topic_allocation = json.loads(dev_data['topic_allocation'])
+                except Exception as e:
+                    logger.error(f"Error parsing topic_allocation: {e}")
+                    topic_allocation = None
             
             # Find current section in sections data
             current_section_data = None
@@ -602,12 +637,7 @@ def api_generate_section_draft(post_id, section_id):
                 'SECTION_GROUP': 'Historical Foundations of Autumnal Traditions',  # This should come from planning data
                 'GROUP_SUMMARY': 'This group explores the Celtic roots and historical developments that shaped Scotland\'s autumnal customs, highlighting their significance in understanding the country\'s identity.',
                 'SECTION_TOPICS': ', '.join(current_section_data.get('topics', [])),
-                'AVOID_SECTIONS_DETAILED': '''Agriculture and the Land's Bounty: Crop rotation practices in ancient Scotland, Agricultural cycle and Celtic mythology, Crops in Scottish folk remedies
-Seasonal Celebrations: Timeless Traditions: Modern harvest festivals, Community celebrations, Seasonal observances
-Autumnal Symbolism and Mythology: Symbolic meanings of autumn, Mythological connections, Seasonal symbolism
-Farmers' Knowledge and Folk Remedies: Traditional agricultural wisdom, Healing practices, Folk medicine
-Christianity's Impact on Autumn Traditions: Religious influences on customs, Christian adaptations, Church calendar
-Women's Roles and Folk Traditions: Gender roles in traditions, Women's contributions, Folk practices'''
+                'AVOID_SECTIONS_DETAILED': build_avoid_topics_text(topic_allocation, {'section_id': f'section_{section["section_order"]}'})
             }
             
             # Replace placeholders in prompt
@@ -620,6 +650,9 @@ Women's Roles and Folk Traditions: Gender roles in traditions, Women's contribut
                 {'role': 'system', 'content': prompt_data['system_prompt']},
                 {'role': 'user', 'content': prompt_text}
             ]
+            
+            # Construct the full message for debugging
+            full_message = f"=== SYSTEM PROMPT ===\n{prompt_data['system_prompt']}\n\n=== USER PROMPT (with placeholders replaced) ===\n{prompt_text}\n\n=== MODEL ===\nollama: llama3.2:latest\n\n=== TEMPERATURE ===\n0.7\n\n=== MAX TOKENS ===\n2000"
             
             logger.info(f"Generating draft for section {section_id} of post {post_id}")
             llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
@@ -642,7 +675,8 @@ Women's Roles and Folk Traditions: Gender roles in traditions, Women's contribut
             return jsonify({
                 'success': True,
                 'draft_content': llm_response['content'],
-                'message': 'Draft generated successfully'
+                'message': 'Draft generated successfully',
+                'llm_message': full_message
             })
             
     except Exception as e:
@@ -652,41 +686,62 @@ Women's Roles and Folk Traditions: Gender roles in traditions, Women's contribut
             'error': str(e)
         }), 500
 
-@bp.route('/api/llm/prompts/section-drafting')
-def api_get_section_drafting_prompt():
-    """Get the Section Drafting prompt"""
+@bp.route('/api/llm/prompts/section-drafting', methods=['GET', 'PUT'])
+def api_section_drafting_prompt():
+    """Get or update the Section Drafting prompt"""
     try:
         with db_manager.get_cursor() as cursor:
-            cursor.execute("""
-                SELECT name, system_prompt, prompt_text
-                FROM llm_prompt
-                WHERE name = 'Section Drafting'
-            """)
-            prompt = cursor.fetchone()
-            
-            if not prompt:
+            if request.method == 'PUT':
+                # Update the prompt
+                data = request.get_json()
+                system_prompt = data.get('system_prompt', '')
+                prompt_text = data.get('prompt_text', '')
+                
+                cursor.execute("""
+                    UPDATE llm_prompt 
+                    SET system_prompt = %s, prompt_text = %s
+                    WHERE name = 'Section Drafting'
+                """, (system_prompt, prompt_text))
+                
+                cursor.connection.commit()
+                
                 return jsonify({
-                    'success': False,
-                    'error': 'Section Drafting prompt not found'
-                }), 404
+                    'success': True,
+                    'message': 'Prompt updated successfully'
+                })
             
-            return jsonify({
-                'success': True,
-                'prompt': {
-                    'name': prompt['name'],
-                    'system_prompt': prompt['system_prompt'],
-                    'prompt_text': prompt['prompt_text']
-                },
-                'llm_config': {
-                    'provider': 'ollama',
-                    'model': 'llama3.2:latest',
-                    'temperature': 0.7,
-                    'max_tokens': 2000
-                }
-            })
+            else:
+                # GET method - return the prompt
+                cursor.execute("""
+                    SELECT name, system_prompt, prompt_text
+                    FROM llm_prompt
+                    WHERE name = 'Section Drafting'
+                """)
+                prompt = cursor.fetchone()
+                
+                if not prompt:
+                    return jsonify({
+                        'success': False,
+                        'error': 'Section Drafting prompt not found'
+                    }), 404
+                
+                return jsonify({
+                    'success': True,
+                    'prompt': {
+                        'name': prompt['name'],
+                        'system_prompt': prompt['system_prompt'],
+                        'prompt_text': prompt['prompt_text']
+                    },
+                    'llm_config': {
+                        'provider': 'ollama',
+                        'model': 'llama3.2:latest',
+                        'temperature': 0.7,
+                        'max_tokens': 2000
+                    }
+                })
             
     except Exception as e:
-        logger.error(f"Error in api_get_section_drafting_prompt: {e}")
+        logger.error(f"Error in api_section_drafting_prompt: {e}")
         return jsonify({
             'success': False,
             'error': str(e)

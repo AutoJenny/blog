@@ -352,8 +352,8 @@ async function loadBrainstormTopics() {
         const response = await fetch(`/planning/api/posts/${window.postId}`);
         const data = await response.json();
         
-        if (data.development && data.development.idea_scope) {
-            const ideaScopeData = JSON.parse(data.development.idea_scope);
+        if (data.post && data.post.idea_scope) {
+            const ideaScopeData = JSON.parse(data.post.idea_scope);
             topics = ideaScopeData.generated_topics; // Keep full topic objects
             displayTopics();
         } else {

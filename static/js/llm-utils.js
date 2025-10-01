@@ -42,6 +42,33 @@ function toggleLLMAccordion() {
 }
 
 /**
+ * Global debug accordion toggle function
+ * Toggles the LLM message debug accordion open/closed state
+ */
+function toggleDebugAccordion() {
+    const debugContent = document.getElementById('debug-accordion-content');
+    const debugIcon = document.getElementById('debug-accordion-icon');
+    
+    if (!debugContent || !debugIcon) return;
+    
+    const isOpen = debugContent.style.display !== 'none';
+    
+    if (isOpen) {
+        // Close accordion
+        debugContent.style.display = 'none';
+        debugIcon.style.transform = 'rotate(0deg)';
+        debugContent.classList.remove('open');
+        debugContent.classList.add('closed');
+    } else {
+        // Open accordion
+        debugContent.style.display = 'block';
+        debugIcon.style.transform = 'rotate(180deg)';
+        debugContent.classList.remove('closed');
+        debugContent.classList.add('open');
+    }
+}
+
+/**
  * Format word count for display
  * @param {string} text - Text to count words in
  * @returns {number} Word count
