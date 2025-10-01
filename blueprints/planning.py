@@ -3204,19 +3204,41 @@ STEP-BY-STEP ALLOCATION PROCESS:
 6. CONSIDER ALL 7 SECTIONS - do not avoid any section without good reason
 7. REMEMBER: Sections are presented in random order to avoid bias
 
-ALLOCATION GUIDANCE:
-- S01: Ancient Celtic origins and historical foundations
-- S02: Harvest festivals and agricultural traditions
-- S03: Symbolism and mythology in Scottish folklore
-- S04: Samhain celebrations and enduring legacy
-- S05: Modern-day significance and contemporary relevance
-- S06: Autumnal traditions and Scottish landscape
-- S07: Cultural continuity and preservation in modern times (IMPORTANT: This section needs topics!)
+DETAILED ALLOCATION GUIDANCE WITH EXAMPLES:
 
-BALANCE REQUIREMENT:
-- All 7 sections must receive topics
-- If S07 has fewer topics than other sections, prioritize topics that could fit S07
-- Modern, contemporary, or cultural continuity topics should go to S07
+S01 - Ancient Celtic Origins: ONLY topics about Celtic beliefs, ancient rituals, pre-Christian practices, druidic traditions, ancient mythology
+✅ GOOD: "Celtic Mythology Autumn", "Ancient Druidic Harvest Rituals", "Pre-Christian Celtic Calendar"
+❌ BAD: "Food Preserving", "Modern Festivals", "Agricultural Practices"
+
+S02 - Harvest Festivals and Agricultural Traditions: Topics about farming, crops, harvest celebrations, agricultural practices
+✅ GOOD: "Autumnal Food Preserving Scotland", "Crop Rotation Practices", "Harvest Festival Celebrations"
+❌ BAD: "Celtic Mythology", "Modern Urban Festivals", "Symbolic Meanings"
+
+S03 - Symbolism and Mythology: Topics about symbolic meanings, folklore, mythological creatures, spiritual significance
+✅ GOOD: "Symbolism of Autumn Leaves", "Mythological Creatures", "Spiritual Significance"
+❌ BAD: "Agricultural Practices", "Modern Celebrations", "Historical Origins"
+
+S04 - Samhain Celebrations: Topics specifically about Samhain, Halloween traditions, death/ancestor rituals
+✅ GOOD: "Samhain Traditions", "Halloween Celebrations", "Ancestor Worship"
+❌ BAD: "General Harvest Festivals", "Modern Urban Life", "Agricultural Practices"
+
+S05 - Modern-day Significance: Topics about contemporary relevance, modern interpretations, current practices
+✅ GOOD: "Modern Urban Festivals", "Contemporary Celebrations", "Today's Traditions"
+❌ BAD: "Ancient Celtic Origins", "Historical Practices", "Mythological Creatures"
+
+S06 - Autumnal Traditions and Scottish Landscape: Topics about landscape, nature, seasonal changes, environmental connections
+✅ GOOD: "Scottish Landscape in Autumn", "Seasonal Changes", "Nature Connections"
+❌ BAD: "Urban Festivals", "Ancient Mythology", "Modern Technology"
+
+S07 - Cultural Continuity: Topics about preservation, evolution, cultural transmission, heritage
+✅ GOOD: "Cultural Preservation", "Heritage Transmission", "Cultural Evolution"
+❌ BAD: "Ancient Origins", "Modern Technology", "Agricultural Practices"
+
+CRITICAL MATCHING RULES:
+- Read the topic title and description carefully
+- Match the PRIMARY theme, not secondary aspects
+- Consider the section's core focus, not peripheral connections
+- If uncertain, choose the section whose PRIMARY theme matches the topic's PRIMARY theme
 
 CRITICAL OUTPUT REQUIREMENTS:
 - First, explain your reasoning: "Topic [title] covers [themes from description], so I choose section [SXX] because its description indicates [section focus]"
