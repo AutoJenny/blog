@@ -4068,13 +4068,14 @@ CRITICAL REQUIREMENTS:
 - Create ONLY new creative titles - do NOT modify subtitles, topics, or descriptions
 - Keep the EXACT same topics and order - DO NOT reduce the number of topics
 - Do NOT use the current section theme as the title - create something new and creative
-- Make titles evocative and engaging for Scottish heritage audiences
-- Use authentic Scottish terminology and cultural references where appropriate
-- Be MORE creative - avoid generic titles like "Ancient Celtic Origins"
+- Make titles evocative and engaging for the target audience
+- Use authentic terminology and cultural references where appropriate
+- Be MORE creative - avoid generic titles
 - TITLES MUST BE SHORT: 2-4 words maximum
 - NO COLONS, NO SUBTITLES, NO DESCRIPTIONS in the title
 - NO compound titles with ":" or "and" or "of the"
 - Just evocative words that capture the essence
+- Focus on POETIC CREATIVITY - make titles beautiful and memorable
 
 OUTPUT FORMAT: Return ONLY valid JSON with creative titles:
 {{
@@ -4092,23 +4093,13 @@ OUTPUT FORMAT: Return ONLY valid JSON with creative titles:
   ]
 }}
 
-CREATIVE TITLE EXAMPLES (SHORT AND SNAPPY):
-- Instead of "Ancient Celtic Origins" → "Celtic Whispers"
-- Instead of "Agricultural Practices" → "Land's Wisdom"
-- Instead of "Seasonal Celebrations" → "Golden Festivals"
-- Instead of "Christianity's Impact" → "Cross and Croft"
-- Instead of "Women's Roles" → "Sacred Keepers"
-- Instead of "Folk Remedies" → "Healing Hands"
-
-CRITICAL: Make titles SHORT, SNAPPY, and CREATIVE. NO colons, NO subtitles, NO long descriptions. Just evocative words that capture the essence. MAXIMUM 4 WORDS.
-
 TITLE GUIDELINES:
-- Use evocative language that captures Scottish spirit
-- Include cultural references where appropriate (e.g., "Celtic", "Highland", "Ancient Scottish")
+- Use evocative, poetic language that captures the spirit of the content
 - Make titles accessible to international audiences
-- Avoid overly academic or dry language
-- Focus on emotional connection and cultural pride
+- Focus on emotional connection and beauty
 - Be SPECIFIC and CREATIVE - not generic
+- MAXIMUM 4 WORDS - short and snappy
+- NO colons, NO subtitles, NO compound phrases
 
 SUBTITLE GUIDELINES:
 - Keep subtitles snappy and direct
