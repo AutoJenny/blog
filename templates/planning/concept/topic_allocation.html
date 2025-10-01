@@ -473,7 +473,14 @@ function displayAllocationResults(result) {
     html += '<h4>Topic Allocation Results</h4>';
     
     if (result.allocations && result.allocations.allocations) {
-        result.allocations.allocations.forEach(section => {
+        // Sort sections by section_id to match the order from section structure
+        const sortedSections = result.allocations.allocations.sort((a, b) => {
+            const aNum = parseInt(a.section_id.replace('section_', ''));
+            const bNum = parseInt(b.section_id.replace('section_', ''));
+            return aNum - bNum;
+        });
+        
+        sortedSections.forEach(section => {
             html += `<div class="section-allocation">`;
             html += `<h5>${section.section_theme}</h5>`;
             html += `<div class="topics-list">`;
