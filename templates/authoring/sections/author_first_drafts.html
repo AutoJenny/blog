@@ -591,6 +591,12 @@ class AuthorFirstDraftsManager {
             const sectionElement = this.createSectionElement(section);
             container.appendChild(sectionElement);
         });
+        
+        // Auto-load the first section if available
+        if (this.sections.length > 0) {
+            const firstSection = this.sections[0];
+            this.loadSection(firstSection.id);
+        }
     }
     
     createSectionElement(section) {
