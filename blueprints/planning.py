@@ -4071,18 +4071,22 @@ CRITICAL REQUIREMENTS:
 - Make titles evocative and engaging for Scottish heritage audiences
 - Use authentic Scottish terminology and cultural references where appropriate
 - Be MORE creative - avoid generic titles like "Ancient Celtic Origins"
+- TITLES MUST BE SHORT: 2-4 words maximum
+- NO COLONS, NO SUBTITLES, NO DESCRIPTIONS in the title
+- NO compound titles with ":" or "and" or "of the"
+- Just evocative words that capture the essence
 
 OUTPUT FORMAT: Return ONLY valid JSON with creative titles:
 {{
   "sections": [
     {{
       "id": "section_1",
-      "title": "NEW CREATIVE TITLE ONLY",
+      "title": "SHORT CREATIVE TITLE (2-4 words, no colons)",
       "order": 1
     }},
     {{
       "id": "section_2", 
-      "title": "NEW CREATIVE TITLE ONLY",
+      "title": "SHORT CREATIVE TITLE (2-4 words, no colons)",
       "order": 2
     }}
   ]
@@ -4096,7 +4100,7 @@ CREATIVE TITLE EXAMPLES (SHORT AND SNAPPY):
 - Instead of "Women's Roles" → "Sacred Keepers"
 - Instead of "Folk Remedies" → "Healing Hands"
 
-CRITICAL: Make titles SHORT, SNAPPY, and CREATIVE. NO colons, NO subtitles, NO long descriptions. Just evocative words that capture the essence.
+CRITICAL: Make titles SHORT, SNAPPY, and CREATIVE. NO colons, NO subtitles, NO long descriptions. Just evocative words that capture the essence. MAXIMUM 4 WORDS.
 
 TITLE GUIDELINES:
 - Use evocative language that captures Scottish spirit
