@@ -24,9 +24,7 @@
                     </div>
                 </div>
                 <div class="input-actions">
-                    <button class="btn btn-primary" onclick="startTitling()" id="generate-btn">
-                        <i class="fas fa-heading"></i> Create Titles & Descriptions
-                    </button>
+                    <!-- Generate button is handled by LLM module -->
                 </div>
             </div>
             
@@ -416,69 +414,7 @@ function initializeTitling() {
     // Initialize any titling-specific functionality
 }
 
-async function startTitling() {
-    if (!generatedGroups || generatedGroups.length === 0) {
-        alert('No topic allocation available. Please go back to Topic Allocation to generate topics first.');
-        return;
-    }
-    
-    // Use the shared LLM module to generate content
-    if (llmModule) {
-        // Override the generateContent method to use the titling API
-        const originalGenerateContent = llmModule.generateContent.bind(llmModule);
-        llmModule.generateContent = async function() {
-            const generateBtn = document.getElementById('generate-btn');
-            const resultsDisplay = document.getElementById('llm-results-display');
-            
-            if (!generateBtn || !resultsDisplay) return;
-    
-            // Show loading state
-            generateBtn.disabled = true;
-            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Titles...';
-            resultsDisplay.innerHTML = '<div class="loading">Creating section titles and descriptions...</div>';
-            
-            try {
-                // Get expanded idea for context
-                const expandedIdea = await getExpandedIdea();
-                
-                // Call the titling API
-                const response = await fetch('/planning/api/sections/title', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        topic_allocation: generatedGroups, // This is now topic allocation data
-                        expanded_idea: expandedIdea,
-                        post_id: window.postId
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    generatedSections = data.sections;
-                    displaySections(generatedSections);
-                    // Automatically save sections to database
-                    await saveSectionsToDatabase(generatedSections);
-                } else {
-                    console.error('Error creating titles:', data.error);
-                    resultsDisplay.innerHTML = `<div class="error">Error creating titles: ${data.error}</div>`;
-                }
-            } catch (error) {
-                console.error('Error creating titles:', error);
-                resultsDisplay.innerHTML = `<div class="error">Failed to create titles: ${error.message}</div>`;
-            } finally {
-                // Reset button state
-                generateBtn.disabled = false;
-                generateBtn.innerHTML = '<i class="fas fa-heading"></i> Create Titles & Descriptions';
-            }
-        };
-        
-        // Call the modified generateContent method
-        await llmModule.generateContent();
-    }
-}
+// Custom titling function removed - using LLM module's built-in functionality
 
 async function getExpandedIdea() {
     try {
