@@ -32,12 +32,6 @@
                         </div>
                     </div>
                     
-                    <div class="input-section">
-                        <h5>Brainstormed Topics</h5>
-                        <div id="topics-display" class="expanded-idea-content">
-                            <!-- Topics from brainstorming will appear here -->
-                        </div>
-                    </div>
                     
                 </div>
             </div>
@@ -330,7 +324,6 @@ let llmModule = null;
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
     loadSectionStructure();
-    loadBrainstormTopics();
     loadExistingAllocation();
     initializeTopicAllocationModule();
 });
@@ -441,55 +434,6 @@ function displaySectionStructure(structure) {
     container.innerHTML = html;
 }
 
-// Load brainstormed topics
-async function loadBrainstormTopics() {
-    try {
-        const response = await fetch(`/planning/api/posts/${window.postId}`);
-        const data = await response.json();
-        
-        if (data.development && data.development.idea_scope) {
-            const ideaScopeData = JSON.parse(data.development.idea_scope);
-            const topics = ideaScopeData.generated_topics; // Get full topic objects, not just titles
-            displayBrainstormTopics(topics);
-        } else {
-            document.getElementById('topics-display').innerHTML = '<p class="error">No topics found from brainstorming</p>';
-        }
-    } catch (error) {
-        console.error('Error loading brainstorm topics:', error);
-        document.getElementById('topics-display').innerHTML = '<p class="error">Error loading brainstorm topics</p>';
-    }
-}
-
-// Display brainstormed topics
-function displayBrainstormTopics(topics) {
-    const container = document.getElementById('topics-display');
-    if (!topics || topics.length === 0) {
-        container.innerHTML = '<p class="error">No topics available</p>';
-        return;
-    }
-    
-    let topicsHTML = '<div class="topics-list">';
-    
-    topics.forEach((topic, index) => {
-        const title = topic.title || `Topic ${index + 1}`;
-        const description = topic.description || 'No description available';
-        const category = topic.category || 'general';
-        
-        topicsHTML += `
-            <div class="topic-item" data-topic-id="${index}" data-category="${category}">
-                <div class="topic-content">
-                    <div class="topic-title">${escapeHtml(title)}</div>
-                    <div class="topic-description">${escapeHtml(description)}</div>
-                    <div class="topic-category">Category: ${escapeHtml(category)}</div>
-                </div>
-            </div>
-        `;
-    });
-    
-    topicsHTML += '</div>';
-    
-    container.innerHTML = topicsHTML;
-}
 
 // Generate section-specific topics
 async function generateSectionSpecificTopics() {
