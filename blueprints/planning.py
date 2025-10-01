@@ -2431,8 +2431,8 @@ def validate_section_structure(structure_data):
             return False
         
         for section in sections:
-            # Core required fields (simplified format)
-            required_fields = ['section_code', 'theme', 'description']
+            # New format fields (title instead of theme)
+            required_fields = ['section_code', 'title', 'description']
             if not all(field in section for field in required_fields):
                 return False
             
