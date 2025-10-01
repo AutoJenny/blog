@@ -15795,3 +15795,26 @@ DO NOT return JSON format. Return simple text lines only.
 2025-10-01 13:26:43,617 - werkzeug - INFO -  * Restarting with stat
 2025-10-01 13:26:43,882 - werkzeug - WARNING -  * Debugger is active!
 2025-10-01 13:26:43,888 - werkzeug - INFO -  * Debugger PIN: 842-147-207
+2025-10-01 13:26:52,379 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 13:26:52,409 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 13:26:52,651 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 13:26:52,657 - werkzeug - INFO -  * Debugger PIN: 842-147-207
+2025-10-01 13:28:01,752 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 13:28:01,791 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 13:28:02,060 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 13:28:02,067 - werkzeug - INFO -  * Debugger PIN: 842-147-207
+2025-10-01 13:28:34,515 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 13:28:34] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-10-01 13:28:34,517 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 13:28:34] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-10-01 13:28:34,517 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 13:28:34] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-10-01 13:28:34,543 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 13:28:34] "GET /planning/posts/60/concept/topic-allocation HTTP/1.1" 200 -
+2025-10-01 13:28:34,563 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 13:28:34] "[33mGET /static/images/site/favicon.ico HTTP/1.1[0m" 404 -
+2025-10-01 13:28:34,564 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 13:28:34] "[33mGET /static/images/site/apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-10-01 13:28:34,564 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 13:28:34] "[33mGET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1[0m" 404 -
+2025-10-01 13:28:44,464 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 13:28:44,498 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 13:28:44,752 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 13:28:44,757 - werkzeug - INFO -  * Debugger PIN: 842-147-207
+2025-10-01 13:29:12,416 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 13:29:12,444 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 13:29:12,697 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 13:29:12,702 - werkzeug - INFO -  * Debugger PIN: 842-147-207
