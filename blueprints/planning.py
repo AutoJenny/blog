@@ -3157,17 +3157,15 @@ CRITICAL RULES:
 - If topic contains "modern" or "urban" → Find section with "modern, urban" keywords
 
 CRITICAL OUTPUT REQUIREMENTS:
-- Return EXACTLY ONE LINE
-- Use EXACTLY this format: {idea_code} {{SXX}}
+- First, explain your reasoning: "Topic contains [keywords], so I choose section [SXX] because it has [matching keywords]"
+- Then return the allocation in this format: {idea_code} {{SXX}}
 - Replace XX with the section number (01, 02, 03, etc.)
-- Do NOT include any other text, explanations, or formatting
-- Do NOT repeat the topic title
-- Do NOT include JSON formatting
 
 EXAMPLE OUTPUT:
-{idea_code} {{S02}}
+Topic contains "music, dance", so I choose section S05 because it has "music, dance, folklore, mythology" keywords
+{idea_code} {{S05}}
 
-RETURN ONLY THE ALLOCATION LINE:"""
+RETURN YOUR REASONING FOLLOWED BY THE ALLOCATION LINE:"""
     
     return prompt
 
