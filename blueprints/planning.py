@@ -2766,7 +2766,7 @@ def api_allocate_topics():
                                 'message': f'Topics allocated successfully (with automatic retry for {len(missing_topics)} missing topics)',
                                 'allocations': merged_allocation,
                                 'results': merged_allocation,  # Add results field for LLM module compatibility
-                                'raw_response': 'Automatic retry successful - all topics allocated via retry mechanism'
+                                'raw_response': content
                             })
                         else:
                             logger.error("Merged allocation still failed validation")
@@ -2778,7 +2778,7 @@ def api_allocate_topics():
                                     'message': f'Topics allocated successfully (partial: {len(merged_allocation.get("allocations", []))} sections)',
                                     'allocations': merged_allocation,
                                     'results': merged_allocation,
-                                    'raw_response': 'Automatic retry successful - partial allocation completed'
+                                    'raw_response': content
                                 })
                     else:
                         logger.error(f"Automatic retry failed: {retry_result.get('error', 'Unknown error')}")
@@ -2792,7 +2792,7 @@ def api_allocate_topics():
                     'message': f'Topics allocated successfully (partial: {len(set(allocated_topics))}/{len(original_titles)} topics)',
                     'allocations': allocation_data,
                     'results': allocation_data,
-                    'raw_response': f'Partial allocation successful: {len(set(allocated_topics))}/{len(original_titles)} topics allocated'
+                    'raw_response': content
                 })
             
             # Save to database
