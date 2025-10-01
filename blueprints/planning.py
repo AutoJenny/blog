@@ -2556,11 +2556,12 @@ def api_allocate_topics():
         
         # Debug: Log topics_text to see what's being sent to LLM
         logger.info(f"Topics being sent to LLM (first 5):")
-        for i, topic in enumerate(topics[:5]):
-            topic_title = topic.get('title', topic) if isinstance(topic, dict) else topic
-            logger.info(f"  Topic {i+1}: '{topic_title}'")
+        for i, topic in enumerate(formatted_topics[:5]):
+            logger.info(f"  Topic {i+1}: '{topic}'")
         logger.info(f"Total topics_text length: {len(topics_text)}")
         logger.info(f"Topics_text preview: {topics_text[:200]}...")
+        logger.info(f"Formatted topics count: {len(formatted_topics)}")
+        logger.info(f"Original topics count: {len(topics)}")
         
         # Get the database prompt and replace placeholders
         with db_manager.get_cursor() as cursor:
