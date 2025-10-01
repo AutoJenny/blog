@@ -3071,12 +3071,22 @@ def build_individual_topic_prompt(idea_code, topic_title, section_structure):
     prompt = f"""TASK: Allocate the following topic to ONE SECTION below based on THEMATIC COHERENCE. Each topic must go to its BEST FIT section based on content and theme.
 
 TOPIC TO ALLOCATE (ignore idea code {idea_code} for purpose of allocation):
-{{{idea_code}: "{topic_title}"}},
+{topic_title}
 
 SECTION STRUCTURE:{sections_text}
 
-REQUIRED OUTPUT FORMAT - return exactly like this with only ONE response:
-{idea_code} {{S02}} using the current IDEA code allocated to the most appropriate section code"""
+CRITICAL OUTPUT REQUIREMENTS:
+- Return EXACTLY ONE LINE
+- Use EXACTLY this format: {idea_code} {{SXX}}
+- Replace XX with the section number (01, 02, 03, etc.)
+- Do NOT include any other text, explanations, or formatting
+- Do NOT repeat the topic title
+- Do NOT include JSON formatting
+
+EXAMPLE OUTPUT:
+{idea_code} {{S02}}
+
+RETURN ONLY THE ALLOCATION LINE:"""
     
     return prompt
 
@@ -3101,8 +3111,13 @@ def build_allocation_data(all_allocations, section_structure):
         }
     }
     
-    for section_code, topic_list in section_groups.items():
-        section_order = int(section_code[1:])  # Extract number from S01, S02, etc.
+    # Sort sections by section code to ensure proper ordering
+    sorted_sections = sorted(section_groups.items(), key=lambda x: int(x[0].replace('{', '').replace('}', '')[1:]))
+    
+    for section_code, topic_list in sorted_sections:
+        # Clean section code (remove braces if present)
+        clean_section_code = section_code.replace('{', '').replace('}', '')
+        section_order = int(clean_section_code[1:])  # Extract number from S01, S02, etc.
         section_theme = section_structure['sections'][section_order - 1]['theme']
         
         allocation_data['allocations'].append({
@@ -3152,7 +3167,10 @@ def api_allocate_topics_iterative():
                 if not result:
                     return jsonify({'success': False, 'error': 'No section structure found'}), 400
                 
-                section_structure = json.loads(result['section_structure'])
+                if isinstance(result['section_structure'], str):
+                    section_structure = json.loads(result['section_structure'])
+                else:
+                    section_structure = result['section_structure']
         
         # Process each topic individually
         all_allocations = []
@@ -3163,12 +3181,12 @@ def api_allocate_topics_iterative():
             
             # Extract idea code from topic title
             import re
-            idea_match = re.search(r'\{IDEA\d+\}', topic_title)
+            idea_match = re.search(r'IDEA\d+', topic_title)
             if not idea_match:
                 logger.error(f"No idea code found in topic: {topic_title}")
                 continue
             
-            idea_code = idea_match.group(0)
+            idea_code = f"{{{idea_match.group(0)}}}"
             
             # Extract actual title (remove JSON formatting)
             if topic_title.startswith('{"') and topic_title.endswith('"}'):
@@ -3200,10 +3218,25 @@ def api_allocate_topics_iterative():
             content = result['content'].strip()
             raw_responses.append(f"{idea_code}: {content}")
             
-            # Extract section code from response
+            # Extract section code from response - try multiple patterns
+            section_code = None
+            
+            # Try pattern 1: {S01}, {S02}, etc.
             section_match = re.search(r'\{S\d+\}', content)
             if section_match:
                 section_code = section_match.group(0)
+            else:
+                # Try pattern 2: S01, S02, etc. (without braces)
+                section_match = re.search(r'S\d+', content)
+                if section_match:
+                    section_code = f"{{{section_match.group(0)}}}"
+                else:
+                    # Try pattern 3: Look for any number after the idea code
+                    number_match = re.search(rf'{idea_code.replace("{", "").replace("}", "")}\s*[{{]?S(\d+)[}}]?', content)
+                    if number_match:
+                        section_code = f"{{S{number_match.group(1).zfill(2)}}}"
+            
+            if section_code:
                 all_allocations.append({
                     'idea_code': idea_code,
                     'topic_title': actual_title,
