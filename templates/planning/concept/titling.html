@@ -320,6 +320,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize LLM module
     llmModule = initializeLLMModule('titling', window.postId);
+    console.log('LLM Module initialized:', llmModule);
+    console.log('LLM Module config:', llmModule?.config);
     
     // Load existing sections (persistence)
     loadExistingSections();
