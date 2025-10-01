@@ -3014,7 +3014,7 @@ def validate_topic_allocation(allocation_data, original_topics):
     except:
         return False
 
-def save_topic_allocation(post_id, allocation_data):
+def save_topic_allocation(post_id, allocation_data, raw_response=None):
     """Save topic allocation to database"""
     try:
         with db_manager.get_cursor() as cursor:
@@ -3034,6 +3034,23 @@ def save_topic_allocation(post_id, allocation_data):
             cursor.connection.commit()
     except Exception as e:
         logger.error(f"Error saving topic allocation: {e}")
+
+def load_topic_allocation(post_id):
+    """Load existing topic allocation from database"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT topic_allocation FROM post_development 
+                WHERE post_id = %s AND topic_allocation IS NOT NULL
+            """, (post_id,))
+            
+            result = cursor.fetchone()
+            if result and result['topic_allocation']:
+                return json.loads(result['topic_allocation'])
+            return None
+    except Exception as e:
+        logger.error(f"Error loading topic allocation: {e}")
+        return None
         raise
 
 @bp.route('/api/sections/allocate-topics/<int:post_id>', methods=['GET'])
@@ -3064,7 +3081,8 @@ def api_get_topic_allocation(post_id):
             return jsonify({
                 'success': True,
                 'allocations': allocation_data,
-                'completed_at': result['allocation_completed_at']
+                'completed_at': result['allocation_completed_at'],
+                'raw_response': 'Previously saved allocation - raw response not available'
             })
             
     except Exception as e:
