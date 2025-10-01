@@ -3293,7 +3293,7 @@ def api_allocate_topics_iterative():
         # Get post data
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
-                SELECT p.title, p.description, pd.idea_scope, pd.section_structure, pd.expanded_idea
+                SELECT p.title, pd.idea_scope, pd.section_structure, pd.expanded_idea
                 FROM post p
                 LEFT JOIN post_development pd ON p.id = pd.post_id
                 WHERE p.id = %s
@@ -3303,15 +3303,23 @@ def api_allocate_topics_iterative():
             if not result:
                 return jsonify({'success': False, 'error': 'Post not found'}), 404
             
-            title, description, idea_scope, section_structure, expanded_idea = result
+            title = result['title']
+            idea_scope = result['idea_scope']
+            section_structure = result['section_structure']
+            expanded_idea = result['expanded_idea']
+            logger.info(f"Database query result - idea_scope: {idea_scope is not None}, section_structure: {section_structure is not None}")
         
         # Parse topics from idea_scope
         if not idea_scope:
             return jsonify({'success': False, 'error': 'No topics found from brainstorming'}), 400
         
         try:
-            topics = json.loads(idea_scope) if isinstance(idea_scope, str) else idea_scope
-        except json.JSONDecodeError:
+            idea_scope_data = json.loads(idea_scope) if isinstance(idea_scope, str) else idea_scope
+            topics = idea_scope_data.get('generated_topics', [])
+            logger.info(f"Parsed {len(topics)} topics from idea_scope")
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON decode error: {e}")
+            logger.error(f"idea_scope content: {idea_scope[:200]}...")
             return jsonify({'success': False, 'error': 'Invalid topics format'}), 400
         
         # Parse section structure
@@ -3394,8 +3402,14 @@ def api_allocate_topics_iterative():
             
             content = result.get('content', '').strip()
             
-            # Parse JSON response
+            # Parse JSON response - handle markdown code blocks
             try:
+                # Strip markdown code blocks if present
+                if content.startswith('```json') and content.endswith('```'):
+                    content = content[7:-3].strip()
+                elif content.startswith('```') and content.endswith('```'):
+                    content = content[3:-3].strip()
+                
                 scoring_data = json.loads(content)
                 
                 # Validate consistency checks
@@ -3423,7 +3437,7 @@ def api_allocate_topics_iterative():
                 
             except json.JSONDecodeError as e:
                 logger.error(f"JSON parsing error for {idea_code}: {e}")
-                logger.error(f"Response content: {content}")
+                logger.error(f"Response content: {content[:200]}...")
                 continue
         
         # Debug: Log section code distribution
