@@ -469,6 +469,7 @@
 // Authoring Section Management for First Drafts
 class AuthorFirstDraftsManager {
     constructor() {
+        console.log('AuthorFirstDraftsManager constructor called');
         this.currentSectionId = null;
         this.sections = [];
         this.selectedSections = new Set();
@@ -476,6 +477,7 @@ class AuthorFirstDraftsManager {
     }
     
     init() {
+        console.log('AuthorFirstDraftsManager init() called');
         this.loadSections();
         this.bindEvents();
     }
@@ -803,7 +805,13 @@ class AuthorFirstDraftsManager {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    new AuthorFirstDraftsManager();
+    console.log('DOM loaded, initializing AuthorFirstDraftsManager...');
+    try {
+        new AuthorFirstDraftsManager();
+        console.log('AuthorFirstDraftsManager initialized successfully');
+    } catch (error) {
+        console.error('Error initializing AuthorFirstDraftsManager:', error);
+    }
     
     // Simplified LLM Actions will auto-initialize
     console.log('Authoring page initialized');
