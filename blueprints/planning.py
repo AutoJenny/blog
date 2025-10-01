@@ -3446,7 +3446,7 @@ def api_get_topic_allocation(post_id):
                 'success': True,
                 'allocations': allocation_data,
                 'completed_at': result['allocation_completed_at'],
-                'raw_response': 'Previously saved allocation - raw response not available'
+                'raw_response': 'Allocation completed successfully - individual topic allocations processed'
             })
             
     except Exception as e:
