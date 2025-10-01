@@ -2145,13 +2145,17 @@ def api_save_section_titling_prompt():
         
         with db_manager.get_cursor() as cursor:
             # Update the section titling prompt
+            logger.info(f"Updating Section Titling prompt - system_prompt length: {len(system_prompt)}, prompt_text length: {len(prompt_text)}")
             cursor.execute("""
                 UPDATE llm_prompt 
                 SET system_prompt = %s, prompt_text = %s, updated_at = NOW()
                 WHERE name = 'Section Titling'
             """, (system_prompt, prompt_text))
             
+            logger.info(f"Update query executed, rowcount: {cursor.rowcount}")
+            
             if cursor.rowcount == 0:
+                logger.error("No rows updated - Section Titling prompt not found")
                 return jsonify({
                     'success': False,
                     'error': 'Section Titling prompt not found'
