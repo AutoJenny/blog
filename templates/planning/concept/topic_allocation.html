@@ -343,10 +343,4 @@ async function allocateTopics() {
 <script src="{{ url_for('static', filename='js/llm-event-manager.js') }}"></script>
 <script src="{{ url_for('static', filename='js/llm-module.js') }}"></script>
 
-<script>
-// Initialize LLM module for topic allocation
-document.addEventListener('DOMContentLoaded', function() {
-    initializeLLMModule('topic_allocation', window.postId);
-});
-</script>
 {% endblock %}
