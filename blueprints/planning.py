@@ -3133,11 +3133,19 @@ def build_individual_topic_prompt(idea_code, topic_title, section_structure, top
     """Build prompt for individual topic allocation with rich context"""
     
     # Build enhanced section structure text with clearer boundaries and keywords
+    # Randomize section order to avoid positional bias
+    import random
+    sections = section_structure.get('sections', [])
+    randomized_sections = sections.copy()
+    random.shuffle(randomized_sections)
+    
     sections_text = ""
-    for i, section in enumerate(section_structure.get('sections', [])):
-        section_code = f"S{str(i+1).zfill(2)}"
+    for i, section in enumerate(randomized_sections):
+        # Find original section number
+        original_index = sections.index(section)
+        section_code = f"S{str(original_index+1).zfill(2)}"
         # Handle both new format (title) and old format (theme)
-        section_title = section.get('title') or section.get('theme', f'Section {i+1}')
+        section_title = section.get('title') or section.get('theme', f'Section {original_index+1}')
         section_description = section.get('description', 'No description available')
         
         sections_text += f"\n{section_code}: {section_title}\n"
@@ -3184,13 +3192,17 @@ CRITICAL ALLOCATION REQUIREMENTS:
 - Each section has a DISTINCT thematic focus with NO OVERLAP
 - Consider the section's unique scope and purpose when making your choice
 - Ensure balanced distribution across all sections when possible
+- DO NOT avoid any section - every section must receive topics
+- If a topic could fit multiple sections, choose the one that needs more topics
 
 STEP-BY-STEP ALLOCATION PROCESS:
-1. READ the topic title AND description carefully to understand its full scope
-2. IDENTIFY key themes and concepts from both title and description
-3. SCAN each section's title, description, and keywords to find the best thematic match
-4. CHOOSE the section whose content focus most closely aligns with the topic's themes
-5. CONSIDER ALL 7 SECTIONS - do not avoid any section without good reason
+1. FIRST: Read through ALL 7 sections below to understand their themes and scope
+2. THEN: Read the topic title AND description carefully to understand its full scope
+3. IDENTIFY key themes and concepts from both title and description
+4. COMPARE the topic against ALL 7 sections to find the best thematic match
+5. CHOOSE the section whose content focus most closely aligns with the topic's themes
+6. CONSIDER ALL 7 SECTIONS - do not avoid any section without good reason
+7. REMEMBER: Sections are presented in random order to avoid bias
 
 ALLOCATION GUIDANCE:
 - S01: Ancient Celtic origins and historical foundations
@@ -3199,7 +3211,12 @@ ALLOCATION GUIDANCE:
 - S04: Samhain celebrations and enduring legacy
 - S05: Modern-day significance and contemporary relevance
 - S06: Autumnal traditions and Scottish landscape
-- S07: Cultural continuity and preservation in modern times
+- S07: Cultural continuity and preservation in modern times (IMPORTANT: This section needs topics!)
+
+BALANCE REQUIREMENT:
+- All 7 sections must receive topics
+- If S07 has fewer topics than other sections, prioritize topics that could fit S07
+- Modern, contemporary, or cultural continuity topics should go to S07
 
 CRITICAL OUTPUT REQUIREMENTS:
 - First, explain your reasoning: "Topic [title] covers [themes from description], so I choose section [SXX] because its description indicates [section focus]"
