@@ -595,7 +595,7 @@ class AuthorFirstDraftsManager {
         // Auto-load the first section if available
         if (this.sections.length > 0) {
             const firstSection = this.sections[0];
-            this.loadSection(firstSection.id);
+            this.selectSection(firstSection.id);
         }
     }
     
