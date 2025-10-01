@@ -463,8 +463,20 @@ function displaySectionStructure(structure) {
                 <h5>{${sectionCode}} ${escapeHtml(theme)}</h5>
                 <p><strong>Description:</strong> ${escapeHtml(description)}</p>
                 <p><strong>Boundaries:</strong> ${escapeHtml(boundaries)}</p>
-            </div>
         `;
+        
+        // Show topics and exclusions if they exist (old format)
+        if (section.topics && section.topics.length > 0) {
+            const topics = Array.isArray(section.topics) ? section.topics.join(', ') : section.topics;
+            html += `<p><strong>Topics:</strong> ${escapeHtml(topics)}</p>`;
+        }
+        
+        if (section.exclusions && section.exclusions.length > 0) {
+            const exclusions = Array.isArray(section.exclusions) ? section.exclusions.join(', ') : section.exclusions;
+            html += `<p><strong>Exclusions:</strong> ${escapeHtml(exclusions)}</p>`;
+        }
+        
+        html += `</div>`;
     });
     
     html += '</div>';

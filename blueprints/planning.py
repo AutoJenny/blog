@@ -2421,17 +2421,13 @@ def validate_section_structure(structure_data):
             return False
         
         for section in sections:
-            # New format fields (no topics, no exclusions)
+            # Core required fields
             required_fields = ['section_code', 'theme', 'description', 'boundaries']
             if not all(field in section for field in required_fields):
                 return False
             
             # Validate section codes
             if not section['section_code'].startswith('S'):
-                return False
-            
-            # Validate that topics array is empty (as per new requirements)
-            if 'topics' in section and section['topics']:
                 return False
         
         return True
