@@ -2299,47 +2299,46 @@ def api_design_section_structure():
                 if result and result['expanded_idea']:
                     expanded_idea = result['expanded_idea']
         
-        # Format topics for prompt
-        topics_text = '\n'.join([f"- {topic.get('title', topic) if isinstance(topic, dict) else topic}" for topic in topics])
+        # Format topics for prompt with title and description
+        topics_data = []
+        for topic in topics:
+            if isinstance(topic, dict):
+                title = topic.get('title', 'Unknown Topic')
+                description = topic.get('description', 'No description available')
+                topics_data.append(f"- {title}: {description}")
+            else:
+                topics_data.append(f"- {topic}")
         
-        # Create structure design prompt
-        structure_prompt = f"""Design a 7-section blog structure for: {expanded_idea}
-
-TOPICS TO ENCOMPASS ({len(topics)} topics):
-{topics_text}
-
-REQUIREMENTS:
-- Create exactly 7 sections that together cover all topics
-- Each section should have clear thematic boundaries
-- Sections should flow logically from ancient to modern
-- Each section should be engaging for Scottish heritage audience
-- Specify what each section includes and excludes
-- Ensure comprehensive coverage without overlap
-
-OUTPUT FORMAT: Return ONLY valid JSON:
-{{
-  "sections": [
-    {{
-      "id": "section_1",
-      "theme": "Clear thematic focus",
-      "boundaries": "What this section covers",
-      "exclusions": "What this section does NOT cover",
-      "order": 1,
-      "description": "Engaging description for readers"
-    }}
-  ],
-  "metadata": {{
-    "total_sections": 7,
-    "design_principles": "How sections relate to each other",
-    "audience_focus": "Target audience description"
-  }}
-}}"""
+        topics_text = '\n'.join(topics_data)
+        
+        # Get the LLM prompt template
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, name, system_prompt, prompt_text
+                FROM llm_prompt 
+                WHERE name = 'Section Structure Design'
+                ORDER BY updated_at DESC
+                LIMIT 1
+            """)
+            
+            prompt_data = cursor.fetchone()
+            if not prompt_data:
+                return jsonify({
+                    'success': False,
+                    'error': 'Section Structure Design prompt not found'
+                }), 404
+            
+            # Replace placeholders in prompt
+            prompt_text = prompt_data['prompt_text']
+            if '[TOPICS_DATA]' in prompt_text:
+                prompt_text = prompt_text.replace('[TOPICS_DATA]', topics_text)
         
         # Execute LLM request
-        messages = [
-            {'role': 'system', 'content': 'You are a Scottish heritage content specialist and blog structure designer. Your expertise lies in creating engaging, logical blog structures that comprehensively cover Scottish cultural topics while maintaining reader engagement.'},
-            {'role': 'user', 'content': structure_prompt}
-        ]
+        messages = []
+        if prompt_data['system_prompt']:
+            messages.append({'role': 'system', 'content': prompt_data['system_prompt']})
+        
+        messages.append({'role': 'user', 'content': prompt_text})
         
         result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
         
