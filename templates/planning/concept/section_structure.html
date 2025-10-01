@@ -422,6 +422,8 @@ async function generateSectionStructure() {
         
         if (result.success) {
             sectionStructure = result.section_structure;
+            // Display the raw LLM response
+            displayRawResponse(result.raw_response || 'No raw response available');
             // Display the results in the LLM module
             displaySectionStructure(sectionStructure);
             console.log('Section structure generated successfully');
@@ -434,6 +436,14 @@ async function generateSectionStructure() {
     } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-magic"></i> Design Section Structure';
+    }
+}
+
+// Display raw LLM response
+function displayRawResponse(rawResponse) {
+    const rawResponseElement = document.getElementById('raw-llm-response');
+    if (rawResponseElement && rawResponse) {
+        rawResponseElement.textContent = rawResponse;
     }
 }
 
