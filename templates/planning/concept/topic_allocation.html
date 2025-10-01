@@ -296,6 +296,7 @@ let llmModule = null;
 document.addEventListener('DOMContentLoaded', function() {
     loadSectionStructure();
     loadBrainstormTopics();
+    loadExistingAllocation();
     initializeTopicAllocationModule();
 });
 
@@ -323,6 +324,27 @@ async function loadSectionStructure() {
     } catch (error) {
         console.error('Error loading section structure:', error);
         document.getElementById('section-structure-display').innerHTML = '<p class="error">Error loading section structure</p>';
+    }
+}
+
+// Load existing topic allocation
+async function loadExistingAllocation() {
+    try {
+        const response = await fetch(`/planning/api/sections/allocate-topics/${window.postId}`);
+        const result = await response.json();
+        
+        if (result.success && result.allocations) {
+            // Display the existing allocation results
+            displayAllocationResults(result);
+            
+            // Display the raw response if available
+            if (result.raw_response) {
+                displayRawResponse(result.raw_response);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading existing allocation:', error);
+        // Don't show error to user, just log it
     }
 }
 
