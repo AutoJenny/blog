@@ -14,12 +14,19 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Wait for sections to load, then auto-select first one
-    setTimeout(function() {
+    function tryAutoSelect() {
         const firstSection = document.querySelector('.section-item');
         if (firstSection) {
+            console.log('Found first section, clicking it');
             firstSection.click();
+        } else {
+            console.log('No sections found yet, retrying...');
+            setTimeout(tryAutoSelect, 200);
         }
-    }, 500);
+    }
+    
+    // Start trying after a short delay
+    setTimeout(tryAutoSelect, 500);
 });
 </script>
 
