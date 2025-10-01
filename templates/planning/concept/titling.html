@@ -381,14 +381,12 @@ function displayTopicAllocation(allocations) {
     let allocationHTML = '<div class="allocation-list">';
     allocations.forEach((allocation, index) => {
         const sectionTheme = allocation.section_theme || `Section ${index + 1}`;
-        const creativeTitle = allocation.title || sectionTheme; // Use creative title if available
         const topics = allocation.topics || [];
         
         allocationHTML += `
             <div class="allocation-item" data-section-id="${index}">
                 <div class="section-header">
-                    <h5 class="section-title">${escapeHtml(creativeTitle)}</h5>
-                    <p class="section-subtitle">${escapeHtml(sectionTheme)}</p>
+                    <h5 class="section-title">${escapeHtml(sectionTheme)}</h5>
                     <div class="section-meta">
                         <span class="topic-count">${topics.length} topics</span>
                         <span class="section-order">Section ${index + 1}</span>
@@ -521,18 +519,12 @@ function displaySections(sectionsData) {
             <div class="section-item" data-section-id="${section.id || index}">
                 <div class="section-header">
                     <h4 class="section-title">${section.title || `Section ${index + 1}`}</h4>
+                    <p class="section-subtitle">${section.subtitle || ''}</p>
                     <div class="section-meta">
                         <span class="topic-count">${topicCount} topics</span>
                         <span class="section-order">${section.order || index + 1}</span>
                     </div>
                 </div>
-                ${section.subtitle ? `<div class="section-subtitle">${section.subtitle}</div>` : ''}
-                ${section.boundaries ? `
-                    <div class="section-boundaries">
-                        <h5>Boundaries & Scope</h5>
-                        <p>${section.boundaries}</p>
-                    </div>
-                ` : ''}
                 <div class="section-topics">
                     ${(section.topics || []).map(topic => 
                         `<div class="section-topic-item" data-topic="${topic}">
