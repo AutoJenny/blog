@@ -1832,7 +1832,8 @@ def api_generate_brainstorm_topics():
                 'success': True,
                 'message': 'Topics generated successfully',
                 'topics': topics,
-                'count': len(topics)
+                'count': len(topics),
+                'raw_response': result['content']
             })
             
     except Exception as e:
@@ -1858,13 +1859,23 @@ def parse_brainstorm_topics(content):
             topic_list = json.loads(json_str)
             
             if isinstance(topic_list, list):
-                for topic_text in topic_list:
-                    if isinstance(topic_text, str) and validate_topic(topic_text):
+                for topic_item in topic_list:
+                    if isinstance(topic_item, dict):
+                        # Handle object format with title, description, category, word_count
+                        if 'title' in topic_item:
+                            topics.append({
+                                'title': topic_item['title'].strip(),
+                                'description': topic_item.get('description', topic_item['title']).strip(),
+                                'category': topic_item.get('category', 'general'),
+                                'word_count': topic_item.get('word_count', len(topic_item['title'].split()))
+                            })
+                    elif isinstance(topic_item, str) and validate_topic(topic_item):
+                        # Handle string format (legacy)
                         topics.append({
-                            'title': topic_text.strip(),
-                            'description': topic_text.strip(),
-                            'category': categorize_topic(topic_text),
-                            'word_count': len(topic_text.split())
+                            'title': topic_item.strip(),
+                            'description': topic_item.strip(),
+                            'category': categorize_topic(topic_item),
+                            'word_count': len(topic_item.split())
                         })
                 
                 if topics:
