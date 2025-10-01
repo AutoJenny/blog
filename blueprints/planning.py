@@ -4025,21 +4025,26 @@ def api_sections_title():
         
         # Use hardcoded Section Titling prompt for now (to avoid database issue)
         logger.info("Using hardcoded Section Titling prompt")
-        system_prompt = """You are a Scottish heritage content specialist and engaging blog writer. Your expertise lies in creating compelling, authentic titles and descriptions that resonate with audiences interested in Scottish culture, history, and traditions.
+        system_prompt = """You are a titling specialist. Your job is to craft short, poetic, evocative section titles that fit the supplied sections and their bullet topics. 
+CONSTRAINTS:
+- 2–4 words per title.
+- No colons, dashes, or sub-clauses.
+- Avoid literal echoes of the original (e.g., "Ancient," "Origins," "History," "Traditions," "Festival," "Harvest," "Samhain," "Hogmanay," "Symbolism") unless used metaphorically and sparingly.
+- Use evocative imagery, mood, and metaphor; keep it Scottish in tone without naming specific festivals unless present in bullets.
+- Title Case or Small Caps casing acceptable; no emoji; ASCII only.
 
-EXPERTISE:
-- Scottish heritage and cultural authenticity
-- Engaging title creation for heritage audiences
-- Compelling descriptions that capture Scottish essence
-- Historical accuracy and cultural sensitivity
-- Reader engagement through evocative language
+OUTPUT:
+- Strict JSON only, no prose.
+- Exactly one title per input section, preserving input order.
 
-CRITICAL REQUIREMENTS:
-- Create titles that evoke Scottish heritage and cultural pride
-- Use authentic Scottish terminology and references where appropriate
-- Ensure descriptions capture the essence and importance of each section
-- Make content accessible to both Scottish and international audiences
-- Focus on engagement, authenticity, and cultural significance"""
+FORMAT:
+{
+  "post_title": "<copied from input>",
+  "sections": [
+    { "index": 1, "original": "<original section title>", "title": "<2-4 word creative title>" },
+    ...
+  ]
+}"""
         
         # Prepare topic allocation data for the prompt
         logger.info("Preparing topic allocation data for prompt")
@@ -4059,63 +4064,22 @@ CRITICAL REQUIREMENTS:
             topics_list = '\n  '.join(section.get('topics', []))
             sections_text += f"\nSection {i+1}: {section_theme}\n  {topics_list}\n"
         
-        titling_prompt = f"""You are tasked with creating engaging, creative titles for these existing sections about {expanded_idea}. Create NEW, CREATIVE titles that are more engaging than the current technical section names.
+        titling_prompt = f"""Generate creative section titles for this post. Follow all constraints and output format exactly.
 
-EXISTING SECTIONS TO TITLE (CREATE NEW CREATIVE TITLES ONLY):
+INPUT:
+POST_TITLE:
+{expanded_idea}
+
+SECTIONS_AND_TOPICS:
 {sections_text}
 
-CRITICAL REQUIREMENTS:
-- Create ONLY new creative titles - do NOT modify subtitles, topics, or descriptions
-- Keep the EXACT same topics and order - DO NOT reduce the number of topics
-- Do NOT use the current section theme as the title - create something new and creative
-- Make titles evocative and engaging for the target audience
-- Use authentic terminology and cultural references where appropriate
-- Be MORE creative - avoid generic titles
-- TITLES MUST BE SHORT: 2-4 words maximum
-- NO COLONS, NO SUBTITLES, NO DESCRIPTIONS in the title
-- NO compound titles with ":" or "and" or "of the"
-- Just evocative words that capture the essence
-- Focus on POETIC CREATIVITY - make titles beautiful and memorable
+VALIDATION RULES:
+- Ensure every title is 2–4 words.
+- No punctuation except spaces and apostrophes within words.
+- Do not repeat the original section's key nouns verbatim unless transformed (e.g., "Oats" → "Oatfire" acceptable).
+- If any title violates constraints, silently fix it and still return valid JSON.
 
-OUTPUT FORMAT: Return ONLY valid JSON with creative titles:
-{{
-  "sections": [
-    {{
-      "id": "section_1",
-      "title": "SHORT CREATIVE TITLE (2-4 words, no colons)",
-      "order": 1
-    }},
-    {{
-      "id": "section_2", 
-      "title": "SHORT CREATIVE TITLE (2-4 words, no colons)",
-      "order": 2
-    }}
-  ]
-}}
-
-TITLE GUIDELINES:
-- Use evocative, poetic language that captures the spirit of the content
-- Make titles accessible to international audiences
-- Focus on emotional connection and beauty
-- Be SPECIFIC and CREATIVE - not generic
-- MAXIMUM 4 WORDS - short and snappy
-- NO colons, NO subtitles, NO compound phrases
-
-SUBTITLE GUIDELINES:
-- Keep subtitles snappy and direct
-- NO fluff phrases like "This section delves into", "Join us as we explore", "Discover the fascinating", "Delving into", "Unveiling", "Exploring", "Unlocking"
-- NO action verbs that add no meaning: "Discover", "Explore", "Unveil", "Delve", "Unlock", "Reveal"
-- Start with concrete nouns or direct statements about the content
-- Maximum 6-8 words
-- Focus on WHAT the content covers, not HOW to approach it
-- Examples of GOOD subtitles: "Celtic festivals and harvest traditions", "Medieval crops and farming practices"
-- Examples of BAD subtitles: "Delving into the mysteries of", "Unveiling Scotland's ancient secrets", "Exploring the rich history of"
-
-DESCRIPTION GUIDELINES:
-- Brief, direct description of what readers will learn
-- Highlight the cultural and historical significance
-- Use engaging, accessible language
-- Keep under 2 sentences"""
+RETURN ONLY JSON."""
         
         logger.info(f"Prompt prepared, length: {len(titling_prompt)}")
         logger.info(f"First 500 chars of prompt: {titling_prompt[:500]}")
@@ -4167,10 +4131,10 @@ DESCRIPTION GUIDELINES:
             # Merge LLM creative titles with existing input data
             merged_sections = []
             for i, section in enumerate(topic_allocation):
-                # Find matching LLM section by order
+                # Find matching LLM section by index or order
                 llm_section = None
                 for llm_sec in sections_data.get('sections', []):
-                    if llm_sec.get('order') == i + 1:
+                    if llm_sec.get('index') == i + 1 or llm_sec.get('order') == i + 1 or llm_sec.get('id') == f'section_{i+1}':
                         llm_section = llm_sec
                         break
                 
