@@ -2612,13 +2612,28 @@ def api_allocate_topics():
             # Create idea code to topic mapping (extract idea codes from topic titles)
             idea_to_topic = {}
             import re
+            import json
             for topic in topics:
                 topic_title = topic.get('title', topic) if isinstance(topic, dict) else topic
-                # Extract idea code from topic title (e.g., "{IDEA01} Topic Title" -> "IDEA01")
-                idea_match = re.search(r'\{IDEA(\d+)\}', topic_title)
-                if idea_match:
-                    idea_code = f"IDEA{idea_match.group(1).zfill(2)}"
-                    idea_to_topic[idea_code] = topic_title
+                
+                # Handle current JSON format: '{"IDEA01": "Topic Title"}'
+                if topic_title.startswith('{"IDEA') and topic_title.endswith('"}'):
+                    try:
+                        topic_obj = json.loads(topic_title)
+                        for idea_code, actual_title in topic_obj.items():
+                            idea_to_topic[idea_code] = f"{{{idea_code}}} {actual_title}"
+                    except json.JSONDecodeError:
+                        # Fallback to regex extraction
+                        idea_match = re.search(r'\{IDEA(\d+)\}', topic_title)
+                        if idea_match:
+                            idea_code = f"IDEA{idea_match.group(1).zfill(2)}"
+                            idea_to_topic[idea_code] = topic_title
+                else:
+                    # Handle normal format: "{IDEA01} Topic Title"
+                    idea_match = re.search(r'\{IDEA(\d+)\}', topic_title)
+                    if idea_match:
+                        idea_code = f"IDEA{idea_match.group(1).zfill(2)}"
+                        idea_to_topic[idea_code] = topic_title
             
             # Filter out empty lines and invalid lines
             valid_lines = []
