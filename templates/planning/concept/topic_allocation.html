@@ -18,7 +18,12 @@
         <div class="brainstorm-content">
             <div class="idea-generator">
                 <div class="input-data">
-                    <h4>Input Data</h4>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4 style="margin: 0;">Input Data</h4>
+                        <button class="btn btn-primary" id="custom-allocate-btn" onclick="allocateTopics()" style="margin: 0;">
+                            <i class="fas fa-magic"></i> Allocate All Topics
+                        </button>
+                    </div>
                     
                     <div class="input-section">
                         <h5>Section Structure</h5>
@@ -34,11 +39,6 @@
                         </div>
                     </div>
                     
-                    <div class="input-actions">
-                        <button class="btn btn-primary" onclick="allocateTopics()" id="custom-allocate-btn">
-                            <i class="fas fa-tasks"></i> Allocate All Topics
-                        </button>
-                    </div>
                 </div>
             </div>
             
