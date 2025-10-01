@@ -2538,33 +2538,28 @@ def api_allocate_topics():
         # Format topics for prompt (topics already have idea codes from brainstorming)
         topics_text = '\n'.join([f"{topic.get('title', topic) if isinstance(topic, dict) else topic}" for topic in topics])
         
-        # Create allocation prompt
-        allocation_prompt = f"""TASK: Allocate {len(topics)} topics to sections based on THEMATIC COHERENCE. Each topic must go to its BEST FIT section based on content and theme.
-
-SECTION STRUCTURE:
-{sections_text}
-
-TOPICS TO ALLOCATE (process these in numbered order 1-{len(topics)}):
-{topics_text}
-
-
-REQUIRED OUTPUT FORMAT - return exactly {len(topics)} lines like this:
-{{IDEA01}} {{S01}}
-{{IDEA02}} {{S02}}
-{{IDEA03}} {{S03}}
-
-CRITICAL RULES:
-1. Return EXACTLY {len(topics)} lines
-2. Keep topics in the SAME ORDER as numbered above (IDEA01, IDEA02, IDEA03...)
-3. Each line format: {{IDEAXX}} {{SXX}}
-4. Use idea codes IDEA01, IDEA02, IDEA03... up to IDEA{len(topics):02d}
-5. Use section codes S01, S02, S03, S04, S05, S06, S07
-6. NO JSON format, NO quotes, NO commas
-7. Each topic appears exactly once
-8. Match topics to their THEMATICALLY MOST APPROPRIATE section
-9. Process topics in order: IDEA01, IDEA02, IDEA03... up to IDEA{len(topics):02d}
-
-DO NOT return JSON format. Return simple text lines only."""
+        # Get the database prompt and replace placeholders
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT prompt_text 
+                FROM llm_prompt 
+                WHERE name = 'Individual Topic Allocation'
+                ORDER BY id DESC
+                LIMIT 1
+            """)
+            prompt_result = cursor.fetchone()
+            
+            if not prompt_result:
+                return jsonify({
+                    'success': False,
+                    'error': 'Individual Topic Allocation prompt not found'
+                }), 500
+            
+            # Replace placeholders with actual data
+            allocation_prompt = prompt_result['prompt_text']
+            allocation_prompt = allocation_prompt.replace('[TOTAL_TOPICS]', str(len(topics)))
+            allocation_prompt = allocation_prompt.replace('[SECTION_STRUCTURE]', sections_text)
+            allocation_prompt = allocation_prompt.replace('[TOPICS_LIST]', topics_text)
         
         # Execute LLM request
         messages = [
