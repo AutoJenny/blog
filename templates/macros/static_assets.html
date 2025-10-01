@@ -49,12 +49,7 @@
         {% elif blueprint_name == 'authoring' %}
             <script src="{{ url_for('static', filename='js/main.js') }}"></script>
             <script src="{{ url_for('static', filename='js/workflow-nav.js') }}"></script>
-            <script src="{{ url_for('static', filename='js/llm-module.js') }}"></script>
-            <script src="{{ url_for('static', filename='js/llm-config.js') }}"></script>
-            <script src="{{ url_for('static', filename='js/llm-api-client.js') }}"></script>
-            <script src="{{ url_for('static', filename='js/llm-ui-manager.js') }}"></script>
-            <script src="{{ url_for('static', filename='js/llm-event-manager.js') }}"></script>
-            <script src="{{ url_for('static', filename='js/llm-utils.js') }}"></script>
+            <script src="{{ url_for('static', filename='js/simplified-llm-actions.js') }}"></script>
         {% else %}
             <script src="{{ url_for('static', filename='js/main.js') }}"></script>
         {% endif %}
