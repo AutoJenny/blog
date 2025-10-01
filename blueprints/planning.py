@@ -4645,13 +4645,12 @@ def api_save_sections(post_id):
                 
                 # Insert or update post_section table with titles and subtitles
                 cursor.execute("""
-                    INSERT INTO post_section (post_id, section_order, section_heading, section_description, status, created_at, updated_at)
-                    VALUES (%s, %s, %s, %s, 'draft', NOW(), NOW())
+                    INSERT INTO post_section (post_id, section_order, section_heading, section_description, status)
+                    VALUES (%s, %s, %s, %s, 'draft')
                     ON CONFLICT (post_id, section_order) 
                     DO UPDATE SET 
                         section_heading = EXCLUDED.section_heading,
-                        section_description = EXCLUDED.section_description,
-                        updated_at = NOW()
+                        section_description = EXCLUDED.section_description
                 """, (post_id, i + 1, title, subtitle))
             
             # Commit the transaction
