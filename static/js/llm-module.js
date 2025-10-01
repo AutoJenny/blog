@@ -89,6 +89,9 @@ class LLMModule {
         const result = await this.apiClient.generateContent(this.config.generateEndpoint, requestData);
         
         if (result.success) {
+            // Display raw LLM response
+            this.displayRawResponse(result.raw_response || result.content || 'No raw response available');
+            
             // Handle different response formats based on config
             if (this.config.resultsField === 'draft_content') {
                 // For authoring, put content directly in the editor
@@ -104,6 +107,13 @@ class LLMModule {
         // Reset button state
         generateBtn.disabled = false;
         generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate';
+    }
+    
+    displayRawResponse(rawResponse) {
+        const rawResponseElement = document.getElementById('raw-llm-response');
+        if (rawResponseElement) {
+            rawResponseElement.textContent = rawResponse;
+        }
     }
     
     setPostId(postId) {
