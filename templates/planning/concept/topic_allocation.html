@@ -28,7 +28,6 @@
                         </button>
                     </div>
                 </div>
-                
             </div>
             
             <div class="brainstorm-results">
@@ -36,291 +35,134 @@
             </div>
         </div>
     </div>
-
-    <!-- Results Panel -->
-    <div id="results-panel" class="results-panel" style="display: none;">
-        <div class="panel-header">
-            <h3>Topic Allocation Results</h3>
-        </div>
-        <div class="panel-content">
-            <div id="allocation-results" class="results-display">
-                <!-- Allocation results will be displayed here -->
-            </div>
-        </div>
-    </div>
     {% endblock %}
 </div>
 
-<script>
-let topics = [];
-let sectionStructure = null;
-let topicAllocation = null;
-
-// Set post ID for API calls
-window.postId = {{ post_id }};
-
-// Set navigation highlighting
-window.currentStage = 'concept';
-window.currentSubstage = 'topic-allocation';
-
-// Initialize page
-document.addEventListener('DOMContentLoaded', function() {
-    loadSectionStructure();
-    loadExistingAllocation();
-    initializeLLMModule('topic_allocation', window.postId);
-});
-
-// Load section structure from previous page
-async function loadSectionStructure() {
-    try {
-        const response = await fetch(`/planning/api/sections/design-structure/${window.postId}`);
-        const data = await response.json();
-        
-        if (data.success && data.section_structure) {
-            sectionStructure = data.section_structure;
-            displaySectionStructure();
-        } else {
-            document.getElementById('section-structure-display').innerHTML = '<p class="error">No section structure found from previous page</p>';
-        }
-    } catch (error) {
-        console.error('Error loading section structure:', error);
-        document.getElementById('section-structure-display').innerHTML = '<p class="error">Error loading section structure</p>';
-    }
-}
-
-// Display section structure from previous page
-function displaySectionStructure() {
-    const container = document.getElementById('section-structure-display');
-    if (!container || !sectionStructure) return;
-    
-    let html = '<div class="section-structure-results">';
-    
-    if (sectionStructure.sections) {
-        sectionStructure.sections.forEach((section, index) => {
-            const sectionCode = `S${String(index + 1).padStart(2, '0')}`;
-            html += `
-                <div class="section-item">
-                    <h5>{${sectionCode}} ${section.theme}</h5>
-                    <p><strong>Description:</strong> ${section.description}</p>
-                    <p><strong>Boundaries:</strong> ${section.boundaries}</p>
-                </div>
-            `;
-        });
-    }
-    
-    html += '</div>';
-    container.innerHTML = html;
-}
-
-// Display topics
-function displayTopics() {
-    const container = document.getElementById('topics-display');
-    if (topics.length === 0) {
-        container.innerHTML = '<p class="error">No topics available</p>';
-        return;
-    }
-    
-    const topicsList = topics.map((topic, index) => 
-        `<div class="topic-item">${index + 1}. ${topic}</div>`
-    ).join('');
-    
-    container.innerHTML = `
-        <div class="topics-list">
-            <p><strong>${topics.length} topics to allocate:</strong></p>
-            ${topicsList}
-        </div>
-    `;
-}
-
-// Display section structure
-function displaySectionStructure() {
-    const container = document.getElementById('structure-display');
-    
-    if (!sectionStructure || !sectionStructure.sections) {
-        container.innerHTML = '<p class="error">No section structure available</p>';
-        return;
-    }
-    
-    const sectionsHtml = sectionStructure.sections.map((section, index) => `
-        <div class="section-item">
-            <h5>Section ${section.order}: ${section.theme}</h5>
-            <p><strong>Boundaries:</strong> ${section.boundaries}</p>
-        </div>
-    `).join('');
-    
-    container.innerHTML = `
-        <div class="structure-summary">
-            <p><strong>${sectionStructure.sections.length} sections available for allocation</strong></p>
-        </div>
-        <div class="sections-list">
-            ${sectionsHtml}
-        </div>
-    `;
-}
-
-// Allocate topics to sections
-async function allocateTopics() {
-    const btn = document.getElementById('custom-allocate-btn');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Allocating Topics...';
-    
-    try {
-        const response = await fetch('/planning/api/sections/allocate-topics', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                topics: topics,
-                section_structure: sectionStructure,
-                post_id: window.postId
-            })
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            topicAllocation = result.allocations;
-            displayAllocationResults();
-            showResultsPanel();
-        } else {
-            alert('Error: ' + result.error);
-        }
-    } catch (error) {
-        console.error('Error allocating topics:', error);
-        alert('Error allocating topics: ' + error.message);
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-tasks"></i> Allocate All Topics';
-    }
-}
-
-// Display allocation results
-function displayAllocationResults() {
-    const container = document.getElementById('allocation-results');
-    
-    if (!topicAllocation || !topicAllocation.allocations) {
-        container.innerHTML = '<p class="error">No allocation data available</p>';
-        return;
-    }
-    
-    const allocationsHtml = topicAllocation.allocations.map((allocation, index) => `
-        <div class="allocation-item">
-            <h4>Section ${allocation.section_id.replace('section_', '')}: ${allocation.section_theme}</h4>
-            <div class="topics-in-section">
-                ${allocation.topics.map(topic => `<span class="topic-tag">${topic}</span>`).join('')}
-            </div>
-            <p class="allocation-reason"><em>${allocation.allocation_reason}</em></p>
-        </div>
-    `).join('');
-    
-    container.innerHTML = `
-        <div class="allocation-summary">
-            <p><strong>Allocated ${topicAllocation.metadata.total_topics_allocated} topics across ${topicAllocation.allocations.length} sections</strong></p>
-        </div>
-        <div class="allocations-list">
-            ${allocationsHtml}
-        </div>
-    `;
-}
-
-// Show results panel
-function showResultsPanel() {
-    document.getElementById('results-panel').style.display = 'block';
-}
-
-// Load existing allocation
-async function loadExistingAllocation() {
-    try {
-        const response = await fetch(`/planning/api/sections/allocate-topics/${window.postId}`);
-        const data = await response.json();
-        
-        if (data.success && data.allocation) {
-            topicAllocation = data.allocation;
-            displayAllocationResults();
-            showResultsPanel();
-        }
-    } catch (error) {
-        console.error('Error loading existing allocation:', error);
-    }
-}
-</script>
-
 <style>
+.brainstorm-main {
+    padding: 2rem 0;
+}
+
+.brainstorm-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.brainstorm-header h2 {
+    font-size: 2rem;
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+}
+
+.brainstorm-header p {
+    font-size: 1.125rem;
+    color: #94a3b8;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.brainstorm-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.idea-generator {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.input-data {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.input-data h4 {
+    color: #f1f5f9;
+    margin-bottom: 1rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.expanded-idea-content {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    min-height: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.input-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+    background: #64748b;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.brainstorm-results {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.5rem;
+    min-height: 600px;
+}
+
 .topic-item {
     padding: 8px 12px;
     margin: 4px 0;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 4px;
-    border-left: 3px solid var(--accent-color);
-}
-
-.section-item {
-    padding: 12px;
-    margin: 8px 0;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 6px;
-    border-left: 3px solid #4CAF50;
-}
-
-.section-item h5 {
-    margin: 0 0 6px 0;
-    color: #4CAF50;
-}
-
-.allocation-item {
-    padding: 16px;
-    margin: 12px 0;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    border-left: 4px solid var(--accent-color);
-}
-
-.allocation-item h4 {
-    margin: 0 0 12px 0;
-    color: var(--accent-color);
-}
-
-.topics-in-section {
-    margin: 8px 0;
-}
-
-.topic-tag {
-    display: inline-block;
-    padding: 4px 8px;
-    margin: 2px 4px 2px 0;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    font-size: 0.9em;
-}
-
-.allocation-reason {
-    margin: 8px 0 0 0;
-    font-size: 0.9em;
-    color: #888;
-}
-
-.allocation-summary {
-    padding: 16px;
-    background: rgba(0, 255, 0, 0.1);
-    border-radius: 8px;
-    margin-bottom: 16px;
-    border-left: 4px solid #00ff00;
-}
-
-.results-panel {
-    margin-top: 20px;
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 3px solid #3b82f6;
+    font-size: 0.875rem;
 }
 
 .loading {
-    color: #888;
+    color: #94a3b8;
     font-style: italic;
+    text-align: center;
+    padding: 2rem;
 }
 
 .error {
-    color: #ff6b6b;
+    color: #ef4444;
+    text-align: center;
+    padding: 2rem;
 }
 
 .section-structure-results {
@@ -353,7 +195,131 @@ async function loadExistingAllocation() {
 .section-item strong {
     color: #e2e8f0;
 }
+
+.topics-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.topics-list p {
+    margin-bottom: 1rem;
+    color: #e2e8f0;
+    font-weight: 500;
+}
+
+@media (max-width: 1024px) {
+    .brainstorm-content {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .brainstorm-main {
+        padding: 1rem 0;
+    }
+}
 </style>
+
+<script>
+// Set post ID for API calls
+window.postId = {{ post_id }};
+
+// Set navigation highlighting
+window.currentStage = 'concept';
+window.currentSubstage = 'topic-allocation';
+
+let sectionStructure = null;
+let llmModule = null;
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    loadSectionStructure();
+    initializeLLMModule();
+});
+
+// Initialize LLM module
+function initializeLLMModule() {
+    if (typeof initializeLLMModule === 'function') {
+        llmModule = initializeLLMModule('topic_allocation', window.postId);
+    } else {
+        console.error('initializeLLMModule function not found');
+    }
+}
+
+// Load section structure from previous page
+async function loadSectionStructure() {
+    try {
+        const response = await fetch(`/planning/api/sections/design-structure/${window.postId}`);
+        const data = await response.json();
+        
+        if (data.success && data.section_structure) {
+            sectionStructure = data.section_structure;
+            displaySectionStructure(sectionStructure);
+        } else {
+            document.getElementById('section-structure-display').innerHTML = '<p class="error">No section structure found from previous page</p>';
+        }
+    } catch (error) {
+        console.error('Error loading section structure:', error);
+        document.getElementById('section-structure-display').innerHTML = '<p class="error">Error loading section structure</p>';
+    }
+}
+
+// Display section structure (same format as section structure page output)
+function displaySectionStructure(structure) {
+    const container = document.getElementById('section-structure-display');
+    if (!structure || !structure.sections) {
+        container.innerHTML = '<p class="error">No section structure available</p>';
+        return;
+    }
+    
+    let html = '<div class="section-structure-results">';
+    
+    structure.sections.forEach((section, index) => {
+        const sectionCode = `S${String(index + 1).padStart(2, '0')}`;
+        html += `
+            <div class="section-item">
+                <h5>{${sectionCode}} ${section.theme}</h5>
+                <p><strong>Description:</strong> ${section.description}</p>
+                <p><strong>Boundaries:</strong> ${section.boundaries}</p>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// Allocate topics
+async function allocateTopics() {
+    const btn = document.getElementById('custom-allocate-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Allocating Topics...';
+    
+    try {
+        const response = await fetch('/planning/api/sections/allocate-topics', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                post_id: window.postId
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Display the results in the LLM module
+            console.log('Topics allocated successfully');
+        } else {
+            alert('Error: ' + result.error);
+        }
+    } catch (error) {
+        console.error('Error allocating topics:', error);
+        alert('Error allocating topics: ' + error.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-tasks"></i> Allocate All Topics';
+    }
+}
+</script>
 
 <!-- LLM Module JavaScript Files -->
 <script src="{{ url_for('static', filename='js/llm-config.js') }}"></script>
