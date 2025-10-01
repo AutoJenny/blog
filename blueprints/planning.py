@@ -3233,7 +3233,10 @@ def build_allocation_data(all_allocations, section_structure):
         # Clean section code (remove braces if present)
         clean_section_code = section_code.replace('{', '').replace('}', '')
         section_order = int(clean_section_code[1:])  # Extract number from S01, S02, etc.
-        section_theme = section_structure['sections'][section_order - 1]['theme']
+        
+        # Handle both new format (title) and old format (theme)
+        section_data = section_structure['sections'][section_order - 1]
+        section_theme = section_data.get('title') or section_data.get('theme', f'Section {section_order}')
         
         allocation_data['allocations'].append({
             'section_id': f'section_{section_order}',
