@@ -2766,7 +2766,7 @@ def api_allocate_topics():
                                 'message': f'Topics allocated successfully (with automatic retry for {len(missing_topics)} missing topics)',
                                 'allocations': merged_allocation,
                                 'results': merged_allocation,  # Add results field for LLM module compatibility
-                                'raw_response': llm_result.get('content', 'No raw response available')
+                                'raw_response': 'Automatic retry successful - all topics allocated via retry mechanism'
                             })
                         else:
                             logger.error("Merged allocation still failed validation")
