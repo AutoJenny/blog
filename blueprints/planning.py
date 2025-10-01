@@ -74,7 +74,7 @@ class LLMService:
                 response = requests.post(
                     f"{self.providers[provider]['base_url']}/api/chat",
                     json=data,
-                    timeout=60
+                    timeout=120
                 )
             else:
                 return {'error': f'Unknown provider: {provider}'}
