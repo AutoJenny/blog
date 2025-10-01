@@ -4023,9 +4023,47 @@ def api_sections_title():
                 'error': 'No topic allocation provided'
             }), 400
         
-        # Use hardcoded Section Titling prompt for now (to avoid database issue)
-        logger.info("Using hardcoded Section Titling prompt")
-        system_prompt = """You are a titling specialist. Your job is to craft short, poetic, evocative section titles that fit the supplied sections and their bullet topics. 
+        # Load Section Titling prompt from database
+        logger.info("Loading Section Titling prompt from database")
+        try:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT system_prompt
+                    FROM llm_prompt 
+                    WHERE name = 'Section Titling'
+                    ORDER BY id DESC
+                    LIMIT 1
+                """)
+                prompt_data = cursor.fetchone()
+                
+                if prompt_data and prompt_data['system_prompt']:
+                    system_prompt = prompt_data['system_prompt']
+                    logger.info("Loaded system prompt from database")
+                else:
+                    logger.warning("Section Titling system prompt not found in database, using fallback")
+                    system_prompt = """You are a titling specialist. Your job is to craft short, poetic, evocative section titles that fit the supplied sections and their bullet topics. 
+CONSTRAINTS:
+- 2–4 words per title.
+- No colons, dashes, or sub-clauses.
+- Avoid literal echoes of the original section titles unless used metaphorically and sparingly.
+- Use evocative imagery, mood, and metaphor; keep it culturally appropriate without naming specific festivals unless present in bullets.
+- Title Case or Small Caps casing acceptable; no emoji; ASCII only.
+
+OUTPUT:
+- Strict JSON only, no prose.
+- Exactly one title per input section, preserving input order.
+
+FORMAT:
+{
+  "post_title": "<copied from input>",
+  "sections": [
+    { "index": 1, "original": "<original section title>", "title": "<2-4 word creative title>" },
+    ...
+  ]
+}"""
+        except Exception as e:
+            logger.error(f"Error loading system prompt from database: {e}")
+            system_prompt = """You are a titling specialist. Your job is to craft short, poetic, evocative section titles that fit the supplied sections and their bullet topics. 
 CONSTRAINTS:
 - 2–4 words per title.
 - No colons, dashes, or sub-clauses.
