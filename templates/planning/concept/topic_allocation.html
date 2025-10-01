@@ -19,9 +19,21 @@
             <div class="idea-generator">
                 <div class="input-data">
                     <h4>Input Data</h4>
-                    <div id="section-structure-display" class="expanded-idea-content">
-                        <!-- Section structure from previous page will appear here -->
+                    
+                    <div class="input-section">
+                        <h5>Section Structure</h5>
+                        <div id="section-structure-display" class="expanded-idea-content">
+                            <!-- Section structure from previous page will appear here -->
+                        </div>
                     </div>
+                    
+                    <div class="input-section">
+                        <h5>Brainstormed Topics</h5>
+                        <div id="topics-display" class="expanded-idea-content">
+                            <!-- Topics from brainstorming will appear here -->
+                        </div>
+                    </div>
+                    
                     <div class="input-actions">
                         <button class="btn btn-primary" onclick="allocateTopics()" id="custom-allocate-btn">
                             <i class="fas fa-tasks"></i> Allocate All Topics
@@ -87,6 +99,19 @@
     margin-bottom: 1rem;
     font-size: 1.125rem;
     font-weight: 600;
+}
+
+.input-section {
+    margin-bottom: 1.5rem;
+}
+
+.input-section h5 {
+    color: #e2e8f0;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 0.5rem;
 }
 
 .expanded-idea-content {
@@ -233,6 +258,7 @@ let llmModule = null;
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
     loadSectionStructure();
+    loadBrainstormTopics();
     initializeTopicAllocationModule();
 });
 
@@ -286,6 +312,45 @@ function displaySectionStructure(structure) {
     
     html += '</div>';
     container.innerHTML = html;
+}
+
+// Load brainstormed topics
+async function loadBrainstormTopics() {
+    try {
+        const response = await fetch(`/planning/api/posts/${window.postId}`);
+        const data = await response.json();
+        
+        if (data.development && data.development.idea_scope) {
+            const ideaScopeData = JSON.parse(data.development.idea_scope);
+            const topics = ideaScopeData.generated_topics.map(topic => topic.title);
+            displayBrainstormTopics(topics);
+        } else {
+            document.getElementById('topics-display').innerHTML = '<p class="error">No topics found from brainstorming</p>';
+        }
+    } catch (error) {
+        console.error('Error loading brainstorm topics:', error);
+        document.getElementById('topics-display').innerHTML = '<p class="error">Error loading brainstorm topics</p>';
+    }
+}
+
+// Display brainstormed topics
+function displayBrainstormTopics(topics) {
+    const container = document.getElementById('topics-display');
+    if (!topics || topics.length === 0) {
+        container.innerHTML = '<p class="error">No topics available</p>';
+        return;
+    }
+    
+    // Display topics in a clean list format
+    const topicsList = topics.map((topic, index) => 
+        `<div class="topic-item">${topic}</div>`
+    ).join('');
+    
+    container.innerHTML = `
+        <div class="topics-list">
+            ${topicsList}
+        </div>
+    `;
 }
 
 // Allocate topics
