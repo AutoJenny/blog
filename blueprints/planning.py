@@ -2389,7 +2389,8 @@ def api_design_section_structure():
             return jsonify({
                 'success': True,
                 'message': 'Section structure designed successfully',
-                'section_structure': structure_data
+                'section_structure': structure_data,
+                'raw_response': result['content']
             })
             
         except json.JSONDecodeError as e:
