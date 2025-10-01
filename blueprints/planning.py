@@ -2154,6 +2154,10 @@ def api_save_section_titling_prompt():
             
             logger.info(f"Update query executed, rowcount: {cursor.rowcount}")
             
+            # Commit the transaction
+            cursor.connection.commit()
+            logger.info("Transaction committed")
+            
             if cursor.rowcount == 0:
                 logger.error("No rows updated - Section Titling prompt not found")
                 return jsonify({
