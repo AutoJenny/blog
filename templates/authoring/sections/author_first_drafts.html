@@ -7,7 +7,7 @@
 <script>
     window.currentStage = 'authoring';
     window.currentSubstage = 'author-first-drafts';
-    window.postId = {{ post_id }};
+    window.postId = {{ post_id|default('null') }};
 </script>
 
 <!-- Simple test script -->
