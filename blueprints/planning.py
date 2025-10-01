@@ -3179,26 +3179,35 @@ TOPIC TO ALLOCATE (ignore idea code {idea_code} for purpose of allocation):
 
 SECTION STRUCTURE:{sections_text}
 
+CRITICAL ALLOCATION REQUIREMENTS:
+- You MUST choose from ALL 7 sections (S01, S02, S03, S04, S05, S06, S07)
+- Each section has a DISTINCT thematic focus with NO OVERLAP
+- Consider the section's unique scope and purpose when making your choice
+- Ensure balanced distribution across all sections when possible
+
 STEP-BY-STEP ALLOCATION PROCESS:
 1. READ the topic title AND description carefully to understand its full scope
 2. IDENTIFY key themes and concepts from both title and description
 3. SCAN each section's title, description, and keywords to find the best thematic match
 4. CHOOSE the section whose content focus most closely aligns with the topic's themes
+5. CONSIDER ALL 7 SECTIONS - do not avoid any section without good reason
 
-ALLOCATION PROCESS:
-1. Analyze the topic's title and description to understand its core themes
-2. Compare against each section's title, description, and keywords
-3. Choose the section whose thematic focus best matches the topic's content
-4. Consider the topic category (historical, cultural, practical, general) as additional guidance
-5. Ensure the topic fits within the section's scope and boundaries
+ALLOCATION GUIDANCE:
+- S01: Ancient Celtic origins and historical foundations
+- S02: Harvest festivals and agricultural traditions
+- S03: Symbolism and mythology in Scottish folklore
+- S04: Samhain celebrations and enduring legacy
+- S05: Modern-day significance and contemporary relevance
+- S06: Autumnal traditions and Scottish landscape
+- S07: Cultural continuity and preservation in modern times
 
 CRITICAL OUTPUT REQUIREMENTS:
 - First, explain your reasoning: "Topic [title] covers [themes from description], so I choose section [SXX] because its description indicates [section focus]"
 - Then return the allocation in this format: {idea_code} {{SXX}}
-- Replace XX with the section number (01, 02, 03, etc.)
+- Replace XX with the section number (01, 02, 03, 04, 05, 06, or 07)
 
 EXAMPLE OUTPUT:
-Topic "Scottish Folk Music Traditions" covers traditional music and cultural practices, so I choose section S03 because its description indicates focus on cultural celebrations and traditions
+Topic "Scottish Folk Music Traditions" covers traditional music and cultural practices, so I choose section S03 because its description indicates focus on symbolism and mythology in Scottish folklore
 {idea_code} {{S03}}
 
 RETURN YOUR REASONING FOLLOWED BY THE ALLOCATION LINE:"""
@@ -3344,6 +3353,14 @@ def api_allocate_topics_iterative():
             
             # Create a consistent structure for the prompt function
             structured_sections = {'sections': sections_data}
+            
+            # Debug: Log section structure being sent to LLM
+            if i == 0:  # Only log for first topic to avoid spam
+                logger.info(f"Section structure being sent to LLM: {len(sections_data)} sections")
+                for j, section in enumerate(sections_data):
+                    section_title = section.get('title') or section.get('theme', f'Section {j+1}')
+                    logger.info(f"  S{j+1:02d}: {section_title}")
+            
             individual_prompt = build_individual_topic_prompt(idea_code, actual_title, structured_sections, topic_data, expanded_idea)
             
             # Execute LLM request for this single topic
