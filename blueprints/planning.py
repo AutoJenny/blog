@@ -3131,31 +3131,30 @@ def build_individual_topic_prompt(idea_code, topic_title, section_structure, top
         article_context += f"Article Overview: {expanded_idea[:200]}...\n"
         article_context += f"Key Themes: Historical evolution, cultural practices, symbolism, community traditions, modern adaptations\n"
     
-    prompt = f"""TASK: Allocate the following topic to ONE SECTION below based on THEMATIC COHERENCE and CONTENT FIT. Each topic must go to its BEST FIT section based on content, theme, and category.
+    prompt = f"""TASK: Allocate the following topic to ONE SECTION below based on THEMATIC COHERENCE and CONTENT FIT.
 
 TOPIC TO ALLOCATE (ignore idea code {idea_code} for purpose of allocation):
 {topic_title}{topic_context}{article_context}
 
 SECTION STRUCTURE:{sections_text}
 
-ALLOCATION GUIDELINES:
-1. MATCH TOPIC KEYWORDS TO SECTION KEYWORDS:
-   - If topic contains "music", "dance", "folklore", "mythology", "creatures" → Look for sections with these keywords
-   - If topic contains "harvest", "festival", "celebration", "rural" → Look for harvest/festival sections
-   - If topic contains "christianity", "religion", "intersection" → Look for Christianity sections
-   - If topic contains "ceres", "symbolism", "ancient" → Look for Ceres sections
-   - If topic contains "modern", "urban", "revival" → Look for modern sections
-   - If topic contains "rural", "community", "practical" → Look for rural community sections
+STEP-BY-STEP ALLOCATION PROCESS:
+1. READ the topic title carefully: "{topic_title}"
+2. IDENTIFY key words in the topic (e.g., "music", "dance", "harvest", "christianity", "modern")
+3. SCAN each section's keywords to find matches
+4. CHOOSE the section with the most relevant keyword matches
 
-2. CATEGORY-BASED MATCHING:
-   - HISTORICAL topics → Sections about origins, history, evolution
-   - CULTURAL topics → Sections about traditions, festivals, cultural practices  
-   - PRACTICAL topics → Sections about practical applications, community practices
-   - GENERAL topics → Sections about general themes, modern adaptations
-   - MODERN/URBAN topics → Sections about contemporary, urban contexts
-   - FESTIVAL-SPECIFIC topics → Sections specifically about festivals, celebrations
+EXAMPLES OF CORRECT ALLOCATIONS:
+- Topic: "Scottish Folk Music and Dance Traditions" → Should go to section with keywords: music, dance, folklore, mythology
+- Topic: "Harvest Festival Celebrations" → Should go to section with keywords: harvest, festival, celebration
+- Topic: "Christianity and Folklore Intersections" → Should go to section with keywords: christianity, religion, intersection
+- Topic: "Modern Urban Celebrations" → Should go to section with keywords: modern, urban, revival
 
-3. CRITICAL: Read the section keywords carefully and match them to your topic!
+CRITICAL RULES:
+- If topic contains "music" or "dance" → Find section with "music, dance" keywords
+- If topic contains "harvest" or "festival" → Find section with "harvest, festival" keywords  
+- If topic contains "christianity" or "religion" → Find section with "christianity, religion" keywords
+- If topic contains "modern" or "urban" → Find section with "modern, urban" keywords
 
 CRITICAL OUTPUT REQUIREMENTS:
 - Return EXACTLY ONE LINE
