@@ -3059,21 +3059,53 @@ def load_topic_allocation(post_id):
         return None
         raise
 
-def build_individual_topic_prompt(idea_code, topic_title, section_structure):
-    """Build prompt for individual topic allocation"""
+def build_individual_topic_prompt(idea_code, topic_title, section_structure, topic_data=None, expanded_idea=None):
+    """Build prompt for individual topic allocation with rich context"""
     
-    # Build section structure text
+    # Build enhanced section structure text with clearer boundaries
     sections_text = ""
     for i, section in enumerate(section_structure.get('sections', [])):
         section_code = f"S{str(i+1).zfill(2)}"
-        sections_text += f"\n{section_code}: {section['theme']}\n  Boundaries: {section['description']}\n"
+        sections_text += f"\n{section_code}: {section['theme']}\n"
+        sections_text += f"  Focus: {section['description']}\n"
+        sections_text += f"  Scope: {section['boundaries']}\n"
+        if section.get('exclusions'):
+            sections_text += f"  Excludes: {section['exclusions']}\n"
     
-    prompt = f"""TASK: Allocate the following topic to ONE SECTION below based on THEMATIC COHERENCE. Each topic must go to its BEST FIT section based on content and theme.
+    # Build topic context
+    topic_context = ""
+    if topic_data:
+        topic_context = f"\nTOPIC CONTEXT:\n"
+        topic_context += f"- Category: {topic_data.get('category', 'general')}\n"
+        topic_context += f"- Description: {topic_data.get('description', topic_title)}\n"
+        topic_context += f"- Word Count: {topic_data.get('word_count', 'unknown')}\n"
+    
+    # Build article context
+    article_context = ""
+    if expanded_idea:
+        # Extract key themes from expanded_idea
+        article_context = f"\nARTICLE CONTEXT:\n"
+        article_context += f"This article explores Scottish autumn folklore through themes of:\n"
+        article_context += f"- Celtic roots and historical evolution\n"
+        article_context += f"- Traditional harvest practices and festivals\n"
+        article_context += f"- Cultural symbolism and mythology\n"
+        article_context += f"- Rural community traditions\n"
+        article_context += f"- Modern-day celebrations and revival\n"
+    
+    prompt = f"""TASK: Allocate the following topic to ONE SECTION below based on THEMATIC COHERENCE and CONTENT FIT. Each topic must go to its BEST FIT section based on content, theme, and category.
 
 TOPIC TO ALLOCATE (ignore idea code {idea_code} for purpose of allocation):
-{topic_title}
+{topic_title}{topic_context}{article_context}
 
 SECTION STRUCTURE:{sections_text}
+
+ALLOCATION GUIDELINES:
+- HISTORICAL topics (ancient roots, evolution, records) → S01 (Celtic Roots) or S04 (Christianity intersections)
+- CULTURAL topics (traditions, celebrations, symbolism) → S02 (Harvest Festivals), S03 (Ceres), S05 (Mythology), S06 (Rural Communities)
+- PRACTICAL topics (techniques, safety, preservation) → S02 (Harvest Festivals) or S06 (Rural Communities)
+- GENERAL topics (markets, creatures, art) → S05 (Mythology) or S07 (Modern Revival)
+- MODERN/URBAN topics → S07 (Modern Revival)
+- FESTIVAL-SPECIFIC topics → S02 (Harvest Festivals) or S03 (Ceres)
 
 CRITICAL OUTPUT REQUIREMENTS:
 - Return EXACTLY ONE LINE
@@ -3151,7 +3183,7 @@ def api_allocate_topics_iterative():
                     return jsonify({'success': False, 'error': 'No topics found from brainstorming'}), 400
                 
                 idea_scope_data = json.loads(result['idea_scope'])
-                topics = [topic['title'] for topic in idea_scope_data.get('generated_topics', [])]
+                topics = idea_scope_data.get('generated_topics', [])
         
         # Get section structure from request or from database
         if 'section_structure' in data:
@@ -3172,12 +3204,29 @@ def api_allocate_topics_iterative():
                 else:
                     section_structure = result['section_structure']
         
+        # Fetch expanded_idea for additional context
+        expanded_idea = None
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT expanded_idea FROM post_development 
+                WHERE post_id = %s AND expanded_idea IS NOT NULL
+            """, (post_id,))
+            result = cursor.fetchone()
+            if result:
+                expanded_idea = result['expanded_idea']
+        
         # Process each topic individually
         all_allocations = []
         raw_responses = []
         
         for i, topic in enumerate(topics):
-            topic_title = topic.get('title', topic) if isinstance(topic, dict) else topic
+            # Handle both dict and string formats
+            if isinstance(topic, dict):
+                topic_title = topic.get('title', '')
+                topic_data = topic
+            else:
+                topic_title = topic
+                topic_data = None
             
             # Extract idea code from topic title
             import re
@@ -3198,8 +3247,8 @@ def api_allocate_topics_iterative():
             else:
                 actual_title = topic_title
             
-            # Build individual topic prompt
-            individual_prompt = build_individual_topic_prompt(idea_code, actual_title, section_structure)
+            # Build individual topic prompt with rich context
+            individual_prompt = build_individual_topic_prompt(idea_code, actual_title, section_structure, topic_data, expanded_idea)
             
             # Execute LLM request for this single topic
             messages = [
