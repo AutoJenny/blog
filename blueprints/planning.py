@@ -3204,41 +3204,31 @@ STEP-BY-STEP ALLOCATION PROCESS:
 6. CONSIDER ALL 7 SECTIONS - do not avoid any section without good reason
 7. REMEMBER: Sections are presented in random order to avoid bias
 
-DETAILED ALLOCATION GUIDANCE WITH EXAMPLES:
+THEMATIC MATCHING PRINCIPLES:
 
-S01 - Ancient Celtic Origins: ONLY topics about Celtic beliefs, ancient rituals, pre-Christian practices, druidic traditions, ancient mythology
-✅ GOOD: "Celtic Mythology Autumn", "Ancient Druidic Harvest Rituals", "Pre-Christian Celtic Calendar"
-❌ BAD: "Food Preserving", "Modern Festivals", "Agricultural Practices"
+1. PRIMARY THEME ANALYSIS:
+   - Identify the main subject matter of the topic
+   - Determine the primary focus (historical, cultural, practical, symbolic, modern, etc.)
+   - Match this primary focus to the section's core theme
 
-S02 - Harvest Festivals and Agricultural Traditions: Topics about farming, crops, harvest celebrations, agricultural practices
-✅ GOOD: "Autumnal Food Preserving Scotland", "Crop Rotation Practices", "Harvest Festival Celebrations"
-❌ BAD: "Celtic Mythology", "Modern Urban Festivals", "Symbolic Meanings"
+2. SECTION-SPECIFIC GUIDANCE:
+   - Historical Origins sections: Topics about beginnings, foundations, ancient practices
+   - Cultural Practices sections: Topics about traditions, customs, community activities
+   - Symbolic Meaning sections: Topics about symbolism, mythology, spiritual significance
+   - Modern Relevance sections: Topics about contemporary applications, current practices
+   - Environmental sections: Topics about nature, landscape, seasonal connections
+   - Continuity sections: Topics about preservation, evolution, cultural transmission
 
-S03 - Symbolism and Mythology: Topics about symbolic meanings, folklore, mythological creatures, spiritual significance
-✅ GOOD: "Symbolism of Autumn Leaves", "Mythological Creatures", "Spiritual Significance"
-❌ BAD: "Agricultural Practices", "Modern Celebrations", "Historical Origins"
+3. MATCHING CRITERIA:
+   - Topic's PRIMARY theme must align with section's PRIMARY focus
+   - Avoid allocating based on secondary or peripheral connections
+   - Consider the section's core purpose, not just keyword overlap
+   - If a topic could fit multiple sections, choose the best thematic match
 
-S04 - Samhain Celebrations: Topics specifically about Samhain, Halloween traditions, death/ancestor rituals
-✅ GOOD: "Samhain Traditions", "Halloween Celebrations", "Ancestor Worship"
-❌ BAD: "General Harvest Festivals", "Modern Urban Life", "Agricultural Practices"
-
-S05 - Modern-day Significance: Topics about contemporary relevance, modern interpretations, current practices
-✅ GOOD: "Modern Urban Festivals", "Contemporary Celebrations", "Today's Traditions"
-❌ BAD: "Ancient Celtic Origins", "Historical Practices", "Mythological Creatures"
-
-S06 - Autumnal Traditions and Scottish Landscape: Topics about landscape, nature, seasonal changes, environmental connections
-✅ GOOD: "Scottish Landscape in Autumn", "Seasonal Changes", "Nature Connections"
-❌ BAD: "Urban Festivals", "Ancient Mythology", "Modern Technology"
-
-S07 - Cultural Continuity: Topics about preservation, evolution, cultural transmission, heritage
-✅ GOOD: "Cultural Preservation", "Heritage Transmission", "Cultural Evolution"
-❌ BAD: "Ancient Origins", "Modern Technology", "Agricultural Practices"
-
-CRITICAL MATCHING RULES:
-- Read the topic title and description carefully
-- Match the PRIMARY theme, not secondary aspects
-- Consider the section's core focus, not peripheral connections
-- If uncertain, choose the section whose PRIMARY theme matches the topic's PRIMARY theme
+4. QUALITY INDICATORS:
+   - Good matches: Topic's main subject aligns with section's main focus
+   - Poor matches: Topic allocated based on minor keywords or tangential connections
+   - Avoid: Forcing topics into sections where they don't naturally belong
 
 CRITICAL OUTPUT REQUIREMENTS:
 - First, explain your reasoning: "Topic [title] covers [themes from description], so I choose section [SXX] because its description indicates [section focus]"
@@ -3246,8 +3236,8 @@ CRITICAL OUTPUT REQUIREMENTS:
 - Replace XX with the section number (01, 02, 03, 04, 05, 06, or 07)
 
 EXAMPLE OUTPUT:
-Topic "Scottish Folk Music Traditions" covers traditional music and cultural practices, so I choose section S03 because its description indicates focus on symbolism and mythology in Scottish folklore
-{idea_code} {{S03}}
+Topic "Traditional Music Practices" covers cultural traditions and community activities, so I choose section S02 because its description indicates focus on cultural practices and traditions
+{idea_code} {{S02}}
 
 RETURN YOUR REASONING FOLLOWED BY THE ALLOCATION LINE:"""
     
