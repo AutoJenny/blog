@@ -3353,7 +3353,7 @@ def api_allocate_topics_iterative():
             ]
             
             logger.info(f"Processing topic {i+1}/{len(topics)}: {idea_code}")
-            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages, max_tokens=4000)
+            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages, max_tokens=8000)
             
             if 'error' in result:
                 logger.error(f"LLM error for {idea_code}: {result['error']}")
@@ -3391,6 +3391,15 @@ def api_allocate_topics_iterative():
                 logger.info(f"Allocated {idea_code} to {section_code}")
             else:
                 logger.error(f"No section code found in response for {idea_code}: {content}")
+        
+        # Debug: Log section code distribution
+        section_counts = {}
+        for allocation in all_allocations:
+            section_code = allocation['section_code']
+            section_counts[section_code] = section_counts.get(section_code, 0) + 1
+        
+        logger.info(f"Section allocation counts: {section_counts}")
+        logger.info(f"Total allocations: {len(all_allocations)}")
         
         # Build final allocation data
         # Use the same structured format for consistency
