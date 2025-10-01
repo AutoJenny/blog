@@ -3144,17 +3144,11 @@ STEP-BY-STEP ALLOCATION PROCESS:
 3. SCAN each section's keywords to find matches
 4. CHOOSE the section with the most relevant keyword matches
 
-EXAMPLES OF CORRECT ALLOCATIONS:
-- Topic: "Scottish Folk Music and Dance Traditions" → Should go to section with keywords: music, dance, folklore, mythology
-- Topic: "Harvest Festival Celebrations" → Should go to section with keywords: harvest, festival, celebration
-- Topic: "Christianity and Folklore Intersections" → Should go to section with keywords: christianity, religion, intersection
-- Topic: "Modern Urban Celebrations" → Should go to section with keywords: modern, urban, revival
-
-CRITICAL RULES:
-- If topic contains "music" or "dance" → Find section with "music, dance" keywords
-- If topic contains "harvest" or "festival" → Find section with "harvest, festival" keywords  
-- If topic contains "christianity" or "religion" → Find section with "christianity, religion" keywords
-- If topic contains "modern" or "urban" → Find section with "modern, urban" keywords
+ALLOCATION PROCESS:
+1. Read the topic title and identify its main themes
+2. Look at each section's keywords and find the best thematic match
+3. Choose the section whose keywords most closely align with the topic's themes
+4. Consider the topic category (historical, cultural, practical, general) as additional guidance
 
 CRITICAL OUTPUT REQUIREMENTS:
 - First, explain your reasoning: "Topic contains [keywords], so I choose section [SXX] because it has [matching keywords]"
@@ -3162,8 +3156,8 @@ CRITICAL OUTPUT REQUIREMENTS:
 - Replace XX with the section number (01, 02, 03, etc.)
 
 EXAMPLE OUTPUT:
-Topic contains "music, dance", so I choose section S05 because it has "music, dance, folklore, mythology" keywords
-{idea_code} {{S05}}
+Topic contains [main themes], so I choose section SXX because it has [matching keywords]
+{idea_code} {{SXX}}
 
 RETURN YOUR REASONING FOLLOWED BY THE ALLOCATION LINE:"""
     
