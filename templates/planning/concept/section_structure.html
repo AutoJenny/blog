@@ -456,16 +456,19 @@ function displaySectionStructure(structure) {
         const sectionCode = section.section_code || `S${String(index + 1).padStart(2, '0')}`;
         const theme = section.theme || 'Untitled Section';
         const description = section.description || 'No description available';
-        const boundaries = Array.isArray(section.boundaries) ? section.boundaries.join(', ') : section.boundaries || 'No boundaries specified';
         
         html += `
             <div class="section-item">
                 <h5>{${sectionCode}} ${escapeHtml(theme)}</h5>
                 <p><strong>Description:</strong> ${escapeHtml(description)}</p>
-                <p><strong>Boundaries:</strong> ${escapeHtml(boundaries)}</p>
         `;
         
-        // Show topics and exclusions if they exist (old format)
+        // Show boundaries, topics, and exclusions if they exist (old format compatibility)
+        if (section.boundaries && (Array.isArray(section.boundaries) ? section.boundaries.length > 0 : section.boundaries)) {
+            const boundaries = Array.isArray(section.boundaries) ? section.boundaries.join(', ') : section.boundaries;
+            html += `<p><strong>Boundaries:</strong> ${escapeHtml(boundaries)}</p>`;
+        }
+        
         if (section.topics && section.topics.length > 0) {
             const topics = Array.isArray(section.topics) ? section.topics.join(', ') : section.topics;
             html += `<p><strong>Topics:</strong> ${escapeHtml(topics)}</p>`;

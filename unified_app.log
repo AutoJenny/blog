@@ -12305,3 +12305,15 @@ DO NOT return JSON format. Return simple text lines only.
 2025-10-01 12:04:00,918 - blueprints.planning - INFO - Cleaned content: [  {    "section_code": "S01",    "theme": "Scottish Harvest Traditions and Folklore",    "description": "Exploring traditional Scottish harvest practices, folklore, and cultural significance",    "bo...
 2025-10-01 12:04:00,923 - config.database - INFO - Database connection established
 2025-10-01 12:04:00,930 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 12:04:00] "POST /planning/api/sections/design-structure HTTP/1.1" 200 -
+2025-10-01 12:04:07,393 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 12:04:07,429 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 12:04:07,672 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 12:04:07,677 - werkzeug - INFO -  * Debugger PIN: 842-147-207
+2025-10-01 12:04:10,938 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 12:04:10,966 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 12:04:11,198 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 12:04:11,203 - werkzeug - INFO -  * Debugger PIN: 842-147-207
+2025-10-01 12:07:33,035 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 12:07:33,081 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 12:07:33,338 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 12:07:33,344 - werkzeug - INFO -  * Debugger PIN: 842-147-207
