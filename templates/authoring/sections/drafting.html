@@ -13,6 +13,17 @@
 <!-- Include condensed header -->
 {% include 'planning/includes/condensed_header.html' %}
 
+<script>
+// Move authoring content to process-tab after page loads
+document.addEventListener('DOMContentLoaded', function() {
+    const authoringContent = document.querySelector('.authoring-workspace');
+    const processTab = document.getElementById('process-tab');
+    if (authoringContent && processTab) {
+        processTab.appendChild(authoringContent);
+    }
+});
+</script>
+
 <!-- Authoring Workspace -->
 <div class="authoring-workspace">
     <div class="workspace-container">

@@ -890,3 +890,195 @@ Autumnal Symbolism: The Cultural Significance of Autumn in Scotland: The Celtic 
 2025-10-01 21:39:10,755 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:39:10] "GET /planning/api/posts/60 HTTP/1.1" 200 -
 2025-10-01 21:39:10,761 - config.database - INFO - Database connection established
 2025-10-01 21:39:10,766 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:39:10] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-10-01 21:39:49,568 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 21:39:49,607 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 21:39:49,839 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 21:39:49,845 - werkzeug - INFO -  * Debugger PIN: 842-147-207
+2025-10-01 21:40:02,575 - config.database - INFO - Database connection established
+2025-10-01 21:40:02,579 - blueprints.authoring - ERROR - Error in authoring_sections_fix_language: authoring/sections/fix_language.html
+2025-10-01 21:40:02,579 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:40:02] "[35m[1mGET /authoring/posts/60/sections/fix_language HTTP/1.1[0m" 500 -
+2025-10-01 21:41:17,952 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:41:17] "[32mGET /planning/posts/60/concept HTTP/1.1[0m" 302 -
+2025-10-01 21:41:18,001 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:41:18] "GET /planning/posts/60/concept/brainstorm HTTP/1.1" 200 -
+2025-10-01 21:41:18,026 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:41:18] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-01 21:41:18,028 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:41:18] "[36mGET /static/css/llm-module.css HTTP/1.1[0m" 304 -
+2025-10-01 21:41:18,029 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:41:18] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-10-01 21:41:18,029 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:41:18] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-01 21:41:18,030 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:41:18] "[36mGET /static/js/llm-utils.js HTTP/1.1[0m" 304 -
+2025-10-01 21:41:18,031 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:41:18] "[36mGET /static/js/llm-config.js HTTP/1.1[0m" 304 -
+2025-10-01 21:41:18,032 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:41:18] "[36mGET /static/js/llm-ui-manager.js HTTP/1.1[0m" 304 -
+2025-10-01 21:41:18,032 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:41:18] "[36mGET /static/js/llm-api-client.js HTTP/1.1[0m" 304 -
+2025-10-01 21:41:18,033 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:41:18] "[36mGET /static/js/llm-event-manager.js HTTP/1.1[0m" 304 -
+2025-10-01 21:41:18,034 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:41:18] "[36mGET /static/js/llm-module.js HTTP/1.1[0m" 304 -
+2025-10-01 21:41:18,035 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:41:18] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-01 21:41:18,035 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:41:18] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-01 21:41:18,036 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:41:18] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-01 21:41:18,043 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:41:18] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-10-01 21:41:18,055 - config.database - INFO - Database connection established
+2025-10-01 21:41:18,055 - config.database - INFO - Database connection established
+2025-10-01 21:41:18,056 - config.database - INFO - Database connection established
+2025-10-01 21:41:18,056 - blueprints.planning - ERROR - Error fetching prompt: invalid input syntax for type integer: "topic-brainstorming"
+CONTEXT:  unnamed portal parameter $2 = '...'
+2025-10-01 21:41:18,056 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:41:18] "GET /planning/api/llm/prompts/topic-brainstorming HTTP/1.1" 200 -
+2025-10-01 21:41:18,057 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:41:18] "GET /planning/api/posts/60/expanded-idea HTTP/1.1" 200 -
+2025-10-01 21:41:18,058 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:41:18] "GET /planning/api/posts/60/idea-scope HTTP/1.1" 200 -
+2025-10-01 21:41:18,156 - config.database - INFO - Database connection established
+2025-10-01 21:41:18,165 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:41:18] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-10-01 21:45:00,950 - config.database - INFO - Database connection established
+2025-10-01 21:45:00,960 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:00] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+2025-10-01 21:45:00,963 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:00] "[36mGET /static/js/llm-module.js HTTP/1.1[0m" 304 -
+2025-10-01 21:45:00,984 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:00] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-01 21:45:00,992 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:00] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-01 21:45:00,992 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:00] "[36mGET /static/css/llm-module.css HTTP/1.1[0m" 304 -
+2025-10-01 21:45:00,993 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:00] "[36mGET /static/js/llm-config.js HTTP/1.1[0m" 304 -
+2025-10-01 21:45:00,994 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:00] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-10-01 21:45:00,994 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:00] "[36mGET /static/css/sections.css HTTP/1.1[0m" 304 -
+2025-10-01 21:45:00,994 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:00] "[36mGET /static/js/llm-utils.js HTTP/1.1[0m" 304 -
+2025-10-01 21:45:00,998 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:00] "[36mGET /static/js/llm-ui-manager.js HTTP/1.1[0m" 304 -
+2025-10-01 21:45:01,001 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:01] "[36mGET /static/js/llm-module.js HTTP/1.1[0m" 304 -
+2025-10-01 21:45:01,001 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:01] "[36mGET /static/js/llm-api-client.js HTTP/1.1[0m" 304 -
+2025-10-01 21:45:01,002 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:01] "[36mGET /static/js/llm-event-manager.js HTTP/1.1[0m" 304 -
+2025-10-01 21:45:01,002 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:01] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-01 21:45:01,002 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:01] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-01 21:45:01,002 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:01] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-01 21:45:01,004 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:01] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-10-01 21:45:01,009 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:01] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-10-01 21:45:01,023 - config.database - INFO - Database connection established
+2025-10-01 21:45:01,026 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:01] "GET /authoring/api/posts/60/sections HTTP/1.1" 200 -
+2025-10-01 21:45:01,123 - config.database - INFO - Database connection established
+2025-10-01 21:45:01,130 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:01] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-10-01 21:45:10,027 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:10] "GET /planning/posts/60/concept/brainstorm HTTP/1.1" 200 -
+2025-10-01 21:45:12,685 - config.database - INFO - Database connection established
+2025-10-01 21:45:12,695 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:12] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-10-01 21:45:17,118 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:17] "GET /planning/posts/60/concept/brainstorm HTTP/1.1" 200 -
+2025-10-01 21:45:41,039 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:41] "[35m[1mGET /planning/posts/60/concept/brainstorm HTTP/1.1[0m" 500 -
+2025-10-01 21:45:43,885 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:45:43] "[35m[1mGET /planning/posts/60/concept/brainstorm HTTP/1.1[0m" 500 -
+2025-10-01 21:46:07,398 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:46:07] "[35m[1mGET /planning/posts/60/concept/brainstorm HTTP/1.1[0m" 500 -
+2025-10-01 21:46:26,103 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:46:26] "[35m[1mGET /planning/posts/60/concept/brainstorm HTTP/1.1[0m" 500 -
+2025-10-01 21:46:38,010 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:46:38] "[35m[1mGET /planning/posts/60/concept/brainstorm HTTP/1.1[0m" 500 -
+2025-10-01 21:46:47,086 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:46:47] "[35m[1mGET /planning/posts/60/concept/brainstorm HTTP/1.1[0m" 500 -
+2025-10-01 21:46:56,813 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:46:56] "GET /planning/posts/60/concept/brainstorm HTTP/1.1" 200 -
+2025-10-01 21:46:59,245 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:46:59] "GET /planning/posts/60/concept/brainstorm HTTP/1.1" 200 -
+2025-10-01 21:47:04,849 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:47:04] "GET /planning/posts/60/concept/section-structure HTTP/1.1" 200 -
+2025-10-01 21:47:27,732 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:47:27] "GET /planning/posts/60/concept/brainstorm HTTP/1.1" 200 -
+2025-10-01 21:47:30,368 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:47:30] "GET /planning/posts/60/concept/brainstorm HTTP/1.1" 200 -
+2025-10-01 21:47:35,473 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:47:35] "GET /planning/posts/60/concept/brainstorm HTTP/1.1" 200 -
+2025-10-01 21:52:36,938 - config.database - INFO - Database connection established
+2025-10-01 21:52:36,963 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:36] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+2025-10-01 21:52:36,982 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:36] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-01 21:52:36,984 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:36] "[36mGET /static/css/sections.css HTTP/1.1[0m" 304 -
+2025-10-01 21:52:36,985 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:36] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-10-01 21:52:36,986 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:36] "[36mGET /static/js/llm-ui-manager.js HTTP/1.1[0m" 304 -
+2025-10-01 21:52:36,987 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:36] "[36mGET /static/js/llm-config.js HTTP/1.1[0m" 304 -
+2025-10-01 21:52:36,987 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:36] "[36mGET /static/js/llm-utils.js HTTP/1.1[0m" 304 -
+2025-10-01 21:52:36,987 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:36] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-01 21:52:36,987 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:36] "[36mGET /static/css/llm-module.css HTTP/1.1[0m" 304 -
+2025-10-01 21:52:36,992 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:36] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-01 21:52:36,992 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:36] "[36mGET /static/js/llm-module.js HTTP/1.1[0m" 304 -
+2025-10-01 21:52:36,992 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:36] "[36mGET /static/js/llm-event-manager.js HTTP/1.1[0m" 304 -
+2025-10-01 21:52:36,993 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:36] "[36mGET /static/js/llm-api-client.js HTTP/1.1[0m" 304 -
+2025-10-01 21:52:36,993 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:36] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-01 21:52:36,994 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:36] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-01 21:52:36,996 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:36] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-10-01 21:52:37,000 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:37] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-10-01 21:52:37,011 - config.database - INFO - Database connection established
+2025-10-01 21:52:37,013 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:37] "GET /authoring/api/posts/60/sections HTTP/1.1" 200 -
+2025-10-01 21:52:37,112 - config.database - INFO - Database connection established
+2025-10-01 21:52:37,119 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:37] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-10-01 21:52:50,240 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:50] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-10-01 21:52:50,243 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:50] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-10-01 21:52:50,245 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:50] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-10-01 21:52:50,246 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:50] "[33mGET /static/images/site/favicon.ico HTTP/1.1[0m" 404 -
+2025-10-01 21:52:50,248 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:50] "[33mGET /static/images/site/apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-10-01 21:52:50,248 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:52:50] "[33mGET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1[0m" 404 -
+2025-10-01 21:54:06,205 - config.database - INFO - Database connection established
+2025-10-01 21:54:06,208 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:54:06] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+2025-10-01 21:54:09,118 - config.database - INFO - Database connection established
+2025-10-01 21:54:09,121 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:54:09] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+2025-10-01 21:54:53,864 - config.database - INFO - Database connection established
+2025-10-01 21:54:53,871 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:54:53] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+2025-10-01 21:54:53,898 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:54:53] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-01 21:54:53,902 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:54:53] "[36mGET /static/js/llm-utils.js HTTP/1.1[0m" 304 -
+2025-10-01 21:54:53,902 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:54:53] "[36mGET /static/css/llm-module.css HTTP/1.1[0m" 304 -
+2025-10-01 21:54:53,902 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:54:53] "[36mGET /static/css/sections.css HTTP/1.1[0m" 304 -
+2025-10-01 21:54:53,903 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:54:53] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-01 21:54:53,903 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:54:53] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-10-01 21:54:53,903 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:54:53] "[36mGET /static/js/llm-config.js HTTP/1.1[0m" 304 -
+2025-10-01 21:54:53,907 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:54:53] "[36mGET /static/js/llm-ui-manager.js HTTP/1.1[0m" 304 -
+2025-10-01 21:54:53,908 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:54:53] "[36mGET /static/js/llm-api-client.js HTTP/1.1[0m" 304 -
+2025-10-01 21:54:53,908 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:54:53] "[36mGET /static/js/llm-module.js HTTP/1.1[0m" 304 -
+2025-10-01 21:54:53,910 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:54:53] "[36mGET /static/js/llm-event-manager.js HTTP/1.1[0m" 304 -
+2025-10-01 21:54:53,910 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:54:53] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-01 21:54:53,911 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:54:53] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-01 21:54:53,911 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:54:53] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-01 21:54:53,912 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:54:53] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-10-01 21:54:53,918 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:54:53] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-10-01 21:54:53,931 - config.database - INFO - Database connection established
+2025-10-01 21:54:53,933 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:54:53] "GET /authoring/api/posts/60/sections HTTP/1.1" 200 -
+2025-10-01 21:54:54,032 - config.database - INFO - Database connection established
+2025-10-01 21:54:54,038 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:54:54] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-10-01 21:55:14,535 - config.database - INFO - Database connection established
+2025-10-01 21:55:14,538 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:14] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+2025-10-01 21:55:17,011 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:17] "GET /planning/posts/60/concept/brainstorm HTTP/1.1" 200 -
+2025-10-01 21:55:19,657 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:19] "GET /planning/posts/60/concept/section-structure HTTP/1.1" 200 -
+2025-10-01 21:55:24,413 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:24] "GET /planning/posts/60/concept/topic-allocation HTTP/1.1" 200 -
+2025-10-01 21:55:27,093 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:27] "GET /planning/posts/60/concept/titling HTTP/1.1" 200 -
+2025-10-01 21:55:36,387 - config.database - INFO - Database connection established
+2025-10-01 21:55:36,391 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:36] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+2025-10-01 21:55:36,427 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:36] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-01 21:55:36,430 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:36] "[36mGET /static/css/sections.css HTTP/1.1[0m" 304 -
+2025-10-01 21:55:36,431 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:36] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-10-01 21:55:36,432 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:36] "[36mGET /static/css/llm-module.css HTTP/1.1[0m" 304 -
+2025-10-01 21:55:36,432 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:36] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-01 21:55:36,433 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:36] "[36mGET /static/js/llm-utils.js HTTP/1.1[0m" 304 -
+2025-10-01 21:55:36,433 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:36] "[36mGET /static/js/llm-config.js HTTP/1.1[0m" 304 -
+2025-10-01 21:55:36,434 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:36] "[36mGET /static/js/llm-ui-manager.js HTTP/1.1[0m" 304 -
+2025-10-01 21:55:36,435 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:36] "[36mGET /static/js/llm-api-client.js HTTP/1.1[0m" 304 -
+2025-10-01 21:55:36,436 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:36] "[36mGET /static/js/llm-module.js HTTP/1.1[0m" 304 -
+2025-10-01 21:55:36,437 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:36] "[36mGET /static/js/llm-event-manager.js HTTP/1.1[0m" 304 -
+2025-10-01 21:55:36,439 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:36] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-01 21:55:36,439 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:36] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-01 21:55:36,440 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:36] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-01 21:55:36,440 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:36] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-10-01 21:55:36,448 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:36] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-10-01 21:55:36,463 - config.database - INFO - Database connection established
+2025-10-01 21:55:36,466 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:36] "GET /authoring/api/posts/60/sections HTTP/1.1" 200 -
+2025-10-01 21:55:36,563 - config.database - INFO - Database connection established
+2025-10-01 21:55:36,568 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:55:36] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-10-01 21:56:09,906 - config.database - INFO - Database connection established
+2025-10-01 21:56:09,911 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:56:09] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-10-01 21:56:32,889 - config.database - INFO - Database connection established
+2025-10-01 21:56:32,899 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:56:32] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+2025-10-01 21:56:35,864 - config.database - INFO - Database connection established
+2025-10-01 21:56:35,869 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:56:35] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-10-01 21:57:04,714 - config.database - INFO - Database connection established
+2025-10-01 21:57:04,720 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:57:04] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+2025-10-01 21:57:18,157 - config.database - INFO - Database connection established
+2025-10-01 21:57:18,163 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:57:18] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+2025-10-01 21:57:51,647 - config.database - INFO - Database connection established
+2025-10-01 21:57:51,652 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:57:51] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+2025-10-01 21:58:09,525 - config.database - INFO - Database connection established
+2025-10-01 21:58:09,536 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:58:09] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+2025-10-01 21:58:09,570 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:58:09] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-01 21:58:09,573 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:58:09] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-01 21:58:09,575 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:58:09] "[36mGET /static/js/llm-config.js HTTP/1.1[0m" 304 -
+2025-10-01 21:58:09,576 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:58:09] "[36mGET /static/css/sections.css HTTP/1.1[0m" 304 -
+2025-10-01 21:58:09,576 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:58:09] "[36mGET /static/js/llm-utils.js HTTP/1.1[0m" 304 -
+2025-10-01 21:58:09,577 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:58:09] "[36mGET /static/css/llm-module.css HTTP/1.1[0m" 304 -
+2025-10-01 21:58:09,577 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:58:09] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-10-01 21:58:09,577 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:58:09] "[36mGET /static/js/llm-ui-manager.js HTTP/1.1[0m" 304 -
+2025-10-01 21:58:09,578 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:58:09] "[36mGET /static/js/llm-api-client.js HTTP/1.1[0m" 304 -
+2025-10-01 21:58:09,581 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:58:09] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-01 21:58:09,583 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:58:09] "[36mGET /static/js/llm-event-manager.js HTTP/1.1[0m" 304 -
+2025-10-01 21:58:09,584 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:58:09] "[36mGET /static/js/llm-module.js HTTP/1.1[0m" 304 -
+2025-10-01 21:58:09,584 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:58:09] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-01 21:58:09,585 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:58:09] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-01 21:58:09,585 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:58:09] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-10-01 21:58:09,592 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:58:09] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-10-01 21:58:09,605 - config.database - INFO - Database connection established
+2025-10-01 21:58:09,607 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:58:09] "GET /authoring/api/posts/60/sections HTTP/1.1" 200 -
+2025-10-01 21:58:09,711 - config.database - INFO - Database connection established
+2025-10-01 21:58:09,712 - config.database - INFO - Database connection established
+2025-10-01 21:58:09,712 - config.database - INFO - Database connection established
+2025-10-01 21:58:09,718 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:58:09] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-10-01 21:58:09,718 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:58:09] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-10-01 21:58:09,719 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 21:58:09] "GET /planning/api/posts/60 HTTP/1.1" 200 -
