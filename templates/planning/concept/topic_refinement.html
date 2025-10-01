@@ -19,31 +19,13 @@
             <div class="idea-generator">
                 <div class="input-data">
                     <h4>Input Data</h4>
-                    <div class="data-section">
-                        <h5>Current Topic Allocation</h5>
-                        <div id="allocation-display" class="data-display">
-                            <p class="loading">Loading topic allocation...</p>
-                        </div>
+                    <div id="topic-allocation-display" class="expanded-idea-content">
+                        <!-- Topic allocation from previous page will appear here -->
                     </div>
-                    
                     <div class="input-actions">
-                        <button id="refine-topics-btn" class="btn btn-primary" onclick="refineTopics()">
-                            <i class="fas fa-compress-alt"></i>
-                            Refine Overloaded Sections
+                        <button class="btn btn-primary" onclick="refineTopics()" id="custom-refine-btn">
+                            <i class="fas fa-magic"></i> Refine Topics
                         </button>
-                    </div>
-                </div>
-                
-                <div class="brainstorm-settings">
-                    <h4>Refinement Settings</h4>
-                    <div class="form-group">
-                        <label for="refinement-strategy">Refinement Strategy</label>
-                        <select id="refinement-strategy">
-                            <option value="consolidate">Consolidate (merge similar topics)</option>
-                            <option value="prioritize">Prioritize (keep most important)</option>
-                            <option value="redistribute">Redistribute (move to other sections)</option>
-                            <option value="summarize">Summarize (create overview topics)</option>
-                        </select>
                     </div>
                 </div>
             </div>
@@ -53,25 +35,191 @@
             </div>
         </div>
     </div>
-
-    <!-- Results Panel -->
-    <div id="results-panel" class="results-panel" style="display: none;">
-        <div class="panel-header">
-            <h3>Refined Topic Allocation</h3>
-        </div>
-        <div class="panel-content">
-            <div id="refinement-results" class="results-display">
-                <!-- Refinement results will be displayed here -->
-            </div>
-        </div>
-    </div>
     {% endblock %}
 </div>
 
-<script>
-let topicAllocation = null;
-let refinedTopics = null;
+<style>
+.brainstorm-main {
+    padding: 2rem 0;
+}
 
+.brainstorm-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.brainstorm-header h2 {
+    font-size: 2rem;
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+}
+
+.brainstorm-header p {
+    font-size: 1.125rem;
+    color: #94a3b8;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.brainstorm-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.idea-generator {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.input-data {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.input-data h4 {
+    color: #f1f5f9;
+    margin-bottom: 1rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.expanded-idea-content {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    min-height: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.input-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+    background: #64748b;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.brainstorm-results {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.5rem;
+    min-height: 600px;
+}
+
+.topic-item {
+    padding: 8px 12px;
+    margin: 4px 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    border-left: 3px solid #3b82f6;
+    font-size: 0.875rem;
+}
+
+.loading {
+    color: #94a3b8;
+    font-style: italic;
+    text-align: center;
+    padding: 2rem;
+}
+
+.error {
+    color: #ef4444;
+    text-align: center;
+    padding: 2rem;
+}
+
+.topic-allocation-results {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.section-item {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.section-item h5 {
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.section-item p {
+    color: #cbd5e1;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.section-item strong {
+    color: #e2e8f0;
+}
+
+.topics-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.topics-list p {
+    margin-bottom: 1rem;
+    color: #e2e8f0;
+    font-weight: 500;
+}
+
+@media (max-width: 1024px) {
+    .brainstorm-content {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .brainstorm-main {
+        padding: 1rem 0;
+    }
+}
+</style>
+
+<script>
 // Set post ID for API calls
 window.postId = {{ post_id }};
 
@@ -79,75 +227,74 @@ window.postId = {{ post_id }};
 window.currentStage = 'concept';
 window.currentSubstage = 'topic-refinement';
 
+let topicAllocation = null;
+let llmModule = null;
+
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
     loadTopicAllocation();
-    loadExistingRefinement();
-    initializeLLMModule('topic_refinement', window.postId);
+    initializeLLMModule();
 });
 
-// Load topic allocation
+// Initialize LLM module
+function initializeLLMModule() {
+    if (typeof initializeLLMModule === 'function') {
+        llmModule = initializeLLMModule('topic_refinement', window.postId);
+    } else {
+        console.error('initializeLLMModule function not found');
+    }
+}
+
+// Load topic allocation from previous page
 async function loadTopicAllocation() {
     try {
         const response = await fetch(`/planning/api/sections/allocate-topics/${window.postId}`);
         const data = await response.json();
         
-        if (data.success && data.allocation) {
-            topicAllocation = data.allocation;
-            displayTopicAllocation();
+        if (data.success && data.topic_allocation) {
+            topicAllocation = data.topic_allocation;
+            displayTopicAllocation(topicAllocation);
         } else {
-            document.getElementById('allocation-display').innerHTML = '<p class="error">No topic allocation found. Please complete Topic Allocation first.</p>';
+            document.getElementById('topic-allocation-display').innerHTML = '<p class="error">No topic allocation found from previous page</p>';
         }
     } catch (error) {
         console.error('Error loading topic allocation:', error);
-        document.getElementById('allocation-display').innerHTML = '<p class="error">Error loading topic allocation</p>';
+        document.getElementById('topic-allocation-display').innerHTML = '<p class="error">Error loading topic allocation</p>';
     }
 }
 
-// Display topic allocation
-function displayTopicAllocation() {
-    const container = document.getElementById('allocation-display');
-    
-    if (!topicAllocation || !topicAllocation.allocations) {
-        container.innerHTML = '<p class="error">No allocation data available</p>';
+// Display topic allocation (same format as topic allocation page output)
+function displayTopicAllocation(allocation) {
+    const container = document.getElementById('topic-allocation-display');
+    if (!allocation || !allocation.sections) {
+        container.innerHTML = '<p class="error">No topic allocation available</p>';
         return;
     }
     
-    // Check for overloaded sections (>5 topics)
-    const overloadedSections = topicAllocation.allocations.filter(allocation => allocation.topics.length > 5);
+    let html = '<div class="topic-allocation-results">';
     
-    const allocationsHtml = topicAllocation.allocations.map((allocation, index) => {
-        const isOverloaded = allocation.topics.length > 5;
-        const sectionClass = isOverloaded ? 'allocation-item overloaded' : 'allocation-item';
-        
-        return `
-            <div class="${sectionClass}">
-                <h5>Section ${allocation.section_id.replace('section_', '')}: ${allocation.section_theme}</h5>
-                <div class="topics-count ${isOverloaded ? 'overloaded' : ''}">
-                    <strong>${allocation.topics.length} topics</strong>
-                    ${isOverloaded ? '<span class="warning">⚠️ Needs refinement</span>' : ''}
-                </div>
-                <div class="topics-in-section">
-                    ${allocation.topics.map(topic => `<span class="topic-tag">${topic}</span>`).join('')}
+    allocation.sections.forEach((section, index) => {
+        const sectionCode = `S${String(index + 1).padStart(2, '0')}`;
+        html += `
+            <div class="section-item">
+                <h5>{${sectionCode}} ${section.theme}</h5>
+                <p><strong>Description:</strong> ${section.description}</p>
+                <p><strong>Boundaries:</strong> ${section.boundaries}</p>
+                <div class="topics-list">
+                    <p><strong>Allocated Topics:</strong></p>
+                    ${section.topics.map(topic => `<p>• ${topic}</p>`).join('')}
                 </div>
             </div>
         `;
-    }).join('');
+    });
     
-    container.innerHTML = `
-        <div class="allocation-summary">
-            <p><strong>Current allocation: ${topicAllocation.metadata.total_topics_allocated} topics across ${topicAllocation.allocations.length} sections</strong></p>
-            ${overloadedSections.length > 0 ? `<p class="warning">⚠️ ${overloadedSections.length} sections have more than 5 topics and need refinement</p>` : '<p class="success">✅ All sections have 5 or fewer topics - no refinement needed</p>'}
-        </div>
-        <div class="allocations-list">
-            ${allocationsHtml}
-        </div>
-    `;
+    html += '</div>';
+    container.innerHTML = html;
 }
 
 // Refine topics
 async function refineTopics() {
-    const btn = document.getElementById('refine-topics-btn');
+    const btn = document.getElementById('custom-refine-btn');
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refining Topics...';
     
@@ -156,7 +303,7 @@ async function refineTopics() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                topic_allocation: topicAllocation,
+                allocations: topicAllocation,
                 post_id: window.postId
             })
         });
@@ -164,9 +311,8 @@ async function refineTopics() {
         const result = await response.json();
         
         if (result.success) {
-            refinedTopics = result.refined_allocation;
-            displayRefinementResults();
-            showResultsPanel();
+            // Display the results in the LLM module
+            console.log('Topics refined successfully');
         } else {
             alert('Error: ' + result.error);
         }
@@ -175,155 +321,10 @@ async function refineTopics() {
         alert('Error refining topics: ' + error.message);
     } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-compress-alt"></i> Refine Overloaded Sections';
-    }
-}
-
-// Display refinement results
-function displayRefinementResults() {
-    const container = document.getElementById('refinement-results');
-    
-    if (!refinedTopics || !refinedTopics.allocations) {
-        container.innerHTML = '<p class="error">No refinement data available</p>';
-        return;
-    }
-    
-    const allocationsHtml = refinedTopics.allocations.map((allocation, index) => `
-        <div class="allocation-item">
-            <h4>Section ${allocation.section_id.replace('section_', '')}: ${allocation.section_theme}</h4>
-            <div class="topics-count">
-                <strong>${allocation.topics.length} topics</strong>
-            </div>
-            <div class="topics-in-section">
-                ${allocation.topics.map(topic => `<span class="topic-tag">${topic}</span>`).join('')}
-            </div>
-            <p class="refinement-reason"><em>${allocation.refinement_reason || 'Topics refined for optimal coverage'}</em></p>
-        </div>
-    `).join('');
-    
-    container.innerHTML = `
-        <div class="refinement-summary">
-            <p><strong>Refined allocation: ${refinedTopics.metadata.total_topics_allocated} topics across ${refinedTopics.allocations.length} sections</strong></p>
-            <p class="success">✅ All sections now have 5 or fewer topics</p>
-        </div>
-        <div class="allocations-list">
-            ${allocationsHtml}
-        </div>
-    `;
-}
-
-// Show results panel
-function showResultsPanel() {
-    document.getElementById('results-panel').style.display = 'block';
-}
-
-// Load existing refinement
-async function loadExistingRefinement() {
-    try {
-        const response = await fetch(`/planning/api/sections/refine-topics/${window.postId}`);
-        const data = await response.json();
-        
-        if (data.success && data.refined_allocation) {
-            refinedTopics = data.refined_allocation;
-            displayRefinementResults();
-            showResultsPanel();
-        }
-    } catch (error) {
-        console.error('Error loading existing refinement:', error);
+        btn.innerHTML = '<i class="fas fa-magic"></i> Refine Topics';
     }
 }
 </script>
-
-<style>
-.allocation-item {
-    padding: 16px;
-    margin: 12px 0;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    border-left: 4px solid var(--accent-color);
-}
-
-.allocation-item.overloaded {
-    border-left-color: #ff9800;
-    background: rgba(255, 152, 0, 0.1);
-}
-
-.allocation-item h4,
-.allocation-item h5 {
-    margin: 0 0 12px 0;
-    color: var(--accent-color);
-}
-
-.allocation-item.overloaded h5 {
-    color: #ff9800;
-}
-
-.topics-count {
-    margin: 8px 0;
-    padding: 8px 12px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    display: inline-block;
-}
-
-.topics-count.overloaded {
-    background: rgba(255, 152, 0, 0.2);
-    color: #ff9800;
-}
-
-.topics-in-section {
-    margin: 8px 0;
-}
-
-.topic-tag {
-    display: inline-block;
-    padding: 4px 8px;
-    margin: 2px 4px 2px 0;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    font-size: 0.9em;
-}
-
-.refinement-reason {
-    margin: 8px 0 0 0;
-    font-size: 0.9em;
-    color: #888;
-}
-
-.allocation-summary,
-.refinement-summary {
-    padding: 16px;
-    background: rgba(0, 255, 0, 0.1);
-    border-radius: 8px;
-    margin-bottom: 16px;
-    border-left: 4px solid #00ff00;
-}
-
-.warning {
-    color: #ff9800;
-}
-
-.success {
-    color: #4CAF50;
-}
-
-.results-panel {
-    margin-top: 20px;
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.loading {
-    color: #888;
-    font-style: italic;
-}
-
-.error {
-    color: #ff6b6b;
-}
-</style>
 
 <!-- LLM Module JavaScript Files -->
 <script src="{{ url_for('static', filename='js/llm-config.js') }}"></script>
@@ -336,7 +337,7 @@ async function loadExistingRefinement() {
 <script>
 // Initialize LLM module for topic refinement
 document.addEventListener('DOMContentLoaded', function() {
-    initializeLLMModule('topic_refinement');
+    initializeLLMModule('topic_refinement', window.postId);
 });
 </script>
 {% endblock %}
