@@ -2480,11 +2480,23 @@ def api_allocate_topics():
         section_structure = data.get('section_structure', {})
         post_id = data.get('post_id')
         
+        # Get topics from brainstorming if not provided
         if not topics:
-            return jsonify({
-                'success': False,
-                'error': 'No topics provided'
-            }), 400
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT idea_scope 
+                    FROM post_development 
+                    WHERE post_id = %s
+                """, (post_id,))
+                result = cursor.fetchone()
+                if result and result['idea_scope']:
+                    idea_scope_data = json.loads(result['idea_scope'])
+                    topics = [topic['title'] for topic in idea_scope_data.get('generated_topics', [])]
+                else:
+                    return jsonify({
+                        'success': False,
+                        'error': 'No topics found from brainstorming. Please complete brainstorming first.'
+                    }), 400
         
         if not post_id:
             return jsonify({
