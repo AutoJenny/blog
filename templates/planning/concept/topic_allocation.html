@@ -269,6 +269,34 @@
     font-size: 0.9rem;
 }
 
+.topic-content {
+    padding: 0.5rem;
+}
+
+.topic-title {
+    font-weight: 600;
+    color: #f1f5f9; /* Changed to white for better contrast */
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem; /* Slightly larger */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.topic-description {
+    color: #cbd5e1;
+    font-size: 0.9rem; /* Smaller */
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+    font-style: italic; /* Italic */
+}
+
+.topic-category {
+    color: #10b981; /* Green color */
+    font-size: 0.85rem; /* Smallest */
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
 @media (max-width: 1024px) {
     .brainstorm-content {
         grid-template-columns: 1fr;
@@ -421,7 +449,7 @@ async function loadBrainstormTopics() {
         
         if (data.development && data.development.idea_scope) {
             const ideaScopeData = JSON.parse(data.development.idea_scope);
-            const topics = ideaScopeData.generated_topics.map(topic => topic.title);
+            const topics = ideaScopeData.generated_topics; // Get full topic objects, not just titles
             displayBrainstormTopics(topics);
         } else {
             document.getElementById('topics-display').innerHTML = '<p class="error">No topics found from brainstorming</p>';
@@ -440,16 +468,27 @@ function displayBrainstormTopics(topics) {
         return;
     }
     
-    // Display topics in a clean list format
-    const topicsList = topics.map((topic, index) => 
-        `<div class="topic-item">${topic}</div>`
-    ).join('');
+    let topicsHTML = '<div class="topics-list">';
     
-    container.innerHTML = `
-        <div class="topics-list">
-            ${topicsList}
-        </div>
-    `;
+    topics.forEach((topic, index) => {
+        const title = topic.title || `Topic ${index + 1}`;
+        const description = topic.description || 'No description available';
+        const category = topic.category || 'general';
+        
+        topicsHTML += `
+            <div class="topic-item" data-topic-id="${index}" data-category="${category}">
+                <div class="topic-content">
+                    <div class="topic-title">${escapeHtml(title)}</div>
+                    <div class="topic-description">${escapeHtml(description)}</div>
+                    <div class="topic-category">Category: ${escapeHtml(category)}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    topicsHTML += '</div>';
+    
+    container.innerHTML = topicsHTML;
 }
 
 // Allocate topics
