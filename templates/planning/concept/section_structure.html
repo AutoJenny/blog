@@ -452,6 +452,8 @@ function displaySectionStructure(structure) {
     const resultsDisplay = document.getElementById('llm-results-display');
     if (!resultsDisplay) return;
     
+    console.log('Displaying structure:', structure);
+    
     let html = '<div class="section-structure-results">';
     
     // Handle both new format (array) and old format (object with sections)
@@ -462,10 +464,14 @@ function displaySectionStructure(structure) {
         sections = structure.sections;
     }
     
+    console.log('Sections to display:', sections);
+    
     sections.forEach((section, index) => {
         const sectionCode = section.section_code || `S${String(index + 1).padStart(2, '0')}`;
         const title = section.title || section.theme || 'Untitled Section'; // Support both new and old format
         const description = section.description || 'No description available';
+        
+        console.log(`Section ${index}:`, { sectionCode, title, description, section });
         
         html += `
             <div class="section-item">
