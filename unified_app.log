@@ -10775,3 +10775,60 @@ DO NOT return JSON format. Return simple text lines only.
 2025-10-01 09:47:09,763 - werkzeug - INFO -  * Restarting with stat
 2025-10-01 09:47:10,001 - werkzeug - WARNING -  * Debugger is active!
 2025-10-01 09:47:10,006 - werkzeug - INFO -  * Debugger PIN: 842-147-207
+2025-10-01 09:47:20,637 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 09:47:20,664 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 09:47:20,914 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 09:47:20,919 - werkzeug - INFO -  * Debugger PIN: 842-147-207
+2025-10-01 09:47:22,005 - config.database - INFO - Database connection established
+2025-10-01 09:47:22,012 - config.database - INFO - Database connection established
+2025-10-01 09:47:22,018 - config.database - INFO - Database connection established
+2025-10-01 09:47:22,020 - blueprints.planning - INFO - Processing topic 1/36: {IDEA01}
+2025-10-01 09:47:22,022 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:47:23,379 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 538
+2025-10-01 09:47:23,380 - blueprints.planning - INFO - Allocated {IDEA01} to {S01}
+2025-10-01 09:47:23,380 - blueprints.planning - INFO - Processing topic 2/36: {IDEA02}
+2025-10-01 09:47:23,381 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:47:24,690 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 553
+2025-10-01 09:47:24,691 - blueprints.planning - INFO - Allocated {IDEA02} to {S01}
+2025-10-01 09:47:24,691 - blueprints.planning - INFO - Processing topic 3/36: {IDEA03}
+2025-10-01 09:47:24,691 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:47:25,816 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 498
+2025-10-01 09:47:25,817 - blueprints.planning - INFO - Allocated {IDEA03} to {S02}
+2025-10-01 09:47:25,817 - blueprints.planning - INFO - Processing topic 4/36: {IDEA04}
+2025-10-01 09:47:25,817 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:47:27,163 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 554
+2025-10-01 09:47:27,164 - blueprints.planning - INFO - Allocated {IDEA04} to {S03}
+2025-10-01 09:47:27,164 - blueprints.planning - INFO - Processing topic 5/36: {IDEA07}
+2025-10-01 09:47:27,164 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:47:28,273 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 468
+2025-10-01 09:47:28,274 - blueprints.planning - INFO - Allocated {IDEA07} to {S04}
+2025-10-01 09:47:28,274 - blueprints.planning - INFO - Processing topic 6/36: {IDEA09}
+2025-10-01 09:47:28,275 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:47:29,910 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 743
+2025-10-01 09:47:29,910 - blueprints.planning - INFO - Allocated {IDEA09} to {S04}
+2025-10-01 09:47:29,910 - blueprints.planning - INFO - Processing topic 7/36: {IDEA10}
+2025-10-01 09:47:29,911 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:47:31,053 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 464
+2025-10-01 09:47:31,054 - blueprints.planning - INFO - Allocated {IDEA10} to {S05}
+2025-10-01 09:47:31,054 - blueprints.planning - INFO - Processing topic 8/36: {IDEA11}
+2025-10-01 09:47:31,055 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:47:32,169 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 479
+2025-10-01 09:47:32,169 - blueprints.planning - INFO - Allocated {IDEA11} to {S01}
+2025-10-01 09:47:32,170 - blueprints.planning - INFO - Processing topic 9/36: {IDEA12}
+2025-10-01 09:47:32,170 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:47:33,331 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 501
+2025-10-01 09:47:33,331 - blueprints.planning - INFO - Allocated {IDEA12} to {S07}
+2025-10-01 09:47:33,331 - blueprints.planning - INFO - Processing topic 10/36: {IDEA13}
+2025-10-01 09:47:33,332 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:47:34,553 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 518
+2025-10-01 09:47:34,553 - blueprints.planning - INFO - Allocated {IDEA13} to {S06}
+2025-10-01 09:47:34,553 - blueprints.planning - INFO - Processing topic 11/36: {IDEA15}
+2025-10-01 09:47:34,554 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 09:47:34,672 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 09:47:34,709 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 09:47:34,953 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 09:47:34,959 - werkzeug - INFO -  * Debugger PIN: 842-147-207
+2025-10-01 09:47:40,278 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 09:47:40,322 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 09:47:40,577 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 09:47:40,582 - werkzeug - INFO -  * Debugger PIN: 842-147-207
