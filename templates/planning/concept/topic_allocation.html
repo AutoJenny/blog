@@ -295,10 +295,24 @@ async function allocateTopics() {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Allocating Topics...';
     
     try {
+        // First get the topics from brainstorming
+        const topicsResponse = await fetch(`/planning/api/posts/${window.postId}`);
+        const topicsData = await topicsResponse.json();
+        
+        if (!topicsData.development || !topicsData.development.idea_scope) {
+            throw new Error('No topics found from brainstorming');
+        }
+        
+        const ideaScopeData = JSON.parse(topicsData.development.idea_scope);
+        const topics = ideaScopeData.generated_topics.map(topic => topic.title);
+        
+        // Then allocate topics using the section structure
         const response = await fetch('/planning/api/sections/allocate-topics', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+                topics: topics,
+                section_structure: sectionStructure,
                 post_id: window.postId
             })
         });
@@ -332,7 +346,7 @@ async function allocateTopics() {
 <script>
 // Initialize LLM module for topic allocation
 document.addEventListener('DOMContentLoaded', function() {
-    initializeLLMModule('topic_allocation');
+    initializeLLMModule('topic_allocation', window.postId);
 });
 </script>
 {% endblock %}
