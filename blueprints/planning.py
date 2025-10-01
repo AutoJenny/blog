@@ -3059,10 +3059,48 @@ def load_topic_allocation(post_id):
         return None
         raise
 
+def get_section_keywords(theme, description):
+    """Extract relevant keywords for a section to help with topic matching"""
+    # Convert to lowercase for matching
+    text = f"{theme} {description}".lower()
+    
+    # Define keyword patterns for different types of content
+    keywords = []
+    
+    # Historical/Ancient themes
+    if any(word in text for word in ['celtic', 'ancient', 'origins', 'roots', 'historical', 'evolution', 'reformation']):
+        keywords.extend(['ancient', 'historical', 'origins', 'celtic', 'roots'])
+    
+    # Harvest/Festival themes  
+    if any(word in text for word in ['harvest', 'festival', 'celebration', 'rural', 'agricultural', 'crops']):
+        keywords.extend(['harvest', 'festival', 'rural', 'agricultural', 'celebration'])
+    
+    # Ceres-specific themes
+    if any(word in text for word in ['ceres', 'symbolism', 'ancient festival']):
+        keywords.extend(['ceres', 'symbolism', 'ancient'])
+    
+    # Christianity themes
+    if any(word in text for word in ['christianity', 'christian', 'intersection', 'influence', 'religion']):
+        keywords.extend(['christianity', 'religion', 'intersection'])
+    
+    # Mythology themes
+    if any(word in text for word in ['mythology', 'myth', 'symbolism', 'folklore', 'creatures', 'music', 'dance']):
+        keywords.extend(['mythology', 'folklore', 'symbolism', 'music', 'dance', 'creatures'])
+    
+    # Rural community themes
+    if any(word in text for word in ['rural', 'community', 'communities', 'traditions', 'practical']):
+        keywords.extend(['rural', 'community', 'traditions', 'practical'])
+    
+    # Modern/Urban themes
+    if any(word in text for word in ['modern', 'urban', 'revival', 'contemporary', 'today']):
+        keywords.extend(['modern', 'urban', 'revival', 'contemporary'])
+    
+    return list(set(keywords))  # Remove duplicates
+
 def build_individual_topic_prompt(idea_code, topic_title, section_structure, topic_data=None, expanded_idea=None):
     """Build prompt for individual topic allocation with rich context"""
     
-    # Build enhanced section structure text with clearer boundaries
+    # Build enhanced section structure text with clearer boundaries and keywords
     sections_text = ""
     for i, section in enumerate(section_structure.get('sections', [])):
         section_code = f"S{str(i+1).zfill(2)}"
@@ -3071,6 +3109,11 @@ def build_individual_topic_prompt(idea_code, topic_title, section_structure, top
         sections_text += f"  Scope: {section['boundaries']}\n"
         if section.get('exclusions'):
             sections_text += f"  Excludes: {section['exclusions']}\n"
+        
+        # Add specific keywords for this section
+        keywords = get_section_keywords(section['theme'], section['description'])
+        if keywords:
+            sections_text += f"  Keywords: {', '.join(keywords)}\n"
     
     # Build topic context
     topic_context = ""
@@ -3096,12 +3139,23 @@ TOPIC TO ALLOCATE (ignore idea code {idea_code} for purpose of allocation):
 SECTION STRUCTURE:{sections_text}
 
 ALLOCATION GUIDELINES:
-- HISTORICAL topics (ancient roots, evolution, records) → Look for sections about origins, history, or evolution
-- CULTURAL topics (traditions, celebrations, symbolism) → Look for sections about traditions, festivals, or cultural practices
-- PRACTICAL topics (techniques, safety, preservation) → Look for sections about practical applications or community practices
-- GENERAL topics (markets, creatures, art) → Look for sections about general themes or modern adaptations
-- MODERN/URBAN topics → Look for sections about contemporary or urban contexts
-- FESTIVAL-SPECIFIC topics → Look for sections specifically about festivals or celebrations
+1. MATCH TOPIC KEYWORDS TO SECTION KEYWORDS:
+   - If topic contains "music", "dance", "folklore", "mythology", "creatures" → Look for sections with these keywords
+   - If topic contains "harvest", "festival", "celebration", "rural" → Look for harvest/festival sections
+   - If topic contains "christianity", "religion", "intersection" → Look for Christianity sections
+   - If topic contains "ceres", "symbolism", "ancient" → Look for Ceres sections
+   - If topic contains "modern", "urban", "revival" → Look for modern sections
+   - If topic contains "rural", "community", "practical" → Look for rural community sections
+
+2. CATEGORY-BASED MATCHING:
+   - HISTORICAL topics → Sections about origins, history, evolution
+   - CULTURAL topics → Sections about traditions, festivals, cultural practices  
+   - PRACTICAL topics → Sections about practical applications, community practices
+   - GENERAL topics → Sections about general themes, modern adaptations
+   - MODERN/URBAN topics → Sections about contemporary, urban contexts
+   - FESTIVAL-SPECIFIC topics → Sections specifically about festivals, celebrations
+
+3. CRITICAL: Read the section keywords carefully and match them to your topic!
 
 CRITICAL OUTPUT REQUIREMENTS:
 - Return EXACTLY ONE LINE
