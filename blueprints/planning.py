@@ -3169,8 +3169,8 @@ RESPONSE_RULES:
     
     return canonicalize_prompt
 
-def build_scoring_prompt(idea_code, topic_title, topic_data, sections_data, section_loads, tie_margin=5):
-    """Build simplified scoring prompt per expert's recommendation"""
+def build_scoring_prompt(idea_code, topic_title, topic_data, sections_data):
+    """Build scoring-only prompt per expert's v2 recommendation"""
     
     # Build topic data
     topic_description = topic_data.get('description', topic_title) if topic_data else topic_title
@@ -3189,7 +3189,7 @@ def build_scoring_prompt(idea_code, topic_title, topic_data, sections_data, sect
     # Extract idea ID without braces for cleaner output
     idea_id = idea_code.replace('{', '').replace('}', '')
     
-    scoring_prompt = f"""Allocate the IDEA to ONE SECTION.
+    scoring_prompt = f"""Score the IDEA against ALL sections. Return exactly 7 integer scores (0–100). Do not choose a section.
 
 IDEA:
 {idea_id} {topic_title}
@@ -3198,18 +3198,6 @@ Category: {topic_category}
 
 SECTIONS:
 {sections_block}
-
-SCORING RULES:
-- Assign a fit_score 0–100 for each section.
-- Use IDEA title, description, and category to decide.
-- Higher = stronger thematic match.
-- After scoring, allocate:
-   * Default = section with highest fit_score.
-   * If multiple within 5 points, prefer section with lower section_load (from BALANCING_INFO).
-   * If still tied, pick the lowest section_id.
-
-BALANCING_INFO:
-{json.dumps({"section_loads": section_loads}, ensure_ascii=False)}
 
 OUTPUT_SCHEMA:
 {{
@@ -3222,74 +3210,150 @@ OUTPUT_SCHEMA:
     {{"section_id":"S05","fit_score":N}},
     {{"section_id":"S06","fit_score":N}},
     {{"section_id":"S07","fit_score":N}}
-  ],
-  "allocation":{{"chosen_section_id":"SXX"}}
+  ]
 }}
 
-OUTPUT_RULES:
+RULES:
 - JSON only
-- Scores must be integers 0–100
 - Exactly 7 score objects
-- chosen_section_id must be one of S01–S07"""
+- fit_score is integer 0..100
+- No allocation field"""
     
     return scoring_prompt
 
-def validate_and_override(scoring_data, idea_id, section_loads, tie_margin=5):
-    """Validate LLM output and apply deterministic override logic"""
+def validate_scores(scoring_data, expected_idea_id):
+    """Validate LLM scores and return clean score dictionary"""
     
     VALID_SECTIONS = ['S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07']
     
     # Basic validation
-    if scoring_data.get("idea_id") != idea_id:
-        logger.warning(f"idea_id mismatch: expected {idea_id}, got {scoring_data.get('idea_id')}")
+    if scoring_data.get("idea_id") != expected_idea_id:
+        logger.warning(f"idea_id mismatch: expected {expected_idea_id}, got {scoring_data.get('idea_id')}")
     
     scores = scoring_data.get("scores", [])
     if not isinstance(scores, list) or len(scores) != 7:
-        logger.error(f"Invalid scores format for {idea_id}")
-        return 'S01'  # Fallback
+        logger.error(f"Invalid scores format for {expected_idea_id}")
+        return None
     
     # Build score dictionary
     by_id = {}
+    seen = set()
     for row in scores:
         sid = row.get("section_id")
         fs = row.get("fit_score")
         if sid not in VALID_SECTIONS:
-            logger.error(f"Invalid section_id {sid} for {idea_id}")
-            continue
+            logger.error(f"Invalid section_id {sid} for {expected_idea_id}")
+            return None
         if not isinstance(fs, int) or not (0 <= fs <= 100):
-            logger.error(f"Invalid fit_score {fs} for {idea_id}")
-            continue
+            logger.error(f"Invalid fit_score {fs} for {expected_idea_id}")
+            return None
+        if sid in seen:
+            logger.error(f"Duplicate section {sid} for {expected_idea_id}")
+            return None
+        seen.add(sid)
         by_id[sid] = fs
     
     if len(by_id) != 7:
-        logger.error(f"Missing scores for {idea_id}")
-        return 'S01'  # Fallback
+        logger.error(f"Missing scores for {expected_idea_id}")
+        return None
     
-    # Deterministic selection logic
-    # 1) Find highest score
-    best_score = max(by_id.values())
-    top_sections = [sid for sid, sc in by_id.items() if sc == best_score]
+    return by_id
+
+def compute_capacities(n_ideas, sections_data):
+    """Compute balanced capacities for each section"""
+    base = n_ideas // 7
+    rem = n_ideas % 7
+    caps = {}
     
-    # 2) Find sections within tie_margin of best
-    near_sections = [sid for sid, sc in by_id.items() if best_score - sc <= tie_margin]
+    # Deterministic order: as provided
+    for idx, section in enumerate(sections_data):
+        section_id = section.get('id', f"S{idx+1:02d}")
+        caps[section_id] = base + (1 if idx < rem else 0)
     
-    # 3) Among near sections, prefer lowest load
-    if near_sections:
-        min_load = min(section_loads[sid] for sid in near_sections)
-        low_load_sections = [sid for sid in near_sections if section_loads[sid] == min_load]
+    # Ensure at least 1 capacity per section when possible
+    if n_ideas >= 7:
+        for idx, section in enumerate(sections_data):
+            section_id = section.get('id', f"S{idx+1:02d}")
+            if caps[section_id] == 0:
+                caps[section_id] = 1
         
-        # 4) Final tie-breaker: lowest section ID
-        final_choice = sorted(low_load_sections)[0]
-    else:
-        # Fallback to highest score
-        final_choice = sorted(top_sections)[0]
+        # Rebalance capacities to keep sum == N
+        total = sum(caps.values())
+        while total > n_ideas:
+            # Reduce from sections with largest caps (>1), highest sid last
+            for idx in reversed(range(len(sections_data))):
+                section_id = sections_data[idx].get('id', f"S{idx+1:02d}")
+                if caps[section_id] > 1:
+                    caps[section_id] -= 1
+                    total -= 1
+                    if total == n_ideas:
+                        break
     
-    # Check if model's choice differs
-    model_choice = scoring_data.get("allocation", {}).get("chosen_section_id")
-    if model_choice != final_choice:
-        logger.info(f"Override for {idea_id}: model chose {model_choice}, deterministic choice is {final_choice}")
+    return caps
+
+def allocate_global(scores_matrix, sections_data, capacities):
+    """
+    Two-phase deterministic assignment:
+    A) Coverage pass: give each section 1 idea (best available) if capacity>0
+    B) Best-remaining: sort all (idea,section) pairs by score desc and fill until capacities exhausted
+    """
+    ideas = list(scores_matrix.keys())
+    assignment = {}  # idea -> section
+    remaining_cap = capacities.copy()
     
-    return final_choice
+    # Helper: pick best unassigned idea for a section
+    def best_for_section(section_id):
+        best_i = None
+        best_s = -1
+        for iid in ideas:
+            if iid in assignment:
+                continue
+            sc = scores_matrix[iid][section_id]
+            if sc > best_s or (sc == best_s and (best_i is None or iid < best_i)):
+                best_s = sc
+                best_i = iid
+        return best_i, best_s
+    
+    # A) Coverage pass
+    for section in sections_data:
+        section_id = section.get('id', f"S{sections_data.index(section)+1:02d}")
+        if remaining_cap.get(section_id, 0) <= 0:
+            continue
+        iid, sc = best_for_section(section_id)
+        if iid is not None:
+            assignment[iid] = section_id
+            remaining_cap[section_id] -= 1
+    
+    # B) Best-remaining pairs
+    pairs = []
+    for iid in ideas:
+        for section in sections_data:
+            section_id = section.get('id', f"S{sections_data.index(section)+1:02d}")
+            pairs.append((scores_matrix[iid][section_id], section_id, iid))
+    
+    # Sort by score desc, then section_id asc, then idea_id asc (deterministic)
+    pairs.sort(key=lambda x: (-x[0], x[1], x[2]))
+    
+    for score, section_id, iid in pairs:
+        if iid in assignment:
+            continue
+        if remaining_cap.get(section_id, 0) <= 0:
+            continue
+        assignment[iid] = section_id
+        remaining_cap[section_id] -= 1
+        # Stop early if all assigned
+        if len(assignment) == len(ideas):
+            break
+    
+    # Final sanity check
+    if len(assignment) != len(ideas):
+        logger.error(f"Not all ideas assigned: {len(assignment)}/{len(ideas)}")
+    
+    for section_id, cap in remaining_cap.items():
+        if cap < 0:
+            logger.error(f"Capacity underflow for {section_id}: {cap}")
+    
+    return assignment
 
 def build_allocation_data(all_allocations, section_structure):
     """Build final allocation data structure"""
@@ -3392,9 +3456,9 @@ def api_allocate_topics_iterative():
         
         structured_sections = {'sections': sections_data}
         
-        # Score each topic individually with simplified approach
-        all_allocations = []
-        section_loads = {'S01': 0, 'S02': 0, 'S03': 0, 'S04': 0, 'S05': 0, 'S06': 0, 'S07': 0}
+        # Phase 1: LLM scoring only (no allocation, no loads shown)
+        logger.info("Phase 1: LLM scoring all topics against all sections")
+        scores_matrix = {}  # idea_id -> {section_id: score}
         
         # Get topics with rich data
         topics_with_data = []
@@ -3420,15 +3484,17 @@ def api_allocate_topics_iterative():
             else:
                 idea_code = f"{{IDEA{str(i+1).zfill(2)}}}"
             
-            # Build simplified scoring prompt
-            scoring_prompt = build_scoring_prompt(idea_code, actual_title, topic_data, sections_data, section_loads)
+            idea_id = idea_code.replace('{', '').replace('}', '')
+            
+            # Build scoring-only prompt
+            scoring_prompt = build_scoring_prompt(idea_code, actual_title, topic_data, sections_data)
             
             scoring_messages = [
-                {'role': 'system', 'content': 'You are a strict classifier that assigns one IDEA to the best-fitting SECTION. You must score ALL sections first, then choose ONE allocation. Output JSON only. No extra text.'},
+                {'role': 'system', 'content': 'You are a strict classifier. Score ONE IDEA against ALL SECTIONS. Do not allocate. Output JSON only. No prose. Do not rely on list order.'},
                 {'role': 'user', 'content': scoring_prompt}
             ]
             
-            logger.info(f"Processing topic {i+1}/{len(topics_with_data)}: {idea_code}")
+            logger.info(f"Scoring topic {i+1}/{len(topics_with_data)}: {idea_code}")
             result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', scoring_messages, max_tokens=2000)
             
             if 'error' in result:
@@ -3447,26 +3513,57 @@ def api_allocate_topics_iterative():
                 
                 scoring_data = json.loads(content)
                 
-                # Validate and apply deterministic override
-                chosen_section = validate_and_override(scoring_data, idea_code.replace('{', '').replace('}', ''), section_loads, 5)
+                # Validate scores
+                per_section_scores = validate_scores(scoring_data, idea_id)
+                if per_section_scores is None:
+                    logger.error(f"Invalid scores for {idea_code}")
+                    continue
                 
-                # Update section loads
-                if chosen_section in section_loads:
-                    section_loads[chosen_section] += 1
-                
-                all_allocations.append({
-                    'idea_code': idea_code,
-                    'topic_title': actual_title,
-                    'section_code': f"{{{chosen_section}}}",
-                    'scores': scoring_data.get('scores', [])
-                })
-                
-                logger.info(f"Allocated {idea_code} to {chosen_section}")
+                scores_matrix[idea_id] = per_section_scores
+                logger.info(f"Scored {idea_code} against all sections")
                 
             except json.JSONDecodeError as e:
                 logger.error(f"JSON parsing error for {idea_code}: {e}")
                 logger.error(f"Response content: {content[:200]}...")
                 continue
+        
+        # Phase 2: Global balanced assignment
+        logger.info(f"Phase 2: Global assignment for {len(scores_matrix)} topics")
+        
+        # Compute balanced capacities
+        capacities = compute_capacities(len(scores_matrix), sections_data)
+        logger.info(f"Section capacities: {capacities}")
+        
+        # Global assignment
+        assignment = allocate_global(scores_matrix, sections_data, capacities)
+        
+        # Build final allocations
+        all_allocations = []
+        for idea_id, section_id in assignment.items():
+            # Find the original topic data
+            topic_data = None
+            for topic in topics_with_data:
+                topic_title = topic.get('title', '')
+                if '{' in topic_title and '}' in topic_title:
+                    import re
+                    idea_match = re.search(r'\{([^}]+)\}', topic_title)
+                    if idea_match and idea_match.group(1) == idea_id:
+                        topic_data = topic
+                        break
+            
+            if topic_data:
+                actual_title = topic_data.get('title', '').replace(f"{{{idea_id}}}", '').strip()
+            else:
+                actual_title = f"Topic {idea_id}"
+            
+            all_allocations.append({
+                'idea_code': f"{{{idea_id}}}",
+                'topic_title': actual_title,
+                'section_code': f"{{{section_id}}}",
+                'scores': [{"section_id": sid, "fit_score": scores_matrix[idea_id][sid]} for sid in ['S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07']]
+            })
+        
+        logger.info(f"Global assignment completed: {len(all_allocations)} topics assigned")
         
         # Debug: Log section code distribution
         section_counts = {}
