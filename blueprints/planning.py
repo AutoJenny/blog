@@ -4118,8 +4118,8 @@ DESCRIPTION GUIDELINES:
 - Keep under 2 sentences"""
         
         logger.info(f"Prompt prepared, length: {len(titling_prompt)}")
-        
-        # Call LLM
+        logger.info(f"First 500 chars of prompt: {titling_prompt[:500]}")
+        logger.info(f"Calling LLM for titling with {len(topic_allocation)} sections")
         messages = [
             {'role': 'system', 'content': system_prompt},
             {'role': 'user', 'content': titling_prompt}
