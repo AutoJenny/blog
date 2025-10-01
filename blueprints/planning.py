@@ -4644,14 +4644,27 @@ def api_save_sections(post_id):
                 subtitle = section.get('subtitle', '')
                 
                 # Insert or update post_section table with titles and subtitles
+                # First check if section exists
                 cursor.execute("""
-                    INSERT INTO post_section (post_id, section_order, section_heading, section_description, status)
-                    VALUES (%s, %s, %s, %s, 'draft')
-                    ON CONFLICT (post_id, section_order) 
-                    DO UPDATE SET 
-                        section_heading = EXCLUDED.section_heading,
-                        section_description = EXCLUDED.section_description
-                """, (post_id, i + 1, title, subtitle))
+                    SELECT id FROM post_section 
+                    WHERE post_id = %s AND section_order = %s
+                """, (post_id, i + 1))
+                
+                existing_section = cursor.fetchone()
+                
+                if existing_section:
+                    # Update existing section
+                    cursor.execute("""
+                        UPDATE post_section 
+                        SET section_heading = %s, section_description = %s
+                        WHERE post_id = %s AND section_order = %s
+                    """, (title, subtitle, post_id, i + 1))
+                else:
+                    # Insert new section
+                    cursor.execute("""
+                        INSERT INTO post_section (post_id, section_order, section_heading, section_description, status)
+                        VALUES (%s, %s, %s, %s, 'draft')
+                    """, (post_id, i + 1, title, subtitle))
             
             # Commit the transaction
             cursor.connection.commit()
