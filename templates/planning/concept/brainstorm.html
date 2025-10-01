@@ -569,6 +569,8 @@ async function startBrainstorming() {
                 if (data.success) {
                     generatedTopics = data.topics || [];
                     displayTopics(generatedTopics);
+                    // Display raw LLM response
+                    displayRawResponse(data.raw_response);
                     // Automatically save all generated topics
                     await saveTopicsToDatabase(generatedTopics);
                 } else {
@@ -669,6 +671,13 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+function displayRawResponse(rawResponse) {
+    const rawResponseElement = document.getElementById('raw-llm-response');
+    if (rawResponseElement && rawResponse) {
+        rawResponseElement.textContent = rawResponse;
+    }
 }
 </script>
 <!-- Include LLM Module Scripts -->
