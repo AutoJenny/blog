@@ -2474,6 +2474,7 @@ def api_get_section_structure(post_id):
 @bp.route('/api/sections/allocate-topics', methods=['POST'])
 def api_allocate_topics():
     """Step 2: Allocate topics to sections"""
+    import json
     try:
         data = request.get_json()
         topics = data.get('topics', [])
@@ -2535,8 +2536,31 @@ def api_allocate_topics():
             sections_text += f"  Boundaries: {section['boundaries']}\n"
             sections_text += f"  Exclusions: {section['exclusions']}\n"
         
-        # Format topics for prompt (topics already have idea codes from brainstorming)
-        topics_text = '\n'.join([f"{topic.get('title', topic) if isinstance(topic, dict) else topic}" for topic in topics])
+        # Format topics for prompt (convert JSON format to string format)
+        formatted_topics = []
+        for topic in topics:
+            topic_title = topic.get('title', topic) if isinstance(topic, dict) else topic
+            
+            # Convert JSON format to string format
+            if topic_title.startswith('{"IDEA') and topic_title.endswith('"}'):
+                try:
+                    topic_obj = json.loads(topic_title)
+                    for idea_code, actual_title in topic_obj.items():
+                        formatted_topics.append(f"{{{idea_code}}} {actual_title}")
+                except json.JSONDecodeError:
+                    formatted_topics.append(topic_title)
+            else:
+                formatted_topics.append(topic_title)
+        
+        topics_text = '\n'.join(formatted_topics)
+        
+        # Debug: Log topics_text to see what's being sent to LLM
+        logger.info(f"Topics being sent to LLM (first 5):")
+        for i, topic in enumerate(topics[:5]):
+            topic_title = topic.get('title', topic) if isinstance(topic, dict) else topic
+            logger.info(f"  Topic {i+1}: '{topic_title}'")
+        logger.info(f"Total topics_text length: {len(topics_text)}")
+        logger.info(f"Topics_text preview: {topics_text[:200]}...")
         
         # Get the database prompt and replace placeholders
         with db_manager.get_cursor() as cursor:
@@ -2612,7 +2636,6 @@ def api_allocate_topics():
             # Create idea code to topic mapping (extract idea codes from topic titles)
             idea_to_topic = {}
             import re
-            import json
             for topic in topics:
                 topic_title = topic.get('title', topic) if isinstance(topic, dict) else topic
                 
