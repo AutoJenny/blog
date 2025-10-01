@@ -2592,6 +2592,12 @@ def api_allocate_topics():
             {'role': 'user', 'content': allocation_prompt}
         ]
         
+        # Debug: Log the actual prompt being sent to LLM
+        logger.info("=== FULL PROMPT SENT TO LLM ===")
+        logger.info(f"System prompt: {messages[0]['content']}")
+        logger.info(f"User prompt: {messages[1]['content']}")
+        logger.info("=== END OF PROMPT ===")
+        
         result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
         
         logger.info(f"LLM allocation result: {result}")
