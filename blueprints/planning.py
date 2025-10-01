@@ -4080,7 +4080,7 @@ def api_sections_title():
         try:
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
-                    SELECT system_prompt
+                    SELECT system_prompt, prompt_text
                     FROM llm_prompt 
                     WHERE name = 'Section Titling'
                     ORDER BY id DESC
@@ -4154,7 +4154,14 @@ FORMAT:
             topics_list = '\n  '.join(section.get('topics', []))
             sections_text += f"\nSection {i+1}: {section_theme}\n  {topics_list}\n"
         
-        titling_prompt = f"""Generate creative section titles for this post. Follow all constraints and output format exactly.
+        # Use database prompt_text if available, otherwise fallback
+        if prompt_data and prompt_data['prompt_text']:
+            # Replace placeholders in the database prompt
+            titling_prompt = prompt_data['prompt_text'].replace('[PLACEHOLDER]', expanded_idea, 1).replace('[PLACEHOLDER]', sections_text, 1)
+            logger.info("Using database prompt_text")
+        else:
+            # Fallback to hardcoded prompt
+            titling_prompt = f"""Generate creative section titles for this post. Follow all constraints and output format exactly.
 
 INPUT:
 POST_TITLE:
@@ -4170,6 +4177,7 @@ VALIDATION RULES:
 - If any title violates constraints, silently fix it and still return valid JSON.
 
 RETURN ONLY JSON."""
+            logger.info("Using fallback prompt_text")
         
         logger.info(f"Prompt prepared, length: {len(titling_prompt)}")
         logger.info(f"First 500 chars of prompt: {titling_prompt[:500]}")
