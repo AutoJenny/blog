@@ -3169,74 +3169,127 @@ RESPONSE_RULES:
     
     return canonicalize_prompt
 
-def build_scoring_prompt(idea_code, topic_title, topic_data, canonical_sections, section_loads, tie_margin=5):
-    """Step 2: Score one topic against all sections"""
+def build_scoring_prompt(idea_code, topic_title, topic_data, sections_data, section_loads, tie_margin=5):
+    """Build simplified scoring prompt per expert's recommendation"""
     
     # Build topic data
     topic_description = topic_data.get('description', topic_title) if topic_data else topic_title
     topic_category = topic_data.get('category', 'general') if topic_data else 'general'
     
-    # Build balancing info
-    balancing_info = {
-        "section_loads": section_loads,
-        "target_per_section": None,
-        "tie_margin": tie_margin
-    }
+    # Build sections text
+    sections_text = []
+    for section in sections_data:
+        section_id = section.get('id', f"S{len(sections_text)+1:02d}")
+        section_title = section.get('title') or section.get('theme', f'Section {len(sections_text)+1}')
+        section_description = section.get('description', 'No description available')
+        sections_text.append(f"{section_id} {section_title}\nDescription: {section_description}")
     
-    scoring_prompt = f"""Score the TOPIC against ALL SECTIONS. Provide a score row for S01..S07.
-Then propose one allocation. Respect balancing rules.
+    sections_block = "\n".join(sections_text)
+    
+    # Extract idea ID without braces for cleaner output
+    idea_id = idea_code.replace('{', '').replace('}', '')
+    
+    scoring_prompt = f"""Allocate the IDEA to ONE SECTION.
 
-TOPIC:
-{{
-  "id":"{idea_code}",
-  "title":"{topic_title}",
-  "description":"{topic_description}",
-  "category":"{topic_category}"
-}}
+IDEA:
+{idea_id} {topic_title}
+Description: {topic_description}
+Category: {topic_category}
 
-SECTIONS_CANONICAL:
-{canonical_sections}
+SECTIONS:
+{sections_block}
+
+SCORING RULES:
+- Assign a fit_score 0–100 for each section.
+- Use IDEA title, description, and category to decide.
+- Higher = stronger thematic match.
+- After scoring, allocate:
+   * Default = section with highest fit_score.
+   * If multiple within 5 points, prefer section with lower section_load (from BALANCING_INFO).
+   * If still tied, pick the lowest section_id.
 
 BALANCING_INFO:
-{balancing_info}
+{json.dumps({"section_loads": section_loads}, ensure_ascii=False)}
 
-SCORING_RULES:
-- fit_score: integer 0–100 (independent of order)
-- Derive scores from semantic fit to each section.scope + include/exclude keywords.
-- If scores differ by ≤ tie_margin, prefer the section with LOWER section_loads.
-- Never ignore any section. Always produce 7 scores.
-
-SELECTION_RULES:
-- chosen_section_id = argmax(fit_score) unless another section within tie_margin has lower load, then choose that one.
-- If multiple still tied, pick the lowest-load; if still tied, choose the lowest section id.
-
-RESPONSE_SCHEMA:
+OUTPUT_SCHEMA:
 {{
-  "topic_id":"{idea_code}",
+  "idea_id":"{idea_id}",
   "scores":[
-    {{"section_id":"S01","fit_score":N,"evidence_terms":["t1","t2","t3"],"notes":"<=10 words"}},
-    {{"section_id":"S02","fit_score":N,"evidence_terms":["..."],"notes":"..."}},
-    {{"section_id":"S03","fit_score":N,"evidence_terms":["..."],"notes":"..."}},
-    {{"section_id":"S04","fit_score":N,"evidence_terms":["..."],"notes":"..."}},
-    {{"section_id":"S05","fit_score":N,"evidence_terms":["..."],"notes":"..."}},
-    {{"section_id":"S06","fit_score":N,"evidence_terms":["..."],"notes":"..."}},
-    {{"section_id":"S07","fit_score":N,"evidence_terms":["..."],"notes":"..."}}
+    {{"section_id":"S01","fit_score":N}},
+    {{"section_id":"S02","fit_score":N}},
+    {{"section_id":"S03","fit_score":N}},
+    {{"section_id":"S04","fit_score":N}},
+    {{"section_id":"S05","fit_score":N}},
+    {{"section_id":"S06","fit_score":N}},
+    {{"section_id":"S07","fit_score":N}}
   ],
-  "allocation":{{
-    "chosen_section_id":"SXX",
-    "reason_keywords":["k1","k2","k3"]
-  }},
-  "consistency_checks":{{
-    "chosen_is_argmax": true|false,
-    "valid_section_id": true|false
-  }}
+  "allocation":{{"chosen_section_id":"SXX"}}
 }}
 
-RESPONSE_RULES:
-- JSON only. No extra text.
-- Scores must be integers. evidence_terms are short tokens present/implied in the topic or section scope."""
+OUTPUT_RULES:
+- JSON only
+- Scores must be integers 0–100
+- Exactly 7 score objects
+- chosen_section_id must be one of S01–S07"""
     
     return scoring_prompt
+
+def validate_and_override(scoring_data, idea_id, section_loads, tie_margin=5):
+    """Validate LLM output and apply deterministic override logic"""
+    
+    VALID_SECTIONS = ['S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07']
+    
+    # Basic validation
+    if scoring_data.get("idea_id") != idea_id:
+        logger.warning(f"idea_id mismatch: expected {idea_id}, got {scoring_data.get('idea_id')}")
+    
+    scores = scoring_data.get("scores", [])
+    if not isinstance(scores, list) or len(scores) != 7:
+        logger.error(f"Invalid scores format for {idea_id}")
+        return 'S01'  # Fallback
+    
+    # Build score dictionary
+    by_id = {}
+    for row in scores:
+        sid = row.get("section_id")
+        fs = row.get("fit_score")
+        if sid not in VALID_SECTIONS:
+            logger.error(f"Invalid section_id {sid} for {idea_id}")
+            continue
+        if not isinstance(fs, int) or not (0 <= fs <= 100):
+            logger.error(f"Invalid fit_score {fs} for {idea_id}")
+            continue
+        by_id[sid] = fs
+    
+    if len(by_id) != 7:
+        logger.error(f"Missing scores for {idea_id}")
+        return 'S01'  # Fallback
+    
+    # Deterministic selection logic
+    # 1) Find highest score
+    best_score = max(by_id.values())
+    top_sections = [sid for sid, sc in by_id.items() if sc == best_score]
+    
+    # 2) Find sections within tie_margin of best
+    near_sections = [sid for sid, sc in by_id.items() if best_score - sc <= tie_margin]
+    
+    # 3) Among near sections, prefer lowest load
+    if near_sections:
+        min_load = min(section_loads[sid] for sid in near_sections)
+        low_load_sections = [sid for sid in near_sections if section_loads[sid] == min_load]
+        
+        # 4) Final tie-breaker: lowest section ID
+        final_choice = sorted(low_load_sections)[0]
+    else:
+        # Fallback to highest score
+        final_choice = sorted(top_sections)[0]
+    
+    # Check if model's choice differs
+    model_choice = scoring_data.get("allocation", {}).get("chosen_section_id")
+    if model_choice != final_choice:
+        logger.info(f"Override for {idea_id}: model chose {model_choice}, deterministic choice is {final_choice}")
+    
+    return final_choice
 
 def build_allocation_data(all_allocations, section_structure):
     """Build final allocation data structure"""
@@ -3339,25 +3392,7 @@ def api_allocate_topics_iterative():
         
         structured_sections = {'sections': sections_data}
         
-        # Step 1: Canonicalize sections (run once per batch)
-        logger.info("Step 1: Canonicalizing sections")
-        canonicalize_prompt = canonicalize_sections(structured_sections)
-        
-        canonicalize_messages = [
-            {'role': 'system', 'content': 'You are a taxonomy normalizer. Output strict JSON only. No prose.'},
-            {'role': 'user', 'content': canonicalize_prompt}
-        ]
-        
-        canonicalize_result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', canonicalize_messages, max_tokens=2000)
-        
-        if 'error' in canonicalize_result:
-            logger.error(f"Canonicalization error: {canonicalize_result['error']}")
-            return jsonify({'success': False, 'error': f'Section canonicalization failed: {canonicalize_result["error"]}'}), 500
-        
-        canonical_sections = canonicalize_result.get('content', '').strip()
-        logger.info(f"Canonicalized sections: {canonical_sections[:200]}...")
-        
-        # Step 2: Score each topic individually
+        # Score each topic individually with simplified approach
         all_allocations = []
         section_loads = {'S01': 0, 'S02': 0, 'S03': 0, 'S04': 0, 'S05': 0, 'S06': 0, 'S07': 0}
         
@@ -3385,11 +3420,11 @@ def api_allocate_topics_iterative():
             else:
                 idea_code = f"{{IDEA{str(i+1).zfill(2)}}}"
             
-            # Build scoring prompt
-            scoring_prompt = build_scoring_prompt(idea_code, actual_title, topic_data, canonical_sections, section_loads)
+            # Build simplified scoring prompt
+            scoring_prompt = build_scoring_prompt(idea_code, actual_title, topic_data, sections_data, section_loads)
             
             scoring_messages = [
-                {'role': 'system', 'content': 'You are a strict classifier. Output JSON only. No explanations. Do not rely on list order.'},
+                {'role': 'system', 'content': 'You are a strict classifier that assigns one IDEA to the best-fitting SECTION. You must score ALL sections first, then choose ONE allocation. Output JSON only. No extra text.'},
                 {'role': 'user', 'content': scoring_prompt}
             ]
             
@@ -3412,14 +3447,8 @@ def api_allocate_topics_iterative():
                 
                 scoring_data = json.loads(content)
                 
-                # Validate consistency checks
-                consistency = scoring_data.get('consistency_checks', {})
-                if not consistency.get('valid_section_id', False):
-                    logger.warning(f"Invalid section ID for {idea_code}, retrying...")
-                    continue
-                
-                # Get chosen section
-                chosen_section = scoring_data.get('allocation', {}).get('chosen_section_id', 'S01')
+                # Validate and apply deterministic override
+                chosen_section = validate_and_override(scoring_data, idea_code.replace('{', '').replace('}', ''), section_loads, 5)
                 
                 # Update section loads
                 if chosen_section in section_loads:
@@ -3429,8 +3458,7 @@ def api_allocate_topics_iterative():
                     'idea_code': idea_code,
                     'topic_title': actual_title,
                     'section_code': f"{{{chosen_section}}}",
-                    'scores': scoring_data.get('scores', []),
-                    'reason_keywords': scoring_data.get('allocation', {}).get('reason_keywords', [])
+                    'scores': scoring_data.get('scores', [])
                 })
                 
                 logger.info(f"Allocated {idea_code} to {chosen_section}")
