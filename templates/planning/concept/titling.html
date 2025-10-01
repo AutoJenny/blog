@@ -19,8 +19,8 @@
             <div class="titling-input">
                 <div class="input-data">
                     <h4>Input Data</h4>
-                    <div id="generated-groups-display" class="groups-content">
-                        <!-- Generated groups from grouping page will appear here -->
+                    <div id="topic-allocation-display" class="allocation-content">
+                        <!-- Topic allocation from topic allocation page will appear here -->
                     </div>
                 </div>
                 <div class="input-actions">
@@ -115,7 +115,7 @@
     font-size: 1.1rem;
 }
 
-.groups-content {
+.allocation-content {
     background: #0f172a;
     border: 1px solid #334155;
     border-radius: 8px;
@@ -308,11 +308,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize LLM module
     llmModule = initializeLLMModule('titling', window.postId);
     
-    // Load generated groups
-    loadGeneratedGroups();
-
     // Load existing sections (persistence)
     loadExistingSections();
+    loadTopicAllocation();
     
     // Initialize titling functionality
     initializeTitling();
@@ -333,66 +331,71 @@ async function loadExistingSections() {
     }
 }
 
-async function loadGeneratedGroups() {
+async function loadTopicAllocation() {
     try {
-        const response = await fetch(`/planning/api/posts/${window.postId}/groups`);
+        const response = await fetch(`/planning/api/sections/allocate-topics/${window.postId}`);
         const data = await response.json();
         
-        if (data.success && data.groups) {
-            // Handle nested structure: data.groups.groups
-            let groups = data.groups;
-            if (groups.groups && Array.isArray(groups.groups)) {
-                groups = groups.groups;
-            }
+        if (data.success && data.allocations) {
+            const allocations = data.allocations.allocations;
             
-            if (groups.length > 0) {
-                generatedGroups = groups;
-                displayGeneratedGroups(generatedGroups);
-                console.log('Loaded existing groups for titling:', groups.length);
+            if (allocations && allocations.length > 0) {
+                generatedGroups = allocations; // Reuse the variable for compatibility
+                displayTopicAllocation(allocations);
+                console.log('Loaded topic allocation for titling:', allocations.length);
             } else {
-                console.log('No existing groups found');
-                displayGeneratedGroupsError('No groups found. Please go back to Section Grouping to create groups first.');
+                console.log('No topic allocation found');
+                displayTopicAllocationError('No topic allocation found. Please go back to Topic Allocation to generate topics first.');
             }
         } else {
-            console.error('Error loading groups:', data.error);
-            displayGeneratedGroupsError('No groups found. Please go back to Section Grouping to create groups first.');
+            console.error('Error loading topic allocation:', data.error);
+            displayTopicAllocationError('No topic allocation found. Please go back to Topic Allocation to generate topics first.');
         }
     } catch (error) {
-        console.error('Error loading groups:', error);
-        displayGeneratedGroupsError('Failed to load groups');
+        console.error('Error loading topic allocation:', error);
+        displayTopicAllocationError('Failed to load topic allocation');
     }
 }
 
-function displayGeneratedGroups(groups) {
-    const groupsDisplay = document.getElementById('generated-groups-display');
+function displayTopicAllocation(allocations) {
+    const allocationDisplay = document.getElementById('topic-allocation-display');
     
-    if (!groups || groups.length === 0) {
-        groupsDisplay.innerHTML = '<div class="no-groups">No groups available. Please go back to Section Grouping to create groups first.</div>';
+    if (!allocations || allocations.length === 0) {
+        allocationDisplay.innerHTML = '<div class="no-allocation">No topic allocation available. Please go back to Topic Allocation to generate topics first.</div>';
         return;
     }
     
-    let groupsHTML = '<div class="groups-list">';
-    groups.forEach(group => {
-        const topicCount = group.topics ? group.topics.length : 0;
-        groupsHTML += `
-            <div class="group-item" data-group-id="${group.id || group.order}">
-                <h5 class="group-theme">${group.theme || `Group ${group.order || 1}`}</h5>
-                <div class="group-topics">
-                    ${(group.topics || []).map(topic => 
-                        `<div class="group-topic-item">${topic}</div>`
-                    ).join('')}
+    let allocationHTML = '<div class="allocation-list">';
+    allocations.forEach((allocation, index) => {
+        const sectionTheme = allocation.section_theme || `Section ${index + 1}`;
+        const topics = allocation.topics || [];
+        
+        allocationHTML += `
+            <div class="allocation-item" data-section-id="${index}">
+                <div class="section-header">
+                    <h5 class="section-title">${escapeHtml(sectionTheme)}</h5>
+                    <div class="section-meta">
+                        <span class="topic-count">${topics.length} topics</span>
+                        <span class="section-order">Section ${index + 1}</span>
+                    </div>
+                </div>
+                <div class="section-topics">
+                    <h6>Topics:</h6>
+                    <div class="topics-grid">
+                        ${topics.map(topic => `<div class="topic-item">${escapeHtml(topic)}</div>`).join('')}
+                    </div>
                 </div>
             </div>
         `;
     });
-    groupsHTML += '</div>';
+    allocationHTML += '</div>';
     
-    groupsDisplay.innerHTML = groupsHTML;
+    allocationDisplay.innerHTML = allocationHTML;
 }
 
-function displayGeneratedGroupsError(error) {
-    const groupsDisplay = document.getElementById('generated-groups-display');
-    groupsDisplay.innerHTML = `<div class="no-groups">${error}</div>`;
+function displayTopicAllocationError(error) {
+    const allocationDisplay = document.getElementById('topic-allocation-display');
+    allocationDisplay.innerHTML = `<div class="no-allocation">${error}</div>`;
 }
 
 function initializeTitling() {
@@ -401,7 +404,7 @@ function initializeTitling() {
 
 async function startTitling() {
     if (!generatedGroups || generatedGroups.length === 0) {
-        alert('No groups available. Please go back to Section Grouping to create groups first.');
+        alert('No topic allocation available. Please go back to Topic Allocation to generate topics first.');
         return;
     }
     
@@ -431,7 +434,7 @@ async function startTitling() {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        groups: generatedGroups,
+                        topic_allocation: generatedGroups, // This is now topic allocation data
                         expanded_idea: expandedIdea,
                         post_id: window.postId
                     })

@@ -4010,17 +4010,17 @@ OUTPUT FORMAT: Return ONLY valid JSON:
 
 @bp.route('/api/sections/title', methods=['POST'])
 def api_sections_title():
-    """Stage 2: Create titles and descriptions for grouped sections"""
+    """Stage 2: Create titles and descriptions for sections with allocated topics"""
     try:
         data = request.get_json()
-        groups = data.get('groups', [])
+        topic_allocation = data.get('topic_allocation', [])
         expanded_idea = data.get('expanded_idea', '')
         post_id = data.get('post_id')
         
-        if not groups:
+        if not topic_allocation:
             return jsonify({
                 'success': False,
-                'error': 'No groups provided'
+                'error': 'No topic allocation provided'
             }), 400
         
         # Use hardcoded Section Titling prompt for now (to avoid database issue)
@@ -4041,40 +4041,41 @@ CRITICAL REQUIREMENTS:
 - Make content accessible to both Scottish and international audiences
 - Focus on engagement, authenticity, and cultural significance"""
         
-        # Prepare groups data for the prompt
-        logger.info("Preparing groups data for prompt")
-        groups_data = {
-            "groups": groups,
+        # Prepare topic allocation data for the prompt
+        logger.info("Preparing topic allocation data for prompt")
+        allocation_data = {
+            "sections": topic_allocation,
             "metadata": {
-                "total_groups": len(groups),
-                "total_topics": sum(len(group.get('topics', [])) for group in groups)
+                "total_sections": len(topic_allocation),
+                "total_topics": sum(len(section.get('topics', [])) for section in topic_allocation)
             }
         }
         
         # Create the titling prompt
         logger.info("Creating titling prompt")
-        groups_text = ""
-        for group in groups:
-            topics_list = '\n  '.join(group.get('topics', []))
-            groups_text += f"\nGroup {group.get('order', 1)}: {group.get('theme', 'Untitled')}\n  {topics_list}\n"
+        sections_text = ""
+        for i, section in enumerate(topic_allocation):
+            section_theme = section.get('section_theme', f'Section {i+1}')
+            topics_list = '\n  '.join(section.get('topics', []))
+            sections_text += f"\nSection {i+1}: {section_theme}\n  {topics_list}\n"
         
-        titling_prompt = f"""You are tasked with creating engaging titles and snappy subtitles for these existing thematic groups about {expanded_idea}. DO NOT reorganize, reorder, or change the topics - just add creative titles and subtitles.
+        titling_prompt = f"""You are tasked with creating engaging titles and snappy subtitles for these existing sections with allocated topics about {expanded_idea}. DO NOT reorganize, reorder, or change the topics - just add creative titles and subtitles.
 
-EXISTING GROUPS TO TITLE (PRESERVE EXACTLY AS IS):
-{groups_text}
+EXISTING SECTIONS TO TITLE (PRESERVE EXACTLY AS IS):
+{sections_text}
 
 CRITICAL REQUIREMENTS:
-- Keep the EXACT same group structure, topics, and order
+- Keep the EXACT same section structure, topics, and order
 - Only add creative titles and snappy subtitles
 - Do NOT reorganize or reallocate topics
-- Do NOT change the group themes or explanations
+- Do NOT change the section themes or explanations
 - Do NOT modify the topic lists
 
 OUTPUT FORMAT: Return ONLY valid JSON:
 {{
   "sections": [
     {{
-      "id": "group_1",
+      "id": "section_1",
       "title": "Engaging Scottish Heritage Title",
       "subtitle": "Snappy subtitle - no fluff like 'This section delves into'",
       "description": "Brief description of what this section covers",
@@ -4084,9 +4085,9 @@ OUTPUT FORMAT: Return ONLY valid JSON:
     }}
   ],
   "metadata": {{
-    "total_sections": {len(groups)},
-    "total_topics": {sum(len(group.get('topics', [])) for group in groups)},
-    "allocated_topics": {sum(len(group.get('topics', [])) for group in groups)},
+    "total_sections": {len(topic_allocation)},
+    "total_topics": {sum(len(section.get('topics', [])) for section in topic_allocation)},
+    "allocated_topics": {sum(len(section.get('topics', [])) for section in topic_allocation)},
     "audience_focus": "Scottish heritage enthusiasts and cultural readers"
   }}
 }}
@@ -4122,7 +4123,7 @@ DESCRIPTION GUIDELINES:
             {'role': 'user', 'content': titling_prompt}
         ]
         
-        logger.info(f"Calling LLM for titling with {len(groups)} groups")
+        logger.info(f"Calling LLM for titling with {len(topic_allocation)} sections")
         llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
         logger.info(f"LLM response: {llm_response}")
         
@@ -4165,7 +4166,7 @@ DESCRIPTION GUIDELINES:
             logger.warning(f"LLM JSON parsing failed: {e}")
             logger.warning(f"LLM response content: {llm_response['content'][:500]}...")
             # Fallback: create simple sections
-            sections_data = create_fallback_sections_from_groups(groups)
+            sections_data = create_fallback_sections_from_allocation(topic_allocation)
         
         return jsonify({
             'success': True,
@@ -4212,18 +4213,18 @@ def create_fallback_groups(topics, group_count):
         }
     }
 
-def create_fallback_sections_from_groups(groups):
-    """Create simple fallback sections from groups"""
+def create_fallback_sections_from_allocation(topic_allocation):
+    """Create simple fallback sections from topic allocation"""
     sections = []
     
-    for group in groups:
+    for i, allocation in enumerate(topic_allocation):
         sections.append({
-            'id': group.get('id', f'section_{group.get("order", 1)}'),
-            'title': f"Section {group.get('order', 1)}: {group.get('theme', 'Untitled')}",
-            'description': f"This section covers topics related to {group.get('theme', 'the main theme').lower()}.",
+            'id': f'section_{i+1}',
+            'title': f"Section {i+1}: {allocation.get('section_theme', 'Untitled')}",
+            'description': f"This section covers topics related to {allocation.get('section_theme', 'the main theme').lower()}.",
             'boundaries': "Focus on the specific topics listed, avoiding overlap with other sections.",
-            'topics': group.get('topics', []),
-            'order': group.get('order', 1)
+            'topics': allocation.get('topics', []),
+            'order': i+1
         })
     
     return {
