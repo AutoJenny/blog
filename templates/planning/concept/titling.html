@@ -453,8 +453,10 @@ async function startTitling() {
         
         if (data.success) {
             generatedSections = data.sections;
+            console.log('Generated sections data:', generatedSections);
             displaySections(generatedSections);
             // Automatically save sections to database
+            console.log('About to save sections to database...');
             await saveSectionsToDatabase(generatedSections);
         } else {
             console.error('Error creating titles:', data.error);
@@ -535,6 +537,7 @@ function displaySections(sectionsData) {
 
 async function saveSectionsToDatabase(sectionsData) {
     try {
+        console.log('Saving sections data:', sectionsData);
         const response = await fetch(`/planning/api/posts/${window.postId}/sections`, {
             method: 'POST',
             headers: {
@@ -546,6 +549,7 @@ async function saveSectionsToDatabase(sectionsData) {
         });
         
         const data = await response.json();
+        console.log('Save response:', data);
         
         if (data.success) {
             console.log('Sections saved successfully');
