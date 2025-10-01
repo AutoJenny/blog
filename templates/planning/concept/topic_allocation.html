@@ -289,6 +289,13 @@ window.postId = {{ post_id }};
 window.currentStage = 'concept';
 window.currentSubstage = 'topic-allocation';
 
+// Utility function to escape HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 let sectionStructure = null;
 let llmModule = null;
 
@@ -351,22 +358,55 @@ async function loadExistingAllocation() {
 // Display section structure (same format as section structure page output)
 function displaySectionStructure(structure) {
     const container = document.getElementById('section-structure-display');
-    if (!structure || !structure.sections) {
+    if (!structure) {
         container.innerHTML = '<p class="error">No section structure available</p>';
         return;
     }
     
+    console.log('Displaying structure:', structure);
+    
     let html = '<div class="section-structure-results">';
     
-    structure.sections.forEach((section, index) => {
-        const sectionCode = `S${String(index + 1).padStart(2, '0')}`;
+    // Handle both new format (array) and old format (object with sections)
+    let sections = [];
+    if (Array.isArray(structure)) {
+        sections = structure;
+    } else if (structure.sections) {
+        sections = structure.sections;
+    }
+    
+    console.log('Sections to display:', sections);
+    
+    sections.forEach((section, index) => {
+        const sectionCode = section.section_code || `S${String(index + 1).padStart(2, '0')}`;
+        const title = section.title || section.theme || 'Untitled Section'; // Support both new and old format
+        const description = section.description || 'No description available';
+        
+        console.log(`Section ${index}:`, { sectionCode, title, description, section });
+        
         html += `
             <div class="section-item">
-                <h5>{${sectionCode}} ${section.theme}</h5>
-                <p><strong>Description:</strong> ${section.description}</p>
-                <p><strong>Boundaries:</strong> ${section.boundaries}</p>
-            </div>
+                <h5>{${sectionCode}} ${escapeHtml(title)}</h5>
+                <p><strong>Description:</strong> ${escapeHtml(description)}</p>
         `;
+        
+        // Show boundaries, topics, and exclusions if they exist (old format compatibility)
+        if (section.boundaries && (Array.isArray(section.boundaries) ? section.boundaries.length > 0 : section.boundaries)) {
+            const boundaries = Array.isArray(section.boundaries) ? section.boundaries.join(', ') : section.boundaries;
+            html += `<p><strong>Boundaries:</strong> ${escapeHtml(boundaries)}</p>`;
+        }
+        
+        if (section.topics && section.topics.length > 0) {
+            const topics = Array.isArray(section.topics) ? section.topics.join(', ') : section.topics;
+            html += `<p><strong>Topics:</strong> ${escapeHtml(topics)}</p>`;
+        }
+        
+        if (section.exclusions && section.exclusions.length > 0) {
+            const exclusions = Array.isArray(section.exclusions) ? section.exclusions.join(', ') : section.exclusions;
+            html += `<p><strong>Exclusions:</strong> ${escapeHtml(exclusions)}</p>`;
+        }
+        
+        html += `</div>`;
     });
     
     html += '</div>';
