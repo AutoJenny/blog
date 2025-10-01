@@ -2752,7 +2752,8 @@ DO NOT return JSON format. Return simple text lines only."""
             return jsonify({
                 'success': True,
                 'message': 'Topics allocated successfully',
-                'allocations': allocation_data
+                'allocations': allocation_data,
+                'results': allocation_data  # Add results field for LLM module compatibility
             })
             
         except Exception as e:
