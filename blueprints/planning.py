@@ -3331,7 +3331,17 @@ def api_allocate_topics_iterative():
                 actual_title = topic_title
             
             # Build individual topic prompt with rich context
-            individual_prompt = build_individual_topic_prompt(idea_code, actual_title, section_structure, topic_data, expanded_idea)
+            # Handle both array format (new) and object format (old) for section_structure
+            if isinstance(section_structure, list):
+                # New format: direct array of sections
+                sections_data = section_structure
+            else:
+                # Old format: object with 'sections' key
+                sections_data = section_structure.get('sections', [])
+            
+            # Create a consistent structure for the prompt function
+            structured_sections = {'sections': sections_data}
+            individual_prompt = build_individual_topic_prompt(idea_code, actual_title, structured_sections, topic_data, expanded_idea)
             
             # Execute LLM request for this single topic
             messages = [
@@ -3380,7 +3390,8 @@ def api_allocate_topics_iterative():
                 logger.error(f"No section code found in response for {idea_code}: {content}")
         
         # Build final allocation data
-        allocation_data = build_allocation_data(all_allocations, section_structure)
+        # Use the same structured format for consistency
+        allocation_data = build_allocation_data(all_allocations, structured_sections)
         
         # Save to database
         save_topic_allocation(post_id, allocation_data)
