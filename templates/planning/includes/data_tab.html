@@ -4,6 +4,9 @@
         <div class="data-content">
             <!-- Database Tables Section -->
             <h3><i class="fas fa-database"></i> Database Tables</h3>
+            <div id="data-tab-debug" style="background: #10b981; color: white; padding: 1rem; margin: 1rem 0; border-radius: 6px;">
+                <strong>Data Tab Debug:</strong> <span id="debug-status">Initializing...</span>
+            </div>
             
             <!-- Table Selection Radio Buttons -->
             <div class="table-selection">
@@ -495,13 +498,56 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('[Data Tab] Initializing...');
     
+    // Update debug status
+    const debugStatus = document.getElementById('debug-status');
+    if (debugStatus) {
+        debugStatus.textContent = 'DOM loaded, initializing...';
+    }
+    
     // Initialize data tab
     initializeDataTab();
     
     // Load post data with a small delay to ensure DOM is ready
     setTimeout(() => {
+        console.log('[Data Tab] Attempting to load post data...');
+        if (debugStatus) {
+            debugStatus.textContent = 'Loading post data...';
+        }
         loadPostData();
     }, 100);
+});
+
+// Also run when Data tab is clicked to ensure data loads
+document.addEventListener('click', function(event) {
+    if (event.target && event.target.getAttribute('data-tab') === 'data') {
+        console.log('[Data Tab] Data tab clicked, loading data...');
+        setTimeout(() => {
+            loadPostData();
+        }, 100);
+    }
+});
+
+// Also run when the data-tab panel becomes visible
+const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+            const dataTab = document.getElementById('data-tab');
+            if (dataTab && dataTab.classList.contains('active')) {
+                console.log('[Data Tab] Data tab became active, loading data...');
+                setTimeout(() => {
+                    loadPostData();
+                }, 100);
+            }
+        }
+    });
+});
+
+// Start observing when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    const dataTab = document.getElementById('data-tab');
+    if (dataTab) {
+        observer.observe(dataTab, { attributes: true });
+    }
 });
 
 function initializeDataTab() {
@@ -583,6 +629,7 @@ async function loadPostData() {
         console.log('[Data Tab] Post ID:', postId);
         
         if (!postId) {
+            console.error('[Data Tab] Post ID not found');
             throw new Error('Post ID not found');
         }
         
@@ -590,6 +637,8 @@ async function loadPostData() {
         console.log('[Data Tab] Fetching from:', url);
         
         const response = await fetch(url);
+        console.log('[Data Tab] Response status:', response.status);
+        
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
@@ -605,67 +654,90 @@ async function loadPostData() {
 }
 
 function getPostId() {
+    console.log('[Data Tab] Getting post ID...');
+    
     // Try to get post ID from various sources
     const llmContainer = document.querySelector('.llm-container');
     if (llmContainer && llmContainer.dataset.postId) {
+        console.log('[Data Tab] Found post ID from llm-container:', llmContainer.dataset.postId);
         return llmContainer.dataset.postId;
     }
     
     // Try to get from URL
     const urlMatch = window.location.pathname.match(/\/posts\/(\d+)/);
     if (urlMatch) {
+        console.log('[Data Tab] Found post ID from URL:', urlMatch[1]);
         return urlMatch[1];
     }
     
     // Try to get from a data attribute on the body or container
     const body = document.body;
     if (body.dataset.postId) {
+        console.log('[Data Tab] Found post ID from body:', body.dataset.postId);
         return body.dataset.postId;
     }
     
+    console.log('[Data Tab] No post ID found');
     return null;
 }
 
 function populatePostData(data) {
     console.log('[Data Tab] Populating post data:', data);
     
+    // Extract the actual post data from the API response
+    const postData = data.post || data;
+    const scheduleData = data.schedule;
+    const sectionsData = data.sections;
+    
+    console.log('[Data Tab] Post data:', postData);
+    console.log('[Data Tab] Schedule data:', scheduleData);
+    console.log('[Data Tab] Sections data:', sectionsData);
+    
     // Post overview
     const postStatus = document.getElementById('post-status');
     const postCreated = document.getElementById('post-created');
     const postUpdated = document.getElementById('post-updated');
     
-    if (postStatus) postStatus.textContent = data.status || 'Unknown';
-    if (postCreated) postCreated.textContent = data.created_at ? new Date(data.created_at).toLocaleString() : 'Unknown';
-    if (postUpdated) postUpdated.textContent = data.updated_at ? new Date(data.updated_at).toLocaleString() : 'Unknown';
+    if (postStatus) postStatus.textContent = postData.status || 'Unknown';
+    if (postCreated) postCreated.textContent = postData.created_at ? new Date(postData.created_at).toLocaleString() : 'Unknown';
+    if (postUpdated) postUpdated.textContent = postData.updated_at ? new Date(postData.updated_at).toLocaleString() : 'Unknown';
     
-    // Populate database tables
-    populateDatabaseTables(data);
+    // Populate database tables with the correct data structure
+    populateDatabaseTables(postData, scheduleData, sectionsData);
     
     console.log('[Data Tab] Post data populated successfully');
 }
 
-function populateDatabaseTables(data) {
+function populateDatabaseTables(postData, scheduleData, sectionsData) {
     // Set table IDs
-    document.getElementById('post-table-id').textContent = data.id || 'Unknown';
-    document.getElementById('post-development-table-id').textContent = data.id || 'Unknown';
-    document.getElementById('calendar-schedule-table-id').textContent = data.id || 'Unknown';
-    document.getElementById('post-section-table-id').textContent = data.id || 'Unknown';
+    document.getElementById('post-table-id').textContent = postData.id || 'Unknown';
+    document.getElementById('post-development-table-id').textContent = postData.id || 'Unknown';
+    document.getElementById('calendar-schedule-table-id').textContent = postData.id || 'Unknown';
+    document.getElementById('post-section-table-id').textContent = postData.id || 'Unknown';
     
     // Populate Post table
-    populateTableFields('post-fields-container', data, 'post');
+    populateTableFields('post-fields-container', postData, 'post');
     
     // Populate Post Development table
-    if (data.development) {
-        populateTableFields('post-development-fields-container', data.development, 'post_development');
+    if (postData.expanded_idea || postData.idea_scope || postData.section_structure || postData.topic_allocation) {
+        // Create a development data object from the post data
+        const developmentData = {
+            id: postData.id,
+            idea_scope: postData.idea_scope,
+            section_structure: postData.section_structure,
+            topic_allocation: postData.topic_allocation,
+            refined_topics: postData.refined_topics,
+            expanded_idea: postData.expanded_idea,
+            idea_seed: postData.idea_seed
+        };
+        populateTableFields('post-development-fields-container', developmentData, 'post_development');
     } else {
         document.getElementById('post-development-fields-container').innerHTML = '<div class="loading">No development data found</div>';
     }
     
     // Populate Calendar Schedule table
-    console.log('[Data Tab] Calendar schedule data:', data.calendar_schedule);
-    if (data.calendar_schedule && data.calendar_schedule.length > 0) {
-        // If there are multiple schedule entries, show the first one
-        const scheduleData = data.calendar_schedule[0];
+    console.log('[Data Tab] Calendar schedule data:', scheduleData);
+    if (scheduleData) {
         console.log('[Data Tab] Populating calendar schedule with data:', scheduleData);
         populateTableFields('calendar-schedule-fields-container', scheduleData, 'calendar_schedule');
     } else {
@@ -674,9 +746,8 @@ function populateDatabaseTables(data) {
     }
     
     // Populate Post Section table
-    console.log('[Data Tab] Post section data:', data.post_sections);
-    if (data.post_sections && data.post_sections.length > 0) {
-        const sectionsData = data.post_sections;
+    console.log('[Data Tab] Post section data:', sectionsData);
+    if (sectionsData && sectionsData.length > 0) {
         console.log('[Data Tab] Populating post sections with data:', sectionsData);
         
         // Create a comprehensive summary for authoring workflow

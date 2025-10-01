@@ -12,7 +12,17 @@
     <!-- Include condensed header -->
     {% include 'planning/includes/condensed_header.html' %}
     
-    {% block process_content %}
+    <script>
+    // Move topic allocation content to process-tab after page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        const allocationContent = document.querySelector('.brainstorm-main');
+        const processTab = document.getElementById('process-tab');
+        if (allocationContent && processTab) {
+            processTab.appendChild(allocationContent);
+        }
+    });
+    </script>
+    
     <div class="brainstorm-main">
         
         <div class="brainstorm-content">
@@ -41,7 +51,6 @@
             </div>
         </div>
     </div>
-    {% endblock %}
 </div>
 
 <style>

@@ -12,7 +12,17 @@
     <!-- Include condensed header -->
     {% include 'planning/includes/condensed_header.html' %}
     
-    {% block process_content %}
+    <script>
+    // Move titling content to process-tab after page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        const titlingContent = document.querySelector('.titling-main');
+        const processTab = document.getElementById('process-tab');
+        if (titlingContent && processTab) {
+            processTab.appendChild(titlingContent);
+        }
+    });
+    </script>
+    
     <div class="titling-main">
         
         <div class="titling-content">
@@ -87,7 +97,6 @@
             </div>
         </div>
     </div>
-    {% endblock %}
 </div>
 
 <style>
