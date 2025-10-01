@@ -15554,3 +15554,244 @@ DO NOT return JSON format. Return simple text lines only.
 2025-10-01 13:23:55,307 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 13:23:55] "GET /planning/api/sections/allocate-topics/60 HTTP/1.1" 200 -
 2025-10-01 13:23:59,173 - config.database - INFO - Database connection established
 2025-10-01 13:23:59,177 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 13:23:59] "GET /planning/api/sections/allocate-topics/60 HTTP/1.1" 200 -
+2025-10-01 13:24:15,897 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 13:24:15,929 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 13:24:16,163 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 13:24:16,168 - werkzeug - INFO -  * Debugger PIN: 842-147-207
+2025-10-01 13:24:24,663 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 13:24:24,701 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 13:24:24,960 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 13:24:24,966 - werkzeug - INFO -  * Debugger PIN: 842-147-207
+2025-10-01 13:24:31,687 - config.database - INFO - Database connection established
+2025-10-01 13:24:31,693 - blueprints.planning - INFO - Calendar schedule query for post_id=60 returned 1 results
+2025-10-01 13:24:31,693 - blueprints.planning - INFO - Calendar schedule entry: {'id': 1, 'year': 2025, 'week_number': 39, 'post_id': 60, 'scheduled_date': datetime.date(2025, 9, 28), 'created_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660), 'updated_at': datetime.datetime(2025, 9, 28, 19, 51, 44, 811660)}
+2025-10-01 13:24:31,694 - blueprints.planning - INFO - Post sections query for post_id=60 returned 7 results
+2025-10-01 13:24:31,694 - blueprints.planning - INFO - Post section entry: {'id': 762, 'post_id': 60, 'section_order': 1, 'section_heading': "Harvesting Scotland's Ancient Roots", 'ideas_to_include': None, 'facts_to_include': None, 'highlighting': None, 'image_concepts': None, 'image_prompts': None, 'image_meta_descriptions': None, 'image_captions': None, 'section_description': "Uncover the rich history of Scotland's autumnal customs, from Samhain to Ceres Festival.", 'status': 'complete', 'polished': None, 'draft': "<p>As the last wisps of summer's warmth fade, Scotland's ancient roots stir with renewed vitality. The autumnal equinox marks a pivotal moment in the Celtic calendar, when Samhain's veil between worlds grew thin, and the spirits of the land gathered to celebrate the harvest season. This liminal time was imbued with sacred significance, as the cycles of nature echoed the rhythms of human existence.</p>\n\n<p>The earliest recorded customs date back to the Iron Age, where druids would light bonfires and perform rituals to ensure a bountiful harvest. The Ceres Festival, named after the goddess of agriculture, further underscored the importance of fertility and abundance. In Scotland's rugged landscape, the Celtic gods were invoked through sacred dances, chanting, and offerings to the land.</p>\n\n<p>This rich tapestry of ancient traditions weaves together the fabric of Scottish identity, a testament to the enduring power of community and connection with the natural world. As we delve into the historical foundations of autumnal customs, we uncover a story that is at once deeply rooted in Scotland's past yet speaks to our collective human experience.</p>", 'image_filename': None, 'image_generated_at': None, 'image_title': None, 'image_width': None, 'image_height': None}
+2025-10-01 13:24:31,694 - blueprints.planning - INFO - Post section entry: {'id': 763, 'post_id': 60, 'section_order': 2, 'section_heading': "Agriculture and the Land's Bounty", 'ideas_to_include': None, 'facts_to_include': None, 'highlighting': None, 'image_concepts': None, 'image_prompts': None, 'image_meta_descriptions': None, 'image_captions': None, 'section_description': 'Scottish agriculture influenced autumnal folklore and traditions.', 'status': 'complete', 'polished': None, 'draft': '<h1>Agriculture and the Land\'s Bounty</h1>\n\n<h2>Crop Rotation Practices in Ancient Scotland</h2>\n\nThe ancient Scots were skilled farmers, relying on crop rotation practices to maintain soil fertility and ensure a bountiful harvest. This intricate system of planting and harvesting involved rotating crops such as oats, barley, and turnips, which not only provided sustenance but also helped to maintain the delicate balance of Scotland\'s ecosystem. The practice was often tied to lunar cycles, with farmers carefully observing the phases of the moon to determine the optimal times for sowing, planting, and harvesting.\n\n<p>One fascinating example of crop rotation in ancient Scotland is found in the works of medieval chronicler, John of Fordun. In his book "Chronica Gentis Scotorum," he describes how the Scots used a system of \'twin-crop\' farming, where two crops were planted together – for instance, oats and barley. This practice not only helped to reduce crop failure but also created a more diverse and resilient agricultural economy.</p>\n\n<h3>The Agricultural Cycle and Celtic Mythology</h3>\n\nThe ancient Celtic festivals, such as Beltane and Lughnasadh, played a significant role in Scotland\'s agricultural cycle. These festivals marked the beginning of summer and autumn planting seasons, respectively, and were often tied to rituals and ceremonies that honored the gods of agriculture and fertility.\n\n<p>For example, the ancient Celts believed that the earth was inhabited by spirits known as \'sidhe,\' who were responsible for guiding crops towards a bountiful harvest. Farmers would offer sacrifices and prayers to these spirits in the hopes of securing a successful crop, and the festival of Lughnasadh was often celebrated with feasts, music, and dancing.</p>\n\n<p>By exploring the intricate relationships between agriculture, mythology, and culture, we can gain a deeper understanding of Scotland\'s unique heritage and the ways in which its people have connected with the land throughout history. The ancient crop rotation practices and agricultural cycles not only provided sustenance but also played a vital role in shaping Scotland\'s identity as a nation.</p>', 'image_filename': None, 'image_generated_at': None, 'image_title': None, 'image_width': None, 'image_height': None}
+2025-10-01 13:24:31,694 - blueprints.planning - INFO - Post section entry: {'id': 764, 'post_id': 60, 'section_order': 3, 'section_heading': 'Seasonal Celebrations: Timeless Traditions', 'ideas_to_include': None, 'facts_to_include': None, 'highlighting': None, 'image_concepts': None, 'image_prompts': None, 'image_meta_descriptions': None, 'image_captions': None, 'section_description': "autumn festivals like Samhain, Hogmanay, and Ceres Festival have shaped Scotland's identity.", 'status': 'complete', 'polished': None, 'draft': '<h1>Seasonal Celebrations: Timeless Traditions</h1>\n\n<p>In the twilight of autumn, Scotland\'s culture is bathed in a warm, golden light. As the summer days dwindle and the nights grow longer, the country\'s people prepare to welcome the harvest season with traditional celebrations that date back centuries. At the heart of these festivities lies Samhain, an ancient Celtic festival marking the boundary between summer and winter, life and death.</p>\n\n<p>Samhain, celebrated on November 1st, is a time-honored tradition in Scottish culture, steeped in myth and symbolism. The word "Samhain" itself comes from the Gaelic "sanamain," meaning "summer\'s end." For centuries, Scots have marked this occasion with bonfires, divination rituals, and communal feasts, honoring the ancestors who had passed into the spirit world. These practices, though now largely secularized, retain a deep cultural significance, reflecting a profound connection to the land, community, and the cycles of nature.</p>\n\n<p>One of Scotland\'s most enduring Samhain traditions is the carving of turnips and lanterns. According to folklore, on the eve of Samhain, spirits of the dead would return to earth, seeking to rejoin their families. To ward off these malevolent entities, Scots would carve out faces from turnips, place a candle within, and display them in their windows. This practice, known as "guising," was said to offer protection from any mischievous spirits that might be lurking about.</p>\n\n<p>In 19th-century Scottish literature, Samhain is often depicted as a time of eerie magic and supernatural wonder. Authors such as Robert Burns and Sir Walter Scott wove tales of ghosts, goblins, and otherworldly creatures into their works, capturing the essence of this fascinating season. For example, in "The Tales of the Heather," Burns writes of the "fairy mounds" that dot Scotland\'s countryside, said to be inhabited by spirits who linger on the edge of the mortal world.</p>\n\n<p>Today, Samhain traditions continue to thrive in Scotland, albeit in a more secularized form. Communities gather for harvest festivals, sharing food, drink, and stories of their ancestors\' experiences with this ancient holiday. These events serve as a poignant reminder of Scotland\'s rich cultural heritage, one that continues to nourish and inspire us today.</p>', 'image_filename': None, 'image_generated_at': None, 'image_title': None, 'image_width': None, 'image_height': None}
+2025-10-01 13:24:31,694 - blueprints.planning - INFO - Post section entry: {'id': 765, 'post_id': 60, 'section_order': 4, 'section_heading': 'Autumnal Symbolism and Mythology', 'ideas_to_include': None, 'facts_to_include': None, 'highlighting': None, 'image_concepts': None, 'image_prompts': None, 'image_meta_descriptions': None, 'image_captions': None, 'section_description': 'Unravel the symbolic meanings behind autumn leaves, equinoxes, and harvest festivals in Scottish folklore.', 'status': 'draft', 'polished': None, 'draft': None, 'image_filename': None, 'image_generated_at': None, 'image_title': None, 'image_width': None, 'image_height': None}
+2025-10-01 13:24:31,694 - blueprints.planning - INFO - Post section entry: {'id': 766, 'post_id': 60, 'section_order': 5, 'section_heading': "Farmers' Knowledge and Folk Remedies", 'ideas_to_include': None, 'facts_to_include': None, 'highlighting': None, 'image_concepts': None, 'image_prompts': None, 'image_meta_descriptions': None, 'image_captions': None, 'section_description': "Investigate how Scottish farmers' knowledge influenced folk remedies and traditional practices.", 'status': 'draft', 'polished': None, 'draft': None, 'image_filename': None, 'image_generated_at': None, 'image_title': None, 'image_width': None, 'image_height': None}
+2025-10-01 13:24:31,694 - blueprints.planning - INFO - Post section entry: {'id': 767, 'post_id': 60, 'section_order': 6, 'section_heading': "Christianity's Impact on Autumn Traditions", 'ideas_to_include': None, 'facts_to_include': None, 'highlighting': None, 'image_concepts': None, 'image_prompts': None, 'image_meta_descriptions': None, 'image_captions': None, 'section_description': "Analyze how Christianity influenced and shaped Scotland's autumnal customs, particularly during the Reformation.", 'status': 'draft', 'polished': None, 'draft': None, 'image_filename': None, 'image_generated_at': None, 'image_title': None, 'image_width': None, 'image_height': None}
+2025-10-01 13:24:31,695 - blueprints.planning - INFO - Post section entry: {'id': 768, 'post_id': 60, 'section_order': 7, 'section_heading': "Women's Roles and Folk Traditions", 'ideas_to_include': None, 'facts_to_include': None, 'highlighting': None, 'image_concepts': None, 'image_prompts': None, 'image_meta_descriptions': None, 'image_captions': None, 'section_description': 'Examine how Scottish women played a vital role in preserving traditional practices and folk remedies.', 'status': 'draft', 'polished': None, 'draft': None, 'image_filename': None, 'image_generated_at': None, 'image_title': None, 'image_width': None, 'image_height': None}
+2025-10-01 13:24:31,696 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 13:24:31] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-10-01 13:24:31,706 - config.database - INFO - Database connection established
+2025-10-01 13:24:31,708 - blueprints.planning - INFO - Section structure being sent to LLM: 7 sections
+2025-10-01 13:24:31,708 - blueprints.planning - INFO -   S01: Ancient Celtic Origins of Autumn Celebrations
+2025-10-01 13:24:31,708 - blueprints.planning - INFO -   S02: Harvest Festivals and Agricultural Traditions
+2025-10-01 13:24:31,708 - blueprints.planning - INFO -   S03: Samhain Festival Origins: Ancient Celtic Rituals and Celebrations
+2025-10-01 13:24:31,708 - blueprints.planning - INFO -   S04: Oat Harvest Rituals: A Key Component of Autumn Folklore
+2025-10-01 13:24:31,708 - blueprints.planning - INFO -   S05: Ceres Festival History: Ancient Roman Influences on Scottish Autumn Celebrations
+2025-10-01 13:24:31,708 - blueprints.planning - INFO -   S06: Modern-Day Celebrations: Hogmanay Traditions in Scotland
+2025-10-01 13:24:31,708 - blueprints.planning - INFO -   S07: Autumnal Symbolism: The Cultural Significance of Autumn in Scotland
+2025-10-01 13:24:31,708 - blueprints.planning - INFO - Processing topic 1/50: {IDEA01}
+2025-10-01 13:24:31,711 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:24:33,482 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 624
+2025-10-01 13:24:33,482 - blueprints.planning - INFO - Allocated {IDEA01} to {S07}
+2025-10-01 13:24:33,482 - blueprints.planning - INFO - Processing topic 2/50: {IDEA02}
+2025-10-01 13:24:33,483 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:24:35,132 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 577
+2025-10-01 13:24:35,133 - blueprints.planning - INFO - Allocated {IDEA02} to {S07}
+2025-10-01 13:24:35,133 - blueprints.planning - INFO - Processing topic 3/50: {IDEA03}
+2025-10-01 13:24:35,134 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:24:36,282 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 311
+2025-10-01 13:24:36,282 - blueprints.planning - INFO - Allocated {IDEA03} to {S04}
+2025-10-01 13:24:36,282 - blueprints.planning - INFO - Processing topic 4/50: {IDEA04}
+2025-10-01 13:24:36,283 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:24:37,832 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 532
+2025-10-01 13:24:37,833 - blueprints.planning - INFO - Allocated {IDEA04} to {S06}
+2025-10-01 13:24:37,833 - blueprints.planning - INFO - Processing topic 5/50: {IDEA05}
+2025-10-01 13:24:37,833 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:24:39,723 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 745
+2025-10-01 13:24:39,724 - blueprints.planning - INFO - Allocated {IDEA05} to {S04}
+2025-10-01 13:24:39,724 - blueprints.planning - INFO - Processing topic 6/50: {IDEA06}
+2025-10-01 13:24:39,724 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:24:41,484 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 663
+2025-10-01 13:24:41,484 - blueprints.planning - INFO - Allocated {IDEA06} to {S07}
+2025-10-01 13:24:41,484 - blueprints.planning - INFO - Processing topic 7/50: {IDEA07}
+2025-10-01 13:24:41,485 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:24:43,135 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 603
+2025-10-01 13:24:43,135 - blueprints.planning - INFO - Allocated {IDEA07} to {S04}
+2025-10-01 13:24:43,135 - blueprints.planning - INFO - Processing topic 8/50: {IDEA08}
+2025-10-01 13:24:43,136 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:24:44,728 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 581
+2025-10-01 13:24:44,728 - blueprints.planning - INFO - Allocated {IDEA08} to {S02}
+2025-10-01 13:24:44,729 - blueprints.planning - INFO - Processing topic 9/50: {IDEA09}
+2025-10-01 13:24:44,730 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:24:45,869 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 311
+2025-10-01 13:24:45,869 - blueprints.planning - INFO - Allocated {IDEA09} to {S04}
+2025-10-01 13:24:45,869 - blueprints.planning - INFO - Processing topic 10/50: {IDEA10}
+2025-10-01 13:24:45,870 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:24:47,518 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 612
+2025-10-01 13:24:47,518 - blueprints.planning - INFO - Allocated {IDEA10} to {S01}
+2025-10-01 13:24:47,518 - blueprints.planning - INFO - Processing topic 11/50: {IDEA11}
+2025-10-01 13:24:47,519 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:24:49,241 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 650
+2025-10-01 13:24:49,241 - blueprints.planning - INFO - Allocated {IDEA11} to {S02}
+2025-10-01 13:24:49,241 - blueprints.planning - INFO - Processing topic 12/50: {IDEA12}
+2025-10-01 13:24:49,242 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:24:50,936 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 672
+2025-10-01 13:24:50,936 - blueprints.planning - INFO - Allocated {IDEA12} to {S07}
+2025-10-01 13:24:50,937 - blueprints.planning - INFO - Processing topic 13/50: {IDEA13}
+2025-10-01 13:24:50,937 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:24:52,080 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 311
+2025-10-01 13:24:52,080 - blueprints.planning - INFO - Allocated {IDEA13} to {S07}
+2025-10-01 13:24:52,080 - blueprints.planning - INFO - Processing topic 14/50: {IDEA14}
+2025-10-01 13:24:52,081 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:24:53,732 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 591
+2025-10-01 13:24:53,732 - blueprints.planning - INFO - Allocated {IDEA14} to {S07}
+2025-10-01 13:24:53,732 - blueprints.planning - INFO - Processing topic 15/50: {IDEA15}
+2025-10-01 13:24:53,733 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:24:55,427 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 641
+2025-10-01 13:24:55,427 - blueprints.planning - INFO - Allocated {IDEA15} to {S04}
+2025-10-01 13:24:55,428 - blueprints.planning - INFO - Processing topic 16/50: {IDEA16}
+2025-10-01 13:24:55,428 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:24:56,576 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 311
+2025-10-01 13:24:56,576 - blueprints.planning - INFO - Allocated {IDEA16} to {S04}
+2025-10-01 13:24:56,577 - blueprints.planning - INFO - Processing topic 17/50: {IDEA17}
+2025-10-01 13:24:56,577 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:24:58,314 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 634
+2025-10-01 13:24:58,314 - blueprints.planning - INFO - Allocated {IDEA17} to {S06}
+2025-10-01 13:24:58,314 - blueprints.planning - INFO - Processing topic 18/50: {IDEA18}
+2025-10-01 13:24:58,315 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:24:59,453 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 310
+2025-10-01 13:24:59,454 - blueprints.planning - INFO - Allocated {IDEA18} to {S04}
+2025-10-01 13:24:59,454 - blueprints.planning - INFO - Processing topic 19/50: {IDEA19}
+2025-10-01 13:24:59,456 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:01,232 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 656
+2025-10-01 13:25:01,233 - blueprints.planning - INFO - Allocated {IDEA19} to {S04}
+2025-10-01 13:25:01,233 - blueprints.planning - INFO - Processing topic 20/50: {IDEA20}
+2025-10-01 13:25:01,233 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:02,791 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 577
+2025-10-01 13:25:02,791 - blueprints.planning - INFO - Allocated {IDEA20} to {S07}
+2025-10-01 13:25:02,791 - blueprints.planning - INFO - Processing topic 21/50: {IDEA21}
+2025-10-01 13:25:02,792 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:04,447 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 607
+2025-10-01 13:25:04,450 - blueprints.planning - INFO - Allocated {IDEA21} to {S07}
+2025-10-01 13:25:04,451 - blueprints.planning - INFO - Processing topic 22/50: {IDEA22}
+2025-10-01 13:25:04,453 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:06,061 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 586
+2025-10-01 13:25:06,062 - blueprints.planning - INFO - Allocated {IDEA22} to {S04}
+2025-10-01 13:25:06,062 - blueprints.planning - INFO - Processing topic 23/50: {IDEA23}
+2025-10-01 13:25:06,064 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:07,767 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 624
+2025-10-01 13:25:07,768 - blueprints.planning - INFO - Allocated {IDEA23} to {S04}
+2025-10-01 13:25:07,768 - blueprints.planning - INFO - Processing topic 24/50: {IDEA24}
+2025-10-01 13:25:07,769 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:09,335 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 578
+2025-10-01 13:25:09,336 - blueprints.planning - INFO - Allocated {IDEA24} to {S04}
+2025-10-01 13:25:09,337 - blueprints.planning - INFO - Processing topic 25/50: {IDEA25}
+2025-10-01 13:25:09,338 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:10,480 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 311
+2025-10-01 13:25:10,481 - blueprints.planning - INFO - Allocated {IDEA25} to {S04}
+2025-10-01 13:25:10,482 - blueprints.planning - INFO - Processing topic 26/50: {IDEA26}
+2025-10-01 13:25:10,484 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:12,116 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 592
+2025-10-01 13:25:12,116 - blueprints.planning - INFO - Allocated {IDEA26} to {S07}
+2025-10-01 13:25:12,116 - blueprints.planning - INFO - Processing topic 27/50: {IDEA27}
+2025-10-01 13:25:12,117 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:13,841 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 665
+2025-10-01 13:25:13,842 - blueprints.planning - INFO - Allocated {IDEA27} to {S07}
+2025-10-01 13:25:13,842 - blueprints.planning - INFO - Processing topic 28/50: {IDEA28}
+2025-10-01 13:25:13,842 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:15,471 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 591
+2025-10-01 13:25:15,472 - blueprints.planning - INFO - Allocated {IDEA28} to {S04}
+2025-10-01 13:25:15,472 - blueprints.planning - INFO - Processing topic 29/50: {IDEA29}
+2025-10-01 13:25:15,474 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:17,158 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 649
+2025-10-01 13:25:17,159 - blueprints.planning - INFO - Allocated {IDEA29} to {S04}
+2025-10-01 13:25:17,159 - blueprints.planning - INFO - Processing topic 30/50: {IDEA30}
+2025-10-01 13:25:17,160 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:18,763 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 562
+2025-10-01 13:25:18,764 - blueprints.planning - INFO - Allocated {IDEA30} to {S07}
+2025-10-01 13:25:18,765 - blueprints.planning - INFO - Processing topic 31/50: {IDEA31}
+2025-10-01 13:25:18,768 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:19,907 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 311
+2025-10-01 13:25:19,909 - blueprints.planning - INFO - Allocated {IDEA31} to {S04}
+2025-10-01 13:25:19,909 - blueprints.planning - INFO - Processing topic 32/50: {IDEA32}
+2025-10-01 13:25:19,910 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:21,586 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 627
+2025-10-01 13:25:21,587 - blueprints.planning - INFO - Allocated {IDEA32} to {S07}
+2025-10-01 13:25:21,588 - blueprints.planning - INFO - Processing topic 33/50: {IDEA33}
+2025-10-01 13:25:21,590 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:23,279 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 632
+2025-10-01 13:25:23,280 - blueprints.planning - INFO - Allocated {IDEA33} to {S04}
+2025-10-01 13:25:23,280 - blueprints.planning - INFO - Processing topic 34/50: {IDEA34}
+2025-10-01 13:25:23,280 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:24,862 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 567
+2025-10-01 13:25:24,863 - blueprints.planning - INFO - Allocated {IDEA34} to {S04}
+2025-10-01 13:25:24,864 - blueprints.planning - INFO - Processing topic 35/50: {IDEA35}
+2025-10-01 13:25:24,866 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:26,534 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 603
+2025-10-01 13:25:26,535 - blueprints.planning - INFO - Allocated {IDEA35} to {S05}
+2025-10-01 13:25:26,535 - blueprints.planning - INFO - Processing topic 36/50: {IDEA36}
+2025-10-01 13:25:26,536 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:28,151 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 602
+2025-10-01 13:25:28,152 - blueprints.planning - INFO - Allocated {IDEA36} to {S04}
+2025-10-01 13:25:28,152 - blueprints.planning - INFO - Processing topic 37/50: {IDEA37}
+2025-10-01 13:25:28,154 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:29,295 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 311
+2025-10-01 13:25:29,297 - blueprints.planning - INFO - Allocated {IDEA37} to {S04}
+2025-10-01 13:25:29,297 - blueprints.planning - INFO - Processing topic 38/50: {IDEA38}
+2025-10-01 13:25:29,300 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:30,945 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 588
+2025-10-01 13:25:30,946 - blueprints.planning - INFO - Allocated {IDEA38} to {S04}
+2025-10-01 13:25:30,947 - blueprints.planning - INFO - Processing topic 39/50: {IDEA39}
+2025-10-01 13:25:30,948 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:32,697 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 680
+2025-10-01 13:25:32,699 - blueprints.planning - INFO - Allocated {IDEA39} to {S04}
+2025-10-01 13:25:32,699 - blueprints.planning - INFO - Processing topic 40/50: {IDEA40}
+2025-10-01 13:25:32,703 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:34,236 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 534
+2025-10-01 13:25:34,237 - blueprints.planning - INFO - Allocated {IDEA40} to {S01}
+2025-10-01 13:25:34,238 - blueprints.planning - INFO - Processing topic 41/50: {IDEA41}
+2025-10-01 13:25:34,240 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:35,868 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 559
+2025-10-01 13:25:35,869 - blueprints.planning - INFO - Allocated {IDEA41} to {S04}
+2025-10-01 13:25:35,869 - blueprints.planning - INFO - Processing topic 42/50: {IDEA42}
+2025-10-01 13:25:35,872 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:37,548 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 605
+2025-10-01 13:25:37,549 - blueprints.planning - INFO - Allocated {IDEA42} to {S07}
+2025-10-01 13:25:37,550 - blueprints.planning - INFO - Processing topic 43/50: {IDEA43}
+2025-10-01 13:25:37,552 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:39,260 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 657
+2025-10-01 13:25:39,262 - blueprints.planning - INFO - Allocated {IDEA43} to {S04}
+2025-10-01 13:25:39,262 - blueprints.planning - INFO - Processing topic 44/50: {IDEA44}
+2025-10-01 13:25:39,265 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:40,798 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 520
+2025-10-01 13:25:40,799 - blueprints.planning - INFO - Allocated {IDEA44} to {S06}
+2025-10-01 13:25:40,799 - blueprints.planning - INFO - Processing topic 45/50: {IDEA45}
+2025-10-01 13:25:40,801 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:42,499 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 642
+2025-10-01 13:25:42,499 - blueprints.planning - INFO - Allocated {IDEA45} to {S07}
+2025-10-01 13:25:42,499 - blueprints.planning - INFO - Processing topic 46/50: {IDEA46}
+2025-10-01 13:25:42,500 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:44,167 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 620
+2025-10-01 13:25:44,168 - blueprints.planning - INFO - Allocated {IDEA46} to {S05}
+2025-10-01 13:25:44,169 - blueprints.planning - INFO - Processing topic 47/50: {IDEA47}
+2025-10-01 13:25:44,172 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:45,716 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 562
+2025-10-01 13:25:45,717 - blueprints.planning - INFO - Allocated {IDEA47} to {S02}
+2025-10-01 13:25:45,717 - blueprints.planning - INFO - Processing topic 48/50: {IDEA48}
+2025-10-01 13:25:45,718 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:47,294 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 563
+2025-10-01 13:25:47,295 - blueprints.planning - INFO - Allocated {IDEA48} to {S04}
+2025-10-01 13:25:47,296 - blueprints.planning - INFO - Processing topic 49/50: {IDEA49}
+2025-10-01 13:25:47,298 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:49,006 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 645
+2025-10-01 13:25:49,006 - blueprints.planning - INFO - Allocated {IDEA49} to {S07}
+2025-10-01 13:25:49,007 - blueprints.planning - INFO - Processing topic 50/50: {IDEA50}
+2025-10-01 13:25:49,007 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-01 13:25:50,614 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 547
+2025-10-01 13:25:50,615 - blueprints.planning - INFO - Allocated {IDEA50} to {S04}
+2025-10-01 13:25:50,615 - blueprints.planning - INFO - Section allocation counts: {'{S07}': 15, '{S04}': 25, '{S06}': 3, '{S02}': 3, '{S01}': 2, '{S05}': 2}
+2025-10-01 13:25:50,615 - blueprints.planning - INFO - Total allocations: 50
+2025-10-01 13:25:50,626 - config.database - INFO - Database connection established
+2025-10-01 13:25:50,639 - werkzeug - INFO - 127.0.0.1 - - [01/Oct/2025 13:25:50] "POST /planning/api/sections/allocate-topics-iterative HTTP/1.1" 200 -
+2025-10-01 13:26:36,899 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 13:26:36,937 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 13:26:37,200 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 13:26:37,206 - werkzeug - INFO -  * Debugger PIN: 842-147-207
+2025-10-01 13:26:43,580 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-01 13:26:43,617 - werkzeug - INFO -  * Restarting with stat
+2025-10-01 13:26:43,882 - werkzeug - WARNING -  * Debugger is active!
+2025-10-01 13:26:43,888 - werkzeug - INFO -  * Debugger PIN: 842-147-207
