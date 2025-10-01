@@ -425,6 +425,11 @@ async function allocateTopics() {
             // Display the results in the LLM module
             console.log('Topics allocated successfully');
             displayAllocationResults(result);
+            
+            // Display the raw LLM response
+            if (result.raw_response) {
+                displayRawResponse(result.raw_response);
+            }
         } else {
             alert('Error: ' + result.error);
         }
@@ -459,6 +464,14 @@ function displayAllocationResults(result) {
     
     html += '</div>';
     resultsDisplay.innerHTML = html;
+}
+
+// Display raw LLM response
+function displayRawResponse(rawResponse) {
+    const rawResponseElement = document.getElementById('raw-llm-response');
+    if (rawResponseElement) {
+        rawResponseElement.textContent = rawResponse;
+    }
 }
 </script>
 
