@@ -4070,6 +4070,7 @@ CRITICAL REQUIREMENTS:
 - Do NOT use the current section theme as the title - create something new and creative
 - Make titles evocative and engaging for Scottish heritage audiences
 - Use authentic Scottish terminology and cultural references where appropriate
+- Be MORE creative - avoid generic titles like "Ancient Celtic Origins"
 
 OUTPUT FORMAT: Return ONLY valid JSON with creative titles:
 {{
@@ -4087,17 +4088,21 @@ OUTPUT FORMAT: Return ONLY valid JSON with creative titles:
   ]
 }}
 
+CREATIVE TITLE EXAMPLES:
+- Instead of "Ancient Celtic Origins" → "Whispers from the Celtic Dawn"
+- Instead of "Agricultural Practices" → "The Land's Ancient Wisdom"
+- Instead of "Seasonal Celebrations" → "Festivals of the Golden Season"
+- Instead of "Christianity's Impact" → "When Cross Met Croft"
+- Instead of "Women's Roles" → "Keepers of the Sacred Flame"
+- Instead of "Folk Remedies" → "Healing Hands of the Highlands"
+
 TITLE GUIDELINES:
 - Use evocative language that captures Scottish spirit
 - Include cultural references where appropriate (e.g., "Celtic", "Highland", "Ancient Scottish")
 - Make titles accessible to international audiences
-- Examples of creative titles:
-  * Instead of "Ancient Celtic Origins" → "Whispers from the Celtic Dawn"
-  * Instead of "Agricultural Practices" → "The Land's Ancient Wisdom"
-  * Instead of "Seasonal Celebrations" → "Festivals of the Golden Season"
-  * Instead of "Christianity's Impact" → "When Cross Met Croft"
 - Avoid overly academic or dry language
 - Focus on emotional connection and cultural pride
+- Be SPECIFIC and CREATIVE - not generic
 
 SUBTITLE GUIDELINES:
 - Keep subtitles snappy and direct
@@ -4572,24 +4577,6 @@ def api_save_sections(post_id):
                     INSERT INTO post_development (post_id, sections, section_headings, section_order, created_at, updated_at)
                     VALUES (%s, %s, %s, %s, NOW(), NOW())
                 """, (post_id, sections_json, headings_json, order_json))
-            
-            # Save titles and subtitles to post table (permanent storage)
-            for section in sections:
-                section_id = section.get('id', f"section_{sections.index(section)+1}")
-                title = section.get('title', '')
-                subtitle = section.get('subtitle', '')
-                
-                # Update post table with section titles and subtitles
-                cursor.execute("""
-                    UPDATE post 
-                    SET section_titles = COALESCE(section_titles, '{}'::jsonb) || %s::jsonb,
-                        section_subtitles = COALESCE(section_subtitles, '{}'::jsonb) || %s::jsonb
-                    WHERE id = %s
-                """, (
-                    json.dumps({section_id: title}),
-                    json.dumps({section_id: subtitle}),
-                    post_id
-                ))
             
             # Commit the transaction
             cursor.connection.commit()
