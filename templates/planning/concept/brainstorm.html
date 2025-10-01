@@ -350,6 +350,26 @@
     padding: 0.5rem 0;
 }
 
+.topic-title {
+    font-weight: 600;
+    color: #3b82f6;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+.topic-description {
+    color: #cbd5e1;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+}
+
+.topic-category {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
 .no-topics {
     grid-column: 1 / -1;
     text-align: center;
@@ -605,7 +625,11 @@ function displayTopics(topics) {
     topics.forEach((topic, index) => {
         topicsHTML += `
             <div class="topic-item" data-topic-id="${index}" data-category="${topic.category || 'general'}">
-                <div class="topic-content">${topic.title}</div>
+                <div class="topic-content">
+                    <div class="topic-title">${topic.title}</div>
+                    <div class="topic-description">${topic.description || 'No description available'}</div>
+                    <div class="topic-category">Category: ${topic.category || 'general'}</div>
+                </div>
             </div>
         `;
     });
