@@ -4059,37 +4059,32 @@ CRITICAL REQUIREMENTS:
             topics_list = '\n  '.join(section.get('topics', []))
             sections_text += f"\nSection {i+1}: {section_theme}\n  {topics_list}\n"
         
-        titling_prompt = f"""You are tasked with creating engaging, creative titles and snappy subtitles for these existing sections with allocated topics about {expanded_idea}. Create NEW, CREATIVE titles that are more engaging than the current technical section names.
+        titling_prompt = f"""You are tasked with creating engaging, creative titles for these existing sections about {expanded_idea}. Create NEW, CREATIVE titles that are more engaging than the current technical section names.
 
-EXISTING SECTIONS TO TITLE (CREATE NEW CREATIVE TITLES):
+EXISTING SECTIONS TO TITLE (CREATE NEW CREATIVE TITLES ONLY):
 {sections_text}
 
 CRITICAL REQUIREMENTS:
-- Create NEW, CREATIVE titles that are more engaging than the current section names
-- Keep the EXACT same topics and order
+- Create ONLY new creative titles - do NOT modify subtitles, topics, or descriptions
+- Keep the EXACT same topics and order - DO NOT reduce the number of topics
 - Do NOT use the current section theme as the title - create something new and creative
 - Make titles evocative and engaging for Scottish heritage audiences
 - Use authentic Scottish terminology and cultural references where appropriate
 
-OUTPUT FORMAT: Return ONLY valid JSON:
+OUTPUT FORMAT: Return ONLY valid JSON with creative titles:
 {{
   "sections": [
     {{
       "id": "section_1",
-      "title": "NEW CREATIVE TITLE (not the current section theme)",
-      "subtitle": "Snappy subtitle - no fluff like 'This section delves into'",
-      "description": "Brief description of what this section covers",
-      "topics": ["EXACT SAME TOPICS AS INPUT"],
-      "order": 1,
-      "cultural_significance": "Why this theme matters to Scottish heritage"
+      "title": "NEW CREATIVE TITLE ONLY",
+      "order": 1
+    }},
+    {{
+      "id": "section_2", 
+      "title": "NEW CREATIVE TITLE ONLY",
+      "order": 2
     }}
-  ],
-  "metadata": {{
-    "total_sections": {len(topic_allocation)},
-    "total_topics": {sum(len(section.get('topics', [])) for section in topic_allocation)},
-    "allocated_topics": {sum(len(section.get('topics', [])) for section in topic_allocation)},
-    "audience_focus": "Scottish heritage enthusiasts and cultural readers"
-  }}
+  ]
 }}
 
 TITLE GUIDELINES:
@@ -4166,9 +4161,40 @@ DESCRIPTION GUIDELINES:
                     content = content[json_start:json_end]
             
             sections_data = json.loads(content)
-            # Sanitize subtitles/descriptions and enforce constraints
-            sections_data = sanitize_sections_text(sections_data)
-            logger.info(f"Successfully parsed LLM response for titling")
+            
+            # Merge LLM creative titles with existing input data
+            merged_sections = []
+            for i, section in enumerate(topic_allocation):
+                # Find matching LLM section by order
+                llm_section = None
+                for llm_sec in sections_data.get('sections', []):
+                    if llm_sec.get('order') == i + 1:
+                        llm_section = llm_sec
+                        break
+                
+                # Create merged section with creative title and original data
+                merged_section = {
+                    'id': f'section_{i+1}',
+                    'title': llm_section.get('title', section.get('section_theme', f'Section {i+1}')) if llm_section else section.get('section_theme', f'Section {i+1}'),
+                    'subtitle': section.get('section_description', ''),
+                    'description': section.get('section_description', ''),
+                    'topics': section.get('topics', []),
+                    'order': i + 1,
+                    'cultural_significance': f"Exploring {section.get('section_theme', f'Section {i+1}')} in Scottish heritage"
+                }
+                merged_sections.append(merged_section)
+            
+            sections_data = {
+                'sections': merged_sections,
+                'metadata': {
+                    'total_sections': len(topic_allocation),
+                    'total_topics': sum(len(section.get('topics', [])) for section in topic_allocation),
+                    'allocated_topics': sum(len(section.get('topics', [])) for section in topic_allocation),
+                    'audience_focus': 'Scottish heritage enthusiasts and cultural readers'
+                }
+            }
+            
+            logger.info(f"Successfully merged creative titles with existing data")
         except json.JSONDecodeError as e:
             logger.warning(f"LLM JSON parsing failed: {e}")
             logger.warning(f"LLM response content: {llm_response['content'][:500]}...")
@@ -4546,6 +4572,24 @@ def api_save_sections(post_id):
                     INSERT INTO post_development (post_id, sections, section_headings, section_order, created_at, updated_at)
                     VALUES (%s, %s, %s, %s, NOW(), NOW())
                 """, (post_id, sections_json, headings_json, order_json))
+            
+            # Save titles and subtitles to post table (permanent storage)
+            for section in sections:
+                section_id = section.get('id', f"section_{sections.index(section)+1}")
+                title = section.get('title', '')
+                subtitle = section.get('subtitle', '')
+                
+                # Update post table with section titles and subtitles
+                cursor.execute("""
+                    UPDATE post 
+                    SET section_titles = COALESCE(section_titles, '{}'::jsonb) || %s::jsonb,
+                        section_subtitles = COALESCE(section_subtitles, '{}'::jsonb) || %s::jsonb
+                    WHERE id = %s
+                """, (
+                    json.dumps({section_id: title}),
+                    json.dumps({section_id: subtitle}),
+                    post_id
+                ))
             
             # Commit the transaction
             cursor.connection.commit()
