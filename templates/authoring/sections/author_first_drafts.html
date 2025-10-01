@@ -10,12 +10,16 @@
     window.postId = {{ post_id }};
 </script>
 
-<!-- Test script to verify execution -->
+<!-- Simple auto-load script -->
 <script>
-console.log('Authoring template script starting...');
-console.log('Testing basic functionality...');
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded test - this should appear');
+    // Wait for sections to load, then auto-select first one
+    setTimeout(function() {
+        const firstSection = document.querySelector('.section-item');
+        if (firstSection) {
+            firstSection.click();
+        }
+    }, 500);
 });
 </script>
 
