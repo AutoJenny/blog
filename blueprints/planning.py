@@ -2764,7 +2764,9 @@ def api_allocate_topics():
                             return jsonify({
                                 'success': True,
                                 'message': f'Topics allocated successfully (with automatic retry for {len(missing_topics)} missing topics)',
-                                'allocations': merged_allocation
+                                'allocations': merged_allocation,
+                                'results': merged_allocation,  # Add results field for LLM module compatibility
+                                'raw_response': llm_result.get('content', 'No raw response available')
                             })
                         else:
                             logger.error("Merged allocation still failed validation")
@@ -2795,7 +2797,8 @@ def api_allocate_topics():
                 'success': True,
                 'message': 'Topics allocated successfully',
                 'allocations': allocation_data,
-                'results': allocation_data  # Add results field for LLM module compatibility
+                'results': allocation_data,  # Add results field for LLM module compatibility
+                'raw_response': llm_result.get('content', 'No raw response available')
             })
             
         except Exception as e:
