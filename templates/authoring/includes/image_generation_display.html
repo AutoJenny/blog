@@ -1,0 +1,45 @@
+<div class="image-generation-display" id="image-generation-display" style="display: none;">
+    <h5>Generated Image</h5>
+    
+    <div class="generated-image-container" id="generated-image-container">
+        <!-- Generated image will be displayed here -->
+    </div>
+</div>
+
+<style>
+.image-generation-display {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.image-generation-display h5 {
+    color: #e2e8f0;
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.generated-image-container {
+    text-align: center;
+}
+
+.generated-image-container img {
+    max-width: 100%;
+    max-height: 500px;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.no-image-message {
+    color: #94a3b8;
+    font-style: italic;
+    padding: 2rem;
+    background: #0f172a;
+    border-radius: 8px;
+    border: 1px dashed #334155;
+}
+</style>

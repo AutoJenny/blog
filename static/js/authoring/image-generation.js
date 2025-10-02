@@ -1,5 +1,5 @@
 import { SectionsPanel } from './sections-panel.js';
-import { ImageCaptionsOutputPanel } from './image-captions-output-panel.js';
+import { ImageGenerationOutputPanel } from './image-generation-output-panel.js';
 
 function initTabs() {
   const tabButtons = document.querySelectorAll('.tab-btn');
@@ -20,10 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
   initTabs();
 
   const postId = window.postId;
-  const output = new ImageCaptionsOutputPanel({ postId });
+  const output = new ImageGenerationOutputPanel({ postId });
   
   // Make output panel available globally for LLM module
-  window.imageCaptionsOutputPanel = output;
+  window.imageGenerationOutputPanel = output;
 
   const sectionsPanel = new SectionsPanel({
     postId,
@@ -45,8 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Function to initialize LLM module for current section
   function initializeLLMForSection(sectionId) {
-      // Initialize LLM module with image_captions configuration
-      const llmModule = initializeLLMModule('image_captions', postId, sectionId);
+      // Initialize LLM module with image_generation configuration
+      const llmModule = initializeLLMModule('image_generation', postId, sectionId);
     if (llmModule) {
       window.llmModule = llmModule;
     }

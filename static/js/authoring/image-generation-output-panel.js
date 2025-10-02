@@ -1,6 +1,6 @@
 import { postJSON, getJSON } from './api.js';
 
-export class ImageCaptionsOutputPanel {
+export class ImageGenerationOutputPanel {
   constructor({ postId }) {
     this.postId = postId;
     this.current = null;
@@ -36,16 +36,21 @@ export class ImageCaptionsOutputPanel {
   }
 
   bind() {
-    document.getElementById('save-btn')?.addEventListener('click', () => this.saveImageCaptions());
-    document.getElementById('regenerate-btn')?.addEventListener('click', () => this.generateImageCaptions());
+    document.getElementById('save-btn')?.addEventListener('click', () => this.saveImageGeneration());
+    document.getElementById('regenerate-btn')?.addEventListener('click', () => this.generateImage());
+
+    // Override the Generate button to call our direct image generation
+    document.getElementById('generate-btn')?.addEventListener('click', () => {
+      this.handleGenerateButton();
+    });
 
     window.addEventListener('sections:batch-generate', async (e) => {
-      console.log('[DEBUG] ImageCaptionsOutputPanel received sections:batch-generate event:', e.detail);
+      console.log('[DEBUG] ImageGenerationOutputPanel received sections:batch-generate event:', e.detail);
       const ids = e.detail?.ids || [];
       console.log('[DEBUG] Processing batch generation for IDs:', ids);
       for (const id of ids) { 
-        console.log(`[DEBUG] Generating image caption for section ${id}`);
-        await this.generateImageCaptions(id); 
+        console.log(`[DEBUG] Generating image for section ${id}`);
+        await this.generateImage(id); 
       }
       
       // Notify sections panel to reload data after batch generation
@@ -53,6 +58,73 @@ export class ImageCaptionsOutputPanel {
       const reloadEvent = new CustomEvent('sections:reload-data');
       window.dispatchEvent(reloadEvent);
     });
+  }
+
+  async handleGenerateButton() {
+    const generateBtn = document.getElementById('generate-btn');
+    if (!generateBtn) return;
+
+    // Show loading state
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+
+    try {
+      // Get current section
+      const currentSection = this.current;
+      if (!currentSection || !currentSection.id) {
+        throw new Error('No section selected');
+      }
+
+      console.log(`[Image Generation] Generating image for section ${currentSection.id}`);
+      
+      // Call the image generation API directly
+      const response = await fetch(`/authoring/api/posts/${this.postId}/sections/${currentSection.id}/generate-image`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('[Image Generation] API response:', result);
+
+      if (result.success) {
+        console.log('[Image Generation] Image generated successfully:', result.message);
+        
+        // Update raw response display
+        const rawResponseElement = document.getElementById('raw-llm-response');
+        if (rawResponseElement) {
+          rawResponseElement.textContent = result.message || 'Image generated successfully';
+        }
+        
+        // Refresh the image display after a short delay
+        setTimeout(() => {
+          this.displayGeneratedImage(currentSection.id);
+        }, 1000);
+        
+      } else {
+        throw new Error(result.error || 'Image generation failed');
+      }
+
+    } catch (error) {
+      console.error('[Image Generation] Error:', error);
+      
+      // Update raw response display with error
+      const rawResponseElement = document.getElementById('raw-llm-response');
+      if (rawResponseElement) {
+        rawResponseElement.textContent = `Error: ${error.message}`;
+      }
+      
+    } finally {
+      // Reset button state
+      generateBtn.disabled = false;
+      generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate';
+    }
   }
 
   show(section) {
@@ -68,9 +140,8 @@ export class ImageCaptionsOutputPanel {
     document.getElementById('save-btn').disabled = false;
     document.getElementById('regenerate-btn').disabled = false;
 
-    // Display image captions and alt text (strict: no fallbacks)
-    this.displayImageCaptions(section.image_captions || '');
-    this.displayImageAltText(section.image_alt_text || '');
+    // Display generated image for the section
+    this.displayGeneratedImage(section.id);
   }
 
   showMultiple(sections) {
@@ -94,109 +165,126 @@ export class ImageCaptionsOutputPanel {
     document.getElementById('save-btn').disabled = false;
     document.getElementById('regenerate-btn').disabled = false;
 
-    // Display prompts for all selected sections (strict: no fallbacks)
-    this.displayMultipleSectionsPrompts(sections);
+    // Display images for all selected sections
+    this.displayMultipleSectionsImages(sections);
   }
 
   clearDisplay() {
-    const promptsDisplay = document.getElementById('image-captions-display');
-    if (promptsDisplay) promptsDisplay.style.display = 'none';
+    const imageDisplay = document.getElementById('image-generation-display');
+    if (imageDisplay) imageDisplay.style.display = 'none';
   }
 
-  displayMultipleSectionsPrompts(sections) {
-    const promptsDisplay = document.getElementById('image-captions-display');
-    const promptsContainer = document.getElementById('captions-container');
-    promptsContainer.innerHTML = '';
-
-    sections.forEach((section) => {
-      const promptsData = section.image_captions || '';
-      if (promptsData.trim() === '') return;
-      
-      const sectionHeader = document.createElement('div');
-      sectionHeader.className = 'section-prompts-header';
-      sectionHeader.style.gridColumn = '1 / -1';
-      sectionHeader.innerHTML = `
-        <h6 style="color: #e2e8f0; margin: 1rem 0 0.5rem 0; padding-bottom: 0.5rem; border-bottom: 1px solid #334155;">
-          Section ${section.order}: ${section.title}
-        </h6>
+  displayGeneratedImage(sectionId) {
+    const imageDisplay = document.getElementById('image-generation-display');
+    const imageContainer = document.getElementById('generated-image-container');
+    
+    if (!imageDisplay || !imageContainer) return;
+    
+    // Construct the image path
+    const imagePath = `/static/content/posts/${this.postId}/sections/${sectionId}/raw/${sectionId}.png`;
+    
+    // Check if image exists by trying to load it
+    const img = new Image();
+    img.onload = () => {
+      // Image exists, display it
+      imageContainer.innerHTML = `
+        <img src="${imagePath}" alt="Generated image for section ${sectionId}" />
       `;
-      promptsContainer.appendChild(sectionHeader);
-      
-      const promptCard = document.createElement('div');
-      promptCard.className = 'prompt-card';
-      promptCard.dataset.sectionId = section.id;
-      promptCard.innerHTML = `
-        <div class="prompt-content">
-          <div class="prompt-text">${promptsData}</div>
+      imageDisplay.style.display = 'block';
+    };
+    img.onerror = () => {
+      // Image doesn't exist, show message
+      imageContainer.innerHTML = `
+        <div class="no-image-message">
+          No generated image found for this section.<br>
+          Click "Regenerate" to generate an image.
         </div>
       `;
-      promptsContainer.appendChild(promptCard);
+      imageDisplay.style.display = 'block';
+    };
+    img.src = imagePath;
+  }
+
+  displayMultipleSectionsImages(sections) {
+    const imageDisplay = document.getElementById('image-generation-display');
+    const imageContainer = document.getElementById('generated-image-container');
+    
+    if (!imageDisplay || !imageContainer) return;
+    
+    imageContainer.innerHTML = '';
+    
+    sections.forEach((section) => {
+      const imagePath = `/static/content/posts/${this.postId}/sections/${section.id}/raw/${section.id}.png`;
+      
+      const sectionDiv = document.createElement('div');
+      sectionDiv.className = 'section-image-container';
+      sectionDiv.style.marginBottom = '1rem';
+      sectionDiv.style.padding = '1rem';
+      sectionDiv.style.border = '1px solid #334155';
+      sectionDiv.style.borderRadius = '8px';
+      
+      const sectionHeader = document.createElement('h6');
+      sectionHeader.style.color = '#e2e8f0';
+      sectionHeader.style.margin = '0 0 0.5rem 0';
+      sectionHeader.style.paddingBottom = '0.5rem';
+      sectionHeader.style.borderBottom = '1px solid #334155';
+      sectionHeader.textContent = `Section ${section.order}: ${section.title}`;
+      sectionDiv.appendChild(sectionHeader);
+      
+      const img = new Image();
+      img.onload = () => {
+        const imgElement = document.createElement('img');
+        imgElement.src = imagePath;
+        imgElement.alt = `Generated image for section ${section.id}`;
+        imgElement.style.maxWidth = '100%';
+        imgElement.style.maxHeight = '300px';
+        imgElement.style.borderRadius = '8px';
+        imgElement.style.border = '1px solid #334155';
+        sectionDiv.appendChild(imgElement);
+      };
+      img.onerror = () => {
+        const noImageDiv = document.createElement('div');
+        noImageDiv.className = 'no-image-message';
+        noImageDiv.style.padding = '1rem';
+        noImageDiv.style.textAlign = 'center';
+        noImageDiv.style.color = '#94a3b8';
+        noImageDiv.style.fontStyle = 'italic';
+        noImageDiv.textContent = 'No generated image found for this section';
+        sectionDiv.appendChild(noImageDiv);
+      };
+      img.src = imagePath;
+      
+      imageContainer.appendChild(sectionDiv);
     });
     
-    if (promptsContainer.children.length > 0) {
-      promptsDisplay.style.display = 'block';
-    } else {
-      this.clearDisplay();
-    }
-  }
-
-  displayImageCaptions(promptsData) {
-    const promptsDisplay = document.getElementById('image-captions-display');
-    const promptsContainer = document.getElementById('captions-container');
-    
-    if (!promptsData || promptsData.trim() === '') {
-      promptsDisplay.style.display = 'none';
-      return;
-    }
-    
-    promptsContainer.innerHTML = `
-      <div class="prompt-card">
-        <div class="prompt-content">
-          <div class="prompt-text">${promptsData}</div>
-        </div>
-      </div>
-    `;
-    promptsDisplay.style.display = 'block';
-  }
-
-
-  displayImageAltText(altTextData) {
-    const altTextDisplay = document.getElementById('image-alt-text-display');
-    const altTextContainer = document.getElementById('alt-text-container');
-    
-    if (!altTextData || altTextData.trim() === '') {
-      if (altTextDisplay) altTextDisplay.style.display = 'none';
-      return;
-    }
-    
-    altTextContainer.innerHTML = `
-      <div class="alt-text-card">
-        <div class="alt-text-content">
-          <div class="alt-text-text">${altTextData}</div>
-        </div>
-      </div>
-    `;
-    if (altTextDisplay) altTextDisplay.style.display = 'block';
+    imageDisplay.style.display = 'block';
   }
 
   updateWordCount() {
     // No-op in strict mode
   }
 
-  async saveImageCaptions() {
-    // Strict: implement when edit UI is added; no-op for now
+  async saveImageGeneration() {
+    // No-op for now - images are automatically saved
   }
 
-  async generateImageCaptions(sectionId = null) {
+  async generateImage(sectionId = null) {
     const id = sectionId || (this.current?.id);
     if (!id) return;
     
     try {
-      const res = await postJSON(`/authoring/api/posts/${this.postId}/sections/${id}/generate-image-captions`, {});
-      this.displayImageCaptions(res.image_captions || '(no content)');
-      this.displayImageAltText(res.image_alt_text || '(no content)');
+      console.log(`Generating image for section ${id}`);
+      const res = await postJSON(`/authoring/api/posts/${this.postId}/sections/${id}/generate-image`, {});
+      
+      if (res.success) {
+        // Refresh the display to show the newly generated image
+        this.displayGeneratedImage(id);
+        console.log('Image generated successfully:', res.message);
+      } else {
+        console.error('Image generation failed:', res.error);
+      }
     } catch (err) {
-      console.error(err);
+      console.error('Error generating image:', err);
     }
   }
 }

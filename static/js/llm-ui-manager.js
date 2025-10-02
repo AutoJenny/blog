@@ -67,7 +67,7 @@ class LLMUIManager {
             </div>`;
         }
 
-        if (config.max_tokens) {
+        if (config && config.max_tokens) {
             configHTML += `<div class="tokens-info">
                 <strong>Max Tokens:</strong> ${config.max_tokens}
             </div>`;

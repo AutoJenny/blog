@@ -3,13 +3,72 @@ from flask import Blueprint, render_template, jsonify, request, redirect, url_fo
 from config.database import db_manager
 import logging
 import json
+import os
 import requests
 import re
 from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
-def process_llm_html_content(html_content):
+def generate_dalle_image(image_prompt, post_id, section_id):
+    """Generate image using DALL-E API"""
+    try:
+        # Load OpenAI API key from environment
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            return {'success': False, 'error': 'OPENAI_API_KEY not found in environment'}
+        
+        # Call DALL-E API
+        headers = {
+            'Authorization': f'Bearer {api_key}',
+            'Content-Type': 'application/json'
+        }
+        
+        data = {
+            'model': 'dall-e-3',
+            'prompt': image_prompt,
+            'n': 1,
+            'size': '1792x1024',
+            'quality': 'standard',
+            'style': 'natural'
+        }
+        
+        response = requests.post('https://api.openai.com/v1/images/generations', 
+                               headers=headers, json=data, timeout=60)
+        
+        if response.status_code != 200:
+            return {'success': False, 'error': f'DALL-E API error: {response.status_code} - {response.text}'}
+        
+        result = response.json()
+        
+        if 'data' not in result or not result['data']:
+            return {'success': False, 'error': 'No image data returned from DALL-E'}
+        
+        # Download the image
+        image_url = result['data'][0]['url']
+        image_response = requests.get(image_url, timeout=30)
+        
+        if image_response.status_code != 200:
+            return {'success': False, 'error': f'Failed to download image: {image_response.status_code}'}
+        
+        # Create directory structure
+        image_dir = f"static/content/posts/{post_id}/sections/{section_id}/raw"
+        os.makedirs(image_dir, exist_ok=True)
+        
+        # Save image with section-based naming
+        image_path = f"{image_dir}/{section_id}.png"
+        with open(image_path, 'wb') as f:
+            f.write(image_response.content)
+        
+        return {
+            'success': True,
+            'image_path': f"/static/content/posts/{post_id}/sections/{section_id}/raw/{section_id}.png",
+            'local_path': image_path
+        }
+        
+    except Exception as e:
+        logger.error(f"DALL-E generation error: {str(e)}")
+        return {'success': False, 'error': str(e)}
     """
     Process LLM HTML content to create both draft (HTML) and section_text (plain text) versions.
     
@@ -1434,6 +1493,89 @@ def api_image_captions_prompt():
     except Exception as e:
         logger.error(f"Error with Image Captions prompt: {e}")
         return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/llm/prompts/image-generation', methods=['GET', 'PUT'])
+def api_image_generation_prompt():
+    """Get or update the image generation prompt"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            if request.method == 'GET':
+                # Get the prompt
+                cursor.execute("""
+                    SELECT id, name, prompt_text, description
+                    FROM llm_prompt
+                    WHERE name = 'Image Generation'
+                """)
+                prompt = cursor.fetchone()
+                
+                if prompt:
+                    return jsonify({
+                        'success': True,
+                        'prompt': {
+                            'id': prompt['id'],
+                            'name': prompt['name'],
+                            'text': prompt['prompt_text'],
+                            'description': prompt['description']
+                        }
+                    })
+                else:
+                    return jsonify({'success': False, 'error': 'Prompt not found'})
+            
+            elif request.method == 'PUT':
+                # Update the prompt
+                data = request.get_json()
+                prompt_text = data.get('text', '')
+                
+                cursor.execute("""
+                    UPDATE llm_prompt
+                    SET prompt_text = %s, updated_at = NOW()
+                    WHERE name = 'Image Generation'
+                """, (prompt_text,))
+                
+                return jsonify({'success': True, 'message': 'Prompt updated successfully'})
+                
+    except Exception as e:
+        logger.error(f"Error with Image Generation prompt: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/sections/<int:section_id>/generate-image', methods=['POST'])
+def api_generate_image(post_id, section_id):
+    """Generate image for a specific section using DALL-E"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get section data including image_prompts
+            cursor.execute("""
+                SELECT id, section_order, section_heading, image_prompts
+                FROM post_section
+                WHERE id = %s AND post_id = %s
+            """, (section_id, post_id))
+            
+            section = cursor.fetchone()
+            if not section:
+                return jsonify({'success': False, 'error': 'Section not found'})
+            
+            # Parse image_prompts JSON to get the actual prompt
+            image_prompts_data = json.loads(section['image_prompts']) if section['image_prompts'] else {}
+            image_prompt = image_prompts_data.get('image_prompt', '')
+            
+            if not image_prompt:
+                return jsonify({'success': False, 'error': 'No image prompt found for this section'})
+            
+            # Generate image using DALL-E
+            dalle_result = generate_dalle_image(image_prompt, post_id, section_id)
+            
+            if dalle_result['success']:
+                return jsonify({
+                    'success': True,
+                    'image_path': dalle_result['image_path'],
+                    'message': 'Image generated successfully'
+                })
+            else:
+                return jsonify({'success': False, 'error': dalle_result['error']})
+                
+    except Exception as e:
+        logger.error(f"Error generating image: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)})
 
 @bp.route('/api/posts/<int:post_id>/sections/<int:section_id>/generate-image-captions', methods=['POST'])
 def api_generate_image_captions(post_id, section_id):

@@ -90,7 +90,7 @@ class LLMModule {
         
         if (result.success) {
             // Display raw LLM response
-            this.displayRawResponse(result.raw_response || result.content || 'No raw response available');
+            this.displayRawResponse(result.raw_response || result.content || result.message || 'No raw response available');
             
             // Handle different response formats based on config
             if (this.config.resultsField === 'draft_content') {
@@ -99,6 +99,9 @@ class LLMModule {
             } else if (this.config.resultsField === 'image_prompts') {
                 // For image prompts, update the ImagePromptsOutputPanel
                 this.updateImagePromptsOutput(result);
+            } else if (this.config.resultsField === 'generated_image') {
+                // For image generation, update the ImageGenerationOutputPanel
+                this.updateImageGenerationOutput(result);
             } else {
                 // For other modules, use standard display
                 this.uiManager.displayResults(result.results || result);
@@ -123,6 +126,20 @@ class LLMModule {
         // Update the ImagePromptsOutputPanel with the generated result
         if (window.imagePromptsOutputPanel && result.image_prompt) {
             window.imagePromptsOutputPanel.displayImagePrompts(result.image_prompt);
+        }
+    }
+    
+    updateImageGenerationOutput(result) {
+        // Update the ImageGenerationOutputPanel with the generated image
+        if (window.imageGenerationOutputPanel && result.success) {
+            // Add a small delay to ensure the file is fully written
+            setTimeout(() => {
+                // Refresh the image display to show the newly generated image
+                const currentSection = window.imageGenerationOutputPanel.current;
+                if (currentSection && currentSection.id) {
+                    window.imageGenerationOutputPanel.displayGeneratedImage(currentSection.id);
+                }
+            }, 1000); // 1 second delay
         }
     }
     
