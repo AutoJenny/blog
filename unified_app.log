@@ -3431,3 +3431,69 @@ CONTEXT:  unnamed portal parameter $2 = '...'
 2025-10-02 09:12:50,355 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:12:50] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
 2025-10-02 09:12:50,473 - config.database - INFO - Database connection established
 2025-10-02 09:12:50,483 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:12:50] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-10-02 09:16:09,257 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-02 09:16:09,298 - werkzeug - INFO -  * Restarting with stat
+2025-10-02 09:16:09,557 - werkzeug - WARNING -  * Debugger is active!
+2025-10-02 09:16:09,564 - werkzeug - INFO -  * Debugger PIN: 842-147-207
+2025-10-02 09:18:54,475 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:18:54] "[35m[1mGET /planning/posts/60/concept/brainstorm HTTP/1.1[0m" 500 -
+2025-10-02 09:19:03,935 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:03] "GET /planning/posts/60/concept/brainstorm HTTP/1.1" 200 -
+2025-10-02 09:19:05,924 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:05] "[35m[1mGET /planning/posts/60/concept/section-structure HTTP/1.1[0m" 500 -
+2025-10-02 09:19:18,094 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:18] "GET /planning/posts/60/concept/section-structure HTTP/1.1" 200 -
+2025-10-02 09:19:36,180 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:36] "GET /planning/posts/60/concept/brainstorm HTTP/1.1" 200 -
+2025-10-02 09:19:36,225 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:36] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-02 09:19:36,227 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:36] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-02 09:19:36,228 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:36] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-10-02 09:19:36,228 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:36] "[36mGET /static/js/llm-utils.js HTTP/1.1[0m" 304 -
+2025-10-02 09:19:36,229 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:36] "[36mGET /static/css/llm-module.css HTTP/1.1[0m" 304 -
+2025-10-02 09:19:36,230 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:36] "[36mGET /static/js/llm-ui-manager.js HTTP/1.1[0m" 304 -
+2025-10-02 09:19:36,230 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:36] "[36mGET /static/js/llm-config.js HTTP/1.1[0m" 304 -
+2025-10-02 09:19:36,231 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:36] "[36mGET /static/js/llm-api-client.js HTTP/1.1[0m" 304 -
+2025-10-02 09:19:36,232 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:36] "[36mGET /static/js/llm-event-manager.js HTTP/1.1[0m" 304 -
+2025-10-02 09:19:36,233 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:36] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-02 09:19:36,234 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:36] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-02 09:19:36,235 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:36] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-02 09:19:36,235 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:36] "[36mGET /static/js/llm-module.js HTTP/1.1[0m" 304 -
+2025-10-02 09:19:36,242 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:36] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-10-02 09:19:36,268 - config.database - INFO - Database connection established
+2025-10-02 09:19:36,269 - config.database - INFO - Database connection established
+2025-10-02 09:19:36,269 - config.database - INFO - Database connection established
+2025-10-02 09:19:36,270 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:36] "GET /planning/api/posts/60/expanded-idea HTTP/1.1" 200 -
+2025-10-02 09:19:36,271 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:36] "GET /planning/api/posts/60/idea-scope HTTP/1.1" 200 -
+2025-10-02 09:19:36,271 - blueprints.planning - ERROR - Error fetching prompt: invalid input syntax for type integer: "topic-brainstorming"
+CONTEXT:  unnamed portal parameter $2 = '...'
+2025-10-02 09:19:36,271 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:36] "GET /planning/api/llm/prompts/topic-brainstorming HTTP/1.1" 200 -
+2025-10-02 09:19:36,355 - config.database - INFO - Database connection established
+2025-10-02 09:19:36,360 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:36] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-10-02 09:19:36,759 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:36] "GET /planning/posts/60/concept/topic-allocation HTTP/1.1" 200 -
+2025-10-02 09:19:39,564 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:39] "GET /planning/posts/60/concept/titling HTTP/1.1" 200 -
+2025-10-02 09:19:41,356 - config.database - INFO - Database connection established
+2025-10-02 09:19:41,363 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:41] "GET /authoring/posts/60/sections/author-first-drafts HTTP/1.1" 200 -
+2025-10-02 09:19:43,197 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:43] "GET /planning/posts/60/concept/section-structure HTTP/1.1" 200 -
+2025-10-02 09:19:43,199 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:43] "[36mGET /planning/posts/60/concept/section-structure?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-10-02 09:19:43,200 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:43] "[36mGET /planning/posts/60/concept/section-structure?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-10-02 09:19:43,201 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:43] "[36mGET /planning/posts/60/concept/section-structure?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-10-02 09:19:43,202 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:43] "[36mGET /planning/posts/60/concept/section-structure?__debugger__=yes&cmd=resource&f=console.png&s=NCSrtvoDY56raF9WQFyx HTTP/1.1[0m" 304 -
+2025-10-02 09:19:43,240 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:43] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-02 09:19:43,241 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:43] "[36mGET /static/css/llm-module.css HTTP/1.1[0m" 304 -
+2025-10-02 09:19:43,244 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:43] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-02 09:19:43,246 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:43] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-10-02 09:19:43,247 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:43] "[36mGET /static/js/llm-utils.js HTTP/1.1[0m" 304 -
+2025-10-02 09:19:43,247 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:43] "[36mGET /static/js/llm-api-client.js HTTP/1.1[0m" 304 -
+2025-10-02 09:19:43,248 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:43] "[36mGET /static/js/llm-config.js HTTP/1.1[0m" 304 -
+2025-10-02 09:19:43,248 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:43] "[36mGET /static/js/llm-ui-manager.js HTTP/1.1[0m" 304 -
+2025-10-02 09:19:43,250 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:43] "[36mGET /static/js/llm-event-manager.js HTTP/1.1[0m" 304 -
+2025-10-02 09:19:43,253 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:43] "[36mGET /static/js/llm-module.js HTTP/1.1[0m" 304 -
+2025-10-02 09:19:43,253 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:43] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-02 09:19:43,254 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:43] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-02 09:19:43,254 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:43] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-02 09:19:43,259 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:43] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-10-02 09:19:43,274 - config.database - INFO - Database connection established
+2025-10-02 09:19:43,274 - config.database - INFO - Database connection established
+2025-10-02 09:19:43,276 - blueprints.planning - ERROR - Error fetching prompt: invalid input syntax for type integer: "section-structure"
+CONTEXT:  unnamed portal parameter $2 = '...'
+2025-10-02 09:19:43,276 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:43] "GET /planning/api/llm/prompts/section-structure HTTP/1.1" 200 -
+2025-10-02 09:19:43,277 - config.database - INFO - Database connection established
+2025-10-02 09:19:43,279 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:43] "GET /planning/api/sections/design-structure/60 HTTP/1.1" 200 -
+2025-10-02 09:19:43,281 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:43] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-10-02 09:19:43,375 - config.database - INFO - Database connection established
+2025-10-02 09:19:43,383 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 09:19:43] "GET /planning/api/posts/60 HTTP/1.1" 200 -

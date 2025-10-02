@@ -12,17 +12,7 @@
     <!-- Include condensed header -->
     {% include 'planning/includes/condensed_header.html' %}
     
-    <script>
-    // Move titling content to process-tab after page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        const titlingContent = document.querySelector('.titling-main');
-        const processTab = document.getElementById('process-tab');
-        if (titlingContent && processTab) {
-            processTab.appendChild(titlingContent);
-        }
-    });
-    </script>
-    
+    {% block process_content %}
     <div class="titling-main">
         
         <div class="titling-content">
@@ -594,4 +584,5 @@ function toggleLLMAccordion() {
     }
 }
 </script>
+    {% endblock %}
 {% endblock %}
