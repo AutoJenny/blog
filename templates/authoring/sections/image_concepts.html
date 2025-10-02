@@ -2481,20 +2481,6 @@ document.addEventListener('DOMContentLoaded', function() {
     border-top: 1px solid #334155;
 }
 
-.section-text-content {
-    background: #1e293b;
-    border: 1px solid #475569;
-    border-radius: 4px;
-    padding: 0.75rem;
-    color: #e2e8f0;
-    font-size: 0.875rem;
-    line-height: 1.5;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    max-height: 4.5rem; /* Approximately 3-4 lines */
-    overflow-y: auto;
-    overflow-x: hidden;
-}
 
 .section-subtitle {
     color: #94a3b8;
@@ -2763,11 +2749,18 @@ class AuthoringManager {
                 </div>
                 <span class="progress-text">${section.progress || 0}% complete</span>
             </div>
-            <div class="section-content-accordion" data-section-id="${section.id}" style="display: none;">
-                <div class="section-text-content">
-                    ${section.section_text || 'No content available'}
+        <div class="section-content-accordion" data-section-id="${section.id}" style="display: none;">
+            <div class="section-text-content">
+                ${section.section_text || 'No content available'}
+            </div>
+            <div class="section-ideas-content">
+                <div class="ideas-list">
+                    ${(section.topics || []).map(idea => 
+                        `<div class="idea-item">${idea}</div>`
+                    ).join('')}
                 </div>
             </div>
+        </div>
         `;
         
         // Add click handler
