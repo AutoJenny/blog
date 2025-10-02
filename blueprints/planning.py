@@ -264,7 +264,7 @@ def api_posts(post_id):
             
             # Get post sections
             cursor.execute("""
-                SELECT id, section_order, section_heading, section_description, 
+                SELECT id, post_id, section_order, section_heading, section_description, 
                        ideas_to_include, facts_to_include, highlighting,
                        image_concepts, image_prompts, image_meta_descriptions,
                        image_captions, status, polished, draft,
