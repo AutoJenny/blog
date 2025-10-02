@@ -233,7 +233,9 @@ export class ImagePromptsOutputPanel {
 
     const promptCard = document.createElement('div');
     promptCard.className = 'prompt-card';
-    promptCard.dataset.sectionId = this.current.id;
+    if (this.current && this.current.id) {
+      promptCard.dataset.sectionId = this.current.id;
+    }
     
     // Display the full image_prompt (which includes style guidelines and dimensions)
     const fullPrompt = promptData.image_prompt || promptData.base_concept || 'No prompt available';
