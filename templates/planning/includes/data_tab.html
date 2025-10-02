@@ -57,7 +57,7 @@
                     <h4>Post Section Table (ID: <span id="post-section-table-id">Loading...</span>)</h4>
                     
                     <!-- Section Selector -->
-                    <div class="section-selector" id="section-selector" style="display: none;">
+                    <div class="section-selector" id="section-selector" style="display: block;">
                         <label for="section-dropdown">Select Section:</label>
                         <select id="section-dropdown" class="section-dropdown">
                             <option value="">Choose a section...</option>
@@ -935,6 +935,14 @@ function setupSectionSelector(sectionsData) {
         option.textContent = `${section.section_order}. ${section.section_heading || 'Untitled'} (${section.status || 'draft'})`;
         sectionDropdown.appendChild(option);
     });
+    
+    // Auto-select first section and show its content
+    if (sectionsData.length > 0) {
+        const firstSection = sectionsData[0];
+        sectionDropdown.value = firstSection.id;
+        console.log('[Data Tab] Auto-selecting first section:', firstSection);
+        showIndividualSection(firstSection);
+    }
     
     // Add change event listener
     sectionDropdown.addEventListener('change', function() {
