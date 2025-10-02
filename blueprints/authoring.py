@@ -1268,20 +1268,39 @@ def api_generate_image_prompts(post_id, section_id):
             
             raw_content = result['content']
             
-            # Validate JSON
+            # Handle the new single-string format from improved prompt
             try:
                 import json
-                parsed_json = json.loads(raw_content)
                 
-                # Check if it has the expected structure
-                if not isinstance(parsed_json, dict) or 'image_prompt' not in parsed_json:
-                    raise ValueError("Missing 'image_prompt' key")
-                
-                if not parsed_json['image_prompt'] or not parsed_json['image_prompt'].strip():
-                    raise ValueError("image_prompt field is empty")
-                
-                # Get the base prompt from LLM
-                base_prompt = parsed_json['image_prompt'].strip()
+                # Check if it's JSON format (legacy) or single string (new format)
+                if raw_content.strip().startswith('{'):
+                    # Legacy JSON format
+                    parsed_json = json.loads(raw_content)
+                    
+                    if not isinstance(parsed_json, dict) or 'image_prompt' not in parsed_json:
+                        raise ValueError("Missing 'image_prompt' key")
+                    
+                    if not parsed_json['image_prompt'] or not parsed_json['image_prompt'].strip():
+                        raise ValueError("image_prompt field is empty")
+                    
+                    base_prompt = parsed_json['image_prompt'].strip()
+                else:
+                    # New single-string format
+                    base_prompt = raw_content.strip()
+                    
+                    if not base_prompt:
+                        raise ValueError("Empty prompt generated")
+                    
+                    # Ensure base prompt is under 150 characters
+                    if len(base_prompt) > 150:
+                        # Truncate to 150 characters, trying to end at a word boundary
+                        truncated = base_prompt[:150]
+                        last_space = truncated.rfind(' ')
+                        if last_space > 120:  # Only truncate at word boundary if it's not too short
+                            base_prompt = truncated[:last_space]
+                        else:
+                            base_prompt = truncated
+                        logger.info(f"Truncated base prompt from {len(raw_content)} to {len(base_prompt)} characters")
                 
                 # Programmatically add style guidelines and dimensions
                 style_guidelines = "Generate an intricately detailed scene in the soft, vibrant styles of inkwash and watercolour. The colouring schema must be colourful but washed out, and the image should 'fade' through soft brushstrokes that naturally end before the edges of the canvas, blending the image as a part of the white background paper."
@@ -1302,51 +1321,14 @@ def api_generate_image_prompts(post_id, section_id):
                 }
                 
                 image_prompt = json.dumps(final_json)
-                logger.info("Valid JSON generated for image prompt with programmatic style guidelines")
+                logger.info("Generated image prompt with programmatic style guidelines")
                 
             except (json.JSONDecodeError, ValueError) as e:
-                logger.error(f"Invalid JSON generated: {e}")
-                
-                # Try to fix incomplete JSON by adding missing closing brace
-                if raw_content.strip().endswith('"') and not raw_content.strip().endswith('}'):
-                    try:
-                        # Attempt to complete the JSON
-                        fixed_content = raw_content.strip() + '\n}'
-                        parsed_json = json.loads(fixed_content)
-                        
-                        if isinstance(parsed_json, dict) and 'image_prompt' in parsed_json:
-                            base_prompt = parsed_json['image_prompt'].strip()
-                            
-                            # Programmatically add style guidelines and dimensions
-                            style_guidelines = "Generate an intricately detailed scene in the soft, vibrant styles of inkwash and watercolour. The colouring schema must be colourful but washed out, and the image should 'fade' through soft brushstrokes that naturally end before the edges of the canvas, blending the image as a part of the white background paper."
-                            
-                            width = format_data['width'] if format_data else 512
-                            height = format_data['height'] if format_data else 512
-                            
-                            full_prompt = f"{base_prompt}, {style_guidelines} Dimensions: {width}x{height} pixels."
-                            
-                            final_json = {
-                                "image_prompt": full_prompt,
-                                "dimensions": f"{width}x{height}",
-                                "style": "inkwash and watercolour",
-                                "base_concept": base_prompt
-                            }
-                            
-                            image_prompt = json.dumps(final_json)
-                            logger.info("Fixed incomplete JSON and generated valid image prompt")
-                        else:
-                            raise ValueError("Could not fix incomplete JSON")
-                    except Exception as fix_error:
-                        logger.error(f"Failed to fix incomplete JSON: {fix_error}")
-                        return jsonify({
-                            'error': f'Failed to generate valid JSON. Error: {e}',
-                            'raw_content': raw_content[:500] + '...' if len(raw_content) > 500 else raw_content
-                        }), 500
-                else:
-                    return jsonify({
-                        'error': f'Failed to generate valid JSON. Error: {e}',
-                        'raw_content': raw_content[:500] + '...' if len(raw_content) > 500 else raw_content
-                    }), 500
+                logger.error(f"Error processing prompt: {e}")
+                return jsonify({
+                    'error': f'Failed to process generated prompt. Error: {e}',
+                    'raw_content': raw_content[:500] + '...' if len(raw_content) > 500 else raw_content
+                }), 500
             
             # Save to database
             cursor.execute("""
