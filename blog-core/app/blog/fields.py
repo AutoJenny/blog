@@ -27,7 +27,7 @@ WORKFLOW_FIELDS = {
         "generation",
         "optimization",
         "watermarking",
-        "image_meta_descriptions",
+        "image_alt_text",
         "image_captions",
     ],
     "Top & Tail Stage": [

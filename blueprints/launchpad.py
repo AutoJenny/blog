@@ -1751,7 +1751,7 @@ def get_post_sections_with_images(post_id):
                 section_description, ideas_to_include, facts_to_include,
                 draft, polished, highlighting, image_concepts,
                 image_prompts,
-                image_meta_descriptions, image_captions, status,
+                image_alt_text, image_captions, status,
                 image_title, image_width, image_height
             FROM post_section 
             WHERE post_id = %s 

@@ -266,7 +266,7 @@ def api_posts(post_id):
             cursor.execute("""
                 SELECT id, post_id, section_order, section_heading, section_description, 
                        ideas_to_include, facts_to_include, highlighting,
-                       image_concepts, image_prompts, image_meta_descriptions,
+                       image_concepts, image_prompts, image_alt_text,
                        image_captions, status, polished, draft,
                        image_filename, image_generated_at, image_title,
                        image_width, image_height
@@ -575,7 +575,7 @@ def api_get_sections(post_id):
             cursor.execute("""
                 SELECT section_order, section_heading, section_description, 
                        ideas_to_include, facts_to_include, highlighting,
-                       image_concepts, image_prompts, image_meta_descriptions,
+                       image_concepts, image_prompts, image_alt_text,
                        image_captions, status, polished, draft,
                        image_filename, image_generated_at, image_title,
                        image_width, image_height
