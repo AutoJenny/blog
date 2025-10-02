@@ -663,12 +663,12 @@ def api_generate_section_draft(post_id, section_id):
                     'error': f"LLM generation failed: {llm_response['error']}"
                 }), 500
             
-            # Save generated content to database
+            # Save generated content to database (both draft and polished fields)
             cursor.execute("""
                 UPDATE post_section 
-                SET draft = %s, status = 'complete'
+                SET draft = %s, polished = %s, status = 'complete'
                 WHERE post_id = %s AND id = %s
-            """, (llm_response['content'], post_id, section_id))
+            """, (llm_response['content'], llm_response['content'], post_id, section_id))
             
             cursor.connection.commit()
             
