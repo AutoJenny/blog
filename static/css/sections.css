@@ -467,4 +467,28 @@
     background-color: #fee2e2 !important;
     border-color: #ef4444 !important;
     color: #991b1b !important;
+}
+
+/* Section Text Content */
+.section-text-content {
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 4px;
+    padding: 0.75rem;
+    color: #e2e8f0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 4.5rem; /* Approximately 3-4 lines */
+    overflow-y: auto;
+    overflow-x: hidden;
+    margin-bottom: 0.75rem;
+}
+
+/* Ideas List Scrolling */
+.ideas-list {
+    max-height: 4.5rem; /* Approximately 3-4 lines */
+    overflow-y: auto;
+    overflow-x: hidden;
 } 
