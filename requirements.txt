@@ -6,3 +6,4 @@ python-dotenv==1.0.0
 redis==5.0.1
 psutil==5.9.6
 markdown==3.5.1
+beautifulsoup4==4.12.2
