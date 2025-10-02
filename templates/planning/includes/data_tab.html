@@ -822,6 +822,7 @@ function populateDatabaseTables(postData, scheduleData, sectionsData) {
         
         // Store sections data globally for the selector
         window.sectionsData = sectionsData;
+        console.log('[Data Tab] Stored sections data globally:', sectionsData);
         
         // Setup section selector
         setupSectionSelector(sectionsData);
@@ -958,6 +959,10 @@ function showSectionsSummary(sectionsData) {
 }
 
 function showIndividualSection(section) {
+    console.log('[Data Tab] Showing individual section:', section);
+    console.log('[Data Tab] Section draft length:', section.draft ? section.draft.length : 'No draft');
+    console.log('[Data Tab] Section polished length:', section.polished ? section.polished.length : 'No polished');
+    
     // Create a clean data object with all section fields
     const sectionData = {
         id: section.id,
@@ -978,6 +983,7 @@ function showIndividualSection(section) {
         polished_preview: section.polished ? section.polished.substring(0, 200) + '...' : 'No polished content'
     };
     
+    console.log('[Data Tab] Processed section data:', sectionData);
     populateTableFields('post-section-fields-container', sectionData, 'post_section');
 }
 
