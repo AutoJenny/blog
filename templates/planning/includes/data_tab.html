@@ -55,6 +55,15 @@
                 <!-- Post Section Table Display -->
                 <div id="post-section-table-display" class="table-display">
                     <h4>Post Section Table (ID: <span id="post-section-table-id">Loading...</span>)</h4>
+                    
+                    <!-- Section Selector -->
+                    <div class="section-selector" id="section-selector" style="display: none;">
+                        <label for="section-dropdown">Select Section:</label>
+                        <select id="section-dropdown" class="section-dropdown">
+                            <option value="">Choose a section...</option>
+                        </select>
+                    </div>
+                    
                     <div id="post-section-fields-container" class="fields-container">
                         <div class="loading">Loading post section data...</div>
                     </div>
@@ -521,6 +530,44 @@
     border-color: #374151;
     background: rgba(55, 65, 81, 0.05);
 }
+
+/* Section Selector Styles */
+.section-selector {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(71, 85, 105, 0.1);
+    border-radius: 6px;
+    border: 1px solid #475569;
+}
+
+.section-selector label {
+    color: #e2e8f0;
+    font-weight: 600;
+    margin-right: 1rem;
+    display: inline-block;
+}
+
+.section-dropdown {
+    background: #1e293b;
+    color: #e2e8f0;
+    border: 1px solid #475569;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    min-width: 200px;
+    cursor: pointer;
+}
+
+.section-dropdown:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.section-dropdown option {
+    background: #1e293b;
+    color: #e2e8f0;
+}
 </style>
 
 <script>
@@ -773,25 +820,14 @@ function populateDatabaseTables(postData, scheduleData, sectionsData) {
     if (sectionsData && sectionsData.length > 0) {
         console.log('[Data Tab] Populating post sections with data:', sectionsData);
         
-        // Create a comprehensive summary for authoring workflow
-        const sectionsSummary = {
-            total_sections: sectionsData.length,
-            sections_with_content: sectionsData.filter(s => s.draft && s.draft.length > 0).length,
-            sections_complete: sectionsData.filter(s => s.status === 'complete').length,
-            section_list: sectionsData.map(section => 
-                `${section.section_order}. ${section.section_heading} (${section.status || 'draft'}) - ${section.draft ? section.draft.length + ' chars' : 'no content'}`
-            ).join('\n'),
-            // Show first section with generated content for detailed view
-            first_section_id: sectionsData[0].id,
-            first_section_title: sectionsData[0].section_heading,
-            first_section_status: sectionsData[0].status,
-            first_section_draft_length: sectionsData[0].draft ? sectionsData[0].draft.length : 0,
-            first_section_draft_preview: sectionsData[0].draft ? sectionsData[0].draft.substring(0, 200) + '...' : 'No content generated',
-            // Include all fields from the first section
-            ...sectionsData[0]
-        };
+        // Store sections data globally for the selector
+        window.sectionsData = sectionsData;
         
-        populateTableFields('post-section-fields-container', sectionsSummary, 'post_section');
+        // Setup section selector
+        setupSectionSelector(sectionsData);
+        
+        // Show summary by default
+        showSectionsSummary(sectionsData);
     } else {
         console.log('[Data Tab] No post section data, showing empty message');
         document.getElementById('post-section-fields-container').innerHTML = '<div class="loading">No post section data found</div>';
@@ -860,6 +896,89 @@ function populateTableFields(containerId, data, tableType) {
     });
     
     console.log(`[Data Tab] Added ${fields.length} field items to container`);
+}
+
+function setupSectionSelector(sectionsData) {
+    const sectionSelector = document.getElementById('section-selector');
+    const sectionDropdown = document.getElementById('section-dropdown');
+    
+    if (!sectionSelector || !sectionDropdown) return;
+    
+    // Show the selector
+    sectionSelector.style.display = 'block';
+    
+    // Clear existing options
+    sectionDropdown.innerHTML = '<option value="">Choose a section...</option>';
+    
+    // Add summary option
+    const summaryOption = document.createElement('option');
+    summaryOption.value = 'summary';
+    summaryOption.textContent = '📊 Summary (All Sections)';
+    sectionDropdown.appendChild(summaryOption);
+    
+    // Add individual section options
+    sectionsData.forEach(section => {
+        const option = document.createElement('option');
+        option.value = section.id;
+        option.textContent = `${section.section_order}. ${section.section_heading || 'Untitled'} (${section.status || 'draft'})`;
+        sectionDropdown.appendChild(option);
+    });
+    
+    // Add change event listener
+    sectionDropdown.addEventListener('change', function() {
+        const selectedValue = this.value;
+        
+        if (selectedValue === 'summary') {
+            showSectionsSummary(sectionsData);
+        } else if (selectedValue) {
+            const selectedSection = sectionsData.find(s => s.id == selectedValue);
+            if (selectedSection) {
+                showIndividualSection(selectedSection);
+            }
+        }
+    });
+}
+
+function showSectionsSummary(sectionsData) {
+    const summaryData = {
+        total_sections: sectionsData.length,
+        sections_with_content: sectionsData.filter(s => s.draft && s.draft.length > 0).length,
+        sections_complete: sectionsData.filter(s => s.status === 'complete').length,
+        sections_draft: sectionsData.filter(s => s.status === 'draft').length,
+        sections_needs_review: sectionsData.filter(s => s.status === 'needs-review').length,
+        total_content_length: sectionsData.reduce((total, s) => total + (s.draft ? s.draft.length : 0), 0),
+        average_content_length: Math.round(sectionsData.reduce((total, s) => total + (s.draft ? s.draft.length : 0), 0) / sectionsData.length),
+        section_list: sectionsData.map(section => 
+            `${section.section_order}. ${section.section_heading || 'Untitled'} (${section.status || 'draft'}) - ${section.draft ? section.draft.length + ' chars' : 'no content'}`
+        ).join('\n'),
+        completion_percentage: Math.round((sectionsData.filter(s => s.status === 'complete').length / sectionsData.length) * 100)
+    };
+    
+    populateTableFields('post-section-fields-container', summaryData, 'post_section');
+}
+
+function showIndividualSection(section) {
+    // Create a clean data object with all section fields
+    const sectionData = {
+        id: section.id,
+        post_id: section.post_id,
+        section_order: section.section_order,
+        section_heading: section.section_heading,
+        section_description: section.section_description,
+        status: section.status,
+        draft: section.draft,
+        polished: section.polished,
+        created_at: section.created_at,
+        updated_at: section.updated_at,
+        // Additional computed fields
+        draft_length: section.draft ? section.draft.length : 0,
+        polished_length: section.polished ? section.polished.length : 0,
+        has_content: section.draft && section.draft.length > 0,
+        draft_preview: section.draft ? section.draft.substring(0, 200) + '...' : 'No content',
+        polished_preview: section.polished ? section.polished.substring(0, 200) + '...' : 'No polished content'
+    };
+    
+    populateTableFields('post-section-fields-container', sectionData, 'post_section');
 }
 
 function formatFieldValue(value) {
