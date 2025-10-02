@@ -47,6 +47,11 @@ export class ImagePromptsOutputPanel {
         console.log(`[DEBUG] Generating image prompt for section ${id}`);
         await this.generateImagePrompts(id); 
       }
+      
+      // Notify sections panel to reload data after batch generation
+      console.log('[DEBUG] Batch generation complete, notifying sections panel to reload');
+      const reloadEvent = new CustomEvent('sections:reload-data');
+      window.dispatchEvent(reloadEvent);
     });
   }
 

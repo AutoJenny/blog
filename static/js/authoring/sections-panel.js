@@ -65,6 +65,12 @@ export class SectionsPanel {
       window.dispatchEvent(evt);
       console.log('[DEBUG] Event dispatched successfully');
     });
+
+    // Listen for reload events after batch generation
+    window.addEventListener('sections:reload-data', () => {
+      console.log('[DEBUG] Sections panel received reload event, refreshing data');
+      this.load();
+    });
   }
 
   render() {
