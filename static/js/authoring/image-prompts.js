@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const postId = window.postId;
   const output = new ImagePromptsOutputPanel({ postId });
+  
+  // Make output panel available globally for LLM module
+  window.imagePromptsOutputPanel = output;
 
   const sectionsPanel = new SectionsPanel({
     postId,

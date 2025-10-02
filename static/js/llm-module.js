@@ -96,6 +96,9 @@ class LLMModule {
             if (this.config.resultsField === 'draft_content') {
                 // For authoring, put content directly in the editor
                 this.uiManager.displayAuthoringResults(result, this);
+            } else if (this.config.resultsField === 'image_prompts') {
+                // For image prompts, update the ImagePromptsOutputPanel
+                this.updateImagePromptsOutput(result);
             } else {
                 // For other modules, use standard display
                 this.uiManager.displayResults(result.results || result);
@@ -113,6 +116,13 @@ class LLMModule {
         const rawResponseElement = document.getElementById('raw-llm-response');
         if (rawResponseElement) {
             rawResponseElement.textContent = rawResponse;
+        }
+    }
+    
+    updateImagePromptsOutput(result) {
+        // Update the ImagePromptsOutputPanel with the generated result
+        if (window.imagePromptsOutputPanel && result.image_prompt) {
+            window.imagePromptsOutputPanel.displayImagePrompts(result.image_prompt);
         }
     }
     

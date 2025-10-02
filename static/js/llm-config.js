@@ -116,3 +116,6 @@ function initializeLLMModule(pageType, postId, sectionId = null) {
     
     return module;
 }
+
+// Make initializeLLMModule available globally
+window.initializeLLMModule = initializeLLMModule;
