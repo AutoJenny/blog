@@ -4,9 +4,6 @@
         <div class="data-content">
             <!-- Database Tables Section -->
             <h3><i class="fas fa-database"></i> Database Tables</h3>
-            <div id="data-tab-debug" style="background: #10b981; color: white; padding: 1rem; margin: 1rem 0; border-radius: 6px;">
-                <strong>Data Tab Debug:</strong> <span id="debug-status">Initializing...</span>
-            </div>
             
             <!-- Table Selection Radio Buttons -->
             <div class="table-selection">
@@ -268,6 +265,8 @@
     display: flex;
     gap: 2rem;
     margin-bottom: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 .radio-group {
@@ -491,6 +490,37 @@
     padding: 2rem;
     font-style: italic;
 }
+
+/* Field prioritization styles */
+.field-item.populated {
+    opacity: 1;
+}
+
+.field-item.empty {
+    opacity: 0.6;
+}
+
+.field-item.populated label {
+    color: #e2e8f0;
+    font-weight: 600;
+}
+
+.field-item.empty label {
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+.field-item.populated .field-input,
+.field-item.populated .field-textarea {
+    border-color: #475569;
+    background: rgba(71, 85, 105, 0.1);
+}
+
+.field-item.empty .field-input,
+.field-item.empty .field-textarea {
+    border-color: #374151;
+    background: rgba(55, 65, 81, 0.05);
+}
 </style>
 
 <script>
@@ -498,11 +528,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('[Data Tab] Initializing...');
     
-    // Update debug status
-    const debugStatus = document.getElementById('debug-status');
-    if (debugStatus) {
-        debugStatus.textContent = 'DOM loaded, initializing...';
-    }
+        // Debug status removed - no longer needed
     
     // Initialize data tab
     initializeDataTab();
@@ -510,9 +536,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load post data with a small delay to ensure DOM is ready
     setTimeout(() => {
         console.log('[Data Tab] Attempting to load post data...');
-        if (debugStatus) {
-            debugStatus.textContent = 'Loading post data...';
-        }
         loadPostData();
     }, 100);
 });
@@ -784,35 +807,23 @@ function populateTableFields(containerId, data, tableType) {
         return;
     }
     
-    // For Post Development table, sort by content status (populated first), then alphabetically
-    // For other tables, keep alphabetical with 'id' first
-    let fields;
-    if (tableType === 'post_development') {
-        // Sort by content status: populated fields first, then empty fields
-        // Within each group, sort alphabetically with 'id' first
-        fields = Object.keys(data).sort((a, b) => {
-            const aValue = data[a];
-            const bValue = data[b];
-            const aIsEmpty = aValue === null || aValue === undefined || aValue === '';
-            const bIsEmpty = bValue === null || bValue === undefined || bValue === '';
-            
-            // If one is empty and the other isn't, populated comes first
-            if (aIsEmpty && !bIsEmpty) return 1;
-            if (!aIsEmpty && bIsEmpty) return -1;
-            
-            // If both have same content status, sort alphabetically with 'id' first
-            if (a === 'id') return -1;
-            if (b === 'id') return 1;
-            return a.localeCompare(b);
-        });
-    } else {
-        // Default sorting for other tables: alphabetical with 'id' first
-        fields = Object.keys(data).sort((a, b) => {
-            if (a === 'id') return -1;
-            if (b === 'id') return 1;
-            return a.localeCompare(b);
-        });
-    }
+    // Sort by content status: populated fields first, then empty fields
+    // Within each group, sort alphabetically with 'id' first
+    let fields = Object.keys(data).sort((a, b) => {
+        const aValue = data[a];
+        const bValue = data[b];
+        const aIsEmpty = aValue === null || aValue === undefined || aValue === '';
+        const bIsEmpty = bValue === null || bValue === undefined || bValue === '';
+        
+        // If one is empty and the other isn't, populated comes first
+        if (aIsEmpty && !bIsEmpty) return 1;
+        if (!aIsEmpty && bIsEmpty) return -1;
+        
+        // If both have same content status, sort alphabetically with 'id' first
+        if (a === 'id') return -1;
+        if (b === 'id') return 1;
+        return a.localeCompare(b);
+    });
     
     console.log(`[Data Tab] Found ${fields.length} fields:`, fields);
     
