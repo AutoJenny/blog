@@ -1,5 +1,5 @@
 import { SectionsPanel } from './sections-panel.js';
-import { OutputPanel } from './output-panel.js';
+import { ImageConceptsOutputPanel } from './image-concepts-output-panel.js';
 
 function initTabs() {
   const tabButtons = document.querySelectorAll('.tab-btn');
@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initTabs();
 
   const postId = window.postId;
-  const output = new OutputPanel({ postId });
+  const output = new ImageConceptsOutputPanel({ postId });
 
   const sectionsPanel = new SectionsPanel({
     postId,
@@ -29,6 +29,13 @@ document.addEventListener('DOMContentLoaded', () => {
       // Initialize LLM module for the selected section
       if (section && section.id) {
         initializeLLMForSection(section.id);
+      }
+    },
+    onSelectMultiple: (sections) => {
+      output.showMultiple(sections);
+      // Initialize LLM module for the first selected section
+      if (sections && sections.length > 0 && sections[0].id) {
+        initializeLLMForSection(sections[0].id);
       }
     }
   });
@@ -42,3 +49,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 });
+
+// Global functions for concept selection
+window.selectConcept = function(conceptId, sectionId) {
+  // Remove previous selections for this section only
+  const sectionCards = document.querySelectorAll(`[data-section-id="${sectionId}"]`);
+  sectionCards.forEach(card => {
+    card.classList.remove('selected');
+    const btn = card.querySelector('.btn-select');
+    btn.textContent = 'Select';
+    btn.classList.remove('selected');
+  });
+  
+  // Select current concept
+  const card = document.querySelector(`[data-concept-id="${conceptId}"][data-section-id="${sectionId}"]`);
+  if (card) {
+    card.classList.add('selected');
+    const btn = card.querySelector('.btn-select');
+    btn.textContent = 'Selected';
+    btn.classList.add('selected');
+  }
+};
+
+window.editConcept = function(conceptId, sectionId) {
+  // For now, just show an alert - can be expanded later
+  alert(`Edit functionality for ${conceptId} in Section ${sectionId} will be implemented in future updates`);
+};

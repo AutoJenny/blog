@@ -760,6 +760,31 @@ def api_generate_section_draft(post_id, section_id):
             'error': str(e)
         }), 500
 
+@bp.route('/api/posts/<int:post_id>/sections/<int:section_id>/save-image-concepts', methods=['POST'])
+def api_save_image_concepts(post_id, section_id):
+    """Save image concepts for a specific section"""
+    try:
+        data = request.get_json()
+        image_concepts = data.get('image_concepts', '')
+        
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                UPDATE post_section 
+                SET image_concepts = %s
+                WHERE post_id = %s AND id = %s
+            """, (image_concepts, post_id, section_id))
+            
+            cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Image concepts saved successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error saving image concepts: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @bp.route('/api/posts/<int:post_id>/sections/<int:section_id>/generate-image-concepts', methods=['POST'])
 def api_generate_image_concepts(post_id, section_id):
     """Generate image concepts for a specific section"""
@@ -843,13 +868,58 @@ def api_generate_image_concepts(post_id, section_id):
                 messages.append({'role': 'system', 'content': system_prompt})
             messages.append({'role': 'user', 'content': prompt_text})
             
-            # Execute LLM request
-            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+            # Execute LLM request with retry logic for valid JSON
+            max_retries = 3
+            image_concepts = None
             
-            if 'error' in result:
-                return jsonify({'error': f'LLM generation failed: {result["error"]}'}), 500
+            for attempt in range(max_retries):
+                result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+                
+                if 'error' in result:
+                    if attempt == max_retries - 1:  # Last attempt
+                        return jsonify({'error': f'LLM generation failed: {result["error"]}'}), 500
+                    continue
+                
+                raw_content = result['content']
+                
+                # Validate JSON
+                try:
+                    import json
+                    parsed_json = json.loads(raw_content)
+                    
+                    # Check if it has the expected structure
+                    if not isinstance(parsed_json, dict) or 'concepts' not in parsed_json:
+                        raise ValueError("Missing 'concepts' key")
+                    
+                    if not isinstance(parsed_json['concepts'], list) or len(parsed_json['concepts']) == 0:
+                        raise ValueError("Concepts must be a non-empty list")
+                    
+                    # Check each concept has required fields
+                    required_fields = ['concept_id', 'concept_title', 'concept_description', 'concept_mood', 'key_visual_elements']
+                    for i, concept in enumerate(parsed_json['concepts']):
+                        for field in required_fields:
+                            if field not in concept or not concept[field]:
+                                raise ValueError(f"Concept {i+1} missing or empty field: {field}")
+                    
+                    # JSON is valid, use it
+                    image_concepts = raw_content
+                    logger.info(f"Valid JSON generated on attempt {attempt + 1}")
+                    break
+                    
+                except (json.JSONDecodeError, ValueError) as e:
+                    logger.warning(f"Invalid JSON on attempt {attempt + 1}: {e}")
+                    if attempt == max_retries - 1:  # Last attempt
+                        # Return error with the raw content for debugging
+                        return jsonify({
+                            'error': f'Failed to generate valid JSON after {max_retries} attempts. Last error: {e}',
+                            'raw_content': raw_content[:500] + '...' if len(raw_content) > 500 else raw_content
+                        }), 500
+                    
+                    # Add a more explicit instruction for the next attempt
+                    messages[-1]['content'] += f"\n\nIMPORTANT: The previous response was invalid JSON. Please ensure you return ONLY a complete, valid JSON object with all required fields. Error: {e}"
             
-            image_concepts = result['content']
+            if not image_concepts:
+                return jsonify({'error': 'Failed to generate valid JSON'}), 500
             
             # Save to database
             cursor.execute("""
