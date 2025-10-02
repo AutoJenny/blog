@@ -4,8 +4,47 @@ from config.database import db_manager
 import logging
 import json
 import requests
+import re
+from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
+
+def process_llm_html_content(html_content):
+    """
+    Process LLM HTML content to create both draft (HTML) and section_text (plain text) versions.
+    
+    Args:
+        html_content (str): Raw HTML content from LLM
+        
+    Returns:
+        tuple: (draft_html, section_text_plain)
+    """
+    try:
+        # Parse HTML content
+        soup = BeautifulSoup(html_content, 'html.parser')
+        
+        # Extract the h2 heading (if present)
+        h2_tag = soup.find('h2')
+        section_title = h2_tag.get_text().strip() if h2_tag else ""
+        
+        # Extract all paragraph content
+        p_tags = soup.find_all('p')
+        paragraph_texts = [p.get_text().strip() for p in p_tags if p.get_text().strip()]
+        
+        # Create plain text version by joining paragraphs with double newlines
+        plain_text = '\n\n'.join(paragraph_texts)
+        
+        # Clean up the HTML content (keep original structure)
+        draft_html = html_content.strip()
+        
+        logger.info(f"Processed HTML content: Title='{section_title}', Paragraphs={len(paragraph_texts)}, Plain text length={len(plain_text)}")
+        
+        return draft_html, plain_text
+        
+    except Exception as e:
+        logger.error(f"Error processing HTML content: {e}")
+        # Fallback: return original content for both fields
+        return html_content, html_content
 
 def build_avoid_topics_text(topic_allocation, current_section_data):
     """Build the avoid topics text from topic allocation data"""
@@ -663,12 +702,15 @@ def api_generate_section_draft(post_id, section_id):
                     'error': f"LLM generation failed: {llm_response['error']}"
                 }), 500
             
-            # Save generated content to database (both draft and polished fields)
+            # Process the LLM response to create both HTML and plain text versions
+            draft_html, section_text_plain = process_llm_html_content(llm_response['content'])
+            
+            # Save generated content to database (draft=HTML, polished=plain text)
             cursor.execute("""
                 UPDATE post_section 
                 SET draft = %s, polished = %s, status = 'complete'
                 WHERE post_id = %s AND id = %s
-            """, (llm_response['content'], llm_response['content'], post_id, section_id))
+            """, (draft_html, section_text_plain, post_id, section_id))
             
             cursor.connection.commit()
             
