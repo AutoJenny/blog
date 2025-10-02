@@ -872,8 +872,8 @@ function populateTableFields(containerId, data, tableType) {
         const isEmpty = fieldValue === null || fieldValue === undefined || fieldValue === '';
         const isLongText = typeof fieldValue === 'string' && fieldValue.length > 100;
         
-        // Debug logging for draft and polished fields
-        if (fieldName === 'draft' || fieldName === 'polished') {
+        // Debug logging for draft and section_text fields
+        if (fieldName === 'draft' || fieldName === 'section_text') {
             console.log(`[Data Tab] Field ${fieldName}:`, {
                 value: fieldValue,
                 isEmpty: isEmpty,
@@ -882,13 +882,18 @@ function populateTableFields(containerId, data, tableType) {
             });
         }
         
+        // Special handling for draft field - always show full content
+        const isDraftField = fieldName === 'draft';
+        
         const fieldItem = document.createElement('div');
         fieldItem.className = `field-item ${isEmpty ? 'empty' : 'populated'}`;
         
                 fieldItem.innerHTML = `
                     <div class="field-name">${fieldName}</div>
                     <div class="field-value-container">
-                        ${isLongText ? `
+                        ${isDraftField ? `
+                            <textarea class="field-textarea" readonly style="min-height: 200px; font-family: inherit; background: rgba(71, 85, 105, 0.1); border: 1px solid #475569; color: #e2e8f0; padding: 1rem; border-radius: 4px;">${isEmpty ? '' : String(fieldValue).replace(/"/g, '&quot;')}</textarea>
+                        ` : isLongText ? `
                             <div class="field-value ${isEmpty ? 'empty' : 'preview'}" 
                                  ${isLongText ? `data-full-value="${String(fieldValue).replace(/"/g, '&quot;')}"` : ''}
                                  ${isLongText ? `data-field="${fieldName}"` : ''}
@@ -1006,15 +1011,15 @@ function showIndividualSection(section) {
         section_description: section.section_description,
         status: section.status,
         draft: section.draft,
-        polished: section.polished,
+        section_text: section.polished, // Renamed for clarity
         created_at: section.created_at,
         updated_at: section.updated_at,
         // Additional computed fields
         draft_length: section.draft ? section.draft.length : 0,
-        polished_length: section.polished ? section.polished.length : 0,
+        section_text_length: section.polished ? section.polished.length : 0,
         has_content: section.draft && section.draft.length > 0,
         draft_preview: section.draft ? section.draft.substring(0, 200) + '...' : 'No content',
-        polished_preview: section.polished ? section.polished.substring(0, 200) + '...' : 'No polished content'
+        section_text_preview: section.polished ? section.polished.substring(0, 200) + '...' : 'No section text'
     };
     
     console.log('[Data Tab] Processed section data:', sectionData);
