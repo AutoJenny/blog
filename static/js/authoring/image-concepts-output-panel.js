@@ -136,16 +136,31 @@ export class ImageConceptsOutputPanel {
           conceptsContainer.appendChild(sectionHeader);
 
           // Add concept cards for this section
+          const selectedConceptId = section.selected_image_concept;
+          const defaultConceptId = parsed.concepts[0]?.concept_id;
+          
+          console.log(`[DEBUG] Multiple sections - Section ${section.order}: selectedConceptId=${selectedConceptId}, defaultConceptId=${defaultConceptId}`);
+          
           parsed.concepts.forEach((concept, index) => {
             const card = document.createElement('div');
             card.className = 'concept-card';
             card.dataset.conceptId = concept.concept_id;
             card.dataset.sectionId = section.id;
             
+            // Determine if this concept should be selected
+            const isSelected = selectedConceptId === concept.concept_id || 
+                              (!selectedConceptId && concept.concept_id === defaultConceptId);
+            
+            if (isSelected) {
+              card.classList.add('selected');
+            }
+            
             card.innerHTML = `
               <div class="concept-header">
                 <span class="concept-id">${concept.concept_id}</span>
-                <button class="btn-concept btn-select" onclick="selectConcept('${concept.concept_id}', '${section.id}')">Select</button>
+                <button class="btn-concept btn-select ${isSelected ? 'selected' : ''}" onclick="selectConcept('${concept.concept_id}', '${section.id}')">
+                  ${isSelected ? 'Selected' : 'Select'}
+                </button>
               </div>
               <div class="concept-title">${concept.concept_title}</div>
               <div class="concept-description">${concept.concept_description}</div>
@@ -158,6 +173,13 @@ export class ImageConceptsOutputPanel {
             
             conceptsContainer.appendChild(card);
           });
+          
+          // Auto-select default concept if no selection exists
+          if (!selectedConceptId && defaultConceptId) {
+            setTimeout(() => {
+              window.selectConcept(defaultConceptId, section.id);
+            }, 500);
+          }
 
           hasAnyConcepts = true;
         } else {
@@ -185,12 +207,14 @@ export class ImageConceptsOutputPanel {
   }
 
   displayImageConcepts(conceptsData) {
+    console.log('[DEBUG] displayImageConcepts called with data length:', conceptsData?.length || 0);
     const conceptsDisplay = document.getElementById('image-concepts-display');
     const conceptsContainer = document.getElementById('concepts-container');
     const fallbackEditor = document.getElementById('content-editor-fallback');
     const editor = document.getElementById('content-editor');
 
     if (!conceptsData || conceptsData.trim() === '') {
+      console.log('[DEBUG] No concepts data, hiding displays');
       conceptsDisplay.style.display = 'none';
       fallbackEditor.style.display = 'none';
       return;
@@ -198,51 +222,82 @@ export class ImageConceptsOutputPanel {
 
     try {
       // Try to parse as JSON
+      console.log('[DEBUG] Attempting to parse JSON');
       const parsed = JSON.parse(conceptsData);
+      console.log('[DEBUG] Parsed JSON:', parsed);
+      
       if (parsed.concepts && Array.isArray(parsed.concepts)) {
+        console.log('[DEBUG] Valid concepts array found, rendering cards');
         // Display structured concepts
         this.renderConceptCards(parsed);
         conceptsDisplay.style.display = 'block';
         fallbackEditor.style.display = 'none';
         return;
+      } else {
+        console.log('[DEBUG] No concepts array found in JSON');
       }
     } catch (e) {
+      console.log('[DEBUG] JSON parse error:', e);
       // Not valid JSON, fall back to textarea
     }
 
     // Fallback to textarea display
+    console.log('[DEBUG] Falling back to textarea display');
     editor.value = conceptsData;
     conceptsDisplay.style.display = 'none';
     fallbackEditor.style.display = 'block';
   }
 
   renderConceptCards(conceptsData) {
+    console.log('[DEBUG] renderConceptCards called with:', conceptsData);
     const container = document.getElementById('concepts-container');
+    console.log('[DEBUG] Container element:', container);
     container.innerHTML = '';
 
+    const selectedConceptId = this.current.selected_image_concept;
+    const defaultConceptId = conceptsData.concepts[0]?.concept_id; // First concept as default
+    console.log('[DEBUG] Selected concept ID:', selectedConceptId, 'Default concept ID:', defaultConceptId);
+
     conceptsData.concepts.forEach((concept, index) => {
+      console.log(`[DEBUG] Processing concept ${index}:`, concept.concept_id);
       const card = document.createElement('div');
       card.className = 'concept-card';
       card.dataset.conceptId = concept.concept_id;
+      card.dataset.sectionId = this.current.id; // Associate with current section
+      
+      // Determine if this concept should be selected
+      const isSelected = selectedConceptId === concept.concept_id || 
+                        (!selectedConceptId && concept.concept_id === defaultConceptId);
+      
+      if (isSelected) {
+        card.classList.add('selected');
+      }
       
       card.innerHTML = `
         <div class="concept-header">
           <span class="concept-id">${concept.concept_id}</span>
-          <button class="btn-concept btn-select" onclick="selectConcept('${concept.concept_id}')">Select</button>
+          <button class="btn-concept btn-select ${isSelected ? 'selected' : ''}" onclick="selectConcept('${concept.concept_id}', '${this.current.id}')">
+            ${isSelected ? 'Selected' : 'Select'}
+          </button>
         </div>
         <div class="concept-title">${concept.concept_title}</div>
         <div class="concept-description">${concept.concept_description}</div>
         <div class="concept-mood">Mood: ${concept.concept_mood}</div>
         <div class="concept-elements">Key Elements: ${concept.key_visual_elements}</div>
         <div class="concept-actions">
-          <button class="btn-concept btn-edit" onclick="editConcept('${concept.concept_id}')">Edit</button>
+          <button class="btn-concept btn-edit" onclick="editConcept('${concept.concept_id}', '${this.current.id}')">Edit</button>
         </div>
       `;
       
       container.appendChild(card);
     });
 
-    // No summary needed - concepts are self-contained
+    // Auto-select default concept if no selection exists
+    if (!selectedConceptId && defaultConceptId) {
+      setTimeout(() => {
+        window.selectConcept(defaultConceptId, this.current.id);
+      }, 500);
+    }
   }
 
   updateWordCount() {

@@ -369,7 +369,8 @@ def api_get_sections(post_id):
             cursor.execute("""
                 SELECT id, section_order, section_heading, section_description, 
                        status, draft, polished, ideas_to_include, facts_to_include,
-                       highlighting, image_concepts, image_prompts, image_captions
+                       highlighting, image_concepts, image_prompts, image_captions,
+                       selected_image_concept
                 FROM post_section
                 WHERE post_id = %s
                 ORDER BY section_order
@@ -421,6 +422,7 @@ def api_get_sections(post_id):
                     'image_concepts': section['image_concepts'] or '',
                     'image_prompts': section['image_prompts'] or '',
                     'image_captions': section['image_captions'] or '',
+                    'selected_image_concept': section['selected_image_concept'] or '',
                     'progress': 100 if section['polished'] else (50 if section['draft'] else 0)
                 })
             
@@ -783,6 +785,31 @@ def api_save_image_concepts(post_id, section_id):
             
     except Exception as e:
         logger.error(f"Error saving image concepts: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/sections/<int:section_id>/select-concept', methods=['POST'])
+def api_select_concept(post_id, section_id):
+    """Save the selected image concept for a specific section"""
+    try:
+        data = request.get_json()
+        concept_id = data.get('concept_id', '')
+        
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                UPDATE post_section 
+                SET selected_image_concept = %s
+                WHERE post_id = %s AND id = %s
+            """, (concept_id, post_id, section_id))
+            
+            cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Concept selection saved successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error saving concept selection: {e}")
         return jsonify({'error': str(e)}), 500
 
 @bp.route('/api/posts/<int:post_id>/sections/<int:section_id>/generate-image-concepts', methods=['POST'])
