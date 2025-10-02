@@ -50,27 +50,52 @@ export class SectionsPanel {
       list.innerHTML = '<div class="loading">No sections found</div>';
       return;
     }
-    this.sections.forEach(s => {
-      const div = document.createElement('div');
-      div.className = 'section-item';
-      div.dataset.sectionId = s.id;
-      div.dataset.status = s.status || 'draft';
-      div.innerHTML = `
-        <div class="section-header">
-          <input type="checkbox" class="section-checkbox" data-section-id="${s.id}">
-          <span class="section-number">${s.order}</span>
-          <span class="section-title">${s.title}</span>
-          <span class="section-status ${s.status || 'draft'}">${(s.status || 'draft').replace(/^./, c=>c.toUpperCase())}</span>
-        </div>
-        ${s.subtitle ? `<div class="section-subtitle">${s.subtitle}</div>` : ''}
-        <div class="section-topics">${(s.topics||[]).map(t=>`<span class="topic-tag">${t}</span>`).join('')}</div>
-        <div class="section-progress">
-          <div class="progress-bar"><div class="progress-fill" style="width:${s.progress||0}%"></div></div>
-          <span class="progress-text">${s.progress||0}% complete</span>
-        </div>`;
-      list.appendChild(div);
+    
+    // Use template for each section
+    this.sections.forEach(section => {
+      const sectionElement = this.createSectionFromTemplate(section);
+      list.appendChild(sectionElement);
     });
     this.syncSelectionUI();
+  }
+
+  createSectionFromTemplate(section) {
+    // Create a template element with the section data
+    const template = document.createElement('template');
+    
+    // Convert section data to template format
+    const effectiveStatus = (section.section_text && section.section_text.trim()) ? 'complete' : 'draft';
+    const templateData = {
+      id: section.id,
+      order: section.order,
+      title: section.title,
+      subtitle: section.subtitle,
+      section_text: section.section_text || '',
+      status: effectiveStatus,
+      progress: section.progress || 0,
+      topics: section.topics || []
+    };
+    
+    // Generate HTML using template structure
+    template.innerHTML = `
+      <div class="section-item" data-section-id="${templateData.id}" data-status="${templateData.status}">
+        <div class="section-header">
+          <input type="checkbox" class="section-checkbox" data-section-id="${templateData.id}">
+          <span class="section-number">${templateData.order}</span>
+          <span class="section-title">${templateData.title}</span>
+          <span class="section-status ${templateData.status}">${templateData.status.charAt(0).toUpperCase() + templateData.status.slice(1)}</span>
+        </div>
+        ${templateData.subtitle ? `<div class="section-subtitle">${templateData.subtitle}</div>` : ''}
+        ${templateData.section_text ? `<div class="section-text-preview">${templateData.section_text}</div>` : ''}
+        <div class="section-topics">${templateData.topics.map(topic => `<span class="topic-tag">${topic}</span>`).join('')}</div>
+        <div class="section-progress">
+          <div class="progress-bar"><div class="progress-fill" style="width:${templateData.progress}%"></div></div>
+          <span class="progress-text">${templateData.progress}% complete</span>
+        </div>
+      </div>
+    `;
+    
+    return template.content.firstElementChild;
   }
 
   select(id) {

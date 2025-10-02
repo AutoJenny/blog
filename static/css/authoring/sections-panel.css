@@ -1,0 +1,260 @@
+/* Sections Panel Styling */
+.sections-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem;
+    height: fit-content;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #334155;
+}
+
+.panel-header h3 {
+    color: #e2e8f0;
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.section-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-secondary, .btn-primary {
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary {
+    background: #334155;
+    color: #cbd5e1;
+}
+
+.btn-secondary:hover {
+    background: #475569;
+    color: #e2e8f0;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+}
+
+.section-filters {
+    display: flex;
+    gap: 0.3rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 0.3rem 0.6rem;
+    background: #334155;
+    color: #cbd5e1;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+    background: #475569;
+    color: #e2e8f0;
+}
+
+.filter-btn.active {
+    background: #3b82f6;
+    color: white;
+}
+
+.sections-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.sections-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sections-list::-webkit-scrollbar-track {
+    background: #334155;
+    border-radius: 3px;
+}
+
+.sections-list::-webkit-scrollbar-thumb {
+    background: #64748b;
+    border-radius: 3px;
+}
+
+.sections-list::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Section Item Styling */
+.section-item {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.section-item:hover {
+    border-color: #475569;
+    background: #1e293b;
+}
+
+.section-item.selected {
+    border-color: #3b82f6;
+    background: #1e293b;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.section-number {
+    background: #334155;
+    color: #e2e8f0;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
+}
+
+.section-title {
+    color: #f1f5f9;
+    font-weight: 600;
+    font-size: 0.9rem;
+    flex: 1;
+}
+
+.section-status {
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.section-status.draft {
+    background: #fbbf24;
+    color: #92400e;
+}
+
+.section-status.complete {
+    background: #10b981;
+    color: #064e3b;
+}
+
+.section-status.needs-review {
+    background: #f59e0b;
+    color: #92400e;
+}
+
+.section-subtitle {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+    font-style: italic;
+}
+
+.section-text-preview {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    max-height: 4.5rem; /* Approximately 3-4 lines */
+    overflow-y: auto;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: #cbd5e1;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.section-text-preview::-webkit-scrollbar {
+    width: 4px;
+}
+
+.section-text-preview::-webkit-scrollbar-track {
+    background: #334155;
+    border-radius: 2px;
+}
+
+.section-text-preview::-webkit-scrollbar-thumb {
+    background: #64748b;
+    border-radius: 2px;
+}
+
+.section-text-preview::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.section-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-bottom: 0.5rem;
+}
+
+.topic-tag {
+    background: #334155;
+    color: #cbd5e1;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.7rem;
+}
+
+.section-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 4px;
+    background: #334155;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #3b82f6;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    color: #94a3b8;
+    font-size: 0.7rem;
+    min-width: 60px;
+}
