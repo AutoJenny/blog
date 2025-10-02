@@ -57,7 +57,9 @@ export class SectionsPanel {
     });
 
     document.getElementById('batch-generate-btn')?.addEventListener('click', () => {
-      const ids = Array.from(this.selected);
+      // Generate for ALL sections, not just selected ones
+      const ids = this.sections.map(s => String(s.id));
+      console.log(`[DEBUG] Generate All clicked - generating for ${ids.length} sections:`, ids);
       const evt = new CustomEvent('sections:batch-generate', { detail: { ids }});
       window.dispatchEvent(evt);
     });
