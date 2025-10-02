@@ -1,0 +1,46 @@
+<div class="section-editor">
+  <div class="editor-header">
+    <h4 id="current-section-title">Select a section to begin editing</h4>
+    <div class="editor-controls">
+      <button class="btn-secondary" id="preview-btn" disabled>Preview</button>
+      <button class="btn-primary" id="save-btn" disabled>Save</button>
+      <button class="btn-secondary" id="regenerate-btn" disabled>Regenerate</button>
+    </div>
+  </div>
+
+  <div class="input-data-panel">
+    <h5>Post Context</h5>
+    <div class="context-item"><label>Selected Idea:</label><div id="selected-idea-display">-</div></div>
+    <div class="context-item"><label>Expanded Idea:</label><div id="expanded-idea-display">-</div></div>
+
+    <h5>Section Context</h5>
+    <div class="context-item"><label>Title:</label><span id="section-title-display">-</span></div>
+    <div class="context-item"><label>Subtitle:</label><span id="section-subtitle-display">-</span></div>
+    <div class="context-item"><label>Group:</label><div id="section-group-display">-</div></div>
+    <div class="context-item"><label>Group Summary:</label><div id="section-group-summary-display">-</div></div>
+    <div class="context-item"><label>Topics:</label><div id="section-topics-display">-</div></div>
+    <div class="context-item"><label>Avoid Topics:</label><div id="avoid-topics-display">-</div></div>
+  </div>
+
+  <div class="content-editor">
+    <h5>Generated Content</h5>
+    <textarea id="content-editor" placeholder="Content will be generated here." disabled></textarea>
+    <div class="editor-stats">
+      <span id="word-count">0 words</span>
+      <span id="last-saved">Not saved</span>
+    </div>
+  </div>
+
+  <style>
+    .section-editor{ background:#1e293b; border:1px solid #334155; border-radius:8px; padding:1rem; }
+    .editor-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding-bottom:.5rem; border-bottom:1px solid #334155; }
+    .editor-controls{ display:flex; gap:.5rem; }
+    .input-data-panel h5{ color:#e2e8f0; margin:.75rem 0; font-size:.9rem; }
+    .context-item{ margin-bottom:.5rem; }
+    .context-item label{ color:#94a3b8; font-size:.8rem; font-weight:500; display:block; margin-bottom:.2rem; }
+    #expanded-idea-display{ background:#0f172a; border:1px solid #334155; border-radius:4px; padding:.5rem; font-size:.8rem; max-height:100px; overflow-y:auto; }
+    #content-editor{ width:100%; min-height:300px; background:#0f172a; border:1px solid #334155; border-radius:4px; padding:.75rem; color:#e2e8f0; font-family:'Monaco','Menlo','Ubuntu Mono',monospace; }
+    #content-editor:disabled{ background:#1e293b; color:#64748b; cursor:not-allowed; }
+    .editor-stats{ display:flex; justify-content:space-between; margin-top:.5rem; font-size:.75rem; color:#94a3b8; }
+  </style>
+</div>

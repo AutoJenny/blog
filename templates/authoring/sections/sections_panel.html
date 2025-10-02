@@ -1,0 +1,135 @@
+        <!-- Left Panel: Sections List -->
+        <div class="sections-panel">
+            <div class="panel-header">
+                <h3>Sections</h3>
+                <div class="section-controls">
+                    <button class="btn-secondary" id="select-all-btn">Select All</button>
+                    <button class="btn-primary" id="batch-generate-btn">Generate All</button>
+                </div>
+            </div>
+            
+            <div class="section-filters">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="draft">Draft</button>
+                <button class="filter-btn" data-filter="complete">Complete</button>
+                <button class="filter-btn" data-filter="needs-review">Needs Review</button>
+            </div>
+            
+            <div class="sections-list" id="sections-list">
+                <!-- Sections will be loaded dynamically here -->
+            </div>
+        </div>
+
+        <style>
+            .sections-panel {
+                background: #1e293b;
+                border: 1px solid #334155;
+                border-radius: 8px;
+                padding: 1rem;
+                height: fit-content;
+            }
+            
+            .panel-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1rem;
+                padding-bottom: 0.5rem;
+                border-bottom: 1px solid #334155;
+            }
+            
+            .panel-header h3 {
+                color: #e2e8f0;
+                margin: 0;
+                font-size: 1.1rem;
+                font-weight: 600;
+            }
+            
+            .section-controls {
+                display: flex;
+                gap: 0.5rem;
+            }
+            
+            .btn-secondary, .btn-primary {
+                padding: 0.4rem 0.8rem;
+                border-radius: 4px;
+                font-size: 0.8rem;
+                font-weight: 500;
+                border: none;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+            
+            .btn-secondary {
+                background: #334155;
+                color: #cbd5e1;
+            }
+            
+            .btn-secondary:hover {
+                background: #475569;
+                color: #e2e8f0;
+            }
+            
+            .btn-primary {
+                background: #3b82f6;
+                color: white;
+            }
+            
+            .btn-primary:hover {
+                background: #2563eb;
+            }
+            
+            .section-filters {
+                display: flex;
+                gap: 0.3rem;
+                margin-bottom: 1rem;
+                flex-wrap: wrap;
+            }
+            
+            .filter-btn {
+                padding: 0.3rem 0.6rem;
+                background: #334155;
+                color: #cbd5e1;
+                border: none;
+                border-radius: 4px;
+                font-size: 0.75rem;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+            
+            .filter-btn:hover {
+                background: #475569;
+                color: #e2e8f0;
+            }
+            
+            .filter-btn.active {
+                background: #3b82f6;
+                color: white;
+            }
+            
+            .sections-list {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+                max-height: 60vh;
+                overflow-y: auto;
+            }
+            
+            .sections-list::-webkit-scrollbar {
+                width: 6px;
+            }
+            
+            .sections-list::-webkit-scrollbar-track {
+                background: #334155;
+                border-radius: 3px;
+            }
+            
+            .sections-list::-webkit-scrollbar-thumb {
+                background: #64748b;
+                border-radius: 3px;
+            }
+            
+            .sections-list::-webkit-scrollbar-thumb:hover {
+                background: #94a3b8;
+            }
+        </style>
