@@ -3,13 +3,18 @@
     <input type="checkbox" class="section-checkbox" data-section-id="{{ section.id }}"/>
     <span class="section-number">{{ section.order }}</span>
     <span class="section-title">{{ section.title }}</span>
-    <span class="section-status {{ section.status|default('draft') }}">
-      {{ (section.status or 'draft')|capitalize }}
+    {% set effective_status = 'complete' if section.section_text and section.section_text.strip() else 'draft' %}
+    <span class="section-status {{ effective_status }}">
+      {{ effective_status|capitalize }}
     </span>
   </div>
 
   {% if section.subtitle %}
     <div class="section-subtitle">{{ section.subtitle }}</div>
+  {% endif %}
+
+  {% if section.section_text %}
+    <div class="section-text-preview">{{ section.section_text }}</div>
   {% endif %}
 
   <div class="section-topics">
@@ -22,24 +27,4 @@
     <div class="progress-bar"><div class="progress-fill" style="width: {{ section.progress or 0 }}%"></div></div>
     <span class="progress-text">{{ section.progress or 0 }}% complete</span>
   </div>
-
-  <style>
-    .section-item{ background:#0f172a; border:1px solid #334155; border-radius:6px; padding:.75rem; cursor:pointer; transition:.2s; }
-    .section-item:hover{ border-color:#475569; background:#1e293b; }
-    .section-item.selected{ border-color:#3b82f6; background:#1e293b; }
-    .section-header{ display:flex; align-items:center; gap:.5rem; margin-bottom:.5rem; }
-    .section-number{ background:#334155; color:#e2e8f0; padding:.2rem .4rem; border-radius:3px; font-size:.7rem; font-weight:600; min-width:20px; text-align:center; }
-    .section-title{ color:#f1f5f9; font-weight:600; font-size:.9rem; flex:1; }
-    .section-status{ padding:.2rem .4rem; border-radius:3px; font-size:.7rem; font-weight:500; }
-    .section-status.draft{ background:#fbbf24; color:#92400e; }
-    .section-status.complete{ background:#001a12; color:#064e3b; }
-    .section-status.needs-review{ background:#f59e0b; color:#92400e; }
-    .section-subtitle{ color:#94a3b8; font-size:.8rem; margin-bottom:.5rem; font-style:italic; }
-    .section-topics{ display:flex; flex-wrap:wrap; gap:.3rem; margin-bottom:.5rem; }
-    .topic-tag{ background:#334155; color:#cbd5e1; padding:.2rem .4rem; border-radius:3px; font-size:.7rem; }
-    .section-progress{ display:flex; align-items:center; gap:.5rem; }
-    .progress-bar{ flex:1; height:4px; background:#334155; border-radius:2px; overflow:hidden; }
-    .progress-fill{ height:100%; background:#3b82f6; transition:width .3s ease; }
-    .progress-text{ color:#94a3b8; font-size:.7rem; min-width:60px; }
-  </style>
 </div>

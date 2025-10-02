@@ -1,0 +1,213 @@
+    <div class="workspace-container">
+        <!-- Left Panel: Sections List -->
+        <div class="sections-panel">
+            <div class="panel-header">
+                <h3>Sections</h3>
+                <div class="section-controls">
+                    <button class="btn-secondary" id="select-all-btn">Select All</button>
+                    <button class="btn-primary" id="batch-generate-btn">Generate All</button>
+                </div>
+            </div>
+            
+            <div class="section-filters">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="draft">Draft</button>
+                <button class="filter-btn" data-filter="complete">Complete</button>
+                <button class="filter-btn" data-filter="needs-review">Needs Review</button>
+            </div>
+            
+            <div class="sections-list" id="sections-list">
+                <!-- Sections will be loaded here -->
+                <div class="section-item" data-section-id="1" data-status="draft">
+                    <div class="section-header">
+                        <input type="checkbox" class="section-checkbox" data-section-id="1">
+                        <span class="section-number">1</span>
+                        <span class="section-title">Harvesting Scotland's Ancient Roots</span>
+                        <span class="section-status draft">Draft</span>
+                    </div>
+                    <div class="section-subtitle">Celtic festivals and harvest traditions</div>
+                    <div class="section-topics">
+                        <span class="topic-tag">Samhain</span>
+                        <span class="topic-tag">Ceres Festival</span>
+                        <span class="topic-tag">Harvest traditions</span>
+                    </div>
+                    <div class="section-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 60%"></div>
+                        </div>
+                        <span class="progress-text">60% complete</span>
+                    </div>
+                </div>
+                
+                <div class="section-item" data-section-id="2" data-status="complete">
+                    <div class="section-header">
+                        <input type="checkbox" class="section-checkbox" data-section-id="2">
+                        <span class="section-number">2</span>
+                        <span class="section-title">Medieval Farming Practices</span>
+                        <span class="section-status complete">Complete</span>
+                    </div>
+                    <div class="section-subtitle">Agricultural methods and seasonal cycles</div>
+                    <div class="section-topics">
+                        <span class="topic-tag">Crop rotation</span>
+                        <span class="topic-tag">Seasonal cycles</span>
+                        <span class="topic-tag">Medieval agriculture</span>
+                    </div>
+                    <div class="section-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100%"></div>
+                        </div>
+                        <span class="progress-text">Complete</span>
+                    </div>
+                </div>
+                
+                <!-- More sections... -->
+            </div>
+        </div>
+        
+        <!-- Right Panel: Editor Workspace -->
+        <div class="editor-panel">
+            <!-- LLM Module -->
+            <div class="llm-module-container">
+                <!-- LLM Module - Reusable component for LLM interactions -->
+<div class="llm-module">
+    <!-- LLM Prompt Panel -->
+    <div class="llm-prompt-panel">
+        <div class="prompt-header accordion-header" onclick="toggleLLMAccordion()">
+            <h4 id="prompt-title">Prompt: Loading...</h4>
+            <div class="accordion-toggle">
+                <i class="fas fa-chevron-down" id="accordion-icon"></i>
+            </div>
+        </div>
+        
+        <div class="accordion-content" id="llm-accordion-content" style="display: none;">
+            <div class="prompt-actions" id="prompt-actions">
+                <!-- Edit buttons will be conditionally shown based on config -->
+            </div>
+            
+            <!-- Provider Information -->
+            <div id="llm-provider-info" class="llm-provider-info">
+                <!-- LLM provider, model, and settings will appear here -->
+            </div>
+            
+            <!-- Prompt Display -->
+            <div id="llm-prompt-display" class="llm-prompt-display">
+                <!-- LLM prompt will appear here -->
+            </div>
+            
+            <!-- Prompt Edit Form (hidden by default) -->
+            <div id="llm-prompt-edit" class="llm-prompt-edit" style="display: none;">
+                <div class="form-group">
+                    <label for="system-prompt-edit">System Prompt</label>
+                    <textarea id="system-prompt-edit" rows="4" placeholder="System prompt..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="user-prompt-edit">User Prompt</label>
+                    <textarea id="user-prompt-edit" rows="8" placeholder="User prompt..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- LLM Results Panel -->
+    <div class="llm-results-panel">
+        <div class="results-header">
+            <h4 id="results-title">Generated Results</h4>
+            <button class="btn btn-primary" id="generate-btn">
+                <i class="fas fa-magic"></i> Generate
+            </button>
+        </div>
+        
+        <!-- LLM Message Debug Display -->
+        <div class="llm-message-debug-section" style="margin-bottom: 1rem;">
+            <div class="debug-header accordion-header" onclick="toggleDebugAccordion()">
+                <h5 style="color: #f1f5f9; margin-bottom: 0.5rem;">🔍 LLM Message Debug</h5>
+                <div class="accordion-toggle">
+                    <i class="fas fa-chevron-down" id="debug-accordion-icon"></i>
+                </div>
+            </div>
+            <div class="accordion-content" id="debug-accordion-content" style="display: none;">
+                <div id="llm-message-debug" class="llm-message-debug" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1rem; font-family: monospace; font-size: 0.8rem; color: #cbd5e1; max-height: 300px; overflow-y: auto; white-space: pre-wrap;">
+                    <!-- Actual message sent to LLM will appear here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Raw LLM Response Display -->
+        <div class="raw-response-section" style="margin-bottom: 1rem;">
+            <h5 style="color: #f1f5f9; margin-bottom: 0.5rem;">Raw LLM Response</h5>
+            <div id="raw-llm-response" class="raw-llm-response" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1rem; font-family: monospace; font-size: 0.9rem; color: #cbd5e1; max-height: 200px; overflow-y: auto; white-space: pre-wrap;">
+                <!-- Raw LLM response will appear here -->
+            </div>
+        </div>
+        
+        <!-- Results Display -->
+        <div id="llm-results-display" class="llm-results-display">
+            <!-- Generated results will appear here -->
+        </div>
+    </div>
+</div>
+            </div>
+            
+            <!-- Section Editor -->
+            <div class="section-editor">
+                <div class="editor-header">
+                    <h4 id="current-section-title">Select a section to begin editing</h4>
+                    <div class="editor-controls">
+                        <button class="btn-secondary" id="preview-btn" disabled>Preview</button>
+                        <button class="btn-primary" id="save-btn" disabled>Save</button>
+                        <button class="btn-secondary" id="regenerate-btn" disabled>Regenerate</button>
+                    </div>
+                </div>
+                
+                <!-- Input Data Panel -->
+                <div class="input-data-panel">
+                    <h5>Post Context</h5>
+                    <div class="context-item">
+                        <label>Selected Idea:</label>
+                        <div id="selected-idea-display">-</div>
+                    </div>
+                    <div class="context-item">
+                        <label>Expanded Idea:</label>
+                        <div id="expanded-idea-display">-</div>
+                    </div>
+                    
+                    <h5>Section Context</h5>
+                    <div class="context-item">
+                        <label>Title:</label>
+                        <span id="section-title-display">-</span>
+                    </div>
+                    <div class="context-item">
+                        <label>Subtitle:</label>
+                        <span id="section-subtitle-display">-</span>
+                    </div>
+                    <div class="context-item">
+                        <label>Group:</label>
+                        <div id="section-group-display">-</div>
+                    </div>
+                    <div class="context-item">
+                        <label>Group Summary:</label>
+                        <div id="section-group-summary-display">-</div>
+                    </div>
+                    <div class="context-item">
+                        <label>Topics:</label>
+                        <div id="section-topics-display">-</div>
+                    </div>
+                    <div class="context-item">
+                        <label>Avoid Topics:</label>
+                        <div id="avoid-topics-display">-</div>
+                    </div>
+                </div>
+                
+                <!-- Content Editor -->
+                <div class="content-editor">
+                    <h5>Generated Content</h5>
+                    <textarea id="content-editor" placeholder="Content will be generated here..." disabled></textarea>
+                    <div class="editor-stats">
+                        <span id="word-count">0 words</span>
+                        <span id="last-saved">Not saved</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
