@@ -1,0 +1,55 @@
+<header class="header-gradient shadow-lg border-b border-dark-border py-4">
+  <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex flex-nowrap items-center justify-between h-16 space-x-6">
+      <a href="/" class="flex items-center gap-3 text-white text-2xl font-bold tracking-tight">
+        <img src="/static/images/site/brand-logo.png" alt="BlogForge Logo" class="w-10 h-10 rounded-full shadow" style="background:#23273a; width:40px; height:40px;"/>
+        <span class="font-bold text-white">BlogForge</span>
+      </a>
+      <div class="flex-shrink-0 flex items-center gap-4 ml-4">
+        <a href="/posts" class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Posts</a>
+        <a href="/docs/" class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Docs</a>
+        <a href="/settings" class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Settings</a>
+        <a href="/workflow/" class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Workflow</a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<div class="condensed-planning-header">
+  <div class="main-title-line">
+    <h1 class="planning-title" id="planning-title">Post: ID {{ post_id|default('Unknown') }}</h1>
+  </div>
+  <div class="post-details-line">
+    <span class="status-label">Status:</span><span class="status-value" id="post-status">Unknown</span>
+    <span class="date-label">Created:</span><span class="date-value" id="post-created">Unknown</span>
+    <span class="date-label">Updated:</span><span class="date-value" id="post-updated">Unknown</span>
+  </div>
+
+  <div class="main-stages-line">
+    <div class="main-stages-left">
+      <a href="/planning/posts/{{ post_id }}/calendar" class="stage-btn" data-stage="calendar"><i class="fas fa-calendar-alt"></i> Content Calendar</a>
+      <a href="/planning/posts/{{ post_id }}/concept" class="stage-btn" data-stage="concept"><i class="fas fa-lightbulb"></i> Concept Development</a>
+      <a href="/authoring/posts/{{ post_id }}/sections/author-first-drafts" class="stage-btn" data-stage="authoring"><i class="fas fa-pen-nib"></i> Authoring</a>
+    </div>
+    <div class="main-stages-right">
+      <a href="/planning/posts/{{ post_id }}/old-interface" class="stage-btn old-interface" data-stage="old-interface"><i class="fas fa-history"></i> Old Interface</a>
+    </div>
+  </div>
+
+  <div class="sub-stages-line" id="sub-stages-line">
+    <div class="sub-stages" id="sub-stages">
+      <div class="sub-stage-group" data-stage="authoring">
+        <a href="/authoring/posts/{{ post_id }}/sections/author-first-drafts" class="sub-stage-btn" data-substage="author-first-drafts">Author First Drafts</a>
+        <a href="/authoring/posts/{{ post_id }}/sections/fix_language" class="sub-stage-btn" data-substage="fix-language">Fix Language</a>
+        <a href="/authoring/posts/{{ post_id }}/sections/image_concepts" class="sub-stage-btn" data-substage="image-concepts">Image Concepts</a>
+        <a href="/authoring/posts/{{ post_id }}/sections/image_prompts" class="sub-stage-btn" data-substage="image-prompts">Image Prompts</a>
+        <a href="/authoring/posts/{{ post_id }}/sections/image_captions" class="sub-stage-btn" data-substage="image-captions">Image Captions</a>
+      </div>
+    </div>
+    <div class="subtitle" id="subtitle"></div>
+    <div class="tab-buttons">
+      <button class="tab-btn active" data-tab="process"><i class="fas fa-cogs"></i> Process</button>
+      <button class="tab-btn" data-tab="data"><i class="fas fa-database"></i> Data</button>
+    </div>
+  </div>
+</div>
