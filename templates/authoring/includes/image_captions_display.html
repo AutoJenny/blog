@@ -9,12 +9,13 @@
 
 <!-- Fallback textarea for raw prompts (hidden by default) -->
 <div class="content-editor" id="content-editor-fallback" style="display: none;">
-    <h5>Raw Image Prompt</h5>
-    <textarea id="content-editor" placeholder="Image prompt will be generated here." disabled></textarea>
+    <h5>Raw Output</h5>
+    <textarea id="content-editor" placeholder="Generated output will appear here." disabled></textarea>
     <div class="editor-stats">
         <span id="word-count">0 words</span>
         <span id="last-saved">Not saved</span>
     </div>
+    
 </div>
 
 <style>
@@ -24,6 +25,38 @@
     border-radius: 8px;
     padding: 1rem;
     margin-bottom: 1rem;
+}
+
+/* Dark theme for fallback editor */
+#content-editor-fallback {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+#content-editor-fallback h5 {
+    color: #e2e8f0;
+    margin: 0 0 .5rem 0;
+}
+
+#content-editor {
+    width: 100%;
+    min-height: 120px;
+    background: #0b1220;
+    color: #e2e8f0;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: .75rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.editor-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-top: .5rem;
+    color: #94a3b8;
+    font-size: .8rem;
 }
 
 .captions-container {
