@@ -1,31 +1,2221 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Language - Section Authoring</title>
+    
+    <!-- Static Assets -->
+    
+    
+    <!-- CDN Assets -->
+    
+    <!-- External CDN assets -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 
-{% block css_assets %}
-{{ super() }}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/llm-module.css') }}">
-{% endblock %}
+    
+    <!-- CSS Assets -->
+    
+        
+    
+        <!-- Blueprint-specific CSS -->
+        
+            <link rel="stylesheet" href="/static/css/dist/main.css">
+            <link rel="stylesheet" href="/static/css/nav.dist.css">
+            <link rel="stylesheet" href="/static/css/sections.css">
+            <link rel="stylesheet" href="/static/css/llm-module.css">
+        
+    
 
-{% block title %}Fix Language - Section Authoring{% endblock %}
+    
+    
+    <!-- Favicon -->
+    
+    <link rel="icon" type="image/x-icon" href="/static/images/site/favicon.ico">
+    <link rel="apple-touch-icon" href="/static/images/site/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/images/site/apple-touch-icon-180x180.png">
 
-{% block content %}
+    
+    <!-- Additional Head Content -->
+    
+    
+    <!-- Dark Theme Styles -->
+    <style>
+        body {
+            background-color: #0f1419;
+            color: #e0e0e0;
+        }
+        
+        .header-gradient {
+            background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
+        }
+        
+        .nav-dropdown {
+            background: #23273a;
+            border: 1px solid #31364a;
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+        }
+        
+        .nav-dropdown a {
+            color: #e0e0e0;
+        }
+        
+        .nav-dropdown a:hover {
+            background: #23273a;
+            color: #a5b4fc;
+        }
+        
+        .content-area {
+            min-height: 400px;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+            margin-top: 0;
+            box-shadow: none;
+        }
+        
+        .gradient-header {
+            background: linear-gradient(90deg, #23273a 0%, #181c2a 100%);
+            border: 1px solid #31364a;
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+        }
+        
+        .icon-circle {
+            background: #23273a;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 3rem;
+            height: 3rem;
+            box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25);
+        }
+        
+        .card-dark {
+            background: #181c2a;
+            border: 1px solid #31364a;
+            color: #e0e0e0;
+            box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25);
+        }
+        
+        .card-dark:hover {
+            background: #23273a;
+            border-color: #6366f1;
+        }
+        
+        .section-title {
+            color: #a5b4fc;
+            font-weight: 700;
+        }
+        
+        .input-dark {
+            background: #23273a;
+            color: #e0e0e0;
+            border: 1px solid #31364a;
+        }
+        
+        .input-dark:focus {
+            border-color: #6366f1;
+            outline: none;
+        }
+        
+        .text-dark-accent {
+            color: #9ca3af;
+        }
+        
+        .bg-dark-accent {
+            background-color: #6366f1;
+        }
+        
+        .border-dark-accent {
+            border-color: #6366f1;
+        }
+        
+        .hover\:bg-dark-bg:hover {
+            background-color: #181c2a;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    
+        <!-- Header -->
+<header class="header-gradient shadow-lg border-b border-dark-border py-4">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-nowrap items-center justify-between h-16 space-x-6">
+            <div class="flex items-center space-x-8 flex-1 min-w-0">
+                <!-- Logo and Title -->
+                <a href="/" class="flex items-center gap-3 text-white text-2xl font-bold tracking-tight">
+                    <img src="/static/images/site/brand-logo.png" alt="BlogForge Logo" class="w-10 h-10 rounded-full shadow" style="background:#23273a; width: 40px; height: 40px;" />
+                    <span class="font-bold text-white">BlogForge</span>
+                </a>
+            </div>
+            <div class="flex items-center space-x-4 ml-8">
+                <!-- Modules Dropdown -->
+                <div class="relative group nav-group" tabindex="0">
+                    <button class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1 focus:outline-none" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa-solid fa-cubes"></i> Modules <i class="fa fa-caret-down text-xs"></i>
+                    </button>
+                    <div class="nav-dropdown absolute left-0 mt-2 min-w-[180px] rounded-lg shadow-lg z-50 hidden">
+                        <a href="/db/" class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition">
+                            <i class="fa-solid fa-database text-purple-400"></i> Database
+                        </a>
+                        <a href="/llm/" class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition">
+                            <i class="fa-solid fa-brain text-pink-400"></i> AI
+                        </a>
+                        <a href="/llm/images" class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition">
+                            <i class="fa-solid fa-image text-dark-accent"></i> Images
+                        </a>
+                        <a href="/servers/" class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition">
+                            <i class="fa-solid fa-server text-green-400"></i> Servers
+                        </a>
+                        <a href="http://localhost:5001/" class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition">
+                            <i class="fa-solid fa-rocket text-orange-400"></i> Launchpad
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-shrink-0 flex items-center gap-4 ml-4">
+                <a href="/posts" class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">
+                    Posts
+                </a>
+                <button class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-4 py-2 rounded-lg flex items-center gap-2 shadow transition" id="newPostBtn">
+                    <i class="fa-solid fa-plus"></i>
+                    New Post
+                </button>
+                <a href="/docs/" class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">
+                    Docs
+                </a>
+                <a href="/settings" class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">
+                    Settings
+                </a>
+                <a href="/workflow/" class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">
+                    Workflow
+                </a>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<style>
+    .header-gradient {
+        background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
+    }
+    .nav-dropdown {
+        background: #23273a;
+        border: 1px solid #31364a;
+        box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+    }
+    .nav-dropdown a {
+        color: #e0e0e0;
+    }
+    .nav-dropdown a:hover {
+        background: #23273a;
+        color: #a5b4fc;
+    }
+</style>
+
+<script>
+    // Navigation dropdown functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.nav-group').forEach(group => {
+            group.addEventListener('focusin', () => {
+                group.querySelector('.nav-dropdown').classList.remove('hidden');
+            });
+            group.addEventListener('focusout', () => {
+                setTimeout(() => {
+                    group.querySelector('.nav-dropdown').classList.add('hidden');
+                }, 100);
+            });
+        });
+    });
+</script> 
+    
+    
+    <!-- Main Content -->
+    <main>
+        
 <!-- Set page context for navigation highlighting -->
 <script>
     window.currentStage = 'authoring';
     window.currentSubstage = 'fix-language';
-    window.postId = {{ post_id|default('null') }};
+    window.postId = 60;
 </script>
 
 <!-- Include condensed header -->
-{% include 'planning/includes/condensed_header.html' %}
+<!-- Condensed Planning Header - Combines post info, navigation, and tabs -->
+<div class="condensed-planning-header">
+    <!-- Main Title Line -->
+    <div class="main-title-line">
+        <h1 class="planning-title" id="planning-title">Fix Language: ID: 60</h1>
+    </div>
+    
+    <!-- Post Details Line -->
+    <div class="post-details-line">
+        <span class="status-label">Status:</span>
+        <span class="status-value" id="post-status">Unknown</span>
+        <span class="date-label">Created:</span>
+        <span class="date-value" id="post-created">Unknown</span>
+        <span class="date-label">Updated:</span>
+        <span class="date-value" id="post-updated">Unknown</span>
+    </div>
+    
+    <!-- Main Stage Navigation -->
+    <div class="main-stages-line">
+        <div class="main-stages-left">
+            <a href="/planning/posts/60/calendar" 
+               class="stage-btn" data-stage="calendar">
+                <i class="fas fa-calendar-alt"></i>
+                Content Calendar
+            </a>
+            <a href="/planning/posts/60/concept" 
+               class="stage-btn" data-stage="concept">
+                <i class="fas fa-lightbulb"></i>
+                Concept Development
+            </a>
+            <a href="/planning/posts/60/research" 
+               class="stage-btn disabled" data-stage="research">
+                <i class="fas fa-search"></i>
+                Research & Resources
+            </a>
+            <a href="/authoring/posts/60/sections/author-first-drafts" 
+               class="stage-btn" data-stage="authoring">
+                <i class="fas fa-pen-nib"></i>
+                Authoring
+            </a>
+        </div>
+        <div class="main-stages-right">
+            <a href="/planning/posts/60/old-interface" 
+               class="stage-btn old-interface" data-stage="old-interface">
+                <i class="fas fa-history"></i>
+                Old Interface
+            </a>
+        </div>
+    </div>
+    
+    <!-- Sub-stages with Subtitle and Tabs -->
+    <div class="sub-stages-line" id="sub-stages-line">
+        <!-- Sub-stage Navigation -->
+        <div class="sub-stages" id="sub-stages">
+            <!-- Calendar sub-stages -->
+            <div class="sub-stage-group" data-stage="calendar">
+                <a href="/planning/posts/60/calendar/view" 
+                   class="sub-stage-btn" data-substage="view">
+                    Calendar View
+                </a>
+                <a href="/planning/posts/60/calendar/ideas" 
+                   class="sub-stage-btn" data-substage="ideas">
+                    Idea Generation
+                </a>
+            </div>
+            
+            <!-- Concept sub-stages -->
+            <div class="sub-stage-group" data-stage="concept">
+                <a href="/planning/posts/60/concept/brainstorm" 
+                   class="sub-stage-btn" data-substage="brainstorm">
+                    Topic Brainstorming
+                </a>
+                <a href="/planning/posts/60/concept/section-structure" 
+                   class="sub-stage-btn" data-substage="section-structure">
+                    Section Structure Design
+                </a>
+                <a href="/planning/posts/60/concept/topic-allocation" 
+                   class="sub-stage-btn" data-substage="topic-allocation">
+                    Topic Allocation
+                </a>
+                <a href="/planning/posts/60/concept/titling" 
+                   class="sub-stage-btn" data-substage="titling">
+                    Section Titling
+                </a>
+                <a href="/planning/posts/60/concept/outline" 
+                   class="sub-stage-btn disabled" data-substage="outline">
+                    Content Outline
+                </a>
+            </div>
+            
+            <!-- Research sub-stages -->
+            <div class="sub-stage-group" data-stage="research">
+                <a href="/planning/posts/60/research/sources" 
+                   class="sub-stage-btn disabled" data-substage="sources">
+                    Source Research
+                </a>
+                <a href="/planning/posts/60/research/visuals" 
+                   class="sub-stage-btn disabled" data-substage="visuals">
+                    Visual Planning
+                </a>
+                <a href="/planning/posts/60/research/prompts" 
+                   class="sub-stage-btn disabled" data-substage="prompts">
+                    Image Prompts
+                </a>
+                <a href="/planning/posts/60/research/verification" 
+                   class="sub-stage-btn disabled" data-substage="verification">
+                    Fact Verification
+                </a>
+            </div>
+            
+            <!-- Authoring sub-stages -->
+            <div class="sub-stage-group" data-stage="authoring">
+                <a href="/authoring/posts/60/sections/author-first-drafts" 
+                   class="sub-stage-btn" data-substage="author-first-drafts">
+                    Author First Drafts
+                </a>
+                <a href="/authoring/posts/60/sections/fix_language" 
+                   class="sub-stage-btn" data-substage="fix-language">
+                    Fix Language
+                </a>
+                <a href="/authoring/posts/60/sections/image_concepts" 
+                   class="sub-stage-btn" data-substage="image-concepts">
+                    Image Concepts
+                </a>
+                <a href="/authoring/posts/60/sections/image_prompts" 
+                   class="sub-stage-btn" data-substage="image-prompts">
+                    Image Prompts
+                </a>
+                <a href="/authoring/posts/60/sections/image_captions" 
+                   class="sub-stage-btn" data-substage="image-captions">
+                    Image Captions
+                </a>
+            </div>
+        </div>
+        
+        <!-- Subtitle -->
+        <div class="subtitle" id="subtitle">
+            <!-- Subtitle will be dynamically inserted here based on current substage -->
+        </div>
+        
+        <!-- Process/Data Tabs -->
+        <div class="tab-buttons">
+            <button class="tab-btn active" data-tab="process">
+                <i class="fas fa-cogs"></i>
+                Process
+            </button>
+            <button class="tab-btn" data-tab="data">
+                <i class="fas fa-database"></i>
+                Data
+            </button>
+        </div>
+    </div>
+</div>
 
-<div class="container">
-    <div id="authoring-main">
-        <div id="authoring-content">
-            <div id="sections-panel">
-                <div class="input-data">
-                    <h4>Input Data</h4>
-                    <div id="sections-display" class="sections-content">
-                        <!-- Sections from previous page will appear here -->
+<!-- Tab Content Container -->
+<div class="tab-content">
+    <div id="process-tab" class="tab-panel active">
+        <!-- Process content will be inserted here by each page -->
+    </div>
+    
+    <div id="data-tab" class="tab-panel">
+        <!-- Data Tab Content - Shared across planning pages -->
+<div id="data-tab" class="tab-content">
+    <div class="container">
+        <div class="data-content">
+            <!-- Database Tables Section -->
+            <h3><i class="fas fa-database"></i> Database Tables</h3>
+            
+            <!-- Table Selection Radio Buttons -->
+            <div class="table-selection">
+                    <div class="radio-group">
+                        <input type="radio" id="table-post-development" name="table-selection" value="post_development">
+                        <label for="table-post-development">Post Development Table</label>
+                    </div>
+                    <div class="radio-group">
+                        <input type="radio" id="table-post" name="table-selection" value="post">
+                        <label for="table-post">Post Table</label>
+                    </div>
+                    <div class="radio-group">
+                        <input type="radio" id="table-calendar-schedule" name="table-selection" value="calendar_schedule">
+                        <label for="table-calendar-schedule">Calendar Schedule Table</label>
+                    </div>
+                    <div class="radio-group">
+                        <input type="radio" id="table-post-section" name="table-selection" value="post_section" checked>
+                        <label for="table-post-section">Post Section Table</label>
+                    </div>
+                </div>
+
+                <!-- Post Development Table Display -->
+                <div id="post-development-table-display" class="table-display">
+                    <h4>Post Development Table (ID: <span id="post-development-table-id">Loading...</span>)</h4>
+                    <div id="post-development-fields-container" class="fields-container">
+                        <div class="loading">Loading development data...</div>
+                    </div>
+                </div>
+
+                <!-- Post Table Display -->
+                <div id="post-table-display" class="table-display">
+                    <h4>Post Table (ID: <span id="post-table-id">Loading...</span>)</h4>
+                    <div id="post-fields-container" class="fields-container">
+                        <div class="loading">Loading post data...</div>
+                        <div style="color: #10b981; margin-top: 1rem;">
+                            <strong>Debug:</strong> Data tab is rendering. If you see this, the include is working.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calendar Schedule Table Display -->
+                <div id="calendar-schedule-table-display" class="table-display">
+                    <h4>Calendar Schedule Table (ID: <span id="calendar-schedule-table-id">Loading...</span>)</h4>
+                    <div id="calendar-schedule-fields-container" class="fields-container">
+                        <div class="loading">Loading calendar schedule data...</div>
+                    </div>
+                </div>
+
+                <!-- Post Section Table Display -->
+                <div id="post-section-table-display" class="table-display active">
+                    <h4>Post Section Table (ID: <span id="post-section-table-id">Loading...</span>)</h4>
+                    
+                    <!-- Section Selector -->
+                    <div class="section-selector" id="section-selector" style="display: block;">
+                        <label for="section-dropdown">Select Section:</label>
+                        <select id="section-dropdown" class="section-dropdown">
+                            <option value="">Choose a section...</option>
+                        </select>
+                        <button id="test-section-btn" class="btn btn-secondary" style="margin-left: 1rem;">Test Section 1</button>
+                    </div>
+                    
+                    <div id="post-section-fields-container" class="fields-container">
+                        <div class="loading">Loading post section data...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions Section -->
+            <div class="data-section">
+                <h3><i class="fas fa-tools"></i> Actions</h3>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="refreshPostData()">
+                        <i class="fas fa-sync-alt"></i> Refresh Data
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportPostData()">
+                        <i class="fas fa-download"></i> Export Data
+                    </button>
+                    <button class="btn btn-info" onclick="viewInDatabase()">
+                        <i class="fas fa-database"></i> View in Database
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.data-content {
+    margin-bottom: 2rem;
+}
+
+.data-content h2 {
+    color: #f1f5f9;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #3b82f6;
+    padding-bottom: 0.5rem;
+}
+
+.data-content h3 {
+    color: #e2e8f0;
+    margin: 2rem 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+.status-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.status-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.status-label, .date-label {
+    color: #94a3b8;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+.status-value, .date-value {
+    color: #f1f5f9;
+    font-weight: 600;
+}
+
+.data-section {
+    margin-bottom: 2rem;
+}
+
+.data-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.data-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.data-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.data-item label {
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.data-item span {
+    color: #e2e8f0;
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #334155;
+    min-height: 2rem;
+    display: flex;
+    align-items: center;
+}
+
+.data-item textarea {
+    color: #e2e8f0;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 0.5rem;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.data-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #334155;
+}
+
+.data-tab-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+    font-weight: 500;
+}
+
+.data-tab-btn:hover {
+    color: #e2e8f0;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.data-tab-btn.active {
+    color: #3b82f6;
+    border-bottom-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.data-tab-content {
+    display: none;
+}
+
+.data-tab-content.active {
+    display: block;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+    transform: translateY(-1px);
+}
+
+.btn-info {
+    background: #06b6d4;
+    color: white;
+}
+
+.btn-info:hover {
+    background: #0891b2;
+    transform: translateY(-1px);
+}
+
+/* Table Selection Styles */
+.table-selection {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.radio-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.radio-group input[type="radio"] {
+    accent-color: #3b82f6;
+}
+
+.radio-group label {
+    color: #e2e8f0;
+    font-weight: 500;
+    cursor: pointer;
+    margin: 0;
+}
+
+/* Table Display Styles */
+.table-display {
+    display: none;
+}
+
+.table-display.active {
+    display: block;
+}
+
+.table-display h4 {
+    color: #f1f5f9;
+    margin: 1.5rem 0 1rem 0;
+    padding: 0.75rem 1rem;
+    border-left: 4px solid #3b82f6;
+}
+
+.fields-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.field-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.field-item:hover {
+    border-color: #3b82f6;
+}
+
+.field-item.empty {
+    opacity: 0.6;
+    border-style: dashed;
+}
+
+.field-item.populated {
+    border-left: 4px solid #10b981;
+}
+
+.field-name {
+    min-width: 200px;
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+}
+
+.field-value {
+    flex: 1;
+    color: #e2e8f0;
+    word-break: break-word;
+}
+
+.field-value.empty {
+    color: #6b7280;
+    font-style: italic;
+}
+
+.field-value.preview {
+    max-height: 1.5em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    position: relative;
+}
+
+.field-value.preview::after {
+    content: "Click to expand";
+    position: absolute;
+    right: 0;
+    top: 0;
+    color: #3b82f6;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.field-value.preview:hover::after {
+    opacity: 1;
+}
+
+/* Field Input Styles */
+.field-value-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.field-input {
+    color: #e2e8f0;
+    background: transparent;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 0.5rem;
+    font-family: inherit;
+    font-size: inherit;
+    width: 100%;
+    cursor: text;
+    transition: all 0.2s ease;
+}
+
+.field-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.field-input.changed {
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.field-input.saving {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.field-input.error {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.field-textarea {
+    color: #e2e8f0;
+    background: transparent;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 0.5rem;
+    font-family: inherit;
+    font-size: inherit;
+    width: 100%;
+    min-height: 100px;
+    resize: vertical;
+    transition: all 0.2s ease;
+}
+
+.field-textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.field-textarea.changed {
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.field-textarea.saving {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.field-textarea.error {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.field-value.expanded {
+    max-height: none;
+    white-space: pre-wrap;
+}
+
+.field-value.expanded::after {
+    display: none;
+}
+
+.expand-button {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.expand-button:hover {
+    background: #2563eb;
+}
+
+.expand-button.expanded {
+    background: #6b7280;
+}
+
+.loading {
+    text-align: center;
+    color: #94a3b8;
+    padding: 2rem;
+    font-style: italic;
+}
+
+/* Field prioritization styles */
+.field-item.populated {
+    opacity: 1;
+}
+
+.field-item.empty {
+    opacity: 0.6;
+}
+
+.field-item.populated label {
+    color: #e2e8f0;
+    font-weight: 600;
+}
+
+.field-item.empty label {
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+.field-item.populated .field-input,
+.field-item.populated .field-textarea {
+    border-color: #475569;
+    background: rgba(71, 85, 105, 0.1);
+}
+
+.field-item.empty .field-input,
+.field-item.empty .field-textarea {
+    border-color: #374151;
+    background: rgba(55, 65, 81, 0.05);
+}
+
+/* Section Selector Styles */
+.section-selector {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(71, 85, 105, 0.1);
+    border-radius: 6px;
+    border: 1px solid #475569;
+}
+
+.section-selector label {
+    color: #e2e8f0;
+    font-weight: 600;
+    margin-right: 1rem;
+    display: inline-block;
+}
+
+.section-dropdown {
+    background: #1e293b;
+    color: #e2e8f0;
+    border: 1px solid #475569;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    min-width: 200px;
+    cursor: pointer;
+}
+
+.section-dropdown:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.section-dropdown option {
+    background: #1e293b;
+    color: #e2e8f0;
+}
+</style>
+
+<script>
+// Data tab functionality
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('[Data Tab] Initializing...');
+    
+        // Debug status removed - no longer needed
+    
+    // Initialize data tab
+    initializeDataTab();
+    
+    // Load post data with a small delay to ensure DOM is ready
+    setTimeout(() => {
+        console.log('[Data Tab] Attempting to load post data...');
+        loadPostData();
+    }, 100);
+});
+
+// Also run when Data tab is clicked to ensure data loads
+document.addEventListener('click', function(event) {
+    if (event.target && event.target.getAttribute('data-tab') === 'data') {
+        console.log('[Data Tab] Data tab clicked, loading data...');
+        setTimeout(() => {
+            loadPostData();
+        }, 100);
+    }
+});
+
+// Also run when the data-tab panel becomes visible
+const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+            const dataTab = document.getElementById('data-tab');
+            if (dataTab && dataTab.classList.contains('active')) {
+                console.log('[Data Tab] Data tab became active, loading data...');
+                setTimeout(() => {
+                    loadPostData();
+                }, 100);
+            }
+        }
+    });
+});
+
+// Start observing when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    const dataTab = document.getElementById('data-tab');
+    if (dataTab) {
+        observer.observe(dataTab, { attributes: true });
+    }
+});
+
+function initializeDataTab() {
+    // Data tab switching
+    const dataTabButtons = document.querySelectorAll('.data-tab-btn');
+    const dataTabContents = document.querySelectorAll('.data-tab-content');
+    
+    dataTabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-tab');
+            
+            // Remove active class from all buttons and contents
+            dataTabButtons.forEach(btn => btn.classList.remove('active'));
+            dataTabContents.forEach(content => content.classList.remove('active'));
+            
+            // Add active class to clicked button and corresponding content
+            this.classList.add('active');
+            const targetContent = document.getElementById(targetTab + '-tab');
+            if (targetContent) {
+                targetContent.classList.add('active');
+                console.log(`[Data Tab] Tab ${targetTab} activated, content element:`, targetContent);
+                console.log(`[Data Tab] Content classes after activation:`, targetContent.className);
+                console.log(`[Data Tab] Content display style after activation:`, window.getComputedStyle(targetContent).display);
+            } else {
+                console.error(`[Data Tab] Target content not found: ${targetTab}-tab`);
+            }
+        });
+    });
+    
+    // Table selection radio buttons
+    const tableRadios = document.querySelectorAll('input[name="table-selection"]');
+    const tableDisplays = document.querySelectorAll('.table-display');
+    
+    tableRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.checked) {
+                // Remove active class from all table displays
+                tableDisplays.forEach(display => display.classList.remove('active'));
+                
+                // Add active class to selected table display
+                const targetDisplay = document.getElementById(this.value.replace('_', '-') + '-table-display');
+                if (targetDisplay) {
+                    targetDisplay.classList.add('active');
+                }
+            }
+        });
+    });
+    
+        // Add event listener for when Data tab is clicked to ensure data loads
+        const dataTabButton = document.querySelector('[data-tab="data"]');
+        if (dataTabButton) {
+            dataTabButton.addEventListener('click', function() {
+                console.log('[Data Tab] Data tab clicked, ensuring data is loaded...');
+                // Check if data is already loaded, if not, load it
+                const postStatus = document.getElementById('post-status');
+                if (postStatus && postStatus.textContent === 'Loading...') {
+                    loadPostData();
+                }
+            });
+        }
+        
+        // Debug: Check if data tab content exists
+        const dataTabContent = document.getElementById('data-tab');
+        if (dataTabContent) {
+            console.log('[Data Tab] Data tab content found:', dataTabContent);
+            console.log('[Data Tab] Data tab classes:', dataTabContent.className);
+            console.log('[Data Tab] Data tab display style:', window.getComputedStyle(dataTabContent).display);
+        } else {
+            console.error('[Data Tab] Data tab content not found!');
+        }
+}
+
+async function loadPostData() {
+    try {
+        console.log('[Data Tab] Loading post data...');
+        
+        // Get post ID from the URL or from a data attribute
+        const postId = getPostId();
+        console.log('[Data Tab] Post ID:', postId);
+        
+        if (!postId) {
+            console.error('[Data Tab] Post ID not found');
+            throw new Error('Post ID not found');
+        }
+        
+        const url = `/planning/api/posts/${postId}`;
+        console.log('[Data Tab] Fetching from:', url);
+        
+        const response = await fetch(url);
+        console.log('[Data Tab] Response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('[Data Tab] Data received:', data);
+        
+        populatePostData(data);
+    } catch (error) {
+        console.error('[Data Tab] Error loading post data:', error);
+        showError('Failed to load post data: ' + error.message);
+    }
+}
+
+function getPostId() {
+    console.log('[Data Tab] Getting post ID...');
+    
+    // Try to get post ID from various sources
+    const llmContainer = document.querySelector('.llm-container');
+    if (llmContainer && llmContainer.dataset.postId) {
+        console.log('[Data Tab] Found post ID from llm-container:', llmContainer.dataset.postId);
+        return llmContainer.dataset.postId;
+    }
+    
+    // Try to get from URL
+    const urlMatch = window.location.pathname.match(/\/posts\/(\d+)/);
+    if (urlMatch) {
+        console.log('[Data Tab] Found post ID from URL:', urlMatch[1]);
+        return urlMatch[1];
+    }
+    
+    // Try to get from a data attribute on the body or container
+    const body = document.body;
+    if (body.dataset.postId) {
+        console.log('[Data Tab] Found post ID from body:', body.dataset.postId);
+        return body.dataset.postId;
+    }
+    
+    console.log('[Data Tab] No post ID found');
+    return null;
+}
+
+function populatePostData(data) {
+    console.log('[Data Tab] Populating post data:', data);
+    
+    // Extract the actual post data from the API response
+    const postData = data.post || data;
+    const scheduleData = data.schedule;
+    const sectionsData = data.sections;
+    
+    console.log('[Data Tab] Post data:', postData);
+    console.log('[Data Tab] Schedule data:', scheduleData);
+    console.log('[Data Tab] Sections data:', sectionsData);
+    
+    // Post overview
+    const postStatus = document.getElementById('post-status');
+    const postCreated = document.getElementById('post-created');
+    const postUpdated = document.getElementById('post-updated');
+    
+    if (postStatus) postStatus.textContent = postData.status || 'Unknown';
+    if (postCreated) postCreated.textContent = postData.created_at ? new Date(postData.created_at).toLocaleString() : 'Unknown';
+    if (postUpdated) postUpdated.textContent = postData.updated_at ? new Date(postData.updated_at).toLocaleString() : 'Unknown';
+    
+    // Populate database tables with the correct data structure
+    populateDatabaseTables(postData, scheduleData, sectionsData);
+    
+    console.log('[Data Tab] Post data populated successfully');
+}
+
+function populateDatabaseTables(postData, scheduleData, sectionsData) {
+    // Set table IDs
+    document.getElementById('post-table-id').textContent = postData.id || 'Unknown';
+    document.getElementById('post-development-table-id').textContent = postData.id || 'Unknown';
+    document.getElementById('calendar-schedule-table-id').textContent = postData.id || 'Unknown';
+    document.getElementById('post-section-table-id').textContent = postData.id || 'Unknown';
+    
+    // Populate Post table
+    populateTableFields('post-fields-container', postData, 'post');
+    
+    // Populate Post Development table
+    if (postData.expanded_idea || postData.idea_scope || postData.section_structure || postData.topic_allocation) {
+        // Create a development data object from the post data
+        const developmentData = {
+            id: postData.id,
+            idea_scope: postData.idea_scope,
+            section_structure: postData.section_structure,
+            topic_allocation: postData.topic_allocation,
+            refined_topics: postData.refined_topics,
+            expanded_idea: postData.expanded_idea,
+            idea_seed: postData.idea_seed
+        };
+        populateTableFields('post-development-fields-container', developmentData, 'post_development');
+    } else {
+        document.getElementById('post-development-fields-container').innerHTML = '<div class="loading">No development data found</div>';
+    }
+    
+    // Populate Calendar Schedule table
+    console.log('[Data Tab] Calendar schedule data:', scheduleData);
+    if (scheduleData) {
+        console.log('[Data Tab] Populating calendar schedule with data:', scheduleData);
+        populateTableFields('calendar-schedule-fields-container', scheduleData, 'calendar_schedule');
+    } else {
+        console.log('[Data Tab] No calendar schedule data, showing empty message');
+        document.getElementById('calendar-schedule-fields-container').innerHTML = '<div class="loading">No calendar schedule data found</div>';
+    }
+    
+    // Populate Post Section table
+    console.log('[Data Tab] Post section data:', sectionsData);
+    if (sectionsData && sectionsData.length > 0) {
+        console.log('[Data Tab] Populating post sections with data:', sectionsData);
+        
+        // Store sections data globally for the selector
+        window.sectionsData = sectionsData;
+        console.log('[Data Tab] Stored sections data globally:', sectionsData);
+        
+        // Setup section selector
+        setupSectionSelector(sectionsData);
+        
+        // Show summary by default
+        showSectionsSummary(sectionsData);
+    } else {
+        console.log('[Data Tab] No post section data, showing empty message');
+        document.getElementById('post-section-fields-container').innerHTML = '<div class="loading">No post section data found</div>';
+    }
+}
+
+function populateTableFields(containerId, data, tableType) {
+    console.log(`[Data Tab] Populating ${tableType} fields in container: ${containerId}`);
+    const container = document.getElementById(containerId);
+    
+    if (!container) {
+        console.error(`[Data Tab] Container not found: ${containerId}`);
+        return;
+    }
+    
+    // Sort by content status: populated fields first, then empty fields
+    // Within each group, sort alphabetically with 'id' first
+    let fields = Object.keys(data).sort((a, b) => {
+        const aValue = data[a];
+        const bValue = data[b];
+        const aIsEmpty = aValue === null || aValue === undefined || aValue === '';
+        const bIsEmpty = bValue === null || bValue === undefined || bValue === '';
+        
+        // If one is empty and the other isn't, populated comes first
+        if (aIsEmpty && !bIsEmpty) return 1;
+        if (!aIsEmpty && bIsEmpty) return -1;
+        
+        // If both have same content status, sort alphabetically with 'id' first
+        if (a === 'id') return -1;
+        if (b === 'id') return 1;
+        return a.localeCompare(b);
+    });
+    
+    console.log(`[Data Tab] Found ${fields.length} fields:`, fields);
+    console.log(`[Data Tab] section_text field in fields:`, fields.includes('section_text'));
+    console.log(`[Data Tab] section_text value:`, data.section_text);
+    
+    container.innerHTML = '';
+    
+    fields.forEach(fieldName => {
+        const fieldValue = data[fieldName];
+        const isEmpty = fieldValue === null || fieldValue === undefined || fieldValue === '';
+        const isLongText = typeof fieldValue === 'string' && fieldValue.length > 100;
+        
+        // Debug logging for draft and section_text fields
+        if (fieldName === 'draft' || fieldName === 'section_text') {
+            console.log(`[Data Tab] Field ${fieldName}:`, {
+                value: fieldValue,
+                isEmpty: isEmpty,
+                isLongText: isLongText,
+                length: fieldValue ? fieldValue.length : 0
+            });
+        }
+        
+        // Special handling for draft and section_text fields - always show full content
+        const isDraftField = fieldName === 'draft';
+        const isSectionTextField = fieldName === 'section_text';
+        
+        const fieldItem = document.createElement('div');
+        fieldItem.className = `field-item ${isEmpty ? 'empty' : 'populated'}`;
+        
+                fieldItem.innerHTML = `
+                    <div class="field-name">${fieldName}</div>
+                    <div class="field-value-container">
+                        ${(isDraftField || isSectionTextField) ? `
+                            <textarea class="field-textarea" readonly style="min-height: 200px; font-family: inherit; background: rgba(71, 85, 105, 0.1); border: 1px solid #475569; color: #e2e8f0; padding: 1rem; border-radius: 4px;">${isEmpty ? '' : String(fieldValue).replace(/"/g, '&quot;')}</textarea>
+                        ` : isLongText ? `
+                            <div class="field-value ${isEmpty ? 'empty' : 'preview'}" 
+                                 ${isLongText ? `data-full-value="${String(fieldValue).replace(/"/g, '&quot;')}"` : ''}
+                                 ${isLongText ? `data-field="${fieldName}"` : ''}
+                                 ${isLongText ? `data-table="${tableType}"` : ''}>
+                                ${isEmpty ? 'Empty' : formatFieldValue(fieldValue)}
+                            </div>
+                            <button class="expand-button" onclick="toggleExpand(this.previousElementSibling)">Expand</button>
+                        ` : `
+                            <input type="text" class="field-input" value="${isEmpty ? '' : String(fieldValue).replace(/"/g, '&quot;')}" 
+                                   data-field="${fieldName}" data-table="${tableType}" 
+                                   onchange="markFieldChanged(this)" onblur="saveField(this)">
+                        `}
+                    </div>
+                `;
+        
+        container.appendChild(fieldItem);
+    });
+    
+    console.log(`[Data Tab] Added ${fields.length} field items to container`);
+}
+
+function setupSectionSelector(sectionsData) {
+    const sectionSelector = document.getElementById('section-selector');
+    const sectionDropdown = document.getElementById('section-dropdown');
+    
+    if (!sectionSelector || !sectionDropdown) return;
+    
+    // Show the selector
+    sectionSelector.style.display = 'block';
+    
+    // Clear existing options
+    sectionDropdown.innerHTML = '<option value="">Choose a section...</option>';
+    
+    // Add summary option
+    const summaryOption = document.createElement('option');
+    summaryOption.value = 'summary';
+    summaryOption.textContent = '📊 Summary (All Sections)';
+    sectionDropdown.appendChild(summaryOption);
+    
+    // Add individual section options
+    sectionsData.forEach(section => {
+        const option = document.createElement('option');
+        option.value = section.id;
+        option.textContent = `${section.section_order}. ${section.section_heading || 'Untitled'} (${section.status || 'draft'})`;
+        sectionDropdown.appendChild(option);
+    });
+    
+    // Auto-select first section and show its content
+    if (sectionsData.length > 0) {
+        const firstSection = sectionsData[0];
+        sectionDropdown.value = firstSection.id;
+        console.log('[Data Tab] Auto-selecting first section:', firstSection);
+        showIndividualSection(firstSection);
+    }
+    
+    // Add change event listener
+    sectionDropdown.addEventListener('change', function() {
+        const selectedValue = this.value;
+        
+        if (selectedValue === 'summary') {
+            showSectionsSummary(sectionsData);
+        } else if (selectedValue) {
+            const selectedSection = sectionsData.find(s => s.id == selectedValue);
+            if (selectedSection) {
+                showIndividualSection(selectedSection);
+            }
+        }
+    });
+    
+    // Add test button event listener
+    const testButton = document.getElementById('test-section-btn');
+    if (testButton) {
+        testButton.addEventListener('click', function() {
+            console.log('[Data Tab] Test button clicked, showing section 1');
+            const firstSection = sectionsData.find(s => s.section_order === 1);
+            if (firstSection) {
+                console.log('[Data Tab] Found section 1:', firstSection);
+                showIndividualSection(firstSection);
+            } else {
+                console.error('[Data Tab] Section 1 not found in sections data');
+            }
+        });
+    }
+}
+
+function showSectionsSummary(sectionsData) {
+    const summaryData = {
+        total_sections: sectionsData.length,
+        sections_with_content: sectionsData.filter(s => s.draft && s.draft.length > 0).length,
+        sections_complete: sectionsData.filter(s => s.status === 'complete').length,
+        sections_draft: sectionsData.filter(s => s.status === 'draft').length,
+        sections_needs_review: sectionsData.filter(s => s.status === 'needs-review').length,
+        total_content_length: sectionsData.reduce((total, s) => total + (s.draft ? s.draft.length : 0), 0),
+        average_content_length: Math.round(sectionsData.reduce((total, s) => total + (s.draft ? s.draft.length : 0), 0) / sectionsData.length),
+        section_list: sectionsData.map(section => 
+            `${section.section_order}. ${section.section_heading || 'Untitled'} (${section.status || 'draft'}) - ${section.draft ? section.draft.length + ' chars' : 'no content'}`
+        ).join('\n'),
+        completion_percentage: Math.round((sectionsData.filter(s => s.status === 'complete').length / sectionsData.length) * 100)
+    };
+    
+    populateTableFields('post-section-fields-container', summaryData, 'post_section');
+}
+
+function showIndividualSection(section) {
+    console.log('[Data Tab] Showing individual section:', section);
+    console.log('[Data Tab] Section draft length:', section.draft ? section.draft.length : 'No draft');
+    console.log('[Data Tab] Section polished length:', section.polished ? section.polished.length : 'No polished');
+    
+    // Create a clean data object with all section fields
+    console.log('[Data Tab] Raw section data from API:', section);
+    console.log('[Data Tab] section.polished value:', section.polished);
+    console.log('[Data Tab] section.polished length:', section.polished ? section.polished.length : 'null/undefined');
+    
+    const sectionData = {
+        id: section.id,
+        post_id: section.post_id,
+        section_order: section.section_order,
+        section_heading: section.section_heading,
+        section_description: section.section_description,
+        status: section.status,
+        draft: section.draft,
+        section_text: section.polished, // Maps to database 'polished' field
+        created_at: section.created_at,
+        updated_at: section.updated_at,
+        // Additional computed fields
+        draft_length: section.draft ? section.draft.length : 0,
+        section_text_length: section.polished ? section.polished.length : 0,
+        has_content: section.draft && section.draft.length > 0,
+        draft_preview: section.draft ? section.draft.substring(0, 200) + '...' : 'No content',
+        section_text_preview: section.polished ? section.polished.substring(0, 200) + '...' : 'No section text'
+    };
+    
+    console.log('[Data Tab] Processed section data:', sectionData);
+    console.log('[Data Tab] sectionData.section_text:', sectionData.section_text);
+    console.log('[Data Tab] sectionData keys:', Object.keys(sectionData));
+    populateTableFields('post-section-fields-container', sectionData, 'post_section');
+}
+
+function formatFieldValue(value) {
+    if (value === null || value === undefined) return 'null';
+    if (typeof value === 'boolean') return value ? 'true' : 'false';
+    if (typeof value === 'object') return JSON.stringify(value, null, 2);
+    if (typeof value === 'string' && value.length > 100) {
+        return value.substring(0, 100) + '...';
+    }
+    return String(value);
+}
+
+function toggleExpand(element) {
+    if (element.classList.contains('preview')) {
+        // Expand: show editable textarea
+        element.classList.remove('preview');
+        element.classList.add('expanded');
+        
+        const fullValue = element.getAttribute('data-full-value');
+        const fieldName = element.getAttribute('data-field');
+        const tableType = element.getAttribute('data-table');
+        
+        // Replace with textarea
+        element.innerHTML = `
+            <textarea class="field-textarea" 
+                      data-field="${fieldName}" 
+                      data-table="${tableType}"
+                      onchange="markFieldChanged(this)" 
+                      onblur="saveField(this)">${fullValue}</textarea>
+        `;
+        
+        element.nextElementSibling.textContent = 'Collapse';
+        element.nextElementSibling.classList.add('expanded');
+    } else {
+        // Collapse: show preview
+        element.classList.remove('expanded');
+        element.classList.add('preview');
+        
+        const textarea = element.querySelector('.field-textarea');
+        const fullValue = textarea ? textarea.value : element.getAttribute('data-full-value');
+        
+        // Update data attribute with current value
+        element.setAttribute('data-full-value', fullValue);
+        
+        // Replace with preview text
+        element.innerHTML = fullValue.substring(0, 100) + '...';
+        
+        element.nextElementSibling.textContent = 'Expand';
+        element.nextElementSibling.classList.remove('expanded');
+    }
+}
+
+function refreshPostData() {
+    loadPostData();
+    showNotification('Post data refreshed', 'success');
+}
+
+// Field editing functions
+function markFieldChanged(input) {
+    input.classList.add('changed');
+    input.classList.remove('saving', 'error');
+}
+
+async function saveField(input) {
+    const fieldName = input.getAttribute('data-field');
+    const tableType = input.getAttribute('data-table');
+    const newValue = input.value;
+    
+    console.log('[Data Tab] Saving field:', { fieldName, tableType, newValue });
+    
+    // Get post ID
+    const postId = getPostId();
+    if (!postId) {
+        console.error('[Data Tab] Post ID not found');
+        showError('Post ID not found');
+        return;
+    }
+    
+    console.log('[Data Tab] Post ID:', postId);
+    
+    // Mark as saving
+    input.classList.remove('changed', 'error');
+    input.classList.add('saving');
+    
+    try {
+        const url = `/planning/api/posts/${postId}/update-field`;
+        const payload = {
+            field_name: fieldName,
+            table_type: tableType,
+            new_value: newValue
+        };
+        
+        console.log('[Data Tab] Making request to:', url, 'with payload:', payload);
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        console.log('[Data Tab] Response status:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('[Data Tab] Response error:', errorText);
+            throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
+        }
+        
+        const result = await response.json();
+        console.log('[Data Tab] Response result:', result);
+        
+        if (result.success) {
+            input.classList.remove('saving');
+            showNotification(`Field '${fieldName}' updated successfully`, 'success');
+        } else {
+            throw new Error(result.error || 'Update failed');
+        }
+        
+    } catch (error) {
+        console.error('[Data Tab] Error saving field:', error);
+        input.classList.remove('saving');
+        input.classList.add('error');
+        showError(`Failed to update field '${fieldName}': ${error.message}`);
+    }
+}
+
+function exportPostData() {
+    const data = {
+        post_id: document.querySelector('.llm-container').dataset.postId,
+        timestamp: new Date().toISOString(),
+        data: {
+            status: document.getElementById('post-status').textContent,
+            title: document.getElementById('post-title').textContent,
+            slug: document.getElementById('post-slug').textContent,
+            // Add more fields as needed
+        }
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `post-${data.post_id}-data.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showNotification('Post data exported', 'success');
+}
+
+function viewInDatabase() {
+    window.open('/db/', '_blank');
+}
+
+function showNotification(message, type = 'info') {
+    // Simple notification - you can enhance this
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 6px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        document.body.removeChild(notification);
+    }, 3000);
+}
+
+function showError(message) {
+    showNotification(message, 'error');
+}
+</script>
+    </div>
+</div>
+
+<style>
+/* Condensed Planning Header Styles */
+.condensed-planning-header {
+    margin-bottom: 1rem;
+}
+
+.main-title-line {
+    margin-bottom: 0.5rem;
+}
+
+.planning-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin: 0;
+    text-align: center;
+}
+
+/* Post Details Line */
+.post-details-line {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 1rem;
+    flex-wrap: wrap;
+}
+
+.status-label, .date-label {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-value, .date-value {
+    color: #e2e8f0;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.status-value {
+    padding: 0.2rem 0.5rem;
+    background: #0f172a;
+    border-radius: 4px;
+    border: 1px solid #334155;
+}
+
+/* Main Stage Navigation */
+.main-stages-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #1e293b;
+    border-radius: 6px;
+    border: 1px solid #334155;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.main-stages-left {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.main-stages-right {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.stage-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.stage-btn:hover {
+    background: #334155;
+    border-color: #64748b;
+    color: #e2e8f0;
+}
+
+.stage-btn.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+.stage-btn.old-interface {
+    border-color: #f59e0b;
+    color: #f59e0b;
+}
+
+.stage-btn.old-interface:hover {
+    background: #f59e0b;
+    color: white;
+}
+
+.stage-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    color: #64748b;
+    border-color: #475569;
+}
+
+.stage-btn.disabled:hover {
+    background: transparent;
+    border-color: #475569;
+    color: #64748b;
+}
+
+/* Sub-stages with Subtitle and Tabs */
+.sub-stages-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #0f172a;
+    border-radius: 6px;
+    border: 1px solid #334155;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.sub-stages {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.sub-stage-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.sub-stage-btn {
+    padding: 0.4rem 0.8rem;
+    background: transparent;
+    border: 1px solid #475569;
+    border-radius: 4px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+}
+
+.sub-stage-btn:hover {
+    background: #334155;
+    border-color: #64748b;
+    color: #e2e8f0;
+}
+
+.sub-stage-btn.active {
+    background: #06b6d4;
+    border-color: #06b6d4;
+    color: white;
+}
+
+.sub-stage-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    color: #64748b;
+    border-color: #475569;
+}
+
+.sub-stage-btn.disabled:hover {
+    background: transparent;
+    border-color: #475569;
+    color: #64748b;
+}
+
+/* Subtitle */
+.subtitle {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    font-style: italic;
+    text-align: center;
+    flex: 1;
+    min-width: 200px;
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    background: transparent;
+    border: 1px solid #475569;
+    border-radius: 4px;
+    color: #94a3b8;
+    font-weight: 500;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    background: #334155;
+    border-color: #64748b;
+    color: #e2e8f0;
+}
+
+.tab-btn.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+/* Tab Content */
+.tab-content {
+    position: relative;
+}
+
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .post-details-line {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .main-stages-line {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .main-stages-left {
+        justify-content: center;
+    }
+    
+    .main-stages-right {
+        justify-content: center;
+    }
+    
+    .sub-stages-line {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .sub-stages {
+        justify-content: center;
+    }
+    
+    .subtitle {
+        min-width: auto;
+        margin: 0.5rem 0;
+    }
+    
+    .tab-buttons {
+        justify-content: center;
+    }
+}
+</style>
+
+<script type="module" src="/static/js/planning/planning-header-updater.js"></script>
+
+<script>
+// Subtitle definitions for each substage
+const subtitles = {
+    'calendar': {
+        'view': 'Weekly view of your content schedule - 52 weeks organized by month',
+        'ideas': 'AI-powered suggestions based on seasons, trends, and content gaps.'
+    },
+    'concept': {
+        'brainstorm': 'Generate 50+ topic ideas and curate the best ones for your content.',
+        'grouping': 'Group your generated topics into 6-8 thematic clusters for logical organization.',
+        'titling': 'Create compelling titles and descriptions for each section, defining scope and boundaries.',
+        'outline': 'Create a detailed content outline with logical flow and structure.'
+    },
+    'research': {
+        'sources': 'Research and gather credible sources for your content topics.',
+        'visuals': 'Plan visual elements and image requirements for your content.',
+        'prompts': 'Generate detailed prompts for AI image creation.',
+        'verification': 'Verify facts and ensure content accuracy.'
+    },
+    'authoring': {
+        'author-first-drafts': 'Create initial draft content for each section.',
+        'fix-language': 'Refine and improve language, flow, and readability.',
+        'image-concepts': 'Develop visual concepts and image requirements.',
+        'image-prompts': 'Generate detailed prompts for AI image creation.',
+        'image-captions': 'Create engaging captions and alt text for images.'
+    }
+};
+
+// Navigation highlighting based on current page
+function updateNavigationHighlighting() {
+    // Get current stage and substage from window object (set by each page)
+    const currentStage = window.currentStage;
+    const currentSubstage = window.currentSubstage;
+    
+    console.log('Navigation update - currentStage:', currentStage, 'currentSubstage:', currentSubstage);
+    
+    // Remove active class from all stage buttons first
+    const stageButtons = document.querySelectorAll('.stage-btn');
+    stageButtons.forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Highlight main stage
+    if (currentStage) {
+        stageButtons.forEach(btn => {
+            if (btn.getAttribute('data-stage') === currentStage) {
+                btn.classList.add('active');
+                console.log('Highlighting stage:', currentStage);
+            }
+        });
+    }
+    
+    // Show/hide sub-stages based on current stage
+    const subStagesLine = document.querySelector('.sub-stages-line');
+    if (currentStage && currentStage !== 'old-interface' && subStagesLine) {
+        subStagesLine.style.display = 'flex';
+        
+        // Show only the relevant sub-stage group
+        const subStageGroups = document.querySelectorAll('.sub-stage-group');
+        subStageGroups.forEach(group => {
+            group.style.display = 'none';
+            if (group.getAttribute('data-stage') === currentStage) {
+                group.style.display = 'flex';
+            }
+        });
+        
+        // Highlight current substage and update subtitle
+        if (currentSubstage) {
+            const subStageButtons = document.querySelectorAll('.sub-stage-btn');
+            subStageButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-substage') === currentSubstage) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Update subtitle
+            const subtitleElement = document.getElementById('subtitle');
+            if (subtitleElement && subtitles[currentStage] && subtitles[currentStage][currentSubstage]) {
+                subtitleElement.textContent = subtitles[currentStage][currentSubstage];
+            }
+        }
+    } else if (subStagesLine) {
+        subStagesLine.style.display = 'none';
+    }
+}
+
+// Tab switching functionality
+function initializeTabs() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-tab');
+            
+            // Remove active class from all buttons and panels
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabPanels.forEach(panel => panel.classList.remove('active'));
+            
+            // Add active class to clicked button and corresponding panel
+            this.classList.add('active');
+            const targetPanel = document.getElementById(targetTab + '-tab');
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+            }
+            
+            // Save tab state to localStorage
+            localStorage.setItem('planning-active-tab', targetTab);
+        });
+    });
+    
+    // Restore last active tab from localStorage
+    const lastActiveTab = localStorage.getItem('planning-active-tab');
+    if (lastActiveTab) {
+        const savedButton = document.querySelector(`[data-tab="${lastActiveTab}"]`);
+        const savedPanel = document.getElementById(lastActiveTab + '-tab');
+        if (savedButton && savedPanel) {
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabPanels.forEach(panel => panel.classList.remove('active'));
+            savedButton.classList.add('active');
+            savedPanel.classList.add('active');
+        }
+    }
+}
+
+// Run on DOM ready
+document.addEventListener('DOMContentLoaded', function() {
+    updateNavigationHighlighting();
+    initializeTabs();
+});
+
+// Also run after a short delay to catch pages that set window.currentStage after DOM ready
+setTimeout(updateNavigationHighlighting, 100);
+</script>
+
+<script>
+// Move authoring content to process-tab after page loads
+document.addEventListener('DOMContentLoaded', function() {
+    const authoringContent = document.querySelector('.authoring-workspace');
+    const processTab = document.getElementById('process-tab');
+    if (authoringContent && processTab) {
+        processTab.appendChild(authoringContent);
+    }
+});
+</script>
+
+<!-- Authoring Workspace -->
+<div class="authoring-workspace">
+    <div class="workspace-container">
+        <!-- Left Panel: Sections List -->
+        <div class="sections-panel">
+            <div class="panel-header">
+                <h3>Sections</h3>
+                <div class="section-controls">
+                    <button class="btn-secondary" id="select-all-btn">Select All</button>
+                    <button class="btn-primary" id="batch-generate-btn">Generate All</button>
+                </div>
+            </div>
+            
+            <div class="section-filters">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="draft">Draft</button>
+                <button class="filter-btn" data-filter="complete">Complete</button>
+                <button class="filter-btn" data-filter="needs-review">Needs Review</button>
+            </div>
+            
+            <div class="sections-list" id="sections-list">
+                <!-- Sections will be loaded here -->
+                <div class="section-item" data-section-id="1" data-status="draft">
+                    <div class="section-header">
+                        <input type="checkbox" class="section-checkbox" data-section-id="1">
+                        <span class="section-number">1</span>
+                        <span class="section-title">Harvesting Scotland's Ancient Roots</span>
+                        <span class="section-status draft">Draft</span>
+                    </div>
+                    <div class="section-subtitle">Celtic festivals and harvest traditions</div>
+                    <div class="section-topics">
+                        <span class="topic-tag">Samhain</span>
+                        <span class="topic-tag">Ceres Festival</span>
+                        <span class="topic-tag">Harvest traditions</span>
+                    </div>
+                    <div class="section-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 60%"></div>
+                        </div>
+                        <span class="progress-text">60% complete</span>
+                    </div>
+                </div>
+                
+                <div class="section-item" data-section-id="2" data-status="complete">
+                    <div class="section-header">
+                        <input type="checkbox" class="section-checkbox" data-section-id="2">
+                        <span class="section-number">2</span>
+                        <span class="section-title">Medieval Farming Practices</span>
+                        <span class="section-status complete">Complete</span>
+                    </div>
+                    <div class="section-subtitle">Agricultural methods and seasonal cycles</div>
+                    <div class="section-topics">
+                        <span class="topic-tag">Crop rotation</span>
+                        <span class="topic-tag">Seasonal cycles</span>
+                        <span class="topic-tag">Medieval agriculture</span>
+                    </div>
+                    <div class="section-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100%"></div>
+                        </div>
+                        <span class="progress-text">Complete</span>
+                    </div>
+                </div>
+                
+                <!-- More sections... -->
+            </div>
+        </div>
+        
+        <!-- Right Panel: Editor Workspace -->
+        <div class="editor-panel">
+            <!-- LLM Module -->
+            <div class="llm-module-container">
+                <!-- LLM Module - Reusable component for LLM interactions -->
+<div class="llm-module">
+    <!-- LLM Prompt Panel -->
+    <div class="llm-prompt-panel">
+        <div class="prompt-header accordion-header" onclick="toggleLLMAccordion()">
+            <h4 id="prompt-title">Prompt: Loading...</h4>
+            <div class="accordion-toggle">
+                <i class="fas fa-chevron-down" id="accordion-icon"></i>
+            </div>
+        </div>
+        
+        <div class="accordion-content" id="llm-accordion-content" style="display: none;">
+            <div class="prompt-actions" id="prompt-actions">
+                <!-- Edit buttons will be conditionally shown based on config -->
+            </div>
+            
+            <!-- Provider Information -->
+            <div id="llm-provider-info" class="llm-provider-info">
+                <!-- LLM provider, model, and settings will appear here -->
+            </div>
+            
+            <!-- Prompt Display -->
+            <div id="llm-prompt-display" class="llm-prompt-display">
+                <!-- LLM prompt will appear here -->
+            </div>
+            
+            <!-- Prompt Edit Form (hidden by default) -->
+            <div id="llm-prompt-edit" class="llm-prompt-edit" style="display: none;">
+                <div class="form-group">
+                    <label for="system-prompt-edit">System Prompt</label>
+                    <textarea id="system-prompt-edit" rows="4" placeholder="System prompt..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="user-prompt-edit">User Prompt</label>
+                    <textarea id="user-prompt-edit" rows="8" placeholder="User prompt..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- LLM Results Panel -->
+    <div class="llm-results-panel">
+        <div class="results-header">
+            <h4 id="results-title">Generated Results</h4>
+            <button class="btn btn-primary" id="generate-btn">
+                <i class="fas fa-magic"></i> Generate
+            </button>
+        </div>
+        
+        <!-- LLM Message Debug Display -->
+        <div class="llm-message-debug-section" style="margin-bottom: 1rem;">
+            <div class="debug-header accordion-header" onclick="toggleDebugAccordion()">
+                <h5 style="color: #f1f5f9; margin-bottom: 0.5rem;">🔍 LLM Message Debug</h5>
+                <div class="accordion-toggle">
+                    <i class="fas fa-chevron-down" id="debug-accordion-icon"></i>
+                </div>
+            </div>
+            <div class="accordion-content" id="debug-accordion-content" style="display: none;">
+                <div id="llm-message-debug" class="llm-message-debug" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1rem; font-family: monospace; font-size: 0.8rem; color: #cbd5e1; max-height: 300px; overflow-y: auto; white-space: pre-wrap;">
+                    <!-- Actual message sent to LLM will appear here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Raw LLM Response Display -->
+        <div class="raw-response-section" style="margin-bottom: 1rem;">
+            <h5 style="color: #f1f5f9; margin-bottom: 0.5rem;">Raw LLM Response</h5>
+            <div id="raw-llm-response" class="raw-llm-response" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1rem; font-family: monospace; font-size: 0.9rem; color: #cbd5e1; max-height: 200px; overflow-y: auto; white-space: pre-wrap;">
+                <!-- Raw LLM response will appear here -->
+            </div>
+        </div>
+        
+        <!-- Results Display -->
+        <div id="llm-results-display" class="llm-results-display">
+            <!-- Generated results will appear here -->
+        </div>
+    </div>
+</div>
+            </div>
+            
+            <!-- Section Editor -->
+            <div class="section-editor">
+                <div class="editor-header">
+                    <h4 id="current-section-title">Select a section to begin editing</h4>
+                    <div class="editor-controls">
+                        <button class="btn-secondary" id="preview-btn" disabled>Preview</button>
+                        <button class="btn-primary" id="save-btn" disabled>Save</button>
+                        <button class="btn-secondary" id="regenerate-btn" disabled>Regenerate</button>
                     </div>
                 </div>
                 
@@ -67,21 +2257,410 @@
                         <div id="avoid-topics-display">-</div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="authoring-results">
-                {% include 'includes/llm_module.html' %}
+                
+                <!-- Content Editor -->
+                <div class="content-editor">
+                    <h5>Generated Content</h5>
+                    <textarea id="content-editor" placeholder="Content will be generated here..." disabled></textarea>
+                    <div class="editor-stats">
+                        <span id="word-count">0 words</span>
+                        <span id="last-saved">Not saved</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
+<style>
+/* Authoring Workspace Styles */
+.authoring-workspace {
+    padding: 1rem;
+    min-height: calc(100vh - 200px);
+}
+
+.workspace-container {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Sections Panel */
+.sections-panel {
+    background: #1e293b;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    padding: 1rem;
+    height: fit-content;
+    max-height: calc(100vh - 250px);
+    overflow-y: auto;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #334155;
+}
+
+.panel-header h3 {
+    color: #f1f5f9;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.section-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    border: 1px solid;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+}
+
+.btn-secondary {
+    background: transparent;
+    border-color: #64748b;
+    color: #94a3b8;
+}
+
+.btn-secondary:hover {
+    background: #334155;
+    color: #e2e8f0;
+}
+
+/* Section Filters */
+.section-filters {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.filter-btn {
+    padding: 0.3rem 0.6rem;
+    background: transparent;
+    border: 1px solid #475569;
+    border-radius: 4px;
+    color: #94a3b8;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-btn.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+.filter-btn:hover:not(.active) {
+    background: #334155;
+    color: #e2e8f0;
+}
+
+/* Section Items */
+.sections-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.section-item {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.section-item:hover {
+    border-color: #475569;
+    background: #1e293b;
+}
+
+.section-item.selected {
+    border-color: #3b82f6;
+    background: #1e293b;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.section-checkbox {
+    margin: 0;
+}
+
+.section-number {
+    background: #334155;
+    color: #e2e8f0;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
+}
+
+.section-title {
+    color: #f1f5f9;
+    font-weight: 600;
+    font-size: 0.9rem;
+    flex: 1;
+}
+
+.section-status {
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.section-status.draft {
+    background: #fbbf24;
+    color: #92400e;
+}
+
+.section-status.complete {
+    background: #10b981;
+    color: #064e3b;
+}
+
+.section-status.needs-review {
+    background: #f59e0b;
+    color: #92400e;
+}
+
+.section-subtitle {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+    font-style: italic;
+}
+
+.section-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-bottom: 0.5rem;
+}
+
+.topic-tag {
+    background: #334155;
+    color: #cbd5e1;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.7rem;
+}
+
+.section-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 4px;
+    background: #334155;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #3b82f6;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    color: #94a3b8;
+    font-size: 0.7rem;
+    min-width: 60px;
+}
+
+/* Editor Panel */
+.editor-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.llm-module-container {
+    background: #1e293b;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    padding: 1rem;
+}
+
+.section-editor {
+    background: #1e293b;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    padding: 1rem;
+}
+
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #334155;
+}
+
+.editor-header h4 {
+    color: #f1f5f9;
+    margin: 0;
+    font-size: 1rem;
+}
+
+.editor-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.editor-controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Input Data Panel */
+.input-data-panel {
+    margin-bottom: 1rem;
+}
+
+.input-data-panel h5 {
+    color: #e2e8f0;
+    margin: 0 0 0.75rem 0;
+    font-size: 0.9rem;
+}
+
+.context-item {
+    margin-bottom: 0.5rem;
+}
+
+.context-item label {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: block;
+    margin-bottom: 0.2rem;
+}
+
+.context-item span, .context-item div {
+    color: #e2e8f0;
+    font-size: 0.85rem;
+}
+
+#section-topics-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+#expanded-idea-display {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 0.5rem;
+    font-size: 0.8rem;
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+/* Content Editor */
+.content-editor h5 {
+    color: #e2e8f0;
+    margin: 0 0 0.75rem 0;
+    font-size: 0.9rem;
+}
+
+#content-editor {
+    width: 100%;
+    min-height: 300px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 0.75rem;
+    color: #e2e8f0;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+#content-editor:disabled {
+    background: #1e293b;
+    color: #64748b;
+    cursor: not-allowed;
+}
+
+.editor-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .workspace-container {
+        grid-template-columns: 300px 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .workspace-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .sections-panel {
+        max-height: 300px;
+    }
+}
+</style>
+
+<!-- Include LLM Module Scripts -->
+<script src="/static/js/llm-utils.js"></script>
+<script src="/static/js/llm-config.js"></script>
+<script src="/static/js/llm-ui-manager.js"></script>
+<script src="/static/js/llm-api-client.js"></script>
+<script src="/static/js/llm-event-manager.js"></script>
+<script src="/static/js/llm-module.js"></script>
+
 <script>
-// FixLanguageManager class
-class FixLanguageManager {
+// Authoring Section Management
+class AuthoringManager {
     constructor() {
         this.currentSectionId = null;
         this.sections = [];
+        this.selectedSections = new Set();
         this.init();
     }
     
@@ -98,10 +2677,6 @@ class FixLanguageManager {
             if (data.success) {
                 this.sections = data.sections;
                 this.renderSections();
-                // Auto-load first section
-                if (this.sections.length > 0) {
-                    this.selectSection(this.sections[0].id);
-                }
             }
         } catch (error) {
             console.error('Error loading sections:', error);
@@ -109,7 +2684,7 @@ class FixLanguageManager {
     }
     
     renderSections() {
-        const container = document.getElementById('sections-display');
+        const container = document.getElementById('sections-list');
         container.innerHTML = '';
         
         this.sections.forEach(section => {
@@ -122,59 +2697,411 @@ class FixLanguageManager {
         const div = document.createElement('div');
         div.className = 'section-item';
         div.dataset.sectionId = section.id;
+        div.dataset.status = section.status || 'draft';
+        
         div.innerHTML = `
             <div class="section-header">
-                <h6>${section.title || 'Untitled Section'}</h6>
-                <span class="section-order">${section.order}</span>
+                <input type="checkbox" class="section-checkbox" data-section-id="${section.id}">
+                <span class="section-number">${section.order}</span>
+                <span class="section-title">${section.title}</span>
+                <span class="section-status ${section.status || 'draft'}">${(section.status || 'draft').charAt(0).toUpperCase() + (section.status || 'draft').slice(1)}</span>
             </div>
-            <div class="section-description">${section.description || 'No description'}</div>
+            <div class="section-subtitle">${section.subtitle || ''}</div>
+            <div class="section-topics">
+                ${(section.topics || []).map(topic => 
+                    `<span class="topic-tag">${topic}</span>`
+                ).join('')}
+            </div>
+            <div class="section-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${section.progress || 0}%"></div>
+                </div>
+                <span class="progress-text">${section.progress || 0}% complete</span>
+            </div>
         `;
         
-        div.addEventListener('click', () => this.selectSection(section.id));
+        // Add click handler
+        div.addEventListener('click', (e) => {
+            if (e.target.type !== 'checkbox') {
+                this.selectSection(section.id);
+            }
+        });
+        
         return div;
     }
     
     selectSection(sectionId) {
         this.currentSectionId = sectionId;
+        const section = this.sections.find(s => s.id === sectionId);
         
-        // Update visual selection
-        document.querySelectorAll('.section-item').forEach(item => {
-            item.classList.remove('selected');
-        });
-        document.querySelector(`[data-section-id="${sectionId}"]`).classList.add('selected');
-        
-        // Load section data
-        this.loadSectionData(sectionId);
-    }
-    
-    async loadSectionData(sectionId) {
-        try {
-            // Load post context
-            await this.loadPostContext();
-            
-            // Load section context
-            await this.loadSectionContext(sectionId);
-        } catch (error) {
-            console.error('Error loading section data:', error);
+        if (section) {
+            this.loadSectionContent(section);
+            this.updateSectionSelection();
         }
     }
     
-    async loadPostContext() {
+    loadSectionContent(section) {
+        // Update editor header
+        document.getElementById('current-section-title').textContent = section.title;
+        
+        // Update input data panel
+        document.getElementById('section-title-display').textContent = section.title;
+        document.getElementById('section-subtitle-display').textContent = section.subtitle || '';
+        
+        const topicsDisplay = document.getElementById('section-topics-display');
+        topicsDisplay.innerHTML = (section.topics || []).map(topic => 
+            `<span class="topic-tag">${topic}</span>`
+        ).join('');
+        
+        // Load expanded idea (would come from post data)
+        document.getElementById('expanded-idea-display').textContent = 'Loading expanded idea...';
+        
+        // Enable editor controls
+        document.getElementById('content-editor').disabled = false;
+        document.getElementById('preview-btn').disabled = false;
+        document.getElementById('save-btn').disabled = false;
+        document.getElementById('regenerate-btn').disabled = false;
+        
+        // Load existing content if available
+        if (section.draft_content) {
+            document.getElementById('content-editor').value = section.draft_content;
+            this.updateWordCount();
+        }
+    }
+    
+    updateSectionSelection() {
+        // Remove previous selection
+        document.querySelectorAll('.section-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        
+        // Add selection to current section
+        const currentItem = document.querySelector(`[data-section-id="${this.currentSectionId}"]`);
+        if (currentItem) {
+            currentItem.classList.add('selected');
+        }
+    }
+    
+    updateWordCount() {
+        const content = document.getElementById('content-editor').value;
+        const wordCount = content.trim().split(/\s+/).filter(word => word.length > 0).length;
+        document.getElementById('word-count').textContent = `${wordCount} words`;
+    }
+    
+    bindEvents() {
+        // Content editor events
+        document.getElementById('content-editor').addEventListener('input', () => {
+            this.updateWordCount();
+        });
+        
+        // Save button
+        document.getElementById('save-btn').addEventListener('click', () => {
+            this.saveSection();
+        });
+        
+        // Regenerate button
+        document.getElementById('regenerate-btn').addEventListener('click', () => {
+            this.regenerateSection();
+        });
+        
+        // Batch operations
+        document.getElementById('select-all-btn').addEventListener('click', () => {
+            this.selectAllSections();
+        });
+        
+        document.getElementById('batch-generate-btn').addEventListener('click', () => {
+            this.batchGenerate();
+        });
+    }
+    
+    async saveSection() {
+        if (!this.currentSectionId) return;
+        
+        const content = document.getElementById('content-editor').value;
+        
+        try {
+            const response = await fetch(`/authoring/api/posts/${window.postId}/sections/${this.currentSectionId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    draft_content: content
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                document.getElementById('last-saved').textContent = 'Saved just now';
+                // Update section progress
+                this.updateSectionProgress(this.currentSectionId, 100);
+            }
+        } catch (error) {
+            console.error('Error saving section:', error);
+        }
+    }
+    
+    async regenerateSection() {
+        if (!this.currentSectionId) return;
+        
+        // This would trigger the LLM module to regenerate content
+        // For now, just show a placeholder
+        document.getElementById('content-editor').value = 'Regenerating content...';
+    }
+    
+    selectAllSections() {
+        const checkboxes = document.querySelectorAll('.section-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = true;
+            this.selectedSections.add(checkbox.dataset.sectionId);
+        });
+    }
+    
+    async batchGenerate() {
+        const selectedIds = Array.from(this.selectedSections);
+        if (selectedIds.length === 0) {
+            console.log('No sections selected. Please select sections to generate first, or use "Select All" to select all sections.');
+            return;
+        }
+        
+        // Disable the button during generation
+        const generateBtn = document.getElementById('batch-generate-btn');
+        const originalText = generateBtn.textContent;
+        generateBtn.disabled = true;
+        generateBtn.textContent = 'Generating...';
+        
+        try {
+            console.log(`Generating content for ${selectedIds.length} sections...`);
+            
+            // Generate content for each selected section
+            for (let i = 0; i < selectedIds.length; i++) {
+                const sectionId = selectedIds[i];
+                const progress = Math.round(((i + 1) / selectedIds.length) * 100);
+                
+                // Update progress
+                generateBtn.textContent = `Generating... ${i + 1}/${selectedIds.length}`;
+                this.updateSectionProgress(sectionId, progress);
+                
+                try {
+                    // Generate content for this section
+                    const response = await fetch(`/authoring/api/posts/${window.postId}/sections/${sectionId}/generate`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({})
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        console.log(`Generated content for section ${sectionId}`);
+                        // Update the section status to complete
+                        this.updateSectionStatus(sectionId, 'complete');
+                    } else {
+                        console.error(`Failed to generate content for section ${sectionId}:`, data.error);
+                        this.updateSectionStatus(sectionId, 'error');
+                    }
+                    
+                    // Add a small delay between requests to avoid overwhelming the server
+                    if (i < selectedIds.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                    
+                } catch (error) {
+                    console.error(`Error generating content for section ${sectionId}:`, error);
+                    this.updateSectionStatus(sectionId, 'error');
+                }
+            }
+            
+            console.log(`Batch generation completed! Successfully generated content for ${selectedIds.length} sections.`);
+            
+        } catch (error) {
+            console.error('Batch generation failed:', error);
+        } finally {
+            // Re-enable the button
+            generateBtn.disabled = false;
+            generateBtn.textContent = originalText;
+        }
+    }
+    
+    updateSectionProgress(sectionId, progress) {
+        const section = this.sections.find(s => s.id === sectionId);
+        if (section) {
+            section.progress = progress;
+            const progressFill = document.querySelector(`[data-section-id="${sectionId}"] .progress-fill`);
+            const progressText = document.querySelector(`[data-section-id="${sectionId}"] .progress-text`);
+            
+            if (progressFill) {
+                progressFill.style.width = `${progress}%`;
+            }
+            if (progressText) {
+                progressText.textContent = progress === 100 ? 'Complete' : `${progress}% complete`;
+            }
+        }
+    }
+    
+    updateSectionStatus(sectionId, status) {
+        const sectionElement = document.querySelector(`[data-section-id="${sectionId}"]`);
+        if (sectionElement) {
+            const statusElement = sectionElement.querySelector('.section-status');
+            if (statusElement) {
+                statusElement.className = `section-status ${status}`;
+                statusElement.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+            }
+        }
+    }
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    const authoringManager = new AuthoringManager();
+    
+    // Initialize LLM module for authoring
+    let llmModule = null;
+    
+    // Function to initialize LLM module for current section
+    function initializeLLMForSection(sectionId) {
+        if (llmModule) {
+            // Update the generate endpoint with current section ID
+            llmModule.config.generateEndpoint = `/authoring/api/posts/${window.postId}/sections/${sectionId}/generate`;
+        } else {
+            // Initialize new LLM module
+            llmModule = initializeLLMModule('author_draft', window.postId, sectionId);
+        }
+    }
+    
+    // Override the selectSection method to integrate with LLM module
+    const originalSelectSection = authoringManager.selectSection.bind(authoringManager);
+    authoringManager.selectSection = function(sectionId) {
+        // Call original method
+        originalSelectSection(sectionId);
+        
+        // Track currently selected section globally
+        window.currentSelectedSectionId = sectionId;
+        
+        // Clear previous content from editor
+        const contentEditor = document.getElementById('content-editor');
+        if (contentEditor) {
+            contentEditor.value = '';
+            contentEditor.disabled = true;
+        }
+        
+        // Clear results display
+        const resultsDisplay = document.getElementById('llm-results-display');
+        if (resultsDisplay) {
+            resultsDisplay.innerHTML = '';
+        }
+        
+        // Reset word count
+        const wordCountElement = document.getElementById('word-count');
+        if (wordCountElement) {
+            wordCountElement.textContent = '0 words';
+        }
+        
+        // Disable controls initially
+        document.getElementById('preview-btn').disabled = true;
+        document.getElementById('save-btn').disabled = true;
+        document.getElementById('regenerate-btn').disabled = true;
+        
+        // Initialize LLM module for this section
+        initializeLLMForSection(sectionId);
+        
+        // Load existing draft content
+        loadSectionDraft(sectionId);
+    };
+    
+    // Function to load existing draft content
+    async function loadSectionDraft(sectionId) {
+        try {
+            const response = await fetch(`/authoring/api/posts/${window.postId}/sections/${sectionId}`);
+            const data = await response.json();
+            
+            if (data.success && data.section) {
+                const section = data.section;
+                
+                // Update section-specific input data display
+                document.getElementById('section-title-display').textContent = section.title || '-';
+                document.getElementById('section-subtitle-display').textContent = section.subtitle || '-';
+                
+                // Load all context data
+                loadPostContext();
+                loadSectionContext(sectionId);
+                
+                // Load existing draft content
+                const contentEditor = document.getElementById('content-editor');
+                if (section.draft_content) {
+                    contentEditor.value = section.draft_content;
+                    contentEditor.disabled = false;
+                    updateWordCount();
+                } else {
+                    contentEditor.value = '';
+                    contentEditor.disabled = false;
+                }
+                
+                // Enable controls
+                document.getElementById('preview-btn').disabled = false;
+                document.getElementById('save-btn').disabled = false;
+                document.getElementById('regenerate-btn').disabled = false;
+            }
+        } catch (error) {
+            console.error('Error loading section draft:', error);
+        }
+    }
+    
+    // Function to load section topics from planning data
+    async function loadSectionTopics(sectionId) {
+        try {
+            // Get section order from the section data
+            const response = await fetch(`/authoring/api/posts/${window.postId}/sections/${sectionId}`);
+            const data = await response.json();
+            
+            if (data.success && data.section) {
+                const sectionOrder = data.section.order;
+                
+                // Get sections data from post_development
+                const devResponse = await fetch(`/planning/api/posts/${window.postId}/sections`);
+                const devData = await devResponse.json();
+                
+                if (devData.success && devData.sections) {
+                    // Find the section with matching order
+                    const sectionData = devData.sections.find(s => s.order === sectionOrder);
+                    
+                    if (sectionData && sectionData.topics) {
+                        const topicsDisplay = document.getElementById('section-topics-display');
+                        topicsDisplay.innerHTML = sectionData.topics.map(topic => 
+                            `<span class="topic-tag">${topic}</span>`
+                        ).join('');
+                    } else {
+                        document.getElementById('section-topics-display').textContent = 'No topics found';
+                    }
+                } else {
+                    document.getElementById('section-topics-display').textContent = 'Error loading topics';
+                }
+            }
+        } catch (error) {
+            console.error('Error loading section topics:', error);
+            document.getElementById('section-topics-display').textContent = 'Error loading topics';
+        }
+    }
+    
+    // Function to load post context (title, summary, expanded idea)
+    async function loadPostContext() {
         try {
             const response = await fetch(`/planning/api/posts/${window.postId}`);
             const data = await response.json();
             
-            if (data.post) {
-                // Selected idea (idea_seed)
-                if (data.post.idea_scope) {
-                    const ideaScope = JSON.parse(data.post.idea_scope);
-                    document.getElementById('selected-idea-display').textContent = ideaScope.selected_idea || 'No selected idea found';
+            if (data) {
+                // Selected idea (idea_seed from post_development)
+                if (data.post && data.post.idea_seed) {
+                    document.getElementById('selected-idea-display').textContent = data.post.idea_seed;
                 } else {
                     document.getElementById('selected-idea-display').textContent = 'No selected idea found';
                 }
                 
                 // Expanded idea
-                if (data.post.expanded_idea) {
+                if (data.post && data.post.expanded_idea) {
                     document.getElementById('expanded-idea-display').textContent = data.post.expanded_idea;
                 } else {
                     document.getElementById('expanded-idea-display').textContent = 'No expanded idea found';
@@ -187,64 +3114,218 @@ class FixLanguageManager {
         }
     }
     
-    async loadSectionContext(sectionId) {
+    // Function to load section context (group, topics, avoid topics)
+    async function loadSectionContext(sectionId) {
         try {
             // Get section data
             const sectionResponse = await fetch(`/authoring/api/posts/${window.postId}/sections/${sectionId}`);
             const sectionData = await sectionResponse.json();
             
             if (sectionData.success && sectionData.section) {
-                const section = sectionData.section;
+                const sectionOrder = sectionData.section.order;
                 
-                // Update section-specific input data display
-                document.getElementById('section-title-display').textContent = section.title || '-';
-                document.getElementById('section-subtitle-display').textContent = section.description || '-';
-                
-                // Get planning data for this section
+                // Get planning data for this section from the main post data
                 const planningResponse = await fetch(`/planning/api/posts/${window.postId}`);
                 const planningData = await planningResponse.json();
                 
-                if (planningData.post && planningData.post.topic_allocation) {
-                    const topicAllocation = planningData.post.topic_allocation;
-                    if (topicAllocation.allocations) {
-                        const sectionAllocation = topicAllocation.allocations.find(a => a.section_id === `section_${section.order}`);
+                if (planningData.post && planningData.post.topic_allocation && planningData.post.topic_allocation.allocations) {
+                    const sectionAllocation = planningData.post.topic_allocation.allocations.find(a => a.section_id === `section_${sectionOrder}`);
+                    
+                    if (sectionAllocation) {
+                        // Subtitle (section description)
+                        document.getElementById('section-subtitle-display').textContent = sectionAllocation.section_theme || '-';
                         
-                        if (sectionAllocation) {
-                            document.getElementById('section-group-display').textContent = sectionAllocation.section_theme || '-';
-                            document.getElementById('section-group-summary-display').textContent = sectionAllocation.allocation_reason || '-';
-                            
-                            if (sectionAllocation.topics) {
-                                const topicsDisplay = document.getElementById('section-topics-display');
-                                topicsDisplay.innerHTML = sectionAllocation.topics.map(topic => 
-                                    `<span class="topic-tag">${topic}</span>`
-                                ).join('');
-                            } else {
-                                document.getElementById('section-topics-display').textContent = 'No topics found';
-                            }
+                        // Group (section title/theme)
+                        document.getElementById('section-group-display').textContent = sectionAllocation.section_theme || '-';
+                        
+                        // Group Summary (allocation reason)
+                        document.getElementById('section-group-summary-display').textContent = sectionAllocation.allocation_reason || '-';
+                        
+                        // Topics for this section
+                        if (sectionAllocation.topics && sectionAllocation.topics.length > 0) {
+                            const topicsDisplay = document.getElementById('section-topics-display');
+                            topicsDisplay.innerHTML = sectionAllocation.topics.map(topic => 
+                                `<span class="topic-tag">${topic}</span>`
+                            ).join('');
                         } else {
-                            document.getElementById('section-group-display').textContent = 'No group data found';
-                            document.getElementById('section-group-summary-display').textContent = 'No group data found';
                             document.getElementById('section-topics-display').textContent = 'No topics found';
                         }
+                        
+                        // Avoid topics (ALL topics from ALL other sections)
+                        const otherSections = planningData.post.topic_allocation.allocations.filter(a => a.section_id !== `section_${sectionOrder}`);
+                        const avoidDisplay = document.getElementById('avoid-topics-display');
+                        if (otherSections.length > 0) {
+                            // Collect ALL topics from all other sections
+                            const allAvoidTopics = [];
+                            otherSections.forEach(section => {
+                                if (section.topics && section.topics.length > 0) {
+                                    allAvoidTopics.push(...section.topics);
+                                }
+                            });
+                            
+                            if (allAvoidTopics.length > 0) {
+                                avoidDisplay.innerHTML = allAvoidTopics.map(topic => 
+                                    `<span class="topic-tag avoid-topic">${topic}</span>`
+                                ).join('');
+                            } else {
+                                avoidDisplay.textContent = 'No avoid topics found';
+                            }
+                        } else {
+                            avoidDisplay.textContent = 'No avoid topics defined';
+                        }
+                    } else {
+                        document.getElementById('section-subtitle-display').textContent = 'No group data found';
+                        document.getElementById('section-group-display').textContent = 'No group data found';
+                        document.getElementById('section-group-summary-display').textContent = 'No group data found';
+                        document.getElementById('section-topics-display').textContent = 'No topics found';
+                        document.getElementById('avoid-topics-display').textContent = 'No avoid topics defined';
                     }
+                } else {
+                    document.getElementById('section-subtitle-display').textContent = 'No planning data found';
+                    document.getElementById('section-group-display').textContent = 'No planning data found';
+                    document.getElementById('section-group-summary-display').textContent = 'No planning data found';
+                    document.getElementById('section-topics-display').textContent = 'No planning data found';
+                    document.getElementById('avoid-topics-display').textContent = 'No planning data found';
                 }
-                
-                document.getElementById('avoid-topics-display').textContent = 'No avoid topics defined';
             }
         } catch (error) {
             console.error('Error loading section context:', error);
+            document.getElementById('section-subtitle-display').textContent = 'Error loading';
+            document.getElementById('section-group-display').textContent = 'Error loading';
+            document.getElementById('section-group-summary-display').textContent = 'Error loading';
+            document.getElementById('section-topics-display').textContent = 'Error loading';
+            document.getElementById('avoid-topics-display').textContent = 'Error loading';
         }
     }
     
-    bindEvents() {
-        // Event listeners can be added here if needed
+    // Function to update word count
+    function updateWordCount() {
+        const content = document.getElementById('content-editor').value;
+        const wordCount = content.trim().split(/\s+/).filter(word => word.length > 0).length;
+        document.getElementById('word-count').textContent = `${wordCount} words`;
     }
-}
-
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-    const fixLanguageManager = new FixLanguageManager();
+    
+    // Override saveSection method to integrate with LLM module
+    const originalSaveSection = authoringManager.saveSection.bind(authoringManager);
+    authoringManager.saveSection = async function() {
+        if (!this.currentSectionId) return;
+        
+        const content = document.getElementById('content-editor').value;
+        
+        try {
+            const response = await fetch(`/authoring/api/posts/${window.postId}/sections/${this.currentSectionId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    draft_content: content,
+                    status: 'complete'
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                document.getElementById('last-saved').textContent = 'Saved just now';
+                // Update section progress
+                this.updateSectionProgress(this.currentSectionId, 100);
+                
+                // Update section status in UI
+                const sectionItem = document.querySelector(`[data-section-id="${this.currentSectionId}"]`);
+                if (sectionItem) {
+                    sectionItem.setAttribute('data-status', 'complete');
+                    const statusElement = sectionItem.querySelector('.section-status');
+                    if (statusElement) {
+                        statusElement.textContent = 'Complete';
+                        statusElement.className = 'section-status complete';
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error saving section:', error);
+        }
+    };
+    
+    // Override regenerateSection method to use LLM module
+    const originalRegenerateSection = authoringManager.regenerateSection.bind(authoringManager);
+    authoringManager.regenerateSection = async function() {
+        if (!this.currentSectionId) return;
+        
+        // Use LLM module to regenerate content
+        if (llmModule) {
+            try {
+                // Show loading state
+                const contentEditor = document.getElementById('content-editor');
+                contentEditor.value = 'Regenerating content...';
+                contentEditor.disabled = true;
+                
+                // Call LLM generation
+                const response = await fetch(llmModule.config.generateEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    contentEditor.value = data.draft_content;
+                    contentEditor.disabled = false;
+                    updateWordCount();
+                    
+                    // Auto-save the generated content
+                    await this.saveSection();
+                } else {
+                    contentEditor.value = 'Error generating content: ' + (data.error || 'Unknown error');
+                    contentEditor.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error regenerating section:', error);
+                const contentEditor = document.getElementById('content-editor');
+                contentEditor.value = 'Error regenerating content';
+                contentEditor.disabled = false;
+            }
+        }
+    };
+    
+    // Add event listener for content editor changes
+    document.getElementById('content-editor').addEventListener('input', updateWordCount);
 });
 </script>
 
-{% endblock %}
+
+    </main>
+    
+    <!-- Footer -->
+    
+        <!-- templates/shared/footer.html -->
+<footer class="bg-indigo-950 border-t border-dark-border py-6 mt-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <p class="text-center text-sm text-dark-text">
+            &copy; 2025 BlogForge. All rights reserved. |
+            <a href="/docs" class="text-indigo-300 hover:text-indigo-100 underline ml-2">Docs</a>
+        </p>
+    </div>
+</footer>
+    
+    
+    <!-- JavaScript Assets -->
+    
+        
+    
+        <!-- Blueprint-specific JavaScript -->
+        
+            <script src="/static/js/main.js"></script>
+            <script src="/static/js/workflow-nav.js"></script>
+            <script src="/static/js/simplified-llm-actions.js"></script>
+        
+    
+
+    
+    
+    <!-- Additional Scripts -->
+    
+</body>
+</html>
