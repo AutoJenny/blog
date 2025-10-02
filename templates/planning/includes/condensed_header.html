@@ -130,6 +130,10 @@
                    class="sub-stage-btn" data-substage="image-captions">
                     Image Captions
                 </a>
+                <a href="{{ url_for('authoring.authoring_sections_image_generation', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="image-generation">
+                    Image Generation
+                </a>
             </div>
         </div>
         
@@ -472,7 +476,8 @@ const subtitles = {
         'fix-language': 'Refine and improve language, flow, and readability.',
         'image-concepts': 'Develop visual concepts and image requirements.',
         'image-prompts': 'Generate detailed prompts for AI image creation.',
-        'image-captions': 'Create engaging captions and alt text for images.'
+        'image-captions': 'Create engaging captions and alt text for images.',
+        'image-generation': 'Generate actual images using AI based on prompts and concepts.'
     }
 };
 
