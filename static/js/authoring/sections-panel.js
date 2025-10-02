@@ -129,15 +129,39 @@ export class SectionsPanel {
     this.onSelect?.(s);
   }
 
+  selectMultiple(ids) {
+    this.selected = new Set(ids.map(String));
+    this.syncSelectionUI();
+    const selectedSections = this.sections.filter(s => this.selected.has(String(s.id)));
+    this.onSelectMultiple?.(selectedSections);
+  }
+
   syncSelectionUI() {
     document.querySelectorAll('.section-item').forEach(el => {
       const id = el.dataset.sectionId;
       el.classList.toggle('selected', this.selected.has(id));
       const cb = el.querySelector('.section-checkbox');
-      if (cb) cb.checked = this.selected.has(id);
-      cb?.addEventListener('change', () => {
-        if (cb.checked) this.selected.add(id); else this.selected.delete(id);
-      });
+      if (cb) {
+        cb.checked = this.selected.has(id);
+        // Only add event listener if not already added
+        if (!cb.dataset.listenerAdded) {
+          cb.addEventListener('change', () => {
+            if (cb.checked) {
+              this.selected.add(id);
+            } else {
+              this.selected.delete(id);
+            }
+            // Notify about multiple selection changes
+            const selectedSections = this.sections.filter(s => this.selected.has(String(s.id)));
+            if (this.onSelectMultiple) {
+              this.onSelectMultiple(selectedSections);
+            } else if (selectedSections.length === 1) {
+              this.onSelect?.(selectedSections[0]);
+            }
+          });
+          cb.dataset.listenerAdded = 'true';
+        }
+      }
     });
   }
 

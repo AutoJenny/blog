@@ -10,14 +10,7 @@
 
   {% include 'authoring/includes/input_details_accordion.html' %}
 
-  <div class="content-editor">
-    <h5>Generated Content</h5>
-    <textarea id="content-editor" placeholder="Content will be generated here." disabled></textarea>
-    <div class="editor-stats">
-      <span id="word-count">0 words</span>
-      <span id="last-saved">Not saved</span>
-    </div>
-  </div>
+  {% include 'authoring/includes/image_concepts_display.html' %}
 
   <style>
     .section-editor{ background:#1e293b; border:1px solid #334155; border-radius:8px; padding:1rem; }
