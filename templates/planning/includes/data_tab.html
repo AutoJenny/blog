@@ -1029,6 +1029,8 @@ function showIndividualSection(section) {
     };
     
     console.log('[Data Tab] Processed section data:', sectionData);
+    console.log('[Data Tab] sectionData.section_text:', sectionData.section_text);
+    console.log('[Data Tab] sectionData keys:', Object.keys(sectionData));
     populateTableFields('post-section-fields-container', sectionData, 'post_section');
 }
 
