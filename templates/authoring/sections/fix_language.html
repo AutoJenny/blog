@@ -51,8 +51,20 @@
                         <span id="section-subtitle-display">-</span>
                     </div>
                     <div class="context-item">
-                        <label>Current Draft:</label>
-                        <div id="current-draft-display">-</div>
+                        <label>Group:</label>
+                        <div id="section-group-display">-</div>
+                    </div>
+                    <div class="context-item">
+                        <label>Group Summary:</label>
+                        <div id="section-group-summary-display">-</div>
+                    </div>
+                    <div class="context-item">
+                        <label>Topics:</label>
+                        <div id="section-topics-display">-</div>
+                    </div>
+                    <div class="context-item">
+                        <label>Avoid Topics:</label>
+                        <div id="avoid-topics-display">-</div>
                     </div>
                 </div>
             </div>
@@ -112,10 +124,10 @@ class FixLanguageManager {
         div.dataset.sectionId = section.id;
         div.innerHTML = `
             <div class="section-header">
-                <h6>${section.section_heading || 'Untitled Section'}</h6>
-                <span class="section-order">${section.section_order}</span>
+                <h6>${section.title || 'Untitled Section'}</h6>
+                <span class="section-order">${section.order}</span>
             </div>
-            <div class="section-description">${section.section_description || 'No description'}</div>
+            <div class="section-description">${section.description || 'No description'}</div>
         `;
         
         div.addEventListener('click', () => this.selectSection(section.id));
@@ -154,8 +166,9 @@ class FixLanguageManager {
             
             if (data.post) {
                 // Selected idea (idea_seed)
-                if (data.post.idea_seed) {
-                    document.getElementById('selected-idea-display').textContent = data.post.idea_seed;
+                if (data.post.idea_scope) {
+                    const ideaScope = JSON.parse(data.post.idea_scope);
+                    document.getElementById('selected-idea-display').textContent = ideaScope.selected_idea || 'No selected idea found';
                 } else {
                     document.getElementById('selected-idea-display').textContent = 'No selected idea found';
                 }
@@ -184,16 +197,39 @@ class FixLanguageManager {
                 const section = sectionData.section;
                 
                 // Update section-specific input data display
-                document.getElementById('section-title-display').textContent = section.section_heading || '-';
-                document.getElementById('section-subtitle-display').textContent = section.section_description || '-';
+                document.getElementById('section-title-display').textContent = section.title || '-';
+                document.getElementById('section-subtitle-display').textContent = section.description || '-';
                 
-                // Show current draft content
-                if (section.draft) {
-                    const draftDisplay = document.getElementById('current-draft-display');
-                    draftDisplay.innerHTML = `<pre style="max-height: 200px; overflow-y: auto; background: #f5f5f5; padding: 10px; border-radius: 4px;">${section.draft.substring(0, 1000)}${section.draft.length > 1000 ? '...' : ''}</pre>`;
-                } else {
-                    document.getElementById('current-draft-display').textContent = 'No draft content';
+                // Get planning data for this section
+                const planningResponse = await fetch(`/planning/api/posts/${window.postId}`);
+                const planningData = await planningResponse.json();
+                
+                if (planningData.post && planningData.post.topic_allocation) {
+                    const topicAllocation = planningData.post.topic_allocation;
+                    if (topicAllocation.allocations) {
+                        const sectionAllocation = topicAllocation.allocations.find(a => a.section_id === `section_${section.order}`);
+                        
+                        if (sectionAllocation) {
+                            document.getElementById('section-group-display').textContent = sectionAllocation.section_theme || '-';
+                            document.getElementById('section-group-summary-display').textContent = sectionAllocation.allocation_reason || '-';
+                            
+                            if (sectionAllocation.topics) {
+                                const topicsDisplay = document.getElementById('section-topics-display');
+                                topicsDisplay.innerHTML = sectionAllocation.topics.map(topic => 
+                                    `<span class="topic-tag">${topic}</span>`
+                                ).join('');
+                            } else {
+                                document.getElementById('section-topics-display').textContent = 'No topics found';
+                            }
+                        } else {
+                            document.getElementById('section-group-display').textContent = 'No group data found';
+                            document.getElementById('section-group-summary-display').textContent = 'No group data found';
+                            document.getElementById('section-topics-display').textContent = 'No topics found';
+                        }
+                    }
                 }
+                
+                document.getElementById('avoid-topics-display').textContent = 'No avoid topics defined';
             }
         } catch (error) {
             console.error('Error loading section context:', error);
