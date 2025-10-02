@@ -22,8 +22,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const postId = window.postId;
   const output = new OutputPanel({ postId });
 
-  new SectionsPanel({
+  const sectionsPanel = new SectionsPanel({
     postId,
-    onSelect: (section) => output.show(section)
+    onSelect: (section) => {
+      output.show(section);
+      // Initialize LLM module for the selected section
+      if (section && section.id) {
+        initializeLLMForSection(section.id);
+      }
+    }
   });
+
+  // Function to initialize LLM module for current section
+  function initializeLLMForSection(sectionId) {
+    // Initialize LLM module with image_concepts configuration
+    const llmModule = initializeLLMModule('image_concepts', postId, sectionId);
+    if (llmModule) {
+      window.llmModule = llmModule;
+    }
+  }
 });
