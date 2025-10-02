@@ -1,0 +1,78 @@
+<!-- LLM Module - Reusable component for LLM interactions -->
+<div class="llm-module">
+    <!-- LLM Prompt Panel -->
+    <div class="llm-prompt-panel">
+        <div class="prompt-header accordion-header" onclick="toggleLLMAccordion()">
+            <h4 id="prompt-title">Prompt: Loading...</h4>
+            <div class="accordion-toggle">
+                <i class="fas fa-chevron-down" id="accordion-icon"></i>
+            </div>
+        </div>
+        
+        <div class="accordion-content" id="llm-accordion-content" style="display: none;">
+            <div class="prompt-actions" id="prompt-actions">
+                <!-- Edit buttons will be conditionally shown based on config -->
+            </div>
+            
+            <!-- Provider Information -->
+            <div id="llm-provider-info" class="llm-provider-info">
+                <!-- LLM provider, model, and settings will appear here -->
+            </div>
+            
+            <!-- Prompt Display -->
+            <div id="llm-prompt-display" class="llm-prompt-display">
+                <!-- LLM prompt will appear here -->
+            </div>
+            
+            <!-- Prompt Edit Form (hidden by default) -->
+            <div id="llm-prompt-edit" class="llm-prompt-edit" style="display: none;">
+                <div class="form-group">
+                    <label for="system-prompt-edit">System Prompt</label>
+                    <textarea id="system-prompt-edit" rows="4" placeholder="System prompt..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="user-prompt-edit">User Prompt</label>
+                    <textarea id="user-prompt-edit" rows="8" placeholder="User prompt..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- LLM Results Panel -->
+    <div class="llm-results-panel">
+        <div class="results-header">
+            <h4 id="results-title">Generated Results</h4>
+            <button class="btn btn-primary" id="generate-btn">
+                <i class="fas fa-magic"></i> Generate
+            </button>
+        </div>
+        
+        <!-- LLM Message Debug Display -->
+        <div class="llm-message-debug-section" style="margin-bottom: 1rem;">
+            <div class="debug-header accordion-header" onclick="toggleDebugAccordion()">
+                <h5 style="color: #f1f5f9; margin-bottom: 0.5rem;">🔍 LLM Message Debug</h5>
+                <div class="accordion-toggle">
+                    <i class="fas fa-chevron-down" id="debug-accordion-icon"></i>
+                </div>
+            </div>
+            <div class="accordion-content" id="debug-accordion-content" style="display: none;">
+                <div id="llm-message-debug" class="llm-message-debug" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1rem; font-family: monospace; font-size: 0.8rem; color: #cbd5e1; max-height: 300px; overflow-y: auto; white-space: pre-wrap;">
+                    <!-- Actual message sent to LLM will appear here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Raw LLM Response Display -->
+        <div class="raw-response-section" style="margin-bottom: 1rem;">
+            <h5 style="color: #f1f5f9; margin-bottom: 0.5rem;">Raw LLM Response</h5>
+            <div id="raw-llm-response" class="raw-llm-response" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1rem; font-family: monospace; font-size: 0.9rem; color: #cbd5e1; max-height: 200px; overflow-y: auto; white-space: pre-wrap;">
+                <!-- Raw LLM response will appear here -->
+            </div>
+        </div>
+        
+        <!-- Results Display -->
+        <div id="llm-results-display" class="llm-results-display">
+            <!-- Generated results will appear here -->
+        </div>
+    </div>
+</div>

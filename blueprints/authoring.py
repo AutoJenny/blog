@@ -760,6 +760,175 @@ def api_generate_section_draft(post_id, section_id):
             'error': str(e)
         }), 500
 
+@bp.route('/api/posts/<int:post_id>/sections/<int:section_id>/generate-image-concepts', methods=['POST'])
+def api_generate_image_concepts(post_id, section_id):
+    """Generate image concepts for a specific section"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get section data
+            cursor.execute("""
+                SELECT id, section_order, section_heading, section_description, 
+                       draft, polished, ideas_to_include, facts_to_include,
+                       highlighting, image_concepts, image_prompts, image_captions
+                FROM post_section
+                WHERE post_id = %s AND id = %s
+            """, (post_id, section_id))
+            
+            section = cursor.fetchone()
+            if not section:
+                return jsonify({'error': 'Section not found'}), 404
+            
+            # Get post data for context
+            cursor.execute("""
+                SELECT p.id, pd.idea_seed, pd.expanded_idea
+                FROM post p
+                LEFT JOIN post_development pd ON p.id = pd.post_id
+                WHERE p.id = %s
+            """, (post_id,))
+            
+            post_data = cursor.fetchone()
+            if not post_data:
+                return jsonify({'error': 'Post not found'}), 404
+            
+            # Get topic allocation for this section
+            cursor.execute("""
+                SELECT topic_allocation FROM post_development 
+                WHERE post_id = %s AND topic_allocation IS NOT NULL
+            """, (post_id,))
+            topic_result = cursor.fetchone()
+            
+            topics = []
+            if topic_result and topic_result['topic_allocation']:
+                try:
+                    if isinstance(topic_result['topic_allocation'], dict):
+                        topic_allocation = topic_result['topic_allocation']
+                    else:
+                        import json
+                        topic_allocation = json.loads(topic_result['topic_allocation'])
+                    
+                    # Get topics for this section
+                    section_topics = topic_allocation.get(str(section['section_order']), [])
+                    topics = section_topics if isinstance(section_topics, list) else []
+                except Exception as e:
+                    logger.error(f"Error parsing topic_allocation: {e}")
+            
+            # Get the image concepts prompt
+            cursor.execute("""
+                SELECT prompt_text, system_prompt
+                FROM llm_prompt 
+                WHERE name = 'Image Concepts Generation'
+                ORDER BY updated_at DESC 
+                LIMIT 1
+            """)
+            
+            prompt_data = cursor.fetchone()
+            if not prompt_data:
+                return jsonify({'error': 'Image Concepts prompt not found'}), 404
+            
+            # Build the prompt with actual data
+            prompt_text = prompt_data['prompt_text']
+            system_prompt = prompt_data['system_prompt']
+            
+            # Replace placeholders with actual data
+            prompt_text = prompt_text.replace('[data:idea_seed]', post_data['idea_seed'] or '')
+            prompt_text = prompt_text.replace('[data:expanded_idea]', post_data['expanded_idea'] or '')
+            prompt_text = prompt_text.replace('[data:title]', section['section_heading'] or '')
+            prompt_text = prompt_text.replace('[data:subtitle]', section['section_description'] or '')
+            prompt_text = prompt_text.replace('[data:section_text]', section['polished'] or section['draft'] or '')
+            prompt_text = prompt_text.replace('[data:topics]', '\n'.join([f'- {topic}' for topic in topics]))
+            
+            # Prepare messages for LLM
+            messages = []
+            if system_prompt:
+                messages.append({'role': 'system', 'content': system_prompt})
+            messages.append({'role': 'user', 'content': prompt_text})
+            
+            # Execute LLM request
+            result = llm_service.execute_llm_request('ollama', 'llama3.1:8b', messages, max_tokens=4000)
+            
+            if 'error' in result:
+                return jsonify({'error': f'LLM generation failed: {result["error"]}'}), 500
+            
+            image_concepts = result['content']
+            
+            # Save to database
+            cursor.execute("""
+                UPDATE post_section 
+                SET image_concepts = %s, updated_at = CURRENT_TIMESTAMP
+                WHERE post_id = %s AND id = %s
+            """, (image_concepts, post_id, section_id))
+            
+            cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'image_concepts': image_concepts,
+                'message': 'Image concepts generated successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error generating image concepts: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/llm/prompts/image-concepts', methods=['GET', 'PUT'])
+def api_image_concepts_prompt():
+    """Get or update the Image Concepts prompt"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            if request.method == 'PUT':
+                # Update the prompt
+                data = request.get_json()
+                system_prompt = data.get('system_prompt', '')
+                prompt_text = data.get('prompt_text', '')
+                
+                cursor.execute("""
+                    UPDATE llm_prompt 
+                    SET system_prompt = %s, prompt_text = %s
+                    WHERE name = 'Image Concepts Generation'
+                """, (system_prompt, prompt_text))
+                
+                cursor.connection.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Prompt updated successfully'
+                })
+            
+            else:
+                # Get the prompt
+                cursor.execute("""
+                    SELECT prompt_text, system_prompt, created_at, updated_at
+                    FROM llm_prompt 
+                    WHERE name = 'Image Concepts Generation'
+                    ORDER BY updated_at DESC 
+                    LIMIT 1
+                """)
+                
+                result = cursor.fetchone()
+                if result:
+                    return jsonify({
+                        'success': True,
+                        'prompt': {
+                            'name': 'Image Concepts Generation',
+                            'prompt_text': result['prompt_text'],
+                            'system_prompt': result['system_prompt'],
+                            'created_at': result['created_at'].isoformat() if result['created_at'] else None,
+                            'updated_at': result['updated_at'].isoformat() if result['updated_at'] else None
+                        },
+                        'llm_config': {
+                            'provider': 'Ollama',
+                            'model': 'llama3.1:8b',
+                            'temperature': 0.7,
+                            'max_tokens': 4000
+                        }
+                    })
+                else:
+                    return jsonify({'error': 'Image Concepts prompt not found'}), 404
+                    
+    except Exception as e:
+        logger.error(f"Error with Image Concepts prompt: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @bp.route('/api/llm/prompts/section-drafting', methods=['GET', 'PUT'])
 def api_section_drafting_prompt():
     """Get or update the Section Drafting prompt"""

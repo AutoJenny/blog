@@ -4,13 +4,13 @@
 {% block css_assets %}
 {{ css_assets('authoring') }}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/authoring/sections-panel.css') }}">
-<style>
+    <style>
   .authoring-workspace { padding:1rem; min-height:calc(100vh - 200px); }
   .workspace-container { display:grid; grid-template-columns:350px 1fr; gap:1.5rem; max-width:1400px; margin:0 auto; }
   @media (max-width:1200px){ .workspace-container { grid-template-columns:300px 1fr; } }
   @media (max-width:768px){ .workspace-container { grid-template-columns:1fr; gap:1rem; } }
   .editor-panel { display:flex; flex-direction:column; gap:1rem; }
-</style>
+    </style>
 {% endblock %}
 
 {% block js_assets %}
@@ -32,12 +32,16 @@
     <div class="workspace-container">
         {% include 'authoring/sections/sections_panel.html' %}
         <div class="editor-panel">
-      {% include 'authoring/right/prompts_panel.html' %}
-      {% include 'authoring/right/output_panel.html' %}
+            <!-- LLM Module -->
+            <div class="llm-module-container">
+                {% include 'authoring/includes/llm_module.html' %}
             </div>
+            {% include 'authoring/right/output_panel.html' %}
                     </div>
                 </div>
+                    </div>
 {% endblock %}
 
+{% include 'authoring/includes/llm_accordion_functions.html' %}
 <script type="module" src="/static/js/authoring/image-concepts.js"></script>
 {% endblock %}

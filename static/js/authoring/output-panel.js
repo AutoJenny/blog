@@ -1,11 +1,38 @@
-import { postJSON } from './api.js';
+import { postJSON, getJSON } from './api.js';
 
 export class OutputPanel {
   constructor({ postId }) {
     this.postId = postId;
     this.current = null;
     this.cache = new Map();
+    this.postData = null;
     this.bind();
+    this.loadPostData();
+  }
+
+  async loadPostData() {
+    try {
+      const data = await getJSON(`/planning/api/posts/${this.postId}`);
+      this.postData = data;
+      this.updatePostContext();
+    } catch (error) {
+      console.error('Error loading post data:', error);
+    }
+  }
+
+  updatePostContext() {
+    if (!this.postData || !this.postData.post) return;
+    
+    const ideaSeedEl = document.getElementById('selected-idea-display');
+    const expandedIdeaEl = document.getElementById('expanded-idea-display');
+    
+    if (ideaSeedEl) {
+      ideaSeedEl.textContent = this.postData.post.idea_seed || '-';
+    }
+    
+    if (expandedIdeaEl) {
+      expandedIdeaEl.textContent = this.postData.post.expanded_idea || '-';
+    }
   }
 
   bind() {
