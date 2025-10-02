@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from 'macros/static_assets.html' import css_assets, js_assets %}
+
+{% block css_assets %}
+{{ css_assets('authoring') }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/authoring/sections-panel.css') }}">
+    <style>
+  .authoring-workspace { padding:1rem; min-height:calc(100vh - 200px); }
+  .workspace-container { display:grid; grid-template-columns:350px 1fr; gap:1.5rem; max-width:1400px; margin:0 auto; }
+  @media (max-width:1200px){ .workspace-container { grid-template-columns:300px 1fr; } }
+  @media (max-width:768px){ .workspace-container { grid-template-columns:1fr; gap:1rem; } }
+  .editor-panel { display:flex; flex-direction:column; gap:1rem; }
+    </style>
+{% endblock %}
+
+{% block js_assets %}
+{{ js_assets('authoring') }}
+<script>
+    window.currentStage = 'authoring';
+                window.currentSubstage = 'image-generation';
+  window.postId = {{ post_id|default(0) }};
+</script>
+{% endblock %}
+
+{% block title %}Image Generation - Section Authoring{% endblock %}
+
+{% block content %}
+{% include 'planning/includes/condensed_header.html' %}
+
+{% block process_content %}
+<div class="authoring-workspace">
+    <div class="workspace-container">
+        {% include 'authoring/sections/sections_panel.html' %}
+        <div class="editor-panel">
+            <!-- LLM Module -->
+            <div class="llm-module-container">
+                {% include 'authoring/includes/llm_module.html' %}
+            </div>
+            
+            <!-- Debugging Panel -->
+            {% include 'authoring/includes/debugging_panel.html' %}
+            
+                        {% set currentSubstage = 'image-generation' %}
+            {% include 'authoring/right/output_panel.html' %}
+                    </div>
+                </div>
+                    </div>
+{% endblock %}
+
+{% include 'authoring/includes/llm_accordion_functions.html' %}
+<script type="module" src="/static/js/authoring/image-generation.js"></script>
+{% endblock %}

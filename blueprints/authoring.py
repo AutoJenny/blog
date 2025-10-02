@@ -362,6 +362,32 @@ def authoring_sections_image_captions(post_id):
         logger.error(f"Error in authoring_sections_image_captions: {e}")
         return f"Error: {e}", 500
 
+@bp.route('/posts/<int:post_id>/sections/image_generation')
+def authoring_sections_image_generation(post_id):
+    """Image generation step - Step 59"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get post details
+            cursor.execute("""
+                SELECT id, title, idea_seed, expanded_idea, idea_scope
+                FROM post 
+                WHERE id = %s
+            """, (post_id,))
+            post = cursor.fetchone()
+            
+            if not post:
+                return "Post not found", 404
+            
+            return render_template('authoring/sections/image_generation.html', 
+                                 post_id=post_id,
+                                 post=post,
+                                 page_title="Image Generation",
+                                 blueprint_name='authoring')
+            
+    except Exception as e:
+        logger.error(f"Error in authoring_sections_image_generation: {e}")
+        return f"Error: {e}", 500
+
 # API endpoints for section data
 @bp.route('/api/posts/<int:post_id>/sections')
 def api_get_sections(post_id):
