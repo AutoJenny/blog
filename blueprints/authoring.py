@@ -376,9 +376,36 @@ def api_get_sections(post_id):
             """, (post_id,))
             sections = cursor.fetchall()
             
+            # Get topic allocation data to populate topics
+            cursor.execute("""
+                SELECT topic_allocation FROM post_development 
+                WHERE post_id = %s AND topic_allocation IS NOT NULL
+            """, (post_id,))
+            topic_result = cursor.fetchone()
+            
+            topic_allocation = None
+            if topic_result and topic_result['topic_allocation']:
+                try:
+                    if isinstance(topic_result['topic_allocation'], dict):
+                        topic_allocation = topic_result['topic_allocation']
+                    else:
+                        import json
+                        topic_allocation = json.loads(topic_result['topic_allocation'])
+                except Exception as e:
+                    logger.error(f"Error parsing topic_allocation: {e}")
+                    topic_allocation = None
+            
             # Convert to list of dictionaries
             sections_list = []
             for section in sections:
+                # Get topics for this section from topic_allocation
+                section_topics = []
+                if topic_allocation and topic_allocation.get('allocations'):
+                    for allocation in topic_allocation['allocations']:
+                        if allocation.get('section_id') == f"section_{section['section_order']}":
+                            section_topics = allocation.get('topics', [])
+                            break
+                
                 sections_list.append({
                     'id': section['id'],
                     'order': section['section_order'],
@@ -388,7 +415,7 @@ def api_get_sections(post_id):
                     'draft': section['draft'] or '',
                     'polished': section['polished'] or '',
                     'section_text': section['polished'] or '',  # Map polished to section_text for frontend consistency
-                    'topics': section['ideas_to_include'] or [],
+                    'topics': section_topics,  # Use topics from topic_allocation
                     'facts_to_include': section['facts_to_include'] or '',
                     'highlighting': section['highlighting'] or '',
                     'image_concepts': section['image_concepts'] or '',
