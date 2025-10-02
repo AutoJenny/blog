@@ -34,6 +34,9 @@ def process_llm_html_content(html_content):
         # Create plain text version by joining paragraphs with double newlines
         plain_text = '\n\n'.join(paragraph_texts)
         
+        # Trim any leading/trailing whitespace from the final result
+        plain_text = plain_text.strip()
+        
         # Clean up the HTML content (keep original structure)
         draft_html = html_content.strip()
         
@@ -380,11 +383,12 @@ def api_get_sections(post_id):
                     'id': section['id'],
                     'order': section['section_order'],
                     'title': section['section_heading'],
-                    'description': section['section_description'],
+                    'subtitle': section['section_description'],
                     'status': section['status'] or 'draft',
-                    'draft_content': section['draft'] or '',
-                    'polished_content': section['polished'] or '',
-                    'ideas_to_include': section['ideas_to_include'] or '',
+                    'draft': section['draft'] or '',
+                    'polished': section['polished'] or '',
+                    'section_text': section['polished'] or '',  # Map polished to section_text for frontend consistency
+                    'topics': section['ideas_to_include'] or [],
                     'facts_to_include': section['facts_to_include'] or '',
                     'highlighting': section['highlighting'] or '',
                     'image_concepts': section['image_concepts'] or '',
@@ -430,11 +434,12 @@ def api_get_section_detail(post_id, section_id):
                 'id': section['id'],
                 'order': section['section_order'],
                 'title': section['section_heading'],
-                'description': section['section_description'],
+                'subtitle': section['section_description'],
                 'status': section['status'] or 'draft',
-                'draft_content': section['draft'] or '',
-                'polished_content': section['polished'] or '',
-                'ideas_to_include': section['ideas_to_include'] or '',
+                'draft': section['draft'] or '',
+                'polished': section['polished'] or '',
+                'section_text': section['polished'] or '',  # Map polished to section_text for frontend consistency
+                'topics': section['ideas_to_include'] or [],
                 'facts_to_include': section['facts_to_include'] or '',
                 'highlighting': section['highlighting'] or '',
                 'image_concepts': section['image_concepts'] or '',
