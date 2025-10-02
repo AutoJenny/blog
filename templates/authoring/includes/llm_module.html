@@ -2,13 +2,13 @@
 <div class="llm-module">
     <!-- LLM Prompt Panel -->
     <div class="llm-prompt-panel">
-        <div class="prompt-header accordion-header" onclick="toggleLLMAccordion()">
-            <h4 id="prompt-title">Prompt: Loading...</h4>
+        <div class="prompt-header accordion-header">
+            <h4 id="prompt-title" onclick="toggleLLMAccordion()">Prompt: Loading...</h4>
             <div class="prompt-header-controls">
                 <button class="btn btn-primary" id="generate-btn">
                     <i class="fas fa-magic"></i> Generate
                 </button>
-                <div class="accordion-toggle">
+                <div class="accordion-toggle" onclick="toggleLLMAccordion()">
                     <i class="fas fa-chevron-down" id="accordion-icon"></i>
                 </div>
             </div>

@@ -40,8 +40,13 @@ export class ImagePromptsOutputPanel {
     document.getElementById('regenerate-btn')?.addEventListener('click', () => this.generateImagePrompts());
 
     window.addEventListener('sections:batch-generate', async (e) => {
+      console.log('[DEBUG] ImagePromptsOutputPanel received sections:batch-generate event:', e.detail);
       const ids = e.detail?.ids || [];
-      for (const id of ids) { await this.generateImagePrompts(id); }
+      console.log('[DEBUG] Processing batch generation for IDs:', ids);
+      for (const id of ids) { 
+        console.log(`[DEBUG] Generating image prompt for section ${id}`);
+        await this.generateImagePrompts(id); 
+      }
     });
   }
 

@@ -60,8 +60,10 @@ export class SectionsPanel {
       // Generate for ALL sections, not just selected ones
       const ids = this.sections.map(s => String(s.id));
       console.log(`[DEBUG] Generate All clicked - generating for ${ids.length} sections:`, ids);
+      console.log('[DEBUG] Dispatching sections:batch-generate event');
       const evt = new CustomEvent('sections:batch-generate', { detail: { ids }});
       window.dispatchEvent(evt);
+      console.log('[DEBUG] Event dispatched successfully');
     });
   }
 
