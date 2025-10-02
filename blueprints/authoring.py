@@ -1482,7 +1482,16 @@ def api_generate_image_captions(post_id, section_id):
             # Parse JSON response
             try:
                 import json
-                parsed_json = json.loads(raw_content)
+                # Strip markdown code blocks if present
+                content = raw_content.strip()
+                if content.startswith('```') and content.endswith('```'):
+                    content = content[3:-3].strip()
+                elif content.startswith('```json'):
+                    content = content[7:-3].strip()
+                elif content.startswith('```'):
+                    content = content[3:-3].strip()
+                
+                parsed_json = json.loads(content)
                 
                 if not isinstance(parsed_json, dict) or 'caption' not in parsed_json or 'alt_text' not in parsed_json:
                     raise ValueError("Missing 'caption' or 'alt_text' keys")
