@@ -864,6 +864,8 @@ function populateTableFields(containerId, data, tableType) {
     });
     
     console.log(`[Data Tab] Found ${fields.length} fields:`, fields);
+    console.log(`[Data Tab] section_text field in fields:`, fields.includes('section_text'));
+    console.log(`[Data Tab] section_text value:`, data.section_text);
     
     container.innerHTML = '';
     
