@@ -1003,6 +1003,10 @@ function showIndividualSection(section) {
     console.log('[Data Tab] Section polished length:', section.polished ? section.polished.length : 'No polished');
     
     // Create a clean data object with all section fields
+    console.log('[Data Tab] Raw section data from API:', section);
+    console.log('[Data Tab] section.polished value:', section.polished);
+    console.log('[Data Tab] section.polished length:', section.polished ? section.polished.length : 'null/undefined');
+    
     const sectionData = {
         id: section.id,
         post_id: section.post_id,
@@ -1011,7 +1015,7 @@ function showIndividualSection(section) {
         section_description: section.section_description,
         status: section.status,
         draft: section.draft,
-        section_text: section.polished, // Renamed for clarity
+        section_text: section.polished, // Maps to database 'polished' field
         created_at: section.created_at,
         updated_at: section.updated_at,
         // Additional computed fields
