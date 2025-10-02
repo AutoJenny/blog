@@ -25,6 +25,13 @@
       {% endfor %}
     </div>
 
+    {% if section.selected_image_concept %}
+      <div class="section-selected-concept">
+        <div class="concept-label">Selected Concept:</div>
+        <div class="concept-title">{{ section.selected_image_concept }}</div>
+      </div>
+    {% endif %}
+
     <div class="section-progress">
       <div class="progress-bar"><div class="progress-fill" style="width: {{ section.progress or 0 }}%"></div></div>
       <span class="progress-text">{{ section.progress or 0 }}% complete</span>

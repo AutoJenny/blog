@@ -290,3 +290,35 @@
 .accordion-toggle:hover {
     color: #e2e8f0;
 }
+
+/* Selected Image Concept Styling */
+.section-selected-concept {
+    background: #1e293b;
+    border: 1px solid #3b82f6;
+    border-radius: 4px;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.concept-label {
+    color: #94a3b8;
+    font-size: 0.7rem;
+    font-weight: 500;
+    margin-bottom: 0.2rem;
+}
+
+.concept-title {
+    color: #e2e8f0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.concept-details {
+    color: #e2e8f0;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: pre-line;
+    margin-top: 0.3rem;
+}

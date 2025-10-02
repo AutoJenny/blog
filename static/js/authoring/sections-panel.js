@@ -88,6 +88,35 @@ export class SectionsPanel {
     
     // Convert section data to template format
     const effectiveStatus = (section.section_text && section.section_text.trim()) ? 'complete' : 'draft';
+    
+    // Parse selected image concept title from JSON if available
+    let selectedConceptDisplay = '';
+    let selectedConceptId = section.selected_image_concept || '';
+    
+    if (section.image_concepts && section.image_concepts.trim()) {
+      try {
+        const conceptsData = JSON.parse(section.image_concepts);
+        if (conceptsData.concepts && Array.isArray(conceptsData.concepts)) {
+          // If no concept is selected, auto-select the first one
+          if (!selectedConceptId && conceptsData.concepts.length > 0) {
+            selectedConceptId = conceptsData.concepts[0].concept_id;
+          }
+          
+          // Find the selected concept and build full display
+          const selectedConcept = conceptsData.concepts.find(c => c.concept_id === selectedConceptId);
+          if (selectedConcept) {
+            selectedConceptDisplay = `${selectedConcept.concept_title}
+${selectedConcept.concept_description}
+Mood: ${selectedConcept.concept_mood}
+Key Elements: ${selectedConcept.key_visual_elements}`;
+          }
+        }
+      } catch (e) {
+        // If JSON parsing fails, keep the original selected_image_concept value
+        selectedConceptDisplay = selectedConceptId;
+      }
+    }
+    
     const templateData = {
       id: section.id,
       order: section.order,
@@ -96,7 +125,8 @@ export class SectionsPanel {
       section_text: section.section_text || '',
       status: effectiveStatus,
       progress: section.progress || 0,
-      topics: section.topics || []
+      topics: section.topics || [],
+      selected_image_concept: selectedConceptDisplay || selectedConceptId || ''
     };
     
     // Generate HTML using template structure
@@ -113,6 +143,7 @@ export class SectionsPanel {
           ${templateData.subtitle ? `<div class="section-subtitle">${templateData.subtitle}</div>` : ''}
           ${templateData.section_text ? `<div class="section-text-preview">${templateData.section_text}</div>` : ''}
           <div class="section-topics">${templateData.topics.map(topic => `<span class="topic-tag">${topic}</span>`).join('')}</div>
+          ${templateData.selected_image_concept ? `<div class="section-selected-concept"><div class="concept-label">Selected Concept:</div><div class="concept-details">${templateData.selected_image_concept}</div></div>` : ''}
           <div class="section-progress">
             <div class="progress-bar"><div class="progress-fill" style="width:${templateData.progress}%"></div></div>
             <span class="progress-text">${templateData.progress}% complete</span>
