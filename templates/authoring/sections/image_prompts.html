@@ -40,6 +40,7 @@
             <!-- Debugging Panel -->
             {% include 'authoring/includes/debugging_panel.html' %}
             
+            {% set currentSubstage = 'image-prompts' %}
             {% include 'authoring/right/output_panel.html' %}
                     </div>
                 </div>
@@ -47,5 +48,5 @@
 {% endblock %}
 
 {% include 'authoring/includes/llm_accordion_functions.html' %}
-<script type="module" src="/static/js/authoring/image-concepts.js"></script>
+<script type="module" src="/static/js/authoring/image-prompts.js"></script>
 {% endblock %}

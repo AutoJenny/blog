@@ -8,7 +8,13 @@
     </div>
   </div>
 
-  {% include 'authoring/includes/image_concepts_display.html' %}
+  {% if currentSubstage == 'image-concepts' %}
+    {% include 'authoring/includes/image_concepts_display.html' %}
+  {% elif currentSubstage == 'image-prompts' %}
+    {% include 'authoring/includes/image_prompts_display.html' %}
+  {% else %}
+    {% include 'authoring/includes/image_concepts_display.html' %}
+  {% endif %}
 
   <style>
     .section-editor{ background:#1e293b; border:1px solid #334155; border-radius:8px; padding:1rem; }

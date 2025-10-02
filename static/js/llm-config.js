@@ -67,13 +67,20 @@ const LLM_CONFIGS = {
         resultsTitle: 'Generated Topic Refinement',
         allowEdit: true
     },
-    'image_concepts': { // New config for image concepts generation
-        promptEndpoint: '/authoring/api/llm/prompts/image-concepts',
-        generateEndpoint: '/authoring/api/posts/{id}/sections/{section_id}/generate-image-concepts',
-        resultsField: 'image_concepts',
-        resultsTitle: 'Generated Image Concepts',
-        allowEdit: true
-    }
+                'image_concepts': { // New config for image concepts generation
+                    promptEndpoint: '/authoring/api/llm/prompts/image-concepts',
+                    generateEndpoint: '/authoring/api/posts/{id}/sections/{section_id}/generate-image-concepts',
+                    resultsField: 'image_concepts',
+                    resultsTitle: 'Generated Image Concepts',
+                    allowEdit: true
+                },
+                'image_prompts': { // New config for image prompts generation
+                    promptEndpoint: '/authoring/api/llm/prompts/image-prompts',
+                    generateEndpoint: '/authoring/api/posts/{id}/sections/{section_id}/generate-image-prompts',
+                    resultsField: 'image_prompts',
+                    resultsTitle: 'Generated Image Prompt',
+                    allowEdit: true
+                }
 };
 
 /**
