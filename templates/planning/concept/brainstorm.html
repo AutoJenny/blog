@@ -12,17 +12,7 @@
     <!-- Include condensed header -->
     {% include 'planning/includes/condensed_header.html' %}
     
-    <script>
-    // Move brainstorm content to process-tab after page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        const brainstormContent = document.querySelector('.brainstorm-main');
-        const processTab = document.getElementById('process-tab');
-        if (brainstormContent && processTab) {
-            processTab.appendChild(brainstormContent);
-        }
-    });
-    </script>
-    
+    {% block process_content %}
     <div class="brainstorm-main">
         
         <div class="brainstorm-content">
@@ -731,4 +721,4 @@ function displayRawResponse(rawResponse) {
 <script src="{{ url_for('static', filename='js/llm-event-manager.js') }}"></script>
 <script src="{{ url_for('static', filename='js/llm-module.js') }}"></script>
 
-
+{% endblock %}

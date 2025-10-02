@@ -155,7 +155,9 @@
 <!-- Tab Content Container -->
 <div class="tab-content">
     <div id="process-tab" class="tab-panel active">
+        {% block process_content %}
         <!-- Process content will be inserted here by each page -->
+        {% endblock %}
     </div>
     
     <div id="data-tab" class="tab-panel">
