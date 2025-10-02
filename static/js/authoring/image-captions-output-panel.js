@@ -68,8 +68,9 @@ export class ImageCaptionsOutputPanel {
     document.getElementById('save-btn').disabled = false;
     document.getElementById('regenerate-btn').disabled = false;
 
-    // Display image captions (strict: no fallbacks)
+    // Display image captions and alt text (strict: no fallbacks)
     this.displayImageCaptions(section.image_captions || '');
+    this.displayImageAltText(section.image_alt_text || '');
   }
 
   showMultiple(sections) {

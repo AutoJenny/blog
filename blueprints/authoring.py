@@ -373,7 +373,7 @@ def api_get_sections(post_id):
                 SELECT id, section_order, section_heading, section_description, 
                        status, draft, polished, ideas_to_include, facts_to_include,
                        highlighting, image_concepts, image_prompts, image_captions,
-                       selected_image_concept
+                       image_alt_text, selected_image_concept
                 FROM post_section
                 WHERE post_id = %s
                 ORDER BY section_order
