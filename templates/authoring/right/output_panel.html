@@ -8,19 +8,7 @@
     </div>
   </div>
 
-  <div class="input-data-panel">
-    <h5>Post Context</h5>
-    <div class="context-item"><label>Selected Idea:</label><div id="selected-idea-display">-</div></div>
-    <div class="context-item"><label>Expanded Idea:</label><div id="expanded-idea-display">-</div></div>
-
-    <h5>Section Context</h5>
-    <div class="context-item"><label>Title:</label><span id="section-title-display">-</span></div>
-    <div class="context-item"><label>Subtitle:</label><span id="section-subtitle-display">-</span></div>
-    <div class="context-item"><label>Group:</label><div id="section-group-display">-</div></div>
-    <div class="context-item"><label>Group Summary:</label><div id="section-group-summary-display">-</div></div>
-    <div class="context-item"><label>Topics:</label><div id="section-topics-display">-</div></div>
-    <div class="context-item"><label>Avoid Topics:</label><div id="avoid-topics-display">-</div></div>
-  </div>
+  {% include 'authoring/includes/input_details_accordion.html' %}
 
   <div class="content-editor">
     <h5>Generated Content</h5>
