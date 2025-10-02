@@ -369,7 +369,7 @@ def authoring_sections_image_generation(post_id):
         with db_manager.get_cursor() as cursor:
             # Get post details
             cursor.execute("""
-                SELECT id, title, idea_seed, expanded_idea, idea_scope
+                SELECT id, title, status, created_at, updated_at
                 FROM post 
                 WHERE id = %s
             """, (post_id,))
