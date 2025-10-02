@@ -7124,3 +7124,272 @@ LINE 3:                 SET image_concepts = $1, updated_at = CURREN...
 2025-10-02 13:27:50,708 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:27:50] "GET /authoring/api/posts/60/sections HTTP/1.1" 200 -
 2025-10-02 13:27:50,724 - config.database - INFO - Database connection established
 2025-10-02 13:27:50,729 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:27:50] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-10-02 13:27:50,805 - config.database - INFO - Database connection established
+2025-10-02 13:27:50,813 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:27:50] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-10-02 13:29:43,646 - config.database - INFO - Database connection established
+2025-10-02 13:29:43,654 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:29:47,927 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1552
+2025-10-02 13:29:47,928 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:29:47,930 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:29:47] "POST /authoring/api/posts/60/sections/791/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:29:51,372 - config.database - INFO - Database connection established
+2025-10-02 13:29:51,376 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:29:51] "GET /authoring/posts/60/sections/image_concepts HTTP/1.1" 200 -
+2025-10-02 13:30:06,120 - config.database - INFO - Database connection established
+2025-10-02 13:30:06,124 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "GET /authoring/posts/60/sections/image_concepts HTTP/1.1" 200 -
+2025-10-02 13:30:06,204 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-02 13:30:06,206 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "[36mGET /static/css/llm-module.css HTTP/1.1[0m" 304 -
+2025-10-02 13:30:06,208 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "[36mGET /static/css/authoring/sections-panel.css HTTP/1.1[0m" 304 -
+2025-10-02 13:30:06,209 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "[36mGET /static/css/sections.css?v=1735732800 HTTP/1.1[0m" 304 -
+2025-10-02 13:30:06,210 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-02 13:30:06,210 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-02 13:30:06,211 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "[36mGET /static/js/authoring/image-concepts.js HTTP/1.1[0m" 304 -
+2025-10-02 13:30:06,211 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-10-02 13:30:06,213 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-02 13:30:06,214 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-02 13:30:06,215 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "[36mGET /static/js/llm-utils.js HTTP/1.1[0m" 304 -
+2025-10-02 13:30:06,216 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-10-02 13:30:06,218 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "[36mGET /static/js/llm-ui-manager.js HTTP/1.1[0m" 304 -
+2025-10-02 13:30:06,218 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "[36mGET /static/js/llm-api-client.js HTTP/1.1[0m" 304 -
+2025-10-02 13:30:06,219 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "[36mGET /static/js/llm-config.js HTTP/1.1[0m" 304 -
+2025-10-02 13:30:06,219 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "[36mGET /static/js/llm-event-manager.js HTTP/1.1[0m" 304 -
+2025-10-02 13:30:06,220 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "[36mGET /static/js/llm-module.js HTTP/1.1[0m" 304 -
+2025-10-02 13:30:06,224 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "[36mGET /static/js/authoring/sections-panel.js HTTP/1.1[0m" 304 -
+2025-10-02 13:30:06,224 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "[36mGET /static/js/authoring/image-concepts-output-panel.js HTTP/1.1[0m" 304 -
+2025-10-02 13:30:06,224 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-10-02 13:30:06,227 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "[36mGET /static/js/authoring/api.js HTTP/1.1[0m" 304 -
+2025-10-02 13:30:06,239 - config.database - INFO - Database connection established
+2025-10-02 13:30:06,241 - config.database - INFO - Database connection established
+2025-10-02 13:30:06,245 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "GET /authoring/api/posts/60/sections HTTP/1.1" 200 -
+2025-10-02 13:30:06,247 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-10-02 13:30:06,337 - config.database - INFO - Database connection established
+2025-10-02 13:30:06,344 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:06] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-10-02 13:30:08,669 - config.database - INFO - Database connection established
+2025-10-02 13:30:08,673 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:30:08] "GET /authoring/api/llm/prompts/image-concepts HTTP/1.1" 200 -
+2025-10-02 13:31:15,719 - config.database - INFO - Database connection established
+2025-10-02 13:31:15,724 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:31:18,791 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1693
+2025-10-02 13:31:18,792 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:31:18,794 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:31:18] "POST /authoring/api/posts/60/sections/791/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:31:22,488 - config.database - INFO - Database connection established
+2025-10-02 13:31:22,491 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:31:22] "GET /authoring/posts/60/sections/image_concepts HTTP/1.1" 200 -
+2025-10-02 13:31:36,069 - config.database - INFO - Database connection established
+2025-10-02 13:31:36,078 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:31:37,078 - config.database - INFO - Database connection established
+2025-10-02 13:31:37,086 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:31:39,211 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1747
+2025-10-02 13:31:39,211 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:31:39,214 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:31:39] "POST /authoring/api/posts/60/sections/790/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:31:39,227 - config.database - INFO - Database connection established
+2025-10-02 13:31:39,233 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:31:42,171 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1686
+2025-10-02 13:31:42,171 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:31:42,174 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:31:42] "POST /authoring/api/posts/60/sections/790/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:31:42,187 - config.database - INFO - Database connection established
+2025-10-02 13:31:42,195 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:31:45,484 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1887
+2025-10-02 13:31:45,485 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:31:45,488 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:31:45] "POST /authoring/api/posts/60/sections/791/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:31:45,496 - config.database - INFO - Database connection established
+2025-10-02 13:31:45,502 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:31:48,244 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1659
+2025-10-02 13:31:48,245 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:31:48,248 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:31:48] "POST /authoring/api/posts/60/sections/791/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:31:48,261 - config.database - INFO - Database connection established
+2025-10-02 13:31:48,268 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:31:51,864 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1881
+2025-10-02 13:31:51,864 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:31:51,866 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:31:51] "POST /authoring/api/posts/60/sections/792/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:31:51,878 - config.database - INFO - Database connection established
+2025-10-02 13:31:51,885 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:31:56,863 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-10-02 13:31:56,864 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:31:56,867 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:31:56] "POST /authoring/api/posts/60/sections/792/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:31:56,878 - config.database - INFO - Database connection established
+2025-10-02 13:31:56,886 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:32:00,475 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 2002
+2025-10-02 13:32:00,476 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:32:00,480 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:32:00] "POST /authoring/api/posts/60/sections/793/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:32:00,495 - config.database - INFO - Database connection established
+2025-10-02 13:32:00,504 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:32:01,159 - config.database - INFO - Database connection established
+2025-10-02 13:32:01,169 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:32:01,741 - config.database - INFO - Database connection established
+2025-10-02 13:32:01,751 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:32:03,358 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1780
+2025-10-02 13:32:03,359 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:32:03,362 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:32:03] "POST /authoring/api/posts/60/sections/793/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:32:03,372 - config.database - INFO - Database connection established
+2025-10-02 13:32:03,378 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:32:04,769 - config.database - INFO - Database connection established
+2025-10-02 13:32:04,776 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:32:06,289 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1750
+2025-10-02 13:32:06,289 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:32:06,292 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:32:06] "POST /authoring/api/posts/60/sections/794/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:32:06,303 - config.database - INFO - Database connection established
+2025-10-02 13:32:06,316 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:32:09,493 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1820
+2025-10-02 13:32:09,494 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:32:09,498 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:32:09] "POST /authoring/api/posts/60/sections/790/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:32:09,514 - config.database - INFO - Database connection established
+2025-10-02 13:32:09,523 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:32:11,503 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1253
+2025-10-02 13:32:11,504 - blueprints.authoring - WARNING - Invalid JSON on attempt 1: Concept 1 missing or empty field: key_visual_elements
+2025-10-02 13:32:11,505 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:32:14,725 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1776
+2025-10-02 13:32:14,726 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:32:14,728 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:32:14] "POST /authoring/api/posts/60/sections/794/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:32:14,739 - config.database - INFO - Database connection established
+2025-10-02 13:32:14,746 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:32:17,921 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1692
+2025-10-02 13:32:17,922 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:32:17,926 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:32:17] "POST /authoring/api/posts/60/sections/790/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:32:21,055 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1742
+2025-10-02 13:32:21,056 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:32:21,059 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:32:21] "POST /authoring/api/posts/60/sections/795/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:32:21,074 - config.database - INFO - Database connection established
+2025-10-02 13:32:21,085 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:32:24,459 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1903
+2025-10-02 13:32:24,460 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:32:24,464 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:32:24] "POST /authoring/api/posts/60/sections/791/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:32:24,480 - config.database - INFO - Database connection established
+2025-10-02 13:32:24,490 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:32:27,810 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1806
+2025-10-02 13:32:27,810 - blueprints.authoring - INFO - Valid JSON generated on attempt 2
+2025-10-02 13:32:27,814 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:32:27] "POST /authoring/api/posts/60/sections/790/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:32:27,826 - config.database - INFO - Database connection established
+2025-10-02 13:32:27,838 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:32:30,764 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1599
+2025-10-02 13:32:30,765 - blueprints.authoring - WARNING - Invalid JSON on attempt 1: Expecting ',' delimiter: line 25 column 4 (char 1206)
+2025-10-02 13:32:30,767 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:32:33,901 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1674
+2025-10-02 13:32:33,902 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:32:33,905 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:32:33] "POST /authoring/api/posts/60/sections/796/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:32:37,287 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1792
+2025-10-02 13:32:37,287 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:32:37,290 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:32:37] "POST /authoring/api/posts/60/sections/792/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:32:37,303 - config.database - INFO - Database connection established
+2025-10-02 13:32:37,312 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:32:40,617 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1907
+2025-10-02 13:32:40,618 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:32:40,622 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:32:40] "POST /authoring/api/posts/60/sections/791/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:32:40,637 - config.database - INFO - Database connection established
+2025-10-02 13:32:40,647 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:32:43,790 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1655
+2025-10-02 13:32:43,790 - blueprints.authoring - INFO - Valid JSON generated on attempt 2
+2025-10-02 13:32:43,793 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:32:43] "POST /authoring/api/posts/60/sections/795/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:32:43,808 - config.database - INFO - Database connection established
+2025-10-02 13:32:43,815 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:32:46,730 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1626
+2025-10-02 13:32:46,730 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:32:46,733 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:32:46] "POST /authoring/api/posts/60/sections/793/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:32:46,746 - config.database - INFO - Database connection established
+2025-10-02 13:32:46,756 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:32:51,061 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 None
+2025-10-02 13:32:51,062 - blueprints.authoring - WARNING - Invalid JSON on attempt 1: Expecting ':' delimiter: line 10 column 39 (char 529)
+2025-10-02 13:32:51,065 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:32:54,203 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1700
+2025-10-02 13:32:54,205 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:32:54,209 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:32:54] "POST /authoring/api/posts/60/sections/796/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:32:57,026 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1554
+2025-10-02 13:32:57,027 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:32:57,031 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:32:57] "POST /authoring/api/posts/60/sections/794/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:32:57,046 - config.database - INFO - Database connection established
+2025-10-02 13:32:57,056 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:33:00,623 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1850
+2025-10-02 13:33:00,624 - blueprints.authoring - INFO - Valid JSON generated on attempt 2
+2025-10-02 13:33:00,628 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:00] "POST /authoring/api/posts/60/sections/792/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:33:00,643 - config.database - INFO - Database connection established
+2025-10-02 13:33:00,652 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:33:03,503 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1641
+2025-10-02 13:33:03,504 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:33:03,506 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:03] "POST /authoring/api/posts/60/sections/795/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:33:03,518 - config.database - INFO - Database connection established
+2025-10-02 13:33:03,524 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:33:06,363 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1571
+2025-10-02 13:33:06,364 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:33:06,369 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:06] "POST /authoring/api/posts/60/sections/793/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:33:06,383 - config.database - INFO - Database connection established
+2025-10-02 13:33:06,394 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:33:09,870 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1899
+2025-10-02 13:33:09,871 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:33:09,875 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:09] "POST /authoring/api/posts/60/sections/796/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:33:12,830 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1666
+2025-10-02 13:33:12,832 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:33:12,837 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:12] "POST /authoring/api/posts/60/sections/794/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:33:12,864 - config.database - INFO - Database connection established
+2025-10-02 13:33:12,876 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:33:15,990 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1675
+2025-10-02 13:33:15,991 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:33:15,994 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:15] "POST /authoring/api/posts/60/sections/795/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:33:16,011 - config.database - INFO - Database connection established
+2025-10-02 13:33:16,022 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-10-02 13:33:19,212 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1748
+2025-10-02 13:33:19,213 - blueprints.authoring - INFO - Valid JSON generated on attempt 1
+2025-10-02 13:33:19,217 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:19] "POST /authoring/api/posts/60/sections/796/generate-image-concepts HTTP/1.1" 200 -
+2025-10-02 13:33:27,958 - config.database - INFO - Database connection established
+2025-10-02 13:33:27,960 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:27] "GET /authoring/api/llm/prompts/image-concepts HTTP/1.1" 200 -
+2025-10-02 13:33:29,065 - config.database - INFO - Database connection established
+2025-10-02 13:33:29,067 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:29] "GET /authoring/api/llm/prompts/image-concepts HTTP/1.1" 200 -
+2025-10-02 13:33:29,922 - config.database - INFO - Database connection established
+2025-10-02 13:33:29,925 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:29] "GET /authoring/api/llm/prompts/image-concepts HTTP/1.1" 200 -
+2025-10-02 13:33:31,630 - config.database - INFO - Database connection established
+2025-10-02 13:33:31,633 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:31] "GET /authoring/api/llm/prompts/image-concepts HTTP/1.1" 200 -
+2025-10-02 13:33:42,270 - config.database - INFO - Database connection established
+2025-10-02 13:33:42,275 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:42] "GET /authoring/posts/60/sections/image_prompts HTTP/1.1" 200 -
+2025-10-02 13:33:42,361 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:42] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-02 13:33:42,366 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:42] "[36mGET /static/css/sections.css?v=1735732800 HTTP/1.1[0m" 304 -
+2025-10-02 13:33:42,373 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:42] "[36mGET /static/css/llm-module.css HTTP/1.1[0m" 304 -
+2025-10-02 13:33:42,374 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:42] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-02 13:33:42,374 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:42] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-02 13:33:42,375 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:42] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-02 13:33:42,375 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:42] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-10-02 13:33:42,376 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:42] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-10-02 13:33:42,378 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:42] "[36mGET /static/js/llm-utils.js HTTP/1.1[0m" 304 -
+2025-10-02 13:33:42,379 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:42] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-02 13:33:42,381 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:42] "[36mGET /static/js/llm-ui-manager.js HTTP/1.1[0m" 304 -
+2025-10-02 13:33:42,381 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:42] "[36mGET /static/js/llm-config.js HTTP/1.1[0m" 304 -
+2025-10-02 13:33:42,382 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:42] "[36mGET /static/js/llm-api-client.js HTTP/1.1[0m" 304 -
+2025-10-02 13:33:42,382 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:42] "[36mGET /static/js/llm-event-manager.js HTTP/1.1[0m" 304 -
+2025-10-02 13:33:42,383 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:42] "[36mGET /static/js/llm-module.js HTTP/1.1[0m" 304 -
+2025-10-02 13:33:42,405 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:42] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-10-02 13:33:42,417 - config.database - INFO - Database connection established
+2025-10-02 13:33:42,421 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:42] "GET /authoring/api/posts/60/sections HTTP/1.1" 200 -
+2025-10-02 13:33:42,433 - config.database - INFO - Database connection established
+2025-10-02 13:33:42,439 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:42] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-10-02 13:33:42,518 - config.database - INFO - Database connection established
+2025-10-02 13:33:42,524 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:33:42] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-10-02 13:34:21,839 - config.database - INFO - Database connection established
+2025-10-02 13:34:21,842 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:21] "GET /authoring/posts/60/sections/image_prompts HTTP/1.1" 200 -
+2025-10-02 13:34:21,951 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:21] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-02 13:34:21,958 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:21] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-02 13:34:21,959 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:21] "[36mGET /static/css/llm-module.css HTTP/1.1[0m" 304 -
+2025-10-02 13:34:21,959 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:21] "[36mGET /static/css/sections.css?v=1735732800 HTTP/1.1[0m" 304 -
+2025-10-02 13:34:21,959 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:21] "[36mGET /static/js/planning/planning-header-updater.js HTTP/1.1[0m" 304 -
+2025-10-02 13:34:21,959 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:21] "[36mGET /static/js/llm-utils.js HTTP/1.1[0m" 304 -
+2025-10-02 13:34:21,959 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:21] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-02 13:34:21,963 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:21] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-10-02 13:34:21,965 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:21] "[36mGET /static/js/llm-config.js HTTP/1.1[0m" 304 -
+2025-10-02 13:34:21,966 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:21] "[36mGET /static/js/llm-ui-manager.js HTTP/1.1[0m" 304 -
+2025-10-02 13:34:21,966 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:21] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-02 13:34:21,967 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:21] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-02 13:34:21,967 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:21] "[36mGET /static/js/llm-api-client.js HTTP/1.1[0m" 304 -
+2025-10-02 13:34:21,969 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:21] "[36mGET /static/js/llm-event-manager.js HTTP/1.1[0m" 304 -
+2025-10-02 13:34:21,969 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:21] "[36mGET /static/js/llm-module.js HTTP/1.1[0m" 304 -
+2025-10-02 13:34:21,975 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:21] "[36mGET /static/js/planning/calendar/utils/date-utils.js HTTP/1.1[0m" 304 -
+2025-10-02 13:34:21,987 - config.database - INFO - Database connection established
+2025-10-02 13:34:21,991 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:21] "GET /authoring/api/posts/60/sections HTTP/1.1" 200 -
+2025-10-02 13:34:22,001 - config.database - INFO - Database connection established
+2025-10-02 13:34:22,010 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:22] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-10-02 13:34:22,087 - config.database - INFO - Database connection established
+2025-10-02 13:34:22,098 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:22] "GET /planning/api/posts/60 HTTP/1.1" 200 -
+2025-10-02 13:34:24,259 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:24] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-10-02 13:34:24,260 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:24] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-10-02 13:34:24,262 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:24] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-10-02 13:34:24,269 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:24] "[33mGET /static/images/site/apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-10-02 13:34:24,269 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:24] "[33mGET /static/images/site/favicon.ico HTTP/1.1[0m" 404 -
+2025-10-02 13:34:24,270 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:34:24] "[33mGET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1[0m" 404 -
+2025-10-02 13:35:47,593 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:35:47] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-10-02 13:35:47,596 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:35:47] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-10-02 13:35:47,597 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:35:47] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-10-02 13:35:47,598 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:35:47] "[33mGET /static/images/site/favicon.ico HTTP/1.1[0m" 404 -
+2025-10-02 13:35:47,599 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:35:47] "[33mGET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1[0m" 404 -
+2025-10-02 13:35:47,599 - werkzeug - INFO - 127.0.0.1 - - [02/Oct/2025 13:35:47] "[33mGET /static/images/site/apple-touch-icon.png HTTP/1.1[0m" 404 -
