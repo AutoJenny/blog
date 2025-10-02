@@ -1,0 +1,73 @@
+<!-- Image Prompts Display -->
+<div class="image-captions-display" id="image-captions-display" style="display: none;">
+    <h5>Generated Image Prompt</h5>
+    
+    <div class="captions-container" id="captions-container">
+        <!-- Prompt cards will be dynamically inserted here -->
+    </div>
+</div>
+
+<!-- Fallback textarea for raw prompts (hidden by default) -->
+<div class="content-editor" id="content-editor-fallback" style="display: none;">
+    <h5>Raw Image Prompt</h5>
+    <textarea id="content-editor" placeholder="Image prompt will be generated here." disabled></textarea>
+    <div class="editor-stats">
+        <span id="word-count">0 words</span>
+        <span id="last-saved">Not saved</span>
+    </div>
+</div>
+
+<style>
+.image-captions-display {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.captions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.prompt-card {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 1rem;
+    transition: all 0.2s ease;
+}
+
+.prompt-card:hover {
+    border-color: #475569;
+    background: #1e293b;
+}
+
+.prompt-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.prompt-text {
+    color: #e2e8f0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.section-prompts-header {
+    margin-bottom: 1rem;
+}
+
+.section-prompts-header h6 {
+    color: #e2e8f0;
+    margin: 1rem 0 0.5rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #334155;
+    font-size: 0.9rem;
+}
+</style>

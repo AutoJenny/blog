@@ -12,6 +12,9 @@
     {% include 'authoring/includes/image_concepts_display.html' %}
   {% elif currentSubstage == 'image-prompts' %}
     {% include 'authoring/includes/image_prompts_display.html' %}
+  {% elif currentSubstage == 'image-captions' %}
+    {% include 'authoring/includes/image_captions_display.html' %}
+    {% include 'authoring/includes/image_alt_text_display.html' %}
   {% else %}
     {% include 'authoring/includes/image_concepts_display.html' %}
   {% endif %}
