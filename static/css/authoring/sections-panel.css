@@ -258,3 +258,35 @@
     font-size: 0.7rem;
     min-width: 60px;
 }
+
+/* Accordion styles */
+.section-item.accordion {
+    padding: 0.5rem;
+}
+
+.section-item.accordion .section-header {
+    margin-bottom: 0;
+}
+
+.section-item.accordion .accordion-content {
+    display: none;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #334155;
+}
+
+.section-item.accordion.expanded .accordion-content {
+    display: block;
+}
+
+.accordion-toggle {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    margin-left: auto;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.accordion-toggle:hover {
+    color: #e2e8f0;
+}
