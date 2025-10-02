@@ -1491,6 +1491,12 @@ def api_generate_image_captions(post_id, section_id):
                 elif content.startswith('```'):
                     content = content[3:-3].strip()
                 
+                # Extract only the JSON part (before any additional text)
+                json_start = content.find('{')
+                json_end = content.rfind('}') + 1
+                if json_start >= 0 and json_end > json_start:
+                    content = content[json_start:json_end]
+                
                 parsed_json = json.loads(content)
                 
                 if not isinstance(parsed_json, dict) or 'caption' not in parsed_json or 'alt_text' not in parsed_json:
