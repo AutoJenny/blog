@@ -20,7 +20,28 @@ export class SectionsPanel {
     const list = document.getElementById('sections-list');
     list?.addEventListener('click', (e) => {
       const row = e.target.closest('.section-item');
-      if (row && e.target.type !== 'checkbox') this.select(row.dataset.sectionId);
+      if (row && e.target.type !== 'checkbox' && !e.target.classList.contains('accordion-toggle')) {
+        this.select(row.dataset.sectionId);
+      }
+    });
+
+    // Accordion toggle functionality
+    list?.addEventListener('click', (e) => {
+      if (e.target.classList.contains('accordion-toggle')) {
+        const accordion = e.target.closest('.accordion');
+        const content = accordion.querySelector('.accordion-content');
+        const toggle = e.target;
+        
+        if (content.style.display === 'none' || content.style.display === '') {
+          content.style.display = 'block';
+          toggle.textContent = '▲';
+          accordion.classList.add('expanded');
+        } else {
+          content.style.display = 'none';
+          toggle.textContent = '▼';
+          accordion.classList.remove('expanded');
+        }
+      }
     });
 
     document.querySelector('.section-filters')?.addEventListener('click', (e) => {
@@ -78,19 +99,22 @@ export class SectionsPanel {
     
     // Generate HTML using template structure
     template.innerHTML = `
-      <div class="section-item" data-section-id="${templateData.id}" data-status="${templateData.status}">
-        <div class="section-header">
+      <div class="section-item accordion" data-section-id="${templateData.id}" data-status="${templateData.status}">
+        <div class="section-header accordion-header">
           <input type="checkbox" class="section-checkbox" data-section-id="${templateData.id}">
           <span class="section-number">${templateData.order}</span>
           <span class="section-title">${templateData.title}</span>
           <span class="section-status ${templateData.status}">${templateData.status.charAt(0).toUpperCase() + templateData.status.slice(1)}</span>
+          <span class="accordion-toggle">▼</span>
         </div>
-        ${templateData.subtitle ? `<div class="section-subtitle">${templateData.subtitle}</div>` : ''}
-        ${templateData.section_text ? `<div class="section-text-preview">${templateData.section_text}</div>` : ''}
-        <div class="section-topics">${templateData.topics.map(topic => `<span class="topic-tag">${topic}</span>`).join('')}</div>
-        <div class="section-progress">
-          <div class="progress-bar"><div class="progress-fill" style="width:${templateData.progress}%"></div></div>
-          <span class="progress-text">${templateData.progress}% complete</span>
+        <div class="section-content accordion-content">
+          ${templateData.subtitle ? `<div class="section-subtitle">${templateData.subtitle}</div>` : ''}
+          ${templateData.section_text ? `<div class="section-text-preview">${templateData.section_text}</div>` : ''}
+          <div class="section-topics">${templateData.topics.map(topic => `<span class="topic-tag">${topic}</span>`).join('')}</div>
+          <div class="section-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:${templateData.progress}%"></div></div>
+            <span class="progress-text">${templateData.progress}% complete</span>
+          </div>
         </div>
       </div>
     `;

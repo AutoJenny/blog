@@ -1,5 +1,5 @@
-<div class="section-item" data-section-id="{{ section.id }}" data-status="{{ section.status|default('draft') }}">
-  <div class="section-header">
+<div class="section-item accordion" data-section-id="{{ section.id }}" data-status="{{ section.status|default('draft') }}">
+  <div class="section-header accordion-header">
     <input type="checkbox" class="section-checkbox" data-section-id="{{ section.id }}"/>
     <span class="section-number">{{ section.order }}</span>
     <span class="section-title">{{ section.title }}</span>
@@ -7,24 +7,27 @@
     <span class="section-status {{ effective_status }}">
       {{ effective_status|capitalize }}
     </span>
+    <span class="accordion-toggle">▼</span>
   </div>
 
-  {% if section.subtitle %}
-    <div class="section-subtitle">{{ section.subtitle }}</div>
-  {% endif %}
+  <div class="section-content accordion-content">
+    {% if section.subtitle %}
+      <div class="section-subtitle">{{ section.subtitle }}</div>
+    {% endif %}
 
-  {% if section.section_text %}
-    <div class="section-text-preview">{{ section.section_text }}</div>
-  {% endif %}
+    {% if section.section_text %}
+      <div class="section-text-preview">{{ section.section_text }}</div>
+    {% endif %}
 
-  <div class="section-topics">
-    {% for topic in section.topics or [] %}
-      <span class="topic-tag">{{ topic }}</span>
-    {% endfor %}
-  </div>
+    <div class="section-topics">
+      {% for topic in section.topics or [] %}
+        <span class="topic-tag">{{ topic }}</span>
+      {% endfor %}
+    </div>
 
-  <div class="section-progress">
-    <div class="progress-bar"><div class="progress-fill" style="width: {{ section.progress or 0 }}%"></div></div>
-    <span class="progress-text">{{ section.progress or 0 }}% complete</span>
+    <div class="section-progress">
+      <div class="progress-bar"><div class="progress-fill" style="width: {{ section.progress or 0 }}%"></div></div>
+      <span class="progress-text">{{ section.progress or 0 }}% complete</span>
+    </div>
   </div>
 </div>
