@@ -11,8 +11,10 @@ export class SectionsPanel {
   }
 
   async load() {
+    console.log('[DEBUG] SectionsPanel.load() called - fetching fresh data');
     const data = await getJSON(`/authoring/api/posts/${this.postId}/sections`);
     this.sections = data.success ? (data.sections || []) : [];
+    console.log(`[DEBUG] SectionsPanel.load() - loaded ${this.sections.length} sections`);
     this.render();
   }
 
@@ -69,6 +71,7 @@ export class SectionsPanel {
     // Listen for reload events after batch generation
     window.addEventListener('sections:reload-data', () => {
       console.log('[DEBUG] Sections panel received reload event, refreshing data');
+      console.log('[DEBUG] Current sections before reload:', this.sections.length);
       this.load();
     });
   }
@@ -103,13 +106,16 @@ export class SectionsPanel {
     
     // Check if we're on the image prompts page
     const isImagePromptsPage = window.currentSubstage === 'image-prompts';
+    console.log(`[DEBUG] Section ${section.id}: isImagePromptsPage=${isImagePromptsPage}, currentSubstage=${window.currentSubstage}`);
     
     if (isImagePromptsPage && section.image_prompts && section.image_prompts.trim()) {
+      console.log(`[DEBUG] Section ${section.id}: Processing image_prompts for image-prompts page`);
       // For image prompts page, show the generated image prompt
       try {
         const promptsData = JSON.parse(section.image_prompts);
         if (promptsData.base_concept) {
           selectedConceptDisplay = promptsData.base_concept;
+          console.log(`[DEBUG] Section ${section.id}: Using base_concept: ${selectedConceptDisplay.substring(0, 50)}...`);
         } else if (promptsData.image_prompt) {
           // Extract base concept from full prompt (remove style guidelines)
           const fullPrompt = promptsData.image_prompt;
@@ -119,6 +125,7 @@ export class SectionsPanel {
           } else {
             selectedConceptDisplay = fullPrompt;
           }
+          console.log(`[DEBUG] Section ${section.id}: Extracted from image_prompt: ${selectedConceptDisplay.substring(0, 50)}...`);
         }
       } catch (e) {
         // If JSON parsing fails, show raw content
