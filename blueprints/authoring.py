@@ -425,6 +425,7 @@ def api_get_sections(post_id):
                     'image_concepts': section['image_concepts'] or '',
                     'image_prompts': section['image_prompts'] or '',
                     'image_captions': section['image_captions'] or '',
+                    'image_alt_text': section['image_alt_text'] or '',
                     'selected_image_concept': section['selected_image_concept'] or '',
                     'progress': 100 if section['polished'] else (50 if section['draft'] else 0)
                 })
