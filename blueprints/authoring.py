@@ -125,7 +125,10 @@ class LLMService:
                 data = {
                     'model': model,
                     'messages': messages,
-                    'stream': False
+                    'stream': False,
+                    'options': {
+                        'num_predict': 4000
+                    }
                 }
                 response = requests.post(
                     f"{self.providers[provider]['base_url']}/api/chat",
@@ -1303,10 +1306,47 @@ def api_generate_image_prompts(post_id, section_id):
                 
             except (json.JSONDecodeError, ValueError) as e:
                 logger.error(f"Invalid JSON generated: {e}")
-                return jsonify({
-                    'error': f'Failed to generate valid JSON. Error: {e}',
-                    'raw_content': raw_content[:500] + '...' if len(raw_content) > 500 else raw_content
-                }), 500
+                
+                # Try to fix incomplete JSON by adding missing closing brace
+                if raw_content.strip().endswith('"') and not raw_content.strip().endswith('}'):
+                    try:
+                        # Attempt to complete the JSON
+                        fixed_content = raw_content.strip() + '\n}'
+                        parsed_json = json.loads(fixed_content)
+                        
+                        if isinstance(parsed_json, dict) and 'image_prompt' in parsed_json:
+                            base_prompt = parsed_json['image_prompt'].strip()
+                            
+                            # Programmatically add style guidelines and dimensions
+                            style_guidelines = "Generate an intricately detailed scene in the soft, vibrant styles of inkwash and watercolour. The colouring schema must be colourful but washed out, and the image should 'fade' through soft brushstrokes that naturally end before the edges of the canvas, blending the image as a part of the white background paper."
+                            
+                            width = format_data['width'] if format_data else 512
+                            height = format_data['height'] if format_data else 512
+                            
+                            full_prompt = f"{base_prompt}, {style_guidelines} Dimensions: {width}x{height} pixels."
+                            
+                            final_json = {
+                                "image_prompt": full_prompt,
+                                "dimensions": f"{width}x{height}",
+                                "style": "inkwash and watercolour",
+                                "base_concept": base_prompt
+                            }
+                            
+                            image_prompt = json.dumps(final_json)
+                            logger.info("Fixed incomplete JSON and generated valid image prompt")
+                        else:
+                            raise ValueError("Could not fix incomplete JSON")
+                    except Exception as fix_error:
+                        logger.error(f"Failed to fix incomplete JSON: {fix_error}")
+                        return jsonify({
+                            'error': f'Failed to generate valid JSON. Error: {e}',
+                            'raw_content': raw_content[:500] + '...' if len(raw_content) > 500 else raw_content
+                        }), 500
+                else:
+                    return jsonify({
+                        'error': f'Failed to generate valid JSON. Error: {e}',
+                        'raw_content': raw_content[:500] + '...' if len(raw_content) > 500 else raw_content
+                    }), 500
             
             # Save to database
             cursor.execute("""
