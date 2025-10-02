@@ -62,6 +62,7 @@
                         <select id="section-dropdown" class="section-dropdown">
                             <option value="">Choose a section...</option>
                         </select>
+                        <button id="test-section-btn" class="btn btn-secondary" style="margin-left: 1rem;">Test Section 1</button>
                     </div>
                     
                     <div id="post-section-fields-container" class="fields-container">
@@ -871,6 +872,16 @@ function populateTableFields(containerId, data, tableType) {
         const isEmpty = fieldValue === null || fieldValue === undefined || fieldValue === '';
         const isLongText = typeof fieldValue === 'string' && fieldValue.length > 100;
         
+        // Debug logging for draft and polished fields
+        if (fieldName === 'draft' || fieldName === 'polished') {
+            console.log(`[Data Tab] Field ${fieldName}:`, {
+                value: fieldValue,
+                isEmpty: isEmpty,
+                isLongText: isLongText,
+                length: fieldValue ? fieldValue.length : 0
+            });
+        }
+        
         const fieldItem = document.createElement('div');
         fieldItem.className = `field-item ${isEmpty ? 'empty' : 'populated'}`;
         
@@ -938,6 +949,21 @@ function setupSectionSelector(sectionsData) {
             }
         }
     });
+    
+    // Add test button event listener
+    const testButton = document.getElementById('test-section-btn');
+    if (testButton) {
+        testButton.addEventListener('click', function() {
+            console.log('[Data Tab] Test button clicked, showing section 1');
+            const firstSection = sectionsData.find(s => s.section_order === 1);
+            if (firstSection) {
+                console.log('[Data Tab] Found section 1:', firstSection);
+                showIndividualSection(firstSection);
+            } else {
+                console.error('[Data Tab] Section 1 not found in sections data');
+            }
+        });
+    }
 }
 
 function showSectionsSummary(sectionsData) {
