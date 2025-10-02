@@ -884,8 +884,9 @@ function populateTableFields(containerId, data, tableType) {
             });
         }
         
-        // Special handling for draft field - always show full content
+        // Special handling for draft and section_text fields - always show full content
         const isDraftField = fieldName === 'draft';
+        const isSectionTextField = fieldName === 'section_text';
         
         const fieldItem = document.createElement('div');
         fieldItem.className = `field-item ${isEmpty ? 'empty' : 'populated'}`;
@@ -893,7 +894,7 @@ function populateTableFields(containerId, data, tableType) {
                 fieldItem.innerHTML = `
                     <div class="field-name">${fieldName}</div>
                     <div class="field-value-container">
-                        ${isDraftField ? `
+                        ${(isDraftField || isSectionTextField) ? `
                             <textarea class="field-textarea" readonly style="min-height: 200px; font-family: inherit; background: rgba(71, 85, 105, 0.1); border: 1px solid #475569; color: #e2e8f0; padding: 1rem; border-radius: 4px;">${isEmpty ? '' : String(fieldValue).replace(/"/g, '&quot;')}</textarea>
                         ` : isLongText ? `
                             <div class="field-value ${isEmpty ? 'empty' : 'preview'}" 
