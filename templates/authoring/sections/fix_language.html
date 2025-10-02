@@ -2,7 +2,6 @@
 
 {% block css_assets %}
 {{ super() }}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/sections.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/llm-module.css') }}">
 {% endblock %}
 
@@ -19,299 +18,197 @@
 <!-- Include condensed header -->
 {% include 'planning/includes/condensed_header.html' %}
 
-<script>
-// Move authoring content to process-tab after page loads
-document.addEventListener('DOMContentLoaded', function() {
-    const authoringContent = document.querySelector('.authoring-workspace');
-    const processTab = document.getElementById('process-tab');
-    if (authoringContent && processTab) {
-        processTab.appendChild(authoringContent);
-    }
-});
-</script>
-
-<!-- Authoring Workspace -->
-<div class="authoring-workspace">
-    <div class="workspace-container">
-        <!-- Left Panel: Sections List -->
-        <div class="sections-panel">
-            <div class="panel-header">
-                <h3>Sections</h3>
-                <div class="section-controls">
-                    <button class="btn-secondary" id="select-all-btn">Select All</button>
-                    <button class="btn-primary" id="batch-generate-btn">Fix All</button>
+<div class="container">
+    <div class="authoring-main">
+        <div class="authoring-content">
+            <div class="sections-panel">
+                <div class="input-data">
+                    <h4>Input Data</h4>
+                    <div id="sections-display" class="sections-content">
+                        <!-- Sections from previous page will appear here -->
+                    </div>
                 </div>
-            </div>
-            
-            <div class="section-filters">
-                <button class="filter-btn active" data-filter="all">All</button>
-                <button class="filter-btn" data-filter="draft">Draft</button>
-                <button class="filter-btn" data-filter="complete">Complete</button>
-                <button class="filter-btn" data-filter="needs-review">Needs Review</button>
-            </div>
-            
-            <div class="sections-list" id="sections-list">
-                <!-- Sections will be loaded here -->
-            </div>
-        </div>
-
-        <!-- Right Panel: Main Content Area -->
-        <div class="content-panel">
-            <div class="content-header">
-                <h2 id="section-title">Select a Section</h2>
-                <span class="section-status" id="section-status"></span>
-            </div>
-            
-            <div class="content-body">
+                
                 <!-- Input Data Panel -->
                 <div class="input-data-panel">
-                    <div class="panel-header">
-                        <h5>Input Data</h5>
+                    <h5>Post Context</h5>
+                    <div class="context-item">
+                        <label>Selected Idea:</label>
+                        <div id="selected-idea-display">-</div>
                     </div>
-                    <div class="panel-content">
-                        <div class="context-group">
-                            <h5 class="context-header">Post Context</h5>
-                            <div class="context-item">
-                                <strong>Selected Idea:</strong> <span id="selected-idea"></span>
-                            </div>
-                            <div class="context-item">
-                                <strong>Expanded Idea:</strong> <span id="expanded-idea"></span>
-                            </div>
-                        </div>
-                        <div class="context-group">
-                            <h5 class="context-header">Section Context</h5>
-                            <div class="context-item">
-                                <strong>Section Title:</strong> <span id="section-context-title"></span>
-                            </div>
-                            <div class="context-item">
-                                <strong>Section Subtitle:</strong> <span id="section-context-subtitle"></span>
-                            </div>
-                            <div class="context-item">
-                                <strong>Current Draft:</strong> <div id="current-draft-content" class="draft-preview"></div>
-                            </div>
-                        </div>
+                    <div class="context-item">
+                        <label>Expanded Idea:</label>
+                        <div id="expanded-idea-display">-</div>
+                    </div>
+                    
+                    <h5>Section Context</h5>
+                    <div class="context-item">
+                        <label>Title:</label>
+                        <span id="section-title-display">-</span>
+                    </div>
+                    <div class="context-item">
+                        <label>Subtitle:</label>
+                        <span id="section-subtitle-display">-</span>
+                    </div>
+                    <div class="context-item">
+                        <label>Current Draft:</label>
+                        <div id="current-draft-display">-</div>
                     </div>
                 </div>
-
-                <!-- LLM Module for Fix Language -->
+            </div>
+            
+            <div class="authoring-results">
                 {% include 'includes/llm_module.html' %}
-
-                <!-- Generated Fix Language Output -->
-                <div class="output-panel">
-                    <div class="panel-header">
-                        <h5>Fixed Content</h5>
-                        <button class="btn-secondary btn-sm" id="save-fixes-btn">Save Fixes</button>
-                    </div>
-                    <div class="panel-content">
-                        <textarea id="generated-fixes" class="form-control" rows="10" placeholder="Fixed content will appear here..."></textarea>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-// Fix Language Manager
+// FixLanguageManager class
 class FixLanguageManager {
-    constructor(postId) {
-        this.postId = postId;
+    constructor() {
+        this.currentSectionId = null;
         this.sections = [];
-        this.selectedSections = new Set();
-        this.currentSection = null;
-        
         this.init();
     }
     
-    async init() {
-        console.log('Initializing Fix Language Manager...');
-        await this.loadSections();
-        await this.loadPostContext();
-        this.setupEventListeners();
-        this.renderSections();
-        
-        // Initialize LLM module
-        if (typeof initializeLLMModule === 'function') {
-            this.llmModule = initializeLLMModule('fix_language', this.postId);
-        }
+    init() {
+        this.loadSections();
+        this.bindEvents();
     }
     
     async loadSections() {
         try {
-            const response = await fetch(`/authoring/api/posts/${this.postId}/sections`);
+            const response = await fetch(`/authoring/api/posts/${window.postId}/sections`);
             const data = await response.json();
             
             if (data.success) {
                 this.sections = data.sections;
-                console.log('Loaded sections:', this.sections);
-            } else {
-                console.error('Failed to load sections:', data.error);
+                this.renderSections();
+                // Auto-load first section
+                if (this.sections.length > 0) {
+                    this.selectSection(this.sections[0].id);
+                }
             }
         } catch (error) {
             console.error('Error loading sections:', error);
         }
     }
     
+    renderSections() {
+        const container = document.getElementById('sections-display');
+        container.innerHTML = '';
+        
+        this.sections.forEach(section => {
+            const sectionElement = this.createSectionElement(section);
+            container.appendChild(sectionElement);
+        });
+    }
+    
+    createSectionElement(section) {
+        const div = document.createElement('div');
+        div.className = 'section-item';
+        div.dataset.sectionId = section.id;
+        div.innerHTML = `
+            <div class="section-header">
+                <h6>${section.section_heading || 'Untitled Section'}</h6>
+                <span class="section-order">${section.section_order}</span>
+            </div>
+            <div class="section-description">${section.section_description || 'No description'}</div>
+        `;
+        
+        div.addEventListener('click', () => this.selectSection(section.id));
+        return div;
+    }
+    
+    selectSection(sectionId) {
+        this.currentSectionId = sectionId;
+        
+        // Update visual selection
+        document.querySelectorAll('.section-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        document.querySelector(`[data-section-id="${sectionId}"]`).classList.add('selected');
+        
+        // Load section data
+        this.loadSectionData(sectionId);
+    }
+    
+    async loadSectionData(sectionId) {
+        try {
+            // Load post context
+            await this.loadPostContext();
+            
+            // Load section context
+            await this.loadSectionContext(sectionId);
+        } catch (error) {
+            console.error('Error loading section data:', error);
+        }
+    }
+    
     async loadPostContext() {
         try {
-            const response = await fetch(`/planning/api/posts/${this.postId}`);
+            const response = await fetch(`/planning/api/posts/${window.postId}`);
             const data = await response.json();
             
-            if (data.success) {
-                const post = data.post;
+            if (data.post) {
+                // Selected idea (idea_seed)
+                if (data.post.idea_seed) {
+                    document.getElementById('selected-idea-display').textContent = data.post.idea_seed;
+                } else {
+                    document.getElementById('selected-idea-display').textContent = 'No selected idea found';
+                }
                 
-                // Update post context
-                document.getElementById('selected-idea').textContent = post.idea_seed || 'Not specified';
-                document.getElementById('expanded-idea').textContent = post.expanded_idea || 'Not specified';
-                
-                console.log('Loaded post context:', post);
-            } else {
-                console.error('Failed to load post context:', data.error);
+                // Expanded idea
+                if (data.post.expanded_idea) {
+                    document.getElementById('expanded-idea-display').textContent = data.post.expanded_idea;
+                } else {
+                    document.getElementById('expanded-idea-display').textContent = 'No expanded idea found';
+                }
             }
         } catch (error) {
             console.error('Error loading post context:', error);
+            document.getElementById('selected-idea-display').textContent = 'Error loading';
+            document.getElementById('expanded-idea-display').textContent = 'Error loading';
         }
-    }
-    
-    setupEventListeners() {
-        // Select All button
-        document.getElementById('select-all-btn').addEventListener('click', () => {
-            this.selectAllSections();
-        });
-        
-        // Batch Generate button
-        document.getElementById('batch-generate-btn').addEventListener('click', () => {
-            this.batchGenerate();
-        });
-        
-        // Save Fixes button
-        document.getElementById('save-fixes-btn').addEventListener('click', () => {
-            this.saveFixes();
-        });
-    }
-    
-    renderSections() {
-        const sectionsList = document.getElementById('sections-list');
-        
-        if (this.sections.length === 0) {
-            sectionsList.innerHTML = '<div class="no-sections">No sections found</div>';
-            return;
-        }
-        
-        sectionsList.innerHTML = this.sections.map(section => `
-            <div class="section-item ${this.selectedSections.has(section.id) ? 'selected' : ''}" 
-                 data-section-id="${section.id}" data-status="${section.status}">
-                <div class="section-header">
-                    <div class="section-info">
-                        <h4>${section.section_heading || 'Untitled Section'}</h4>
-                        <span class="section-order">${section.section_order}</span>
-                    </div>
-                    <div class="section-controls">
-                        <input type="checkbox" class="section-checkbox" 
-                               ${this.selectedSections.has(section.id) ? 'checked' : ''}>
-                    </div>
-                </div>
-                <div class="section-content">
-                    <div class="section-status ${section.status}">
-                        ${section.status.charAt(0).toUpperCase() + section.status.slice(1)}
-                    </div>
-                </div>
-            </div>
-        `).join('');
-        
-        // Add click handlers for section selection
-        sectionsList.querySelectorAll('.section-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                if (!e.target.classList.contains('section-checkbox')) {
-                    this.toggleSectionSelection(parseInt(item.dataset.sectionId));
-                }
-            });
-        });
-        
-        // Add checkbox handlers
-        sectionsList.querySelectorAll('.section-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', (e) => {
-                e.stopPropagation();
-                this.toggleSectionSelection(parseInt(e.target.closest('.section-item').dataset.sectionId));
-            });
-        });
-    }
-    
-    toggleSectionSelection(sectionId) {
-        if (this.selectedSections.has(sectionId)) {
-            this.selectedSections.delete(sectionId);
-        } else {
-            this.selectedSections.add(sectionId);
-        }
-        
-        this.renderSections();
-        this.loadSectionContext(sectionId);
-    }
-    
-    selectAllSections() {
-        this.sections.forEach(section => {
-            this.selectedSections.add(section.id);
-        });
-        this.renderSections();
     }
     
     async loadSectionContext(sectionId) {
-        const section = this.sections.find(s => s.id === sectionId);
-        if (!section) return;
-        
-        this.currentSection = section;
-        
-        // Update section context display
-        document.getElementById('section-title').textContent = section.section_heading || 'Untitled Section';
-        document.getElementById('section-context-title').textContent = section.section_heading || 'Untitled Section';
-        document.getElementById('section-context-subtitle').textContent = section.section_description || 'No description';
-        
-        // Show current draft content
-        const draftContent = document.getElementById('current-draft-content');
-        if (section.draft) {
-            draftContent.innerHTML = `<pre>${section.draft.substring(0, 500)}${section.draft.length > 500 ? '...' : ''}</pre>`;
-        } else {
-            draftContent.textContent = 'No draft content';
+        try {
+            // Get section data
+            const sectionResponse = await fetch(`/authoring/api/posts/${window.postId}/sections/${sectionId}`);
+            const sectionData = await sectionResponse.json();
+            
+            if (sectionData.success && sectionData.section) {
+                const section = sectionData.section;
+                
+                // Update section-specific input data display
+                document.getElementById('section-title-display').textContent = section.section_heading || '-';
+                document.getElementById('section-subtitle-display').textContent = section.section_description || '-';
+                
+                // Show current draft content
+                if (section.draft) {
+                    const draftDisplay = document.getElementById('current-draft-display');
+                    draftDisplay.innerHTML = `<pre style="max-height: 200px; overflow-y: auto; background: #f5f5f5; padding: 10px; border-radius: 4px;">${section.draft.substring(0, 1000)}${section.draft.length > 1000 ? '...' : ''}</pre>`;
+                } else {
+                    document.getElementById('current-draft-display').textContent = 'No draft content';
+                }
+            }
+        } catch (error) {
+            console.error('Error loading section context:', error);
         }
     }
     
-    async batchGenerate() {
-        const selectedIds = Array.from(this.selectedSections);
-        if (selectedIds.length === 0) {
-            console.log('No sections selected. Please select sections to generate first.');
-            return;
-        }
-        
-        console.log(`Fixing language for ${selectedIds.length} sections...`);
-        
-        // Implementation would call the LLM API for each section
-        for (const sectionId of selectedIds) {
-            await this.fixLanguage(sectionId);
-        }
-    }
-    
-    async fixLanguage(sectionId) {
-        console.log(`Fixing language for section ${sectionId}`);
-        
-        // This would call the LLM API to fix language issues
-        // Implementation depends on the specific API endpoint
-    }
-    
-    async saveFixes() {
-        console.log('Saving language fixes...');
-        
-        // Implementation would save the fixed content to the database
+    bindEvents() {
+        // Event listeners can be added here if needed
     }
 }
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    const postId = window.postId;
-    if (postId) {
-        window.fixLanguageManager = new FixLanguageManager(postId);
-    } else {
-        console.error('Post ID not found');
-    }
+    const fixLanguageManager = new FixLanguageManager();
 });
 </script>
+
 {% endblock %}
