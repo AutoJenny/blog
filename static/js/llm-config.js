@@ -80,6 +80,13 @@ const LLM_CONFIGS = {
                     resultsField: 'image_prompts',
                     resultsTitle: 'Generated Image Prompt',
                     allowEdit: true
+                },
+                'image_captions': { // New config for image captions generation
+                    promptEndpoint: '/authoring/api/llm/prompts/image-captions',
+                    generateEndpoint: '/authoring/api/posts/{id}/sections/{section_id}/generate-image-captions',
+                    resultsField: 'image_captions',
+                    resultsTitle: 'Generated Image Captions',
+                    allowEdit: true
                 }
 };
 

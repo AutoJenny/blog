@@ -1348,3 +1348,200 @@ def api_generate_image_prompts(post_id, section_id):
     except Exception as e:
         logger.error(f"Error generating image prompt: {e}")
         return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/llm/prompts/image-captions', methods=['GET', 'PUT'])
+def api_image_captions_prompt():
+    """Get or update the Image Captions prompt"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            if request.method == 'PUT':
+                # Update the prompt
+                data = request.get_json()
+                system_prompt = data.get('system_prompt', '')
+                prompt_text = data.get('prompt_text', '')
+                
+                cursor.execute("""
+                    UPDATE llm_prompt 
+                    SET system_prompt = %s, prompt_text = %s
+                    WHERE name = 'Image Captions Generation'
+                """, (system_prompt, prompt_text))
+                
+                cursor.connection.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Prompt updated successfully'
+                })
+            
+            else:
+                # Get the prompt
+                cursor.execute("""
+                    SELECT prompt_text, system_prompt, created_at, updated_at
+                    FROM llm_prompt 
+                    WHERE name = 'Image Captions Generation'
+                    ORDER BY updated_at DESC 
+                    LIMIT 1
+                """)
+                
+                result = cursor.fetchone()
+                if result:
+                    return jsonify({
+                        'success': True,
+                        'prompt': {
+                            'name': 'Image Captions Generation',
+                            'prompt_text': result['prompt_text'],
+                            'system_prompt': result['system_prompt'],
+                            'created_at': result['created_at'].isoformat() if result['created_at'] else None,
+                            'updated_at': result['updated_at'].isoformat() if result['updated_at'] else None
+                        },
+                        'llm_config': {
+                            'provider': 'Ollama',
+                            'model': 'llama3.2:latest',
+                            'temperature': 0.7,
+                            'max_tokens': 2000
+                        }
+                    })
+                else:
+                    return jsonify({'error': 'Image Captions prompt not found'}), 404
+                    
+    except Exception as e:
+        logger.error(f"Error with Image Captions prompt: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/sections/<int:section_id>/generate-image-captions', methods=['POST'])
+def api_generate_image_captions(post_id, section_id):
+    """Generate image captions and alt text for a specific section"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get section data
+            cursor.execute("""
+                SELECT id, section_order, section_heading, section_description, 
+                       draft, polished, ideas_to_include, facts_to_include,
+                       highlighting, image_concepts, image_prompts, image_captions,
+                       selected_image_concept
+                FROM post_section
+                WHERE post_id = %s AND id = %s
+            """, (post_id, section_id))
+            
+            section = cursor.fetchone()
+            if not section:
+                return jsonify({'error': 'Section not found'}), 404
+            
+            # Get the selected concept details (EXCLUDE the title as it's too metaphorical)
+            selected_concept_text = ''
+            if section['selected_image_concept'] and section['image_concepts']:
+                try:
+                    import json
+                    concepts_data = json.loads(section['image_concepts'])
+                    if concepts_data.get('concepts'):
+                        selected_concept = next(
+                            (c for c in concepts_data['concepts'] if c['concept_id'] == section['selected_image_concept']), 
+                            None
+                        )
+                        if selected_concept:
+                            # Exclude the concept_title as it's too metaphorical
+                            selected_concept_text = f"{selected_concept['concept_description']}\nMood: {selected_concept['concept_mood']}\nKey Elements: {selected_concept['key_visual_elements']}"
+                except Exception as e:
+                    logger.error(f"Error parsing selected concept: {e}")
+                    selected_concept_text = section['selected_image_concept']
+            
+            # Get the image captions prompt
+            cursor.execute("""
+                SELECT prompt_text, system_prompt
+                FROM llm_prompt 
+                WHERE name = 'Image Captions Generation'
+                ORDER BY updated_at DESC 
+                LIMIT 1
+            """)
+            
+            prompt_data = cursor.fetchone()
+            if not prompt_data:
+                return jsonify({'error': 'Image Captions prompt not found'}), 404
+            
+            # Build the prompt with actual data
+            prompt_text = prompt_data['prompt_text']
+            system_prompt = prompt_data['system_prompt']
+            
+            # Replace placeholders with actual data
+            prompt_text = prompt_text.replace('[data:selected_concept]', selected_concept_text)
+            
+            # Prepare messages for LLM
+            messages = []
+            if system_prompt:
+                messages.append({'role': 'system', 'content': system_prompt})
+            messages.append({'role': 'user', 'content': prompt_text})
+            
+            # Execute LLM request
+            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+            
+            if 'error' in result:
+                return jsonify({'error': f'LLM generation failed: {result["error"]}'}), 500
+            
+            raw_content = result['content']
+            
+            # Parse JSON response
+            try:
+                import json
+                parsed_json = json.loads(raw_content)
+                
+                if not isinstance(parsed_json, dict) or 'caption' not in parsed_json or 'alt_text' not in parsed_json:
+                    raise ValueError("Missing 'caption' or 'alt_text' keys")
+                
+                if not parsed_json['caption'] or not parsed_json['caption'].strip():
+                    raise ValueError("caption field is empty")
+                
+                if not parsed_json['alt_text'] or not parsed_json['alt_text'].strip():
+                    raise ValueError("alt_text field is empty")
+                
+                # Save to database
+                cursor.execute("""
+                    UPDATE post_section 
+                    SET image_captions = %s, image_alt_text = %s
+                    WHERE post_id = %s AND id = %s
+                """, (parsed_json['caption'].strip(), parsed_json['alt_text'].strip(), post_id, section_id))
+                
+                cursor.connection.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'image_captions': parsed_json['caption'].strip(),
+                    'image_alt_text': parsed_json['alt_text'].strip(),
+                    'message': 'Image captions and alt text generated successfully'
+                })
+                
+            except (json.JSONDecodeError, ValueError) as e:
+                logger.error(f"Error processing captions: {e}")
+                return jsonify({
+                    'error': f'Failed to process generated captions. Error: {e}',
+                    'raw_content': raw_content[:500] + '...' if len(raw_content) > 500 else raw_content
+                }), 500
+            
+    except Exception as e:
+        logger.error(f"Error generating image captions: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/sections/<int:section_id>/save-image-captions', methods=['POST'])
+def api_save_image_captions(post_id, section_id):
+    """Save image captions and alt text for a specific section"""
+    try:
+        data = request.get_json()
+        image_captions = data.get('image_captions', '')
+        image_alt_text = data.get('image_alt_text', '')
+        
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                UPDATE post_section 
+                SET image_captions = %s, image_alt_text = %s
+                WHERE post_id = %s AND id = %s
+            """, (image_captions, image_alt_text, post_id, section_id))
+            
+            cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Image captions and alt text saved successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error saving image captions: {e}")
+        return jsonify({'error': str(e)}), 500

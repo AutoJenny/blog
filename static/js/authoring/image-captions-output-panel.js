@@ -249,6 +249,41 @@ export class ImageCaptionsOutputPanel {
     container.appendChild(promptCard);
   }
 
+  displayImageAltText(altTextData) {
+    const altTextDisplay = document.getElementById('image-alt-text-display');
+    const altTextContainer = document.getElementById('alt-text-container');
+    const fallbackEditor = document.getElementById('content-editor-fallback');
+    const editor = document.getElementById('content-editor');
+
+    if (!altTextData || altTextData.trim() === '') {
+      if (altTextDisplay) altTextDisplay.style.display = 'none';
+      if (fallbackEditor) fallbackEditor.style.display = 'none';
+      return;
+    }
+
+    try {
+      // For alt text, we expect simple text, not JSON
+      altTextContainer.innerHTML = `
+        <div class="alt-text-card">
+          <div class="alt-text-content">
+            <div class="alt-text-text">${altTextData}</div>
+          </div>
+        </div>
+      `;
+      if (altTextDisplay) altTextDisplay.style.display = 'block';
+      if (fallbackEditor) fallbackEditor.style.display = 'none';
+      return;
+    } catch (e) {
+      console.log('[DEBUG] Alt text display error:', e);
+    }
+
+    // Fallback to textarea display
+    console.log('[DEBUG] Falling back to textarea display for alt text');
+    editor.value = altTextData;
+    if (altTextDisplay) altTextDisplay.style.display = 'none';
+    if (fallbackEditor) fallbackEditor.style.display = 'block';
+  }
+
   updateWordCount() {
     // This function is primarily for the fallback textarea
     const text = (document.getElementById('content-editor')?.value || '').trim();
@@ -277,7 +312,8 @@ export class ImageCaptionsOutputPanel {
 
     try {
       const res = await postJSON(`/authoring/api/posts/${this.postId}/sections/${id}/generate-image-captions`, {});
-      this.displayImageCaptions(res.image_prompt || '(no content)');
+      this.displayImageCaptions(res.image_captions || '(no content)');
+      this.displayImageAltText(res.image_alt_text || '(no content)');
     } catch (err) {
       this.displayImageCaptions(`Error generating content: ${err.message || err}`);
       console.error(err);
