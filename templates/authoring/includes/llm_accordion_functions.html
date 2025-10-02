@@ -29,4 +29,19 @@ function toggleDebugAccordion() {
         icon.classList.add('fa-chevron-down');
     }
 }
+
+function toggleInputDetailsAccordion() {
+    const content = document.getElementById('input-details-accordion-content');
+    const icon = document.getElementById('input-details-accordion-icon');
+    
+    if (content.style.display === 'none' || content.style.display === '') {
+        content.style.display = 'block';
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+    } else {
+        content.style.display = 'none';
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+    }
+}
 </script>

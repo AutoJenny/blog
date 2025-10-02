@@ -1021,12 +1021,18 @@ function showIndividualSection(section) {
         section_text: section.polished, // Maps to database 'polished' field
         created_at: section.created_at,
         updated_at: section.updated_at,
+        // Image-related fields
+        image_concepts: section.image_concepts || '',
+        image_prompts: section.image_prompts || '',
+        image_captions: section.image_captions || '',
         // Additional computed fields
         draft_length: section.draft ? section.draft.length : 0,
         section_text_length: section.polished ? section.polished.length : 0,
         has_content: section.draft && section.draft.length > 0,
         draft_preview: section.draft ? section.draft.substring(0, 200) + '...' : 'No content',
-        section_text_preview: section.polished ? section.polished.substring(0, 200) + '...' : 'No section text'
+        section_text_preview: section.polished ? section.polished.substring(0, 200) + '...' : 'No section text',
+        image_concepts_length: section.image_concepts ? section.image_concepts.length : 0,
+        image_concepts_preview: section.image_concepts ? section.image_concepts.substring(0, 200) + '...' : 'No image concepts'
     };
     
     console.log('[Data Tab] Processed section data:', sectionData);

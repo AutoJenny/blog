@@ -844,7 +844,7 @@ def api_generate_image_concepts(post_id, section_id):
             messages.append({'role': 'user', 'content': prompt_text})
             
             # Execute LLM request
-            result = llm_service.execute_llm_request('ollama', 'llama3.1:8b', messages, max_tokens=4000)
+            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
             
             if 'error' in result:
                 return jsonify({'error': f'LLM generation failed: {result["error"]}'}), 500
@@ -854,7 +854,7 @@ def api_generate_image_concepts(post_id, section_id):
             # Save to database
             cursor.execute("""
                 UPDATE post_section 
-                SET image_concepts = %s, updated_at = CURRENT_TIMESTAMP
+                SET image_concepts = %s
                 WHERE post_id = %s AND id = %s
             """, (image_concepts, post_id, section_id))
             
