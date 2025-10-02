@@ -97,11 +97,35 @@ export class SectionsPanel {
     // Convert section data to template format
     const effectiveStatus = (section.section_text && section.section_text.trim()) ? 'complete' : 'draft';
     
-    // Parse selected image concept title from JSON if available
+    // Parse selected image concept or image prompts based on current page
     let selectedConceptDisplay = '';
     let selectedConceptId = section.selected_image_concept || '';
     
-    if (section.image_concepts && section.image_concepts.trim()) {
+    // Check if we're on the image prompts page
+    const isImagePromptsPage = window.currentSubstage === 'image-prompts';
+    
+    if (isImagePromptsPage && section.image_prompts && section.image_prompts.trim()) {
+      // For image prompts page, show the generated image prompt
+      try {
+        const promptsData = JSON.parse(section.image_prompts);
+        if (promptsData.base_concept) {
+          selectedConceptDisplay = promptsData.base_concept;
+        } else if (promptsData.image_prompt) {
+          // Extract base concept from full prompt (remove style guidelines)
+          const fullPrompt = promptsData.image_prompt;
+          const styleIndex = fullPrompt.indexOf(', Generate an intricately detailed scene');
+          if (styleIndex > 0) {
+            selectedConceptDisplay = fullPrompt.substring(0, styleIndex);
+          } else {
+            selectedConceptDisplay = fullPrompt;
+          }
+        }
+      } catch (e) {
+        // If JSON parsing fails, show raw content
+        selectedConceptDisplay = section.image_prompts;
+      }
+    } else if (section.image_concepts && section.image_concepts.trim()) {
+      // For other pages, show selected image concept
       try {
         const conceptsData = JSON.parse(section.image_concepts);
         if (conceptsData.concepts && Array.isArray(conceptsData.concepts)) {
