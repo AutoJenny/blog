@@ -19,13 +19,15 @@
     window.currentStage = 'imaging';
     window.currentSubstage = 'image-generation';
     window.postId = {{ post_id|default(0) }};
+    window.imagingStage = true;
+    window.imagingSubstage = 'image-generation';
 </script>
 {% endblock %}
 
 {% block title %}Image Generation - Imaging Workflow{% endblock %}
 
 {% block content %}
-{% include 'imaging/includes/imaging_header.html' %}
+{% include 'shared/blog_pipeline_header.html' %}
 
 {% block process_content %}
 <div class="imaging-workspace">

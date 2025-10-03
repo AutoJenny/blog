@@ -33,24 +33,24 @@ The Image Generation page currently has extensive dependencies on authoring/plan
 - [x] **3.3** Create `templates/imaging/includes/input_details.html` (independent input details)
 - [x] **3.4** Create `templates/imaging/includes/llm_accordion_functions.html` (independent accordion)
 
-### Phase 4: Create Independent JavaScript Modules
-- [ ] **4.1** Create `static/js/imaging/sections-panel.js` (independent sections panel)
-- [ ] **4.2** Create `static/js/imaging/image-generation-output-panel.js` (independent output panel)
-- [ ] **4.3** Create `static/js/imaging/image-generation.js` (independent main JS)
-- [ ] **4.4** Create `static/js/imaging/api.js` (independent API utilities)
+### Phase 4: Create Independent JavaScript Modules ✅ COMPLETED
+- [x] **4.1** Create `static/js/imaging/sections-panel.js` (independent sections panel)
+- [x] **4.2** Create `static/js/imaging/image-generation-output-panel.js` (independent output panel)
+- [x] **4.3** Create `static/js/imaging/image-generation.js` (independent main JS)
+- [x] **4.4** Create `static/js/imaging/api.js` (independent API utilities)
 
-### Phase 5: Create Independent API Endpoints
-- [ ] **5.1** Create `modules/imaging/` directory structure
-- [ ] **5.2** Move image generation API to `modules/imaging/api.py`
-- [ ] **5.3** Create `modules/imaging/services.py` (independent services)
-- [ ] **5.4** Create imaging-specific post/section API endpoints
-- [ ] **5.5** Update all API calls to use imaging endpoints
+### Phase 5: Create Independent API Endpoints ✅ COMPLETED
+- [x] **5.1** Create `modules/image_generation/` directory structure
+- [x] **5.2** Move image generation API to `modules/image_generation/api.py`
+- [x] **5.3** Create `modules/image_generation/services.py` (independent services)
+- [x] **5.4** Create imaging-specific post/section API endpoints
+- [x] **5.5** Update all API calls to use imaging endpoints
 
-### Phase 6: Create Independent Templates
-- [ ] **6.1** Create `templates/imaging/sections/image_generation.html` (independent main template)
-- [ ] **6.2** Create `templates/imaging/includes/llm_module_image_generation.html` (independent LLM module)
-- [ ] **6.3** Create `templates/imaging/includes/debugging_panel_image_generation.html` (independent debugging)
-- [ ] **6.4** Create `templates/imaging/right/output_panel_image_generation.html` (independent output)
+### Phase 6: Create Independent Templates ✅ COMPLETED
+- [x] **6.1** Create `templates/imaging/sections/image_generation.html` (independent main template)
+- [x] **6.2** Create `templates/imaging/includes/llm_module_image_generation.html` (independent LLM module)
+- [x] **6.3** Create `templates/imaging/includes/debugging_panel_image_generation.html` (independent debugging)
+- [x] **6.4** Create `templates/imaging/right/output_panel_image_generation.html` (independent output)
 
 ### Phase 7: Update State Management
 - [ ] **7.1** Create imaging-specific localStorage keys

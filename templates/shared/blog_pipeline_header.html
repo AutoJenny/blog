@@ -1,8 +1,8 @@
-<!-- Condensed Planning Header - Combines post info, navigation, and tabs -->
-<div class="condensed-planning-header">
+<!-- Unified Blog Pipeline Header - Used across ALL stages -->
+<div class="blog-pipeline-header">
     <!-- Main Title Line -->
     <div class="main-title-line">
-        <h1 class="planning-title" id="planning-title">{{ page_title }}: ID: {{ post_id }}</h1>
+        <h1 class="pipeline-title" id="pipeline-title">{{ page_title }}: ID: {{ post_id }}</h1>
     </div>
     
     <!-- Post Details Line -->
@@ -21,17 +21,12 @@
             <a href="{{ url_for('planning.planning_calendar', post_id=post_id) }}" 
                class="stage-btn" data-stage="calendar">
                 <i class="fas fa-calendar-alt"></i>
-                Content Calendar
+                Calendar
             </a>
             <a href="{{ url_for('planning.planning_concept', post_id=post_id) }}" 
                class="stage-btn" data-stage="concept">
                 <i class="fas fa-lightbulb"></i>
-                Concept Development
-            </a>
-            <a href="{{ url_for('planning.planning_research', post_id=post_id) }}" 
-               class="stage-btn disabled" data-stage="research">
-                <i class="fas fa-search"></i>
-                Research & Resources
+                Planning
             </a>
             <a href="{{ url_for('authoring.authoring_sections_author_first_drafts', post_id=post_id) }}" 
                class="stage-btn" data-stage="authoring">
@@ -69,7 +64,7 @@
                 </a>
             </div>
             
-            <!-- Concept sub-stages -->
+            <!-- Planning sub-stages -->
             <div class="sub-stage-group" data-stage="concept">
                 <a href="{{ url_for('planning.planning_concept_brainstorm', post_id=post_id) }}" 
                    class="sub-stage-btn" data-substage="brainstorm">
@@ -90,26 +85,6 @@
                 <a href="{{ url_for('planning.planning_concept_outline', post_id=post_id) }}" 
                    class="sub-stage-btn disabled" data-substage="outline">
                     Content Outline
-                </a>
-            </div>
-            
-            <!-- Research sub-stages -->
-            <div class="sub-stage-group" data-stage="research">
-                <a href="{{ url_for('planning.planning_research_sources', post_id=post_id) }}" 
-                   class="sub-stage-btn disabled" data-substage="sources">
-                    Source Research
-                </a>
-                <a href="{{ url_for('planning.planning_research_visuals', post_id=post_id) }}" 
-                   class="sub-stage-btn disabled" data-substage="visuals">
-                    Visual Planning
-                </a>
-                <a href="{{ url_for('planning.planning_research_prompts', post_id=post_id) }}" 
-                   class="sub-stage-btn disabled" data-substage="prompts">
-                    Image Prompts
-                </a>
-                <a href="{{ url_for('planning.planning_research_verification', post_id=post_id) }}" 
-                   class="sub-stage-btn disabled" data-substage="verification">
-                    Fact Verification
                 </a>
             </div>
             
@@ -179,16 +154,20 @@
 </div>
 
 <style>
-/* Condensed Planning Header Styles */
-.condensed-planning-header {
+/* Unified Blog Pipeline Header Styles */
+.blog-pipeline-header {
     margin-bottom: 1rem;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 1rem;
 }
 
 .main-title-line {
     margin-bottom: 0.5rem;
 }
 
-.planning-title {
+.pipeline-title {
     font-size: 1.75rem;
     font-weight: 700;
     color: #f1f5f9;
@@ -459,8 +438,6 @@
 }
 </style>
 
-<script type="module" src="/static/js/planning/planning-header-updater.js"></script>
-
 <script>
 // Subtitle definitions for each substage
 const subtitles = {
@@ -473,12 +450,6 @@ const subtitles = {
         'grouping': 'Group your generated topics into 6-8 thematic clusters for logical organization.',
         'titling': 'Create compelling titles and descriptions for each section, defining scope and boundaries.',
         'outline': 'Create a detailed content outline with logical flow and structure.'
-    },
-    'research': {
-        'sources': 'Research and gather credible sources for your content topics.',
-        'visuals': 'Plan visual elements and image requirements for your content.',
-        'prompts': 'Generate detailed prompts for AI image creation.',
-        'verification': 'Verify facts and ensure content accuracy.'
     },
     'authoring': {
         'author-first-drafts': 'Create initial draft content for each section.',
@@ -572,12 +543,12 @@ function initializeTabs() {
             }
             
             // Save tab state to localStorage
-            localStorage.setItem('planning-active-tab', targetTab);
+            localStorage.setItem('blog-pipeline-active-tab', targetTab);
         });
     });
     
     // Restore last active tab from localStorage
-    const lastActiveTab = localStorage.getItem('planning-active-tab');
+    const lastActiveTab = localStorage.getItem('blog-pipeline-active-tab');
     if (lastActiveTab) {
         const savedButton = document.querySelector(`[data-tab="${lastActiveTab}"]`);
         const savedPanel = document.getElementById(lastActiveTab + '-tab');

@@ -18,6 +18,11 @@
                 <i class="fas fa-search"></i>
                 Research & Resources
             </a>
+            <a href="{{ url_for('imaging.imaging_sections_image_generation', post_id=post_id) }}" 
+               class="stage-btn" data-stage="imaging">
+                <i class="fas fa-magic"></i>
+                Image Generation
+            </a>
         </div>
         <div class="old-interface-group">
             <a href="{{ url_for('planning.planning_old_interface', post_id=post_id) }}" 

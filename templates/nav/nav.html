@@ -85,6 +85,26 @@
                     {% endfor %}
                 </div>
             </div>
+            <!-- Imaging Group -->
+            <div class="flex flex-col items-center">
+                <span class="text-sm text-gray-400 mb-3 font-medium">Imaging</span>
+                <div class="flex gap-6">
+                    {% for substage in ['image-generation'] %}
+                    {% set icon = {
+                    'image-generation': 'magic'
+                    } %}
+                    {% set is_active = stage == 'imaging' and substage == substage %}
+                    <a href="/imaging/posts/{{ post_id }}/sections/{{ substage }}"
+                        class="flex flex-col items-center p-4 bg-dark-bg border rounded-lg hover:bg-dark-hover transition-colors duration-200 {% if is_active %}border-blue-500 bg-dark-hover{% else %}border-dark-border{% endif %}">
+                        <i
+                            class="fas fa-{{ icon[substage] }} text-2xl mb-3 {% if is_active %}text-blue-500{% else %}text-dark-text{% endif %}"></i>
+                        <div
+                            class="text-sm {% if is_active %}text-blue-500 font-medium{% else %}text-dark-text{% endif %}">
+                            Image Generation</div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
             <!-- Publishing Group -->
             <div class="flex flex-col items-center">
                 <span class="text-sm text-gray-400 mb-3 font-medium">Publishing</span>
@@ -128,7 +148,7 @@
         
         // Extract current stage, substage, and step from URL path
         const pathParts = window.location.pathname.split('/');
-        const stageIndex = pathParts.findIndex(part => part === 'planning' || part === 'writing' || part === 'publishing');
+        const stageIndex = pathParts.findIndex(part => part === 'planning' || part === 'writing' || part === 'imaging' || part === 'publishing');
         const substageIndex = stageIndex + 1;
         const stepIndex = stageIndex + 2;
         
@@ -157,7 +177,7 @@
     function navigateToPost(postId) {
         // Extract current stage, substage, and step from URL path
         const pathParts = window.location.pathname.split('/');
-        const stageIndex = pathParts.findIndex(part => part === 'planning' || part === 'writing' || part === 'publishing');
+        const stageIndex = pathParts.findIndex(part => part === 'planning' || part === 'writing' || part === 'imaging' || part === 'publishing');
         const substageIndex = stageIndex + 1;
         const stepIndex = stageIndex + 2;
         

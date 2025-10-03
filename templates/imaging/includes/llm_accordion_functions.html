@@ -8,18 +8,18 @@ function toggleLLMAccordion() {
         content.style.display = 'block';
         icon.classList.remove('fa-chevron-down');
         icon.classList.add('fa-chevron-up');
-        localStorage.setItem('llm-accordion-state', 'open');
+        localStorage.setItem('imaging-llm-accordion-state', 'open');
     } else {
         content.style.display = 'none';
         icon.classList.remove('fa-chevron-up');
         icon.classList.add('fa-chevron-down');
-        localStorage.setItem('llm-accordion-state', 'closed');
+        localStorage.setItem('imaging-llm-accordion-state', 'closed');
     }
 }
 
 // Restore accordion state on page load
 document.addEventListener('DOMContentLoaded', function() {
-    const savedState = localStorage.getItem('llm-accordion-state');
+    const savedState = localStorage.getItem('imaging-llm-accordion-state');
     if (savedState === 'open') {
         const content = document.getElementById('llm-accordion-content');
         const icon = document.getElementById('accordion-icon');
