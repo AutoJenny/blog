@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from 'macros/static_assets.html' import css_assets, js_assets %}
+
+{% block css_assets %}
+{{ css_assets('imaging') }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/sections-panel.css') }}">
+    <style>
+  .imaging-workspace { padding:1rem; min-height:calc(100vh - 200px); }
+  .workspace-container { display:grid; grid-template-columns:350px 1fr; gap:1.5rem; max-width:1400px; margin:0 auto; }
+  @media (max-width:1200px){ .workspace-container { grid-template-columns:300px 1fr; } }
+  @media (max-width:768px){ .workspace-container { grid-template-columns:1fr; gap:1rem; } }
+  .editor-panel { display:flex; flex-direction:column; gap:1rem; }
+    </style>
+{% endblock %}
+
+{% block js_assets %}
+{{ js_assets('imaging') }}
+<script>
+    window.currentStage = 'imaging';
+    window.currentSubstage = 'image-generation';
+    window.postId = {{ post_id|default(0) }};
+</script>
+{% endblock %}
+
+{% block title %}Image Generation - Imaging Workflow{% endblock %}
+
+{% block content %}
+{% include 'imaging/includes/imaging_header.html' %}
+
+{% block process_content %}
+<div class="imaging-workspace">
+    <div class="workspace-container">
+        {% include 'imaging/includes/sections_panel.html' %}
+        <div class="editor-panel">
+            <!-- LLM Module -->
+            <div class="llm-module-container">
+                {% include 'imaging/includes/llm_module_image_generation.html' %}
+            </div>
+            
+            <!-- Debugging Panel -->
+            {% include 'imaging/includes/debugging_panel_image_generation.html' %}
+            
+            {% set currentSubstage = 'image-generation' %}
+            {% include 'imaging/right/output_panel_image_generation.html' %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% include 'imaging/includes/llm_accordion_functions.html' %}
+<script type="module" src="/static/js/imaging/image-generation.js"></script>
+{% endblock %}

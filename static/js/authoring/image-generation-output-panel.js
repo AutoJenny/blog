@@ -77,13 +77,29 @@ export class ImageGenerationOutputPanel {
 
       console.log(`[Image Generation] Generating image for section ${currentSection.id}`);
       
+      // Get selected model and parameters
+      const modelSelect = document.getElementById('image-model-select');
+      const selectedModel = modelSelect ? modelSelect.value : 'sdxl-lora';
+      
+      // Collect model parameters
+      const parameters = {};
+      const paramInputs = document.querySelectorAll('#parameters-container select, #parameters-container input');
+      paramInputs.forEach(input => {
+        if (input.value) {
+          parameters[input.name] = input.value;
+        }
+      });
+      
       // Call the image generation API directly
-      const response = await fetch(`/authoring/api/posts/${this.postId}/sections/${currentSection.id}/generate-image`, {
+      const response = await fetch(`/authoring/api/image-generation/posts/${this.postId}/sections/${currentSection.id}/generate-image`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({})
+        body: JSON.stringify({
+          model_name: selectedModel,
+          parameters: parameters
+        })
       });
 
       if (!response.ok) {

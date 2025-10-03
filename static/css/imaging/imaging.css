@@ -1,0 +1,270 @@
+/* Imaging CSS Bundle - Standalone imaging workflow styles */
+
+/* Base Imaging Styles */
+.imaging-workspace {
+    padding: 1rem;
+    min-height: calc(100vh - 200px);
+}
+
+.workspace-container {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+@media (max-width: 1200px) {
+    .workspace-container {
+        grid-template-columns: 300px 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .workspace-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+.editor-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* LLM Module Styles */
+.llm-module-container {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.llm-module {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.llm-prompt-panel {
+    background: #1e293b;
+}
+
+.prompt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #0f172a;
+    border-bottom: 1px solid #334155;
+    cursor: pointer;
+}
+
+.prompt-header h4 {
+    color: #e2e8f0;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.prompt-header-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.prompt-header-controls .btn {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.prompt-header-controls .btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.prompt-header-controls .btn-primary:hover {
+    background: #2563eb;
+}
+
+.accordion-toggle {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+
+.accordion-toggle:hover {
+    color: #e2e8f0;
+}
+
+.accordion-content {
+    padding: 1rem;
+    transition: all 0.3s ease;
+}
+
+/* Image Model Selection Styles */
+.image-model-selection {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.image-model-selection .form-group {
+    margin-bottom: 0;
+}
+
+.image-model-selection label {
+    color: #e2e8f0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.image-model-selection .form-control {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 0.5rem;
+    color: #e2e8f0;
+    font-size: 0.9rem;
+    width: 100%;
+}
+
+.image-model-selection .form-control:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* Model Parameters Styles */
+.model-parameters {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.model-parameters h6 {
+    color: #e2e8f0;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.parameter-group {
+    margin-bottom: 1rem;
+}
+
+.parameter-group label {
+    color: #cbd5e1;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.parameter-group select,
+.parameter-group input {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 0.5rem;
+    color: #e2e8f0;
+    font-size: 0.8rem;
+    width: 100%;
+}
+
+.parameter-group select:focus,
+.parameter-group input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* Debugging Panel Styles */
+.debugging-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.debugging-panel .accordion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #334155;
+    margin-bottom: 1rem;
+}
+
+.debugging-panel .accordion-header h5 {
+    color: #e2e8f0;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.debugging-panel .accordion-toggle {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+
+.debugging-panel .accordion-toggle:hover {
+    color: #e2e8f0;
+}
+
+.debugging-panel .accordion-content {
+    transition: all 0.3s ease;
+}
+
+/* Output Panel Styles */
+.section-editor {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #334155;
+}
+
+.editor-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.image-generation-container {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.image-display img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}

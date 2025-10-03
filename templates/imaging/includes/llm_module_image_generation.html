@@ -1,0 +1,452 @@
+<!-- Imaging LLM Module for Image Generation - Independent from authoring -->
+<div class="llm-module" id="llm-module">
+    <div class="llm-header" onclick="toggleLLMAccordion()">
+        <h4 id="prompt-title">LLM & Prompt settings: Loading...</h4>
+        <i class="fas fa-chevron-up" id="llm-accordion-icon"></i>
+    </div>
+    
+    <div class="llm-accordion-content" id="llm-accordion-content">
+        <!-- Model Selection -->
+        <div class="image-model-selection" id="image-model-selection">
+            <label for="image-model-select">Image Generation Model:</label>
+            <select id="image-model-select" name="image_model">
+                <option value="sdxl-lora">SDXL LoRA (Local)</option>
+                <option value="dall-e-3">DALL-E 3 (OpenAI)</option>
+                <option value="dall-e-2">DALL-E 2 (OpenAI)</option>
+            </select>
+        </div>
+
+        <!-- Model Parameters -->
+        <div class="model-parameters" id="parameters-container">
+            <!-- Parameters will be populated dynamically based on selected model -->
+        </div>
+
+        <!-- Prompt Configuration -->
+        <div class="prompt-config">
+            <div class="prompt-section">
+                <label for="system-prompt">System Prompt:</label>
+                <textarea id="system-prompt" name="system_prompt" rows="3" placeholder="System prompt for image generation..."></textarea>
+            </div>
+            
+            <div class="prompt-section">
+                <label for="user-prompt">User Prompt:</label>
+                <textarea id="user-prompt" name="user_prompt" rows="4" placeholder="User prompt for image generation..."></textarea>
+            </div>
+        </div>
+
+        <!-- LLM Configuration -->
+        <div class="llm-config">
+            <div class="config-row">
+                <label for="llm-provider">LLM Provider:</label>
+                <select id="llm-provider" name="llm_provider">
+                    <option value="openai">OpenAI</option>
+                    <option value="anthropic">Anthropic</option>
+                </select>
+            </div>
+            
+            <div class="config-row">
+                <label for="llm-model">LLM Model:</label>
+                <select id="llm-model" name="llm_model">
+                    <option value="gpt-4">GPT-4</option>
+                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                </select>
+            </div>
+            
+            <div class="config-row">
+                <label for="temperature">Temperature:</label>
+                <input type="range" id="temperature" name="temperature" min="0" max="2" step="0.1" value="0.7">
+                <span id="temperature-value">0.7</span>
+            </div>
+            
+            <div class="config-row">
+                <label for="max-tokens">Max Tokens:</label>
+                <input type="number" id="max-tokens" name="max_tokens" min="1" max="4000" value="1000">
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="llm-actions">
+            <button type="button" id="generate-image-btn" class="btn btn-primary">
+                <i class="fas fa-magic"></i> Generate Image
+            </button>
+            <button type="button" id="save-config-btn" class="btn btn-secondary">
+                <i class="fas fa-save"></i> Save Configuration
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.llm-module {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.llm-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid #334155;
+}
+
+.llm-header h4 {
+    color: #e2e8f0;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.llm-header i {
+    color: #94a3b8;
+    transition: transform 0.2s ease;
+}
+
+.llm-accordion-content {
+    padding: 1rem;
+}
+
+.image-model-selection {
+    margin-bottom: 1rem;
+}
+
+.image-model-selection label {
+    display: block;
+    color: #e2e8f0;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.image-model-selection select {
+    width: 100%;
+    padding: 0.5rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    color: #e2e8f0;
+}
+
+.model-parameters {
+    margin-bottom: 1rem;
+}
+
+.prompt-config {
+    margin-bottom: 1rem;
+}
+
+.prompt-section {
+    margin-bottom: 1rem;
+}
+
+.prompt-section label {
+    display: block;
+    color: #e2e8f0;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.prompt-section textarea {
+    width: 100%;
+    padding: 0.5rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    color: #e2e8f0;
+    resize: vertical;
+}
+
+.llm-config {
+    margin-bottom: 1rem;
+}
+
+.config-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    gap: 0.5rem;
+}
+
+.config-row label {
+    color: #e2e8f0;
+    min-width: 120px;
+    font-weight: 500;
+}
+
+.config-row select,
+.config-row input {
+    padding: 0.3rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    color: #e2e8f0;
+}
+
+.config-row input[type="range"] {
+    flex: 1;
+}
+
+.config-row span {
+    color: #94a3b8;
+    min-width: 30px;
+}
+
+.llm-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+}
+
+.btn-secondary {
+    background: #64748b;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #475569;
+}
+</style>
+
+<script>
+// Initialize LLM module on page load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('[LLM Module] Initializing image generation LLM module');
+    
+    // Load LLM configuration
+    loadLLMConfiguration();
+    
+    // Set up model selection handler
+    const modelSelect = document.getElementById('image-model-select');
+    if (modelSelect) {
+        modelSelect.addEventListener('change', updateModelParameters);
+        updateModelParameters(); // Initialize parameters
+    }
+    
+    // Set up temperature slider
+    const temperatureSlider = document.getElementById('temperature');
+    const temperatureValue = document.getElementById('temperature-value');
+    if (temperatureSlider && temperatureValue) {
+        temperatureSlider.addEventListener('input', function() {
+            temperatureValue.textContent = this.value;
+        });
+    }
+    
+    // Set up generate button
+    const generateBtn = document.getElementById('generate-image-btn');
+    if (generateBtn) {
+        generateBtn.addEventListener('click', handleGenerateImage);
+    }
+    
+    // Set up save button
+    const saveBtn = document.getElementById('save-config-btn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', handleSaveConfiguration);
+    }
+});
+
+async function loadLLMConfiguration() {
+    try {
+        console.log('[LLM Module] Loading LLM configuration');
+        const response = await fetch('/authoring/prompts/image-generation');
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('[LLM Module] Configuration loaded:', data);
+            
+            // Update prompt fields
+            if (data.prompt) {
+                const systemPrompt = document.getElementById('system-prompt');
+                const userPrompt = document.getElementById('user-prompt');
+                
+                if (systemPrompt && data.prompt.system_prompt) {
+                    systemPrompt.value = data.prompt.system_prompt;
+                }
+                if (userPrompt && data.prompt.prompt_text) {
+                    userPrompt.value = data.prompt.prompt_text;
+                }
+            }
+            
+            // Update LLM configuration
+            if (data.llm_config) {
+                const provider = document.getElementById('llm-provider');
+                const model = document.getElementById('llm-model');
+                const temperature = document.getElementById('temperature');
+                const maxTokens = document.getElementById('max-tokens');
+                
+                if (provider && data.llm_config.provider) {
+                    provider.value = data.llm_config.provider;
+                }
+                if (model && data.llm_config.model) {
+                    model.value = data.llm_config.model;
+                }
+                if (temperature && data.llm_config.temperature !== undefined) {
+                    temperature.value = data.llm_config.temperature;
+                    document.getElementById('temperature-value').textContent = data.llm_config.temperature;
+                }
+                if (maxTokens && data.llm_config.max_tokens) {
+                    maxTokens.value = data.llm_config.max_tokens;
+                }
+            }
+            
+            // Update title
+            const title = document.getElementById('prompt-title');
+            if (title) {
+                title.textContent = 'LLM & Prompt settings: Ready';
+            }
+        } else {
+            throw new Error(data.error || 'Failed to load configuration');
+        }
+    } catch (error) {
+        console.error('[LLM Module] Error loading configuration:', error);
+        const title = document.getElementById('prompt-title');
+        if (title) {
+            title.textContent = 'LLM & Prompt settings: Error';
+        }
+    }
+}
+
+function updateModelParameters() {
+    const modelSelect = document.getElementById('image-model-select');
+    const parametersContainer = document.getElementById('parameters-container');
+    
+    if (!modelSelect || !parametersContainer) return;
+    
+    const selectedModel = modelSelect.value;
+    console.log('[LLM Module] Updating parameters for model:', selectedModel);
+    
+    let parametersHTML = '';
+    
+    if (selectedModel === 'sdxl-lora') {
+        parametersHTML = `
+            <div class="parameter-group">
+                <label for="image-dimensions">Image Dimensions:</label>
+                <select id="image-dimensions" name="image_dimensions">
+                    <option value="1024x1024">1024x1024 (Square)</option>
+                    <option value="1792x1024">1792x1024 (Landscape)</option>
+                    <option value="1024x1792">1024x1792 (Portrait)</option>
+                </select>
+            </div>
+            <div class="parameter-group">
+                <label for="steps">Steps:</label>
+                <input type="number" id="steps" name="steps" min="10" max="50" value="20">
+            </div>
+            <div class="parameter-group">
+                <label for="cfg">CFG Scale:</label>
+                <input type="number" id="cfg" name="cfg" min="1" max="20" step="0.5" value="7">
+            </div>
+            <div class="parameter-group">
+                <label for="seed">Seed (optional):</label>
+                <input type="number" id="seed" name="seed" min="0" max="999999999" placeholder="Random">
+            </div>
+        `;
+    } else if (selectedModel.startsWith('dall-e')) {
+        parametersHTML = `
+            <div class="parameter-group">
+                <label for="image-size">Image Size:</label>
+                <select id="image-size" name="image_size">
+                    <option value="1024x1024">1024x1024 (Square)</option>
+                    <option value="1792x1024">1792x1024 (Landscape)</option>
+                    <option value="1024x1792">1024x1792 (Portrait)</option>
+                </select>
+            </div>
+            <div class="parameter-group">
+                <label for="quality">Quality:</label>
+                <select id="quality" name="quality">
+                    <option value="standard">Standard</option>
+                    <option value="hd">HD</option>
+                </select>
+            </div>
+            <div class="parameter-group">
+                <label for="style">Style:</label>
+                <select id="style" name="style">
+                    <option value="vivid">Vivid</option>
+                    <option value="natural">Natural</option>
+                </select>
+            </div>
+        `;
+    }
+    
+    parametersContainer.innerHTML = parametersHTML;
+}
+
+async function handleGenerateImage() {
+    console.log('[LLM Module] Generate image button clicked');
+    
+    if (window.imagingOutputPanel) {
+        try {
+            await window.imagingOutputPanel.handleGenerateButton();
+        } catch (error) {
+            console.error('[LLM Module] Error generating image:', error);
+            alert('Error generating image: ' + error.message);
+        }
+    } else {
+        console.error('[LLM Module] Output panel not available');
+        alert('Output panel not available');
+    }
+}
+
+async function handleSaveConfiguration() {
+    console.log('[LLM Module] Save configuration button clicked');
+    
+    // Collect configuration data
+    const config = {
+        image_model: document.getElementById('image-model-select').value,
+        system_prompt: document.getElementById('system-prompt').value,
+        user_prompt: document.getElementById('user-prompt').value,
+        llm_provider: document.getElementById('llm-provider').value,
+        llm_model: document.getElementById('llm-model').value,
+        temperature: parseFloat(document.getElementById('temperature').value),
+        max_tokens: parseInt(document.getElementById('max-tokens').value)
+    };
+    
+    // Collect model parameters
+    const parameters = {};
+    const paramInputs = document.querySelectorAll('#parameters-container select, #parameters-container input');
+    paramInputs.forEach(input => {
+        if (input.value) {
+            parameters[input.name] = input.value;
+        }
+    });
+    config.parameters = parameters;
+    
+    try {
+        const response = await fetch('/authoring/api/llm/save-config', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(config)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Configuration saved successfully!');
+        } else {
+            throw new Error(result.error || 'Failed to save configuration');
+        }
+    } catch (error) {
+        console.error('[LLM Module] Error saving configuration:', error);
+        alert('Error saving configuration: ' + error.message);
+    }
+}
+</script>

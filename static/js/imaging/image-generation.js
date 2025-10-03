@@ -1,18 +1,19 @@
-import { SectionsPanel } from './sections-panel.js';
-import { ImageGenerationOutputPanel } from './image-generation-output-panel.js';
+// Imaging Image Generation - Independent from authoring
+import { ImagingSectionsPanel } from './sections-panel.js';
+import { ImagingOutputPanel } from './image-generation-output-panel.js';
 
 function initTabs() {
   const tabButtons = document.querySelectorAll('.tab-btn');
-  const tabPanels  = document.querySelectorAll('.tab-panel');
+  const tabPanels = document.querySelectorAll('.tab-panel');
   tabButtons.forEach(btn => btn.addEventListener('click', () => {
     const t = btn.getAttribute('data-tab');
     tabButtons.forEach(b => b.classList.remove('active'));
     tabPanels.forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById(`${t}-tab`)?.classList.add('active');
-    localStorage.setItem('planning-active-tab', t);
+    localStorage.setItem('imaging-active-tab', t);
   }));
-  const saved = localStorage.getItem('planning-active-tab');
+  const saved = localStorage.getItem('imaging-active-tab');
   if (saved) document.querySelector(`.tab-btn[data-tab="${saved}"]`)?.click();
 }
 
@@ -20,53 +21,41 @@ document.addEventListener('DOMContentLoaded', () => {
   initTabs();
 
   const postId = window.postId;
-  const output = new ImageGenerationOutputPanel({ postId });
+  const output = new ImagingOutputPanel({ postId });
   
   // Make output panel available globally for LLM module
-  window.imageGenerationOutputPanel = output;
+  window.imagingOutputPanel = output;
 
-  const sectionsPanel = new SectionsPanel({
+  const sectionsPanel = new ImagingSectionsPanel({
     postId,
     onSelect: (section) => {
       output.show(section);
-      // Initialize LLM module for the selected section
-      if (section && section.id) {
-        initializeLLMForSection(section.id);
-      }
+      console.log('Section selected:', section);
     },
     onSelectMultiple: (sections) => {
       output.showMultiple(sections);
-      // Initialize LLM module for the first selected section
-      if (sections && sections.length > 0 && sections[0].id) {
-        initializeLLMForSection(sections[0].id);
-      }
+      console.log('Multiple sections selected:', sections);
     }
   });
 
   // Initialize LLM module immediately on page load
-  const llmModule = initializeLLMModule('image_generation', postId, null);
-  if (llmModule) {
-    window.llmModule = llmModule;
-  }
-
+  // Note: LLM module initialization will be handled by the template's JavaScript
+  
   // Function to initialize LLM module for current section
   function initializeLLMForSection(sectionId) {
-      // Initialize LLM module with image_generation configuration
-      const llmModule = initializeLLMModule('image_generation', postId, sectionId);
-    if (llmModule) {
-      window.llmModule = llmModule;
-    }
+      // LLM module initialization will be handled by the template's JavaScript
+      console.log('LLM module initialization for section:', sectionId);
   }
 });
 
-// Global functions for concept selection (not directly used in image captions, but kept for consistency if needed)
+// Global functions for concept selection (not directly used in image generation, but kept for consistency if needed)
 window.selectConcept = async function(conceptId, sectionId) {
   console.log(`[DEBUG] selectConcept called: conceptId=${conceptId}, sectionId=${sectionId}`);
   
   try {
     // Save selection to database
     console.log(`[DEBUG] Making API call to save selection`);
-    const response = await fetch(`/authoring/api/posts/${window.postId}/sections/${sectionId}/select-concept`, {
+    const response = await fetch(`/imaging/api/posts/${window.postId}/sections/${sectionId}/select-concept`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

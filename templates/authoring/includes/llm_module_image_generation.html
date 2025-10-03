@@ -1,0 +1,242 @@
+<!-- LLM Module - Image Generation specific component -->
+<div class="llm-module">
+    <!-- LLM Prompt Panel -->
+    <div class="llm-prompt-panel">
+        <div class="prompt-header accordion-header">
+            <h4 id="prompt-title" onclick="toggleLLMAccordion()">LLM & Prompt settings: Loading...</h4>
+            <div class="prompt-header-controls">
+                <button class="btn btn-primary" id="generate-btn">
+                    <i class="fas fa-magic"></i> Generate
+                </button>
+                <div class="accordion-toggle" onclick="toggleLLMAccordion()">
+                    <i class="fas fa-chevron-up" id="accordion-icon"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion-content" id="llm-accordion-content">
+            <div class="prompt-actions" id="prompt-actions">
+                <!-- Edit buttons will be conditionally shown based on config -->
+            </div>
+            <!-- Image Model Selection -->
+            <div id="image-model-selection" class="image-model-selection">
+                <div class="form-group">
+                    <label for="image-model-select">Image Generation Model</label>
+                    <select id="image-model-select" class="form-control">
+                        <option value="">Loading models...</option>
+                    </select>
+                </div>
+                
+                <!-- Model Parameters -->
+                <div id="model-parameters" class="model-parameters" style="display: none;">
+                    <h6 style="color: #e2e8f0; margin-bottom: 0.5rem;">Model Parameters</h6>
+                    <div id="parameters-container">
+                        <!-- Dynamic parameters will appear here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Prompt Display -->
+            <div id="llm-prompt-display" class="llm-prompt-display">
+                <!-- LLM prompt will appear here -->
+            </div>
+            
+            <!-- Prompt Edit Form (hidden by default) -->
+            <div id="llm-prompt-edit" class="llm-prompt-edit" style="display: none;">
+                <div class="form-group">
+                    <label for="system-prompt-edit">System Prompt</label>
+                    <textarea id="system-prompt-edit" rows="4" placeholder="System prompt..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="user-prompt-edit">User Prompt</label>
+                    <textarea id="user-prompt-edit" rows="8" placeholder="User prompt..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Model Parameters Styles */
+.model-parameters {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.model-parameters h6 {
+    color: #e2e8f0;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.parameter-group {
+    margin-bottom: 1rem;
+}
+
+.parameter-group label {
+    color: #cbd5e1;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.parameter-group select,
+.parameter-group input {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 0.5rem;
+    color: #e2e8f0;
+    font-size: 0.8rem;
+    width: 100%;
+}
+
+.parameter-group select:focus,
+.parameter-group input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+</style>
+
+<script>
+// Image Generation Model Selection
+document.addEventListener('DOMContentLoaded', function() {
+    const modelSelect = document.getElementById('image-model-select');
+    const parametersDiv = document.getElementById('model-parameters');
+    const parametersContainer = document.getElementById('parameters-container');
+    
+    // Load available models from API
+    console.log('Loading models from API...');
+    fetch('/authoring/prompts/image-generation')
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('API response:', data);
+            if (data.success && data.available_models) {
+                populateModelDropdown(data.available_models);
+                // Set default to SDXL
+                modelSelect.value = 'sdxl-lora';
+                updateModelParameters(data.available_models, 'sdxl-lora');
+            } else {
+                console.error('API returned unsuccessful response:', data);
+                modelSelect.innerHTML = '<option value="">Error: API returned unsuccessful response</option>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading models:', error);
+            modelSelect.innerHTML = '<option value="">Error loading models</option>';
+        });
+    
+    // Handle model selection change
+    modelSelect.addEventListener('change', function() {
+        const selectedModel = this.value;
+        if (selectedModel) {
+            fetch('/authoring/prompts/image-generation')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.available_models) {
+                        updateModelParameters(data.available_models, selectedModel);
+                    }
+                });
+        } else {
+            parametersDiv.style.display = 'none';
+        }
+    });
+    
+    function populateModelDropdown(models) {
+        modelSelect.innerHTML = '';
+        models.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model.name;
+            option.textContent = `${model.name} (${model.provider_name})`;
+            option.title = model.description;
+            modelSelect.appendChild(option);
+        });
+    }
+    
+    function updateModelParameters(models, selectedModelName) {
+        const selectedModel = models.find(m => m.name === selectedModelName);
+        if (selectedModel && selectedModel.api_params) {
+            const params = selectedModel.api_params;
+            parametersContainer.innerHTML = '';
+            
+            // Image Dimensions
+            let dimensions = params.image_dimensions || params.sizes || [params.default_size || '1792x1024'];
+            if (dimensions) {
+                const dimGroup = createParameterGroup('Image Dimensions', 'image-dimensions', 'select');
+                dimensions.forEach(dim => {
+                    const option = document.createElement('option');
+                    option.value = dim;
+                    option.textContent = dim;
+                    dimGroup.querySelector('select').appendChild(option);
+                });
+                // Set default
+                dimGroup.querySelector('select').value = dimensions[0];
+                parametersContainer.appendChild(dimGroup);
+            }
+            
+            // Style Settings
+            let styles = params.style_settings || params.style || ['natural'];
+            if (styles) {
+                const styleGroup = createParameterGroup('Style', 'style-setting', 'select');
+                styles.forEach(style => {
+                    const option = document.createElement('option');
+                    option.value = style;
+                    option.textContent = style;
+                    styleGroup.querySelector('select').appendChild(option);
+                });
+                // Set default
+                styleGroup.querySelector('select').value = styles[0];
+                parametersContainer.appendChild(styleGroup);
+            }
+            
+            // Model-specific parameters
+            if (params.model_specific) {
+                Object.entries(params.model_specific).forEach(([key, value]) => {
+                    if (typeof value === 'number') {
+                        const numGroup = createParameterGroup(key.replace('_', ' ').toUpperCase(), key, 'number');
+                        numGroup.querySelector('input').value = value;
+                        parametersContainer.appendChild(numGroup);
+                    }
+                });
+            }
+            
+            parametersDiv.style.display = 'block';
+        } else {
+            parametersDiv.style.display = 'none';
+        }
+    }
+    
+    function createParameterGroup(label, name, type) {
+        const group = document.createElement('div');
+        group.className = 'parameter-group';
+        
+        const labelEl = document.createElement('label');
+        labelEl.textContent = label;
+        group.appendChild(labelEl);
+        
+        if (type === 'select') {
+            const select = document.createElement('select');
+            select.name = name;
+            select.id = name;
+            group.appendChild(select);
+        } else if (type === 'number') {
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.name = name;
+            input.id = name;
+            group.appendChild(input);
+        }
+        
+        return group;
+    }
+});
+</script>

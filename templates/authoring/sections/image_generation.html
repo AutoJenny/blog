@@ -34,14 +34,14 @@
         <div class="editor-panel">
             <!-- LLM Module -->
             <div class="llm-module-container">
-                {% include 'authoring/includes/llm_module.html' %}
+                {% include 'authoring/includes/llm_module_image_generation.html' %}
             </div>
             
             <!-- Debugging Panel -->
-            {% include 'authoring/includes/debugging_panel.html' %}
+            {% include 'authoring/includes/debugging_panel_image_generation.html' %}
             
                         {% set currentSubstage = 'image-generation' %}
-            {% include 'authoring/right/output_panel.html' %}
+            {% include 'authoring/right/output_panel_image_generation.html' %}
                     </div>
                 </div>
                     </div>
