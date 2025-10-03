@@ -1,80 +1,75 @@
-<div class="section-editor">
-  <div class="editor-header">
-    <h4 id="current-section-title">Select a section to begin editing</h4>
-    <div class="editor-controls">
-      <button class="btn-secondary" id="preview-btn" disabled>Preview</button>
-      <button class="btn-primary" id="save-btn" disabled>Save</button>
-      <button class="btn-secondary" id="regenerate-btn" disabled>Generate Image</button>
-    </div>
+<div class="image-results-viewer">
+  <div class="viewer-header">
+    <h4 id="current-section-title">Select a section to view images</h4>
   </div>
 
-  <!-- Image Generation Display -->
-  <div id="image-generation-display" class="image-generation-display" style="display: none;">
-    <div class="image-generation-container">
-      <h5 style="color: #e2e8f0; margin-bottom: 1rem;">Image Generation</h5>
-      
-      <!-- Image Prompts Display -->
-      <div id="image-prompts-display" class="image-prompts-display" style="display: none;">
-        <h6 style="color: #cbd5e1; margin-bottom: 0.5rem;">Image Prompts</h6>
-        <div id="prompts-container" class="prompts-container">
-          <!-- Image prompts will appear here -->
-        </div>
-      </div>
-      
-      <!-- Generated Image Display -->
-      <div id="generated-image-section" class="generated-image-section" style="margin-top: 1rem;">
-        <h6 style="color: #cbd5e1; margin-bottom: 0.5rem;">Generated Image</h6>
-        <div id="image-display" class="image-display" style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 1rem; text-align: center; min-height: 200px;">
-          <p style="color: #94a3b8;">No image generated yet</p>
-        </div>
-      </div>
+  <!-- Image Display Area -->
+  <div id="image-display-area" class="image-display-area">
+    <div class="no-selection-message">
+      <i class="fas fa-image" style="font-size: 3rem; color: #64748b; margin-bottom: 1rem;"></i>
+      <p style="color: #94a3b8; font-size: 1.1rem;">Select a section to view its generated images</p>
     </div>
   </div>
 
   <style>
-    .section-editor{ background:#1e293b; border:1px solid #334155; border-radius:8px; padding:1rem; }
-    .editor-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding-bottom:.5rem; border-bottom:1px solid #334155; }
-    .editor-controls{ display:flex; gap:.5rem; }
+    .image-results-viewer {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 1rem;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
     
-    .image-generation-container {
+    .viewer-header {
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #334155;
+    }
+    
+    .viewer-header h4 {
+      color: #e2e8f0;
+      margin: 0;
+      font-size: 1.1rem;
+    }
+    
+    .image-display-area {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 300px;
+    }
+    
+    .no-selection-message {
+      text-align: center;
+      color: #94a3b8;
+    }
+    
+    .section-image {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      margin: 0 auto;
+      display: block;
+    }
+    
+    .image-info {
+      margin-top: 1rem;
+      padding: 0.75rem;
       background: #0f172a;
       border: 1px solid #334155;
-      border-radius: 8px;
-      padding: 1rem;
-    }
-    
-    .prompts-container {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 8px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-    }
-    
-    .prompt-card {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 8px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-    }
-    
-    .prompt-content {
-      color: #e2e8f0;
-    }
-    
-    .prompt-text {
-      font-family: monospace;
+      border-radius: 6px;
       font-size: 0.9rem;
-      line-height: 1.4;
-      white-space: pre-wrap;
+      color: #cbd5e1;
     }
     
-    .image-display img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    .image-path {
+      font-family: monospace;
+      color: #94a3b8;
+      word-break: break-all;
     }
   </style>
 </div>

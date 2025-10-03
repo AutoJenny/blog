@@ -41,6 +41,7 @@ export class ImagingOutputPanel {
   }
 
   show(section) {
+    console.log('[Output Panel] show() called with:', section);
     this.current = section;
     this.updateSectionContext(section);
     this.showImageGenerationDisplay();
@@ -70,55 +71,60 @@ export class ImagingOutputPanel {
   }
 
   showImageGenerationDisplay() {
-    const display = document.getElementById('image-generation-display');
-    if (display) {
-      display.style.display = 'block';
-    }
-
-    this.updateImagePrompts();
-    this.updateGeneratedImage();
+    this.updateSectionTitle();
+    this.updateImageDisplay();
   }
 
-  updateImagePrompts() {
-    if (!this.current) return;
-
-    const promptsDisplay = document.getElementById('image-prompts-display');
-    const promptsContainer = document.getElementById('prompts-container');
-
-    if (!promptsDisplay || !promptsContainer) return;
-
-    try {
-      const imagePrompts = this.current.image_prompts ? JSON.parse(this.current.image_prompts) : {};
-      
-      if (imagePrompts.image_prompt) {
-        promptsDisplay.style.display = 'block';
-        promptsContainer.innerHTML = `
-          <div class="prompt-card">
-            <div class="prompt-content">
-              <div class="prompt-text">${imagePrompts.image_prompt}</div>
-            </div>
-          </div>
-        `;
-      } else {
-        promptsDisplay.style.display = 'none';
-      }
-    } catch (error) {
-      console.error('Error parsing image prompts:', error);
-      promptsDisplay.style.display = 'none';
+  updateSectionTitle() {
+    const titleEl = document.getElementById('current-section-title');
+    if (titleEl && this.current) {
+      titleEl.textContent = this.current.section_heading || `Section ${this.current.id}`;
     }
   }
 
-  updateGeneratedImage() {
-    const imageDisplay = document.getElementById('image-display');
-    if (!imageDisplay) return;
+  updateImageDisplay() {
+    const imageDisplayArea = document.getElementById('image-display-area');
+    if (!imageDisplayArea) return;
+
+    if (!this.current) {
+      // Show no selection message
+      imageDisplayArea.innerHTML = `
+        <div class="no-selection-message">
+          <i class="fas fa-image" style="font-size: 3rem; color: #64748b; margin-bottom: 1rem;"></i>
+          <p style="color: #94a3b8; font-size: 1.1rem;">Select a section to view its generated images</p>
+        </div>
+      `;
+      return;
+    }
 
     // Check if there's a generated image for this section
     const imagePath = `/static/content/posts/${this.postId}/sections/${this.current.id}/raw/${this.current.id}.png`;
     
-    // For now, just show placeholder
-    imageDisplay.innerHTML = `
-      <p style="color: #94a3b8;">No image generated yet</p>
-    `;
+    // Try to load the image
+    const img = new Image();
+    img.onload = () => {
+      // Image exists, display it
+      imageDisplayArea.innerHTML = `
+        <div style="text-align: center;">
+          <img src="${imagePath}" alt="Generated image" class="section-image">
+          <div class="image-info">
+            <div><strong>Section:</strong> ${this.current.section_heading || `Section ${this.current.id}`}</div>
+            <div class="image-path">${imagePath}</div>
+          </div>
+        </div>
+      `;
+    };
+    img.onerror = () => {
+      // Image doesn't exist, show no image message
+      imageDisplayArea.innerHTML = `
+        <div class="no-selection-message">
+          <i class="fas fa-image" style="font-size: 3rem; color: #64748b; margin-bottom: 1rem;"></i>
+          <p style="color: #94a3b8; font-size: 1.1rem;">No image generated for this section yet</p>
+          <p style="color: #64748b; font-size: 0.9rem;">Generate an image using the controls on the left</p>
+        </div>
+      `;
+    };
+    img.src = imagePath;
   }
 
   async handleGenerateButton() {
@@ -142,7 +148,7 @@ export class ImagingOutputPanel {
     });
     
     // Call the image generation API directly
-    const response = await fetch(`/authoring/api/image-generation/posts/${this.postId}/sections/${this.current.id}/generate-image`, {
+    const response = await fetch(`/imaging/api/image-generation/posts/${this.postId}/sections/${this.current.id}/generate-image`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -186,12 +192,8 @@ export class ImagingOutputPanel {
   }
 
   updateImageDisplay(imagePath) {
-    const imageDisplay = document.getElementById('image-display');
-    if (imageDisplay) {
-      imageDisplay.innerHTML = `
-        <img src="${imagePath}" alt="Generated image" style="max-width: 100%; height: auto; border-radius: 8px;">
-      `;
-    }
+    // Refresh the entire image display
+    this.updateImageDisplay();
   }
 
   showNotification(message, type = 'info') {

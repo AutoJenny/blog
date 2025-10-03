@@ -266,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function() {
 async function loadLLMConfiguration() {
     try {
         console.log('[LLM Module] Loading LLM configuration');
-        const response = await fetch('/authoring/prompts/image-generation');
+        const response = await fetch('/imaging/prompts/image-generation');
         const data = await response.json();
         
         if (data.success) {
@@ -429,7 +429,7 @@ async function handleSaveConfiguration() {
     config.parameters = parameters;
     
     try {
-        const response = await fetch('/authoring/api/llm/save-config', {
+        const response = await fetch('/imaging/api/llm/save-config', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

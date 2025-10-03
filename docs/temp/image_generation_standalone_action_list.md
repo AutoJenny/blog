@@ -17,8 +17,8 @@ The Image Generation page currently has extensive dependencies on authoring/plan
 - [x] **1.1** Create new `blueprints/imaging.py` blueprint
 - [x] **1.2** Register imaging blueprint in `unified_app.py`
 - [x] **1.3** Create imaging route structure (`/imaging/posts/<id>/sections/image-generation`)
-- [ ] **1.4** Update main navbar to include "Imaging" stage
-- [ ] **1.5** Update planning header to include Imaging stage navigation
+- [x] **1.4** Update main navbar to include "Imaging" stage
+- [x] **1.5** Create unified blog pipeline header used across all stages
 
 ### Phase 2: Create Independent CSS/JS Bundles ✅ COMPLETED
 - [x] **2.1** Create `static/css/imaging/` directory structure
@@ -52,18 +52,125 @@ The Image Generation page currently has extensive dependencies on authoring/plan
 - [x] **6.3** Create `templates/imaging/includes/debugging_panel_image_generation.html` (independent debugging)
 - [x] **6.4** Create `templates/imaging/right/output_panel_image_generation.html` (independent output)
 
-### Phase 7: Update State Management
-- [ ] **7.1** Create imaging-specific localStorage keys
-- [ ] **7.2** Remove planning/authoring state dependencies
-- [ ] **7.3** Create independent window variable management
-- [ ] **7.4** Update accordion state management
+### Phase 7: Update State Management ❌ INCOMPLETE
+- [x] **7.1** Create imaging-specific localStorage keys (partially done)
+- [ ] **7.2** Remove planning/authoring state dependencies (NOT DONE)
+- [x] **7.3** Create independent window variable management (partially done)
+- [x] **7.4** Update accordion state management (partially done)
 
-### Phase 8: Testing & Cleanup
-- [ ] **8.1** Test all imaging functionality independently
-- [ ] **8.2** Verify no authoring/planning dependencies remain
-- [ ] **8.3** Update navigation links throughout the application
-- [ ] **8.4** Remove old image generation code from authoring
-- [ ] **8.5** Update documentation
+### Phase 8: Remove ALL Dependencies ❌ CRITICAL - NOT STARTED
+
+#### 8.1 API Endpoint Dependencies (BREAKS AUTHORING IF CHANGED)
+- [ ] **8.1.1** Change `/authoring/prompts/image-generation` to `/imaging/prompts/image-generation`
+  - File: `templates/imaging/includes/llm_module_image_generation.html` line 269
+  - Impact: BREAKS authoring LLM prompts if changed
+- [ ] **8.1.2** Change `/authoring/api/llm/save-config` to `/imaging/api/llm/save-config`
+  - File: `templates/imaging/includes/llm_module_image_generation.html` line 432
+  - Impact: BREAKS authoring LLM config saving if changed
+- [ ] **8.1.3** Change `/authoring/api/image-generation/posts/...` to `/imaging/api/image-generation/posts/...`
+  - File: `static/js/imaging/image-generation-output-panel.js` line 145
+  - Impact: BREAKS authoring image generation if changed
+
+#### 8.2 Template Dependencies (BREAKS OTHER STAGES IF CHANGED)
+- [ ] **8.2.1** Remove `{% include 'authoring/includes/input_details_accordion.html' %}` from debugging panel
+  - File: `templates/imaging/includes/debugging_panel_image_generation.html` line 11
+  - Impact: BREAKS authoring input details if changed
+- [ ] **8.2.2** Remove `{% include 'planning/includes/data_tab.html' %}` from unified header
+  - File: `templates/shared/blog_pipeline_header.html` line 152
+  - Impact: BREAKS planning data tab if changed
+- [ ] **8.2.3** Create imaging-specific input details accordion
+  - File: `templates/imaging/includes/input_details_accordion.html` (NEW)
+  - Must be independent copy of authoring version
+- [ ] **8.2.4** Create imaging-specific data tab
+  - File: `templates/imaging/includes/data_tab.html` (NEW)
+  - Must be independent copy of planning version
+
+#### 8.3 JavaScript Dependencies (BREAKS OTHER STAGES IF CHANGED)
+- [ ] **8.3.1** Remove `workflow-nav.js` dependency (planning-specific)
+  - File: `templates/macros/static_assets.html` line 67
+  - Impact: BREAKS planning navigation if changed
+- [ ] **8.3.2** Remove `main.js` dependency (may contain authoring functions)
+  - File: `templates/macros/static_assets.html` line 66
+  - Impact: MAY BREAK multiple stages if changed
+- [ ] **8.3.3** Create imaging-specific navigation JavaScript
+  - File: `static/js/imaging/navigation.js` (NEW)
+  - Must be independent copy of workflow-nav.js functionality
+- [ ] **8.3.4** Create imaging-specific main JavaScript
+  - File: `static/js/imaging/main.js` (NEW)
+  - Must be independent copy of main.js functionality
+
+#### 8.4 CSS Dependencies (BREAKS OTHER STAGES IF CHANGED)
+- [ ] **8.4.1** Remove `nav.dist.css` dependency (planning-specific)
+  - File: `templates/macros/static_assets.html` line 27
+  - Impact: BREAKS planning navigation styles if changed
+- [ ] **8.4.2** Remove `main.css` dependency (may contain authoring styles)
+  - File: `templates/macros/static_assets.html` line 26
+  - Impact: MAY BREAK multiple stages if changed
+- [ ] **8.4.3** Create imaging-specific navigation CSS
+  - File: `static/css/imaging/navigation.css` (NEW)
+  - Must be independent copy of nav.dist.css
+- [ ] **8.4.4** Create imaging-specific main CSS
+  - File: `static/css/imaging/main.css` (NEW)
+  - Must be independent copy of main.css
+
+#### 8.5 Create Imaging-Specific API Endpoints (NEW ENDPOINTS NEEDED)
+- [ ] **8.5.1** Create `/imaging/prompts/image-generation` endpoint
+  - File: `blueprints/imaging.py` (NEW route)
+  - Must duplicate authoring functionality independently
+- [ ] **8.5.2** Create `/imaging/api/llm/save-config` endpoint
+  - File: `blueprints/imaging.py` (NEW route)
+  - Must duplicate authoring functionality independently
+- [ ] **8.5.3** Create `/imaging/api/image-generation/posts/...` endpoint
+  - File: `blueprints/imaging.py` (NEW route)
+  - Must duplicate authoring functionality independently
+- [ ] **8.5.4** Create imaging-specific LLM configuration storage
+  - File: `modules/imaging/` (NEW module)
+  - Must be independent from authoring LLM config
+
+#### 8.6 Database Dependencies (BREAKS OTHER STAGES IF CHANGED)
+- [ ] **8.6.1** Audit database table dependencies
+  - Check if imaging uses authoring-specific tables
+  - Check if imaging uses planning-specific tables
+- [ ] **8.6.2** Create imaging-specific database schema if needed
+  - File: `migrations/imaging_*.sql` (NEW)
+  - Must be independent from authoring/planning schemas
+
+#### 8.7 Configuration Dependencies (BREAKS OTHER STAGES IF CHANGED)
+- [ ] **8.7.1** Audit environment variable dependencies
+  - Check if imaging uses authoring-specific env vars
+  - Check if imaging uses planning-specific env vars
+- [ ] **8.7.2** Create imaging-specific configuration
+  - File: `config/imaging.py` (NEW)
+  - Must be independent from authoring/planning config
+
+#### 8.8 File System Dependencies (BREAKS OTHER STAGES IF CHANGED)
+- [ ] **8.8.1** Audit file path dependencies
+  - Check if imaging writes to authoring-specific directories
+  - Check if imaging writes to planning-specific directories
+- [ ] **8.8.2** Create imaging-specific file structure
+  - Directory: `static/content/imaging/` (NEW)
+  - Must be independent from authoring/planning file structure
+
+#### 8.9 Test Complete Independence
+- [ ] **8.9.1** Verify imaging works without any authoring/planning files
+  - Test with authoring files temporarily renamed
+  - Test with planning files temporarily renamed
+- [ ] **8.9.2** Verify changes to imaging don't break other stages
+  - Test authoring functionality after imaging changes
+  - Test planning functionality after imaging changes
+- [ ] **8.9.3** Verify changes to other stages don't break imaging
+  - Test imaging functionality after authoring changes
+  - Test imaging functionality after planning changes
+- [ ] **8.9.4** Verify imaging can be deployed independently
+  - Test imaging without authoring/planning modules
+  - Test imaging with minimal dependencies
+
+### Phase 9: Testing & Cleanup
+- [ ] **9.1** Test all imaging functionality independently
+- [ ] **9.2** Verify no authoring/planning dependencies remain
+- [ ] **9.3** Update navigation links throughout the application
+- [ ] **9.4** Remove old image generation code from authoring
+- [ ] **9.5** Update documentation
 
 ## Priority Order
 1. **Phase 1** - Create new Imaging stage (immediate)

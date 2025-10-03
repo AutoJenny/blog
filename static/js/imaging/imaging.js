@@ -33,6 +33,35 @@ window.ImagingUtils = {
     }
 };
 
+// Imaging-specific accordion functions
+function toggleImagingInputDetailsAccordion() {
+    const content = document.getElementById('imaging-input-details-accordion-content');
+    const icon = document.getElementById('imaging-input-details-accordion-icon');
+    
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.className = 'fas fa-chevron-up';
+        localStorage.setItem('imaging-input-details-accordion-state', 'open');
+    } else {
+        content.style.display = 'none';
+        icon.className = 'fas fa-chevron-down';
+        localStorage.setItem('imaging-input-details-accordion-state', 'closed');
+    }
+}
+
+// Restore accordion state on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const savedState = localStorage.getItem('imaging-input-details-accordion-state');
+    if (savedState === 'open') {
+        const content = document.getElementById('imaging-input-details-accordion-content');
+        const icon = document.getElementById('imaging-input-details-accordion-icon');
+        if (content && icon) {
+            content.style.display = 'block';
+            icon.className = 'fas fa-chevron-up';
+        }
+    }
+});
+
 // Initialize imaging workspace on DOM ready
 document.addEventListener('DOMContentLoaded', function() {
     window.ImagingUtils.init();

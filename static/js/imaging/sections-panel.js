@@ -89,27 +89,38 @@ export class ImagingSectionsPanel {
   }
 
   selectSection(element) {
+    console.log('[Sections Panel] Section clicked:', element);
     const sectionId = parseInt(element.dataset.sectionId);
     const section = this.sections.find(s => s.id === sectionId);
     
-    if (!section) return;
+    console.log('[Sections Panel] Section ID:', sectionId, 'Section data:', section);
+    
+    if (!section) {
+      console.log('[Sections Panel] Section not found!');
+      return;
+    }
 
     // Toggle selection
     if (this.selectedSections.has(sectionId)) {
       this.selectedSections.delete(sectionId);
       element.classList.remove('selected');
+      console.log('[Sections Panel] Deselected section:', sectionId);
     } else {
       this.selectedSections.add(sectionId);
       element.classList.add('selected');
+      console.log('[Sections Panel] Selected section:', sectionId);
     }
 
     // Notify parent
     if (this.selectedSections.size === 1) {
+      console.log('[Sections Panel] Calling onSelect with:', section);
       this.onSelect?.(section);
     } else if (this.selectedSections.size > 1) {
       const selectedSections = this.sections.filter(s => this.selectedSections.has(s.id));
+      console.log('[Sections Panel] Calling onSelectMultiple with:', selectedSections);
       this.onSelectMultiple?.(selectedSections);
     } else {
+      console.log('[Sections Panel] Calling onSelect with null');
       this.onSelect?.(null);
     }
   }
