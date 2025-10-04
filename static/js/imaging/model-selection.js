@@ -38,6 +38,7 @@ class ModelSelectionPanel {
         if (!parametersContainer) return;
         
         console.log('[Model Selection] Updating parameters for model:', this.currentModel);
+        console.log('[Model Selection] Parameters container HTML before:', parametersContainer.innerHTML.substring(0, 200));
         
         let parametersHTML = '';
         
@@ -91,7 +92,10 @@ class ModelSelectionPanel {
             `;
         }
         
-        parametersContainer.innerHTML = parametersHTML;
+        // Don't overwrite the HTML - it's already in the template
+        // parametersContainer.innerHTML = parametersHTML;
+        
+        console.log('[Model Selection] Parameters container HTML after:', parametersContainer.innerHTML.substring(0, 200));
         
         // Add event listeners to new parameter inputs
         this.setupParameterListeners();
@@ -280,4 +284,47 @@ document.addEventListener('DOMContentLoaded', function() {
             icon.className = 'fas fa-chevron-up';
         }
     }
+    
+    // Set up slider value displays
+    setupSliderDisplays();
 });
+
+// Set up slider value displays
+function setupSliderDisplays() {
+    // Steps slider
+    const stepsSlider = document.getElementById('steps');
+    const stepsValue = document.getElementById('steps-value');
+    if (stepsSlider && stepsValue) {
+        stepsSlider.addEventListener('input', function() {
+            stepsValue.textContent = this.value;
+        });
+    }
+    
+    // CFG slider
+    const cfgSlider = document.getElementById('cfg');
+    const cfgValue = document.getElementById('cfg-value');
+    if (cfgSlider && cfgValue) {
+        cfgSlider.addEventListener('input', function() {
+            cfgValue.textContent = this.value;
+        });
+    }
+    
+    // LoRA scale slider
+    const loraScaleSlider = document.getElementById('lora-scale-aether');
+    const loraScaleValue = document.getElementById('lora-scale-value');
+    if (loraScaleSlider && loraScaleValue) {
+        loraScaleSlider.addEventListener('input', function() {
+            loraScaleValue.textContent = this.value;
+        });
+    }
+}
+
+// Generate random seed
+function generateRandomSeed() {
+    const seedInput = document.getElementById('seed');
+    if (seedInput) {
+        const randomSeed = Math.floor(Math.random() * 999999999);
+        seedInput.value = randomSeed;
+        console.log('[Model Selection] Generated random seed:', randomSeed);
+    }
+}

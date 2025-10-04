@@ -249,8 +249,8 @@ function setupModelSelection() {
         console.log('[Imaging Core] Loaded model config:', config);
         if (config.model) {
             dropdown.value = config.model;
-            console.log('[Imaging Core] About to call updateModelParameters with:', config.model, config.parameters);
-            updateModelParameters(config.model, config.parameters);
+            console.log('[Imaging Core] Model config loaded:', config.model, config.parameters);
+            // updateModelParameters removed - using template HTML with LoRA controls
             updateTitle(config.model);
             console.log('[Imaging Core] Set dropdown to:', config.model);
             console.log('[Imaging Core] Dropdown value after setting:', dropdown.value);
@@ -266,7 +266,7 @@ function setupModelSelection() {
     dropdown.addEventListener('change', function() {
         const model = this.value;
         console.log('[Imaging Core] Model changed to:', model);
-        updateModelParameters(model);
+        // updateModelParameters removed - using template HTML with LoRA controls
         updateTitle(model);
         saveModelSelection({ model, parameters: getCurrentParameters() });
     });
@@ -296,73 +296,6 @@ async function saveModelSelection(config) {
     }
 }
 
-function updateModelParameters(model, savedParams = {}) {
-    const container = document.getElementById('parameters-container');
-    if (!container) return;
-
-    let html = '';
-    if (model === 'sdxl-lora') {
-        const dimensions = savedParams.dimensions || '1024x1024';
-        const steps = savedParams.steps || '20';
-        
-        
-        html = `
-            <div class="param-group">
-                <label>Dimensions:</label>
-                <select name="dimensions">
-                    <option value="1024x1024" ${dimensions === '1024x1024' ? 'selected' : ''}>1024x1024</option>
-                    <option value="1792x1024" ${dimensions === '1792x1024' ? 'selected' : ''}>1792x1024</option>
-                </select>
-            </div>
-            <div class="param-group">
-                <label>Steps:</label>
-                <input type="number" name="steps" value="${steps}" min="10" max="50">
-            </div>
-        `;
-    } else if (model.startsWith('dall-e')) {
-        const size = savedParams.size || '1024x1024';
-        const quality = savedParams.quality || 'standard';
-        const style = savedParams.style || 'vivid';
-        
-        
-        html = `
-            <div class="param-group">
-                <label>Size:</label>
-                <select name="size">
-                    <option value="1024x1024" ${size === '1024x1024' ? 'selected' : ''}>1024x1024</option>
-                    <option value="1792x1024" ${size === '1792x1024' ? 'selected' : ''}>1792x1024</option>
-                    <option value="1024x1792" ${size === '1024x1792' ? 'selected' : ''}>1024x1792</option>
-                </select>
-            </div>
-            <div class="param-group">
-                <label>Quality:</label>
-                <select name="quality">
-                    <option value="standard" ${quality === 'standard' ? 'selected' : ''}>Standard</option>
-                    <option value="hd" ${quality === 'hd' ? 'selected' : ''}>HD</option>
-                </select>
-            </div>
-            <div class="param-group">
-                <label>Style:</label>
-                <select name="style">
-                    <option value="vivid" ${style === 'vivid' ? 'selected' : ''}>Vivid</option>
-                    <option value="natural" ${style === 'natural' ? 'selected' : ''}>Natural</option>
-                </select>
-            </div>
-        `;
-    }
-    container.innerHTML = html;
-    
-    // Add event listeners to parameter inputs
-    const inputs = container.querySelectorAll('input, select');
-    inputs.forEach(input => {
-        input.addEventListener('change', function() {
-            saveModelSelection({ 
-                model: document.getElementById('image-model-select').value, 
-                parameters: getCurrentParameters() 
-            });
-        });
-    });
-}
 
 function updateTitle(model) {
     const titleElement = document.getElementById('model-title');
