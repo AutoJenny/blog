@@ -220,6 +220,13 @@ function selectSection(sectionId) {
     }
     
     updateOutputPanel();
+    
+    // Dispatch custom event for other components to listen to
+    const event = new CustomEvent('sectionSelected', {
+        detail: { sectionId: sectionId }
+    });
+    document.dispatchEvent(event);
+    console.log('[Imaging Core] Dispatched sectionSelected event for:', sectionId);
 }
 
 function hasImage(sectionId) {

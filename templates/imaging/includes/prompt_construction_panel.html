@@ -17,5 +17,320 @@
             <textarea id="style-prompt" name="style_prompt" rows="3" placeholder="Describe the artistic style, mood, colors, and visual treatment..."></textarea>
         </div>
         
+        <!-- Save/Load Controls -->
+        <div class="prompt-controls">
+            <button type="button" class="btn btn-primary" id="save-prompts-btn">
+                <i class="fas fa-save"></i> Save Prompts
+            </button>
+            <button type="button" class="btn btn-secondary" id="load-prompts-btn">
+                <i class="fas fa-folder-open"></i> Load Prompts
+            </button>
+            <button type="button" class="btn btn-secondary" id="clear-prompts-btn">
+                <i class="fas fa-trash"></i> Clear
+            </button>
+        </div>
     </div>
 </div>
+
+<script>
+// Prompt Construction Panel - Save/Load functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const contentPrompt = document.getElementById('content-prompt');
+    const stylePrompt = document.getElementById('style-prompt');
+    const savePromptsBtn = document.getElementById('save-prompts-btn');
+    const loadPromptsBtn = document.getElementById('load-prompts-btn');
+    const clearPromptsBtn = document.getElementById('clear-prompts-btn');
+    
+    // Load prompts on page load
+    loadPromptsFromStorage();
+    
+    // Set up section selection listener to auto-populate content prompt
+    setupSectionSelectionListener();
+    
+    // Auto-save on input (debounced)
+    let saveTimeout;
+    const inputs = [contentPrompt, stylePrompt];
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                savePromptsToStorage();
+            }, 1000); // Save 1 second after user stops typing
+        });
+    });
+    
+    // Manual save button
+    savePromptsBtn?.addEventListener('click', function() {
+        savePromptsToStorage();
+        showNotification('Prompts saved successfully!', 'success');
+    });
+    
+    // Manual load button 
+    loadPromptsBtn?.addEventListener('click', function() {
+        loadPromptsFromStorage();
+        showNotification('Prompts loaded successfully!', 'success');
+    });
+    
+    // Clear button
+    clearPromptsBtn?.addEventListener('click', function() {
+        if (confirm('Are you sure you want to clear all prompts?')) {
+            clearPrompts();
+            showNotification('Prompts cleared!', 'info');
+        }
+    });
+});
+
+function savePromptsToStorage() {
+    const contentPrompt = document.getElementById('content-prompt')?.value || '';
+    const stylePrompt = document.getElementById('style-prompt')?.value || '';
+    
+    const prompts = {
+        contentPrompt: contentPrompt,
+        stylePrompt: stylePrompt,
+        timestamp: new Date().toISOString()
+    };
+    
+    localStorage.setItem('imaging-prompts', JSON.stringify(prompts));
+    
+    // Also save individual prompts for easy access
+    localStorage.setItem('imaging-content-prompt', contentPrompt);
+    localStorage.setItem('imaging-style-prompt', stylePrompt);
+    
+    console.log('[Prompt Construction] Prompts saved to localStorage');
+}
+
+function loadPromptsFromStorage() {
+    const promptsData = localStorage.getItem('imaging-prompts');
+    
+    if (promptsData) {
+        try {
+            const prompts = JSON.parse(promptsData);
+            
+            // Load into textareas
+            const contentPromptEl = document.getElementById('content-prompt');
+            const stylePromptEl = document.getElementById('style-prompt');
+            
+            if (contentPromptEl && prompts.contentPrompt) {
+                contentPromptEl.value = prompts.contentPrompt;
+            }
+            
+            if (stylePromptEl && prompts.stylePrompt) {
+                stylePromptEl.value = prompts.stylePrompt;
+            }
+            
+            console.log('[Prompt Construction] Prompts loaded from localStorage:', prompts);
+            
+            // Show timestamp info
+            if (prompts.timestamp) {
+                const loadTime = new Date(prompts.timestamp).toLocaleString();
+                console.log('[Prompt Construction] Last saved:', loadTime);
+            }
+            
+        } catch (error) {
+            console.error('[Prompt Construction] Error loading prompts:', error);
+            // Fallback to individual prompt storage
+            loadIndividualPrompts();
+        }
+    } else {
+        // Try individual prompt storage
+        loadIndividualPrompts();
+    }
+}
+
+function loadIndividualPrompts() {
+    const contentPrompt = localStorage.getItem('imaging-content-prompt') || '';
+    const stylePrompt = localStorage.getItem('imaging-style-prompt') || '';
+    
+    const contentPromptEl = document.getElementById('content-prompt');
+    const stylePromptEl = document.getElementById('style-prompt');
+    
+    if (contentPromptEl) {
+        contentPromptEl.value = contentPrompt;
+    }
+    
+    if (stylePromptEl) {
+        stylePromptEl.value = stylePrompt;
+    }
+}
+
+function clearPrompts() {
+    document.getElementById('content-prompt').value = '';
+    document.getElementById('style-prompt').value = '';
+    
+    // Clear from storage
+    localStorage.removeItem('imaging-prompts');
+    localStorage.removeItem('imaging-content-prompt');
+    localStorage.removeItem('imaging-style-prompt');
+    
+    console.log('[Prompt Construction] Prompts cleared');
+}
+
+function setupSectionSelectionListener() {
+    console.log('[Prompt Construction] Setting up section selection listener');
+    
+    // Listen for section selection changes
+    document.addEventListener('sectionSelected', async function(event) {
+        const sectionId = event.detail.sectionId;
+        console.log('[Prompt Construction] sectionSelected event received:', sectionId);
+        
+        await populateContentPromptFromSection(sectionId);
+    });
+    
+    // Also listen for clicks on section items
+    document.addEventListener('click', async function(event) {
+        const sectionItem = event.target.closest('.section-item[data-section-id]');
+        if (sectionItem) {
+            const sectionId = sectionItem.getAttribute('data-section-id');
+            console.log('[Prompt Construction] Section clicked:', sectionId);
+            
+            await populateContentPromptFromSection(sectionId);
+        }
+    });
+    
+    console.log('[Prompt Construction] Section selection listener set up complete');
+}
+
+async function populateContentPromptFromSection(sectionId) {
+    if (!sectionId) return;
+    
+    try {
+        console.log('[Prompt Construction] Starting populateContentPromptFromSection for:', sectionId);
+        
+        // Fetch section data from the existing sections data or API
+        let sectionData = null;
+        
+        // First try to find in window.sectionsData (from the data tab)
+        console.log('[Prompt Construction] Checking window.sectionsData:', window.sectionsData);
+        if (window.sectionsData && window.sectionsData.length > 0) {
+            sectionData = window.sectionsData.find(s => s.id == sectionId);
+            console.log('[Prompt Construction] Found section in window.sectionsData:', sectionData);
+        }
+        
+        // If not found, fetch directly from API
+        if (!sectionData) {
+            const postId = window.postId || 60; // Default to 60
+            console.log('[Prompt Construction] Fetching from API for postId:', postId);
+            const response = await fetch(`/imaging/api/posts/${postId}/sections`);
+            const data = await response.json();
+            
+            if (data.success && data.sections) {
+                sectionData = data.sections.find(s => s.id == sectionId);
+                console.log('[Prompt Construction] Found section via API:', sectionData);
+            }
+        }
+        
+        if (!sectionData) {
+            console.error('[Prompt Construction] Section data not found for ID:', sectionId);
+            return;
+        }
+        
+        console.log('[Prompt Construction] Using section data:', sectionData);
+        
+        // Extract concept_description from image_concepts
+        if (sectionData.image_concepts) {
+            try {
+                const imageConceptsData = JSON.parse(sectionData.image_concepts);
+                
+                if (imageConceptsData.concepts && imageConceptsData.concepts.length > 0) {
+                    const firstConcept = imageConceptsData.concepts[0];
+                    
+                    if (firstConcept.concept_description) {
+                        const contentPromptEl = document.getElementById('content-prompt');
+                        if (contentPromptEl) {
+                            console.log('[Prompt Construction] Found concept_description:', firstConcept.concept_description);
+                            console.log('[Prompt Construction] Current content prompt length:', contentPromptEl.value.length);
+                            
+                            // Always update when section is selected
+                            contentPromptEl.value = firstConcept.concept_description;
+                            console.log('[Prompt Construction] Auto-populated content prompt:', firstConcept.concept_description);
+                            
+                            // Auto-save the updated prompt
+                            savePromptsToStorage();
+                            
+                            showNotification('Content prompt auto-populated from section concept!', 'success');
+                        } else {
+                            console.error('[Prompt Construction] Could not find content-prompt element');
+                        }
+                    } else {
+                        console.log('[Prompt Construction] No concept_description found in firstConcept');
+                    }
+                } else {
+                    console.log('[Prompt Construction] No concepts found in image_concepts');
+                }
+            } catch (error) {
+                console.error('[Prompt Construction] Error parsing image_concepts JSON:', error);
+            }
+        } else {
+            console.log('[Prompt Construction] No image_concepts data for section:', sectionId);
+        }
+        
+    } catch (error) {
+        console.error('[Prompt Construction] Error populating content prompt:', error);
+    }
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 6px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        font-size: 0.9rem;
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+        }
+    }, 3000);
+}
+</script>
+
+<style>
+.prompt-controls {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #334155;
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.prompt-controls .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.prompt-controls .btn-primary {
+    background: #10b981;
+    color: white;
+    border: none;
+    border-radius: 4px;
+}
+
+.prompt-controls .btn-primary:hover {
+    background: #059669;
+}
+
+.prompt-controls .btn-secondary {
+    background: #6b7280;
+    color: white;
+    border: none;
+    border-radius: 4px;
+}
+
+.prompt-controls .btn-secondary:hover {
+    background: #4b5563;
+}
+</style>
