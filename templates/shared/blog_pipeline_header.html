@@ -149,11 +149,7 @@
     </div>
     
     <div id="data-tab" class="tab-panel">
-        {% if request.endpoint and 'imaging' in request.endpoint %}
-            {% include 'imaging/includes/data_tab.html' %}
-        {% else %}
-            {% include 'planning/includes/data_tab.html' %}
-        {% endif %}
+        {% include 'shared/database_tables_panel.html' %}
     </div>
 </div>
 

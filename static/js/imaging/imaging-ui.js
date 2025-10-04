@@ -24,14 +24,33 @@ function setupAccordions() {
             const isOpen = modelContent.style.display !== 'none';
             modelContent.style.display = isOpen ? 'none' : 'block';
             modelIcon.className = isOpen ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
-            localStorage.setItem('imaging-model-accordion', isOpen ? 'closed' : 'open');
+            sessionStorage.setItem('imaging-model-accordion', isOpen ? 'closed' : 'open');
         });
         
-        // Restore state
-        const savedState = localStorage.getItem('imaging-model-accordion');
+        // Restore state (default to closed)
+        const savedState = sessionStorage.getItem('imaging-model-accordion');
         if (savedState === 'open') {
             modelContent.style.display = 'block';
             modelIcon.className = 'fas fa-chevron-up';
+        } else {
+            modelContent.style.display = 'none';
+            modelIcon.className = 'fas fa-chevron-down';
+        }
+    }
+    
+    // Prompt construction accordion
+    const promptContent = document.getElementById('prompt-accordion-content');
+    const promptIcon = document.getElementById('prompt-accordion-icon');
+    
+    if (promptContent && promptIcon) {
+        // Restore state (default to open)
+        const savedState = sessionStorage.getItem('imaging-prompt-accordion');
+        if (savedState === 'closed') {
+            promptContent.style.display = 'none';
+            promptIcon.className = 'fas fa-chevron-down';
+        } else {
+            promptContent.style.display = 'block';
+            promptIcon.className = 'fas fa-chevron-up';
         }
     }
 }
@@ -80,6 +99,7 @@ function togglePromptConstructionAccordion() {
         const isOpen = content.style.display !== 'none';
         content.style.display = isOpen ? 'none' : 'block';
         icon.className = isOpen ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+        sessionStorage.setItem('imaging-prompt-accordion', isOpen ? 'closed' : 'open');
     }
 }
 
