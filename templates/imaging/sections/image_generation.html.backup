@@ -2,15 +2,15 @@
 {% from 'macros/static_assets.html' import css_assets, js_assets %}
 
 {% block css_assets %}
-{{ css_assets('authoring') }}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/authoring/sections-panel.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/image-generation.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/output-panel.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/model-selection.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/prompt-construction.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/debugging-panel.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/data-tab.css') }}">
 {{ css_assets('imaging') }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/sections-panel.css') }}">
+    <style>
+  .imaging-workspace { padding:1rem; min-height:calc(100vh - 200px); }
+  .workspace-container { display:grid; grid-template-columns:350px 1fr; gap:1.5rem; max-width:1400px; margin:0 auto; }
+  @media (max-width:1200px){ .workspace-container { grid-template-columns:300px 1fr; } }
+  @media (max-width:768px){ .workspace-container { grid-template-columns:1fr; gap:1rem; } }
+  .editor-panel { display:flex; flex-direction:column; gap:1rem; }
+    </style>
 {% endblock %}
 
 {% block js_assets %}

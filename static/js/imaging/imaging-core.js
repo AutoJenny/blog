@@ -42,7 +42,10 @@ async function loadSections() {
         }
     } catch (error) {
         console.error('Error loading sections:', error);
-        sectionsList.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+        const sectionsList = document.getElementById('sections-list');
+        if (sectionsList) {
+            sectionsList.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+        }
     }
 }
 
@@ -50,25 +53,173 @@ function renderSections() {
     const sectionsList = document.getElementById('sections-list');
     if (!sectionsList) return;
 
-    const html = sections.map(section => `
-        <div class="section-item" onclick="selectSection(${section.id})">
-            <div class="section-title">${section.title || `Section ${section.id}`}</div>
-            <div class="section-status">${hasImage(section.id) ? '📷' : '⭕'}</div>
-        </div>
-    `).join('');
+    const html = sections.map(section => {
+        // Determine effective status
+        const effectiveStatus = (section.section_text && section.section_text.trim()) ? 'complete' : 'draft';
+        
+        // Get topics array
+        const topics = section.topics || [];
+        
+        // Get progress (simplified for imaging)
+        const progress = effectiveStatus === 'complete' ? 100 : 0;
+        
+        // Parse selected image concept
+        let selectedConceptDisplay = '';
+        let selectedConceptId = section.selected_image_concept || '';
+        
+        if (section.image_concepts && section.image_concepts.trim()) {
+            try {
+                const conceptsData = JSON.parse(section.image_concepts);
+                if (conceptsData.concepts && Array.isArray(conceptsData.concepts)) {
+                    // If no concept is selected, auto-select the first one
+                    if (!selectedConceptId && conceptsData.concepts.length > 0) {
+                        selectedConceptId = conceptsData.concepts[0].concept_id;
+                    }
+                    
+                    // Find the selected concept and build full display
+                    const selectedConcept = conceptsData.concepts.find(c => c.concept_id === selectedConceptId);
+                    if (selectedConcept) {
+                        selectedConceptDisplay = `${selectedConcept.concept_title}
+${selectedConcept.concept_description}
+Mood: ${selectedConcept.concept_mood}
+Key Elements: ${selectedConcept.key_visual_elements}`;
+                    }
+                }
+            } catch (e) {
+                // If JSON parsing fails, keep the original selected_image_concept value
+                selectedConceptDisplay = selectedConceptId;
+            }
+        }
+        
+        return `
+            <div class="section-item accordion" data-section-id="${section.id}" data-status="${effectiveStatus}">
+                <div class="section-header accordion-header">
+                    <input type="checkbox" class="section-checkbox" data-section-id="${section.id}">
+                    <span class="section-number">${section.section_order || section.order}</span>
+                    <span class="section-title">${section.section_heading || section.title || 'Section'}</span>
+                    <span class="section-status ${effectiveStatus}">${effectiveStatus.charAt(0).toUpperCase() + effectiveStatus.slice(1)}</span>
+                    <span class="accordion-toggle">▼</span>
+                </div>
+                <div class="section-content accordion-content">
+                    ${section.section_description ? `<div class="section-subtitle">${section.section_description}</div>` : ''}
+                    ${section.section_text ? `<div class="section-text-preview">${section.section_text}</div>` : ''}
+                    <div class="section-topics">${topics.map(topic => `<span class="topic-tag">${topic}</span>`).join('')}</div>
+                    ${selectedConceptDisplay ? `<div class="section-selected-concept"><div class="concept-label">Selected Concept:</div><div class="concept-details">${selectedConceptDisplay}</div></div>` : ''}
+                    <div class="section-progress">
+                        <div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div>
+                        <span class="progress-text">${progress}% complete</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
     
     sectionsList.innerHTML = html;
+    
+    // Add event listeners for accordion functionality
+    setupAccordionListeners();
+    setupSectionControls();
+}
+
+function setupAccordionListeners() {
+    const sectionsList = document.getElementById('sections-list');
+    if (!sectionsList) return;
+
+    // Accordion toggle functionality
+    sectionsList.addEventListener('click', (e) => {
+        if (e.target.classList.contains('accordion-toggle')) {
+            const accordion = e.target.closest('.accordion');
+            const content = accordion.querySelector('.accordion-content');
+            const toggle = e.target;
+            
+            if (content.style.display === 'none' || content.style.display === '') {
+                content.style.display = 'block';
+                toggle.textContent = '▲';
+                accordion.classList.add('expanded');
+            } else {
+                content.style.display = 'none';
+                toggle.textContent = '▼';
+                accordion.classList.remove('expanded');
+            }
+        }
+    });
+
+    // Section selection functionality
+    sectionsList.addEventListener('click', (e) => {
+        const row = e.target.closest('.section-item');
+        if (row && e.target.type !== 'checkbox' && !e.target.classList.contains('accordion-toggle')) {
+            selectSection(row.dataset.sectionId);
+        }
+    });
+
+    // Checkbox functionality
+    sectionsList.addEventListener('change', (e) => {
+        if (e.target.classList.contains('section-checkbox')) {
+            const sectionId = e.target.dataset.sectionId;
+            if (e.target.checked) {
+                selectSection(sectionId);
+            }
+        }
+    });
+}
+
+function setupSectionControls() {
+    // Filter buttons
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remove active class from all buttons
+            filterButtons.forEach(b => b.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            const filter = this.getAttribute('data-filter');
+            filterSections(filter);
+        });
+    });
+    
+    // Control buttons
+    const selectAllBtn = document.getElementById('select-all-btn');
+    if (selectAllBtn) {
+        selectAllBtn.addEventListener('click', function() {
+            // Select all sections logic
+            console.log('[Imaging Core] Select all sections');
+        });
+    }
+    
+    const batchGenerateBtn = document.getElementById('batch-generate-btn');
+    if (batchGenerateBtn) {
+        batchGenerateBtn.addEventListener('click', function() {
+            // Batch generate images logic
+            console.log('[Imaging Core] Batch generate images for all sections');
+        });
+    }
+}
+
+function filterSections(filter) {
+    const sectionItems = document.querySelectorAll('.section-item');
+    sectionItems.forEach(item => {
+        // For now, show all sections regardless of filter
+        // This can be enhanced later with actual filtering logic
+        item.style.display = 'block';
+    });
 }
 
 function selectSection(sectionId) {
+    console.log('[Imaging Core] Section selected:', sectionId);
     currentSection = sectionId;
-    updateOutputPanel();
     
     // Highlight selected section
     document.querySelectorAll('.section-item').forEach(item => {
         item.classList.remove('selected');
     });
-    event.target.closest('.section-item').classList.add('selected');
+    
+    const selectedSection = document.querySelector(`[data-section-id="${sectionId}"]`);
+    if (selectedSection) {
+        selectedSection.classList.add('selected');
+    }
+    
+    updateOutputPanel();
 }
 
 function hasImage(sectionId) {
@@ -232,9 +383,42 @@ function getCurrentParameters() {
 // Output panel
 function updateOutputPanel() {
     const title = document.getElementById('current-section-title');
+    const imageDisplayArea = document.getElementById('image-display-area');
+    
     if (title && currentSection) {
         const section = sections.find(s => s.id === currentSection);
-        title.textContent = section ? section.title : `Section ${currentSection}`;
+        title.textContent = section ? (section.section_heading || section.title || `Section ${currentSection}`) : `Section ${currentSection}`;
+        
+        // Check for images in the section's raw directory
+        if (imageDisplayArea) {
+            const imagePath = `/static/content/posts/${window.postId}/sections/${currentSection}/raw/${currentSection}.png`;
+            
+            // Create image element to test if it exists
+            const img = new Image();
+            img.onload = function() {
+                // Image exists, display it
+                imageDisplayArea.innerHTML = `
+                    <div style="text-align: center;">
+                        <img src="${imagePath}" alt="Section ${currentSection} image" class="section-image">
+                        <div class="image-info">
+                            <p><strong>Image Path:</strong> ${imagePath}</p>
+                            <p><strong>Section:</strong> ${currentSection}</p>
+                        </div>
+                    </div>
+                `;
+            };
+            img.onerror = function() {
+                // Image doesn't exist, show no image message
+                imageDisplayArea.innerHTML = `
+                    <div class="no-selection-message">
+                        <i class="fas fa-image" style="font-size: 3rem; color: #64748b; margin-bottom: 1rem;"></i>
+                        <p style="color: #94a3b8; font-size: 1.1rem;">No image generated yet for this section</p>
+                        <p style="color: #64748b; font-size: 0.9rem;">Expected path: ${imagePath}</p>
+                    </div>
+                `;
+            };
+            img.src = imagePath;
+        }
     }
 }
 

@@ -24,73 +24,62 @@
     font-weight: 600;
 }
 
-.section-controls {
+.panel-controls {
     display: flex;
     gap: 0.5rem;
 }
 
-.sections-panel .btn-secondary, .sections-panel .btn-primary {
-    padding: 0.4rem 0.8rem;
+.btn-refresh {
+    background: #475569;
     border: none;
+    color: #cbd5e1;
+    padding: 0.4rem 0.6rem;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 0.8rem;
-    font-weight: 500;
     transition: all 0.2s ease;
 }
 
-.sections-panel .btn-secondary {
-    background: #475569;
-    color: #cbd5e1;
-}
-
-.sections-panel .btn-secondary:hover {
+.btn-refresh:hover {
     background: #64748b;
     color: #f1f5f9;
-}
-
-.sections-panel .btn-primary {
-    background: #3b82f6;
-    color: white;
-}
-
-.sections-panel .btn-primary:hover {
-    background: #2563eb;
-}
-
-.section-filters {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-}
-
-.sections-panel .filter-btn {
-    padding: 0.3rem 0.6rem;
-    background: transparent;
-    border: 1px solid #475569;
-    border-radius: 4px;
-    color: #94a3b8;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.sections-panel .filter-btn:hover {
-    background: #334155;
-    border-color: #64748b;
-    color: #e2e8f0;
-}
-
-.sections-panel .filter-btn.active {
-    background: #06b6d4;
-    border-color: #06b6d4;
-    color: white;
 }
 
 .sections-list {
     max-height: 600px;
     overflow-y: auto;
+}
+
+.loading-state {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    padding: 1rem;
+    text-align: center;
+    justify-content: center;
+}
+
+.error-state {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #ef4444;
+    font-size: 0.9rem;
+    padding: 1rem;
+    text-align: center;
+    justify-content: center;
+}
+
+.empty-state {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    padding: 1rem;
+    text-align: center;
+    justify-content: center;
 }
 
 .section-item {
