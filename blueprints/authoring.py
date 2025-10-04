@@ -261,7 +261,9 @@ def authoring_sections_author_first_drafts(post_id):
                                  post_id=post_id,
                                  post=post,
                                  page_title="Author First Drafts",
-                                 blueprint_name='authoring')
+                                 blueprint_name='authoring',
+                                 currentStage='authoring',
+                                 currentSubstage='author-first-drafts')
             
     except Exception as e:
         logger.error(f"Error in authoring_sections_author_first_drafts: {e}")

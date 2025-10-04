@@ -148,9 +148,15 @@
         {% endblock %}
     </div>
     
-    <div id="data-tab" class="tab-panel">
-        {% include 'shared/database_tables_panel.html' %}
-    </div>
+             <div id="data-tab" class="tab-panel">
+                 {% if currentStage == 'planning' %}
+                     {% include 'planning/includes/data_tab.html' %}
+                 {% elif currentStage == 'imaging' %}
+                     {% include 'imaging/includes/data_tab.html' %}
+                 {% elif currentStage == 'authoring' and currentSubstage == 'author-first-drafts' %}
+                     {% include 'shared/data_display.html' %}
+                 {% endif %}
+             </div>
 </div>
 
 <style>
