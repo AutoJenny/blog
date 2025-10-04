@@ -1,35 +1,10 @@
-<!-- Imaging Prompt Construction Panel - Independent from authoring -->
-<div class="prompt-construction-panel" id="prompt-construction-panel">
+<div class="prompt-construction-panel">
     <div class="panel-header" onclick="togglePromptConstructionAccordion()">
-        <h4 id="prompt-title">Prompt Construction: Loading...</h4>
-        <i class="fas fa-chevron-up" id="prompt-accordion-icon"></i>
+        <h4 id="prompt-title">Prompt Construction</h4>
+        <i class="fas fa-chevron-down" id="prompt-accordion-icon"></i>
     </div>
     
-    <div class="panel-content" id="prompt-accordion-content">
-        <!-- Prompt Configuration -->
-        <div class="prompt-config">
-            <div class="prompt-section">
-                <label for="system-prompt">System Prompt:</label>
-                <textarea id="system-prompt" name="system_prompt" rows="3" placeholder="System prompt for image generation..."></textarea>
-            </div>
-            
-            <div class="prompt-section">
-                <label for="user-prompt">User Prompt:</label>
-                <textarea id="user-prompt" name="user_prompt" rows="4" placeholder="User prompt for image generation..."></textarea>
-            </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="prompt-actions">
-            <button type="button" id="save-prompts-btn" class="btn btn-secondary">
-                <i class="fas fa-save"></i> Save Prompts
-            </button>
-            <button type="button" id="load-prompts-btn" class="btn btn-secondary">
-                <i class="fas fa-download"></i> Load Prompts
-            </button>
-        </div>
+    <div class="panel-content" id="prompt-accordion-content" style="display: none;">
+        <!-- Content will be added here -->
     </div>
 </div>
-
-
-<!-- Inline JavaScript removed - functionality moved to imaging-core.js -->

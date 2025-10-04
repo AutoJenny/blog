@@ -71,5 +71,18 @@ function showNotification(message, type = 'info') {
     setTimeout(() => notification.remove(), 3000);
 }
 
+// Prompt construction accordion
+function togglePromptConstructionAccordion() {
+    const content = document.getElementById('prompt-accordion-content');
+    const icon = document.getElementById('prompt-accordion-icon');
+    
+    if (content && icon) {
+        const isOpen = content.style.display !== 'none';
+        content.style.display = isOpen ? 'none' : 'block';
+        icon.className = isOpen ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+    }
+}
+
 // Make functions globally available
 window.showNotification = showNotification;
+window.togglePromptConstructionAccordion = togglePromptConstructionAccordion;
