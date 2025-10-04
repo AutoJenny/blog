@@ -152,7 +152,7 @@
                  {% if currentStage == 'planning' %}
                      {% include 'planning/includes/data_tab.html' %}
                  {% elif currentStage == 'imaging' %}
-                     {% include 'imaging/includes/data_tab.html' %}
+                     {% include 'shared/data_display.html' %}
                  {% elif currentStage == 'authoring' and currentSubstage == 'author-first-drafts' %}
                      {% include 'shared/data_display.html' %}
                  {% endif %}

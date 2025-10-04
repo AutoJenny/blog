@@ -151,7 +151,9 @@ def imaging_sections_image_generation(post_id):
                              post_title=post['title'],
                              post_status=post['status'],
                              post_created=post_created,
-                             post_updated=post_updated)
+                             post_updated=post_updated,
+                             currentStage='imaging',
+                             currentSubstage='image-generation')
     except Exception as e:
         logger.error(f"Error rendering image generation page: {str(e)}")
         return f"Error: {str(e)}", 500
