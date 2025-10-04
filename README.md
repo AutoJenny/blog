@@ -2,6 +2,10 @@
 
 A comprehensive content management system built with Flask, featuring AI-powered content generation, workflow management, and multi-platform syndication.
 
+## ⚠️ DEVELOPMENT IMPORTANT NOTICE
+
+**Template Canonicalization in Progress**: This project has accumulated significant template duplication across multiple directories. See [`docs/template_canonicalization_strategy.md`](docs/template_canonicalization_strategy.md) for the ongoing cleanup strategy and canonical file structure. **Always check canonical locations before editing templates.**
+
 ## 🚀 Quick Start
 
 ### Prerequisites
