@@ -129,8 +129,29 @@ bp = Blueprint('imaging', __name__, url_prefix='/imaging')
 def imaging_sections_image_generation(post_id):
     """Image Generation page - standalone imaging workflow"""
     try:
+        with db_manager.get_cursor() as cursor:
+            # Get post data for header
+            cursor.execute("""
+                SELECT id, title, status, created_at, updated_at
+                FROM post
+                WHERE id = %s
+            """, (post_id,))
+            
+            post = cursor.fetchone()
+            if not post:
+                return f"Post {post_id} not found", 404
+            
+            # Format dates for display
+            post_created = post['created_at'].strftime('%Y-%m-%d %H:%M') if post['created_at'] else 'Unknown'
+            post_updated = post['updated_at'].strftime('%Y-%m-%d %H:%M') if post['updated_at'] else 'Unknown'
+            
         return render_template('imaging/sections/image_generation.html', 
-                             post_id=post_id)
+                             post_id=post_id,
+                             page_title='Image Generation',
+                             post_title=post['title'],
+                             post_status=post['status'],
+                             post_created=post_created,
+                             post_updated=post_updated)
     except Exception as e:
         logger.error(f"Error rendering image generation page: {str(e)}")
         return f"Error: {str(e)}", 500
