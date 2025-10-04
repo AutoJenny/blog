@@ -1,0 +1,259 @@
+<!-- Imaging Prompt Construction Panel - Independent from authoring -->
+<div class="prompt-construction-panel" id="prompt-construction-panel">
+    <div class="panel-header" onclick="togglePromptConstructionAccordion()">
+        <h4 id="prompt-title">Prompt Construction: Loading...</h4>
+        <i class="fas fa-chevron-up" id="prompt-accordion-icon"></i>
+    </div>
+    
+    <div class="panel-content" id="prompt-accordion-content">
+        <!-- Prompt Configuration -->
+        <div class="prompt-config">
+            <div class="prompt-section">
+                <label for="system-prompt">System Prompt:</label>
+                <textarea id="system-prompt" name="system_prompt" rows="3" placeholder="System prompt for image generation..."></textarea>
+            </div>
+            
+            <div class="prompt-section">
+                <label for="user-prompt">User Prompt:</label>
+                <textarea id="user-prompt" name="user_prompt" rows="4" placeholder="User prompt for image generation..."></textarea>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="prompt-actions">
+            <button type="button" id="save-prompts-btn" class="btn btn-secondary">
+                <i class="fas fa-save"></i> Save Prompts
+            </button>
+            <button type="button" id="load-prompts-btn" class="btn btn-secondary">
+                <i class="fas fa-download"></i> Load Prompts
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.prompt-construction-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid #334155;
+}
+
+.panel-header h4 {
+    color: #e2e8f0;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.panel-header i {
+    color: #94a3b8;
+    transition: transform 0.2s ease;
+}
+
+.panel-content {
+    padding: 1rem;
+}
+
+.prompt-config {
+    margin-bottom: 1rem;
+}
+
+.prompt-section {
+    margin-bottom: 1rem;
+}
+
+.prompt-section label {
+    display: block;
+    color: #e2e8f0;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.prompt-section textarea {
+    width: 100%;
+    padding: 0.5rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    color: #e2e8f0;
+    resize: vertical;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.prompt-section textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.prompt-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.btn-secondary {
+    background: #64748b;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #475569;
+}
+
+.btn-secondary:disabled {
+    background: #475569;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+</style>
+
+<script>
+// Prompt Construction Panel JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('[Prompt Construction] Initializing prompt construction panel');
+    
+    // Load prompt configuration
+    loadPromptConfiguration();
+    
+    // Set up save button
+    const saveBtn = document.getElementById('save-prompts-btn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', handleSavePrompts);
+    }
+    
+    // Set up load button
+    const loadBtn = document.getElementById('load-prompts-btn');
+    if (loadBtn) {
+        loadBtn.addEventListener('click', handleLoadPrompts);
+    }
+});
+
+async function loadPromptConfiguration() {
+    try {
+        console.log('[Prompt Construction] Loading prompt configuration');
+        const response = await fetch('/imaging/prompts/image-generation');
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('[Prompt Construction] Configuration loaded:', data);
+            
+            // Update prompt fields
+            if (data.prompt) {
+                const systemPrompt = document.getElementById('system-prompt');
+                const userPrompt = document.getElementById('user-prompt');
+                
+                if (systemPrompt && data.prompt.system_prompt) {
+                    systemPrompt.value = data.prompt.system_prompt;
+                }
+                if (userPrompt && data.prompt.prompt_text) {
+                    userPrompt.value = data.prompt.prompt_text;
+                }
+            }
+            
+            // Update title
+            const title = document.getElementById('prompt-title');
+            if (title) {
+                title.textContent = 'Prompt Construction: Ready';
+            }
+        } else {
+            throw new Error(data.error || 'Failed to load configuration');
+        }
+    } catch (error) {
+        console.error('[Prompt Construction] Error loading configuration:', error);
+        const title = document.getElementById('prompt-title');
+        if (title) {
+            title.textContent = 'Prompt Construction: Error';
+        }
+    }
+}
+
+async function handleSavePrompts() {
+    console.log('[Prompt Construction] Save prompts button clicked');
+    
+    // Collect prompt data
+    const prompts = {
+        system_prompt: document.getElementById('system-prompt').value,
+        user_prompt: document.getElementById('user-prompt').value
+    };
+    
+    try {
+        const response = await fetch('/imaging/prompts/image-generation', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(prompts)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Prompts saved successfully!');
+        } else {
+            throw new Error(result.error || 'Failed to save prompts');
+        }
+    } catch (error) {
+        console.error('[Prompt Construction] Error saving prompts:', error);
+        alert('Error saving prompts: ' + error.message);
+    }
+}
+
+async function handleLoadPrompts() {
+    console.log('[Prompt Construction] Load prompts button clicked');
+    
+    // Reload the prompt configuration
+    await loadPromptConfiguration();
+    alert('Prompts loaded successfully!');
+}
+
+function togglePromptConstructionAccordion() {
+    const content = document.getElementById('prompt-accordion-content');
+    const icon = document.getElementById('prompt-accordion-icon');
+    
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.className = 'fas fa-chevron-up';
+        localStorage.setItem('imaging-prompt-accordion-state', 'open');
+    } else {
+        content.style.display = 'none';
+        icon.className = 'fas fa-chevron-down';
+        localStorage.setItem('imaging-prompt-accordion-state', 'closed');
+    }
+}
+
+// Restore accordion state on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const savedState = localStorage.getItem('imaging-prompt-accordion-state');
+    if (savedState === 'open') {
+        const content = document.getElementById('prompt-accordion-content');
+        const icon = document.getElementById('prompt-accordion-icon');
+        if (content && icon) {
+            content.style.display = 'block';
+            icon.className = 'fas fa-chevron-up';
+        }
+    }
+});
+</script>

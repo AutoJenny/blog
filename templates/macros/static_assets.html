@@ -26,6 +26,8 @@
             <link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/main.css') }}">
             <link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/navigation.css') }}">
             <link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/imaging.css') }}">
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/model-selection.css') }}">
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/prompt-construction.css') }}">
         {% else %}
             <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/main.css') }}">
         {% endif %}
@@ -63,9 +65,8 @@
             <script src="{{ url_for('static', filename='js/llm-event-manager.js') }}"></script>
             <script src="{{ url_for('static', filename='js/llm-module.js') }}"></script>
         {% elif blueprint_name == 'imaging' %}
-            <script src="{{ url_for('static', filename='js/imaging/main.js') }}"></script>
-            <script src="{{ url_for('static', filename='js/imaging/navigation.js') }}"></script>
-            <script src="{{ url_for('static', filename='js/imaging/imaging.js') }}"></script>
+            <script src="{{ url_for('static', filename='js/imaging/imaging-core.js') }}"></script>
+            <script src="{{ url_for('static', filename='js/imaging/imaging-ui.js') }}"></script>
         {% else %}
             <script src="{{ url_for('static', filename='js/main.js') }}"></script>
         {% endif %}

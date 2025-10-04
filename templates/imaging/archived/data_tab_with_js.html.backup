@@ -1,0 +1,607 @@
+<!-- Data Tab Content - Imaging Version -->
+<div id="imaging-data-tab" class="tab-content">
+    <div class="container">
+        <div class="data-content">
+            <!-- Database Tables Section -->
+            <h3><i class="fas fa-database"></i> Database Tables</h3>
+            
+            <!-- Table Selection Radio Buttons -->
+            <div class="table-selection">
+                <div class="radio-group">
+                    <input type="radio" id="imaging-table-post-development" name="imaging-table-selection" value="post_development">
+                    <label for="imaging-table-post-development">Post Development Table</label>
+                </div>
+                <div class="radio-group">
+                    <input type="radio" id="imaging-table-post" name="imaging-table-selection" value="post">
+                    <label for="imaging-table-post">Post Table</label>
+                </div>
+                <div class="radio-group">
+                    <input type="radio" id="imaging-table-post-section" name="imaging-table-selection" value="post_section" checked>
+                    <label for="imaging-table-post-section">Post Section Table</label>
+                </div>
+            </div>
+
+            <!-- Post Development Table Display -->
+            <div id="imaging-post-development-table-display" class="table-display">
+                <h4>Post Development Table (ID: <span id="imaging-post-development-table-id">Loading...</span>)</h4>
+                <div id="imaging-post-development-fields-container" class="fields-container">
+                    <div class="loading">Loading development data...</div>
+                </div>
+            </div>
+
+            <!-- Post Table Display -->
+            <div id="imaging-post-table-display" class="table-display">
+                <h4>Post Table (ID: <span id="imaging-post-table-id">Loading...</span>)</h4>
+                <div id="imaging-post-fields-container" class="fields-container">
+                    <div class="loading">Loading post data...</div>
+                    <div style="color: #10b981; margin-top: 1rem;">
+                        <strong>Debug:</strong> Imaging data tab is rendering. If you see this, the include is working.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Post Section Table Display -->
+            <div id="imaging-post-section-table-display" class="table-display active">
+                <h4>Post Section Table (ID: <span id="imaging-post-section-table-id">Loading...</span>)</h4>
+                
+                <!-- Section Selector -->
+                <div class="section-selector" id="imaging-section-selector" style="display: block;">
+                    <label for="imaging-section-dropdown">Select Section:</label>
+                    <select id="imaging-section-dropdown" class="section-dropdown">
+                        <option value="">Choose a section...</option>
+                    </select>
+                    <button id="imaging-test-section-btn" class="btn btn-secondary" style="margin-left: 1rem;">Test Section 1</button>
+                </div>
+                
+                <div id="imaging-post-section-fields-container" class="fields-container">
+                    <div class="loading">Loading post section data...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions Section -->
+        <div class="data-section">
+            <h3><i class="fas fa-tools"></i> Actions</h3>
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="imagingRefreshPostData()">
+                    <i class="fas fa-sync-alt"></i> Refresh Data
+                </button>
+                <button class="btn btn-secondary" onclick="imagingExportPostData()">
+                    <i class="fas fa-download"></i> Export Data
+                </button>
+                <button class="btn btn-info" onclick="imagingViewInDatabase()">
+                    <i class="fas fa-database"></i> View in Database
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Imaging-specific data tab styles */
+.data-content {
+    margin-bottom: 2rem;
+}
+
+.data-content h2 {
+    color: #f1f5f9;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #3b82f6;
+    padding-bottom: 0.5rem;
+}
+
+.data-content h3 {
+    color: #e2e8f0;
+    margin: 2rem 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.data-section {
+    margin-bottom: 2rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+    transform: translateY(-1px);
+}
+
+.btn-info {
+    background: #06b6d4;
+    color: white;
+}
+
+.btn-info:hover {
+    background: #0891b2;
+    transform: translateY(-1px);
+}
+
+/* Table Selection Styles */
+.table-selection {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.radio-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.radio-group input[type="radio"] {
+    accent-color: #3b82f6;
+}
+
+.radio-group label {
+    color: #e2e8f0;
+    font-weight: 500;
+    cursor: pointer;
+    margin: 0;
+}
+
+/* Table Display Styles */
+.table-display {
+    display: none;
+}
+
+.table-display.active {
+    display: block;
+}
+
+.table-display h4 {
+    color: #f1f5f9;
+    margin: 1.5rem 0 1rem 0;
+    padding: 0.75rem 1rem;
+    border-left: 4px solid #3b82f6;
+}
+
+.fields-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.field-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.field-item:hover {
+    border-color: #3b82f6;
+}
+
+.field-item.empty {
+    opacity: 0.6;
+    border-style: dashed;
+}
+
+.field-item.populated {
+    border-left: 4px solid #10b981;
+}
+
+.field-name {
+    min-width: 200px;
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+}
+
+.field-value {
+    flex: 1;
+    color: #e2e8f0;
+    word-break: break-word;
+}
+
+.field-value.empty {
+    color: #6b7280;
+    font-style: italic;
+}
+
+.loading {
+    text-align: center;
+    color: #94a3b8;
+    padding: 2rem;
+    font-style: italic;
+}
+
+/* Section Selector Styles */
+.section-selector {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(71, 85, 105, 0.1);
+    border-radius: 6px;
+    border: 1px solid #475569;
+}
+
+.section-selector label {
+    color: #e2e8f0;
+    font-weight: 600;
+    margin-right: 1rem;
+    display: inline-block;
+}
+
+.section-dropdown {
+    background: #1e293b;
+    color: #e2e8f0;
+    border: 1px solid #475569;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    min-width: 200px;
+    cursor: pointer;
+}
+
+.section-dropdown:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.section-dropdown option {
+    background: #1e293b;
+    color: #e2e8f0;
+}
+</style>
+
+<script>
+// Imaging-specific data tab functionality
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('[Imaging Data Tab] Initializing...');
+    
+    // Initialize imaging data tab
+    initializeImagingDataTab();
+    
+    // Load post data with a small delay to ensure DOM is ready
+    setTimeout(() => {
+        console.log('[Imaging Data Tab] Attempting to load post data...');
+        imagingLoadPostData();
+    }, 100);
+});
+
+function initializeImagingDataTab() {
+    // Table selection radio buttons
+    const tableRadios = document.querySelectorAll('input[name="imaging-table-selection"]');
+    const tableDisplays = document.querySelectorAll('.table-display');
+    
+    tableRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.checked) {
+                // Remove active class from all table displays
+                tableDisplays.forEach(display => display.classList.remove('active'));
+                
+                // Add active class to selected table display
+                const targetDisplay = document.getElementById('imaging-' + this.value.replace('_', '-') + '-table-display');
+                if (targetDisplay) {
+                    targetDisplay.classList.add('active');
+                }
+            }
+        });
+    });
+}
+
+async function imagingLoadPostData() {
+    try {
+        console.log('[Imaging Data Tab] Loading post data...');
+        
+        // Get post ID from the URL
+        const postId = imagingGetPostId();
+        console.log('[Imaging Data Tab] Post ID:', postId);
+        
+        if (!postId) {
+            console.error('[Imaging Data Tab] Post ID not found');
+            throw new Error('Post ID not found');
+        }
+        
+        const url = `/imaging/api/posts/${postId}`;
+        console.log('[Imaging Data Tab] Fetching from:', url);
+        
+        const response = await fetch(url);
+        console.log('[Imaging Data Tab] Response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('[Imaging Data Tab] Data received:', data);
+        
+        imagingPopulatePostData(data);
+    } catch (error) {
+        console.error('[Imaging Data Tab] Error loading post data:', error);
+        imagingShowError('Failed to load post data: ' + error.message);
+    }
+}
+
+function imagingGetPostId() {
+    console.log('[Imaging Data Tab] Getting post ID...');
+    
+    // Try to get from URL
+    const urlMatch = window.location.pathname.match(/\/posts\/(\d+)/);
+    if (urlMatch) {
+        console.log('[Imaging Data Tab] Found post ID from URL:', urlMatch[1]);
+        return urlMatch[1];
+    }
+    
+    console.log('[Imaging Data Tab] No post ID found');
+    return null;
+}
+
+function imagingPopulatePostData(data) {
+    console.log('[Imaging Data Tab] Populating post data:', data);
+    
+    // Extract the actual post data from the API response
+    const postData = data.post || data;
+    
+    console.log('[Imaging Data Tab] Post data:', postData);
+    
+    // Set table IDs
+    document.getElementById('imaging-post-table-id').textContent = postData.id || 'Unknown';
+    document.getElementById('imaging-post-development-table-id').textContent = postData.id || 'Unknown';
+    document.getElementById('imaging-post-section-table-id').textContent = postData.id || 'Unknown';
+    
+    // Populate Post table
+    imagingPopulateTableFields('imaging-post-fields-container', postData, 'post');
+    
+    // Populate Post Development table
+    if (postData.expanded_idea || postData.idea_seed || postData.basic_idea || postData.provisional_title) {
+        const developmentData = {
+            id: postData.id,
+            idea_seed: postData.idea_seed,
+            expanded_idea: postData.expanded_idea,
+            basic_idea: postData.basic_idea,
+            provisional_title: postData.provisional_title
+        };
+        imagingPopulateTableFields('imaging-post-development-fields-container', developmentData, 'post_development');
+    } else {
+        document.getElementById('imaging-post-development-fields-container').innerHTML = '<div class="loading">No development data found</div>';
+    }
+    
+    // Load sections data
+    imagingLoadSectionsData(postData.id);
+    
+    console.log('[Imaging Data Tab] Post data populated successfully');
+}
+
+async function imagingLoadSectionsData(postId) {
+    try {
+        const url = `/imaging/api/posts/${postId}/sections`;
+        console.log('[Imaging Data Tab] Fetching sections from:', url);
+        
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('[Imaging Data Tab] Sections data received:', data);
+        
+        if (data.sections && data.sections.length > 0) {
+            imagingSetupSectionSelector(data.sections);
+            imagingShowSectionsSummary(data.sections);
+        } else {
+            document.getElementById('imaging-post-section-fields-container').innerHTML = '<div class="loading">No post section data found</div>';
+        }
+    } catch (error) {
+        console.error('[Imaging Data Tab] Error loading sections data:', error);
+        document.getElementById('imaging-post-section-fields-container').innerHTML = '<div class="loading">Error loading sections data</div>';
+    }
+}
+
+function imagingPopulateTableFields(containerId, data, tableType) {
+    console.log(`[Imaging Data Tab] Populating ${tableType} fields in container: ${containerId}`);
+    const container = document.getElementById(containerId);
+    
+    if (!container) {
+        console.error(`[Imaging Data Tab] Container not found: ${containerId}`);
+        return;
+    }
+    
+    const fields = Object.keys(data).sort();
+    container.innerHTML = '';
+    
+    fields.forEach(fieldName => {
+        const fieldValue = data[fieldName];
+        const isEmpty = fieldValue === null || fieldValue === undefined || fieldValue === '';
+        
+        const fieldItem = document.createElement('div');
+        fieldItem.className = `field-item ${isEmpty ? 'empty' : 'populated'}`;
+        
+        fieldItem.innerHTML = `
+            <div class="field-name">${fieldName}</div>
+            <div class="field-value ${isEmpty ? 'empty' : ''}">
+                ${isEmpty ? 'Empty' : String(fieldValue)}
+            </div>
+        `;
+        
+        container.appendChild(fieldItem);
+    });
+}
+
+function imagingSetupSectionSelector(sectionsData) {
+    const sectionSelector = document.getElementById('imaging-section-selector');
+    const sectionDropdown = document.getElementById('imaging-section-dropdown');
+    
+    if (!sectionSelector || !sectionDropdown) return;
+    
+    // Show the selector
+    sectionSelector.style.display = 'block';
+    
+    // Clear existing options
+    sectionDropdown.innerHTML = '<option value="">Choose a section...</option>';
+    
+    // Add summary option
+    const summaryOption = document.createElement('option');
+    summaryOption.value = 'summary';
+    summaryOption.textContent = '📊 Summary (All Sections)';
+    sectionDropdown.appendChild(summaryOption);
+    
+    // Add individual section options
+    sectionsData.forEach(section => {
+        const option = document.createElement('option');
+        option.value = section.id;
+        option.textContent = `${section.section_order}. ${section.section_heading || 'Untitled'}`;
+        sectionDropdown.appendChild(option);
+    });
+    
+    // Add change event listener
+    sectionDropdown.addEventListener('change', function() {
+        const selectedValue = this.value;
+        
+        if (selectedValue === 'summary') {
+            imagingShowSectionsSummary(sectionsData);
+        } else if (selectedValue) {
+            const selectedSection = sectionsData.find(s => s.id == selectedValue);
+            if (selectedSection) {
+                imagingShowIndividualSection(selectedSection);
+            }
+        }
+    });
+    
+    // Add test button event listener
+    const testButton = document.getElementById('imaging-test-section-btn');
+    if (testButton) {
+        testButton.addEventListener('click', function() {
+            const firstSection = sectionsData.find(s => s.section_order === 1);
+            if (firstSection) {
+                imagingShowIndividualSection(firstSection);
+            }
+        });
+    }
+}
+
+function imagingShowSectionsSummary(sectionsData) {
+    const summaryData = {
+        total_sections: sectionsData.length,
+        sections_with_image_prompts: sectionsData.filter(s => s.image_prompts && s.image_prompts.length > 0).length,
+        sections_with_image_captions: sectionsData.filter(s => s.image_captions && s.image_captions.length > 0).length,
+        total_image_prompts_length: sectionsData.reduce((total, s) => total + (s.image_prompts ? s.image_prompts.length : 0), 0),
+        average_image_prompts_length: Math.round(sectionsData.reduce((total, s) => total + (s.image_prompts ? s.image_prompts.length : 0), 0) / sectionsData.length),
+        section_list: sectionsData.map(section => 
+            `${section.section_order}. ${section.section_heading || 'Untitled'} - ${section.image_prompts ? section.image_prompts.length + ' chars' : 'no image prompts'}`
+        ).join('\n')
+    };
+    
+    imagingPopulateTableFields('imaging-post-section-fields-container', summaryData, 'post_section');
+}
+
+function imagingShowIndividualSection(section) {
+    console.log('[Imaging Data Tab] Showing individual section:', section);
+    
+    const sectionData = {
+        id: section.id,
+        post_id: section.post_id,
+        section_order: section.section_order,
+        section_heading: section.section_heading,
+        section_description: section.section_description,
+        image_prompts: section.image_prompts || '',
+        image_captions: section.image_captions || '',
+        selected_image_concept: section.selected_image_concept || '',
+        image_prompts_length: section.image_prompts ? section.image_prompts.length : 0,
+        image_captions_length: section.image_captions ? section.image_captions.length : 0,
+        has_image_prompts: section.image_prompts && section.image_prompts.length > 0,
+        image_prompts_preview: section.image_prompts ? section.image_prompts.substring(0, 200) + '...' : 'No image prompts'
+    };
+    
+    imagingPopulateTableFields('imaging-post-section-fields-container', sectionData, 'post_section');
+}
+
+function imagingRefreshPostData() {
+    imagingLoadPostData();
+    imagingShowNotification('Post data refreshed', 'success');
+}
+
+function imagingExportPostData() {
+    const data = {
+        post_id: imagingGetPostId(),
+        timestamp: new Date().toISOString(),
+        data: {
+            // Add relevant imaging data fields
+        }
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `imaging-post-${data.post_id}-data.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    imagingShowNotification('Post data exported', 'success');
+}
+
+function imagingViewInDatabase() {
+    window.open('/db/', '_blank');
+}
+
+function imagingShowNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 6px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        document.body.removeChild(notification);
+    }, 3000);
+}
+
+function imagingShowError(message) {
+    imagingShowNotification(message, 'error');
+}
+</script>

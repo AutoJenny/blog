@@ -34,9 +34,14 @@
     <div class="workspace-container">
         {% include 'imaging/includes/sections_panel.html' %}
         <div class="editor-panel">
-            <!-- LLM Module -->
-            <div class="llm-module-container">
-                {% include 'imaging/includes/llm_module_image_generation.html' %}
+            <!-- Model Selection Panel -->
+            <div class="model-selection-container">
+                {% include 'imaging/includes/model_selection_panel.html' %}
+            </div>
+            
+            <!-- Prompt Construction Panel -->
+            <div class="prompt-construction-container">
+                {% include 'imaging/includes/prompt_construction_panel.html' %}
             </div>
             
             <!-- Debugging Panel -->
@@ -49,6 +54,5 @@
 </div>
 {% endblock %}
 
-{% include 'imaging/includes/llm_accordion_functions.html' %}
-<script type="module" src="/static/js/imaging/image-generation.js"></script>
+<!-- Streamlined initialization - handled by imaging-core.js and imaging-ui.js -->
 {% endblock %}

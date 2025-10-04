@@ -1,0 +1,157 @@
+/* Imaging Model Selection Panel Styles */
+
+.model-selection-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
+}
+
+.model-selection-panel:hover {
+    border-color: #475569;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid #334155;
+    transition: background-color 0.2s ease;
+}
+
+.panel-header:hover {
+    background-color: rgba(71, 85, 105, 0.1);
+}
+
+.panel-header h4 {
+    color: #e2e8f0;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.panel-header i {
+    color: #94a3b8;
+    transition: transform 0.2s ease;
+}
+
+.panel-content {
+    padding: 1rem;
+}
+
+.image-model-selection {
+    margin-bottom: 1rem;
+}
+
+.image-model-selection label {
+    display: block;
+    color: #e2e8f0;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.image-model-selection select {
+    width: 100%;
+    padding: 0.5rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    color: #e2e8f0;
+    transition: border-color 0.2s ease;
+}
+
+.image-model-selection select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.model-parameters {
+    margin-bottom: 1rem;
+}
+
+.parameter-group {
+    margin-bottom: 0.75rem;
+}
+
+.parameter-group label {
+    display: block;
+    color: #e2e8f0;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.parameter-group select,
+.parameter-group input {
+    width: 100%;
+    padding: 0.4rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    color: #e2e8f0;
+    font-size: 0.9rem;
+    transition: border-color 0.2s ease;
+}
+
+.parameter-group select:focus,
+.parameter-group input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.model-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+    background: #64748b;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-primary:disabled:hover {
+    background: #64748b;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .model-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

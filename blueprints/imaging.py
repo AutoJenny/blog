@@ -315,3 +315,72 @@ def imaging_generate_image(post_id, section_id):
     except Exception as e:
         logger.error(f"Error generating image: {str(e)}")
         return jsonify({'success': False, 'error': str(e)})
+
+@bp.route('/api/model-selection', methods=['GET', 'POST'])
+def imaging_model_selection():
+    """Get or save model selection configuration"""
+    try:
+        if request.method == 'GET':
+            # Load saved model selection from ui_user_preferences
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT preference_value FROM ui_user_preferences 
+                    WHERE preference_key = 'imaging_model_selection'
+                """)
+                result = cursor.fetchone()
+                
+                if result:
+                    config = json.loads(result['preference_value'])
+                    return jsonify({
+                        'success': True,
+                        'model': config.get('model', 'sdxl-lora'),
+                        'parameters': config.get('parameters', {})
+                    })
+                else:
+                    # Return default configuration
+                    return jsonify({
+                        'success': True,
+                        'model': 'sdxl-lora',
+                        'parameters': {
+                            'image_dimensions': '1024x1024',
+                            'steps': 20,
+                            'cfg': 7,
+                            'seed': None
+                        }
+                    })
+        
+        elif request.method == 'POST':
+            # Save model selection to ui_user_preferences
+            data = request.get_json()
+            model = data.get('model', 'sdxl-lora')
+            parameters = data.get('parameters', {})
+            
+            config_data = {
+                'model': model,
+                'parameters': parameters,
+                'last_used': '2024-01-01T12:00:00Z'
+            }
+            
+            with db_manager.get_cursor() as cursor:
+                # Insert or update in ui_user_preferences
+                try:
+                    result = cursor.execute("""
+                        INSERT INTO ui_user_preferences (user_id, preference_key, preference_value, preference_type, category, is_global)
+                        VALUES (1, 'imaging_model_selection', %s, 'json', 'imaging', false)
+                        ON CONFLICT (user_id, preference_key) 
+                        DO UPDATE SET preference_value = %s, updated_at = NOW()
+                    """, (json.dumps(config_data), json.dumps(config_data)))
+                    cursor.connection.commit()  # Explicit commit
+                    logger.info(f"Successfully saved model selection: {config_data}, result: {result}")
+                except Exception as db_error:
+                    logger.error(f"Database error saving model selection: {db_error}")
+                    return jsonify({'success': False, 'error': str(db_error)}), 500
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Model selection saved successfully'
+                })
+                
+    except Exception as e:
+        logger.error(f"Error with model selection: {e}")
+        return jsonify({'error': str(e)}), 500
