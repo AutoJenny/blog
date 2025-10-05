@@ -16,7 +16,9 @@
 {% endblock %}
 
 {% block js_assets %}
-{{ js_assets('authoring') }}
+<!-- Completely override base.html's js_assets to avoid conflicts with shared LLM files -->
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/workflow-nav.js') }}"></script>
 <script>
     window.currentStage = 'authoring';
         window.currentSubstage = 'image-prompts';
@@ -36,7 +38,8 @@
         <div class="editor-panel">
             <!-- LLM Module -->
             <div class="llm-module-container">
-                {% include 'authoring/includes/llm_module_authoring.html' %}
+                {% include 'authoring/includes/llm_settings_panel.html' %}
+                {% include 'authoring/includes/llm_prompts.html' %}
             </div>
             
             <!-- Debugging Panel -->
