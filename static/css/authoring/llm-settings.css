@@ -1,0 +1,120 @@
+/* Authoring LLM Settings Panel Styles */
+.llm-settings-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid #334155;
+}
+
+.panel-header h4 {
+    color: #e2e8f0;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.panel-content {
+    padding: 1rem;
+}
+
+.provider-selection,
+.model-selection {
+    margin-bottom: 1rem;
+}
+
+.provider-selection label,
+.model-selection label {
+    display: block;
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.provider-selection select,
+.model-selection select {
+    width: 100%;
+    padding: 0.5rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    color: #e2e8f0;
+    font-size: 0.9rem;
+}
+
+.model-parameters {
+    margin-top: 1rem;
+}
+
+.param-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    gap: 0.5rem;
+}
+
+.param-row label {
+    min-width: 100px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #cbd5e1;
+}
+
+.param-row input[type="range"] {
+    flex: 1;
+    margin: 0 0.5rem;
+    background: transparent;
+    border: none;
+    height: 4px;
+    border-radius: 2px;
+    outline: none;
+}
+
+.param-row input[type="range"]::-webkit-slider-track {
+    background: #334155;
+    height: 4px;
+    border-radius: 2px;
+}
+
+.param-row input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #3b82f6;
+    cursor: pointer;
+    border: 2px solid #1e293b;
+}
+
+.param-row input[type="number"] {
+    width: 100px;
+    padding: 0.25rem 0.5rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    color: #e2e8f0;
+    font-size: 0.85rem;
+}
+
+.param-value {
+    min-width: 40px;
+    font-size: 0.8rem;
+    color: #94a3b8;
+    text-align: center;
+    font-weight: 500;
+}
