@@ -81,20 +81,27 @@ def imaging_generate_sdxl_image(image_prompt, post_id, section_id, parameters):
         height = parameters.get('height', 1024)
         steps = parameters.get('steps', 20)
         cfg = parameters.get('cfg', 7.5)
+        lora_scale = parameters.get('lora_scale', 0.85)
         seed = parameters.get('seed', None)
         
         # Call SDXL script
         import subprocess
         
+        # Use the virtual environment
+        venv_python = os.path.join(os.getcwd(), 'venv_sdxl', 'bin', 'python')
+        if not os.path.exists(venv_python):
+            return {'success': False, 'error': 'SDXL virtual environment not found. Please run setup_sdxl.sh first.'}
+        
         cmd = [
-            'python3', 'scripts/generate_sdxl_lora_integrated.py',
+            venv_python, 'scripts/generate_sdxl_lora_integrated.py',
             '--subject', image_prompt,
             '--post_id', str(post_id),
             '--section_id', str(section_id),
             '--width', str(width),
             '--height', str(height),
             '--steps', str(steps),
-            '--cfg', str(cfg)
+            '--cfg', str(cfg),
+            '--lora_scale', str(lora_scale)
         ]
         
         if seed:
@@ -298,11 +305,16 @@ def imaging_generate_image(post_id, section_id):
         data = request.get_json()
         model_name = data.get('model_name', 'dall-e-3')
         parameters = data.get('parameters', {})
+        image_prompt = data.get('image_prompt', '')
         
+        # Validate that we have a prompt
+        if not image_prompt:
+            return jsonify({'success': False, 'error': 'No image prompt provided'})
+        
+        # Verify section exists
         with db_manager.get_cursor() as cursor:
-            # Get section data including image_prompts
             cursor.execute("""
-                SELECT id, section_order, section_heading, image_prompts
+                SELECT id, section_order, section_heading
                 FROM post_section
                 WHERE id = %s AND post_id = %s
             """, (section_id, post_id))
@@ -310,13 +322,6 @@ def imaging_generate_image(post_id, section_id):
             section = cursor.fetchone()
             if not section:
                 return jsonify({'success': False, 'error': 'Section not found'})
-            
-            # Parse image_prompts JSON to get the actual prompt
-            image_prompts_data = json.loads(section['image_prompts']) if section['image_prompts'] else {}
-            image_prompt = image_prompts_data.get('image_prompt', '')
-            
-            if not image_prompt:
-                return jsonify({'success': False, 'error': 'No image prompt found for this section'})
             
             # Route to appropriate image generation function based on model
             if model_name.startswith('dall-e') or model_name.startswith('openai'):

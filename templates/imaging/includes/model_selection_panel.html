@@ -2,7 +2,12 @@
 <div class="model-selection-panel" id="model-selection-panel">
     <div class="panel-header" onclick="toggleModelSelectionAccordion()">
         <h4 id="model-title">Model Selection: Loading...</h4>
-        <i class="fas fa-chevron-up" id="model-accordion-icon"></i>
+        <div class="header-actions">
+            <button type="button" id="generate-image-btn" class="btn btn-primary btn-sm" onclick="event.stopPropagation(); window.imageGenerationHandler?.handleGenerateImage();">
+                <i class="fas fa-magic"></i> Generate Image
+            </button>
+            <i class="fas fa-chevron-up" id="model-accordion-icon"></i>
+        </div>
     </div>
     
     <div class="panel-content" id="model-accordion-content">
@@ -97,12 +102,7 @@
             </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="model-actions">
-            <button type="button" id="generate-image-btn" class="btn btn-primary">
-                <i class="fas fa-magic"></i> Generate Image
-            </button>
-        </div>
+        <!-- Action Buttons - Generate button moved to header -->
     </div>
 </div>
 

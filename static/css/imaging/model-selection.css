@@ -14,6 +14,12 @@
     border-bottom: 1px solid #334155;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
 .panel-header h4 {
     color: #e2e8f0;
     margin: 0;
@@ -238,8 +244,9 @@
 }
 
 .btn-sm {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    border-radius: 4px;
 }
 
 .btn-secondary {

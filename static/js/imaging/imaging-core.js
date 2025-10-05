@@ -362,20 +362,20 @@ function updateOutputPanel() {
     }
 }
 
-// Generate image
-function generateImage() {
-    if (!currentSection) {
-        alert('Please select a section first');
-        return;
-    }
-    
-    const model = document.getElementById('image-model-select').value;
-    const parameters = getCurrentParameters();
-    
-    console.log('Generating image for section', currentSection, 'with model', model, 'parameters', parameters);
-    // Image generation logic would go here
-}
+// Generate image - handled by ImageGenerationHandler
+// function generateImage() {
+//     if (!currentSection) {
+//         alert('Please select a section first');
+//         return;
+//     }
+//     
+//     const model = document.getElementById('image-model-select').value;
+//     const parameters = getCurrentParameters();
+//     
+//     console.log('Generating image for section', currentSection, 'with model', model, 'parameters', parameters);
+//     // Image generation logic would go here
+// }
 
 // Make functions globally available
 window.selectSection = selectSection;
-window.generateImage = generateImage;
+// window.generateImage = generateImage; // Handled by ImageGenerationHandler

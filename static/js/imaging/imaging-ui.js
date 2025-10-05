@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('[Imaging UI] Initializing');
     
     setupAccordions();
-    setupGenerateButton();
+    // setupGenerateButton(); // Handled by ImageGenerationHandler
     setupRefreshButton();
 });
 
@@ -55,13 +55,13 @@ function setupAccordions() {
     }
 }
 
-// Generate button
-function setupGenerateButton() {
-    const generateBtn = document.getElementById('generate-image-btn');
-    if (generateBtn) {
-        generateBtn.addEventListener('click', generateImage);
-    }
-}
+// Generate button - handled by ImageGenerationHandler
+// function setupGenerateButton() {
+//     const generateBtn = document.getElementById('generate-image-btn');
+//     if (generateBtn) {
+//         generateBtn.addEventListener('click', generateImage);
+//     }
+// }
 
 // Refresh button
 function setupRefreshButton() {
