@@ -29,8 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
     postId,
     onSelect: (section) => {
       output.show(section);
-      // Initialize LLM module for the selected section
+      // Save selected section to localStorage for persistence
       if (section && section.id) {
+        localStorage.setItem('authoring-selected-section', section.id);
         initializeLLMForSection(section.id);
       }
     },
@@ -38,10 +39,24 @@ document.addEventListener('DOMContentLoaded', () => {
       output.showMultiple(sections);
       // Initialize LLM module for the first selected section
       if (sections && sections.length > 0 && sections[0].id) {
+        localStorage.setItem('authoring-selected-section', sections[0].id);
         initializeLLMForSection(sections[0].id);
       }
     }
   });
+
+  // Restore previously selected section on page load
+  const savedSectionId = localStorage.getItem('authoring-selected-section');
+  if (savedSectionId) {
+    // Wait for sections to load, then restore selection
+    setTimeout(() => {
+      const savedSection = sectionsPanel.sections.find(s => s.id == savedSectionId);
+      if (savedSection) {
+        sectionsPanel.select(savedSectionId);
+        console.log(`[Image Prompts] Restored selection for section ${savedSectionId}`);
+      }
+    }, 100);
+  }
 
   // Function to initialize LLM module for current section
   function initializeLLMForSection(sectionId) {
