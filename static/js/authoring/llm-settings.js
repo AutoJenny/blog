@@ -55,6 +55,18 @@ class AuthoringLLMSettingsHandler {
             this.updateTokenLimitInstructions();
             this.saveImagingModelSelection();
         });
+
+        // System prompt change handler
+        const systemPromptField = document.getElementById('system-prompt-display');
+        systemPromptField?.addEventListener('blur', () => {
+            this.saveSystemPrompt();
+        });
+
+        // Style guidelines change handler
+        const styleGuidelinesField = document.getElementById('style-guidelines-display');
+        styleGuidelinesField?.addEventListener('blur', () => {
+            this.saveStyleGuidelines();
+        });
     }
 
     setupSliderDisplays() {
@@ -292,6 +304,68 @@ class AuthoringLLMSettingsHandler {
         const compiledText = `${systemPrompt}\n\n${tokenLimits}\n\n${styleGuidelines}\n\n${sectionContent}`;
         
         compiledPreviewField.value = compiledText;
+    }
+
+    async saveSystemPrompt() {
+        const systemPromptField = document.getElementById('system-prompt-display');
+        if (!systemPromptField) return;
+        
+        const systemPrompt = systemPromptField.value.trim();
+        
+        try {
+            const response = await fetch('/authoring/api/save-system-prompt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    system_prompt: systemPrompt,
+                    prompt_name: 'Image Prompts Generation'
+                })
+            });
+            
+            if (!response.ok) {
+                console.error('Failed to save system prompt to database');
+                return;
+            }
+            
+            console.log('[System Prompt] Saved successfully');
+            this.updateCompiledPreview();
+            
+        } catch (error) {
+            console.error('Error saving system prompt:', error);
+        }
+    }
+
+    async saveStyleGuidelines() {
+        const styleGuidelinesField = document.getElementById('style-guidelines-display');
+        if (!styleGuidelinesField) return;
+        
+        const styleGuidelines = styleGuidelinesField.value.trim();
+        
+        try {
+            const response = await fetch('/authoring/api/save-style-guidelines', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    style_guidelines: styleGuidelines,
+                    image_format_id: 2
+                })
+            });
+            
+            if (!response.ok) {
+                console.error('Failed to save style guidelines to database');
+                return;
+            }
+            
+            console.log('[Style Guidelines] Saved successfully');
+            this.updateCompiledPreview();
+            
+        } catch (error) {
+            console.error('Error saving style guidelines:', error);
+        }
     }
 }
 

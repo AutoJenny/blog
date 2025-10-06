@@ -1795,3 +1795,73 @@ def api_save_imaging_model_selection():
     except Exception as e:
         logger.error(f"Error saving imaging model selection: {e}")
         return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/save-system-prompt', methods=['POST'])
+def api_save_system_prompt():
+    """Save system prompt for Image Prompts Generation"""
+    try:
+        data = request.get_json()
+        system_prompt = data.get('system_prompt')
+        prompt_name = data.get('prompt_name', 'Image Prompts Generation')
+        
+        if not system_prompt:
+            return jsonify({'error': 'Missing system_prompt'}), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Update the system_prompt in llm_prompt table
+            cursor.execute("""
+                UPDATE llm_prompt 
+                SET system_prompt = %s, updated_at = NOW()
+                WHERE name = %s
+            """, (system_prompt, prompt_name))
+            
+            if cursor.rowcount == 0:
+                return jsonify({'error': 'Prompt not found'}), 404
+            
+            cursor.connection.commit()
+            
+            logger.info(f"System prompt updated for {prompt_name}")
+            
+            return jsonify({
+                'success': True,
+                'message': 'System prompt saved successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error saving system prompt: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/save-style-guidelines', methods=['POST'])
+def api_save_style_guidelines():
+    """Save style guidelines for image format"""
+    try:
+        data = request.get_json()
+        style_guidelines = data.get('style_guidelines')
+        image_format_id = data.get('image_format_id', 2)
+        
+        if not style_guidelines:
+            return jsonify({'error': 'Missing style_guidelines'}), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Update the style_guidelines in image_format table
+            cursor.execute("""
+                UPDATE image_format 
+                SET extra_settings = extra_settings::jsonb || %s::jsonb, updated_at = NOW()
+                WHERE id = %s
+            """, (json.dumps({'style_guidelines': style_guidelines}), image_format_id))
+            
+            if cursor.rowcount == 0:
+                return jsonify({'error': 'Image format not found'}), 404
+            
+            cursor.connection.commit()
+            
+            logger.info(f"Style guidelines updated for image_format {image_format_id}")
+            
+            return jsonify({
+                'success': True,
+                'message': 'Style guidelines saved successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error saving style guidelines: {e}")
+        return jsonify({'error': str(e)}), 500
