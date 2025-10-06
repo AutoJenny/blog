@@ -205,7 +205,7 @@ class AuthoringLLMSettingsHandler {
         const tokenLimit = this.getModelTokenLimit(selectedImagingModel);
         
                 if (tokenLimit) {
-                    tokenLimitField.value = `Generate a single imaging prompt up to ${tokenLimit} characters for ${selectedImagingModel} compatibility. Include: subject, setting, historical period and locality, 2–3 key elements, composition/framing, lighting, color palette, texture/materials, mood, vantage/time. Use the full budget when helpful. Keep to the Style Guidelines. No meta text. Respond ONLY as JSON: {"image_prompt":"..."}`;
+                    tokenLimitField.value = `Generate a single imaging prompt with a HARD LIMIT of ${tokenLimit} characters for ${selectedImagingModel}. If your draft exceeds ${tokenLimit}, rewrite until ≤ ${tokenLimit}. Include: subject, setting, historical period and locality, 2–3 key elements, composition/framing, lighting, color palette, texture/materials, mood, vantage/time. Prioritize ≥4 Style Guidelines cues. No meta text. Respond ONLY as JSON: {"image_prompt":"..."}`;
         } else {
             tokenLimitField.value = 'Token limit instructions will appear here based on selected imaging LLM...';
         }
