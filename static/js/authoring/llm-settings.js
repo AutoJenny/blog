@@ -250,8 +250,26 @@ class AuthoringLLMSettingsHandler {
         const sectionContentField = document.getElementById('section-content-display');
         if (!sectionContentField) return;
         
-        if (section && section.selected_image_concept) {
-            sectionContentField.value = section.selected_image_concept;
+        if (section && section.selected_image_concept && section.image_concepts) {
+            try {
+                // Parse the image_concepts JSON
+                const conceptsData = JSON.parse(section.image_concepts);
+                
+                // Find the selected concept
+                const selectedConcept = conceptsData.concepts?.find(
+                    concept => concept.concept_id === section.selected_image_concept
+                );
+                
+                if (selectedConcept) {
+                    // Extract the description (not the title)
+                    sectionContentField.value = selectedConcept.concept_description || '';
+                } else {
+                    sectionContentField.value = 'Selected concept not found in image concepts data.';
+                }
+            } catch (error) {
+                console.error('Error parsing image concepts:', error);
+                sectionContentField.value = 'Error parsing image concepts data.';
+            }
         } else {
             sectionContentField.value = 'Select a section to see its content...';
         }
