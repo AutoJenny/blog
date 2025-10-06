@@ -20,6 +20,8 @@ class AuthoringLLMSettingsHandler {
         this.loadSettings();
         this.updateProviderInfo();
         this.loadImagingModelSelection();
+        // Update compiled preview after everything is loaded
+        setTimeout(() => this.updateCompiledPreview(), 100);
     }
 
     setupEventListeners() {
@@ -54,6 +56,7 @@ class AuthoringLLMSettingsHandler {
         imagingModelSelect?.addEventListener('change', () => {
             this.updateTokenLimitInstructions();
             this.saveImagingModelSelection();
+            this.updateCompiledPreview();
         });
 
         // System prompt change handler
@@ -61,11 +64,17 @@ class AuthoringLLMSettingsHandler {
         systemPromptField?.addEventListener('blur', () => {
             this.saveSystemPrompt();
         });
+        systemPromptField?.addEventListener('input', () => {
+            this.updateCompiledPreview();
+        });
 
         // Style guidelines change handler
         const styleGuidelinesField = document.getElementById('style-guidelines-display');
         styleGuidelinesField?.addEventListener('blur', () => {
             this.saveStyleGuidelines();
+        });
+        styleGuidelinesField?.addEventListener('input', () => {
+            this.updateCompiledPreview();
         });
 
         // Generate button handler
