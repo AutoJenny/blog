@@ -19,7 +19,7 @@ class AuthoringLLMSettingsHandler {
         this.setupSliderDisplays();
         this.loadSettings();
         this.updateProviderInfo();
-        this.updateTokenLimitInstructions();
+        this.loadImagingModelSelection();
     }
 
     setupEventListeners() {
@@ -53,6 +53,7 @@ class AuthoringLLMSettingsHandler {
         const imagingModelSelect = document.getElementById('imaging-model-select');
         imagingModelSelect?.addEventListener('change', () => {
             this.updateTokenLimitInstructions();
+            this.saveImagingModelSelection();
         });
     }
 
@@ -190,6 +191,59 @@ class AuthoringLLMSettingsHandler {
         };
         
         return tokenLimits[modelName] || null;
+    }
+
+    saveImagingModelSelection() {
+        const imagingModelSelect = document.getElementById('imaging-model-select');
+        if (!imagingModelSelect) return;
+        
+        const selectedModel = imagingModelSelect.value;
+        
+        // Save to localStorage for session persistence
+        localStorage.setItem('imaging-model-selection', selectedModel);
+        
+        // Save to database for permanent persistence
+        this.saveImagingModelToDatabase(selectedModel);
+        
+        console.log('[Imaging Model] Selection saved:', selectedModel);
+    }
+
+    loadImagingModelSelection() {
+        const imagingModelSelect = document.getElementById('imaging-model-select');
+        if (!imagingModelSelect) return;
+        
+        // Try to load from localStorage first
+        const savedModel = localStorage.getItem('imaging-model-selection');
+        if (savedModel) {
+            imagingModelSelect.value = savedModel;
+            this.updateTokenLimitInstructions();
+            return;
+        }
+        
+        // Fallback to default
+        imagingModelSelect.value = 'dall-e-3';
+        this.updateTokenLimitInstructions();
+    }
+
+    async saveImagingModelToDatabase(modelName) {
+        try {
+            const response = await fetch('/authoring/api/save-imaging-model-selection', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    imaging_model: modelName,
+                    post_id: window.postId 
+                })
+            });
+            
+            if (!response.ok) {
+                console.error('Failed to save imaging model selection to database');
+            }
+        } catch (error) {
+            console.error('Error saving imaging model selection:', error);
+        }
     }
 }
 

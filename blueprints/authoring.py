@@ -1749,3 +1749,39 @@ def api_save_image_captions(post_id, section_id):
     except Exception as e:
         logger.error(f"Error saving image captions: {e}")
         return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/save-imaging-model-selection', methods=['POST'])
+def api_save_imaging_model_selection():
+    """Save imaging model selection for persistence across stages"""
+    try:
+        data = request.get_json()
+        imaging_model = data.get('imaging_model')
+        post_id = data.get('post_id')
+        
+        if not imaging_model or not post_id:
+            return jsonify({'error': 'Missing imaging_model or post_id'}), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Save to post_development table for persistence
+            cursor.execute("""
+                INSERT INTO post_development (post_id, imaging_model_selection, updated_at)
+                VALUES (%s, %s, NOW())
+                ON CONFLICT (post_id) 
+                DO UPDATE SET 
+                    imaging_model_selection = EXCLUDED.imaging_model_selection,
+                    updated_at = NOW()
+            """, (post_id, imaging_model))
+            
+            cursor.connection.commit()
+            
+            logger.info(f"Imaging model selection saved: {imaging_model} for post {post_id}")
+            
+            return jsonify({
+                'success': True,
+                'imaging_model': imaging_model,
+                'message': 'Imaging model selection saved successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error saving imaging model selection: {e}")
+        return jsonify({'error': str(e)}), 500
