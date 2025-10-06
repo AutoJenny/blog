@@ -245,6 +245,36 @@ class AuthoringLLMSettingsHandler {
             console.error('Error saving imaging model selection:', error);
         }
     }
+
+    updateSectionContent(section) {
+        const sectionContentField = document.getElementById('section-content-display');
+        if (!sectionContentField) return;
+        
+        if (section && section.selected_image_concept) {
+            sectionContentField.value = section.selected_image_concept;
+        } else {
+            sectionContentField.value = 'Select a section to see its content...';
+        }
+        
+        // Also update the compiled preview
+        this.updateCompiledPreview();
+    }
+
+    updateCompiledPreview() {
+        const compiledPreviewField = document.getElementById('compiled-preview');
+        if (!compiledPreviewField) return;
+        
+        // Get all the component texts
+        const systemPrompt = document.getElementById('system-prompt-display')?.value || '';
+        const tokenLimits = document.getElementById('token-limit-display')?.value || '';
+        const styleGuidelines = document.getElementById('style-guidelines-display')?.value || '';
+        const sectionContent = document.getElementById('section-content-display')?.value || '';
+        
+        // Combine them in the optimal order for LLM processing
+        const compiledText = `${systemPrompt}\n\n${tokenLimits}\n\n${styleGuidelines}\n\n${sectionContent}`;
+        
+        compiledPreviewField.value = compiledText;
+    }
 }
 
 // Accordion functions
@@ -281,4 +311,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize settings handler
     window.authoringLLMSettingsHandler = new AuthoringLLMSettingsHandler();
+    
+    // Make updateSectionContent available globally
+    window.updatePromptBuilderSectionContent = (section) => {
+        window.authoringLLMSettingsHandler?.updateSectionContent(section);
+    };
 });

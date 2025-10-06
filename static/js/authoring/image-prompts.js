@@ -29,6 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
     postId,
     onSelect: (section) => {
       output.show(section);
+      // Update Prompt Builder with section content
+      window.updatePromptBuilderSectionContent?.(section);
       // Save selected section to localStorage for persistence
       if (section && section.id) {
         localStorage.setItem('authoring-selected-section', section.id);
@@ -37,6 +39,10 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     onSelectMultiple: (sections) => {
       output.showMultiple(sections);
+      // Update Prompt Builder with first section content
+      if (sections && sections.length > 0) {
+        window.updatePromptBuilderSectionContent?.(sections[0]);
+      }
       // Initialize LLM module for the first selected section
       if (sections && sections.length > 0 && sections[0].id) {
         localStorage.setItem('authoring-selected-section', sections[0].id);
@@ -53,6 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const savedSection = sectionsPanel.sections.find(s => s.id == savedSectionId);
       if (savedSection) {
         sectionsPanel.select(savedSectionId);
+        // Update Prompt Builder with restored section content
+        window.updatePromptBuilderSectionContent?.(savedSection);
         console.log(`[Image Prompts] Restored selection for section ${savedSectionId}`);
       }
     }, 100);
