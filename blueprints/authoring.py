@@ -1898,6 +1898,19 @@ def api_generate_image_prompt_from_builder():
         
         generated_prompt = result['content'].strip()
         
+        # Parse JSON response to extract just the image_prompt
+        try:
+            import json
+            response_data = json.loads(generated_prompt)
+            if 'image_prompt' in response_data:
+                generated_prompt = response_data['image_prompt']
+            else:
+                # Fallback: if JSON doesn't have image_prompt field, use the whole response
+                logger.warning("JSON response missing 'image_prompt' field, using full response")
+        except json.JSONDecodeError:
+            # Fallback: if not valid JSON, use the whole response
+            logger.warning("LLM response is not valid JSON, using full response")
+        
         # Save to database
         with db_manager.get_cursor() as cursor:
             # Create a JSON structure similar to the existing image_prompts format
