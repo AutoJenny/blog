@@ -1,22 +1,41 @@
 <!-- LLM Prompts Panel -->
 <div class="llm-prompts-panel" id="llm-prompts-panel">
     <div class="panel-header" onclick="toggleLLMPromptsAccordion()">
-        <h4 id="prompt-title">test</h4>
+                <h4 id="prompt-title">Prompt Builder</h4>
         <div class="header-actions">
             <i class="fas fa-chevron-up" id="prompts-accordion-icon"></i>
         </div>
     </div>
     
-    <div class="panel-content" id="prompts-accordion-content" style="display: none;">
-        <div class="prompt-edit">
+        <div class="panel-content" id="prompts-accordion-content" style="display: none;">
+            <!-- 1. System Prompt (Role definition + constraints) -->
             <div class="form-group">
-                <label for="system-prompt-edit">System Prompt</label>
-                <textarea id="system-prompt-edit" rows="4" placeholder="System prompt...">{{ system_prompt or '' }}</textarea>
+                <label for="system-prompt-display">1. System Prompt</label>
+                <textarea id="system-prompt-display" rows="4" readonly placeholder="System prompt...">{{ system_prompt or '' }}</textarea>
             </div>
+            
+            <!-- 2. Token Limit Instructions (Technical constraints) -->
             <div class="form-group">
-                <label for="user-prompt-edit">User Prompt</label>
-                <textarea id="user-prompt-edit" rows="8" placeholder="User prompt..."></textarea>
+                <label for="token-limit-display">2. Token Limit Instructions</label>
+                <textarea id="token-limit-display" rows="2" readonly placeholder="Token limit instructions will appear here based on selected imaging LLM..."></textarea>
+            </div>
+            
+            <!-- 3. Style Guidelines (Output format requirements) -->
+            <div class="form-group">
+                <label for="style-guidelines-display">3. Style Guidelines</label>
+                <textarea id="style-guidelines-display" rows="4" readonly placeholder="Style guidelines will appear here..."></textarea>
+            </div>
+            
+            <!-- 4. Section Content (The actual content to process) -->
+            <div class="form-group">
+                <label for="section-content-display">4. Section Content</label>
+                <textarea id="section-content-display" rows="4" readonly placeholder="Select a section to see its content..."></textarea>
+            </div>
+            
+            <!-- Combined Preview -->
+            <div class="form-group">
+                <label for="compiled-preview">Compiled Preview</label>
+                <textarea id="compiled-preview" rows="6" readonly placeholder="Preview of the complete prompt that will be sent to the TEXT LLM..."></textarea>
             </div>
         </div>
-    </div>
 </div>
