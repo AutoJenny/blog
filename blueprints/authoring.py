@@ -1911,6 +1911,58 @@ def api_generate_image_prompt_from_builder():
             # Fallback: if not valid JSON, use the whole response
             logger.warning("LLM response is not valid JSON, using full response")
         
+        # Enforce imaging-model-specific hard character limit (server-side safety)
+        try:
+            # Determine imaging model selection for this post
+            imaging_limit = None
+            with db_manager.get_cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT imaging_model_selection 
+                    FROM post_development 
+                    WHERE post_id = %s
+                    """,
+                    (post_id,)
+                )
+                row = cursor.fetchone()
+                selected_model = (row.get('imaging_model_selection') if row else None) or 'sdxl-lora'
+
+            model_limits = {
+                'dall-e-3': 4000,
+                'dall-e-2': 1000,
+                'sdxl-lora': 400,
+                'gpt-image-1': 2000,
+            }
+            imaging_limit = model_limits.get(selected_model, 400)
+
+            # If over limit, request a compact rewrite from the LLM
+            if imaging_limit and len(generated_prompt) > imaging_limit:
+                compact_system = (
+                    "You are an expert at compressing image prompts without losing key style and scene cues. "
+                    f"Rewrite the user's prompt to be <= {imaging_limit} characters while preserving period, locality, and at least four distinct Style Guidelines cues. "
+                    "Respond ONLY as JSON in the exact format: {\"image_prompt\": \"...\"}. No commentary."
+                )
+                compact_messages = [
+                    { 'role': 'system', 'content': compact_system },
+                    { 'role': 'user', 'content': generated_prompt }
+                ]
+                compact = llm_service.execute_llm_request(llm_provider.lower(), llm_model, compact_messages)
+                if 'content' in compact:
+                    compact_text = compact['content'].strip()
+                    try:
+                        compact_json = json.loads(compact_text)
+                        compact_prompt = compact_json.get('image_prompt') or compact_text
+                    except Exception:
+                        compact_prompt = compact_text
+                    if len(compact_prompt) <= imaging_limit:
+                        generated_prompt = compact_prompt
+                    else:
+                        # Final safety: soft truncate at nearest word boundary
+                        safe = generated_prompt[:imaging_limit].rsplit(' ', 1)[0]
+                        generated_prompt = safe if safe else generated_prompt[:imaging_limit]
+        except Exception as _limit_err:
+            logger.warning(f"Image prompt length enforcement failed: {_limit_err}")
+
         # Save to database
         with db_manager.get_cursor() as cursor:
             # Create a JSON structure similar to the existing image_prompts format
