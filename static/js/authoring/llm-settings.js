@@ -21,7 +21,7 @@ class AuthoringLLMSettingsHandler {
         this.updateProviderInfo();
         this.loadImagingModelSelection();
         // Update compiled preview after everything is loaded
-        setTimeout(() => this.updateCompiledPreview(), 100);
+        setTimeout(() => { this.extractStyleAnchors(); this.updateCompiledPreview(); }, 100);
     }
 
     setupEventListeners() {
@@ -72,8 +72,11 @@ class AuthoringLLMSettingsHandler {
         const styleGuidelinesField = document.getElementById('style-guidelines-display');
         styleGuidelinesField?.addEventListener('blur', () => {
             this.saveStyleGuidelines();
+            this.extractStyleAnchors();
+            this.updateCompiledPreview();
         });
         styleGuidelinesField?.addEventListener('input', () => {
+            this.extractStyleAnchors();
             this.updateCompiledPreview();
         });
 
@@ -253,6 +256,7 @@ class AuthoringLLMSettingsHandler {
         // Fallback to default
         imagingModelSelect.value = 'dall-e-3';
         this.updateTokenLimitInstructions();
+        this.extractStyleAnchors();
     }
 
     async saveImagingModelToDatabase(modelName) {
@@ -308,20 +312,52 @@ class AuthoringLLMSettingsHandler {
         this.updateCompiledPreview();
     }
 
-    updateCompiledPreview() {
+            updateCompiledPreview() {
         const compiledPreviewField = document.getElementById('compiled-preview');
         if (!compiledPreviewField) return;
         
         // Get all the component texts
         const systemPrompt = document.getElementById('system-prompt-display')?.value || '';
         const tokenLimits = document.getElementById('token-limit-display')?.value || '';
-        const styleGuidelines = document.getElementById('style-guidelines-display')?.value || '';
+                const styleGuidelines = document.getElementById('style-guidelines-display')?.value || '';
+                const styleAnchors = document.getElementById('style-anchors-display')?.value || '';
         const sectionContent = document.getElementById('section-content-display')?.value || '';
         
         // Combine them in the optimal order for LLM processing
-        const compiledText = `${systemPrompt}\n\n${tokenLimits}\n\n${styleGuidelines}\n\n${sectionContent}`;
+                const anchorsBlock = styleAnchors ? `\n\nStyle anchors: ${styleAnchors}` : '';
+                const compiledText = `${systemPrompt}\n\n${tokenLimits}\n\n${styleGuidelines}${anchorsBlock}\n\n${sectionContent}`;
         
         compiledPreviewField.value = compiledText;
+    }
+
+    extractStyleAnchors() {
+        const guidelines = document.getElementById('style-guidelines-display')?.value || '';
+        const anchorsField = document.getElementById('style-anchors-display');
+        if (!anchorsField) return;
+        
+        if (!guidelines.trim()) {
+            anchorsField.value = '';
+            return;
+        }
+        
+        const candidates = [];
+        const cues = [
+            'loose ink outlines', 'semi-transparent', 'visible paper texture', 'edges fade',
+            'muted ochres', 'browns', 'greens', 'blues', 'soft washes', 'fine pen outlines',
+            'hand-painted', 'nostalgic feel'
+        ];
+        for (const cue of cues) {
+            if (guidelines.toLowerCase().includes(cue)) candidates.push(cue);
+        }
+        if (candidates.length < 4) {
+            const parts = guidelines.split(/[;,\.]/).map(s => s.trim()).filter(Boolean);
+            for (const p of parts) {
+                if (p.length <= 40 && /[a-z]/i.test(p)) candidates.push(p);
+                if (candidates.length >= 6) break;
+            }
+        }
+        const unique = [...new Set(candidates)].slice(0, 6);
+        anchorsField.value = unique.join('; ');
     }
 
     async saveSystemPrompt() {
