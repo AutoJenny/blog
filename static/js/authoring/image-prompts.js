@@ -51,20 +51,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Restore previously selected section on page load
-  const savedSectionId = localStorage.getItem('authoring-selected-section');
-  if (savedSectionId) {
-    // Wait for sections to load, then restore selection
-    setTimeout(() => {
-      const savedSection = sectionsPanel.sections.find(s => s.id == savedSectionId);
-      if (savedSection) {
-        sectionsPanel.select(savedSectionId);
-        // Update Prompt Builder with restored section content
-        window.updatePromptBuilderSectionContent?.(savedSection);
-        console.log(`[Image Prompts] Restored selection for section ${savedSectionId}`);
-      }
-    }, 100);
-  }
+          // Restore previously selected section on page load
+          const savedSectionId = localStorage.getItem('authoring-selected-section');
+          if (savedSectionId) {
+            // Wait until the Prompt Builder handler is initialized before restoring selection
+            const tryRestore = () => {
+              if (window.authoringLLMSettingsHandler) {
+                try {
+                  sectionsPanel.select(savedSectionId);
+                  console.log(`[Image Prompts] Restored selection for section ${savedSectionId}`);
+                } catch (err) {
+                  console.warn('[Image Prompts] Failed to restore selection:', err);
+                }
+              } else {
+                setTimeout(tryRestore, 100);
+              }
+            };
+            setTimeout(tryRestore, 150);
+          }
 
   // Function to initialize LLM module for current section
   function initializeLLMForSection(sectionId) {
