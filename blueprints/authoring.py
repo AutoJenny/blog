@@ -1891,8 +1891,7 @@ def api_generate_image_prompt_from_builder():
         ]
         
         # Execute LLM request using the selected provider and model
-        result = llm_service.execute_llm_request(llm_provider.lower(), llm_model, messages, 
-                                                temperature=temperature, max_tokens=max_tokens)
+        result = llm_service.execute_llm_request(llm_provider.lower(), llm_model, messages)
         
         if 'error' in result:
             return jsonify({'error': f'LLM generation failed: {result["error"]}'}), 500
