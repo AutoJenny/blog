@@ -397,10 +397,19 @@ def authoring_sections_image_prompts(post_id):
             """)
             prompt_data = cursor.fetchone()
             
+            # Get style guidelines from image_format table
+            cursor.execute("""
+                SELECT extra_settings::jsonb->>'style_guidelines' as style_guidelines
+                FROM image_format 
+                WHERE id = 2
+            """)
+            style_data = cursor.fetchone()
+            
             # Extract prompt data
             prompt_name = prompt_data['name'] if prompt_data else 'Image Prompts Generation'
             system_prompt = prompt_data['system_prompt'] if prompt_data else ''
             user_prompt = prompt_data['prompt_text'] if prompt_data else ''
+            style_guidelines = style_data['style_guidelines'] if style_data else ''
             
             return render_template('authoring/sections/image_prompts.html', 
                                  post_id=post_id,
@@ -409,7 +418,8 @@ def authoring_sections_image_prompts(post_id):
                                  blueprint_name='authoring',
                                  prompt_name=prompt_name,
                                  system_prompt=system_prompt,
-                                 user_prompt=user_prompt)
+                                 user_prompt=user_prompt,
+                                 style_guidelines=style_guidelines)
             
     except Exception as e:
         logger.error(f"Error in authoring_sections_image_prompts: {e}")
