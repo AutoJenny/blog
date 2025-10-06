@@ -65,10 +65,14 @@ export class ImagePromptsOutputPanel {
     document.getElementById('section-topics-display').innerHTML = (section.topics||[]).map(t=>`<span class="topic-tag">${t}</span>`).join('');
 
     const editor = document.getElementById('content-editor');
-    editor.disabled = false;
-    document.getElementById('preview-btn').disabled = false;
-    document.getElementById('save-btn').disabled = false;
-    document.getElementById('regenerate-btn').disabled = false;
+    if (editor) editor.disabled = false;
+    // Buttons may not exist in this stage; guard safely
+    const previewBtn = document.getElementById('preview-btn');
+    const saveBtn = document.getElementById('save-btn');
+    const regenBtn = document.getElementById('regenerate-btn');
+    if (previewBtn) previewBtn.disabled = false;
+    if (saveBtn) saveBtn.disabled = false;
+    if (regenBtn) regenBtn.disabled = false;
 
     // Display image prompts - try structured display first, fallback to textarea
     this.displayImagePrompts(section.image_prompts || '');
@@ -93,10 +97,13 @@ export class ImagePromptsOutputPanel {
     document.getElementById('section-topics-display').innerHTML = '';
 
     const editor = document.getElementById('content-editor');
-    editor.disabled = false;
-    document.getElementById('preview-btn').disabled = false;
-    document.getElementById('save-btn').disabled = false;
-    document.getElementById('regenerate-btn').disabled = false;
+    if (editor) editor.disabled = false;
+    const previewBtn = document.getElementById('preview-btn');
+    const saveBtn = document.getElementById('save-btn');
+    const regenBtn = document.getElementById('regenerate-btn');
+    if (previewBtn) previewBtn.disabled = false;
+    if (saveBtn) saveBtn.disabled = false;
+    if (regenBtn) regenBtn.disabled = false;
 
     // Display prompts for all selected sections
     this.displayMultipleSectionsPrompts(sections);

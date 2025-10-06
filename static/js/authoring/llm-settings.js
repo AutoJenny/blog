@@ -191,7 +191,7 @@ class AuthoringLLMSettingsHandler {
         }
     }
 
-    updateTokenLimitInstructions() {
+            updateTokenLimitInstructions() {
         const imagingModelSelect = document.getElementById('imaging-model-select');
         const tokenLimitField = document.getElementById('token-limit-display');
         
@@ -202,10 +202,13 @@ class AuthoringLLMSettingsHandler {
         const tokenLimit = this.getModelTokenLimit(selectedImagingModel);
         
         if (tokenLimit) {
-            tokenLimitField.value = `Generate a prompt under ${tokenLimit} characters for ${selectedImagingModel} compatibility.`;
+                    tokenLimitField.value = `Generate a single imaging prompt up to ${tokenLimit} characters for ${selectedImagingModel} compatibility. Include: subject, setting, 2–3 key elements, composition/framing, lighting, color palette, texture/materials, mood, vantage/time. Keep to the Style Guidelines. No meta text. Respond ONLY as JSON: {"image_prompt":"..."}`;
         } else {
             tokenLimitField.value = 'Token limit instructions will appear here based on selected imaging LLM...';
         }
+
+                // Refresh compiled preview when token limit guidance changes
+                this.updateCompiledPreview();
     }
 
     getModelTokenLimit(modelName) {
