@@ -1935,11 +1935,13 @@ def api_generate_image_prompt_from_builder():
             }
             imaging_limit = model_limits.get(selected_model, 400)
 
-            # If over limit, request a compact rewrite from the LLM
+            # If over limit, request a compact rewrite targeting near the cap
             if imaging_limit and len(generated_prompt) > imaging_limit:
+                target_min = max(0, imaging_limit - 40)  # e.g., 360-400 for 400 cap
                 compact_system = (
                     "You are an expert at compressing image prompts without losing key style and scene cues. "
-                    f"Rewrite the user's prompt to be <= {imaging_limit} characters while preserving period, locality, and at least four distinct Style Guidelines cues. "
+                    f"Rewrite the user's prompt to be between {target_min} and {imaging_limit} characters (never exceed {imaging_limit}), "
+                    "preserving historical period, locality, and at least four distinct Style Guidelines cues (prefer exact phrases). "
                     "Respond ONLY as JSON in the exact format: {\"image_prompt\": \"...\"}. No commentary."
                 )
                 compact_messages = [
@@ -1960,6 +1962,31 @@ def api_generate_image_prompt_from_builder():
                         # Final safety: soft truncate at nearest word boundary
                         safe = generated_prompt[:imaging_limit].rsplit(' ', 1)[0]
                         generated_prompt = safe if safe else generated_prompt[:imaging_limit]
+
+            # If result is far under budget, try a single expansion pass (still <= cap)
+            if imaging_limit and len(generated_prompt) < int(imaging_limit * 0.8):
+                target_min = max(0, imaging_limit - 40)
+                expand_system = (
+                    "You are an expert at expanding image prompts while keeping them within a strict limit. "
+                    f"Expand the user's prompt to approach {target_min}-{imaging_limit} characters (do not exceed {imaging_limit}). "
+                    "Add concrete detail (subject, setting, composition, lighting, palette, texture/materials, mood, vantage/time) and maintain at least four distinct Style Guidelines cues (prefer exact phrases). "
+                    "Respond ONLY as JSON in the exact format: {\"image_prompt\": \"...\"}. No commentary."
+                )
+                expand_messages = [
+                    { 'role': 'system', 'content': expand_system },
+                    { 'role': 'user', 'content': generated_prompt }
+                ]
+                expand = llm_service.execute_llm_request(llm_provider.lower(), llm_model, expand_messages)
+                if 'content' in expand:
+                    expand_text = expand['content'].strip()
+                    try:
+                        expand_json = json.loads(expand_text)
+                        expanded_prompt = expand_json.get('image_prompt') or expand_text
+                    except Exception:
+                        expanded_prompt = expand_text
+                    # Accept if within cap
+                    if len(expanded_prompt) <= imaging_limit:
+                        generated_prompt = expanded_prompt
         except Exception as _limit_err:
             logger.warning(f"Image prompt length enforcement failed: {_limit_err}")
 
