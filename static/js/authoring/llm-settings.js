@@ -67,6 +67,12 @@ class AuthoringLLMSettingsHandler {
         styleGuidelinesField?.addEventListener('blur', () => {
             this.saveStyleGuidelines();
         });
+
+        // Generate button handler
+        const generateBtn = document.getElementById('generate-prompt-btn');
+        generateBtn?.addEventListener('click', () => {
+            this.generateImagePrompt();
+        });
     }
 
     setupSliderDisplays() {
@@ -365,6 +371,93 @@ class AuthoringLLMSettingsHandler {
             
         } catch (error) {
             console.error('Error saving style guidelines:', error);
+        }
+    }
+
+    async generateImagePrompt() {
+        const generateBtn = document.getElementById('generate-prompt-btn');
+        const outputField = document.getElementById('image-prompts-display');
+        
+        if (!generateBtn || !outputField) return;
+        
+        // Get the compiled prompt
+        const compiledPrompt = document.getElementById('compiled-preview')?.value || '';
+        if (!compiledPrompt.trim()) {
+            alert('Please ensure all fields are filled in the Prompt Builder');
+            return;
+        }
+        
+        // Get current LLM settings
+        const settings = this.getSettings();
+        
+        // Disable button and show loading
+        generateBtn.disabled = true;
+        generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+        
+        try {
+            const response = await fetch('/authoring/api/generate-image-prompt-from-builder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    compiled_prompt: compiledPrompt,
+                    llm_provider: settings.provider,
+                    llm_model: settings.model,
+                    temperature: settings.temperature,
+                    max_tokens: settings.maxTokens,
+                    post_id: window.postId,
+                    section_id: this.getCurrentSectionId()
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Display the generated prompt in the output field
+                this.displayGeneratedPrompt(result.generated_prompt);
+                console.log('[Generate] Image prompt generated successfully');
+            } else {
+                throw new Error(result.error || 'Unknown error occurred');
+            }
+            
+        } catch (error) {
+            console.error('Error generating image prompt:', error);
+            alert(`Error generating image prompt: ${error.message}`);
+        } finally {
+            // Re-enable button
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate';
+        }
+    }
+
+    getCurrentSectionId() {
+        // Get the currently selected section ID from localStorage or sections panel
+        const savedSectionId = localStorage.getItem('authoring-selected-section');
+        return savedSectionId || null;
+    }
+
+    displayGeneratedPrompt(generatedPrompt) {
+        const outputField = document.getElementById('image-prompts-display');
+        if (!outputField) return;
+        
+        // Show the output panel
+        outputField.style.display = 'block';
+        
+        // Update the prompts container with the generated content
+        const promptsContainer = document.getElementById('prompts-container');
+        if (promptsContainer) {
+            promptsContainer.innerHTML = `
+                <div class="prompt-card">
+                    <div class="prompt-content">
+                        <div class="prompt-text">${generatedPrompt}</div>
+                    </div>
+                </div>
+            `;
         }
     }
 }

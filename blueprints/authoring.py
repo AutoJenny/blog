@@ -1865,3 +1865,66 @@ def api_save_style_guidelines():
     except Exception as e:
         logger.error(f"Error saving style guidelines: {e}")
         return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/generate-image-prompt-from-builder', methods=['POST'])
+def api_generate_image_prompt_from_builder():
+    """Generate image prompt using the compiled prompt from Prompt Builder"""
+    try:
+        data = request.get_json()
+        compiled_prompt = data.get('compiled_prompt')
+        llm_provider = data.get('llm_provider', 'Ollama')
+        llm_model = data.get('llm_model', 'llama3.2:latest')
+        temperature = data.get('temperature', 0.7)
+        max_tokens = data.get('max_tokens', 2000)
+        post_id = data.get('post_id')
+        section_id = data.get('section_id')
+        
+        if not compiled_prompt:
+            return jsonify({'error': 'Missing compiled_prompt'}), 400
+        
+        if not post_id or not section_id:
+            return jsonify({'error': 'Missing post_id or section_id'}), 400
+        
+        # Prepare messages for LLM
+        messages = [
+            {'role': 'user', 'content': compiled_prompt}
+        ]
+        
+        # Execute LLM request using the selected provider and model
+        result = llm_service.execute_llm_request(llm_provider.lower(), llm_model, messages, 
+                                                temperature=temperature, max_tokens=max_tokens)
+        
+        if 'error' in result:
+            return jsonify({'error': f'LLM generation failed: {result["error"]}'}), 500
+        
+        generated_prompt = result['content'].strip()
+        
+        # Save to database
+        with db_manager.get_cursor() as cursor:
+            # Create a JSON structure similar to the existing image_prompts format
+            image_prompt_json = {
+                "image_prompt": generated_prompt,
+                "dimensions": "1792x1024",  # Default dimensions
+                "style": "inkwash and watercolour",
+                "base_concept": generated_prompt
+            }
+            
+            cursor.execute("""
+                UPDATE post_section 
+                SET image_prompts = %s
+                WHERE post_id = %s AND id = %s
+            """, (json.dumps(image_prompt_json), post_id, section_id))
+            
+            cursor.connection.commit()
+            
+            logger.info(f"Generated image prompt saved for post {post_id}, section {section_id}")
+            
+            return jsonify({
+                'success': True,
+                'generated_prompt': generated_prompt,
+                'message': 'Image prompt generated and saved successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error generating image prompt from builder: {e}")
+        return jsonify({'error': str(e)}), 500
