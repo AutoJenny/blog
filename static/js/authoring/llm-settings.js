@@ -19,6 +19,7 @@ class AuthoringLLMSettingsHandler {
         this.setupSliderDisplays();
         this.loadSettings();
         this.updateProviderInfo();
+        this.updateTokenLimitInstructions();
     }
 
     setupEventListeners() {
@@ -46,6 +47,12 @@ class AuthoringLLMSettingsHandler {
         this.maxTokensInput?.addEventListener('change', () => {
             this.updateProviderInfo();
             this.saveSettings();
+        });
+
+        // Imaging model change handler
+        const imagingModelSelect = document.getElementById('imaging-model-select');
+        imagingModelSelect?.addEventListener('change', () => {
+            this.updateTokenLimitInstructions();
         });
     }
 
@@ -154,6 +161,35 @@ class AuthoringLLMSettingsHandler {
         if (settingsTitle) {
             settingsTitle.textContent = `LLM Settings: ${settings.provider} - ${settings.model}`;
         }
+    }
+
+    updateTokenLimitInstructions() {
+        const imagingModelSelect = document.getElementById('imaging-model-select');
+        const tokenLimitField = document.getElementById('token-limit-display');
+        
+        if (!tokenLimitField || !imagingModelSelect) return;
+        
+        // Get token limit for the selected imaging model
+        const selectedImagingModel = imagingModelSelect.value;
+        const tokenLimit = this.getModelTokenLimit(selectedImagingModel);
+        
+        if (tokenLimit) {
+            tokenLimitField.value = `Generate a prompt under ${tokenLimit} characters for ${selectedImagingModel} compatibility.`;
+        } else {
+            tokenLimitField.value = 'Token limit instructions will appear here based on selected imaging LLM...';
+        }
+    }
+
+    getModelTokenLimit(modelName) {
+        // Token limits for imaging models
+        const tokenLimits = {
+            'dall-e-3': 4000,
+            'dall-e-2': 1000,
+            'sdxl-lora': 400,
+            'gpt-image-1': 2000
+        };
+        
+        return tokenLimits[modelName] || null;
     }
 }
 
