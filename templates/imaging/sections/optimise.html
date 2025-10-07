@@ -29,7 +29,13 @@
 {% block content %}
 {% include 'shared/blog_pipeline_header.html' %}
 
-{% block process_content %}{% endblock %}
+{% block process_content %}
+<div class="imaging-workspace">
+  <div class="workspace-container">
+    {% include 'imaging/includes/sections_panel_imaging.html' %}
+  </div>
+  </div>
+{% endblock %}
 
 {% endblock %}
 
