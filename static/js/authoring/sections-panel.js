@@ -59,13 +59,7 @@ export class SectionsPanel {
     });
 
     document.getElementById('batch-generate-btn')?.addEventListener('click', () => {
-      // Generate for ALL sections, not just selected ones
-      const ids = this.sections.map(s => String(s.id));
-      console.log(`[DEBUG] Generate All clicked - generating for ${ids.length} sections:`, ids);
-      console.log('[DEBUG] Dispatching sections:batch-generate event');
-      const evt = new CustomEvent('sections:batch-generate', { detail: { ids }});
-      window.dispatchEvent(evt);
-      console.log('[DEBUG] Event dispatched successfully');
+      this.startBatchGeneration();
     });
 
     // Listen for reload events after batch generation
@@ -74,6 +68,232 @@ export class SectionsPanel {
       console.log('[DEBUG] Current sections before reload:', this.sections.length);
       this.load();
     });
+  }
+
+  startBatchGeneration() {
+    // Generate for ALL sections, not just selected ones
+    const sections = this.sections.map(s => ({ id: String(s.id), title: s.section_heading || `Section ${s.id}` }));
+    
+    // Show progress UI
+    this.showBatchProgress(sections);
+    
+    // Dispatch batch generation event
+    const ids = sections.map(s => s.id);
+    console.log(`[DEBUG] Generate All clicked - generating for ${ids.length} sections:`, ids);
+    console.log('[DEBUG] Dispatching sections:batch-generate event');
+    const evt = new CustomEvent('sections:batch-generate', { detail: { ids, sections }});
+    window.dispatchEvent(evt);
+    console.log('[DEBUG] Event dispatched successfully');
+  }
+
+  showBatchProgress(sections) {
+    // Disable Generate All button
+    const batchBtn = document.getElementById('batch-generate-btn');
+    if (batchBtn) {
+      batchBtn.disabled = true;
+      batchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    }
+
+    // Create progress modal/overlay
+    const progressHTML = `
+      <div id="batch-progress-modal" class="batch-progress-modal">
+        <div class="batch-progress-content">
+          <div class="batch-progress-header">
+            <h3>Batch Generation Progress</h3>
+            <button id="cancel-batch-btn" class="btn btn-secondary btn-sm">
+              <i class="fas fa-times"></i> Cancel
+            </button>
+          </div>
+          <div class="batch-progress-body">
+            <div class="progress-summary">
+              <span id="progress-text">Starting batch generation for ${sections.length} sections...</span>
+            </div>
+            <div class="progress-bar-container">
+              <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+              </div>
+              <span id="progress-percent">0%</span>
+            </div>
+            <div class="section-list">
+              ${sections.map(s => `
+                <div class="section-item" data-section-id="${s.id}">
+                  <span class="section-name">${s.title}</span>
+                  <span class="section-status">Pending</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Remove existing modal if any
+    const existingModal = document.getElementById('batch-progress-modal');
+    if (existingModal) existingModal.remove();
+
+    // Add modal to page
+    document.body.insertAdjacentHTML('beforeend', progressHTML);
+
+    // Add cancel handler
+    document.getElementById('cancel-batch-btn')?.addEventListener('click', () => {
+      this.cancelBatchGeneration();
+    });
+
+    // Add CSS if not already present
+    if (!document.getElementById('batch-progress-styles')) {
+      const styles = `
+        <style id="batch-progress-styles">
+          .batch-progress-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .batch-progress-content {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1.5rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+          }
+          .batch-progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #334155;
+          }
+          .batch-progress-header h3 {
+            margin: 0;
+            color: #e2e8f0;
+          }
+          .progress-summary {
+            margin-bottom: 1rem;
+            color: #e2e8f0;
+          }
+          .progress-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+          }
+          .progress-bar {
+            flex: 1;
+            height: 20px;
+            background: #334155;
+            border-radius: 10px;
+            overflow: hidden;
+          }
+          .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+            transition: width 0.3s ease;
+          }
+          .section-list {
+            max-height: 300px;
+            overflow-y: auto;
+          }
+          .section-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            margin-bottom: 0.25rem;
+            background: #334155;
+            border-radius: 4px;
+          }
+          .section-name {
+            color: #e2e8f0;
+            font-weight: 500;
+          }
+          .section-status {
+            font-size: 0.875rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+          }
+          .section-status.pending { color: #94a3b8; }
+          .section-status.generating { color: #fbbf24; }
+          .section-status.completed { color: #10b981; }
+          .section-status.error { color: #ef4444; }
+        </style>
+      `;
+      document.head.insertAdjacentHTML('beforeend', styles);
+    }
+  }
+
+  updateBatchProgress(currentIndex, totalSections, sectionId, status, error = null) {
+    const progressFill = document.getElementById('progress-fill');
+    const progressPercent = document.getElementById('progress-percent');
+    const progressText = document.getElementById('progress-text');
+    const sectionItem = document.querySelector(`[data-section-id="${sectionId}"]`);
+    const sectionStatus = sectionItem?.querySelector('.section-status');
+
+    if (progressFill && progressPercent) {
+      const percent = Math.round((currentIndex / totalSections) * 100);
+      progressFill.style.width = `${percent}%`;
+      progressPercent.textContent = `${percent}%`;
+    }
+
+    if (progressText) {
+      progressText.textContent = `Processing section ${currentIndex} of ${totalSections}...`;
+    }
+
+    if (sectionStatus) {
+      sectionStatus.textContent = status;
+      sectionStatus.className = `section-status ${status}`;
+      
+      if (error) {
+        sectionStatus.textContent = `Error: ${error}`;
+        sectionStatus.className = 'section-status error';
+      }
+    }
+  }
+
+  completeBatchGeneration(successCount, errorCount) {
+    const progressText = document.getElementById('progress-text');
+    const batchBtn = document.getElementById('batch-generate-btn');
+
+    if (progressText) {
+      progressText.textContent = `Batch complete: ${successCount} successful, ${errorCount} errors`;
+    }
+
+    if (batchBtn) {
+      batchBtn.disabled = false;
+      batchBtn.innerHTML = '<i class="fas fa-magic"></i> Generate All';
+    }
+
+    // Auto-close modal after 3 seconds
+    setTimeout(() => {
+      const modal = document.getElementById('batch-progress-modal');
+      if (modal) modal.remove();
+    }, 3000);
+  }
+
+  cancelBatchGeneration() {
+    // Dispatch cancel event
+    const cancelEvent = new CustomEvent('sections:batch-cancel');
+    window.dispatchEvent(cancelEvent);
+
+    // Reset UI
+    const batchBtn = document.getElementById('batch-generate-btn');
+    if (batchBtn) {
+      batchBtn.disabled = false;
+      batchBtn.innerHTML = '<i class="fas fa-magic"></i> Generate All';
+    }
+
+    // Remove modal
+    const modal = document.getElementById('batch-progress-modal');
+    if (modal) modal.remove();
   }
 
   render() {

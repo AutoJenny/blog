@@ -25,31 +25,34 @@ document.addEventListener('DOMContentLoaded', () => {
   // Make output panel available globally for LLM module
   window.imagePromptsOutputPanel = output;
 
-  const sectionsPanel = new SectionsPanel({
-    postId,
-    onSelect: (section) => {
-      output.show(section);
-      // Update Prompt Builder with section content
-      window.updatePromptBuilderSectionContent?.(section);
-      // Save selected section to localStorage for persistence
-      if (section && section.id) {
-        localStorage.setItem('authoring-selected-section', section.id);
-        initializeLLMForSection(section.id);
-      }
-    },
-    onSelectMultiple: (sections) => {
-      output.showMultiple(sections);
-      // Update Prompt Builder with first section content
-      if (sections && sections.length > 0) {
-        window.updatePromptBuilderSectionContent?.(sections[0]);
-      }
-      // Initialize LLM module for the first selected section
-      if (sections && sections.length > 0 && sections[0].id) {
-        localStorage.setItem('authoring-selected-section', sections[0].id);
-        initializeLLMForSection(sections[0].id);
-      }
-    }
-  });
+          const sectionsPanel = new SectionsPanel({
+            postId,
+            onSelect: (section) => {
+              output.show(section);
+              // Update Prompt Builder with section content
+              window.updatePromptBuilderSectionContent?.(section);
+              // Save selected section to localStorage for persistence
+              if (section && section.id) {
+                localStorage.setItem('authoring-selected-section', section.id);
+                initializeLLMForSection(section.id);
+              }
+            },
+            onSelectMultiple: (sections) => {
+              output.showMultiple(sections);
+              // Update Prompt Builder with first section content
+              if (sections && sections.length > 0) {
+                window.updatePromptBuilderSectionContent?.(sections[0]);
+              }
+              // Initialize LLM module for the first selected section
+              if (sections && sections.length > 0 && sections[0].id) {
+                localStorage.setItem('authoring-selected-section', sections[0].id);
+                initializeLLMForSection(sections[0].id);
+              }
+            }
+          });
+
+          // Make sectionsPanel globally available for batch progress updates
+          window.sectionsPanel = sectionsPanel;
 
           // Restore previously selected section on page load
           const savedSectionId = localStorage.getItem('authoring-selected-section');

@@ -42,16 +42,66 @@ export class ImagePromptsOutputPanel {
     window.addEventListener('sections:batch-generate', async (e) => {
       console.log('[DEBUG] ImagePromptsOutputPanel received sections:batch-generate event:', e.detail);
       const ids = e.detail?.ids || [];
+      const sections = e.detail?.sections || [];
       console.log('[DEBUG] Processing batch generation for IDs:', ids);
-      for (const id of ids) { 
-        console.log(`[DEBUG] Generating image prompt for section ${id}`);
-        await this.generateImagePrompts(id); 
-      }
       
-      // Notify sections panel to reload data after batch generation
-      console.log('[DEBUG] Batch generation complete, notifying sections panel to reload');
-      const reloadEvent = new CustomEvent('sections:reload-data');
-      window.dispatchEvent(reloadEvent);
+      let successCount = 0;
+      let errorCount = 0;
+      let cancelled = false;
+      
+      // Listen for cancellation
+      const cancelHandler = () => {
+        cancelled = true;
+        console.log('[DEBUG] Batch generation cancelled');
+      };
+      window.addEventListener('sections:batch-cancel', cancelHandler);
+      
+      try {
+        for (let i = 0; i < ids.length && !cancelled; i++) {
+          const id = ids[i];
+          const section = sections.find(s => s.id === id);
+          
+          // Update progress UI
+          if (window.sectionsPanel) {
+            window.sectionsPanel.updateBatchProgress(i + 1, ids.length, id, 'generating');
+          }
+          
+          console.log(`[DEBUG] Generating image prompt for section ${id}`);
+          try {
+            await this.generateImagePrompts(id);
+            successCount++;
+            
+            // Update progress UI
+            if (window.sectionsPanel) {
+              window.sectionsPanel.updateBatchProgress(i + 1, ids.length, id, 'completed');
+            }
+          } catch (error) {
+            errorCount++;
+            console.error(`[DEBUG] Error generating image prompt for section ${id}:`, error);
+            
+            // Update progress UI
+            if (window.sectionsPanel) {
+              window.sectionsPanel.updateBatchProgress(i + 1, ids.length, id, 'error', error.message);
+            }
+          }
+        }
+        
+        // Complete batch generation
+        if (!cancelled && window.sectionsPanel) {
+          window.sectionsPanel.completeBatchGeneration(successCount, errorCount);
+        }
+        
+      } finally {
+        // Clean up cancel listener
+        window.removeEventListener('sections:batch-cancel', cancelHandler);
+        
+        // Notify sections panel to reload data after batch generation
+        if (!cancelled) {
+          console.log('[DEBUG] Batch generation complete, notifying sections panel to reload');
+          const reloadEvent = new CustomEvent('sections:reload-data');
+          window.dispatchEvent(reloadEvent);
+        }
+      }
     });
   }
 
