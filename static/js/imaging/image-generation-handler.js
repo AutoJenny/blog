@@ -34,10 +34,17 @@ class ImageGenerationHandler {
         }
 
         try {
-            console.log('[Image Generation Handler] Starting image generation');
+            console.log('[Image Generation Handler] Starting image generation for section:', this.currentSectionId);
+            
+            // Debug: Check if prompt elements exist
+            const promptTextEl = document.querySelector(`[data-section-id="${this.currentSectionId}"] .prompt-text`);
+            console.log('[Image Generation Handler] Prompt text element found:', promptTextEl);
+            if (promptTextEl) {
+                console.log('[Image Generation Handler] Prompt text content:', promptTextEl.textContent.trim());
+            }
             
             // Collect all selections
-            const selections = this.collectAllSelections();
+            const selections = await this.collectAllSelections();
             console.log('[Image Generation Handler] Collected selections:', selections);
 
             // Validate selections
@@ -69,22 +76,25 @@ class ImageGenerationHandler {
         }
     }
 
-    collectAllSelections() {
+    async collectAllSelections() {
+        const contentPrompt = await this.getContentPrompt();
+        const stylePrompt = this.getStylePrompt();
+        
         return {
             // Model Selection
             model: this.getSelectedModel(),
             parameters: this.getModelParameters(),
             
             // Prompt Construction
-            contentPrompt: this.getContentPrompt(),
-            stylePrompt: this.getStylePrompt(),
+            contentPrompt: contentPrompt,
+            stylePrompt: stylePrompt,
             
             // Context
             postId: this.currentPostId,
             sectionId: this.currentSectionId,
             
             // Final prompt (combined)
-            finalPrompt: this.buildFinalPrompt()
+            finalPrompt: this.buildFinalPrompt(contentPrompt, stylePrompt)
         };
     }
 
@@ -122,34 +132,94 @@ class ImageGenerationHandler {
     }
 
     getContentPrompt() {
+        // Try to get prompt from the generated image prompts data
+        if (this.currentSectionId) {
+            // First try to get from the displayed prompt in the Generated Image Prompts panel
+            const promptTextEl = document.querySelector(`[data-section-id="${this.currentSectionId}"] .prompt-text`);
+            if (promptTextEl && promptTextEl.textContent.trim()) {
+                console.log('[Image Generation Handler] Found prompt from Generated Image Prompts panel:', promptTextEl.textContent.trim());
+                return promptTextEl.textContent.trim();
+            }
+            
+            // If not found in the panel, try to get from the section data directly
+            console.log('[Image Generation Handler] Prompt not found in panel, trying to fetch from API...');
+            return this.fetchPromptFromAPI();
+        }
+        
+        console.warn('[Image Generation Handler] No content prompt found');
+        return '';
+    }
+
+    async fetchPromptFromAPI() {
+        try {
+            const response = await fetch(`/imaging/api/posts/${this.currentPostId}/sections`);
+            const data = await response.json();
+            
+            if (data.success && data.sections) {
+                const section = data.sections.find(s => s.id == this.currentSectionId);
+                if (section && section.image_prompts) {
+                    const promptData = JSON.parse(section.image_prompts);
+                    if (promptData.image_prompt) {
+                        console.log('[Image Generation Handler] Found prompt from API:', promptData.image_prompt);
+                        return promptData.image_prompt;
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('[Image Generation Handler] Error fetching prompt from API:', error);
+        }
+        
+        // Fallback: try to get from the old manual prompt fields (for backward compatibility)
         const contentEl = document.getElementById('content-prompt');
-        return contentEl ? contentEl.value.trim() : '';
+        if (contentEl && contentEl.value.trim()) {
+            console.log('[Image Generation Handler] Found prompt from manual content-prompt field:', contentEl.value.trim());
+            return contentEl.value.trim();
+        }
+        
+        return '';
     }
 
     getStylePrompt() {
-        const styleEl = document.getElementById('style-prompt');
-        return styleEl ? styleEl.value.trim() : '';
+        // Try to get style from the generated image prompts data
+        if (this.currentSectionId) {
+            // First try to get from the displayed style in the Generated Image Prompts panel
+            const styleEl = document.querySelector(`[data-section-id="${this.currentSectionId}"] .prompt-style`);
+            if (styleEl && styleEl.textContent.trim()) {
+                // Extract style text (remove "Style:" prefix)
+                const styleText = styleEl.textContent.replace(/^Style:\s*/i, '').trim();
+                console.log('[Image Generation Handler] Found style from Generated Image Prompts panel:', styleText);
+                return styleText;
+            }
+            
+            // Fallback: try to get from the old manual style field (for backward compatibility)
+            const manualStyleEl = document.getElementById('style-prompt');
+            if (manualStyleEl && manualStyleEl.value.trim()) {
+                console.log('[Image Generation Handler] Found style from manual style-prompt field:', manualStyleEl.value.trim());
+                return manualStyleEl.value.trim();
+            }
+        }
+        
+        console.log('[Image Generation Handler] No style prompt found');
+        return '';
     }
 
-    buildFinalPrompt() {
-        const content = this.getContentPrompt();
-        const style = this.getStylePrompt();
+    buildFinalPrompt(contentPrompt, stylePrompt) {
         const model = this.getSelectedModel();
         
-        if (!content) {
+        if (!contentPrompt) {
             throw new Error('Content prompt is required');
         }
 
         // Combine prompts based on model requirements
         if (model === 'sdxl-lora') {
             // SDXL can use both content and style
-            return style ? `${content}, ${style}` : content;
+            return stylePrompt ? `${contentPrompt}, ${stylePrompt}` : contentPrompt;
         } else if (model.startsWith('dall-e')) {
             // DALL-E uses content only
-            return content;
+            return contentPrompt;
         }
         
-        return content;
+        return contentPrompt;
     }
 
     validateSelections(selections) {
@@ -185,9 +255,10 @@ class ImageGenerationHandler {
     }
 
     updateImageDisplay(imagePath) {
-        const outputPanel = document.getElementById('image-output-panel');
-        if (outputPanel) {
-            outputPanel.innerHTML = `
+        // Update the imaging output panel (uses #image-display-area in the imaging templates)
+        const displayArea = document.getElementById('image-display-area');
+        if (displayArea) {
+            displayArea.innerHTML = `
                 <div class="image-display">
                     <img src="${imagePath}" alt="Generated image" style="max-width: 100%; height: auto;">
                     <p class="image-path">Image: ${imagePath}</p>
