@@ -1,7 +1,13 @@
 <div class="prompt-construction-panel">
     <div class="panel-header" onclick="togglePromptConstructionAccordion()">
         <h4 id="prompt-title">Generated Image Prompts</h4>
-        <i class="fas fa-chevron-down" id="prompt-accordion-icon"></i>
+        <div class="panel-actions" style="display:flex; align-items:center; gap:.5rem;">
+            <button type="button" id="regenerate-prompt-btn" title="Regenerate prompt for selected section" style="display:inline-flex; align-items:center; gap:.4rem; padding:.35rem .6rem; font-size:.85rem; border-radius:6px; background:#334155; color:#e2e8f0; border:1px solid #475569; cursor:pointer;">
+                <i class="fas fa-sync-alt"></i>
+                Regenerate
+            </button>
+            <i class="fas fa-chevron-down" id="prompt-accordion-icon"></i>
+        </div>
     </div>
     
     <div class="panel-content" id="prompt-accordion-content" style="display: none;">
@@ -35,6 +41,25 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize with any pre-selected sections
     initializePanel();
+
+    // Bind regenerate button (no UI changes elsewhere)
+    const regenBtn = document.getElementById('regenerate-prompt-btn');
+    if (regenBtn) {
+        regenBtn.addEventListener('click', async function(e) {
+            e.stopPropagation();
+            await regenerateCurrentSectionPrompt();
+        });
+    }
+
+    // Persist selection on global sectionSelected events (in case selection is made by other modules)
+    document.addEventListener('sectionSelected', function(event) {
+        try {
+            const sectionId = event?.detail?.sectionId;
+            if (!sectionId) return;
+            const postId = window.postId || 60;
+            localStorage.setItem(`imaging_selected_section_${postId}`, String(sectionId));
+        } catch (_) { /* ignore */ }
+    });
 });
 
 function setupSectionSelectionListener() {
@@ -62,8 +87,17 @@ function setupSectionSelectionListener() {
         if (sectionItem) {
             const sectionId = sectionItem.getAttribute('data-section-id');
             console.log('[Generated Prompts] Section clicked:', sectionId);
+            try {
+                const postId = window.postId || 60;
+                localStorage.setItem(`imaging_selected_section_${postId}`, String(sectionId));
+            } catch (e) { /* ignore */ }
             
             await displayPromptForSection(sectionId);
+            // Inform other modules (e.g., image-generation-handler)
+            try {
+                const evt = new CustomEvent('sectionSelected', { detail: { sectionId } });
+                document.dispatchEvent(evt);
+            } catch (e) { /* ignore */ }
         }
     });
     
@@ -82,16 +116,34 @@ async function initializePanel() {
             await displayPromptsForMultipleSections(sectionIds);
         }
     }
+
+    // If none selected, try to restore last selection from storage
+    try {
+        const postId = window.postId || 60;
+        const stored = localStorage.getItem(`imaging_selected_section_${postId}`);
+        if (stored) {
+            // Re-select in UI if element exists, so visual state and other listeners update
+            const el = document.querySelector(`.section-item[data-section-id="${stored}"]`);
+            if (el) {
+                el.click(); // triggers the normal selection flow and events
+            } else {
+                // Fallback: update prompt display and notify listeners
+                await displayPromptForSection(stored);
+                const evt = new CustomEvent('sectionSelected', { detail: { sectionId: stored } });
+                document.dispatchEvent(evt);
+            }
+        }
+    } catch (e) { /* ignore */ }
 }
 
-async function displayPromptForSection(sectionId) {
+async function displayPromptForSection(sectionId, { forceReload = false } = {}) {
     if (!sectionId) return;
     
     try {
         console.log('[Generated Prompts] Displaying prompt for section:', sectionId);
         
-        // Fetch section data
-        const sectionData = await fetchSectionData(sectionId);
+        // Fetch section data (force API reload if requested)
+        const sectionData = await fetchSectionData(sectionId, { forceReload });
         if (!sectionData) {
             console.error('[Generated Prompts] Section data not found for ID:', sectionId);
             showNoPromptMessage(sectionId);
@@ -139,9 +191,9 @@ async function displayPromptsForMultipleSections(sectionIds) {
     }
 }
 
-async function fetchSectionData(sectionId) {
+async function fetchSectionData(sectionId, { forceReload = false } = {}) {
     // First try to find in window.sectionsData (from the data tab)
-    if (window.sectionsData && window.sectionsData.length > 0) {
+    if (!forceReload && window.sectionsData && window.sectionsData.length > 0) {
         const sectionData = window.sectionsData.find(s => s.id == sectionId);
         if (sectionData) {
             console.log('[Generated Prompts] Found section in window.sectionsData:', sectionData);
@@ -247,6 +299,66 @@ function showErrorMessage(sectionId, errorMessage) {
             <p>Error loading prompt: ${errorMessage}</p>
         </div>
     `;
+}
+
+// Regenerate prompt for the currently selected section using existing authoring endpoint
+async function regenerateCurrentSectionPrompt() {
+    try {
+        // Resolve current section id
+        const selected = document.querySelector('.section-item.selected[data-section-id]');
+        const currentEl = document.querySelector('.prompt-display-item[data-section-id]');
+        const sectionId = selected?.getAttribute('data-section-id') || currentEl?.getAttribute('data-section-id');
+        const postId = window.postId || 60;
+        if (!sectionId) {
+            alert('Select a section first.');
+            return;
+        }
+
+        // Use currently displayed prompt text as a seed and request a variation
+        const existingText = document.querySelector('.prompt-text')?.textContent?.trim() || '';
+        const compiledPrompt = [
+            'Regenerate a high-quality image prompt as JSON {"image_prompt":"..."} only. Maintain style guidelines and constraints. Produce a different, equally strong variation. If a character limit applies, target near the cap without exceeding it.',
+            existingText ? `Previous prompt for context (do not repeat verbatim): ${existingText}` : ''
+        ].filter(Boolean).join('\n\n');
+
+        // Fallback LLM settings (authoring endpoint requires them)
+        const settings = {
+            provider: 'Ollama',
+            model: 'llama3.2:latest',
+            temperature: 0.7,
+            maxTokens: 2000
+        };
+
+        // Call the existing authoring API to regenerate and persist
+        const resp = await fetch('/authoring/api/generate-image-prompt-from-builder', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                compiled_prompt: compiledPrompt,
+                llm_provider: settings.provider,
+                llm_model: settings.model,
+                temperature: settings.temperature,
+                max_tokens: settings.maxTokens,
+                post_id: postId,
+                section_id: Number(sectionId)
+            })
+        });
+
+        if (!resp.ok) {
+            throw new Error('HTTP ' + resp.status);
+        }
+        const data = await resp.json();
+        if (!data.success) {
+            throw new Error(data.error || 'Unknown error');
+        }
+
+        // Reload prompt from DB for this section to reflect the new value (bypass cache)
+        await displayPromptForSection(sectionId, { forceReload: true });
+
+    } catch (err) {
+        console.error('[Generated Prompts] Regenerate failed:', err);
+        alert('Failed to regenerate: ' + (err?.message || err));
+    }
 }
 </script>
 

@@ -189,10 +189,7 @@ function setupSectionControls() {
     
     const batchGenerateBtn = document.getElementById('batch-generate-btn');
     if (batchGenerateBtn) {
-        batchGenerateBtn.addEventListener('click', function() {
-            // Batch generate images logic
-            console.log('[Imaging Core] Batch generate images for all sections');
-        });
+        batchGenerateBtn.addEventListener('click', () => startBatchImageGeneration());
     }
 }
 
@@ -318,6 +315,181 @@ function getCurrentParameters() {
         }
     });
     return params;
+}
+
+// =========================
+// Batch Image Generation
+// =========================
+let batchCancelRequested = false;
+
+async function startBatchImageGeneration() {
+    try {
+        const batchBtn = document.getElementById('batch-generate-btn');
+        if (batchBtn) {
+            batchBtn.disabled = true;
+            batchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+        }
+
+        // Determine the list of sections to process (all sections in this stage)
+        const ids = (sections || []).map(s => s.id);
+        if (!ids.length) {
+            console.warn('[Imaging Core] No sections to batch generate');
+            if (batchBtn) {
+                batchBtn.disabled = false;
+                batchBtn.innerHTML = '<i class="fas fa-magic"></i> Generate All';
+            }
+            return;
+        }
+
+        showBatchProgressModal(ids.length);
+        batchCancelRequested = false;
+
+        let successCount = 0;
+        let errorCount = 0;
+
+        // Load current model and parameters once
+        const modelSelect = document.getElementById('image-model-select');
+        const modelName = modelSelect ? modelSelect.value : 'sdxl-lora';
+        const parameters = getCurrentParameters();
+
+        // Fetch fresh section data (to get latest prompts)
+        const fresh = await fetch(`/imaging/api/posts/${currentPostId}/sections`).then(r => r.json());
+        const byId = new Map();
+        if (fresh && fresh.success && Array.isArray(fresh.sections)) {
+            fresh.sections.forEach(s => byId.set(s.id, s));
+        }
+
+        for (let i = 0; i < ids.length; i++) {
+            if (batchCancelRequested) break;
+            const id = ids[i];
+            const section = byId.get(id) || (sections || []).find(s => s.id === id);
+
+            updateBatchProgress(i + 1, ids.length, id, 'generating');
+
+            try {
+                // Resolve prompt for this section
+                let imagePrompt = '';
+                if (section && section.image_prompts) {
+                    try {
+                        const parsed = JSON.parse(section.image_prompts);
+                        imagePrompt = parsed.image_prompt || '';
+                    } catch (_) { /* ignore */ }
+                }
+
+                if (!imagePrompt) {
+                    throw new Error('No image prompt found for section');
+                }
+
+                // Call imaging generation API sequentially
+                const resp = await fetch(`/imaging/api/image-generation/posts/${currentPostId}/sections/${id}/generate-image`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model_name: modelName,
+                        parameters,
+                        image_prompt: imagePrompt
+                    })
+                });
+
+                if (!resp.ok) {
+                    throw new Error('HTTP ' + resp.status);
+                }
+                const data = await resp.json();
+                if (!data.success) {
+                    throw new Error(data.error || 'Unknown error');
+                }
+
+                successCount++;
+                updateBatchProgress(i + 1, ids.length, id, 'completed');
+            } catch (err) {
+                console.error('[Imaging Core] Batch generation error for section', id, err);
+                errorCount++;
+                updateBatchProgress(i + 1, ids.length, id, 'error', err?.message || String(err));
+            }
+        }
+
+        completeBatchGeneration(successCount, errorCount);
+    } finally {
+        const batchBtn = document.getElementById('batch-generate-btn');
+        if (batchBtn) {
+            batchBtn.disabled = false;
+            batchBtn.innerHTML = '<i class="fas fa-magic"></i> Generate All';
+        }
+    }
+}
+
+function showBatchProgressModal(total) {
+    // Create or reuse modal
+    let modal = document.getElementById('imaging-batch-progress-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'imaging-batch-progress-modal';
+        modal.innerHTML = `
+            <div class="batch-progress-modal">
+              <div class="batch-progress-content">
+                <div class="batch-progress-header">
+                  <h3>Generating Images</h3>
+                  <button id="imaging-cancel-batch-btn" class="btn btn-secondary btn-sm">Cancel</button>
+                </div>
+                <div class="batch-progress-body">
+                  <div class="progress-row">
+                    <span id="imaging-progress-text">Starting...</span>
+                  </div>
+                  <div id="imaging-progress-list" class="progress-list"></div>
+                </div>
+              </div>
+            </div>`;
+        document.body.appendChild(modal);
+
+        // Minimal styles (scoped)
+        if (!document.getElementById('imaging-batch-progress-styles')) {
+            const style = document.createElement('style');
+            style.id = 'imaging-batch-progress-styles';
+            style.textContent = `
+              .batch-progress-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:9999}
+              .batch-progress-content{background:#0f172a;border:1px solid #334155;border-radius:8px;max-width:700px;width:90%;padding:1rem}
+              .batch-progress-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+              .batch-progress-header h3{color:#e2e8f0;margin:0}
+              .batch-progress-body{color:#94a3b8;font-size:.9rem}
+              .progress-row{margin:.5rem 0}
+              .progress-list{max-height:300px;overflow:auto;border-top:1px solid #334155;margin-top:.5rem;padding-top:.5rem}
+              .progress-item{display:flex;justify-content:space-between;padding:.25rem 0;border-bottom:1px dashed #334155}
+              .status-ok{color:#10b981}
+              .status-err{color:#ef4444}
+            `;
+            document.head.appendChild(style);
+        }
+
+        document.getElementById('imaging-cancel-batch-btn').addEventListener('click', () => {
+            batchCancelRequested = true;
+            document.getElementById('imaging-progress-text').textContent = 'Cancelling...';
+        });
+    }
+
+    document.getElementById('imaging-progress-text').textContent = `Generating for ${total} sections...`;
+    document.getElementById('imaging-progress-list').innerHTML = '';
+}
+
+function updateBatchProgress(currentIndex, total, sectionId, status, error = null) {
+    const list = document.getElementById('imaging-progress-list');
+    const row = document.createElement('div');
+    row.className = 'progress-item';
+    const label = `Section ${sectionId} (${currentIndex}/${total})`;
+    const statusHtml = status === 'completed' ? `<span class="status-ok">done</span>`
+                    : status === 'generating' ? `<span>generating...</span>`
+                    : `<span class="status-err">error: ${error || ''}</span>`;
+    row.innerHTML = `<span>${label}</span>${statusHtml}`;
+    list.appendChild(row);
+    document.getElementById('imaging-progress-text').textContent = `${currentIndex}/${total} processed`;
+}
+
+function completeBatchGeneration(successCount, errorCount) {
+    document.getElementById('imaging-progress-text').textContent = `Batch complete: ${successCount} successful, ${errorCount} errors`;
+    // Auto-close modal after short delay
+    setTimeout(() => {
+        const modal = document.getElementById('imaging-batch-progress-modal');
+        if (modal && modal.parentNode) modal.parentNode.removeChild(modal);
+    }, 1500);
 }
 
 // Output panel

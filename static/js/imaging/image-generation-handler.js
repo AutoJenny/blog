@@ -18,6 +18,8 @@ class ImageGenerationHandler {
         document.addEventListener('sectionSelected', (event) => {
             this.currentSectionId = event.detail.sectionId;
             console.log('[Image Generation Handler] Section selected:', this.currentSectionId);
+            // Attempt to show any existing generated image for this section immediately
+            this.displayExistingIfAny();
         });
 
         // Set up generate button
@@ -96,6 +98,17 @@ class ImageGenerationHandler {
             // Final prompt (combined)
             finalPrompt: this.buildFinalPrompt(contentPrompt, stylePrompt)
         };
+    }
+
+    // If an image already exists for the current selection, display it on load/selection
+    displayExistingIfAny() {
+        try {
+            if (!this.currentPostId || !this.currentSectionId) return;
+            const imagePath = `/static/content/posts/${this.currentPostId}/sections/${this.currentSectionId}/raw/${this.currentSectionId}.png`;
+            this.updateImageDisplay(imagePath);
+        } catch (e) {
+            console.warn('[Image Generation Handler] displayExistingIfAny failed:', e);
+        }
     }
 
     getSelectedModel() {
@@ -332,4 +345,6 @@ class ImageGenerationHandler {
 document.addEventListener('DOMContentLoaded', function() {
     window.imageGenerationHandler = new ImageGenerationHandler();
     console.log('[Image Generation Handler] Initialized');
+    // Try to display any existing image for a restored selection
+    window.imageGenerationHandler.displayExistingIfAny();
 });

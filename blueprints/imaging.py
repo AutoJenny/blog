@@ -54,7 +54,7 @@ def imaging_generate_dalle_image(image_prompt, post_id, section_id, parameters):
         if image_response.status_code != 200:
             return {'success': False, 'error': f'Failed to download image: {image_response.status_code}'}
         
-        # Create directory structure
+        # Create directory structure (main raw directory)
         image_dir = f"static/content/posts/{post_id}/sections/{section_id}/raw"
         os.makedirs(image_dir, exist_ok=True)
         
@@ -112,7 +112,7 @@ def imaging_generate_sdxl_image(image_prompt, post_id, section_id, parameters):
         if result.returncode != 0:
             return {'success': False, 'error': f'SDXL generation failed: {result.stderr}'}
         
-        # The script should have created the image file
+        # The script should have created the image file in the main raw directory
         image_path = f"/static/content/posts/{post_id}/sections/{section_id}/raw/{section_id}.png"
         local_path = f"static/content/posts/{post_id}/sections/{section_id}/raw/{section_id}.png"
         

@@ -10,6 +10,7 @@ import sys
 import torch
 import datetime
 import json
+import random
 from pathlib import Path
 from diffusers import StableDiffusionXLPipeline, DPMSolverMultistepScheduler
 
@@ -60,7 +61,9 @@ def generate_image_for_section(post_id, section_id, subject_prompt, **kwargs):
     """
     try:
         # Set up output directory
-        output_dir = Path(OUTPUT_BASE_DIR) / str(post_id) / "sections" / str(section_id) / "raw"
+        output_subdir = kwargs.get('output_subdir')  # e.g., "test_20251007_101500"
+        base_dir = Path(OUTPUT_BASE_DIR) / str(post_id) / "sections" / str(section_id) / "raw"
+        output_dir = base_dir if not output_subdir else base_dir / output_subdir
         output_dir.mkdir(parents=True, exist_ok=True)
         
         # Default parameters
@@ -69,9 +72,13 @@ def generate_image_for_section(post_id, section_id, subject_prompt, **kwargs):
             'height': kwargs.get('height', 1024),
             'steps': kwargs.get('steps', 30),
             'cfg': kwargs.get('cfg', 5.5),
-            'seed': kwargs.get('seed', 42),
+            'seed': kwargs.get('seed', None),
             'lora_scale': kwargs.get('lora_scale', 0.85)
         }
+
+        # Choose a random seed when none provided (or zero/negative), so runs vary
+        if not params['seed'] or params['seed'] <= 0:
+            params['seed'] = random.randint(1, 2**31 - 1)
         
         # Check if LoRA file exists
         if not os.path.exists(LORA_PATH):
@@ -131,7 +138,10 @@ def generate_image_for_section(post_id, section_id, subject_prompt, **kwargs):
         images[0].save(output_path)
         
         # Return success with relative path for web access
-        relative_path = f"/static/content/posts/{post_id}/sections/{section_id}/raw/{output_filename}"
+        if output_subdir:
+            relative_path = f"/static/content/posts/{post_id}/sections/{section_id}/raw/{output_subdir}/{output_filename}"
+        else:
+            relative_path = f"/static/content/posts/{post_id}/sections/{section_id}/raw/{output_filename}"
         
         print(f"Image saved: {output_path}")
         
@@ -162,8 +172,9 @@ def main():
     parser.add_argument("--height", type=int, default=1024)
     parser.add_argument("--steps", type=int, default=30)
     parser.add_argument("--cfg", type=float, default=5.5)
-    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--lora_scale", type=float, default=0.85)
+    parser.add_argument("--output_subdir", default=None, help="Optional subdirectory under raw/ to save into (e.g., test_YYYYMMDD_HHMMSS)")
     args = parser.parse_args()
     
     # Parse dimensions if provided
@@ -181,7 +192,8 @@ def main():
         steps=args.steps,
         cfg=args.cfg,
         seed=args.seed,
-        lora_scale=args.lora_scale
+        lora_scale=args.lora_scale,
+        output_subdir=args.output_subdir
     )
     
     print(json.dumps(result, indent=2))
