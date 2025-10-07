@@ -333,8 +333,47 @@ export class ImagePromptsOutputPanel {
     editor.disabled = true;
 
     try {
-      const res = await postJSON(`/authoring/api/posts/${this.postId}/sections/${id}/generate-image-prompts`, {});
-      this.displayImagePrompts(res.image_prompt || '(no content)');
+      // Use the improved Prompt Builder API instead of the old endpoint
+      const compiledPrompt = document.getElementById('compiled-preview')?.value || '';
+      if (!compiledPrompt.trim()) {
+        throw new Error('Please ensure Prompt Builder is configured');
+      }
+
+      // Get current LLM settings
+      const settings = window.authoringLLMSettingsHandler?.getSettings() || {
+        provider: 'Ollama',
+        model: 'llama3.2:latest',
+        temperature: 0.7,
+        maxTokens: 2000
+      };
+
+      const response = await fetch('/authoring/api/generate-image-prompt-from-builder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          compiled_prompt: compiledPrompt,
+          llm_provider: settings.provider,
+          llm_model: settings.model,
+          temperature: settings.temperature,
+          max_tokens: settings.maxTokens,
+          post_id: this.postId,
+          section_id: id
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        this.displayImagePrompts(result.generated_prompt);
+      } else {
+        throw new Error(result.error || 'Unknown error occurred');
+      }
     } catch (err) {
       this.displayImagePrompts(`Error generating content: ${err.message || err}`);
       console.error(err);
