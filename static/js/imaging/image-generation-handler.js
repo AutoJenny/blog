@@ -60,10 +60,10 @@ class ImageGenerationHandler {
                 this.showSuccess('Image generated successfully!');
                 this.updateImageDisplay(result.image_path);
                 
-                // Auto-reload page to show the new image
-                setTimeout(() => {
-                    window.location.reload();
-                }, 2000); // Wait 2 seconds to show success message
+                // Don't auto-reload immediately - let user see the new image
+                // setTimeout(() => {
+                //     window.location.reload();
+                // }, 2000); // Wait 2 seconds to show success message
             } else {
                 this.showError(result.error || 'Image generation failed');
             }
@@ -112,7 +112,7 @@ class ImageGenerationHandler {
                 height: this.getParameterValue('height') || 1024,
                 steps: this.getParameterValue('steps') || 30,
                 cfg: this.getParameterValue('cfg') || 5.5,
-                seed: this.getParameterValue('seed') || 42,
+                seed: this.getParameterValue('seed') || null, // Don't use default seed - let SDXL generate random
                 lora_scale: this.getParameterValue('lora_scale') || 0.85
             };
         } else if (model.startsWith('dall-e')) {
@@ -255,15 +255,30 @@ class ImageGenerationHandler {
     }
 
     updateImageDisplay(imagePath) {
+        console.log('[Image Generation Handler] Updating image display with path:', imagePath);
+        
         // Update the imaging output panel (uses #image-display-area in the imaging templates)
         const displayArea = document.getElementById('image-display-area');
+        console.log('[Image Generation Handler] Display area element:', displayArea);
+        
         if (displayArea) {
+            // Add cache-busting parameter to prevent browser caching
+            const cacheBuster = `?t=${Date.now()}`;
+            const imageUrl = `${imagePath}${cacheBuster}`;
+            
+            console.log('[Image Generation Handler] Image URL with cache buster:', imageUrl);
+            
             displayArea.innerHTML = `
                 <div class="image-display">
-                    <img src="${imagePath}" alt="Generated image" style="max-width: 100%; height: auto;">
+                    <img src="${imageUrl}" alt="Generated image" style="max-width: 100%; height: auto;" onload="console.log('[Image Generation Handler] Image loaded successfully')" onerror="console.error('[Image Generation Handler] Image failed to load:', this.src)">
                     <p class="image-path">Image: ${imagePath}</p>
+                    <p class="image-timestamp">Generated: ${new Date().toLocaleString()}</p>
                 </div>
             `;
+            
+            console.log('[Image Generation Handler] Display area updated');
+        } else {
+            console.error('[Image Generation Handler] Could not find image-display-area element');
         }
     }
 
