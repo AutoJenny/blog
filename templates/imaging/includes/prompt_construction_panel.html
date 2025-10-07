@@ -1,179 +1,59 @@
 <div class="prompt-construction-panel">
     <div class="panel-header" onclick="togglePromptConstructionAccordion()">
-        <h4 id="prompt-title">Prompt Construction</h4>
+        <h4 id="prompt-title">Generated Image Prompts</h4>
         <i class="fas fa-chevron-down" id="prompt-accordion-icon"></i>
     </div>
     
     <div class="panel-content" id="prompt-accordion-content" style="display: none;">
-        <!-- Content Prompt -->
-        <div class="prompt-section">
-            <label for="content-prompt">Content Prompt:</label>
-            <textarea id="content-prompt" name="content_prompt" rows="4" placeholder="Describe the main content, subject, and key elements of the image..."></textarea>
+        <!-- Generated Prompts Display -->
+        <div id="generated-prompts-container">
+            <div class="no-selection-message">
+                <p>Select a section from the left panel to view its generated image prompt.</p>
+            </div>
         </div>
         
-        <!-- Style Prompt -->
-        <div class="prompt-section">
-            <label for="style-prompt">Style Prompt:</label>
-            <textarea id="style-prompt" name="style_prompt" rows="3" placeholder="Describe the artistic style, mood, colors, and visual treatment..."></textarea>
-        </div>
-        
-        <!-- Save/Load Controls -->
-        <div class="prompt-controls">
-            <button type="button" class="btn btn-primary" id="save-prompts-btn">
-                <i class="fas fa-save"></i> Save Prompts
-            </button>
-            <button type="button" class="btn btn-secondary" id="load-prompts-btn">
-                <i class="fas fa-folder-open"></i> Load Prompts
-            </button>
-            <button type="button" class="btn btn-secondary" id="clear-prompts-btn">
-                <i class="fas fa-trash"></i> Clear
-            </button>
+        <!-- Multiple Selection Display -->
+        <div id="multiple-prompts-container" style="display: none;">
+            <div class="multiple-selection-header">
+                <h5>Multiple Sections Selected</h5>
+                <p>Image prompts for selected sections:</p>
+            </div>
+            <div id="multiple-prompts-list">
+                <!-- Multiple prompts will be displayed here -->
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-// Prompt Construction Panel - Save/Load functionality
+// Generated Image Prompts Panel - Display functionality
 document.addEventListener('DOMContentLoaded', function() {
-    const contentPrompt = document.getElementById('content-prompt');
-    const stylePrompt = document.getElementById('style-prompt');
-    const savePromptsBtn = document.getElementById('save-prompts-btn');
-    const loadPromptsBtn = document.getElementById('load-prompts-btn');
-    const clearPromptsBtn = document.getElementById('clear-prompts-btn');
+    console.log('[Generated Prompts] Initializing panel...');
     
-    // Load prompts on page load
-    loadPromptsFromStorage();
-    
-    // Set up section selection listener to auto-populate content prompt
+    // Set up section selection listener
     setupSectionSelectionListener();
     
-    // Auto-save on input (debounced)
-    let saveTimeout;
-    const inputs = [contentPrompt, stylePrompt];
-    inputs.forEach(input => {
-        input.addEventListener('input', function() {
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(() => {
-                savePromptsToStorage();
-            }, 1000); // Save 1 second after user stops typing
-        });
-    });
-    
-    // Manual save button
-    savePromptsBtn?.addEventListener('click', function() {
-        savePromptsToStorage();
-        showNotification('Prompts saved successfully!', 'success');
-    });
-    
-    // Manual load button 
-    loadPromptsBtn?.addEventListener('click', function() {
-        loadPromptsFromStorage();
-        showNotification('Prompts loaded successfully!', 'success');
-    });
-    
-    // Clear button
-    clearPromptsBtn?.addEventListener('click', function() {
-        if (confirm('Are you sure you want to clear all prompts?')) {
-            clearPrompts();
-            showNotification('Prompts cleared!', 'info');
-        }
-    });
+    // Initialize with any pre-selected sections
+    initializePanel();
 });
 
-function savePromptsToStorage() {
-    const contentPrompt = document.getElementById('content-prompt')?.value || '';
-    const stylePrompt = document.getElementById('style-prompt')?.value || '';
-    
-    const prompts = {
-        contentPrompt: contentPrompt,
-        stylePrompt: stylePrompt,
-        timestamp: new Date().toISOString()
-    };
-    
-    localStorage.setItem('imaging-prompts', JSON.stringify(prompts));
-    
-    // Also save individual prompts for easy access
-    localStorage.setItem('imaging-content-prompt', contentPrompt);
-    localStorage.setItem('imaging-style-prompt', stylePrompt);
-    
-    console.log('[Prompt Construction] Prompts saved to localStorage');
-}
-
-function loadPromptsFromStorage() {
-    const promptsData = localStorage.getItem('imaging-prompts');
-    
-    if (promptsData) {
-        try {
-            const prompts = JSON.parse(promptsData);
-            
-            // Load into textareas
-            const contentPromptEl = document.getElementById('content-prompt');
-            const stylePromptEl = document.getElementById('style-prompt');
-            
-            if (contentPromptEl && prompts.contentPrompt) {
-                contentPromptEl.value = prompts.contentPrompt;
-            }
-            
-            if (stylePromptEl && prompts.stylePrompt) {
-                stylePromptEl.value = prompts.stylePrompt;
-            }
-            
-            console.log('[Prompt Construction] Prompts loaded from localStorage:', prompts);
-            
-            // Show timestamp info
-            if (prompts.timestamp) {
-                const loadTime = new Date(prompts.timestamp).toLocaleString();
-                console.log('[Prompt Construction] Last saved:', loadTime);
-            }
-            
-        } catch (error) {
-            console.error('[Prompt Construction] Error loading prompts:', error);
-            // Fallback to individual prompt storage
-            loadIndividualPrompts();
-        }
-    } else {
-        // Try individual prompt storage
-        loadIndividualPrompts();
-    }
-}
-
-function loadIndividualPrompts() {
-    const contentPrompt = localStorage.getItem('imaging-content-prompt') || '';
-    const stylePrompt = localStorage.getItem('imaging-style-prompt') || '';
-    
-    const contentPromptEl = document.getElementById('content-prompt');
-    const stylePromptEl = document.getElementById('style-prompt');
-    
-    if (contentPromptEl) {
-        contentPromptEl.value = contentPrompt;
-    }
-    
-    if (stylePromptEl) {
-        stylePromptEl.value = stylePrompt;
-    }
-}
-
-function clearPrompts() {
-    document.getElementById('content-prompt').value = '';
-    document.getElementById('style-prompt').value = '';
-    
-    // Clear from storage
-    localStorage.removeItem('imaging-prompts');
-    localStorage.removeItem('imaging-content-prompt');
-    localStorage.removeItem('imaging-style-prompt');
-    
-    console.log('[Prompt Construction] Prompts cleared');
-}
-
 function setupSectionSelectionListener() {
-    console.log('[Prompt Construction] Setting up section selection listener');
+    console.log('[Generated Prompts] Setting up section selection listener');
     
     // Listen for section selection changes
     document.addEventListener('sectionSelected', async function(event) {
         const sectionId = event.detail.sectionId;
-        console.log('[Prompt Construction] sectionSelected event received:', sectionId);
+        console.log('[Generated Prompts] sectionSelected event received:', sectionId);
         
-        await populateContentPromptFromSection(sectionId);
+        await displayPromptForSection(sectionId);
+    });
+    
+    // Listen for multiple section selection
+    document.addEventListener('sectionsSelected', async function(event) {
+        const sectionIds = event.detail.sectionIds;
+        console.log('[Generated Prompts] sectionsSelected event received:', sectionIds);
+        
+        await displayPromptsForMultipleSections(sectionIds);
     });
     
     // Also listen for clicks on section items
@@ -181,156 +61,294 @@ function setupSectionSelectionListener() {
         const sectionItem = event.target.closest('.section-item[data-section-id]');
         if (sectionItem) {
             const sectionId = sectionItem.getAttribute('data-section-id');
-            console.log('[Prompt Construction] Section clicked:', sectionId);
+            console.log('[Generated Prompts] Section clicked:', sectionId);
             
-            await populateContentPromptFromSection(sectionId);
+            await displayPromptForSection(sectionId);
         }
     });
     
-    console.log('[Prompt Construction] Section selection listener set up complete');
+    console.log('[Generated Prompts] Section selection listener set up complete');
 }
 
-async function populateContentPromptFromSection(sectionId) {
-    if (!sectionId) return;
-    
-    try {
-        console.log('[Prompt Construction] Starting populateContentPromptFromSection for:', sectionId);
-        
-        // Fetch section data from the existing sections data or API
-        let sectionData = null;
-        
-        // First try to find in window.sectionsData (from the data tab)
-        console.log('[Prompt Construction] Checking window.sectionsData:', window.sectionsData);
-        if (window.sectionsData && window.sectionsData.length > 0) {
-            sectionData = window.sectionsData.find(s => s.id == sectionId);
-            console.log('[Prompt Construction] Found section in window.sectionsData:', sectionData);
-        }
-        
-        // If not found, fetch directly from API
-        if (!sectionData) {
-            const postId = window.postId || 60; // Default to 60
-            console.log('[Prompt Construction] Fetching from API for postId:', postId);
-            const response = await fetch(`/imaging/api/posts/${postId}/sections`);
-            const data = await response.json();
-            
-            if (data.success && data.sections) {
-                sectionData = data.sections.find(s => s.id == sectionId);
-                console.log('[Prompt Construction] Found section via API:', sectionData);
-            }
-        }
-        
-        if (!sectionData) {
-            console.error('[Prompt Construction] Section data not found for ID:', sectionId);
-            return;
-        }
-        
-        console.log('[Prompt Construction] Using section data:', sectionData);
-        
-        // Extract concept_description from image_concepts
-        if (sectionData.image_concepts) {
-            try {
-                const imageConceptsData = JSON.parse(sectionData.image_concepts);
-                
-                if (imageConceptsData.concepts && imageConceptsData.concepts.length > 0) {
-                    const firstConcept = imageConceptsData.concepts[0];
-                    
-                    if (firstConcept.concept_description) {
-                        const contentPromptEl = document.getElementById('content-prompt');
-                        if (contentPromptEl) {
-                            console.log('[Prompt Construction] Found concept_description:', firstConcept.concept_description);
-                            console.log('[Prompt Construction] Current content prompt length:', contentPromptEl.value.length);
-                            
-                            // Always update when section is selected
-                            contentPromptEl.value = firstConcept.concept_description;
-                            console.log('[Prompt Construction] Auto-populated content prompt:', firstConcept.concept_description);
-                            
-                            // Auto-save the updated prompt
-                            savePromptsToStorage();
-                            
-                            showNotification('Content prompt auto-populated from section concept!', 'success');
-                        } else {
-                            console.error('[Prompt Construction] Could not find content-prompt element');
-                        }
-                    } else {
-                        console.log('[Prompt Construction] No concept_description found in firstConcept');
-                    }
-                } else {
-                    console.log('[Prompt Construction] No concepts found in image_concepts');
-                }
-            } catch (error) {
-                console.error('[Prompt Construction] Error parsing image_concepts JSON:', error);
-            }
+async function initializePanel() {
+    // Check if there are any pre-selected sections
+    const selectedSections = document.querySelectorAll('.section-item.selected[data-section-id]');
+    if (selectedSections.length > 0) {
+        if (selectedSections.length === 1) {
+            const sectionId = selectedSections[0].getAttribute('data-section-id');
+            await displayPromptForSection(sectionId);
         } else {
-            console.log('[Prompt Construction] No image_concepts data for section:', sectionId);
+            const sectionIds = Array.from(selectedSections).map(s => s.getAttribute('data-section-id'));
+            await displayPromptsForMultipleSections(sectionIds);
         }
-        
-    } catch (error) {
-        console.error('[Prompt Construction] Error populating content prompt:', error);
     }
 }
 
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 6px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        z-index: 1000;
-        font-size: 0.9rem;
-    `;
-    notification.textContent = message;
-    document.body.appendChild(notification);
+async function displayPromptForSection(sectionId) {
+    if (!sectionId) return;
     
-    setTimeout(() => {
-        if (document.body.contains(notification)) {
-            document.body.removeChild(notification);
+    try {
+        console.log('[Generated Prompts] Displaying prompt for section:', sectionId);
+        
+        // Fetch section data
+        const sectionData = await fetchSectionData(sectionId);
+        if (!sectionData) {
+            console.error('[Generated Prompts] Section data not found for ID:', sectionId);
+            showNoPromptMessage(sectionId);
+            return;
         }
-    }, 3000);
+        
+        console.log('[Generated Prompts] Section data:', sectionData);
+        
+        // Hide multiple selection container
+        document.getElementById('multiple-prompts-container').style.display = 'none';
+        
+        // Display the prompt
+        displaySinglePrompt(sectionData);
+        
+    } catch (error) {
+        console.error('[Generated Prompts] Error displaying prompt for section:', error);
+        showErrorMessage(sectionId, error.message);
+    }
+}
+
+async function displayPromptsForMultipleSections(sectionIds) {
+    if (!sectionIds || sectionIds.length === 0) return;
+    
+    try {
+        console.log('[Generated Prompts] Displaying prompts for multiple sections:', sectionIds);
+        
+        // Show multiple selection container
+        document.getElementById('multiple-prompts-container').style.display = 'block';
+        
+        // Clear previous content
+        const multiplePromptsList = document.getElementById('multiple-prompts-list');
+        multiplePromptsList.innerHTML = '';
+        
+        // Fetch and display prompts for each section
+        for (const sectionId of sectionIds) {
+            const sectionData = await fetchSectionData(sectionId);
+            if (sectionData) {
+                const promptElement = createPromptElement(sectionData);
+                multiplePromptsList.appendChild(promptElement);
+            }
+        }
+        
+    } catch (error) {
+        console.error('[Generated Prompts] Error displaying multiple prompts:', error);
+    }
+}
+
+async function fetchSectionData(sectionId) {
+    // First try to find in window.sectionsData (from the data tab)
+    if (window.sectionsData && window.sectionsData.length > 0) {
+        const sectionData = window.sectionsData.find(s => s.id == sectionId);
+        if (sectionData) {
+            console.log('[Generated Prompts] Found section in window.sectionsData:', sectionData);
+            return sectionData;
+        }
+    }
+    
+    // If not found, fetch directly from API
+    const postId = window.postId || 60;
+    console.log('[Generated Prompts] Fetching from API for postId:', postId);
+    const response = await fetch(`/imaging/api/posts/${postId}/sections`);
+    const data = await response.json();
+    
+    if (data.success && data.sections) {
+        const sectionData = data.sections.find(s => s.id == sectionId);
+        console.log('[Generated Prompts] Found section via API:', sectionData);
+        return sectionData;
+    }
+    
+    return null;
+}
+
+function displaySinglePrompt(sectionData) {
+    const container = document.getElementById('generated-prompts-container');
+    
+    if (sectionData.image_prompts) {
+        try {
+            const promptData = JSON.parse(sectionData.image_prompts);
+            const promptElement = createPromptElement(sectionData, promptData);
+            container.innerHTML = '';
+            container.appendChild(promptElement);
+        } catch (error) {
+            console.error('[Generated Prompts] Error parsing image_prompts JSON:', error);
+            showNoPromptMessage(sectionData.id, 'Error parsing prompt data');
+        }
+    } else {
+        showNoPromptMessage(sectionData.id, 'No image prompt generated');
+    }
+}
+
+function createPromptElement(sectionData, promptData = null) {
+    const element = document.createElement('div');
+    element.className = 'prompt-display-item';
+    element.setAttribute('data-section-id', sectionData.id);
+    
+    // Parse prompt data if not provided
+    if (!promptData && sectionData.image_prompts) {
+        try {
+            promptData = JSON.parse(sectionData.image_prompts);
+        } catch (error) {
+            console.error('[Generated Prompts] Error parsing prompt data:', error);
+            promptData = null;
+        }
+    }
+    
+    if (promptData && promptData.image_prompt) {
+        element.innerHTML = `
+            <div class="prompt-header">
+                <h6 class="section-title">${sectionData.section_heading || `Section ${sectionData.id}`}</h6>
+                <div class="prompt-meta">
+                    <span class="prompt-length">${promptData.image_prompt.length} characters</span>
+                    ${promptData.dimensions ? `<span class="prompt-dimensions">${promptData.dimensions}</span>` : ''}
+                </div>
+            </div>
+            <div class="prompt-content">
+                <div class="prompt-text">${promptData.image_prompt}</div>
+            </div>
+            ${promptData.style ? `<div class="prompt-style"><strong>Style:</strong> ${promptData.style}</div>` : ''}
+        `;
+    } else {
+        element.innerHTML = `
+            <div class="prompt-header">
+                <h6 class="section-title">${sectionData.section_heading || `Section ${sectionData.id}`}</h6>
+            </div>
+            <div class="prompt-content">
+                <div class="no-prompt-message">
+                    <p>No image prompt generated for this section.</p>
+                    <p class="hint">Generate prompts in the Authoring → Image Prompts stage first.</p>
+                </div>
+            </div>
+        `;
+    }
+    
+    return element;
+}
+
+function showNoPromptMessage(sectionId, message = 'No image prompt available') {
+    const container = document.getElementById('generated-prompts-container');
+    container.innerHTML = `
+        <div class="no-prompt-message">
+            <h6>Section ${sectionId}</h6>
+            <p>${message}</p>
+            <p class="hint">Generate prompts in the Authoring → Image Prompts stage first.</p>
+        </div>
+    `;
+}
+
+function showErrorMessage(sectionId, errorMessage) {
+    const container = document.getElementById('generated-prompts-container');
+    container.innerHTML = `
+        <div class="error-message">
+            <h6>Section ${sectionId}</h6>
+            <p>Error loading prompt: ${errorMessage}</p>
+        </div>
+    `;
 }
 </script>
 
 <style>
-.prompt-controls {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid #334155;
+.prompt-display-item {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.prompt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #334155;
+}
+
+.section-title {
+    margin: 0;
+    color: #e2e8f0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.prompt-meta {
     display: flex;
     gap: 0.75rem;
-    flex-wrap: wrap;
-}
-
-.prompt-controls .btn {
-    padding: 0.5rem 1rem;
     font-size: 0.875rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    color: #94a3b8;
 }
 
-.prompt-controls .btn-primary {
-    background: #10b981;
-    color: white;
-    border: none;
+.prompt-content {
+    margin-bottom: 0.75rem;
+}
+
+.prompt-text {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 0.75rem;
+    color: #e2e8f0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.prompt-style {
+    font-size: 0.875rem;
+    color: #94a3b8;
+    padding: 0.5rem;
+    background: #334155;
     border-radius: 4px;
 }
 
-.prompt-controls .btn-primary:hover {
-    background: #059669;
+.no-prompt-message, .error-message {
+    text-align: center;
+    padding: 2rem;
+    color: #94a3b8;
 }
 
-.prompt-controls .btn-secondary {
-    background: #6b7280;
-    color: white;
-    border: none;
-    border-radius: 4px;
+.no-prompt-message h6, .error-message h6 {
+    color: #e2e8f0;
+    margin-bottom: 0.5rem;
 }
 
-.prompt-controls .btn-secondary:hover {
-    background: #4b5563;
+.hint {
+    font-size: 0.875rem;
+    color: #64748b;
+    font-style: italic;
+}
+
+.multiple-selection-header {
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #334155;
+}
+
+.multiple-selection-header h5 {
+    margin: 0 0 0.5rem 0;
+    color: #e2e8f0;
+    font-size: 1.1rem;
+}
+
+.multiple-selection-header p {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.no-selection-message {
+    text-align: center;
+    padding: 2rem;
+    color: #94a3b8;
+}
+
+.no-selection-message p {
+    margin: 0;
+    font-size: 0.9rem;
 }
 </style>
