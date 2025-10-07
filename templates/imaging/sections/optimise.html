@@ -83,14 +83,17 @@ document.addEventListener('DOMContentLoaded', async function() {
           inputsCell.innerHTML = `
             <div style="text-align: center;">
               <img src="${imagePath}" alt="Section ${section.id} image" style="max-width: 200px; max-height: 150px; border-radius: 4px; border: 1px solid #334155;">
-              <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #94a3b8;">Section ${section.section_order || section.id}</div>
+              <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #94a3b8;">${section.section_order || section.id}. ${section.section_heading || section.title || 'Untitled'}</div>
+              <button onclick="regenerateImageForSection(${section.id})" style="margin-top: 0.5rem; padding: 0.25rem 0.5rem; background: #334155; color: #e2e8f0; border: 1px solid #475569; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Regenerate</button>
             </div>
           `;
         };
         img.onerror = function() {
           inputsCell.innerHTML = `
             <div style="text-align: center; color: #64748b; font-style: italic;">
-              No image generated
+              <div style="margin-bottom: 0.5rem;">No image generated</div>
+              <div style="margin-bottom: 0.5rem; font-size: 0.8rem; color: #94a3b8;">${section.section_order || section.id}. ${section.section_heading || section.title || 'Untitled'}</div>
+              <button onclick="regenerateImageForSection(${section.id})" style="padding: 0.25rem 0.5rem; background: #334155; color: #e2e8f0; border: 1px solid #475569; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Generate</button>
             </div>
           `;
         };
@@ -113,6 +116,82 @@ document.addEventListener('DOMContentLoaded', async function() {
     console.error('Error loading sections for optimise table:', error);
   }
 });
+
+// Function to regenerate image for a specific section
+async function regenerateImageForSection(sectionId) {
+  try {
+    const postId = window.postId || 60;
+    
+    // Get current model and parameters from the page
+    const modelSelect = document.getElementById('image-model-select');
+    const modelName = modelSelect ? modelSelect.value : 'sdxl-lora';
+    
+    // Get parameters (simplified - using defaults)
+    const parameters = {
+      width: 1792,
+      height: 1024,
+      steps: 30,
+      cfg: 5.5,
+      seed: null,
+      lora_scale: 0.85
+    };
+    
+    // Fetch the section's image prompt
+    const sectionsResponse = await fetch(`/imaging/api/posts/${postId}/sections`);
+    const sectionsData = await sectionsResponse.json();
+    
+    if (!sectionsData.success || !sectionsData.sections) {
+      throw new Error('Failed to fetch sections data');
+    }
+    
+    const section = sectionsData.sections.find(s => s.id == sectionId);
+    if (!section || !section.image_prompts) {
+      throw new Error('No image prompt found for this section');
+    }
+    
+    let imagePrompt = '';
+    try {
+      const promptData = JSON.parse(section.image_prompts);
+      imagePrompt = promptData.image_prompt || '';
+    } catch (e) {
+      imagePrompt = section.image_prompts;
+    }
+    
+    if (!imagePrompt) {
+      throw new Error('No valid image prompt found');
+    }
+    
+    // Call the image generation API
+    const response = await fetch(`/imaging/api/image-generation/posts/${postId}/sections/${sectionId}/generate-image`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model_name: modelName,
+        parameters: parameters,
+        image_prompt: imagePrompt
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      // Reload the table to show the new image
+      location.reload();
+    } else {
+      throw new Error(result.error || 'Image generation failed');
+    }
+    
+  } catch (error) {
+    console.error('Error regenerating image:', error);
+    alert('Failed to regenerate image: ' + error.message);
+  }
+}
 </script>
 
 {% endblock %}
