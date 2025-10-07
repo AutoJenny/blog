@@ -68,11 +68,15 @@ export class ImagePromptsOutputPanel {
           
           console.log(`[DEBUG] Generating image prompt for section ${id}`);
           try {
-            // Select this section to update Prompt Builder content
-            if (window.sectionsPanel) {
-              window.sectionsPanel.select(id);
-              // Wait a moment for the Prompt Builder to update
-              await new Promise(resolve => setTimeout(resolve, 100));
+            // Update Prompt Builder content for this specific section without full selection
+            if (window.updatePromptBuilderSectionContent && section) {
+              // Find the full section data from sectionsPanel
+              const fullSection = window.sectionsPanel?.sections?.find(s => s.id == id);
+              if (fullSection) {
+                window.updatePromptBuilderSectionContent(fullSection);
+                // Wait a moment for the Prompt Builder to update
+                await new Promise(resolve => setTimeout(resolve, 100));
+              }
             }
             
             await this.generateImagePrompts(id);
