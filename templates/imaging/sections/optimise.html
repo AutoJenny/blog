@@ -29,31 +29,7 @@
 {% block content %}
 {% include 'shared/blog_pipeline_header.html' %}
 
-{% block process_content %}
-<div class="imaging-workspace">
-  <div class="workspace-container">
-    <div class="editor-panel" style="width:100%">
-      <div class="model-selection-container">
-        {% include 'imaging/includes/model_selection_panel.html' %}
-      </div>
-      <div class="prompt-construction-container">
-        <div class="prompt-construction-panel">
-          <div class="panel-header" onclick="togglePromptConstructionAccordion()">
-            <h4>Optimise (placeholder)</h4>
-            <i class="fas fa-chevron-down" id="prompt-accordion-icon"></i>
-          </div>
-          <div class="panel-content" id="prompt-accordion-content" style="display: none;">
-            <div class="no-selection-message">
-              <p>This is a placeholder for the Optimise substage. Functionality to follow.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      {% include 'imaging/includes/debugging_panel_image_generation.html' %}
-    </div>
-  </div>
-</div>
-{% endblock %}
+{% block process_content %}{% endblock %}
 
 {% endblock %}
 
