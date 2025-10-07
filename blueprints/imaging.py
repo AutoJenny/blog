@@ -165,6 +165,36 @@ def imaging_sections_image_generation(post_id):
         logger.error(f"Error rendering image generation page: {str(e)}")
         return f"Error: {str(e)}", 500
 
+@bp.route('/posts/<int:post_id>/sections/optimise')
+def imaging_sections_optimise(post_id):
+    """Optimise page - imaging workflow substage"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, title, status, created_at, updated_at
+                FROM post
+                WHERE id = %s
+            """, (post_id,))
+            post = cursor.fetchone()
+            if not post:
+                return f"Post {post_id} not found", 404
+
+            post_created = post['created_at'].strftime('%Y-%m-%d %H:%M') if post['created_at'] else 'Unknown'
+            post_updated = post['updated_at'].strftime('%Y-%m-%d %H:%M') if post['updated_at'] else 'Unknown'
+
+        return render_template('imaging/sections/optimise.html',
+                               post_id=post_id,
+                               page_title='Optimise',
+                               post_title=post['title'],
+                               post_status=post['status'],
+                               post_created=post_created,
+                               post_updated=post_updated,
+                               currentStage='imaging',
+                               currentSubstage='optimise')
+    except Exception as e:
+        logger.error(f"Error rendering optimise page: {str(e)}")
+        return f"Error: {str(e)}", 500
+
 @bp.route('/api/posts/<int:post_id>')
 def api_get_post(post_id):
     """Get post data for imaging workflow"""
