@@ -576,3 +576,6 @@ document.addEventListener('DOMContentLoaded', function() {
 // Also run after a short delay to catch pages that set window.currentStage after DOM ready
 setTimeout(updateNavigationHighlighting, 100);
 </script>
+
+<!-- Include shared header functionality -->
+<script src="{{ url_for('static', filename='js/shared/blog-pipeline-header.js') }}"></script>
