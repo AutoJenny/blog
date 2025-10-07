@@ -262,8 +262,8 @@ class ImageGenerationHandler {
         console.log('[Image Generation Handler] Display area element:', displayArea);
         
         if (displayArea) {
-            // Add cache-busting parameter to prevent browser caching
-            const cacheBuster = `?t=${Date.now()}`;
+            // Add aggressive cache-busting parameter to prevent browser caching
+            const cacheBuster = `?v=${Date.now()}&r=${Math.random().toString(36).substr(2, 9)}`;
             const imageUrl = `${imagePath}${cacheBuster}`;
             
             console.log('[Image Generation Handler] Image URL with cache buster:', imageUrl);
