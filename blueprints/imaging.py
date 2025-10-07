@@ -129,6 +129,115 @@ def imaging_generate_sdxl_image(image_prompt, post_id, section_id, parameters):
         logger.error(f"SDXL generation error: {str(e)}")
         return {'success': False, 'error': str(e)}
 
+def optimize_image_with_watermark(post_id, section_id):
+    """Optimize image with watermark and AI caption"""
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+        import os
+        
+        # Paths
+        raw_image_path = f"static/content/posts/{post_id}/sections/{section_id}/raw/{section_id}.png"
+        watermark_path = "static/images/site/clan-watermark.png"
+        optimized_dir = f"static/content/posts/{post_id}/sections/{section_id}/optimized"
+        optimized_image_path = f"{optimized_dir}/{section_id}.jpg"
+        
+        # Check if raw image exists
+        if not os.path.exists(raw_image_path):
+            return {'success': False, 'error': f'Raw image not found: {raw_image_path}'}
+        
+        # Check if watermark exists
+        if not os.path.exists(watermark_path):
+            return {'success': False, 'error': f'Watermark not found: {watermark_path}'}
+        
+        # Create optimized directory
+        os.makedirs(optimized_dir, exist_ok=True)
+        
+        # Load images
+        image = Image.open(raw_image_path)
+        watermark = Image.open(watermark_path)
+        
+        # Convert to RGBA if needed
+        if image.mode != 'RGBA':
+            image = image.convert('RGBA')
+        
+        # Add watermark (bottom-right)
+        watermark_width = min(200, image.width // 4)
+        watermark_height = int(watermark.height * (watermark_width / watermark.width))
+        watermark_resized = watermark.resize((watermark_width, watermark_height), Image.Resampling.LANCZOS)
+        
+        # Create watermark with alpha
+        watermark_with_alpha = Image.new('RGBA', watermark_resized.size, (0, 0, 0, 0))
+        watermark_with_alpha.paste(watermark_resized, (0, 0))
+        
+        # Calculate position (bottom-right with 10px margin)
+        margin = 10
+        x = image.width - watermark_width - margin
+        y = image.height - watermark_height - margin
+        
+        # Create grey background with 80% transparency (20% opacity)
+        grey_bg = Image.new('RGBA', (watermark_width + 20, watermark_height + 20), (128, 128, 128, 51))
+        
+        # Paste grey background first
+        bg_x = x - 10
+        bg_y = y - 10
+        image.paste(grey_bg, (bg_x, bg_y), grey_bg)
+        
+        # Paste watermark
+        image.paste(watermark_with_alpha, (x, y), watermark_with_alpha)
+        
+        # Add AI-generated text (bottom-left)
+        draw = ImageDraw.Draw(image)
+        
+        # Try to get font
+        try:
+            font = ImageFont.truetype("/System/Library/Fonts/Arial.ttf", 16)
+        except:
+            try:
+                font = ImageFont.load_default()
+            except:
+                font = None
+        
+        text = "AI-generated image"
+        text_color = (128, 128, 128, 180)  # Grey with transparency
+        
+        # Calculate text position (bottom-left with 20px padding)
+        if font:
+            bbox = draw.textbbox((0, 0), text, font=font)
+            text_width = bbox[2] - bbox[0]
+            text_height = bbox[3] - bbox[1]
+        else:
+            text_width = len(text) * 8  # Approximate width
+            text_height = 16
+        
+        text_x = 20
+        text_y = image.height - text_height - 20
+        
+        # Draw text
+        if font:
+            draw.text((text_x, text_y), text, fill=text_color, font=font)
+        else:
+            draw.text((text_x, text_y), text, fill=text_color)
+        
+        # Convert to RGB for JPG saving
+        if image.mode == 'RGBA':
+            # Create white background
+            rgb_image = Image.new('RGB', image.size, (255, 255, 255))
+            rgb_image.paste(image, mask=image.split()[-1])  # Use alpha channel as mask
+            image = rgb_image
+        
+        # Save as JPG with 50% quality
+        image.save(optimized_image_path, 'JPEG', quality=50, optimize=True)
+        
+        return {
+            'success': True,
+            'optimized_path': f"/static/content/posts/{post_id}/sections/{section_id}/optimized/{section_id}.jpg",
+            'message': 'Image optimized successfully'
+        }
+        
+    except Exception as e:
+        logger.error(f"Error optimizing image: {str(e)}")
+        return {'success': False, 'error': str(e)}
+
 # Create blueprint
 bp = Blueprint('imaging', __name__, url_prefix='/imaging')
 
@@ -442,3 +551,107 @@ def imaging_model_selection():
     except Exception as e:
         logger.error(f"Error with model selection: {e}")
         return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/optimize/posts/<int:post_id>/sections/<int:section_id>/optimize-image', methods=['POST'])
+def imaging_optimize_image(post_id, section_id):
+    """Optimize image with watermark and caption for a specific section"""
+    try:
+        # Verify section exists
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, section_order, section_heading
+                FROM post_section
+                WHERE id = %s AND post_id = %s
+            """, (section_id, post_id))
+            
+            section = cursor.fetchone()
+            if not section:
+                return jsonify({'success': False, 'error': 'Section not found'})
+        
+        # Optimize the image
+        result = optimize_image_with_watermark(post_id, section_id)
+        
+        if result['success']:
+            return jsonify({
+                'success': True,
+                'optimized_path': result['optimized_path'],
+                'message': 'Image optimized successfully'
+            })
+        else:
+            return jsonify({'success': False, 'error': result['error']})
+            
+    except Exception as e:
+        logger.error(f"Error optimizing image: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@bp.route('/api/optimize/posts/<int:post_id>/optimize-all', methods=['POST'])
+def imaging_optimize_all_images(post_id):
+    """Optimize all images for a post with watermark and caption"""
+    try:
+        # Get all sections with raw images
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, section_order, section_heading
+                FROM post_section
+                WHERE post_id = %s
+                ORDER BY section_order
+            """, (post_id,))
+            
+            sections = cursor.fetchall()
+        
+        if not sections:
+            return jsonify({'success': False, 'error': 'No sections found'})
+        
+        results = []
+        successful = 0
+        failed = 0
+        
+        for section in sections:
+            section_id = section['id']
+            raw_image_path = f"static/content/posts/{post_id}/sections/{section_id}/raw/{section_id}.png"
+            
+            # Skip if raw image doesn't exist
+            if not os.path.exists(raw_image_path):
+                results.append({
+                    'section_id': section_id,
+                    'section_heading': section['section_heading'],
+                    'success': False,
+                    'error': 'Raw image not found',
+                    'skipped': True
+                })
+                continue
+            
+            # Optimize the image
+            result = optimize_image_with_watermark(post_id, section_id)
+            
+            if result['success']:
+                results.append({
+                    'section_id': section_id,
+                    'section_heading': section['section_heading'],
+                    'success': True,
+                    'optimized_path': result['optimized_path'],
+                    'skipped': False
+                })
+                successful += 1
+            else:
+                results.append({
+                    'section_id': section_id,
+                    'section_heading': section['section_heading'],
+                    'success': False,
+                    'error': result['error'],
+                    'skipped': False
+                })
+                failed += 1
+        
+        return jsonify({
+            'success': True,
+            'total_sections': len(sections),
+            'successful': successful,
+            'failed': failed,
+            'results': results,
+            'message': f'Optimization complete: {successful} successful, {failed} failed'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error optimizing all images: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)})
