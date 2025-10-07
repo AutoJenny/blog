@@ -119,14 +119,19 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 // Function to regenerate image for a specific section
 async function regenerateImageForSection(sectionId) {
+  const button = event.target;
+  const originalText = button.textContent;
+  
   try {
+    // Show loading state
+    button.disabled = true;
+    button.textContent = 'Generating...';
+    button.style.background = '#475569';
+    
     const postId = window.postId || 60;
     
-    // Get current model and parameters from the page
-    const modelSelect = document.getElementById('image-model-select');
-    const modelName = modelSelect ? modelSelect.value : 'sdxl-lora';
-    
-    // Get parameters (simplified - using defaults)
+    // Use default model and parameters (no model selection on this page)
+    const modelName = 'sdxl-lora';
     const parameters = {
       width: 1792,
       height: 1024,
@@ -181,15 +186,28 @@ async function regenerateImageForSection(sectionId) {
     const result = await response.json();
     
     if (result.success) {
-      // Reload the table to show the new image
-      location.reload();
+      // Show success state briefly, then reload
+      button.textContent = 'Success!';
+      button.style.background = '#10b981';
+      setTimeout(() => {
+        location.reload();
+      }, 1000);
     } else {
       throw new Error(result.error || 'Image generation failed');
     }
     
   } catch (error) {
     console.error('Error regenerating image:', error);
+    button.textContent = 'Error';
+    button.style.background = '#ef4444';
     alert('Failed to regenerate image: ' + error.message);
+  } finally {
+    // Reset button after delay
+    setTimeout(() => {
+      button.disabled = false;
+      button.textContent = originalText;
+      button.style.background = '#334155';
+    }, 2000);
   }
 }
 </script>
