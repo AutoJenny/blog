@@ -33,9 +33,87 @@
 <div class="imaging-workspace">
   <div class="workspace-container">
     {% include 'imaging/includes/sections_panel_imaging.html' %}
+    <div class="editor-panel">
+      <table style="width: 100%; border-collapse: collapse; background: #1e293b; border: 1px solid #334155;">
+        <thead>
+          <tr style="background: #0f172a;">
+            <th style="padding: 1rem; border: 1px solid #334155; color: #e2e8f0; text-align: left;">Inputs</th>
+            <th style="padding: 1rem; border: 1px solid #334155; color: #e2e8f0; text-align: left;">Outputs</th>
+          </tr>
+        </thead>
+        <tbody id="optimise-table-body">
+          <!-- Rows will be populated by JavaScript -->
+        </tbody>
+      </table>
+    </div>
   </div>
   </div>
 {% endblock %}
+
+<script>
+// Populate table with sections and their generated images
+document.addEventListener('DOMContentLoaded', async function() {
+  try {
+    const postId = window.postId || 60;
+    const response = await fetch(`/imaging/api/posts/${postId}/sections`);
+    const data = await response.json();
+    
+    if (data.success && data.sections) {
+      const tbody = document.getElementById('optimise-table-body');
+      tbody.innerHTML = '';
+      
+      data.sections.forEach(section => {
+        const row = document.createElement('tr');
+        row.style.borderBottom = '1px solid #334155';
+        
+        // Inputs column - show generated image if it exists
+        const inputsCell = document.createElement('td');
+        inputsCell.style.padding = '1rem';
+        inputsCell.style.border = '1px solid #334155';
+        inputsCell.style.color = '#e2e8f0';
+        
+        const imagePath = `/static/content/posts/${postId}/sections/${section.id}/raw/${section.id}.png`;
+        const img = new Image();
+        img.style.maxWidth = '200px';
+        img.style.maxHeight = '150px';
+        img.style.borderRadius = '4px';
+        img.style.border = '1px solid #334155';
+        
+        img.onload = function() {
+          inputsCell.innerHTML = `
+            <div style="text-align: center;">
+              <img src="${imagePath}" alt="Section ${section.id} image" style="max-width: 200px; max-height: 150px; border-radius: 4px; border: 1px solid #334155;">
+              <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #94a3b8;">Section ${section.section_order || section.id}</div>
+            </div>
+          `;
+        };
+        img.onerror = function() {
+          inputsCell.innerHTML = `
+            <div style="text-align: center; color: #64748b; font-style: italic;">
+              No image generated
+            </div>
+          `;
+        };
+        img.src = imagePath;
+        
+        // Outputs column - empty initially
+        const outputsCell = document.createElement('td');
+        outputsCell.style.padding = '1rem';
+        outputsCell.style.border = '1px solid #334155';
+        outputsCell.style.color = '#64748b';
+        outputsCell.style.fontStyle = 'italic';
+        outputsCell.textContent = 'Optimised output will appear here';
+        
+        row.appendChild(inputsCell);
+        row.appendChild(outputsCell);
+        tbody.appendChild(row);
+      });
+    }
+  } catch (error) {
+    console.error('Error loading sections for optimise table:', error);
+  }
+});
+</script>
 
 {% endblock %}
 
