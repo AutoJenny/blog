@@ -489,12 +489,11 @@ def generate_social_content():
                     'error': 'Product not found'
                 }), 404
             
-            # Get LLM prompt template
+            # Get LLM prompt template for social media syndication
             cursor.execute("""
-                SELECT prompt_template, model_name, temperature, max_tokens
-                FROM llm_prompts
-                WHERE process_id = 1
-                ORDER BY updated_at DESC
+                SELECT prompt_text
+                FROM llm_prompt
+                WHERE name = 'Social Media Syndication'
                 LIMIT 1
             """)
             prompt_config = cursor.fetchone()
@@ -505,24 +504,35 @@ def generate_social_content():
                     'error': 'No LLM prompt configuration found'
                 }), 404
             
-            # Format the prompt with product data
-            prompt_template = prompt_config['prompt_template']
+            # Format the prompt with platform and requirements
+            prompt_template = prompt_config['prompt_text']
+            
+            # Format the prompt with platform info and product details as requirements
             formatted_prompt = prompt_template.format(
-                product_name=product['name'],
-                product_sku=product['url'],  # Use URL as the call-to-action
-                product_description=product['description'],
-                product_price=product['price']
+                platform='Facebook',
+                channel_type='product',
+                requirements=f"""Create an engaging product promotion post for:
+Product Name: {product['name']}
+Description: {product['description']}
+Product URL: {product['url']}
+
+Write a compelling social media post that highlights the product's key features and benefits. Use an engaging tone with appropriate emojis. Include a clear call-to-action directing people to the product URL. Do NOT include the price in the post. Keep it concise but informative."""
             )
             
-            # Call LLM service
+            # Call LLM service with default parameters
             from blueprints.llm_actions import LLMService
             llm_service = LLMService()
             
-            response = llm_service.generate_content(
-                prompt=formatted_prompt,
-                model=prompt_config['model_name'],
-                temperature=prompt_config.get('temperature', 0.7),
-                max_tokens=prompt_config.get('max_tokens', 500)
+            # Prepare messages for the LLM
+            messages = [
+                {"role": "system", "content": "You are a social media marketing expert."},
+                {"role": "user", "content": formatted_prompt}
+            ]
+            
+            response = llm_service.execute_llm_request(
+                provider='ollama',
+                model='mistral',
+                messages=messages
             )
             
             if response and 'content' in response:
@@ -532,9 +542,7 @@ def generate_social_content():
                 cursor.execute("""
                     INSERT INTO posting_queue (product_id, content_type, generated_content, status, created_at, updated_at)
                     VALUES (%s, %s, %s, 'draft', NOW(), NOW())
-                    ON CONFLICT (product_id, content_type) 
-                    DO UPDATE SET generated_content = %s, updated_at = NOW()
-                """, (product_id, content_type, generated_content, generated_content))
+                """, (product_id, content_type, generated_content))
                 
                 return jsonify({
                     'success': True,

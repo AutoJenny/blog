@@ -8,8 +8,9 @@ Object.assign(AIContentGenerationManager.prototype, {
     
     // Generate content using AI
     async generateContent() {
-        if (!this.selectedData) {
-            alert('Please select an item first');
+        // Check if a product is selected
+        if (!window.itemSelectionManager || !window.itemSelectionManager.selectedProduct) {
+            alert('Please select a product first');
             return;
         }
         
@@ -44,7 +45,13 @@ Object.assign(AIContentGenerationManager.prototype, {
     
     // Generate content using real AI
     async generateAIContent() {
-        const prompt = this.generatePrompt(this.selectedData, this.selectedContentType);
+        // Get the selected product ID from the item selection manager
+        if (!window.itemSelectionManager || !window.itemSelectionManager.selectedProduct) {
+            throw new Error('No product selected. Please select a product first.');
+        }
+        
+        const productId = window.itemSelectionManager.selectedProduct.id;
+        const contentType = this.selectedContentType || 'product';
         
         try {
             const response = await fetch('/launchpad/api/syndication/generate-social-content', {
@@ -53,24 +60,16 @@ Object.assign(AIContentGenerationManager.prototype, {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    provider: 'ollama',
-                    model: 'mistral',
-                    prompt: prompt,
-                    process_id: this.processId
+                    product_id: productId,
+                    content_type: contentType
                 })
             });
             
             const data = await response.json();
             console.log('LLM API response:', data);
             
-            if (data.content) {
+            if (data.success && data.content) {
                 this.generatedContent = data.content;
-            } else if (data.result) {
-                this.generatedContent = data.result;
-            } else if (data.success && data.content) {
-                this.generatedContent = data.content;
-            } else if (data.success && data.result) {
-                this.generatedContent = data.result;
             } else {
                 console.error('LLM API error:', data);
                 throw new Error(data.error || 'Failed to generate content');
