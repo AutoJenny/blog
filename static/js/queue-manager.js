@@ -15,11 +15,16 @@ class QueueManager {
      */
     detectPageType() {
         const path = window.location.pathname;
+        console.log('Queue Manager: Detecting page type from path:', path);
+        
         if (path.includes('/product_post')) {
+            console.log('Queue Manager: Detected page type: product');
             return 'product';
         } else if (path.includes('/blog_post')) {
+            console.log('Queue Manager: Detected page type: blog_post');
             return 'blog_post';
         }
+        console.log('Queue Manager: Detected page type: all (default)');
         return 'all'; // Default to showing all
     }
 
@@ -88,25 +93,29 @@ class QueueManager {
      * Load queue data from API
      */
     async loadQueueData() {
-        console.log(`Loading queue data for ${this.pageType} posts...`);
+        console.log(`Queue Manager: Loading queue data for ${this.pageType} posts...`);
         try {
             const response = await fetch('/launchpad/api/queue');
+            console.log('Queue Manager: API response status:', response.status);
             const data = await response.json();
             
-            console.log('API response:', data);
+            console.log('Queue Manager: API response data:', data);
+            console.log('Queue Manager: Data success:', data.success);
+            console.log('Queue Manager: Items count:', data.items ? data.items.length : 'no items');
             
             if (data.success) {
                 // Filter data based on page type
                 this.queueData = this.filterQueueData(data.items);
-                console.log('Filtered queue data:', this.queueData);
+                console.log('Queue Manager: Filtered queue data:', this.queueData);
+                console.log('Queue Manager: Filtered count:', this.queueData.length);
                 this.renderQueue();
                 this.updateQueueCount();
             } else {
-                console.error('Error loading queue:', data.error);
+                console.error('Queue Manager: Error loading queue:', data.error);
                 this.showEmptyQueue();
             }
         } catch (error) {
-            console.error('Error loading queue:', error);
+            console.error('Queue Manager: Error loading queue:', error);
             this.showEmptyQueue();
         }
     }
@@ -744,8 +753,16 @@ function toggleAccordion(sectionId) {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Queue Manager: DOM loaded, checking for posting-queue-content element...');
+    const queueContent = document.getElementById('posting-queue-content');
+    console.log('Queue Manager: posting-queue-content element found:', !!queueContent);
+    
     // Only initialize if we're on a page with queue functionality
-    if (document.getElementById('posting-queue-content')) {
+    if (queueContent) {
+        console.log('Queue Manager: Initializing QueueManager...');
         window.queueManager = new QueueManager();
+        console.log('Queue Manager: QueueManager initialized');
+    } else {
+        console.log('Queue Manager: posting-queue-content element not found, skipping initialization');
     }
 });

@@ -345,6 +345,48 @@ def get_last_updated():
             'error': str(e)
         }), 500
 
+@bp.route('/api/syndication/tags')
+def get_tags():
+    """Get available tags for products."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Use category_id as a proxy for tags since tag column doesn't exist
+            cursor.execute("""
+                SELECT DISTINCT category_ids
+                FROM clan_products
+                WHERE category_ids IS NOT NULL
+                ORDER BY category_ids
+            """)
+            tags = cursor.fetchall()
+            
+            return jsonify({
+                'success': True,
+                'tags': [str(tag['category_ids']) for tag in tags]
+            })
+    except Exception as e:
+        logger.error(f"Error getting tags: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@bp.route('/api/selection-state')
+def get_selection_state():
+    """Get current selection state."""
+    try:
+        # For now, return empty state - this can be enhanced later
+        return jsonify({
+            'success': True,
+            'selected_product': None,
+            'selected_content_type': None
+        })
+    except Exception as e:
+        logger.error(f"Error getting selection state: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @bp.route('/api/syndication/select-product', methods=['POST'])
 def select_random_product():
     """Select a random product for syndication."""
@@ -557,6 +599,38 @@ Write a compelling social media post that highlights the product's key features 
                 
     except Exception as e:
         logger.error(f"Error generating social content: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@bp.route('/api/schedules')
+def get_schedules():
+    """Get available posting schedules."""
+    try:
+        # For now, return empty schedules - this can be enhanced later
+        return jsonify({
+            'success': True,
+            'schedules': []
+        })
+    except Exception as e:
+        logger.error(f"Error getting schedules: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@bp.route('/api/daily-product-posts/today-status')
+def get_today_status():
+    """Get today's posting status."""
+    try:
+        # For now, return empty status - this can be enhanced later
+        return jsonify({
+            'success': True,
+            'post': None
+        })
+    except Exception as e:
+        logger.error(f"Error getting today status: {e}")
         return jsonify({
             'success': False,
             'error': str(e)

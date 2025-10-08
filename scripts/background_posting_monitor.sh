@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# Automated Posting Background Monitor
+# Runs every 5 minutes to check for due posts
+
+SCRIPT_DIR="/Users/autojenny/Documents/projects/blog"
+LOG_FILE="$SCRIPT_DIR/logs/background_posting.log"
+PID_FILE="$SCRIPT_DIR/logs/background_posting.pid"
+
+# Function to log with timestamp
+log() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
+}
+
+# Function to check if already running
+check_running() {
+    if [ -f "$PID_FILE" ]; then
+        local pid=$(cat "$PID_FILE")
+        if ps -p "$pid" > /dev/null 2>&1; then
+            log "Background posting already running (PID: $pid)"
+            exit 1
+        else
+            rm -f "$PID_FILE"
+        fi
+    fi
+}
+
+# Function to cleanup on exit
+cleanup() {
+    log "Background posting monitor stopped"
+    rm -f "$PID_FILE"
+    exit 0
+}
+
+# Set up signal handlers
+trap cleanup SIGTERM SIGINT
+
+# Main monitoring loop
+main() {
+    log "Starting background posting monitor"
+    echo $$ > "$PID_FILE"
+    
+    while true; do
+        log "Checking for due posts..."
+        
+        # Run the posting system
+        cd "$SCRIPT_DIR"
+        
+        # Step 1: Run the automated posting scheduler
+        log "Running automated posting scheduler..."
+        PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/automated_posting.py" >> "$LOG_FILE" 2>&1
+        
+        # Step 2: Run the posting executor
+        log "Running posting executor..."
+        PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/posting_executor.py" >> "$LOG_FILE" 2>&1
+        
+        # Wait 5 minutes
+        log "Waiting 5 minutes until next check..."
+        sleep 300
+    done
+}
+
+# Start the monitor
+check_running
+main
