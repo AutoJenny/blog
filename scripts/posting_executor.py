@@ -18,8 +18,8 @@ from config.database import db_manager
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s',
     handlers=[
         logging.FileHandler('/Users/autojenny/Documents/projects/blog/logs/posting_executor.log'),
         logging.StreamHandler()
@@ -35,9 +35,12 @@ class PostingExecutor:
         """
         Get posts that are due to be published now (status = 'pending')
         """
+        logger.debug("get_pending_posts called")
+        
         try:
             with self.db_manager.get_cursor() as cursor:
                 now = datetime.now()
+                logger.debug(f"Current time: {now}")
                 
                 cursor.execute("""
                     SELECT pq.id, pq.platform, pq.channel_type, pq.content_type,
@@ -56,10 +59,29 @@ class PostingExecutor:
                 
                 posts = cursor.fetchall()
                 logger.info(f"Found {len(posts)} pending posts ready for publishing")
+                
+                # Log details of each pending post
+                for post in posts:
+                    logger.debug(f"Pending post: ID={post['id']}, scheduled={post['scheduled_timestamp']}, platform={post['platform']}")
+                
+                # Also log all 'pending' posts to see what's available
+                cursor.execute("""
+                    SELECT id, status, scheduled_timestamp, platform, content_type
+                    FROM posting_queue 
+                    WHERE status = 'pending'
+                    ORDER BY scheduled_timestamp ASC
+                    LIMIT 10
+                """)
+                all_pending_posts = cursor.fetchall()
+                logger.debug(f"All pending posts in queue: {len(all_pending_posts)}")
+                for post in all_pending_posts:
+                    logger.debug(f"Pending post: ID={post['id']}, scheduled={post['scheduled_timestamp']}, platform={post['platform']}")
+                
                 return posts
                 
         except Exception as e:
             logger.error(f"Error fetching pending posts: {e}")
+            logger.exception("Full exception details:")
             return []
     
     def post_to_facebook(self, post: Dict) -> Dict:

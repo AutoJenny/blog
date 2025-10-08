@@ -12,19 +12,25 @@ export DB_NAME="blog"
 export DB_USER="autojenny"
 
 echo "$(date): Starting complete posting system" >> logs/complete_posting_system.log
+echo "$(date): Working directory: $(pwd)" >> logs/complete_posting_system.log
+echo "$(date): Python path: $PYTHONPATH" >> logs/complete_posting_system.log
 
 # Step 1: Run the automated posting scheduler (staggered timing)
 echo "$(date): Running automated posting scheduler" >> logs/complete_posting_system.log
-python3 scripts/automated_posting.py
-SCHEDULER_EXIT_CODE=$?
+echo "$(date): Command: python3 scripts/automated_posting.py" >> logs/complete_posting_system.log
+python3 scripts/automated_posting.py 2>&1 | tee -a logs/complete_posting_system.log
+SCHEDULER_EXIT_CODE=${PIPESTATUS[0]}
+echo "$(date): Scheduler completed with exit code: $SCHEDULER_EXIT_CODE" >> logs/complete_posting_system.log
 
 # Step 2: Run the posting executor (actual posting)
 echo "$(date): Running posting executor" >> logs/complete_posting_system.log
-python3 scripts/posting_executor.py
-EXECUTOR_EXIT_CODE=$?
+echo "$(date): Command: python3 scripts/posting_executor.py" >> logs/complete_posting_system.log
+python3 scripts/posting_executor.py 2>&1 | tee -a logs/complete_posting_system.log
+EXECUTOR_EXIT_CODE=${PIPESTATUS[0]}
+echo "$(date): Executor completed with exit code: $EXECUTOR_EXIT_CODE" >> logs/complete_posting_system.log
 
 # Log results
-echo "$(date): Scheduler exit code: $SCHEDULER_EXIT_CODE, Executor exit code: $EXECUTOR_EXIT_CODE" >> logs/complete_posting_system.log
+echo "$(date): Final results - Scheduler exit code: $SCHEDULER_EXIT_CODE, Executor exit code: $EXECUTOR_EXIT_CODE" >> logs/complete_posting_system.log
 
 # Exit with error if either failed
 if [ $SCHEDULER_EXIT_CODE -ne 0 ] || [ $EXECUTOR_EXIT_CODE -ne 0 ]; then
