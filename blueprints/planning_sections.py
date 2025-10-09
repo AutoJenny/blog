@@ -6,6 +6,7 @@ Contains section-related API functions extracted from planning_original_backup.p
 
 from flask import request, jsonify
 from config.database import db_manager
+from blueprints.planning_llm import LLMService
 import logging
 import json
 from datetime import datetime
@@ -102,7 +103,7 @@ SECTIONS_AND_TOPICS:
         
         # Call LLM service
         try:
-            from modules.llm_service import LLMService
+            # LLMService already imported at module level
             llm_service = LLMService()
             
             messages = [
@@ -333,7 +334,7 @@ TOPICS:
         
         # Call LLM service
         try:
-            from modules.llm_service import LLMService
+            # LLMService already imported at module level
             llm_service = LLMService()
             
             messages = [

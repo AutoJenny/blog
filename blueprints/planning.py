@@ -15,13 +15,14 @@ logger = logging.getLogger(__name__)
 
 # Import functions from new modules
 from blueprints.planning_views import planning_dashboard as dashboard_func, planning_post_overview as post_overview_func, planning_concept as concept_func, categories_manage as categories_func, planning_research as research_func, planning_old_interface as old_interface_func
-from blueprints.planning_calendar_clean import planning_calendar as calendar_func, planning_calendar_view as calendar_view_func, planning_calendar_ideas as ideas_func
+from blueprints.planning_calendar_clean import planning_calendar as calendar_func, planning_calendar_view as calendar_view_func, planning_calendar_ideas as ideas_func, planning_calendar_ideas_week as ideas_week_func
 from blueprints.planning_concept import planning_concept_brainstorm as brainstorm_func, planning_concept_section_structure as section_structure_func, planning_concept_topic_allocation as topic_allocation_func, planning_concept_titling as titling_func, planning_concept_outline as outline_func, planning_research_sources as sources_func, planning_research_visuals as visuals_func, planning_research_prompts as prompts_func, planning_research_verification as verification_func
 from blueprints.planning_api_calendar import api_calendar_categories as categories_api_func, api_calendar_weeks as weeks_api_func, api_calendar_ideas as ideas_api_func, api_calendar_events as events_api_func, api_calendar_schedule as schedule_api_func, api_calendar_ideas_for_week as ideas_week_api_func
 from blueprints.planning_api_posts import api_posts as posts_api_func
 from blueprints.planning_api_post_specific import api_posts_expanded_idea as expanded_idea_api_func, api_posts_idea_seed as idea_seed_api_func, api_check_topic as check_topic_api_func, api_create_new_post as create_new_api_func, api_posts_idea_scope as idea_scope_api_func
 from blueprints.planning_api_brainstorm import api_generate_brainstorm_topics as brainstorm_topics_api_func
 from blueprints.planning_api_prompts import api_get_prompt as prompt_api_func
+from blueprints.planning_sections import api_sections_title as sections_title_api_func, api_save_sections as sections_save_api_func, api_design_section_structure as sections_design_api_func
 from blueprints.planning_llm import LLMService, parse_brainstorm_topics
 
 # Initialize LLM service
@@ -210,6 +211,130 @@ def api_posts_idea_scope(post_id):
 def api_generate_brainstorm_topics():
     """Generate brainstorming topics using LLM"""
     return brainstorm_topics_api_func()
+
+# ============================================================================
+# SECTION API ENDPOINTS (imported from planning_sections.py)
+# ============================================================================
+
+@bp.route('/api/sections/design-structure', methods=['POST'])
+def api_design_section_structure():
+    """Design section structure based on topics"""
+    return sections_design_api_func()
+
+@bp.route('/api/sections/design-structure/<int:post_id>', methods=['GET'])
+def api_get_section_structure(post_id):
+    """Get section structure for a post"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT section_structure FROM post_development 
+                WHERE post_id = %s AND section_structure IS NOT NULL
+            """, (post_id,))
+            
+            result = cursor.fetchone()
+            if result and result['section_structure']:
+                section_structure = result['section_structure']
+                if isinstance(section_structure, str):
+                    section_structure = json.loads(section_structure)
+                
+                return jsonify({
+                    'success': True,
+                    'section_structure': section_structure
+                })
+            else:
+                return jsonify({'success': True, 'section_structure': None})
+                
+    except Exception as e:
+        logger.error(f"Error fetching section structure: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/sections/title', methods=['POST'])
+def api_sections_title():
+    """Generate section titles"""
+    return sections_title_api_func()
+
+@bp.route('/api/sections/save', methods=['POST'])
+def api_save_sections():
+    """Save sections to database"""
+    return sections_save_api_func()
+
+@bp.route('/api/sections/allocate-topics', methods=['POST'])
+def api_allocate_topics():
+    """Allocate topics to sections"""
+    try:
+        data = request.get_json()
+        post_id = data.get('post_id')
+        topics = data.get('topics', [])
+        sections = data.get('sections', [])
+        
+        if not post_id or not topics or not sections:
+            return jsonify({'error': 'Missing required data'}), 400
+        
+        # Simple topic allocation logic - distribute topics evenly across sections
+        topics_per_section = len(topics) // len(sections)
+        remainder = len(topics) % len(sections)
+        
+        allocations = []
+        topic_index = 0
+        
+        for i, section in enumerate(sections):
+            section_topics = []
+            topics_for_this_section = topics_per_section + (1 if i < remainder else 0)
+            
+            for j in range(topics_for_this_section):
+                if topic_index < len(topics):
+                    section_topics.append(topics[topic_index])
+                    topic_index += 1
+            
+            allocations.append({
+                'section_id': section.get('id', f'section_{i+1}'),
+                'section_title': section.get('title', f'Section {i+1}'),
+                'topics': section_topics
+            })
+        
+        # Save to database
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                UPDATE post_development 
+                SET topic_allocation = %s, updated_at = %s
+                WHERE post_id = %s
+            """, (json.dumps(allocations), datetime.now(), post_id))
+        
+        return jsonify({
+            'success': True,
+            'allocations': allocations
+        })
+        
+    except Exception as e:
+        logger.error(f"Error allocating topics: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/sections/allocate-topics/<int:post_id>', methods=['GET'])
+def api_get_topic_allocation(post_id):
+    """Get existing topic allocation for a post"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT topic_allocation FROM post_development 
+                WHERE post_id = %s AND topic_allocation IS NOT NULL
+            """, (post_id,))
+            
+            result = cursor.fetchone()
+            if result and result['topic_allocation']:
+                allocations = result['topic_allocation']
+                if isinstance(allocations, str):
+                    allocations = json.loads(allocations)
+                
+                return jsonify({
+                    'success': True,
+                    'allocations': allocations
+                })
+            else:
+                return jsonify({'success': True, 'allocations': None})
+                
+    except Exception as e:
+        logger.error(f"Error fetching topic allocation: {e}")
+        return jsonify({'error': str(e)}), 500
 
 # ============================================================================
 # REMAINING FUNCTIONS (still need to be moved to modules)
