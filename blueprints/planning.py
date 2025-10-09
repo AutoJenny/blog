@@ -1058,11 +1058,11 @@ def api_sections_title():
         if not post_id or not topic_allocation:
             return jsonify({'error': 'Missing required data'}), 400
         
-        # Import the original function from the backup
-        from blueprints.planning_original_backup import api_sections_title as original_api_sections_title
+        # Import the function from the new sections module
+        from blueprints.planning_sections import api_sections_title
         
-        # Call the original function
-        return original_api_sections_title()
+        # Call the function
+        return api_sections_title()
         
     except Exception as e:
         logger.error(f"Error in section titling: {e}")
@@ -1079,11 +1079,11 @@ def api_save_sections():
         if not post_id or not sections:
             return jsonify({'error': 'Missing required data'}), 400
         
-        # Import the original function from the backup
-        from blueprints.planning_original_backup import api_save_sections as original_api_save_sections
+        # Import the function from the new sections module
+        from blueprints.planning_sections import api_save_sections
         
-        # Call the original function
-        return original_api_save_sections()
+        # Call the function
+        return api_save_sections()
         
     except Exception as e:
         logger.error(f"Error saving sections: {e}")
@@ -1195,11 +1195,11 @@ def api_get_expanded_idea(post_id):
 def api_get_post_data(post_id):
     """Get post data including development data"""
     try:
-        # Import the original function from the backup
-        from blueprints.planning_original_backup import get_post_data as original_get_post_data
+        # Import the function from the new data module
+        from blueprints.planning_data import get_post_data
         
-        # Call the original function
-        return original_get_post_data(post_id)
+        # Call the function
+        return get_post_data(post_id)
         
     except Exception as e:
         logger.error(f"Error fetching post data: {e}")
@@ -1243,11 +1243,11 @@ def api_design_section_structure():
         if not topics or not post_id:
             return jsonify({'error': 'Missing required data'}), 400
         
-        # Import the original function from the backup
-        from blueprints.planning_original_backup import api_design_section_structure as original_api_design_section_structure
+        # Import the function from the new sections module
+        from blueprints.planning_sections import api_design_section_structure
         
-        # Call the original function
-        return original_api_design_section_structure()
+        # Call the function
+        return api_design_section_structure()
         
     except Exception as e:
         logger.error(f"Error designing section structure: {e}")
