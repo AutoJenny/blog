@@ -82,53 +82,146 @@ If any step fails:
 
 ## PHASE 2: BREAK UP MAIN PLANNING FILE
 
-### Current State Analysis
-- **File**: `blueprints/planning.py` (1,279 lines)
-- **Routes**: 44 routes (too many for one file)
-- **Functions**: 48 functions (too many for one file)
-- **Code Lines**: 1,030 lines (exceeds 300-line guideline)
+### Current State Analysis (UPDATED)
+- **File**: `blueprints/planning.py` (222 lines) ✅ **REDUCED FROM 1,279 LINES**
+- **Routes**: 22 routes (reduced from 44)
+- **Functions**: 22 functions (reduced from 48)
+- **Code Lines**: 222 lines ✅ **UNDER 300-LINE TARGET**
 
-### Proposed File Structure
-- **`planning_views.py`** - All `@bp.route` view functions (~400 lines)
-- **`planning_api.py`** - All API endpoints (~400 lines)
-- **`planning_calendar.py`** - Calendar-specific functionality (~200 lines)
-- **`planning_concept.py`** - Concept development functionality (~200 lines)
-- **`planning_llm.py`** - LLM service and prompt handling (~100 lines)
+### Current Micro-File Structure (PARTIALLY IMPLEMENTED)
+- ✅ **`planning_views.py`** - View functions (created)
+- ✅ **`planning_calendar_clean.py`** - Calendar views (created)
+- ✅ **`planning_concept.py`** - Concept views (created)
+- ✅ **`planning_api_calendar.py`** - Calendar APIs (created)
+- ✅ **`planning_api_posts.py`** - Basic post APIs (created)
+- ✅ **`planning_api_post_specific.py`** - Post-specific APIs (created)
+- ✅ **`planning_api_brainstorm.py`** - Brainstorm APIs (created)
+- ✅ **`planning_api_prompts.py`** - Prompt APIs (created)
+- ✅ **`planning_llm.py`** - LLM service (created)
+- ✅ **`planning_sections.py`** - Section APIs (created)
+- ✅ **`planning_data.py`** - Data retrieval (created)
 
-### Implementation Protocol
+### CRITICAL ISSUES IDENTIFIED
 
-#### Step 1: Audit and Categorize
-- [ ] Map all 44 routes to their logical groupings
-- [ ] Identify dependencies between functions
-- [ ] Document shared imports and utilities
-- [ ] Plan file boundaries to minimize dependencies
+#### Missing API Endpoints (CAUSING PAGE FAILURES)
+The section-structure page requires these endpoints that are **MISSING** from current `planning.py`:
 
-#### Step 2: Create New Files
-- [ ] Create each new file with appropriate imports
-- [ ] Move functions maintaining exact signatures
-- [ ] Ensure all dependencies are properly imported
-- [ ] Test that each file can be imported independently
+1. **`/api/sections/design-structure` (POST)** - Generate section structure
+2. **`/api/sections/design-structure/<post_id>` (GET)** - Get existing structure
+3. **`/api/sections/title` (POST)** - Generate section titles
+4. **`/api/sections/save` (POST)** - Save sections
+5. **`/api/sections/allocate-topics` (POST)** - Allocate topics to sections
+6. **`/api/sections/allocate-topics/<post_id>` (GET)** - Get existing allocation
 
-#### Step 3: Update Main File
-- [ ] Replace moved functions with imports from new files
-- [ ] Maintain all existing route registrations
-- [ ] Ensure blueprint registration still works
-- [ ] **TEST**: Verify application starts successfully
+#### Files Still Referencing Deprecated Backup
+- `blueprints/planning_minimal_modular.py` - Line 243
+- `blueprints/planning_working_modular.py` - Line 160  
+- `blueprints/planning_modular_simple.py` - Line 20
 
-#### Step 4: Test Functionality
-- [ ] Test all routes and endpoints
-- [ ] Verify no functionality is lost
-- [ ] Check for any import or dependency issues
+#### Import Errors in Current Structure
+- Missing `ideas_week_func` import in `planning.py` line 84
+- Incomplete import on line 23 (missing function name)
+
+### CORRECTED IMPLEMENTATION PROTOCOL
+
+#### Step 1: Fix Current Import Errors
+- [ ] Fix incomplete import on line 23 of `planning.py`
+- [ ] Fix missing `ideas_week_func` import on line 84
+- [ ] **TEST**: Verify application starts without errors
+
+#### Step 2: Add Missing API Endpoints
+- [ ] Add `/api/sections/design-structure` (POST) endpoint
+- [ ] Add `/api/sections/design-structure/<post_id>` (GET) endpoint  
+- [ ] Add `/api/sections/title` (POST) endpoint
+- [ ] Add `/api/sections/save` (POST) endpoint
+- [ ] Add `/api/sections/allocate-topics` (POST) endpoint
+- [ ] Add `/api/sections/allocate-topics/<post_id>` (GET) endpoint
+- [ ] **TEST**: Verify section-structure page works completely
+
+#### Step 3: Clean Up Deprecated References
+- [ ] Remove references to `planning_original_backup` from modular files
+- [ ] Delete unused modular files that still reference deprecated backup
+- [ ] **TEST**: Verify no files reference deprecated backup
+
+#### Step 4: Final Verification
+- [ ] Test all planning pages work correctly
+- [ ] Verify section-structure page generates proper content (not hardcoded)
+- [ ] Test all API endpoints respond correctly
 - [ ] **IF SUCCESS**: Proceed to Phase 3
 - [ ] **IF FAILURE**: Rollback changes, investigate issues
 
 #### Rollback Procedure
 If any step fails:
-1. Restore original `blueprints/planning.py`
-2. Delete new files
-3. Test that application works as before
+1. Restore `blueprints/planning_backup_before_phase2.py` as `planning.py`
+2. Delete all micro-files created during Phase 2
+3. Test that application works as before Phase 2
 4. Document failure point and lessons learned
 5. Consult before proceeding with alternative approach
+
+---
+
+## DETAILED AUDIT RESULTS
+
+### Phase 1 Status: ✅ COMPLETED SUCCESSFULLY
+- **Backup file**: `planning_original_backup.py` → `planning_original_backup_deprecated.py` ✅
+- **Functions extracted**: All 4 functions moved to micro-files ✅
+- **No active imports**: Main `planning.py` no longer imports from backup ✅
+- **Application works**: All functionality preserved ✅
+
+### Phase 2 Status: ⚠️ PARTIALLY COMPLETED WITH CRITICAL ISSUES
+
+#### ✅ SUCCESSES
+- **File size reduced**: 1,279 lines → 222 lines (under 300-line target)
+- **Micro-files created**: 11 micro-files successfully created
+- **Routes reduced**: 44 routes → 22 routes
+- **Functions reduced**: 48 functions → 22 functions
+
+#### ❌ CRITICAL FAILURES
+1. **Missing API Endpoints**: 6 critical endpoints missing from `planning.py`
+2. **Import Errors**: 2 import errors preventing clean startup
+3. **Deprecated References**: 3 files still reference deprecated backup
+4. **Page Failures**: Section-structure page cannot function without missing endpoints
+
+#### 🔍 SPECIFIC ISSUES IDENTIFIED
+
+**Missing API Endpoints** (from template analysis):
+```javascript
+// These calls in section_structure.html will FAIL:
+fetch('/planning/api/sections/design-structure', {method: 'POST'})  // MISSING
+fetch('/planning/api/sections/design-structure/${postId}')           // MISSING
+
+// These calls in topic_allocation.html will FAIL:
+fetch('/planning/api/sections/allocate-topics/${postId}')            // MISSING
+```
+
+**Import Errors** (from current planning.py):
+```python
+# Line 23: Incomplete import
+from blueprints.planning_api_brainstorm import  # MISSING FUNCTION NAME
+
+# Line 84: Missing function
+return ideas_week_func(week_number)  # ideas_week_func NOT IMPORTED
+```
+
+**Files with Deprecated References**:
+- `planning_minimal_modular.py:243` - Dynamic import from backup
+- `planning_working_modular.py:160` - Dynamic import from backup  
+- `planning_modular_simple.py:20` - Direct import from backup
+
+### ROOT CAUSE ANALYSIS
+**Phase 2 was executed sloppily** because:
+1. **Insufficient template analysis** - Didn't identify all required API endpoints
+2. **Incomplete import verification** - Didn't verify all imports work
+3. **Inadequate cleanup** - Left references to deprecated files
+4. **Reactive fixing** - Fixed issues as they appeared instead of preventing them
+
+### RECOMMENDED APPROACH
+**Complete Phase 2 properly** before proceeding to Phase 3:
+1. Fix import errors first
+2. Add all missing API endpoints
+3. Clean up deprecated references
+4. Verify section-structure page works completely
+5. Then proceed to Phase 3 (hardcoded content)
 
 ---
 
@@ -179,10 +272,13 @@ If any step fails:
 - [ ] No active imports from backup file
 
 ### Phase 2 Complete When:
-- [ ] Main planning.py file under 300 lines
-- [ ] All functionality distributed across logical files
-- [ ] Application works identically to before
-- [ ] No functionality lost
+- [ ] Main planning.py file under 300 lines ✅ **ACHIEVED (222 lines)**
+- [ ] All functionality distributed across logical files ✅ **ACHIEVED (11 micro-files)**
+- [ ] Application works identically to before ❌ **FAILED (missing endpoints)**
+- [ ] No functionality lost ❌ **FAILED (section-structure page broken)**
+- [ ] **NEW**: All required API endpoints present and working
+- [ ] **NEW**: No import errors in main planning.py
+- [ ] **NEW**: No references to deprecated backup file
 
 ### Phase 3 Complete When:
 - [ ] Hardcoded content contamination eliminated
