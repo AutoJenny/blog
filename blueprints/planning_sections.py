@@ -152,7 +152,7 @@ OUTPUT FORMAT (JSON only):
                 {'role': 'user', 'content': formatted_prompt}
             ]
             
-            response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages, max_tokens=2000)
+            response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages, max_tokens=4000)
             
             if response and 'content' in response:
                 # Debug: Log the raw response
