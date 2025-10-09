@@ -155,6 +155,10 @@ OUTPUT FORMAT (JSON only):
             response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages, max_tokens=2000)
             
             if response and 'content' in response:
+                # Debug: Log the raw response
+                logger.info(f"Raw LLM response length: {len(response['content'])} characters")
+                logger.info(f"Raw LLM response preview: {response['content'][:200]}...")
+                
                 # Parse the JSON response with better error handling
                 try:
                     content = response['content'].strip()
