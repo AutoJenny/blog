@@ -282,21 +282,40 @@ def api_save_sections(post_id):
     """Save generated sections to post_development table"""
     try:
         data = request.get_json()
-        sections_data = data.get('sections', {})
+        sections_data = data.get('sections', [])
         
-        if not sections_data or 'sections' not in sections_data:
+        # Handle different data formats
+        if isinstance(sections_data, list):
+            # Direct array format from titling page
+            sections = sections_data
+            section_headings = []
+            metadata = {}
+        elif isinstance(sections_data, dict) and 'sections' in sections_data:
+            # Nested format from other pages
+            sections = sections_data['sections']
+            section_headings = sections_data.get('section_headings', [])
+            metadata = sections_data.get('metadata', {})
+        else:
             return jsonify({
                 'success': False,
                 'error': 'No sections data provided'
             }), 400
         
-        sections = sections_data['sections']
-        section_headings = sections_data.get('section_headings', [])
-        metadata = sections_data.get('metadata', {})
+        if not sections:
+            return jsonify({
+                'success': False,
+                'error': 'No sections data provided'
+            }), 400
         
         # Sanitize before saving
         try:
-            sections_data = sanitize_sections_text(sections_data)
+            if isinstance(sections_data, list):
+                # For titling page format, create a proper structure for sanitization
+                sanitized_data = {'sections': sections_data}
+                sanitized_data = sanitize_sections_text(sanitized_data)
+                sections_data = sanitized_data
+            else:
+                sections_data = sanitize_sections_text(sections_data)
         except Exception as _e:
             logger.warning(f"Sanitization failed, proceeding without changes: {_e}")
 

@@ -257,7 +257,15 @@ def api_sections_title():
 @bp.route('/api/sections/save', methods=['POST'])
 def api_save_sections():
     """Save sections to database"""
-    return sections_save_api_func()
+    try:
+        data = request.get_json()
+        post_id = data.get('post_id')
+        if not post_id:
+            return jsonify({'error': 'post_id is required'}), 400
+        return sections_save_api_func(post_id)
+    except Exception as e:
+        logger.error(f"Error in api_save_sections route: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @bp.route('/api/sections/allocate-topics', methods=['POST'])
 def api_allocate_topics():
