@@ -759,13 +759,14 @@ def api_generate_section_draft(post_id, section_id):
                     'error': 'Section Drafting prompt not found'
                 }), 500
             
-            # Prepare prompt variables with rich context
+            # Prepare prompt variables with rich context from actual database data
             prompt_vars = {
-                'SELECTED_IDEA': dev_data.get('idea_seed', 'Scottish autumn folklore and traditions'),
+                'SELECTED_IDEA': dev_data.get('idea_seed', ''),
+                'EXPANDED_IDEA': dev_data.get('expanded_idea', ''),
                 'SECTION_TITLE': section['section_heading'],
                 'SECTION_SUBTITLE': section['section_description'] or '',
-                'SECTION_GROUP': 'Historical Foundations of Autumnal Traditions',  # This should come from planning data
-                'GROUP_SUMMARY': 'This group explores the Celtic roots and historical developments that shaped Scotland\'s autumnal customs, highlighting their significance in understanding the country\'s identity.',
+                'SECTION_GROUP': current_section_data.get('section_theme', f'Section {section["section_order"]}'),
+                'GROUP_SUMMARY': current_section_data.get('section_description', ''),
                 'SECTION_TOPICS': ', '.join(current_section_data.get('topics', [])),
                 'AVOID_SECTIONS_DETAILED': build_avoid_topics_text(topic_allocation, {'section_id': f'section_{section["section_order"]}'})
             }
