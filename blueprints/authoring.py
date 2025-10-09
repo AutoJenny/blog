@@ -8,6 +8,9 @@ import requests
 import re
 from bs4 import BeautifulSoup
 
+# Import micro-modules
+from blueprints.authoring_api_sections import api_get_sections as sections_api_func, api_get_section as section_api_func
+
 logger = logging.getLogger(__name__)
 
 def generate_dalle_image(image_prompt, post_id, section_id):
@@ -481,132 +484,12 @@ def authoring_sections_image_generation(post_id):
 @bp.route('/api/posts/<int:post_id>/sections')
 def api_get_sections(post_id):
     """Get all sections for a post from post_section table"""
-    try:
-        with db_manager.get_cursor() as cursor:
-            # Get sections from post_section table
-            cursor.execute("""
-                SELECT id, section_order, section_heading, section_description, 
-                       status, draft, polished, ideas_to_include, facts_to_include,
-                       highlighting, image_concepts, image_prompts, image_captions,
-                       image_alt_text, selected_image_concept
-                FROM post_section
-                WHERE post_id = %s
-                ORDER BY section_order
-            """, (post_id,))
-            sections = cursor.fetchall()
-            
-            # Get topic allocation data to populate topics
-            cursor.execute("""
-                SELECT topic_allocation FROM post_development 
-                WHERE post_id = %s AND topic_allocation IS NOT NULL
-            """, (post_id,))
-            topic_result = cursor.fetchone()
-            
-            topic_allocation = None
-            if topic_result and topic_result['topic_allocation']:
-                try:
-                    if isinstance(topic_result['topic_allocation'], dict):
-                        topic_allocation = topic_result['topic_allocation']
-                    else:
-                        import json
-                        topic_allocation = json.loads(topic_result['topic_allocation'])
-                except Exception as e:
-                    logger.error(f"Error parsing topic_allocation: {e}")
-                    topic_allocation = None
-            
-            # Convert to list of dictionaries
-            sections_list = []
-            for section in sections:
-                # Get topics for this section from topic_allocation
-                section_topics = []
-                if topic_allocation and topic_allocation.get('allocations'):
-                    for allocation in topic_allocation['allocations']:
-                        if allocation.get('section_id') == f"section_{section['section_order']}":
-                            section_topics = allocation.get('topics', [])
-                            break
-                
-                sections_list.append({
-                    'id': section['id'],
-                    'order': section['section_order'],
-                    'title': section['section_heading'],
-                    'subtitle': section['section_description'],
-                    'status': section['status'] or 'draft',
-                    'draft': section['draft'] or '',
-                    'polished': section['polished'] or '',
-                    'section_text': section['polished'] or '',  # Map polished to section_text for frontend consistency
-                    'topics': section_topics,  # Use topics from topic_allocation
-                    'facts_to_include': section['facts_to_include'] or '',
-                    'highlighting': section['highlighting'] or '',
-                    'image_concepts': section['image_concepts'] or '',
-                    'image_prompts': section['image_prompts'] or '',
-                    'image_captions': section['image_captions'] or '',
-                    'image_alt_text': section['image_alt_text'] or '',
-                    'selected_image_concept': section['selected_image_concept'] or '',
-                    'progress': 100 if section['polished'] else (50 if section['draft'] else 0)
-                })
-            
-            return jsonify({
-                'success': True,
-                'sections': sections_list
-            })
-            
-    except Exception as e:
-        logger.error(f"Error in api_get_sections: {e}")
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
+    return sections_api_func(post_id)
 
 @bp.route('/api/posts/<int:post_id>/sections/<int:section_id>')
 def api_get_section_detail(post_id, section_id):
     """Get details for a specific section"""
-    try:
-        with db_manager.get_cursor() as cursor:
-            # Get section from post_section table
-            cursor.execute("""
-                SELECT id, section_order, section_heading, section_description, 
-                       status, draft, polished, ideas_to_include, facts_to_include,
-                       highlighting, image_concepts, image_prompts, image_captions
-                FROM post_section
-                WHERE post_id = %s AND id = %s
-            """, (post_id, section_id))
-            section = cursor.fetchone()
-            
-            if not section:
-                return jsonify({
-                    'success': False,
-                    'error': 'Section not found'
-                }), 404
-            
-            section_data = {
-                'id': section['id'],
-                'order': section['section_order'],
-                'title': section['section_heading'],
-                'subtitle': section['section_description'],
-                'status': section['status'] or 'draft',
-                'draft': section['draft'] or '',
-                'polished': section['polished'] or '',
-                'section_text': section['polished'] or '',  # Map polished to section_text for frontend consistency
-                'topics': section['ideas_to_include'] or [],
-                'facts_to_include': section['facts_to_include'] or '',
-                'highlighting': section['highlighting'] or '',
-                'image_concepts': section['image_concepts'] or '',
-                'image_prompts': section['image_prompts'] or '',
-                'image_captions': section['image_captions'] or '',
-                'progress': 100 if section['polished'] else (50 if section['draft'] else 0)
-            }
-            
-            return jsonify({
-                'success': True,
-                'section': section_data
-            })
-            
-    except Exception as e:
-        logger.error(f"Error in api_get_section_detail: {e}")
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
+    return section_api_func(post_id, section_id)
 
 @bp.route('/api/posts/<int:post_id>/sections/<int:section_id>', methods=['PUT'])
 def api_save_section_content(post_id, section_id):
