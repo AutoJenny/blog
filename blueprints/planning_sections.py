@@ -70,7 +70,9 @@ REQUIRED JSON FORMAT:
   ]
 }
 
-CRITICAL: Your response must contain ONLY the JSON object above. No other text."""
+CRITICAL: Your response must contain ONLY the JSON object above. No other text.
+
+IMPORTANT: Do NOT return the input data structure. Do NOT include section_id, section_theme, or topics in your response. Generate NEW creative titles based on the input, but return them in the required format above."""
                 
                 if prompt_data and prompt_data['prompt_text']:
                     prompt_text = prompt_data['prompt_text']
@@ -183,7 +185,7 @@ SECTIONS_AND_TOPICS:
                     elif isinstance(result, list):
                         # Direct array format: [{"index": 1, ...}, {"index": 2, ...}]
                         sections = result
-                    elif isinstance(result, dict) and 'section_id' in result and 'section_theme' in result:
+                    elif isinstance(result, dict) and ('section_id' in result or 'section_theme' in result or 'topics' in result):
                         # LLM returned input data instead of output - this is an error case
                         logger.error(f"LLM returned input data instead of output. Keys: {list(result.keys())}")
                         logger.error(f"Full response: {result}")

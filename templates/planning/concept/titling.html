@@ -433,76 +433,127 @@ function initializeTitling() {
 }
 
 async function startTitling() {
+    console.log('startTitling() called');
+    
     if (!generatedGroups || generatedGroups.length === 0) {
         alert('No topic allocation available. Please go back to Topic Allocation to generate topics first.');
         return;
     }
     
+    console.log('Topic allocation data found:', generatedGroups.length, 'groups');
+    
+    // Wait for DOM to be ready
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     const generateBtn = document.getElementById('generate-btn');
     const resultsDisplay = document.getElementById('llm-results-display');
+    
+    console.log('Elements found:', {
+        generateBtn: !!generateBtn,
+        resultsDisplay: !!resultsDisplay,
+        generateBtnElement: generateBtn
+    });
     
     if (!generateBtn || !resultsDisplay) {
         console.error('Required elements not found:', {
             generateBtn: !!generateBtn,
             resultsDisplay: !!resultsDisplay
         });
+        alert('Error: Required page elements not found. Please refresh the page.');
         return;
     }
 
-    // Show loading state
+    // Show loading state with immediate visual feedback
+    console.log('Setting loading state...');
     generateBtn.disabled = true;
     generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Titles...';
     generateBtn.classList.add('loading');
+    generateBtn.style.opacity = '0.7';
     resultsDisplay.innerHTML = '<div class="loading">Creating section titles and descriptions...</div>';
+    
+    // Force a reflow to ensure the changes are visible
+    generateBtn.offsetHeight;
     
     console.log('Button loading state set:', {
         disabled: generateBtn.disabled,
         innerHTML: generateBtn.innerHTML,
-        classes: generateBtn.className
+        classes: generateBtn.className,
+        opacity: generateBtn.style.opacity
     });
     
     try {
         // Get expanded idea for context
         const expandedIdea = await getExpandedIdea();
         
-        // Call the titling API
-        const response = await fetch('/planning/api/sections/title', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                topic_allocation: generatedGroups, // This is now topic allocation data
-                expanded_idea: expandedIdea,
-                post_id: window.postId
-            })
-        });
+        // Call the titling API with retry mechanism
+        let attempts = 0;
+        const maxAttempts = 3;
+        let data;
         
-        const data = await response.json();
+        while (attempts < maxAttempts) {
+            attempts++;
+            console.log(`Titling attempt ${attempts}/${maxAttempts}`);
+            
+            const response = await fetch('/planning/api/sections/title', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    topic_allocation: generatedGroups, // This is now topic allocation data
+                    expanded_idea: expandedIdea,
+                    post_id: window.postId
+                })
+            });
+            
+            data = await response.json();
+            
+            if (data.success) {
+                console.log(`Titles generated successfully on attempt ${attempts}`);
+                generatedSections = data.sections;
+                console.log('Generated sections data:', generatedSections);
+                displaySections(generatedSections);
+                // Automatically save sections to database
+                console.log('About to save sections to database...');
+                await saveSectionsToDatabase(generatedSections);
+                break;
+            } else if (data.error && data.error.includes('LLM returned input data')) {
+                console.warn(`Attempt ${attempts} failed: LLM returned input data. Retrying...`);
+                if (attempts < maxAttempts) {
+                    // Wait a bit before retrying
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    continue;
+                }
+            } else {
+                console.error('Error creating titles:', data.error);
+                resultsDisplay.innerHTML = `<div class="error">Error creating titles: ${data.error}</div>`;
+                break;
+            }
+        }
         
-        if (data.success) {
-            generatedSections = data.sections;
-            console.log('Generated sections data:', generatedSections);
-            displaySections(generatedSections);
-            // Automatically save sections to database
-            console.log('About to save sections to database...');
-            await saveSectionsToDatabase(generatedSections);
-        } else {
-            console.error('Error creating titles:', data.error);
-            resultsDisplay.innerHTML = `<div class="error">Error creating titles: ${data.error}</div>`;
+        if (attempts >= maxAttempts && !data.success) {
+            console.error(`All ${maxAttempts} attempts failed`);
+            resultsDisplay.innerHTML = `<div class="error">Failed to generate titles after ${maxAttempts} attempts. Please try again later.</div>`;
         }
     } catch (error) {
         console.error('Error creating titles:', error);
         resultsDisplay.innerHTML = `<div class="error">Failed to create titles: ${error.message}</div>`;
     } finally {
-        // Reset button state
+        // Reset button state with visual feedback
+        console.log('Resetting button state...');
         generateBtn.disabled = false;
         generateBtn.innerHTML = '<i class="fas fa-heading"></i> Create Titles & Descriptions';
         generateBtn.classList.remove('loading');
+        generateBtn.style.opacity = '1';
+        
+        // Force a reflow to ensure the changes are visible
+        generateBtn.offsetHeight;
+        
         console.log('Button state reset:', {
             disabled: generateBtn.disabled,
             innerHTML: generateBtn.innerHTML,
-            classes: generateBtn.className
+            classes: generateBtn.className,
+            opacity: generateBtn.style.opacity
         });
     }
 }
