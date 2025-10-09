@@ -166,22 +166,41 @@ SECTIONS_AND_TOPICS:
                             raise json.JSONDecodeError("No valid JSON found", json_content, 0)
                     
                     # Validate the response structure
-                    if 'sections' not in result:
-                        raise ValueError("Response missing 'sections' key")
+                    logger.info(f"Parsed LLM result: {result}")
                     
-                    if not isinstance(result['sections'], list):
-                        raise ValueError("'sections' must be a list")
+                    sections = []
+                    
+                    # Handle different response formats
+                    if 'sections' in result:
+                        # Expected format: {"sections": [...]}
+                        sections = result['sections']
+                    elif isinstance(result, dict) and 'index' in result and 'original' in result and 'title' in result:
+                        # Single section format: {"index": 1, "original": "...", "title": "..."}
+                        sections = [result]
+                    elif isinstance(result, list):
+                        # Direct array format: [{"index": 1, ...}, {"index": 2, ...}]
+                        sections = result
+                    else:
+                        logger.error(f"Unexpected response format. Available keys: {list(result.keys()) if isinstance(result, dict) else 'Not a dict'}")
+                        raise ValueError(f"Unexpected response format. Available keys: {list(result.keys()) if isinstance(result, dict) else 'Not a dict'}")
+                    
+                    if not isinstance(sections, list):
+                        logger.error(f"'sections' is not a list, it's: {type(sections)}")
+                        raise ValueError(f"'sections' must be a list, got {type(sections)}")
                     
                     # Validate each section
-                    for i, section in enumerate(result['sections']):
+                    for i, section in enumerate(sections):
                         if not isinstance(section, dict):
+                            logger.error(f"Section {i} is not a dictionary: {section}")
                             raise ValueError(f"Section {i} must be a dictionary")
                         if 'index' not in section or 'original' not in section or 'title' not in section:
-                            raise ValueError(f"Section {i} missing required keys: index, original, title")
+                            logger.error(f"Section {i} missing required keys. Available keys: {list(section.keys())}")
+                            raise ValueError(f"Section {i} missing required keys: index, original, title. Available: {list(section.keys())}")
                     
+                    logger.info(f"Successfully validated {len(sections)} sections")
                     return jsonify({
                         'success': True,
-                        'sections': result['sections'],
+                        'sections': sections,
                         'raw_response': response['content']
                     })
                     
