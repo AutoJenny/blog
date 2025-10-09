@@ -18,7 +18,7 @@ def api_posts(post_id):
             cursor.execute("""
                 SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
                        pd.idea_scope, pd.section_structure, pd.topic_allocation,
-                       pd.refined_topics, pd.expanded_idea, pd.idea_seed
+                       pd.refined_topics, pd.expanded_idea, pd.idea_seed, pd.sections
                 FROM post p
                 LEFT JOIN post_development pd ON p.id = pd.post_id
                 WHERE p.id = %s
@@ -37,7 +37,7 @@ def api_posts(post_id):
             
             schedule = cursor.fetchone()
             
-            # Get post sections
+            # Get post sections from post_section table
             cursor.execute("""
                 SELECT id, post_id, section_order, section_heading, section_description, 
                        ideas_to_include, facts_to_include, highlighting, image_concepts,
@@ -50,6 +50,19 @@ def api_posts(post_id):
             """, (post_id,))
             
             sections = cursor.fetchall()
+            
+            # If no sections found in post_section table, check post_development.sections
+            if not sections and result.get('sections'):
+                import json
+                try:
+                    sections_data = json.loads(result['sections'])
+                    if isinstance(sections_data, dict) and 'sections' in sections_data:
+                        sections = sections_data['sections']
+                    elif isinstance(sections_data, list):
+                        sections = sections_data
+                except (json.JSONDecodeError, TypeError) as e:
+                    logger.warning(f"Failed to parse sections from post_development: {e}")
+                    sections = []
             
             return jsonify({
                 'success': True,

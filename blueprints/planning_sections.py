@@ -142,6 +142,11 @@ OUTPUT FORMAT (JSON only):
             # LLMService already imported at module level
             llm_service = LLMService()
             
+            # Debug: Log the prompt length and content
+            logger.info(f"Prompt length: {len(formatted_prompt)} characters")
+            logger.info(f"Number of sections in prompt: {len(topic_allocation)}")
+            logger.info(f"Prompt preview: {formatted_prompt[:500]}...")
+            
             messages = [
                 {'role': 'system', 'content': system_prompt},
                 {'role': 'user', 'content': formatted_prompt}
