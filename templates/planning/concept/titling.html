@@ -374,6 +374,8 @@ async function loadTopicAllocation() {
                 generatedGroups = allocations; // Reuse the variable for compatibility
                 displayTopicAllocation(allocations);
                 console.log('Loaded topic allocation for titling:', allocations.length);
+                console.log('generatedGroups set to:', generatedGroups.length, 'sections');
+                console.log('First section:', generatedGroups[0]?.section_theme);
             } else {
                 console.log('No topic allocation found');
                 displayTopicAllocationError('No topic allocation found. Please go back to Topic Allocation to generate topics first.');
@@ -441,6 +443,12 @@ async function startTitling() {
     }
     
     console.log('Topic allocation data found:', generatedGroups.length, 'groups');
+    console.log('generatedGroups content:', generatedGroups);
+    console.log('About to send to API:', {
+        topic_allocation: generatedGroups,
+        expanded_idea: 'will be fetched',
+        post_id: window.postId
+    });
     
     // Wait for DOM to be ready
     await new Promise(resolve => setTimeout(resolve, 100));
