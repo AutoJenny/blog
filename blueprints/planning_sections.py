@@ -324,13 +324,12 @@ VALIDATION RULES:
             }), 500
         
         # Format the prompt with actual data
-        formatted_prompt = prompt_text.replace('[PLACEHOLDER]', f"""
-EXPANDED_IDEA:
-{expanded_idea}
-
-TOPICS:
-{json.dumps(topics, indent=2)}
-""")
+        formatted_topics = "\n".join([f"- {t['title']}: {t['description']}" for t in topics])
+        
+        # Replace placeholders with actual data
+        formatted_prompt = prompt_text.replace('[USER_TOPIC]', expanded_idea)
+        formatted_prompt = formatted_prompt.replace('[TOPICS_DATA]', formatted_topics)
+        formatted_prompt = formatted_prompt.replace('[USER_CULTURE]', 'Celtic')  # Default to Celtic for now
         
         # Call LLM service
         try:
@@ -349,28 +348,39 @@ TOPICS:
                 try:
                     result = json.loads(response['content'])
                     
-                    # Validate the response structure
-                    if 'sections' not in result:
-                        raise ValueError("Response missing 'sections' key")
+                    # Handle both old format (with 'sections' key) and new format (direct array)
+                    if isinstance(result, list):
+                        sections = result
+                    elif 'sections' in result:
+                        sections = result['sections']
+                    else:
+                        raise ValueError("Response must be a JSON array or contain 'sections' key")
                     
-                    if not isinstance(result['sections'], list):
+                    if not isinstance(sections, list):
                         raise ValueError("'sections' must be a list")
                     
-                    if len(result['sections']) != 7:
-                        raise ValueError(f"Expected exactly 7 sections, got {len(result['sections'])}")
+                    if len(sections) != 7:
+                        raise ValueError(f"Expected exactly 7 sections, got {len(sections)}")
                     
                     # Validate each section
-                    for i, section in enumerate(result['sections']):
+                    for i, section in enumerate(sections):
                         if not isinstance(section, dict):
                             raise ValueError(f"Section {i} must be a dictionary")
-                        required_keys = ['id', 'title', 'purpose', 'topics']
-                        for key in required_keys:
-                            if key not in section:
-                                raise ValueError(f"Section {i} missing required key: {key}")
+                        # Check for either old format (id, title, purpose, topics) or new format (section_code, title, description)
+                        if 'section_code' in section and 'title' in section and 'description' in section:
+                            # New format - convert to old format for compatibility
+                            section['id'] = section['section_code']
+                            section['purpose'] = section['description']
+                            section['topics'] = []  # Topics will be allocated later
+                        elif 'id' in section and 'title' in section and 'purpose' in section:
+                            # Old format - already correct
+                            pass
+                        else:
+                            raise ValueError(f"Section {i} missing required keys: must have either (section_code, title, description) or (id, title, purpose)")
                     
                     return jsonify({
                         'success': True,
-                        'result': result
+                        'structure': {'sections': sections}
                     })
                     
                 except json.JSONDecodeError as e:
