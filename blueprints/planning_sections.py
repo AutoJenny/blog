@@ -380,7 +380,8 @@ VALIDATION RULES:
                     
                     return jsonify({
                         'success': True,
-                        'structure': {'sections': sections}
+                        'section_structure': {'sections': sections},
+                        'raw_response': response['content']
                     })
                     
                 except json.JSONDecodeError as e:
