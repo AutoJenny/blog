@@ -1257,23 +1257,8 @@ def api_design_section_structure():
 # IMPORT REMAINING FUNCTIONS FROM ORIGINAL FILE
 # ============================================================================
 
-# For now, we'll import the rest from the original file
-# This allows us to gradually migrate functions one by one
-
-# Import all other functions from the original file
-import sys
-import importlib.util
-
-# Load the original planning module
-spec = importlib.util.spec_from_file_location("planning_original", "blueprints/planning_original_backup.py")
-planning_original = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(planning_original)
-
-# Add all other functions to this module's namespace
-for name in dir(planning_original):
-    if not name.startswith('_') and callable(getattr(planning_original, name)):
-        if name not in globals():
-            globals()[name] = getattr(planning_original, name)
+# NOTE: Dynamic loading removed to prevent duplicate function conflicts
+# Individual functions are imported as needed above
 
 # Export the main blueprint
 __all__ = ['bp']
