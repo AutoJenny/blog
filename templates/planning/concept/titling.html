@@ -331,12 +331,22 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 async function loadExistingSections() {
     try {
-        const response = await fetch(`/planning/api/posts/${window.postId}/sections`);
+        const response = await fetch(`/planning/api/posts/${window.postId}`);
         const data = await response.json();
-        if (data.success && data.sections && data.sections.sections && data.sections.sections.length > 0) {
-            generatedSections = data.sections;
+        if (data.success && data.sections && data.sections.length > 0) {
+            // Convert database sections to the format expected by displaySections
+            const sectionsData = {
+                sections: data.sections.map(section => ({
+                    id: section.id,
+                    title: section.section_heading,
+                    subtitle: section.section_description,
+                    order: section.section_order,
+                    topics: [] // Topics will be loaded from topic allocation
+                }))
+            };
+            generatedSections = sectionsData;
             displaySections(generatedSections);
-            console.log('Loaded existing sections:', data.sections.sections.length);
+            console.log('Loaded existing sections:', data.sections.length);
         } else {
             console.log('No existing sections found');
         }
@@ -537,12 +547,13 @@ function displaySections(sectionsData) {
 async function saveSectionsToDatabase(sectionsData) {
     try {
         console.log('Saving sections data:', sectionsData);
-        const response = await fetch(`/planning/api/posts/${window.postId}/sections`, {
+        const response = await fetch('/planning/api/sections/save', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
+                post_id: window.postId,
                 sections: sectionsData
             })
         });

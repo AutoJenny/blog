@@ -114,9 +114,26 @@ SECTIONS_AND_TOPICS:
             response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages, max_tokens=2000)
             
             if response and 'content' in response:
-                # Parse the JSON response
+                # Parse the JSON response with better error handling
                 try:
-                    result = json.loads(response['content'])
+                    content = response['content'].strip()
+                    
+                    # Try to extract JSON from the response (handle prose + JSON format)
+                    json_start = content.find('{')
+                    json_end = content.rfind('}') + 1
+                    
+                    if json_start != -1 and json_end > json_start:
+                        json_content = content[json_start:json_end]
+                    else:
+                        # Fallback: try markdown code blocks
+                        if content.startswith('```json') and content.endswith('```'):
+                            json_content = content[7:-3].strip()
+                        elif content.startswith('```') and content.endswith('```'):
+                            json_content = content[3:-3].strip()
+                        else:
+                            json_content = content
+                    
+                    result = json.loads(json_content)
                     
                     # Validate the response structure
                     if 'sections' not in result:
@@ -134,7 +151,8 @@ SECTIONS_AND_TOPICS:
                     
                     return jsonify({
                         'success': True,
-                        'result': result
+                        'sections': result['sections'],
+                        'raw_response': response['content']
                     })
                     
                 except json.JSONDecodeError as e:
@@ -142,7 +160,8 @@ SECTIONS_AND_TOPICS:
                     logger.error(f"Response content: {response['content']}")
                     return jsonify({
                         'success': False,
-                        'error': 'Invalid JSON response from LLM'
+                        'error': 'Invalid JSON response from LLM',
+                        'raw_response': response['content']
                     }), 500
                     
                 except ValueError as e:
