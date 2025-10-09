@@ -399,6 +399,23 @@ VALIDATION RULES:
                         else:
                             raise ValueError(f"Section {i} missing required keys: must have either (section_code, title, description) or (id, title, purpose)")
                     
+                    # Save the generated structure to database
+                    with db_manager.get_cursor() as cursor:
+                        cursor.execute("""
+                            UPDATE post_development 
+                            SET section_structure = %s, updated_at = %s
+                            WHERE post_id = %s
+                        """, (json.dumps({'sections': sections}), datetime.now(), post_id))
+                        
+                        if cursor.rowcount == 0:
+                            # Insert if no existing record
+                            cursor.execute("""
+                                INSERT INTO post_development (post_id, section_structure, updated_at)
+                                VALUES (%s, %s, %s)
+                            """, (post_id, json.dumps({'sections': sections}), datetime.now()))
+                    
+                    logger.info(f"Section structure saved to database for post {post_id}")
+                    
                     return jsonify({
                         'success': True,
                         'section_structure': {'sections': sections},
