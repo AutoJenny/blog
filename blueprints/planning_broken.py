@@ -14,10 +14,10 @@ import re
 logger = logging.getLogger(__name__)
 
 # Import functions from new modules
-from blueprints.planning_views import planning_dashboard as dashboard_func, planning_post_overview as post_overview_func, planning_concept as concept_func, planning_calendar as calendar_func, categories_manage as categories_func, planning_research as research_func, planning_old_interface as old_interface_func
-from blueprints.planning_calendar import planning_calendar_view as calendar_view_func, planning_calendar_ideas_week as ideas_week_func, planning_calendar_ideas as ideas_func
-from blueprints.planning_concept import planning_concept_brainstorm as brainstorm_func, planning_concept_section_structure as section_structure_func, planning_concept_topic_allocation as topic_allocation_func, planning_concept_titling as titling_func, planning_concept_outline as outline_func, planning_research_sources as sources_func, planning_research_visuals as visuals_func, planning_research_prompts as prompts_func, planning_research_verification as verification_func
-from blueprints.planning_api import api_calendar_categories as categories_api_func, api_get_prompt as prompt_api_func
+from blueprints.planning_views import planning_dashboard, planning_post_overview, planning_concept, planning_calendar, categories_manage, planning_research, planning_old_interface
+from blueprints.planning_calendar import planning_calendar_view, planning_calendar_ideas_week, planning_calendar_ideas
+from blueprints.planning_concept import planning_concept_brainstorm, planning_concept_section_structure, planning_concept_topic_allocation, planning_concept_titling, planning_concept_outline, planning_research_sources, planning_research_visuals, planning_research_prompts, planning_research_verification
+from blueprints.planning_api import api_calendar_categories, api_get_prompt
 from blueprints.planning_llm import LLMService, parse_brainstorm_topics
 
 # Initialize LLM service
@@ -33,37 +33,37 @@ bp = Blueprint('planning', __name__, url_prefix='/planning')
 @bp.route('/')
 def planning_dashboard():
     """Planning dashboard"""
-    return dashboard_func()
+    return planning_dashboard()
 
 @bp.route('/posts/<int:post_id>')
 def planning_post_overview(post_id):
     """Planning post overview"""
-    return post_overview_func(post_id)
+    return planning_post_overview(post_id)
 
 @bp.route('/posts/<int:post_id>/concept')
 def planning_concept(post_id):
     """Planning concept"""
-    return concept_func(post_id)
+    return planning_concept(post_id)
 
 @bp.route('/posts/<int:post_id>/calendar')
 def planning_calendar(post_id):
     """Planning calendar"""
-    return calendar_func(post_id)
+    return planning_calendar(post_id)
 
 @bp.route('/categories/manage')
 def categories_manage():
     """Manage calendar categories"""
-    return categories_func()
+    return categories_manage()
 
 @bp.route('/posts/<int:post_id>/research')
 def planning_research(post_id):
     """Planning research"""
-    return research_func(post_id)
+    return planning_research(post_id)
 
 @bp.route('/posts/<int:post_id>/old-interface')
 def planning_old_interface(post_id):
     """Planning old interface"""
-    return old_interface_func(post_id)
+    return planning_old_interface(post_id)
 
 # ============================================================================
 # CALENDAR FUNCTIONS (imported from planning_calendar.py)
@@ -72,17 +72,17 @@ def planning_old_interface(post_id):
 @bp.route('/posts/<int:post_id>/calendar/view')
 def planning_calendar_view(post_id):
     """Calendar view page"""
-    return calendar_view_func(post_id)
+    return planning_calendar_view(post_id)
 
 @bp.route('/calendar/ideas/week/<int:week_number>')
 def planning_calendar_ideas_week(week_number):
     """Week-based idea generation"""
-    return ideas_week_func(week_number)
+    return planning_calendar_ideas_week(week_number)
 
 @bp.route('/posts/<int:post_id>/calendar/ideas')
 def planning_calendar_ideas(post_id):
     """Calendar ideas page"""
-    return ideas_func(post_id)
+    return planning_calendar_ideas(post_id)
 
 # ============================================================================
 # CONCEPT FUNCTIONS (imported from planning_concept.py)
@@ -91,47 +91,47 @@ def planning_calendar_ideas(post_id):
 @bp.route('/posts/<int:post_id>/concept/brainstorm')
 def planning_concept_brainstorm(post_id):
     """Brainstorm page"""
-    return brainstorm_func(post_id)
+    return planning_concept_brainstorm(post_id)
 
 @bp.route('/posts/<int:post_id>/concept/section-structure')
 def planning_concept_section_structure(post_id):
     """Section structure page"""
-    return section_structure_func(post_id)
+    return planning_concept_section_structure(post_id)
 
 @bp.route('/posts/<int:post_id>/concept/topic-allocation')
 def planning_concept_topic_allocation(post_id):
     """Topic allocation page"""
-    return topic_allocation_func(post_id)
+    return planning_concept_topic_allocation(post_id)
 
 @bp.route('/posts/<int:post_id>/concept/titling')
 def planning_concept_titling(post_id):
     """Titling page"""
-    return titling_func(post_id)
+    return planning_concept_titling(post_id)
 
 @bp.route('/posts/<int:post_id>/concept/outline')
 def planning_concept_outline(post_id):
     """Outline page"""
-    return outline_func(post_id)
+    return planning_concept_outline(post_id)
 
 @bp.route('/posts/<int:post_id>/research/sources')
 def planning_research_sources(post_id):
     """Research sources page"""
-    return sources_func(post_id)
+    return planning_research_sources(post_id)
 
 @bp.route('/posts/<int:post_id>/research/visuals')
 def planning_research_visuals(post_id):
     """Research visuals page"""
-    return visuals_func(post_id)
+    return planning_research_visuals(post_id)
 
 @bp.route('/posts/<int:post_id>/research/prompts')
 def planning_research_prompts(post_id):
     """Research prompts page"""
-    return prompts_func(post_id)
+    return planning_research_prompts(post_id)
 
 @bp.route('/posts/<int:post_id>/research/verification')
 def planning_research_verification(post_id):
     """Research verification page"""
-    return verification_func(post_id)
+    return planning_research_verification(post_id)
 
 # ============================================================================
 # API ENDPOINTS (imported from planning_api.py)
@@ -140,12 +140,12 @@ def planning_research_verification(post_id):
 @bp.route('/api/calendar/categories', methods=['GET'])
 def api_calendar_categories():
     """Get all calendar categories"""
-    return categories_api_func()
+    return api_calendar_categories()
 
 @bp.route('/api/llm/prompts/<prompt_type>')
 def api_get_prompt(prompt_type):
     """Get LLM prompt by type"""
-    return prompt_api_func(prompt_type)
+    return api_get_prompt(prompt_type)
 
 # ============================================================================
 # REMAINING FUNCTIONS (still need to be moved to modules)
