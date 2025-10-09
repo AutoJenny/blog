@@ -133,7 +133,7 @@ OUTPUT FORMAT (JSON only):
 {{
   "post_title": "{expanded_idea}",
   "sections": [
-    {{ "index": 1, "original": "{topic_allocation[0].get('section_theme', 'Section 1')}", "title": "Your Creative Title Here" }}
+    {", ".join([f'{{ "index": {i+1}, "original": "{allocation.get("section_theme", f"Section {i+1}")}", "title": "Your Creative Title Here" }}' for i, allocation in enumerate(topic_allocation)])}
   ]
 }}"""
         
