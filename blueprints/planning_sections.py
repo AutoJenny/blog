@@ -100,12 +100,23 @@ VALIDATION RULES:
             }), 500
         
         # Format the prompt with actual data
+        # Transform topic allocation into LLM-friendly format
+        llm_friendly_sections = []
+        for i, allocation in enumerate(topic_allocation):
+            section_theme = allocation.get('section_theme', f'Section {i+1}')
+            topics = allocation.get('topics', [])
+            llm_friendly_sections.append({
+                'index': i + 1,
+                'original': section_theme,
+                'topics': topics
+            })
+        
         formatted_prompt = prompt_text.replace('[PLACEHOLDER]', f"""
 POST_TITLE:
 {expanded_idea}
 
 SECTIONS_AND_TOPICS:
-{json.dumps(topic_allocation, indent=2)}
+{json.dumps(llm_friendly_sections, indent=2)}
 """)
         
         # Call LLM service
