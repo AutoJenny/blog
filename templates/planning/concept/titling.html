@@ -344,10 +344,10 @@ async function loadExistingSections() {
             // Convert database sections to the format expected by displaySections
             const sectionsData = {
                 sections: data.sections.map(section => ({
-                    id: section.id,
-                    title: section.section_heading,
-                    subtitle: section.section_description,
-                    order: section.section_order,
+                    id: section.id || section.index,
+                    title: section.title || section.section_heading,
+                    subtitle: section.original || section.section_description,
+                    order: section.order || section.section_order || section.index,
                     topics: [] // Topics will be loaded from topic allocation
                 }))
             };
