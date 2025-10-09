@@ -335,6 +335,7 @@ window.currentStage = 'concept';
 window.currentSubstage = 'section-structure';
 
 let topics = [];
+let expandedIdea = '';
 let sectionStructure = null;
 let llmModule = null;
 
@@ -345,7 +346,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeLLMModule('section_structure', window.postId);
 });
 
-// Load topics from brainstorming
+// Load topics and expanded idea from brainstorming
 async function loadBrainstormTopics() {
     try {
         const response = await fetch(`/planning/api/posts/${window.postId}`);
@@ -357,6 +358,14 @@ async function loadBrainstormTopics() {
             displayTopics();
         } else {
             document.getElementById('topics-display').innerHTML = '<p class="error">No topics found from brainstorming</p>';
+        }
+        
+        // Load expanded idea
+        if (data.post && data.post.expanded_idea) {
+            expandedIdea = data.post.expanded_idea;
+            console.log('Loaded expanded idea:', expandedIdea.substring(0, 100) + '...');
+        } else {
+            console.warn('No expanded idea found in post data');
         }
     } catch (error) {
         console.error('Error loading topics:', error);
@@ -413,7 +422,8 @@ async function generateSectionStructure() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 topics: topics,
-                post_id: window.postId
+                post_id: window.postId,
+                expanded_idea: expandedIdea
             })
         });
         

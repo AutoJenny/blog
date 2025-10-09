@@ -234,18 +234,21 @@ def api_design_section_structure():
         expanded_idea = data.get('expanded_idea', '')
         post_id = data.get('post_id')
         
-        # Fetch topics from database if not provided
-        if not topics:
+        # Fetch topics and expanded_idea from database if not provided
+        if not topics or not expanded_idea:
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
-                    SELECT idea_scope 
+                    SELECT idea_scope, expanded_idea 
                     FROM post_development 
-                    WHERE post_id = %s AND idea_scope IS NOT NULL
+                    WHERE post_id = %s AND (idea_scope IS NOT NULL OR expanded_idea IS NOT NULL)
                 """, (post_id,))
                 result = cursor.fetchone()
                 if result:
-                    idea_scope_data = json.loads(result['idea_scope'])
-                    topics = idea_scope_data.get('generated_topics', [])
+                    if not topics and result['idea_scope']:
+                        idea_scope_data = json.loads(result['idea_scope'])
+                        topics = idea_scope_data.get('generated_topics', [])
+                    if not expanded_idea and result['expanded_idea']:
+                        expanded_idea = result['expanded_idea']
         
         if not topics:
             return jsonify({
@@ -326,8 +329,26 @@ VALIDATION RULES:
         # Format the prompt with actual data
         formatted_topics = "\n".join([f"- {t['title']}: {t['description']}" for t in topics])
         
+        # Extract a concise topic from expanded_idea for better prompt clarity
+        topic_for_prompt = expanded_idea
+        if expanded_idea:
+            # Try to extract the main topic from the expanded idea
+            lines = expanded_idea.split('\n')
+            for line in lines:
+                if 'blog post' in line.lower() and '"' in line:
+                    # Extract text between quotes
+                    start = line.find('"')
+                    end = line.find('"', start + 1)
+                    if start != -1 and end != -1:
+                        topic_for_prompt = line[start+1:end]
+                        break
+                elif 'Welsh' in line and ('mythology' in line.lower() or 'myths' in line.lower()):
+                    # Extract Welsh mythology topic
+                    topic_for_prompt = "Welsh mythology and folklore"
+                    break
+        
         # Replace placeholders with actual data
-        formatted_prompt = prompt_text.replace('[USER_TOPIC]', expanded_idea)
+        formatted_prompt = prompt_text.replace('[USER_TOPIC]', topic_for_prompt)
         formatted_prompt = formatted_prompt.replace('[TOPICS_DATA]', formatted_topics)
         formatted_prompt = formatted_prompt.replace('[USER_CULTURE]', 'Celtic')  # Default to Celtic for now
         
