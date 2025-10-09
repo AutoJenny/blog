@@ -23,6 +23,7 @@ from blueprints.planning_api_post_specific import api_posts_expanded_idea as exp
 from blueprints.planning_api_brainstorm import api_generate_brainstorm_topics as brainstorm_topics_api_func
 from blueprints.planning_api_prompts import api_get_prompt as prompt_api_func
 from blueprints.planning_sections import api_sections_title as sections_title_api_func, api_save_sections as sections_save_api_func, api_design_section_structure as sections_design_api_func
+from blueprints.planning_api_topic_allocation import api_generate_section_specific_topics as generate_topics_func, api_get_topic_allocation as get_allocation_func
 from blueprints.planning_llm import LLMService, parse_brainstorm_topics
 
 # Initialize LLM service
@@ -308,6 +309,11 @@ def api_allocate_topics():
     except Exception as e:
         logger.error(f"Error allocating topics: {e}")
         return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/sections/generate-section-specific-topics', methods=['POST'])
+def api_generate_section_specific_topics():
+    """Generate section-specific topics instead of forcing existing ideas into sections"""
+    return generate_topics_func()
 
 @bp.route('/api/sections/allocate-topics/<int:post_id>', methods=['GET'])
 def api_get_topic_allocation(post_id):
