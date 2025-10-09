@@ -110,24 +110,32 @@ VALIDATION RULES:
             }), 500
         
         # Format the prompt with actual data
-        # Transform topic allocation into LLM-friendly format
-        llm_friendly_sections = []
+        # Use the simplest possible format to avoid LLM confusion
+        sections_text = ""
         for i, allocation in enumerate(topic_allocation):
             section_theme = allocation.get('section_theme', f'Section {i+1}')
-            topics = allocation.get('topics', [])
-            llm_friendly_sections.append({
-                'index': i + 1,
-                'original': section_theme,
-                'topics': topics
-            })
+            sections_text += f"{i+1}. {section_theme}\n"
         
-        formatted_prompt = prompt_text.replace('[PLACEHOLDER]', f"""
-POST_TITLE:
-{expanded_idea}
+        formatted_prompt = f"""Generate creative section titles for this blog post.
 
-SECTIONS_AND_TOPICS:
-{json.dumps(llm_friendly_sections, indent=2)}
-""")
+BLOG POST TOPIC: {expanded_idea}
+
+SECTIONS TO TITLE:
+{sections_text.strip()}
+
+REQUIREMENTS:
+- Generate exactly {len(topic_allocation)} titles
+- Each title should be 2-4 words
+- Make titles poetic and evocative
+- Do not include the blog post topic in your titles
+
+OUTPUT FORMAT (JSON only):
+{{
+  "post_title": "{expanded_idea}",
+  "sections": [
+    {{ "index": 1, "original": "{topic_allocation[0].get('section_theme', 'Section 1')}", "title": "Your Creative Title Here" }}
+  ]
+}}"""
         
         # Call LLM service
         try:
