@@ -271,10 +271,108 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
         const authorFirstDraftsManager = new AuthorFirstDraftsManager();
         console.log('AuthorFirstDraftsManager initialized successfully');
+        
+        // Initialize LLM module
+        initializeLLMModule();
     } catch (error) {
         console.error('Error initializing AuthorFirstDraftsManager:', error);
     }
 });
+
+// Initialize LLM module for generate functionality
+function initializeLLMModule() {
+    console.log('Initializing LLM module...');
+    
+    // Wait for LLM scripts to load
+    setTimeout(() => {
+        if (typeof LLMModule !== 'undefined') {
+            console.log('LLM module available, initializing...');
+            
+            // Initialize LLM module with authoring configuration
+            const llmModule = new LLMModule({
+                configKey: 'authoring_section_draft',
+                generateEndpoint: `/authoring/api/posts/${window.postId}/sections/${window.currentSectionId || 'section_1'}/generate`,
+                onGenerate: function(response) {
+                    console.log('Generate response:', response);
+                    if (response.success) {
+                        // Display the generated content
+                        displayGeneratedContent(response.draft_content);
+                    } else {
+                        console.error('Generate failed:', response.error);
+                        alert('Error generating content: ' + response.error);
+                    }
+                }
+            });
+            
+            // Update generate endpoint when section changes
+            const originalSelectSection = AuthorFirstDraftsManager.prototype.selectSection;
+            AuthorFirstDraftsManager.prototype.selectSection = function(sectionId) {
+                originalSelectSection.call(this, sectionId);
+                if (llmModule && llmModule.config) {
+                    llmModule.config.generateEndpoint = `/authoring/api/posts/${window.postId}/sections/${sectionId}/generate`;
+                }
+            };
+            
+        } else {
+            console.error('LLM module not available');
+        }
+    }, 1000);
+}
+
+// Display generated content
+function displayGeneratedContent(content) {
+    console.log('Displaying generated content:', content);
+    
+    // Create or update a content display area
+    let contentDisplay = document.getElementById('generated-content-display');
+    if (!contentDisplay) {
+        contentDisplay = document.createElement('div');
+        contentDisplay.id = 'generated-content-display';
+        contentDisplay.className = 'generated-content';
+        contentDisplay.innerHTML = '<h4>Generated Content</h4>';
+        
+        // Insert after the LLM module
+        const llmModule = document.querySelector('.llm-module');
+        if (llmModule) {
+            llmModule.parentNode.insertBefore(contentDisplay, llmModule.nextSibling);
+        }
+    }
+    
+    // Display the content
+    contentDisplay.innerHTML = `
+        <h4>Generated Content</h4>
+        <div class="content-preview">${content}</div>
+        <div class="content-actions">
+            <button class="btn btn-primary" onclick="copyGeneratedContent()">Copy Content</button>
+            <button class="btn btn-secondary" onclick="regenerateContent()">Regenerate</button>
+        </div>
+    `;
+}
+
+// Copy generated content to clipboard
+function copyGeneratedContent() {
+    const contentDisplay = document.getElementById('generated-content-display');
+    const content = contentDisplay.querySelector('.content-preview').textContent;
+    navigator.clipboard.writeText(content).then(() => {
+        alert('Content copied to clipboard!');
+    });
+}
+
+// Regenerate content
+function regenerateContent() {
+    const generateBtn = document.getElementById('generate-btn');
+    if (generateBtn) {
+        generateBtn.click();
+    }
+}
 </script>
+
+<!-- LLM Scripts -->
+<script src="{{ url_for('static', filename='js/llm-utils.js') }}"></script>
+<script src="{{ url_for('static', filename='js/llm-config.js') }}"></script>
+<script src="{{ url_for('static', filename='js/llm-ui-manager.js') }}"></script>
+<script src="{{ url_for('static', filename='js/llm-api-client.js') }}"></script>
+<script src="{{ url_for('static', filename='js/llm-event-manager.js') }}"></script>
+<script src="{{ url_for('static', filename='js/llm-module.js') }}"></script>
 
 {% endblock %}
