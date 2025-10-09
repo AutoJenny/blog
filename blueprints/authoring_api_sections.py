@@ -53,6 +53,9 @@ def api_get_sections(post_id):
                                 'section_order': section.get('order', i+1),
                                 'section_heading': section.get('title', f'Section {i+1}'),
                                 'section_description': section.get('original', ''),
+                                'title': section.get('title', f'Section {i+1}'),  # Add frontend-compatible field
+                                'description': section.get('original', ''),  # Add frontend-compatible field
+                                'order': section.get('order', i+1),  # Add frontend-compatible field
                                 'status': 'draft',
                                 'draft': None,
                                 'polished': None,
@@ -165,6 +168,9 @@ def api_get_section(post_id, section_id):
                                 'section_order': target_section.get('order', i+1),
                                 'section_heading': target_section.get('title', f'Section {i+1}'),
                                 'section_description': target_section.get('original', ''),
+                                'title': target_section.get('title', f'Section {i+1}'),  # Add frontend-compatible field
+                                'description': target_section.get('original', ''),  # Add frontend-compatible field
+                                'order': target_section.get('order', i+1),  # Add frontend-compatible field
                                 'status': 'draft',
                                 'draft': None,
                                 'polished': None,
