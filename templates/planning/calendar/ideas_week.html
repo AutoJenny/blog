@@ -1,0 +1,744 @@
+{% extends "base.html" %}
+
+{% block css_assets %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/llm-module.css') }}">
+{% endblock %}
+
+{% block title %}Idea Generation - Week {{ week_number }} - Content Calendar - Planning - BlogForge{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Week-based header -->
+    <div class="week-header">
+        <div class="week-info">
+            <h1>Idea Generation - Week {{ week_number }}, {{ year }}</h1>
+            <p class="week-description">Select an idea to create a new blog post for this week</p>
+        </div>
+        <div class="week-navigation">
+            <a href="{{ url_for('planning.planning_calendar_ideas_week', week_number=week_number-1) }}" 
+               class="btn btn-secondary">
+                <i class="fas fa-chevron-left"></i> Previous Week
+            </a>
+            <a href="{{ url_for('planning.planning_calendar_ideas_week', week_number=week_number+1) }}" 
+               class="btn btn-secondary">
+                Next Week <i class="fas fa-chevron-right"></i>
+            </a>
+        </div>
+    </div>
+    
+    {% block process_content %}
+    <div class="ideas-main">
+        
+        <div class="ideas-content">
+            <div class="idea-generator">
+                <div class="available-ideas">
+                    <div class="available-ideas-header">
+                        <h4>Available Ideas for Week {{ week_number }}</h4>
+                        <button class="btn btn-secondary" onclick="openNewIdeaDialog()">
+                            <i class="fas fa-plus"></i> New Idea
+                        </button>
+                    </div>
+                    <div id="available-ideas-list" class="ideas-list">
+                        <!-- Available ideas will appear here -->
+                    </div>
+                </div>
+                
+                <div class="selected-idea">
+                    <h4>Selected Idea</h4>
+                    <div id="selected-idea-display" class="selected-idea-content">
+                        <div class="no-selection">No idea selected</div>
+                    </div>
+                    <div class="selected-idea-actions">
+                        <button class="btn btn-success" onclick="confirmSelection()" id="confirm-btn" disabled>
+                            <i class="fas fa-check"></i> Create Post & Continue
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="ideas-results">
+                <h3>Post Creation Status</h3>
+                <div id="post-creation-status" class="idea-seed-display">
+                    <div class="status-message">
+                        <i class="fas fa-info-circle"></i>
+                        Select an idea above to create a new blog post for Week {{ week_number }}
+                    </div>
+                </div>
+                
+                <div class="expanded-idea-section">
+                    <h3>Expanded Idea</h3>
+                    <div id="expanded-idea-display" class="expanded-idea-content">
+                        <div class="no-expanded-idea">No expanded idea yet</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</div>
+
+<!-- New Idea Dialog -->
+<div id="new-idea-dialog" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add New Idea</h3>
+            <span class="close" onclick="closeNewIdeaDialog()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="new-idea-form">
+                <div class="form-group">
+                    <label for="idea-title">Idea Title:</label>
+                    <input type="text" id="idea-title" name="idea_title" required>
+                </div>
+                <div class="form-group">
+                    <label for="idea-description">Description:</label>
+                    <textarea id="idea-description" name="idea_description" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="idea-priority">Priority:</label>
+                    <select id="idea-priority" name="priority">
+                        <option value="random">Random</option>
+                        <option value="mandatory">Mandatory</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="idea-content-type">Content Type:</label>
+                    <select id="idea-content-type" name="content_type">
+                        <option value="guide">Guide</option>
+                        <option value="tutorial">Tutorial</option>
+                        <option value="story">Story</option>
+                        <option value="news">News</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeNewIdeaDialog()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Idea</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.week-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: #1e293b;
+    border-radius: 8px;
+    border: 1px solid #334155;
+}
+
+.week-info h1 {
+    color: #f1f5f9;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
+}
+
+.week-description {
+    color: #94a3b8;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.week-navigation {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.status-message {
+    padding: 1rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    color: #94a3b8;
+    text-align: center;
+}
+
+.status-message i {
+    margin-right: 0.5rem;
+    color: #3b82f6;
+}
+
+.no-selection, .no-expanded-idea {
+    padding: 2rem;
+    text-align: center;
+    color: #64748b;
+    font-style: italic;
+}
+
+.ideas-main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.ideas-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.idea-generator {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.available-ideas, .selected-idea {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.available-ideas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.available-ideas-header h4 {
+    color: #f1f5f9;
+    margin: 0;
+}
+
+.ideas-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.idea-item {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.idea-item:hover {
+    background: #1e293b;
+    border-color: #3b82f6;
+}
+
+.idea-item.selected {
+    background: #1e40af;
+    border-color: #3b82f6;
+}
+
+.idea-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.idea-title {
+    color: #f1f5f9;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.idea-priority {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.priority-mandatory {
+    background: #dc2626;
+    color: white;
+}
+
+.priority-random {
+    background: #6b7280;
+    color: white;
+}
+
+.idea-description {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.idea-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.selected-idea-content {
+    min-height: 200px;
+    padding: 1rem;
+    background: #0f172a;
+    border-radius: 6px;
+    border: 1px solid #334155;
+}
+
+.selected-idea-actions {
+    margin-top: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-success {
+    background: #059669;
+    color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+    background: #047857;
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+}
+
+.ideas-results {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.ideas-results h3 {
+    color: #f1f5f9;
+    margin: 0 0 1rem 0;
+}
+
+.idea-seed-display, .expanded-idea-content {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 1rem;
+    min-height: 100px;
+}
+
+.expanded-idea-section {
+    margin-top: 2rem;
+}
+
+.expanded-idea-section h3 {
+    color: #f1f5f9;
+    margin: 0 0 1rem 0;
+}
+
+/* Modal styles */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.modal-content {
+    background: #1e293b;
+    margin: 5% auto;
+    padding: 0;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #334155;
+}
+
+.modal-header h3 {
+    color: #f1f5f9;
+    margin: 0;
+}
+
+.close {
+    color: #94a3b8;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #f1f5f9;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    color: #f1f5f9;
+    font-size: 0.9rem;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
+
+.no-ideas {
+    padding: 2rem;
+    text-align: center;
+    color: #64748b;
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .ideas-main {
+        grid-template-columns: 1fr;
+    }
+    
+    .idea-generator {
+        grid-template-columns: 1fr;
+    }
+    
+    .week-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .week-navigation {
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+// Week-based mode variables
+window.weekNumber = {{ week_number }};
+window.year = {{ year }};
+window.mode = 'week-based';
+window.postId = null;
+
+// Available ideas data
+let availableIdeas = {{ ideas | tojson }};
+let selectedIdea = null;
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Week-based ideas page loaded for week', window.weekNumber);
+    loadIdeasForWeek();
+    updatePostCreationStatus();
+});
+
+async function loadIdeasForWeek() {
+    try {
+        console.log('Loading ideas for week', window.weekNumber);
+        
+        if (availableIdeas && availableIdeas.length > 0) {
+            displayAvailableIdeas();
+            autoSelectIdea();
+        } else {
+            displayNoIdeas();
+        }
+    } catch (error) {
+        console.error('Error loading ideas:', error);
+        displayNoIdeas();
+    }
+}
+
+function displayAvailableIdeas() {
+    const ideasList = document.getElementById('available-ideas-list');
+    ideasList.innerHTML = '';
+    
+    if (availableIdeas.length === 0) {
+        ideasList.innerHTML = '<div class="no-ideas">No ideas available for this week</div>';
+        return;
+    }
+    
+    availableIdeas.forEach((idea, index) => {
+        const ideaItem = document.createElement('div');
+        ideaItem.className = 'idea-item';
+        ideaItem.innerHTML = `
+            <div class="idea-header">
+                <div class="idea-title">${escapeHtml(idea.idea_title)}</div>
+                <div class="idea-priority priority-${idea.priority}">${idea.priority}</div>
+            </div>
+            <div class="idea-description">${escapeHtml(idea.idea_description || 'No description available')}</div>
+            <div class="idea-meta">
+                <span><i class="fas fa-tag"></i> ${idea.content_type}</span>
+                <span><i class="fas fa-calendar"></i> Week ${idea.week_number}</span>
+            </div>
+        `;
+        
+        ideaItem.addEventListener('click', () => selectIdea(idea, index));
+        ideasList.appendChild(ideaItem);
+    });
+}
+
+function selectIdea(idea, index) {
+    // Remove previous selection
+    document.querySelectorAll('.idea-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    
+    // Add selection to clicked item
+    document.querySelectorAll('.idea-item')[index].classList.add('selected');
+    
+    selectedIdea = idea;
+    displaySelectedIdea();
+    document.getElementById('confirm-btn').disabled = false;
+}
+
+function displaySelectedIdea() {
+    const selectedDisplay = document.getElementById('selected-idea-display');
+    
+    if (!selectedIdea) {
+        selectedDisplay.innerHTML = '<div class="no-selection">No idea selected</div>';
+        return;
+    }
+    
+    selectedDisplay.innerHTML = `
+        <div class="idea-header">
+            <div class="idea-title">${escapeHtml(selectedIdea.idea_title)}</div>
+            <div class="idea-priority priority-${selectedIdea.priority}">${selectedIdea.priority}</div>
+        </div>
+        <div class="idea-description">${escapeHtml(selectedIdea.idea_description || 'No description available')}</div>
+        <div class="idea-meta">
+            <span><i class="fas fa-tag"></i> ${selectedIdea.content_type}</span>
+            <span><i class="fas fa-calendar"></i> Week ${selectedIdea.week_number}</span>
+        </div>
+    `;
+}
+
+function autoSelectIdea() {
+    if (availableIdeas.length > 0) {
+        selectIdea(availableIdeas[0], 0);
+    }
+}
+
+function displayNoIdeas() {
+    const ideasList = document.getElementById('available-ideas-list');
+    ideasList.innerHTML = '<div class="no-ideas">No ideas available for this week</div>';
+}
+
+function updatePostCreationStatus() {
+    const statusDisplay = document.getElementById('post-creation-status');
+    statusDisplay.innerHTML = `
+        <div class="status-message">
+            <i class="fas fa-info-circle"></i>
+            Select an idea above to create a new blog post for Week ${window.weekNumber}
+        </div>
+    `;
+}
+
+async function confirmSelection() {
+    if (!selectedIdea) {
+        alert('Please select an idea first');
+        return;
+    }
+    
+    try {
+        console.log('Creating post for idea:', selectedIdea.idea_title);
+        
+        // Show loading state
+        const confirmBtn = document.getElementById('confirm-btn');
+        const originalText = confirmBtn.innerHTML;
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Post...';
+        confirmBtn.disabled = true;
+        
+        // Check if topic already exists this year
+        const checkResponse = await fetch('/planning/api/posts/check-topic', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                topic: selectedIdea.idea_title,
+                year: window.year
+            })
+        });
+        
+        const checkData = await checkResponse.json();
+        let postId;
+        let action;
+        
+        if (checkData.success && checkData.existing_post_id) {
+            // Topic already exists - reuse existing post
+            postId = checkData.existing_post_id;
+            action = 'reusing existing post';
+            console.log(`Reusing existing post ID ${postId} for topic: ${selectedIdea.idea_title}`);
+        } else {
+            // New topic - create new post
+            const newPostResponse = await fetch('/planning/api/posts/create-new', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    topic: selectedIdea.idea_title,
+                    week_number: window.weekNumber
+                })
+            });
+            
+            const newPostData = await newPostResponse.json();
+            if (newPostData.success) {
+                postId = newPostData.post_id;
+                action = 'created new post';
+                console.log(`Created new post ID ${postId} for topic: ${selectedIdea.idea_title}`);
+            } else {
+                throw new Error('Failed to create new post');
+            }
+        }
+        
+        // Update status display
+        const statusDisplay = document.getElementById('post-creation-status');
+        statusDisplay.innerHTML = `
+            <div class="status-message" style="background: #059669; color: white;">
+                <i class="fas fa-check-circle"></i>
+                Successfully ${action} (ID: ${postId}) for "${selectedIdea.idea_title}"
+            </div>
+        `;
+        
+        // Redirect to post development
+        setTimeout(() => {
+            window.location.href = `/planning/posts/${postId}/concept/brainstorm`;
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Error creating post:', error);
+        
+        // Reset button state
+        const confirmBtn = document.getElementById('confirm-btn');
+        confirmBtn.innerHTML = originalText;
+        confirmBtn.disabled = false;
+        
+        // Show error
+        const statusDisplay = document.getElementById('post-creation-status');
+        statusDisplay.innerHTML = `
+            <div class="status-message" style="background: #dc2626; color: white;">
+                <i class="fas fa-exclamation-circle"></i>
+                Error creating post: ${error.message}
+            </div>
+        `;
+    }
+}
+
+function openNewIdeaDialog() {
+    document.getElementById('new-idea-dialog').style.display = 'block';
+}
+
+function closeNewIdeaDialog() {
+    document.getElementById('new-idea-dialog').style.display = 'none';
+    document.getElementById('new-idea-form').reset();
+}
+
+// Handle new idea form submission
+document.getElementById('new-idea-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const ideaData = {
+        idea_title: formData.get('idea_title'),
+        idea_description: formData.get('idea_description'),
+        priority: formData.get('priority'),
+        content_type: formData.get('content_type'),
+        week_number: window.weekNumber
+    };
+    
+    try {
+        // Add idea to database (this would need a new API endpoint)
+        console.log('Adding new idea:', ideaData);
+        
+        // For now, just add to local list
+        availableIdeas.push({
+            id: Date.now(), // Temporary ID
+            idea_title: ideaData.idea_title,
+            idea_description: ideaData.idea_description,
+            priority: ideaData.priority,
+            content_type: ideaData.content_type,
+            week_number: ideaData.week_number,
+            is_recurring: false
+        });
+        
+        // Refresh display
+        displayAvailableIdeas();
+        closeNewIdeaDialog();
+        
+    } catch (error) {
+        console.error('Error adding idea:', error);
+        alert('Error adding idea: ' + error.message);
+    }
+});
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+</script>
+
+{% endblock %}

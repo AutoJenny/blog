@@ -19,7 +19,7 @@
             <div class="idea-generator">
                 <div class="available-ideas">
                     <div class="available-ideas-header">
-                        <h4>Available Ideas for Week {{ week_number }} ({{ week_dates }})</h4>
+                        <h4>Available Ideas for Post {{ post_id }} (Week {{ week_number }})</h4>
                         <button class="btn btn-secondary" onclick="openNewIdeaDialog()">
                             <i class="fas fa-plus"></i> New Idea
                         </button>
@@ -410,12 +410,8 @@ async function loadIdeasForWeek() {
 
 async function loadCurrentIdeaSeed() {
     try {
-        const response = await fetch(`/planning/api/posts/${window.postId}/idea-seed`);
-        const data = await response.json();
-        
-        if (data.success) {
-            displayCurrentIdeaSeed(data.idea_seed);
-        }
+        // For now, show a message that we're working with week-based ideas
+        displayCurrentIdeaSeed('Working with ideas for current week - no specific post selected yet');
     } catch (error) {
         console.error('Error loading current idea seed:', error);
     }
@@ -515,7 +511,49 @@ async function confirmSelection() {
     try {
         const ideaSeedText = `${selectedIdea.idea_title}: ${selectedIdea.idea_description || 'No description available'}`;
         
-        const response = await fetch(`/planning/api/posts/${window.postId}/idea-seed`, {
+        // Check if this topic has already been used this year
+        const checkResponse = await fetch(`/planning/api/posts/check-topic`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                topic: selectedIdea.idea_title,
+                year: new Date().getFullYear()
+            })
+        });
+        
+        const checkData = await checkResponse.json();
+        let postId;
+        
+        if (checkData.success && checkData.existing_post_id) {
+            // Topic already exists - reuse existing post ID
+            postId = checkData.existing_post_id;
+            console.log(`Reusing existing post ID ${postId} for topic: ${selectedIdea.idea_title}`);
+        } else {
+            // New topic - generate new post ID
+            const newPostResponse = await fetch(`/planning/api/posts/create-new`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    topic: selectedIdea.idea_title,
+                    week_number: window.weekNumber
+                })
+            });
+            
+            const newPostData = await newPostResponse.json();
+            if (newPostData.success) {
+                postId = newPostData.post_id;
+                console.log(`Created new post ID ${postId} for topic: ${selectedIdea.idea_title}`);
+            } else {
+                throw new Error('Failed to create new post');
+            }
+        }
+        
+        // Now set the idea seed for the determined post ID
+        const response = await fetch(`/planning/api/posts/${postId}/idea-seed`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -530,7 +568,40 @@ async function confirmSelection() {
         if (data.success) {
             displayCurrentIdeaSeed(data.idea_seed);
             
-            // Automatically generate expanded idea after confirming selection
+            // If we created a new post, generate expanded idea first, then redirect
+            if (postId !== window.postId) {
+                console.log(`New post ${postId} created, generating expanded idea before redirect`);
+                
+                // Generate expanded idea for the new post
+                try {
+                    const expandedResponse = await fetch(`/planning/api/posts/${postId}/expanded-idea`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            idea_seed: ideaSeedText
+                        })
+                    });
+                    
+                    const expandedData = await expandedResponse.json();
+                    if (expandedData.success) {
+                        console.log(`Expanded idea generated for post ${postId}`);
+                    } else {
+                        console.warn(`Failed to generate expanded idea: ${expandedData.error}`);
+                    }
+                } catch (error) {
+                    console.error('Error generating expanded idea:', error);
+                }
+                
+                // Now redirect to the new post's brainstorm page
+                setTimeout(() => {
+                    window.location.href = `/planning/posts/${postId}/concept/brainstorm`;
+                }, 2000); // Give time to see the success message
+                return;
+            }
+            
+            // For existing posts, generate expanded idea after confirming selection
             setTimeout(() => {
                 generateExpandedIdea();
             }, 500); // Small delay to ensure UI updates

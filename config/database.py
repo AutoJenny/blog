@@ -19,7 +19,8 @@ class DatabaseManager:
         try:
             connection = psycopg.connect(
                 self.config.DATABASE_URL,
-                row_factory=dict_row
+                row_factory=dict_row,
+                autocommit=True  # Enable autocommit for immediate commits
             )
             logger.info("Database connection established")
             return connection

@@ -8,8 +8,8 @@ from config.database import db_manager
 import logging
 import json
 import requests
-import re
 from datetime import datetime
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -325,6 +325,260 @@ def api_calendar_schedule(year, week_number):
         logger.error(f"Error fetching calendar schedule: {e}")
         return jsonify({'error': str(e)}), 500
 
+# Missing ideas page API endpoints
+@bp.route('/api/calendar/ideas/week/<int:week_number>', methods=['GET'])
+def api_calendar_ideas_for_week(week_number):
+    """Get all calendar ideas for a specific week number"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, idea_title, idea_description, seasonal_context, 
+                       content_type, priority, tags, is_recurring
+                FROM calendar_ideas 
+                WHERE week_number = %s
+                ORDER BY 
+                    CASE priority 
+                        WHEN 'mandatory' THEN 1 
+                        WHEN 'random' THEN 2 
+                        ELSE 3 
+                    END,
+                    id
+            """, (week_number,))
+            
+            ideas = cursor.fetchall()
+            
+            return jsonify({
+                'success': True,
+                'week_number': week_number,
+                'ideas': [dict(idea) for idea in ideas]
+            })
+            
+    except Exception as e:
+        logger.error(f"Error fetching calendar ideas for week {week_number}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/idea-seed', methods=['GET'])
+def api_get_idea_seed(post_id):
+    """Get the current idea seed for a post"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT idea_seed 
+                FROM post_development 
+                WHERE post_id = %s
+            """, (post_id,))
+            
+            result = cursor.fetchone()
+            idea_seed = result['idea_seed'] if result else None
+            
+            return jsonify({
+                'success': True,
+                'post_id': post_id,
+                'idea_seed': idea_seed
+            })
+            
+    except Exception as e:
+        logger.error(f"Error fetching idea seed for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/idea-seed', methods=['POST'])
+def api_update_idea_seed(post_id):
+    """Update the idea seed for a post"""
+    try:
+        data = request.get_json()
+        idea_seed = data.get('idea_seed', '')
+        
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO post_development (post_id, idea_seed)
+                VALUES (%s, %s)
+                ON CONFLICT (post_id) 
+                DO UPDATE SET idea_seed = EXCLUDED.idea_seed
+            """, (post_id, idea_seed))
+            
+            return jsonify({
+                'success': True,
+                'post_id': post_id,
+                'idea_seed': idea_seed
+            })
+            
+    except Exception as e:
+        logger.error(f"Error updating idea seed for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# Topic deduplication and post creation endpoints
+@bp.route('/api/posts/check-topic', methods=['POST'])
+def api_check_topic():
+    """Check if a topic has already been used this year"""
+    try:
+        data = request.get_json()
+        topic = data.get('topic', '')
+        year = data.get('year', datetime.now().year)
+        
+        if not topic:
+            return jsonify({'error': 'Topic is required'}), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Check if this topic exists in post_development for this year
+            cursor.execute("""
+                SELECT pd.post_id, pd.idea_seed, p.created_at
+                FROM post_development pd
+                JOIN post p ON pd.post_id = p.id
+                WHERE pd.idea_seed ILIKE %s 
+                AND EXTRACT(YEAR FROM p.created_at) = %s
+                ORDER BY p.created_at DESC
+                LIMIT 1
+            """, (f'%{topic}%', year))
+            
+            result = cursor.fetchone()
+            
+            if result:
+                return jsonify({
+                    'success': True,
+                    'topic_exists': True,
+                    'existing_post_id': result['post_id'],
+                    'idea_seed': result['idea_seed'],
+                    'created_at': result['created_at']
+                })
+            else:
+                return jsonify({
+                    'success': True,
+                    'topic_exists': False,
+                    'existing_post_id': None
+                })
+                
+    except Exception as e:
+        logger.error(f"Error checking topic: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/create-new', methods=['POST'])
+def api_create_new_post():
+    """Create a new post for a topic"""
+    try:
+        data = request.get_json()
+        topic = data.get('topic', '')
+        week_number = data.get('week_number', 1)
+        
+        if not topic:
+            return jsonify({'error': 'Topic is required'}), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Create new post
+            # Create slug from topic
+            slug = topic.lower().replace(' ', '-').replace(':', '').replace(',', '')
+            
+            cursor.execute("""
+                INSERT INTO post (title, slug, created_at, updated_at)
+                VALUES (%s, %s, %s, %s)
+                RETURNING id
+            """, (f"Blog Post: {topic}", slug, datetime.now(), datetime.now()))
+            
+            result = cursor.fetchone()
+            post_id = result['id']
+            
+            # Create post_development entry
+            cursor.execute("""
+                INSERT INTO post_development (post_id, idea_seed)
+                VALUES (%s, %s)
+            """, (post_id, f"{topic}: Generated for week {week_number}"))
+            
+            return jsonify({
+                'success': True,
+                'post_id': post_id,
+                'topic': topic,
+                'week_number': week_number
+            })
+            
+    except Exception as e:
+        logger.error(f"Error creating new post: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# Week-based calendar ideas route
+@bp.route('/calendar/ideas/week/<int:week_number>')
+def planning_calendar_ideas_week(week_number):
+    """Week-based idea generation - creates new posts as needed"""
+    try:
+        # Get current year
+        from datetime import datetime
+        year = datetime.now().year
+        
+        # Load ideas for the specified week
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, idea_title, idea_description, seasonal_context, 
+                       content_type, priority, tags, is_recurring
+                FROM calendar_ideas 
+                WHERE week_number = %s
+                ORDER BY 
+                    CASE priority 
+                        WHEN 'mandatory' THEN 1 
+                        WHEN 'random' THEN 2 
+                        ELSE 3 
+                    END,
+                    id
+            """, (week_number,))
+            
+            ideas = cursor.fetchall()
+        
+        return render_template('planning/calendar/ideas_week.html', 
+                               week_number=week_number,
+                               year=year,
+                               ideas=ideas,
+                               blueprint_name='planning')
+                               
+    except Exception as e:
+        logger.error(f"Error in planning_calendar_ideas_week: {e}")
+        # Fallback with basic week number
+        from datetime import datetime
+        year = datetime.now().year
+        return render_template('planning/calendar/ideas_week.html', 
+                               week_number=week_number,
+                               year=year,
+                               ideas=[],
+                               blueprint_name='planning')
+
+@bp.route('/api/posts/redirect-after-creation', methods=['POST'])
+def api_redirect_after_creation():
+    """Handle post creation and return redirect URL"""
+    try:
+        data = request.get_json()
+        topic = data.get('topic', '')
+        week_number = data.get('week_number', 1)
+        
+        if not topic:
+            return jsonify({'error': 'Topic is required'}), 400
+        
+        # Check if topic already exists this year
+        check_response = api_check_topic()
+        check_data = check_response.get_json()
+        
+        if check_data and check_data.get('success') and check_data.get('topic_exists'):
+            # Topic exists - redirect to existing post
+            post_id = check_data['existing_post_id']
+            redirect_url = f"/planning/posts/{post_id}/concept/brainstorm"
+        else:
+            # Create new post
+            new_post_response = api_create_new_post()
+            new_post_data = new_post_response.get_json()
+            
+            if new_post_data and new_post_data.get('success'):
+                post_id = new_post_data['post_id']
+                redirect_url = f"/planning/posts/{post_id}/concept/brainstorm"
+            else:
+                return jsonify({'error': 'Failed to create new post'}), 500
+        
+        return jsonify({
+            'success': True,
+            'redirect_url': redirect_url,
+            'post_id': post_id,
+            'topic': topic,
+            'week_number': week_number
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in api_redirect_after_creation: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @bp.route('/posts/<int:post_id>/calendar/ideas')
 def planning_calendar_ideas(post_id):
     """Idea Generation sub-stage"""
@@ -354,7 +608,8 @@ def planning_calendar_ideas(post_id):
                                post_id=post_id,
                                year=year,
                                week_number=week_number,
-                               blueprint_name='planning')
+                               blueprint_name='planning',
+                               mode='post-based')  # Explicitly mark as post-based mode
     except Exception as e:
         logger.error(f"Error in planning_calendar_ideas: {e}")
         # Fallback with basic week number
@@ -366,7 +621,8 @@ def planning_calendar_ideas(post_id):
                                post_id=post_id,
                                year=year,
                                week_number=week_number,
-                               blueprint_name='planning')
+                               blueprint_name='planning',
+                               mode='post-based')
 
 @bp.route('/posts/<int:post_id>/research')
 def planning_research(post_id):
@@ -861,28 +1117,79 @@ def api_get_allocate_topics(post_id):
         logger.error(f"Error fetching topic allocation: {e}")
         return jsonify({'error': str(e)}), 500
 
-@bp.route('/api/posts/<int:post_id>/expanded-idea')
+@bp.route('/api/posts/<int:post_id>/expanded-idea', methods=['GET', 'POST'])
 def api_get_expanded_idea(post_id):
-    """Get expanded idea for a post"""
-    try:
-        with db_manager.get_cursor() as cursor:
-            cursor.execute("""
-                SELECT expanded_idea FROM post_development 
-                WHERE post_id = %s AND expanded_idea IS NOT NULL
-            """, (post_id,))
+    """Get or generate expanded idea for a post"""
+    if request.method == 'GET':
+        try:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT expanded_idea FROM post_development 
+                    WHERE post_id = %s AND expanded_idea IS NOT NULL
+                """, (post_id,))
+                
+                result = cursor.fetchone()
+                if result and result['expanded_idea']:
+                    return jsonify({
+                        'success': True,
+                        'expanded_idea': result['expanded_idea']
+                    })
+                else:
+                    return jsonify({'success': True, 'expanded_idea': ''})
+                    
+        except Exception as e:
+            logger.error(f"Error fetching expanded idea: {e}")
+            return jsonify({'error': str(e)}), 500
+    
+    elif request.method == 'POST':
+        try:
+            data = request.get_json()
+            idea_seed = data.get('idea_seed', '')
             
-            result = cursor.fetchone()
-            if result and result['expanded_idea']:
+            if not idea_seed:
+                return jsonify({'error': 'Idea seed is required'}), 400
+            
+            # Generate expanded idea using LLM
+            llm_service = LLMService()
+            
+            prompt = f"""
+            Expand the following blog post idea into a detailed outline and content plan:
+            
+            {idea_seed}
+            
+            Please provide:
+            1. A compelling introduction hook
+            2. Main sections with key points
+            3. Supporting details and examples
+            4. A strong conclusion
+            5. Suggested tone and style
+            
+            Make it engaging and informative for readers interested in Scottish culture and traditions.
+            """
+            
+            response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', [{'role': 'user', 'content': prompt}], max_tokens=4000)
+            
+            if response and 'content' in response:
+                expanded_idea = response['content']
+                
+                # Save to database
+                with db_manager.get_cursor() as cursor:
+                    cursor.execute("""
+                        UPDATE post_development 
+                        SET expanded_idea = %s, updated_at = %s
+                        WHERE post_id = %s
+                    """, (expanded_idea, datetime.now(), post_id))
+                
                 return jsonify({
                     'success': True,
-                    'expanded_idea': result['expanded_idea']
+                    'expanded_idea': expanded_idea
                 })
             else:
-                return jsonify({'success': True, 'expanded_idea': ''})
+                return jsonify({'error': 'Failed to generate expanded idea'}), 500
                 
-    except Exception as e:
-        logger.error(f"Error fetching expanded idea: {e}")
-        return jsonify({'error': str(e)}), 500
+        except Exception as e:
+            logger.error(f"Error generating expanded idea: {e}")
+            return jsonify({'error': str(e)}), 500
 
 @bp.route('/api/posts/<int:post_id>')
 def api_get_post_data(post_id):
