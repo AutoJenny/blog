@@ -214,13 +214,32 @@ def api_generate_section_specific_topics():
                 logger.error(f"Response content: {content[:200]}...")
                 continue
         
-        # Build final allocation data
-        all_allocations = []
-        for section_id, topics in all_section_topics.items():
-            all_allocations.extend(topics)
+        # Build final allocation data in the format expected by frontend
+        allocation_data = {
+            'allocations': [],
+            'metadata': {
+                'total_topics': total_topics,
+                'sections_count': len(sections_data),
+                'generated_at': datetime.now().isoformat(),
+                'method': 'section-specific generation based on individual thematic analysis'
+            }
+        }
         
-        structured_sections = {'sections': sections_data}
-        allocation_data = build_allocation_data(all_allocations, structured_sections)
+        # Group topics by section for frontend display
+        for i, section in enumerate(sections_data):
+            section_id = f"section_{i+1}"
+            section_theme = section.get('title') or section.get('theme', f'Section {i+1}')
+            
+            # Get topics for this section
+            section_topics = []
+            for topic_obj in all_section_topics.get(f"S{str(i+1).zfill(2)}", []):
+                section_topics.append(topic_obj.get('topic_title', 'Untitled Topic'))
+            
+            allocation_data['allocations'].append({
+                'section_id': section_id,
+                'section_theme': section_theme,
+                'topics': section_topics
+            })
         
         # Save to database
         save_topic_allocation(post_id, allocation_data)
