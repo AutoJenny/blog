@@ -55,7 +55,9 @@ CONSTRAINTS:
 - Title Case or Small Caps casing acceptable; no emoji; ASCII only.
 
 OUTPUT:
-- Strict JSON only, no prose.
+- Return ONLY the JSON response, no other text.
+- Do NOT include the input data in your response.
+- Do NOT add explanatory text before or after the JSON.
 - Exactly one title per input section, preserving input order.
 
 FORMAT:
@@ -133,7 +135,35 @@ SECTIONS_AND_TOPICS:
                         else:
                             json_content = content
                     
-                    result = json.loads(json_content)
+                    # Handle case where LLM includes input data in response (invalid JSON)
+                    # Look for the first complete JSON object
+                    try:
+                        result = json.loads(json_content)
+                    except json.JSONDecodeError:
+                        # Try to find the first valid JSON object
+                        lines = json_content.split('\n')
+                        for i, line in enumerate(lines):
+                            if line.strip().startswith('{'):
+                                # Try to find the matching closing brace
+                                brace_count = 0
+                                json_lines = []
+                                for j in range(i, len(lines)):
+                                    json_lines.append(lines[j])
+                                    for char in lines[j]:
+                                        if char == '{':
+                                            brace_count += 1
+                                        elif char == '}':
+                                            brace_count -= 1
+                                    if brace_count == 0:
+                                        break
+                                try:
+                                    partial_json = '\n'.join(json_lines)
+                                    result = json.loads(partial_json)
+                                    break
+                                except json.JSONDecodeError:
+                                    continue
+                        else:
+                            raise json.JSONDecodeError("No valid JSON found", json_content, 0)
                     
                     # Validate the response structure
                     if 'sections' not in result:
