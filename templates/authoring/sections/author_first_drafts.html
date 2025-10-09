@@ -160,6 +160,7 @@ class AuthorFirstDraftsManager {
     
     selectSection(sectionId) {
         this.currentSectionId = sectionId;
+        window.currentSectionId = sectionId; // Make it globally available
         
         // Update visual selection
         document.querySelectorAll('.section-item').forEach(item => {
@@ -290,7 +291,7 @@ function initializeLLMModule() {
             
             // Initialize LLM module with authoring configuration
             const llmModule = new LLMModule({
-                configKey: 'authoring_section_draft',
+                configKey: 'author_draft',
                 generateEndpoint: `/authoring/api/posts/${window.postId}/sections/${window.currentSectionId || 'section_1'}/generate`,
                 onGenerate: function(response) {
                     console.log('Generate response:', response);
