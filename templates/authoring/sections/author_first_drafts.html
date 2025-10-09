@@ -95,6 +95,13 @@ class AuthorFirstDraftsManager {
     async loadSections() {
         try {
             console.log('Loading sections for post:', window.postId);
+            console.log('PostId type:', typeof window.postId);
+            
+            if (!window.postId) {
+                console.error('window.postId is not defined');
+                return;
+            }
+            
             const response = await fetch(`/authoring/api/posts/${window.postId}/sections`);
             const data = await response.json();
             
