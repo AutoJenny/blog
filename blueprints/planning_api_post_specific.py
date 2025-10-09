@@ -251,9 +251,18 @@ def api_posts_idea_scope(post_id):
                 result = cursor.fetchone()
                 
                 if result:
+                    # Parse JSON string if it exists
+                    idea_scope = result['idea_scope']
+                    if idea_scope and isinstance(idea_scope, str):
+                        try:
+                            idea_scope = json.loads(idea_scope)
+                        except json.JSONDecodeError:
+                            # If parsing fails, return as string
+                            pass
+                    
                     return jsonify({
                         'success': True,
-                        'idea_scope': result['idea_scope']
+                        'idea_scope': idea_scope
                     })
                 else:
                     return jsonify({
