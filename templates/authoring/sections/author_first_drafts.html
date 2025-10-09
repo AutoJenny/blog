@@ -77,6 +77,8 @@
 </div>
 
 <script>
+console.log('Authoring page script loaded');
+
 // AuthorFirstDraftsManager class
 class AuthorFirstDraftsManager {
     constructor() {
@@ -258,7 +260,13 @@ class AuthorFirstDraftsManager {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    const authorFirstDraftsManager = new AuthorFirstDraftsManager();
+    console.log('DOM loaded, initializing AuthorFirstDraftsManager');
+    try {
+        const authorFirstDraftsManager = new AuthorFirstDraftsManager();
+        console.log('AuthorFirstDraftsManager initialized successfully');
+    } catch (error) {
+        console.error('Error initializing AuthorFirstDraftsManager:', error);
+    }
 });
 </script>
 
