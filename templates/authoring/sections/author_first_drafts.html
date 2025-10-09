@@ -92,16 +92,22 @@ class AuthorFirstDraftsManager {
     
     async loadSections() {
         try {
+            console.log('Loading sections for post:', window.postId);
             const response = await fetch(`/authoring/api/posts/${window.postId}/sections`);
             const data = await response.json();
             
+            console.log('Sections API response:', data);
+            
             if (data.success) {
                 this.sections = data.sections;
+                console.log('Loaded sections:', this.sections);
                 this.renderSections();
                 // Auto-load first section
                 if (this.sections.length > 0) {
                     this.selectSection(this.sections[0].id);
                 }
+            } else {
+                console.error('API returned error:', data.error);
             }
         } catch (error) {
             console.error('Error loading sections:', error);
@@ -110,9 +116,18 @@ class AuthorFirstDraftsManager {
     
     renderSections() {
         const container = document.getElementById('sections-display');
+        console.log('Rendering sections, container:', container);
+        console.log('Sections to render:', this.sections);
+        
+        if (!container) {
+            console.error('sections-display container not found');
+            return;
+        }
+        
         container.innerHTML = '';
         
-        this.sections.forEach(section => {
+        this.sections.forEach((section, index) => {
+            console.log(`Rendering section ${index}:`, section);
             const sectionElement = this.createSectionElement(section);
             container.appendChild(sectionElement);
         });
