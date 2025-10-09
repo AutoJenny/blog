@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Test Authoring Sections{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Test Authoring Sections</h1>
+    <div id="sections-display">
+        <h3>The Ancient Roots of Legend</h3>
+        <p>Ancient Origins and Historical Foundations</p>
+        <p>ID: section_1</p>
+        <p>Order: 1</p>
+        <hr>
+        <h3>Static Test Content</h3>
+        <p>This should display if the page is working</p>
+    </div>
+</div>
+
+<script>
+console.log('Test script loaded');
+console.log('PostId:', window.postId);
+
+function loadSections() {
+    console.log('Loading sections for post:', window.postId);
+    
+    if (!window.postId) {
+        console.error('window.postId is not defined');
+        document.getElementById('sections-display').innerHTML = '<p>Error: PostId not defined</p>';
+        return;
+    }
+    
+    fetch(`/authoring/api/posts/${window.postId}/sections`)
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('API response:', data);
+            
+            if (data.success) {
+                const sections = data.sections;
+                console.log('Sections loaded:', sections);
+                
+                const container = document.getElementById('sections-display');
+                container.innerHTML = '';
+                
+                sections.forEach((section, index) => {
+                    console.log(`Section ${index}:`, section);
+                    const div = document.createElement('div');
+                    div.innerHTML = `
+                        <h3>${section.title || 'No title'}</h3>
+                        <p>${section.description || 'No description'}</p>
+                        <p>ID: ${section.id}</p>
+                        <p>Order: ${section.order}</p>
+                        <hr>
+                    `;
+                    container.appendChild(div);
+                });
+            } else {
+                console.error('API error:', data.error);
+                document.getElementById('sections-display').innerHTML = `<p>API Error: ${data.error}</p>`;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('sections-display').innerHTML = `<p>Error: ${error.message}</p>`;
+        });
+}
+
+// Set postId for testing
+window.postId = 69;
+
+// Load sections when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, loading sections');
+    loadSections();
+});
+</script>
+{% endblock %}

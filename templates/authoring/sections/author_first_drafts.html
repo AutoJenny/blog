@@ -148,10 +148,10 @@ class AuthorFirstDraftsManager {
         div.dataset.sectionId = section.id;
         div.innerHTML = `
             <div class="section-header">
-                <h6>${section.title || 'Untitled Section'}</h6>
-                <span class="section-order">${section.order}</span>
+                <h6>${section.title || section.section_heading || 'Untitled Section'}</h6>
+                <span class="section-order">${section.order || section.section_order || '1'}</span>
             </div>
-            <div class="section-description">${section.description || 'No description'}</div>
+            <div class="section-description">${section.description || section.section_description || 'No description'}</div>
         `;
         
         div.addEventListener('click', () => this.selectSection(section.id));

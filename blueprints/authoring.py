@@ -480,6 +480,11 @@ def authoring_sections_image_generation(post_id):
         logger.error(f"Error in authoring_sections_image_generation: {e}")
         return f"Error: {e}", 500
 
+@bp.route('/test-sections')
+def test_sections():
+    """Test page for sections loading"""
+    return render_template('test_authoring_sections.html', blueprint_name='authoring')
+
 # API endpoints for section data
 @bp.route('/api/posts/<int:post_id>/sections')
 def api_get_sections(post_id):
