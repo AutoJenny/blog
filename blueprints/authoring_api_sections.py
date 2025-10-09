@@ -27,50 +27,50 @@ def api_get_sections(post_id):
             """, (post_id,))
             sections = cursor.fetchall()
             
-            # If no sections found in post_section, check post_development.sections
-            if not sections:
-                cursor.execute("""
-                    SELECT sections FROM post_development 
-                    WHERE post_id = %s AND sections IS NOT NULL
-                """, (post_id,))
-                result = cursor.fetchone()
-                
-                if result and result['sections']:
-                    try:
-                        sections_data = json.loads(result['sections'])
-                        if isinstance(sections_data, dict) and 'sections' in sections_data:
-                            sections_list = sections_data['sections']
-                        elif isinstance(sections_data, list):
-                            sections_list = sections_data
-                        else:
-                            sections_list = []
-                        
-                        # Convert to post_section format
-                        sections = []
-                        for i, section in enumerate(sections_list):
-                            sections.append({
-                                'id': section.get('id', f'section_{i+1}'),
-                                'section_order': section.get('order', i+1),
-                                'section_heading': section.get('title', f'Section {i+1}'),
-                                'section_description': section.get('original', ''),
-                                'title': section.get('title', f'Section {i+1}'),  # Add frontend-compatible field
-                                'description': section.get('original', ''),  # Add frontend-compatible field
-                                'order': section.get('order', i+1),  # Add frontend-compatible field
-                                'status': 'draft',
-                                'draft': None,
-                                'polished': None,
-                                'ideas_to_include': None,
-                                'facts_to_include': None,
-                                'highlighting': None,
-                                'image_concepts': None,
-                                'image_prompts': None,
-                                'image_captions': None,
-                                'image_alt_text': None,
-                                'selected_image_concept': None
-                            })
-                    except (json.JSONDecodeError, TypeError) as e:
-                        logger.warning(f"Failed to parse sections from post_development: {e}")
-                        sections = []
+            # Always check post_development.sections for complete section list
+            # (post_section might only have generated sections)
+            cursor.execute("""
+                SELECT sections FROM post_development 
+                WHERE post_id = %s AND sections IS NOT NULL
+            """, (post_id,))
+            result = cursor.fetchone()
+            
+            if result and result['sections']:
+                try:
+                    sections_data = json.loads(result['sections'])
+                    if isinstance(sections_data, dict) and 'sections' in sections_data:
+                        sections_list = sections_data['sections']
+                    elif isinstance(sections_data, list):
+                        sections_list = sections_data
+                    else:
+                        sections_list = []
+                    
+                    # Convert to post_section format and add frontend-compatible fields
+                    sections = []
+                    for i, section in enumerate(sections_list):
+                        sections.append({
+                            'id': section.get('id', f'section_{i+1}'),
+                            'section_order': section.get('order', i+1),
+                            'section_heading': section.get('title', f'Section {i+1}'),
+                            'section_description': section.get('original', ''),
+                            'title': section.get('title', f'Section {i+1}'),  # Frontend-compatible field
+                            'description': section.get('original', ''),  # Frontend-compatible field
+                            'order': section.get('order', i+1),  # Frontend-compatible field
+                            'status': 'draft',
+                            'draft': None,
+                            'polished': None,
+                            'ideas_to_include': None,
+                            'facts_to_include': None,
+                            'highlighting': None,
+                            'image_concepts': None,
+                            'image_prompts': None,
+                            'image_captions': None,
+                            'image_alt_text': None,
+                            'selected_image_concept': None
+                        })
+                except (json.JSONDecodeError, TypeError) as e:
+                    logger.warning(f"Failed to parse sections from post_development: {e}")
+                    sections = []
             
             # Get topic allocation data to populate topics
             cursor.execute("""
