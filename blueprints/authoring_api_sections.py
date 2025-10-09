@@ -109,16 +109,18 @@ def api_get_section(post_id, section_id):
     """Get a specific section for a post"""
     try:
         with db_manager.get_cursor() as cursor:
-            # First try post_section table
-            cursor.execute("""
-                SELECT id, section_order, section_heading, section_description, 
-                       status, draft, polished, ideas_to_include, facts_to_include,
-                       highlighting, image_concepts, image_prompts, image_captions,
-                       image_alt_text, selected_image_concept
-                FROM post_section
-                WHERE post_id = %s AND id = %s
-            """, (post_id, section_id))
-            section = cursor.fetchone()
+            # First try post_section table (only if section_id is numeric)
+            section = None
+            if section_id.isdigit():
+                cursor.execute("""
+                    SELECT id, section_order, section_heading, section_description, 
+                           status, draft, polished, ideas_to_include, facts_to_include,
+                           highlighting, image_concepts, image_prompts, image_captions,
+                           image_alt_text, selected_image_concept
+                    FROM post_section
+                    WHERE post_id = %s AND id = %s
+                """, (post_id, int(section_id)))
+                section = cursor.fetchone()
             
             # If not found, check post_development.sections
             if not section:
@@ -138,27 +140,43 @@ def api_get_section(post_id, section_id):
                         else:
                             sections_list = []
                         
-                        # Find the specific section
+                        # Find the specific section by ID or index
+                        target_section = None
                         for i, sec in enumerate(sections_list):
-                            if sec.get('id') == section_id or sec.get('index') == int(section_id.replace('section_', '')):
-                                section = {
-                                    'id': sec.get('id', f'section_{i+1}'),
-                                    'section_order': sec.get('order', i+1),
-                                    'section_heading': sec.get('title', f'Section {i+1}'),
-                                    'section_description': sec.get('original', ''),
-                                    'status': 'draft',
-                                    'draft': None,
-                                    'polished': None,
-                                    'ideas_to_include': None,
-                                    'facts_to_include': None,
-                                    'highlighting': None,
-                                    'image_concepts': None,
-                                    'image_prompts': None,
-                                    'image_captions': None,
-                                    'image_alt_text': None,
-                                    'selected_image_concept': None
-                                }
+                            # Handle both string IDs (section_1) and integer IDs (1)
+                            if (sec.get('id') == section_id or 
+                                sec.get('id') == str(section_id)):
+                                target_section = sec
                                 break
+                            # Also try to match by index if section_id is numeric
+                            elif section_id.isdigit() and sec.get('index') == int(section_id):
+                                target_section = sec
+                                break
+                            # Handle section_1 format
+                            elif section_id.startswith('section_') and section_id.replace('section_', '').isdigit():
+                                section_num = int(section_id.replace('section_', ''))
+                                if sec.get('index') == section_num:
+                                    target_section = sec
+                                    break
+                        
+                        if target_section:
+                            section = {
+                                'id': target_section.get('id', f'section_{i+1}'),
+                                'section_order': target_section.get('order', i+1),
+                                'section_heading': target_section.get('title', f'Section {i+1}'),
+                                'section_description': target_section.get('original', ''),
+                                'status': 'draft',
+                                'draft': None,
+                                'polished': None,
+                                'ideas_to_include': None,
+                                'facts_to_include': None,
+                                'highlighting': None,
+                                'image_concepts': None,
+                                'image_prompts': None,
+                                'image_captions': None,
+                                'image_alt_text': None,
+                                'selected_image_concept': None
+                            }
                     except (json.JSONDecodeError, TypeError) as e:
                         logger.warning(f"Failed to parse sections from post_development: {e}")
             

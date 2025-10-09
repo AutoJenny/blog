@@ -486,7 +486,7 @@ def api_get_sections(post_id):
     """Get all sections for a post from post_section table"""
     return sections_api_func(post_id)
 
-@bp.route('/api/posts/<int:post_id>/sections/<int:section_id>')
+@bp.route('/api/posts/<int:post_id>/sections/<section_id>')
 def api_get_section_detail(post_id, section_id):
     """Get details for a specific section"""
     return section_api_func(post_id, section_id)
