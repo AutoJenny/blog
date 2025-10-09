@@ -441,12 +441,25 @@ async function startTitling() {
     const generateBtn = document.getElementById('generate-btn');
     const resultsDisplay = document.getElementById('llm-results-display');
     
-    if (!generateBtn || !resultsDisplay) return;
+    if (!generateBtn || !resultsDisplay) {
+        console.error('Required elements not found:', {
+            generateBtn: !!generateBtn,
+            resultsDisplay: !!resultsDisplay
+        });
+        return;
+    }
 
     // Show loading state
     generateBtn.disabled = true;
     generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Titles...';
+    generateBtn.classList.add('loading');
     resultsDisplay.innerHTML = '<div class="loading">Creating section titles and descriptions...</div>';
+    
+    console.log('Button loading state set:', {
+        disabled: generateBtn.disabled,
+        innerHTML: generateBtn.innerHTML,
+        classes: generateBtn.className
+    });
     
     try {
         // Get expanded idea for context
@@ -485,6 +498,12 @@ async function startTitling() {
         // Reset button state
         generateBtn.disabled = false;
         generateBtn.innerHTML = '<i class="fas fa-heading"></i> Create Titles & Descriptions';
+        generateBtn.classList.remove('loading');
+        console.log('Button state reset:', {
+            disabled: generateBtn.disabled,
+            innerHTML: generateBtn.innerHTML,
+            classes: generateBtn.className
+        });
     }
 }
 

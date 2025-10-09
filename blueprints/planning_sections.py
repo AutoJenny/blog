@@ -54,20 +54,23 @@ CONSTRAINTS:
 - Use evocative imagery, mood, and metaphor; keep it culturally appropriate without naming specific festivals unless present in bullets.
 - Title Case or Small Caps casing acceptable; no emoji; ASCII only.
 
-OUTPUT:
-- Return ONLY the JSON response, no other text.
-- Do NOT include the input data in your response.
-- Do NOT add explanatory text before or after the JSON.
+OUTPUT REQUIREMENTS:
+- Return ONLY valid JSON, no other text whatsoever.
+- Do NOT echo back the input data.
+- Do NOT include section_id, section_theme, or topics in your response.
+- Generate NEW creative titles for each section.
 - Exactly one title per input section, preserving input order.
 
-FORMAT:
+REQUIRED JSON FORMAT:
 {
   "post_title": "<copied from input>",
   "sections": [
     { "index": 1, "original": "<original section title>", "title": "<2-4 word creative title>" },
-    ...
+    { "index": 2, "original": "<original section title>", "title": "<2-4 word creative title>" }
   ]
-}"""
+}
+
+CRITICAL: Your response must contain ONLY the JSON object above. No other text."""
                 
                 if prompt_data and prompt_data['prompt_text']:
                     prompt_text = prompt_data['prompt_text']
@@ -180,6 +183,11 @@ SECTIONS_AND_TOPICS:
                     elif isinstance(result, list):
                         # Direct array format: [{"index": 1, ...}, {"index": 2, ...}]
                         sections = result
+                    elif isinstance(result, dict) and 'section_id' in result and 'section_theme' in result:
+                        # LLM returned input data instead of output - this is an error case
+                        logger.error(f"LLM returned input data instead of output. Keys: {list(result.keys())}")
+                        logger.error(f"Full response: {result}")
+                        raise ValueError("LLM returned input data instead of generating titles. Please try again.")
                     else:
                         logger.error(f"Unexpected response format. Available keys: {list(result.keys()) if isinstance(result, dict) else 'Not a dict'}")
                         raise ValueError(f"Unexpected response format. Available keys: {list(result.keys()) if isinstance(result, dict) else 'Not a dict'}")
