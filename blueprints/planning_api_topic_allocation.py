@@ -84,7 +84,7 @@ def build_allocation_data(all_allocations, section_structure):
     sections_data = section_structure.get('sections', [])
     
     allocation_data = {
-        'allocations': [],
+        'allocations': all_allocations,  # Use the actual generated topics
         'metadata': {
             'total_topics': len(all_allocations),
             'sections_count': len(sections_data),
