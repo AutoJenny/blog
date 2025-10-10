@@ -971,10 +971,45 @@ def execute_topic_brainstorming(post_id, data):
         if response and 'content' in response:
             topics = parse_brainstorm_topics(response['content'])
             
+            # Save topics to database (same as brainstorm page does)
+            try:
+                with db_manager.get_cursor() as cursor:
+                    # Get current idea_scope
+                    cursor.execute("""
+                        SELECT idea_scope
+                        FROM post_development
+                        WHERE post_id = %s
+                    """, (post_id,))
+                    
+                    result = cursor.fetchone()
+                    idea_scope = {}
+                    if result and result['idea_scope']:
+                        try:
+                            idea_scope = json.loads(result['idea_scope']) if isinstance(result['idea_scope'], str) else result['idea_scope']
+                        except:
+                            idea_scope = {}
+                    
+                    # Update idea_scope with new topics
+                    idea_scope['generated_topics'] = topics
+                    
+                    # Save back to database
+                    cursor.execute("""
+                        UPDATE post_development
+                        SET idea_scope = %s, updated_at = CURRENT_TIMESTAMP
+                        WHERE post_id = %s
+                    """, (json.dumps(idea_scope), post_id))
+                    
+                    logger.info(f"Saved {len(topics)} brainstorm topics to database for post {post_id}")
+                    
+            except Exception as save_error:
+                logger.error(f"Error saving topics to database: {save_error}")
+                # Continue anyway - topics were generated successfully
+            
             return jsonify({
                 'success': True,
                 'topics': topics,
-                'raw_content': response['content']
+                'raw_content': response['content'],
+                'saved_to_database': True
             })
         else:
             return jsonify({'success': False, 'error': 'Failed to generate topics'}), 500
