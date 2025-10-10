@@ -933,6 +933,9 @@ def execute_substage(stage, substage):
             elif stage == 'planning' and substage == 'section_titling':
                 logger.info(f"About to call execute_section_titling with post_id={post_id}, data={data}")
                 return execute_section_titling(post_id, data)
+            elif stage == 'authoring' and substage == 'author_first_drafts':
+                logger.info(f"About to call execute_author_first_drafts with post_id={post_id}, data={data}")
+                return execute_author_first_drafts(post_id, data)
             else:
                 return jsonify({
                     "success": False,
@@ -1492,6 +1495,116 @@ def execute_section_structure(post_id, data):
             
     except Exception as e:
         logger.error(f"Error executing section structure: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+def execute_author_first_drafts(post_id, data):
+    """Execute author first drafts generation for all sections of a post"""
+    try:
+        logger.info(f"Starting author first drafts generation for post {post_id}")
+        
+        # Get all sections for this post
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, section_order, section_heading, section_description, status, draft
+                FROM post_section
+                WHERE post_id = %s
+                ORDER BY section_order
+            """, (post_id,))
+            
+            sections = cursor.fetchall()
+            
+            if not sections:
+                return jsonify({"success": False, "error": "No sections found for this post"}), 404
+        
+        logger.info(f"Found {len(sections)} sections to generate drafts for")
+        
+        # Generate drafts for each section
+        results = []
+        success_count = 0
+        
+        for section in sections:
+            section_id = section['id']
+            section_title = section['section_heading']
+            
+            try:
+                logger.info(f"Generating draft for section {section_id}: {section_title}")
+                
+                # Call the authoring API endpoint for this section
+                from blueprints.authoring import api_generate_section_draft
+                
+                # Create a mock request object
+                class MockRequest:
+                    def get_json(self):
+                        return {}
+                
+                # Temporarily replace the global request object
+                import flask
+                original_request = flask.request
+                flask.request = MockRequest()
+                
+                try:
+                    # Call the section draft generation API
+                    result = api_generate_section_draft(post_id, str(section_id))
+                    
+                    # Convert Flask response to dict if needed
+                    if hasattr(result, 'get_json'):
+                        result_data = result.get_json()
+                    else:
+                        result_data = result
+                    
+                    if result_data.get('success'):
+                        success_count += 1
+                        results.append({
+                            'section_id': section_id,
+                            'section_title': section_title,
+                            'success': True,
+                            'draft_content': result_data.get('draft_content', '')
+                        })
+                        logger.info(f"Successfully generated draft for section {section_id}")
+                    else:
+                        results.append({
+                            'section_id': section_id,
+                            'section_title': section_title,
+                            'success': False,
+                            'error': result_data.get('error', 'Unknown error')
+                        })
+                        logger.error(f"Failed to generate draft for section {section_id}: {result_data.get('error')}")
+                        
+                finally:
+                    # Restore original request object
+                    flask.request = original_request
+                    
+            except Exception as e:
+                logger.error(f"Error generating draft for section {section_id}: {e}")
+                results.append({
+                    'section_id': section_id,
+                    'section_title': section_title,
+                    'success': False,
+                    'error': str(e)
+                })
+        
+        # Update the authoring progress timestamp
+        if success_count > 0:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    UPDATE post_development 
+                    SET authoring_started_at = NOW()
+                    WHERE post_id = %s
+                """, (post_id,))
+        
+        logger.info(f"Author first drafts generation completed: {success_count}/{len(sections)} sections successful")
+        
+        return jsonify({
+            'success': True,
+            'total_sections': len(sections),
+            'successful_sections': success_count,
+            'failed_sections': len(sections) - success_count,
+            'results': results,
+            'message': f'Generated drafts for {success_count} out of {len(sections)} sections'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error executing author first drafts: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 @bp.route('/analytics/<int:post_id>', methods=['GET'])
