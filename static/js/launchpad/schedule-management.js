@@ -84,8 +84,12 @@ class ScheduleManager {
                 console.log('[Schedule Manager] isNaN check:', isNaN(dateObj.getTime()));
                 
                 if (!isNaN(dateObj.getTime())) {
-                    const isoDate = dateObj.toISOString().split('T')[0];
-                    console.log('[Schedule Manager] ISO date:', isoDate);
+                    // Use UTC methods to avoid timezone issues
+                    const year = dateObj.getFullYear();
+                    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                    const day = String(dateObj.getDate()).padStart(2, '0');
+                    const isoDate = `${year}-${month}-${day}`;
+                    console.log('[Schedule Manager] ISO date (UTC):', isoDate);
                     
                     const dateInput = document.getElementById('publish-date');
                     console.log('[Schedule Manager] dateInput element:', dateInput);
