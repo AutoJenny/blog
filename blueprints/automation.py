@@ -942,7 +942,7 @@ def execute_substage(stage, substage):
         return jsonify({"success": False, "error": str(e)}), 500
 
 def execute_topic_brainstorming(post_id, data):
-    """Execute topic brainstorming for a post"""
+    """Execute topic brainstorming for a post using the same logic as template page"""
     try:
         # Get post data
         with db_manager.get_cursor() as cursor:
@@ -962,12 +962,12 @@ def execute_topic_brainstorming(post_id, data):
         if not expanded_idea:
             return jsonify({"success": False, "error": "Expanded idea is required"}), 400
             
-        # Call the brainstorm API logic directly
+        # Use the same logic as the template page API
         from blueprints.planning_llm import LLMService, parse_brainstorm_topics
         
         brainstorm_type = data.get('brainstorm_type', 'comprehensive')
         
-        # Load prompt from database
+        # Load prompt from database (same as template page)
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 SELECT system_prompt, prompt_text
@@ -987,7 +987,7 @@ def execute_topic_brainstorming(post_id, data):
             system_prompt = prompt_data['system_prompt']
             prompt_text = prompt_data['prompt_text']
         
-        # Generate topics using LLM
+        # Generate topics using LLM (same as template page)
         llm_service = LLMService()
         
         user_content = prompt_text.format(
@@ -1005,41 +1005,34 @@ def execute_topic_brainstorming(post_id, data):
         if response and 'content' in response:
             topics = parse_brainstorm_topics(response['content'])
             
-            # Save topics to database (same as brainstorm page does)
-            try:
-                with db_manager.get_cursor() as cursor:
-                    # Get current idea_scope
-                    cursor.execute("""
-                        SELECT idea_scope
-                        FROM post_development
-                        WHERE post_id = %s
-                    """, (post_id,))
-                    
-                    result = cursor.fetchone()
-                    idea_scope = {}
-                    if result and result['idea_scope']:
-                        try:
-                            idea_scope = json.loads(result['idea_scope']) if isinstance(result['idea_scope'], str) else result['idea_scope']
-                        except:
-                            idea_scope = {}
-                    
-                    # Update idea_scope with new topics
-                    idea_scope['generated_topics'] = topics
-                    idea_scope['generated_at'] = datetime.now().isoformat()
-                    idea_scope['total_count'] = len(topics)
-                    
-                    # Save back to database
-                    cursor.execute("""
-                        UPDATE post_development
-                        SET idea_scope = %s, updated_at = CURRENT_TIMESTAMP
-                        WHERE post_id = %s
-                    """, (json.dumps(idea_scope), post_id))
-                    
-                    logger.info(f"Saved {len(topics)} brainstorm topics to database for post {post_id}")
-                    
-            except Exception as save_error:
-                logger.error(f"Error saving topics to database: {save_error}")
-                # Continue anyway - topics were generated successfully
+            # Save topics using the same logic as template page (api_posts_idea_scope)
+            with db_manager.get_cursor() as cursor:
+                # Get existing idea_scope if it exists
+                cursor.execute("""
+                    SELECT idea_scope FROM post_development WHERE post_id = %s
+                """, (post_id,))
+                result = cursor.fetchone()
+                
+                idea_scope = {}
+                if result and result['idea_scope']:
+                    try:
+                        idea_scope = json.loads(result['idea_scope']) if isinstance(result['idea_scope'], str) else result['idea_scope']
+                    except:
+                        idea_scope = {}
+                
+                # Update idea_scope with new topics (same as template page)
+                idea_scope['generated_topics'] = topics
+                idea_scope['generated_at'] = datetime.now().isoformat()
+                idea_scope['total_count'] = len(topics)
+                
+                # Save back to database (same as template page)
+                cursor.execute("""
+                    UPDATE post_development
+                    SET idea_scope = %s, updated_at = CURRENT_TIMESTAMP
+                    WHERE post_id = %s
+                """, (json.dumps(idea_scope), post_id))
+                
+                logger.info(f"Saved {len(topics)} brainstorm topics to database for post {post_id}")
             
             return jsonify({
                 'success': True,
