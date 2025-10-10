@@ -537,7 +537,7 @@ def get_pipeline_status(post_id):
         logger.error(f"Error getting pipeline status: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
-@bp.route('/api/posts-in-development', methods=['GET'])
+@bp.route('/posts-in-development', methods=['GET'])
 def get_posts_in_development():
     """Get list of posts currently in development"""
     try:
@@ -547,7 +547,7 @@ def get_posts_in_development():
                        pd.topic_allocation, pd.section_structure
                 FROM post p
                 LEFT JOIN post_development pd ON p.id = pd.post_id
-                WHERE p.status IN ('draft', 'in_progress')
+                WHERE p.status IN ('draft', 'in_process')
                 ORDER BY p.updated_at DESC
                 LIMIT 50
             """)
