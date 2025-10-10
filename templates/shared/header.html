@@ -328,8 +328,49 @@
             });
         });
         
-        // Initialize alert system
-        initializeAlertSystem();
+    // Initialize alert system
+    initializeAlertSystem();
+    
+    // Create global headerMessages object for automation
+    window.headerMessages = {
+        addMessage: function(messageData) {
+            console.log('[Header Messages] Adding message:', messageData);
+            
+            // Convert automation message to alert format
+            const alert = {
+                id: Date.now() + Math.random(), // Simple unique ID
+                title: messageData.title || 'Automation Alert',
+                message: messageData.message,
+                alert_type: messageData.type || 'warning',
+                severity: messageData.type || 'warning',
+                created_at: new Date().toISOString(),
+                is_read: false,
+                action_text: 'View Details',
+                action_url: messageData.action_url || '/launchpad/one-click-blog'
+            };
+            
+            // Add to alerts array
+            alerts.unshift(alert); // Add to beginning
+            
+            // Update UI
+            updateAlertBadge();
+            if (alertDropdownOpen) {
+                renderAlerts();
+            }
+            
+            console.log('[Header Messages] Message added to alerts:', alert);
+        },
+        
+        getUnreadCount: function() {
+            return alerts.filter(alert => !alert.is_read).length;
+        },
+        
+        markAllRead: function() {
+            markAllAlertsRead();
+        }
+    };
+    
+    console.log('[Header Messages] Global headerMessages object created');
     });
     
     // Alert System JavaScript
