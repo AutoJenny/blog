@@ -84,6 +84,20 @@ class OneClickBlogManager {
         priorityTag.textContent = priorityText;
         tagsContainer.appendChild(priorityTag);
         
+        // Update schedule display
+        const scheduleDate = document.querySelector('.schedule-date');
+        const scheduleRelative = document.querySelector('.schedule-relative');
+        
+        if (scheduleDate) {
+            scheduleDate.textContent = data.scheduled_date || 'Not scheduled';
+        }
+        if (scheduleRelative) {
+            scheduleRelative.textContent = data.scheduled_relative || '';
+        }
+        
+        // Update production button based on status
+        this.updateProductionButton(data.production_status);
+        
         // Update alternative ideas
         this.updateAlternativeIdeas(data.alternative_ideas);
         
@@ -96,6 +110,62 @@ class OneClickBlogManager {
         timelineLabels[0].textContent = `Week ${currentWeek}`;
         timelineLabels[1].textContent = `Week ${currentWeek + 1}`;
         timelineLabels[2].textContent = `Week ${currentWeek + 2}`;
+    }
+    
+    updateProductionButton(status) {
+        const button = document.getElementById('production-btn');
+        const btnText = button.querySelector('.btn-text');
+        const icon = button.querySelector('i');
+        
+        // Remove existing status classes
+        button.classList.remove('loading', 'progress', 'completed');
+        
+        switch (status) {
+            case 'not_started':
+                btnText.textContent = 'Start Production';
+                icon.className = 'fas fa-rocket';
+                button.className = 'btn btn-primary production-btn';
+                break;
+            case 'in_progress':
+                btnText.textContent = 'In Progress';
+                icon.className = 'fas fa-spinner fa-spin';
+                button.className = 'btn btn-warning production-btn progress';
+                break;
+            case 'completed':
+                btnText.textContent = 'View Progress';
+                icon.className = 'fas fa-check-circle';
+                button.className = 'btn btn-success production-btn completed';
+                break;
+            case 'failed':
+                btnText.textContent = 'Retry Production';
+                icon.className = 'fas fa-exclamation-triangle';
+                button.className = 'btn btn-danger production-btn';
+                break;
+            default:
+                btnText.textContent = 'Start Production';
+                icon.className = 'fas fa-rocket';
+                button.className = 'btn btn-primary production-btn';
+        }
+    }
+    
+    handleProductionAction() {
+        const button = document.getElementById('production-btn');
+        const status = button.classList.contains('completed') ? 'completed' : 
+                      button.classList.contains('progress') ? 'in_progress' : 
+                      button.classList.contains('loading') ? 'loading' : 'not_started';
+        
+        switch (status) {
+            case 'not_started':
+            case 'failed':
+                this.startProduction();
+                break;
+            case 'in_progress':
+                this.showNotification('Production is already in progress', 'info');
+                break;
+            case 'completed':
+                this.viewProgress();
+                break;
+        }
     }
     
     updateAlternativeIdeas(alternativeIdeas) {
@@ -189,12 +259,21 @@ class OneClickBlogManager {
         console.log('[One-Click Blog] Starting production...');
         this.showNotification('Starting automation pipeline...', 'info');
         
+        // Update button to show progress
+        this.updateProductionButton('in_progress');
+        
         // This would normally make an API call to start automation
         // For now, simulate starting
         setTimeout(() => {
             this.showNotification('Automation started successfully', 'success');
             this.loadPipelineStatus(); // Refresh pipeline status
         }, 1000);
+    }
+    
+    viewProgress() {
+        console.log('[One-Click Blog] Viewing progress...');
+        this.showNotification('Opening progress view...', 'info');
+        // This would open a detailed progress modal or navigate to progress page
     }
 
     showScheduleModal() {

@@ -108,6 +108,9 @@ def get_next_up():
                         }
                         for idea in alternative_ideas
                     ],
+                    "production_status": "in_progress",  # not_started, in_progress, completed, failed
+                    "scheduled_date": "Oct 15, 2025",  # Short format
+                    "scheduled_relative": "In 2 days",  # Human-readable relative time
                     "can_start_automation": True,
                     "next_available_slot": "2025-10-15T09:00:00Z"  # Keep mock for now
                 }

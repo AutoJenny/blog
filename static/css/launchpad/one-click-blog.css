@@ -77,9 +77,61 @@ body {
 
 .week-info {
     display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.week-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.schedule-info {
+    display: flex;
     flex-direction: column;
     align-items: flex-end;
+    gap: 8px;
+}
+
+.schedule-display {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.schedule-date {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #f1f5f9;
+}
+
+.schedule-relative {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.schedule-btn {
+    background: #475569;
+    color: #e2e8f0;
+    border: 1px solid #64748b;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
     gap: 4px;
+}
+
+.schedule-btn:hover {
+    background: #64748b;
+    border-color: #94a3b8;
+    color: #f1f5f9;
 }
 
 .week-number {
@@ -299,6 +351,45 @@ body {
     display: flex;
     gap: 12px;
     margin-bottom: 20px;
+}
+
+.production-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.production-btn .btn-text {
+    transition: opacity 0.2s ease;
+}
+
+.production-btn.loading .btn-text {
+    opacity: 0.7;
+}
+
+.production-btn.progress .btn-text {
+    opacity: 0.8;
+}
+
+.production-btn.completed .btn-text {
+    opacity: 1;
+}
+
+.production-btn .progress-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.75rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.production-btn.loading .progress-indicator {
+    opacity: 1;
+}
+
+.production-btn.progress .progress-indicator {
+    opacity: 1;
 }
 
 .btn {

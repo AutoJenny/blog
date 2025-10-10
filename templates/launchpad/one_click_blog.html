@@ -25,8 +25,19 @@
             <div class="panel-header">
                 <h2><i class="fas fa-calendar-alt"></i> Next Up</h2>
                 <div class="week-info">
-                    <span class="week-number">Loading...</span>
-                    <span class="week-dates">Loading...</span>
+                    <div class="week-header">
+                        <span class="week-number">Loading...</span>
+                        <span class="week-dates">Loading...</span>
+                    </div>
+                    <div class="schedule-info">
+                        <div class="schedule-display">
+                            <span class="schedule-date">Loading...</span>
+                            <span class="schedule-relative">Loading...</span>
+                        </div>
+                        <button class="schedule-btn" onclick="oneClickBlogManager.showScheduleModal()">
+                            <i class="fas fa-clock"></i> Schedule
+                        </button>
+                    </div>
                 </div>
             </div>
             
@@ -51,11 +62,8 @@
             </div>
             
             <div class="action-buttons">
-                <button class="btn btn-primary start-production-btn" onclick="oneClickBlogManager.startProduction()">
-                    <i class="fas fa-rocket"></i> Start Production
-                </button>
-                <button class="btn btn-secondary schedule-btn" onclick="oneClickBlogManager.showScheduleModal()">
-                    <i class="fas fa-clock"></i> Schedule
+                <button class="btn btn-primary production-btn" id="production-btn" onclick="oneClickBlogManager.handleProductionAction()">
+                    <i class="fas fa-rocket"></i> <span class="btn-text">Start Production</span>
                 </button>
             </div>
             
