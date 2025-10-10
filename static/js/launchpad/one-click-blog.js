@@ -276,10 +276,14 @@ class OneClickBlogManager {
         // This would open a detailed progress modal or navigate to progress page
     }
 
-    showScheduleModal() {
+    async showScheduleModal() {
         console.log('[One-Click Blog] showScheduleModal() called');
         
-        // Show modal first
+        // Ensure we have fresh data before showing modal
+        console.log('[One-Click Blog] Ensuring fresh data is loaded...');
+        await this.loadNextUp();
+        
+        // Show modal
         const modal = document.getElementById('schedule-modal');
         modal.style.display = 'flex';
         
