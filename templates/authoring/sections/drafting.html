@@ -94,24 +94,106 @@ document.addEventListener('DOMContentLoaded', function() {
         
         <!-- Right Panel: Editor Workspace -->
         <div class="editor-panel">
-            <!-- LLM Module -->
-            <div class="llm-module-container">
-                {% include 'authoring/includes/llm_module_authoring.html' %}
-            </div>
             
-            <!-- Section Editor -->
-            <div class="section-editor">
-                <div class="editor-header">
-                    <h4 id="current-section-title">Select a section to begin editing</h4>
-                    <div class="editor-controls">
-                        <button class="btn-secondary" id="preview-btn" disabled>Preview</button>
-                        <button class="btn-primary" id="save-btn" disabled>Save</button>
-                        <button class="btn-secondary" id="regenerate-btn" disabled>Regenerate</button>
+            <!-- Panel 1: LLM Settings (Accordion - Collapsed) -->
+            <div class="llm-settings-panel" id="llm-settings-panel">
+                <div class="panel-header" onclick="toggleLLMSettingsAccordion()">
+                    <h4 id="settings-title">LLM Settings: Loading...</h4>
+                    <div class="header-actions">
+                        <i class="fas fa-chevron-up" id="settings-accordion-icon"></i>
                     </div>
                 </div>
                 
-                <!-- Input Data Panel -->
-                <div class="input-data-panel">
+                <div class="panel-content" id="settings-accordion-content" style="display: none;">
+                    <!-- Active Settings Display -->
+                    <div id="llm-provider-info" class="provider-info">
+                        <!-- LLM provider, model, and settings will appear here -->
+                    </div>
+                    
+                    <!-- Provider Selection -->
+                    <div class="provider-selection">
+                        <label for="llm-provider-select">Provider:</label>
+                        <select id="llm-provider-select">
+                            <option value="Ollama">Ollama</option>
+                            <option value="OpenAI">OpenAI</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Model Selection -->
+                    <div class="model-selection">
+                        <label for="llm-model-select">Model:</label>
+                        <select id="llm-model-select">
+                            <option value="llama3.2:latest">llama3.2:latest</option>
+                            <option value="gpt-4">gpt-4</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Parameters -->
+                    <div class="model-parameters">
+                        <div class="param-row">
+                            <label for="temperature">Temperature:</label>
+                            <input type="range" id="temperature" value="0.7" min="0" max="2" step="0.1">
+                            <span class="param-value" id="temperature-value">0.7</span>
+                        </div>
+                        <div class="param-row">
+                            <label for="max-tokens">Max Tokens:</label>
+                            <input type="number" id="max-tokens" value="2000" min="100" max="4000" step="100">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel 2: LLM Prompts (Accordion - Collapsed) -->
+            <div class="llm-prompts-panel" id="llm-prompts-panel">
+                <div class="panel-header" onclick="toggleLLMPromptsAccordion()">
+                    <h4 id="prompt-title">Prompt (Authoring): Loading...</h4>
+                    <div class="header-actions">
+                        <button class="btn btn-primary btn-sm" id="generate-btn">
+                            <i class="fas fa-magic"></i> Generate
+                        </button>
+                        <i class="fas fa-chevron-up" id="prompts-accordion-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="panel-content" id="prompts-accordion-content" style="display: none;">
+                    <!-- Prompt Display -->
+                    <div id="llm-prompt-display" class="prompt-display">
+                        <!-- LLM prompt will appear here -->
+                    </div>
+                    
+                    <!-- Prompt Edit Form -->
+                    <div id="llm-prompt-edit" class="prompt-edit" style="display: none;">
+                        <div class="form-group">
+                            <label for="system-prompt-edit">System Prompt</label>
+                            <textarea id="system-prompt-edit" rows="4" placeholder="System prompt..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="user-prompt-edit">User Prompt</label>
+                            <textarea id="user-prompt-edit" rows="8" placeholder="User prompt..."></textarea>
+                        </div>
+                        <div class="prompt-actions">
+                            <button class="btn btn-secondary" id="save-prompt-btn">Save</button>
+                            <button class="btn btn-secondary" id="cancel-edit-btn">Cancel</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Edit Controls -->
+                    <div class="prompt-actions" id="prompt-actions">
+                        <button class="btn btn-secondary" id="edit-prompt-btn">Edit Prompt</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel 3: Context (Accordion - Collapsed) -->
+            <div class="context-panel" id="context-panel">
+                <div class="panel-header" onclick="toggleContextAccordion()">
+                    <h4>Context</h4>
+                    <div class="header-actions">
+                        <i class="fas fa-chevron-up" id="context-accordion-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="panel-content" id="context-accordion-content" style="display: none;">
                     <h5>Post Context</h5>
                     <div class="context-item">
                         <label>Selected Idea:</label>
@@ -148,14 +230,29 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div id="avoid-topics-display">-</div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Panel 4: Output (Accordion - Open) -->
+            <div class="output-panel" id="output-panel">
+                <div class="panel-header" onclick="toggleOutputAccordion()">
+                    <h4 id="current-section-title">Select a section to begin editing</h4>
+                    <div class="header-actions">
+                        <button class="btn-secondary" id="preview-btn" disabled>Preview</button>
+                        <button class="btn-primary" id="save-btn" disabled>Save</button>
+                        <button class="btn-secondary" id="regenerate-btn" disabled>Regenerate</button>
+                        <i class="fas fa-chevron-down" id="output-accordion-icon"></i>
+                    </div>
+                </div>
                 
-                <!-- Content Editor -->
-                <div class="content-editor">
-                    <h5>Generated Content</h5>
-                    <textarea id="content-editor" placeholder="Content will be generated here..." disabled></textarea>
-                    <div class="editor-stats">
-                        <span id="word-count">0 words</span>
-                        <span id="last-saved">Not saved</span>
+                <div class="panel-content" id="output-accordion-content" style="display: block;">
+                    <!-- Content Editor -->
+                    <div class="content-editor">
+                        <h5>Generated Content</h5>
+                        <textarea id="content-editor" placeholder="Content will be generated here..." disabled></textarea>
+                        <div class="editor-stats">
+                            <span id="word-count">0 words</span>
+                            <span id="last-saved">Not saved</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -400,18 +497,50 @@ document.addEventListener('DOMContentLoaded', function() {
     gap: 1rem;
 }
 
-.llm-module-container {
+/* Panel Styles */
+.llm-settings-panel,
+.llm-prompts-panel,
+.context-panel,
+.output-panel {
     background: #1e293b;
     border-radius: 8px;
     border: 1px solid #334155;
     padding: 1rem;
 }
 
-.section-editor {
-    background: #1e293b;
-    border-radius: 8px;
-    border: 1px solid #334155;
-    padding: 1rem;
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #334155;
+    cursor: pointer;
+}
+
+.panel-header h4 {
+    color: #f1f5f9;
+    margin: 0;
+    font-size: 1rem;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.header-actions i {
+    color: #94a3b8;
+    transition: color 0.2s ease;
+}
+
+.header-actions i:hover {
+    color: #e2e8f0;
+}
+
+.panel-content {
+    margin-top: 1rem;
 }
 
 .editor-header {
@@ -846,6 +975,41 @@ class AuthoringManager {
                 statusElement.textContent = status.charAt(0).toUpperCase() + status.slice(1);
             }
         }
+    }
+}
+
+// Additional Accordion Functions for new panels
+function toggleContextAccordion() {
+    const content = document.getElementById('context-accordion-content');
+    const icon = document.getElementById('context-accordion-icon');
+    
+    if (content.style.display === 'none' || content.style.display === '') {
+        content.style.display = 'block';
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+        localStorage.setItem('context-accordion-state', 'open');
+    } else {
+        content.style.display = 'none';
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+        localStorage.setItem('context-accordion-state', 'closed');
+    }
+}
+
+function toggleOutputAccordion() {
+    const content = document.getElementById('output-accordion-content');
+    const icon = document.getElementById('output-accordion-icon');
+    
+    if (content.style.display === 'none' || content.style.display === '') {
+        content.style.display = 'block';
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+        localStorage.setItem('output-accordion-state', 'open');
+    } else {
+        content.style.display = 'none';
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+        localStorage.setItem('output-accordion-state', 'closed');
     }
 }
 
