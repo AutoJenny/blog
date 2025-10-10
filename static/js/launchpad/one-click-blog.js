@@ -276,58 +276,66 @@ class OneClickBlogManager {
         // This would open a detailed progress modal or navigate to progress page
     }
 
-    async showScheduleModal() {
+    showScheduleModal() {
         console.log('[One-Click Blog] showScheduleModal() called');
         
-        // Show modal first with loading state
+        // Show modal first
         const modal = document.getElementById('schedule-modal');
         modal.style.display = 'flex';
         
         // Load current schedule data into the modal
-        await this.loadCurrentScheduleData();
+        this.loadCurrentScheduleData();
         
         console.log('[One-Click Blog] Schedule modal fully loaded');
     }
     
-    async loadCurrentScheduleData() {
+    loadCurrentScheduleData() {
         console.log('[One-Click Blog] loadCurrentScheduleData() called');
         
-        try {
-            // Get fresh data from API instead of parsing display text
-            console.log('[One-Click Blog] Fetching data from API...');
-            const response = await fetch('/launchpad/one-click-blog/api/next-up?' + Date.now());
-            const result = await response.json();
+        // Get current schedule data from the display elements
+        const scheduleDateElement = document.querySelector('.schedule-date');
+        const scheduleRelativeElement = document.querySelector('.schedule-relative');
+        
+        if (scheduleDateElement && scheduleRelativeElement) {
+            const scheduleDate = scheduleDateElement.textContent.trim();
+            const scheduleRelative = scheduleRelativeElement.textContent.trim();
             
-            console.log('[One-Click Blog] API Response:', result);
+            console.log('[One-Click Blog] Display data:', { scheduleDate, scheduleRelative });
             
-            if (result.success && result.data.scheduled_date && result.data.scheduled_date !== 'Not scheduled') {
-                console.log('[One-Click Blog] Processing scheduled_date:', result.data.scheduled_date);
+            // Parse the current date if it's not "Not scheduled" or "Loading..."
+            if (scheduleDate && scheduleDate !== 'Not scheduled' && scheduleDate !== 'Loading...') {
+                console.log('[One-Click Blog] Processing display date:', scheduleDate);
                 
-                // Parse the API date format "Oct 12, 2025" to "2025-10-12"
-                const dateObj = new Date(result.data.scheduled_date);
-                console.log('[One-Click Blog] Parsed date object:', dateObj);
-                
-                if (!isNaN(dateObj.getTime())) {
-                    const isoDate = dateObj.toISOString().split('T')[0];
-                    console.log('[One-Click Blog] Setting publish-date to:', isoDate);
+                try {
+                    // Parse "Oct 12, 2025" to "2025-10-12"
+                    const dateObj = new Date(scheduleDate);
+                    console.log('[One-Click Blog] Parsed date object:', dateObj);
                     
-                    const dateInput = document.getElementById('publish-date');
-                    if (dateInput) {
-                        dateInput.value = isoDate;
-                        console.log('[One-Click Blog] ✅ Date input set successfully');
+                    if (!isNaN(dateObj.getTime())) {
+                        const isoDate = dateObj.toISOString().split('T')[0];
+                        console.log('[One-Click Blog] Setting publish-date to:', isoDate);
+                        
+                        const dateInput = document.getElementById('publish-date');
+                        if (dateInput) {
+                            dateInput.value = isoDate;
+                            console.log('[One-Click Blog] ✅ Date input set successfully to:', isoDate);
+                        } else {
+                            console.error('[One-Click Blog] ❌ publish-date element not found');
+                        }
                     } else {
-                        console.error('[One-Click Blog] ❌ publish-date element not found');
+                        console.error('[One-Click Blog] Invalid date format:', scheduleDate);
+                        this.setDefaultDate();
                     }
-                } else {
-                    console.error('[One-Click Blog] Invalid date format from API:', result.data.scheduled_date);
+                } catch (error) {
+                    console.error('[One-Click Blog] Error parsing date:', error);
                     this.setDefaultDate();
                 }
             } else {
-                console.log('[One-Click Blog] No schedule found in API, using default');
+                console.log('[One-Click Blog] No valid schedule found in display, using default');
                 this.setDefaultDate();
             }
-        } catch (error) {
-            console.error('[One-Click Blog] Error loading schedule data:', error);
+        } else {
+            console.error('[One-Click Blog] Schedule display elements not found');
             this.setDefaultDate();
         }
         
