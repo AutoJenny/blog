@@ -31,6 +31,7 @@ class OneClickBlogController {
         console.log('[One-Click Blog Controller] Creating AutomationEngine...');
         this.automationEngine = new AutomationEngine();
         console.log('[One-Click Blog Controller] AutomationEngine created:', this.automationEngine);
+        console.log('[One-Click Blog Controller] AutomationEngine type:', typeof this.automationEngine);
         
         // Set up global event handlers
         console.log('[One-Click Blog Controller] Setting up global handlers...');
@@ -252,6 +253,8 @@ class OneClickBlogController {
      */
     async toggleAutomationMode(stage, substage) {
         console.log(`[One-Click Blog Controller] Toggling automation mode for ${stage}/${substage}`);
+        console.log('[One-Click Blog Controller] automationEngine:', this.automationEngine);
+        console.log('[One-Click Blog Controller] automationEngine type:', typeof this.automationEngine);
         
         if (!this.automationEngine) {
             console.error('[One-Click Blog Controller] AutomationEngine not initialized');
