@@ -538,16 +538,16 @@ VALIDATION RULES:
                     with db_manager.get_cursor() as cursor:
                         cursor.execute("""
                             UPDATE post_development 
-                            SET section_structure = %s, updated_at = %s
+                            SET section_structure = %s, structure_design_at = %s, updated_at = %s
                             WHERE post_id = %s
-                        """, (json.dumps({'sections': sections}), datetime.now(), post_id))
+                        """, (json.dumps({'sections': sections}), datetime.now(), datetime.now(), post_id))
                         
                         if cursor.rowcount == 0:
                             # Insert if no existing record
                             cursor.execute("""
-                                INSERT INTO post_development (post_id, section_structure, updated_at)
-                                VALUES (%s, %s, %s)
-                            """, (post_id, json.dumps({'sections': sections}), datetime.now()))
+                                INSERT INTO post_development (post_id, section_structure, structure_design_at, updated_at)
+                                VALUES (%s, %s, %s, %s)
+                            """, (post_id, json.dumps({'sections': sections}), datetime.now(), datetime.now()))
                     
                     logger.info(f"Section structure saved to database for post {post_id}")
                     
