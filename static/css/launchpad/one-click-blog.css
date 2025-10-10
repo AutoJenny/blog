@@ -1,5 +1,69 @@
 /* One-Click Blog Automation System - CSS Styles */
 
+/* Substage Automation Controls */
+.substage.automation-enabled {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+}
+
+.substage-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.substage-automation {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.automation-mode {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.automation-mode.manual {
+    background-color: #1e40af;
+    color: #dbeafe;
+}
+
+.automation-mode.automatic {
+    background-color: #059669;
+    color: #d1fae5;
+}
+
+.automation-mode.hold {
+    background-color: #dc2626;
+    color: #fecaca;
+}
+
+.automation-controls {
+    display: flex;
+    gap: 4px;
+}
+
+.automation-controls .btn {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    min-width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.automation-controls .btn i {
+    font-size: 0.7rem;
+}
+
 /* Pipeline Post Selector */
 .pipeline-post-selector {
     background: #1e293b;

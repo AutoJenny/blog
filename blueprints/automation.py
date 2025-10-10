@@ -798,6 +798,161 @@ def dismiss_alert(alert_id):
     }
     return jsonify(mock_data)
 
+@bp.route('/api/substage-settings', methods=['GET'])
+def get_substage_settings():
+    """Get all substage automation settings"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT stage, substage, automation_mode, updated_at
+                FROM substage_automation_settings
+                ORDER BY stage, substage
+            """)
+            
+            settings = cursor.fetchall()
+            
+            # Convert to dictionary format for easier frontend use
+            settings_dict = {}
+            for setting in settings:
+                stage = setting['stage']
+                if stage not in settings_dict:
+                    settings_dict[stage] = {}
+                settings_dict[stage][setting['substage']] = {
+                    'mode': setting['automation_mode'],
+                    'updated_at': setting['updated_at'].isoformat() if setting['updated_at'] else None
+                }
+            
+            return jsonify({
+                "success": True,
+                "settings": settings_dict
+            })
+            
+    except Exception as e:
+        logger.error(f"Error getting substage settings: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@bp.route('/api/substage-settings/<stage>/<substage>', methods=['PUT'])
+def update_substage_setting(stage, substage):
+    """Update automation setting for a specific substage"""
+    try:
+        data = request.get_json()
+        automation_mode = data.get('automation_mode')
+        
+        if automation_mode not in ['manual', 'automatic', 'hold']:
+            return jsonify({"success": False, "error": "Invalid automation mode"}), 400
+        
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO substage_automation_settings (stage, substage, automation_mode)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (stage, substage) 
+                DO UPDATE SET 
+                    automation_mode = EXCLUDED.automation_mode,
+                    updated_at = CURRENT_TIMESTAMP
+                RETURNING automation_mode, updated_at
+            """, (stage, substage, automation_mode))
+            
+            result = cursor.fetchone()
+            
+            return jsonify({
+                "success": True,
+                "stage": stage,
+                "substage": substage,
+                "automation_mode": result['automation_mode'],
+                "updated_at": result['updated_at'].isoformat()
+            })
+            
+    except Exception as e:
+        logger.error(f"Error updating substage setting: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@bp.route('/api/substage-execute/<stage>/<substage>', methods=['POST'])
+def execute_substage(stage, substage):
+    """Execute a specific substage (for automation)"""
+    try:
+        data = request.get_json()
+        post_id = data.get('post_id')
+        
+        if not post_id:
+            return jsonify({"success": False, "error": "Post ID is required"}), 400
+        
+        # Check automation setting for this substage
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT automation_mode
+                FROM substage_automation_settings
+                WHERE stage = %s AND substage = %s
+            """, (stage, substage))
+            
+            setting = cursor.fetchone()
+            automation_mode = setting['automation_mode'] if setting else 'manual'
+            
+            # If mode is 'hold', return error to trigger alert
+            if automation_mode == 'hold':
+                return jsonify({
+                    "success": False,
+                    "error": f"Automation blocked: {substage} is set to 'Hold' mode",
+                    "automation_mode": "hold"
+                }), 403
+            
+            # Execute the substage based on stage/substage
+            if stage == 'planning' and substage == 'topic_brainstorming':
+                return execute_topic_brainstorming(post_id, data)
+            else:
+                return jsonify({
+                    "success": False,
+                    "error": f"Substage execution not implemented: {stage}/{substage}"
+                }), 501
+                
+    except Exception as e:
+        logger.error(f"Error executing substage: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+def execute_topic_brainstorming(post_id, data):
+    """Execute topic brainstorming for a post"""
+    try:
+        # Get post data
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT p.title, pd.expanded_idea
+                FROM post p
+                LEFT JOIN post_development pd ON p.id = pd.post_id
+                WHERE p.id = %s
+            """, (post_id,))
+            
+            post = cursor.fetchone()
+            if not post:
+                return jsonify({"success": False, "error": "Post not found"}), 404
+            
+            expanded_idea = post['expanded_idea'] or post['title']
+            
+        # Call the existing brainstorm API logic
+        from blueprints.planning_api_brainstorm import api_generate_brainstorm_topics
+        
+        # Create a mock request object with the required data
+        class MockRequest:
+            def get_json(self):
+                return {
+                    'expanded_idea': expanded_idea,
+                    'brainstorm_type': data.get('brainstorm_type', 'comprehensive'),
+                    'post_id': post_id
+                }
+        
+        # Temporarily replace request with our mock
+        import flask
+        original_request = flask.request
+        flask.request = MockRequest()
+        
+        try:
+            result = api_generate_brainstorm_topics()
+            return result
+        finally:
+            flask.request = original_request
+            
+    except Exception as e:
+        logger.error(f"Error executing topic brainstorming: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @bp.route('/settings', methods=['GET'])
 def get_settings():
     """Get automation settings"""
