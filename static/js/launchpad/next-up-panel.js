@@ -8,6 +8,7 @@ class NextUpPanel {
         this.currentWeek = null;
         this.selectedIdea = null;
         this.alternativeIdeas = [];
+        this.currentPostId = null;
         this.init();
     }
 
@@ -53,6 +54,7 @@ class NextUpPanel {
         this.currentWeek = data.current_week;
         this.selectedIdea = data.selected_idea;
         this.alternativeIdeas = data.alternative_ideas;
+        this.currentPostId = data.post_id;
         
         this.updateWeekInfo();
         this.updateSelectedIdea();

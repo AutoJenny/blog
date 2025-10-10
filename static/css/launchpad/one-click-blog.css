@@ -1,5 +1,56 @@
 /* One-Click Blog Automation System - CSS Styles */
 
+/* Pipeline Post Selector */
+.pipeline-post-selector {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.pipeline-post-selector label {
+    color: #cbd5e1;
+    font-weight: 500;
+    font-size: 0.95rem;
+    white-space: nowrap;
+}
+
+.pipeline-post-selector label i {
+    color: #3b82f6;
+    margin-right: 6px;
+}
+
+.pipeline-post-selector .post-select {
+    flex: 1;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 10px 14px;
+    color: #f1f5f9;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pipeline-post-selector .post-select:hover {
+    border-color: #3b82f6;
+}
+
+.pipeline-post-selector .post-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.pipeline-post-selector .post-select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* Calendar Accordion in Next Up Panel */
 .calendar-accordion {
     background: #1e293b;

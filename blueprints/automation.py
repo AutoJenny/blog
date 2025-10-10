@@ -455,62 +455,144 @@ def update_schedule():
 @bp.route('/pipeline-status/<int:post_id>', methods=['GET'])
 def get_pipeline_status(post_id):
     """Get current pipeline state for a post"""
-    mock_data = {
-        "success": True,
-        "data": {
-            "post_id": post_id,
-            "title": "Welsh Myths and Legends",
-            "current_stage": "authoring",
-            "current_substage": "author-first-drafts",
-            "overall_progress": 67,
-            "stages": {
-                "calendar": {
-                    "status": "complete",
-                    "progress": 100,
-                    "substages": {
-                        "view": {"status": "complete", "completed_at": "2025-10-10T10:00:00Z"},
-                        "ideas": {"status": "complete", "completed_at": "2025-10-10T10:15:00Z"}
-                    }
-                },
-                "concept": {
-                    "status": "complete",
-                    "progress": 100,
-                    "substages": {
-                        "brainstorm": {"status": "complete", "completed_at": "2025-10-10T11:00:00Z"},
-                        "section-structure": {"status": "complete", "completed_at": "2025-10-10T12:00:00Z"},
-                        "topic-allocation": {"status": "complete", "completed_at": "2025-10-10T13:00:00Z"},
-                        "titling": {"status": "complete", "completed_at": "2025-10-10T14:00:00Z"},
-                        "outline": {"status": "complete", "completed_at": "2025-10-10T15:00:00Z"}
-                    }
-                },
-                "authoring": {
-                    "status": "in_progress",
-                    "progress": 60,
-                    "automation_mode": "manual",
-                    "substages": {
-                        "author-first-drafts": {"status": "in_progress", "progress": 80},
-                        "fix-language": {"status": "pending"},
-                        "image-concepts": {"status": "pending"},
-                        "image-prompts": {"status": "pending"},
-                        "image-captions": {"status": "pending"}
-                    }
-                },
-                "imaging": {
-                    "status": "pending",
-                    "progress": 0,
-                    "automation_mode": "auto",
-                    "substages": {
-                        "image-generation": {"status": "pending"},
-                        "optimise": {"status": "pending"}
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get post basic info
+            cursor.execute("""
+                SELECT p.id, p.title, p.status, p.updated_at,
+                       pd.sections, pd.topic_allocation, pd.section_structure
+                FROM post p
+                LEFT JOIN post_development pd ON p.id = pd.post_id
+                WHERE p.id = %s
+            """, (post_id,))
+            
+            post = cursor.fetchone()
+            
+            if not post:
+                return jsonify({"success": False, "error": "Post not found"}), 404
+            
+            # Get section completion status
+            cursor.execute("""
+                SELECT COUNT(*) as total,
+                       SUM(CASE WHEN draft IS NOT NULL AND draft != '' THEN 1 ELSE 0 END) as drafted
+                FROM post_section
+                WHERE post_id = %s
+            """, (post_id,))
+            
+            section_stats = cursor.fetchone()
+            
+            # Calculate stage statuses
+            planning_complete = bool(post['topic_allocation'] and post['section_structure'])
+            authoring_progress = 0
+            if section_stats and section_stats['total'] > 0:
+                authoring_progress = int((section_stats['drafted'] / section_stats['total']) * 100)
+            
+            # Determine overall progress
+            overall_progress = 0
+            if planning_complete:
+                overall_progress += 40
+            overall_progress += int(authoring_progress * 0.6)
+            
+            # Build response
+            data = {
+                "success": True,
+                "post_id": post_id,
+                "overall_progress": overall_progress,
+                "stages": {
+                    "planning": {
+                        "status": "complete" if planning_complete else "in_progress",
+                        "progress": 100 if planning_complete else 50,
+                        "substages": [
+                            {"name": "Topic Brainstorming", "status": "complete" if post['topic_allocation'] else "pending"},
+                            {"name": "Section Structure", "status": "complete" if post['section_structure'] else "pending"},
+                            {"name": "Topic Allocation", "status": "complete" if post['topic_allocation'] else "pending"},
+                            {"name": "Titling", "status": "complete" if post['sections'] else "pending"},
+                            {"name": "Outline", "status": "complete" if planning_complete else "pending"}
+                        ]
+                    },
+                    "authoring": {
+                        "status": "in_progress" if authoring_progress > 0 and authoring_progress < 100 else ("complete" if authoring_progress == 100 else "pending"),
+                        "progress": authoring_progress,
+                        "substages": [
+                            {"name": "Author First Drafts", "status": "in_progress" if authoring_progress > 0 else "pending", "progress": authoring_progress},
+                            {"name": "Fix Language", "status": "pending"},
+                            {"name": "Image Concepts", "status": "pending"},
+                            {"name": "Image Prompts", "status": "pending"}
+                        ]
+                    },
+                    "imaging": {
+                        "status": "pending",
+                        "progress": 0,
+                        "substages": [
+                            {"name": "Image Generation", "status": "pending"},
+                            {"name": "Optimize Images", "status": "pending"}
+                        ]
                     }
                 }
-            },
-            "estimated_completion": "2025-10-12T16:00:00Z",
-            "last_action_at": "2025-10-10T15:30:00Z",
-            "error_count": 0
-        }
-    }
-    return jsonify(mock_data)
+            }
+            
+            return jsonify(data)
+            
+    except Exception as e:
+        logger.error(f"Error getting pipeline status: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@bp.route('/api/posts-in-development', methods=['GET'])
+def get_posts_in_development():
+    """Get list of posts currently in development"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT p.id, p.title, p.status, p.updated_at,
+                       pd.topic_allocation, pd.section_structure
+                FROM post p
+                LEFT JOIN post_development pd ON p.id = pd.post_id
+                WHERE p.status IN ('draft', 'in_progress')
+                ORDER BY p.updated_at DESC
+                LIMIT 50
+            """)
+            
+            posts = cursor.fetchall()
+            
+            posts_list = []
+            for post in posts:
+                # Determine current stage based on what's completed
+                stage = "planning"
+                progress = 0
+                
+                if post['topic_allocation'] and post['section_structure']:
+                    stage = "authoring"
+                    progress = 40
+                    
+                    # Check authoring progress
+                    cursor.execute("""
+                        SELECT COUNT(*) as total,
+                               SUM(CASE WHEN draft IS NOT NULL AND draft != '' THEN 1 ELSE 0 END) as drafted
+                        FROM post_section
+                        WHERE post_id = %s
+                    """, (post['id'],))
+                    
+                    section_stats = cursor.fetchone()
+                    if section_stats and section_stats['total'] > 0:
+                        authoring_progress = int((section_stats['drafted'] / section_stats['total']) * 100)
+                        progress += int(authoring_progress * 0.6)
+                
+                posts_list.append({
+                    "id": post['id'],
+                    "title": post['title'],
+                    "stage": stage,
+                    "progress": progress,
+                    "updated_at": post['updated_at'].isoformat() if post['updated_at'] else None
+                })
+            
+            return jsonify({
+                "success": True,
+                "posts": posts_list
+            })
+            
+    except Exception as e:
+        logger.error(f"Error getting posts in development: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @bp.route('/blog-queue', methods=['GET'])
 def get_blog_queue():

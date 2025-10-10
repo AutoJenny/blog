@@ -7,6 +7,7 @@ class OneClickBlogController {
     constructor() {
         this.scheduleManager = null;
         this.nextUpPanel = null;
+        this.pipelineManager = null;
         this.init();
     }
 
@@ -22,6 +23,10 @@ class OneClickBlogController {
         this.nextUpPanel = new NextUpPanel();
         console.log('[One-Click Blog Controller] NextUpPanel created:', this.nextUpPanel);
         
+        console.log('[One-Click Blog Controller] Creating PipelineManager...');
+        this.pipelineManager = new PipelineManager();
+        console.log('[One-Click Blog Controller] PipelineManager created:', this.pipelineManager);
+        
         // Set up global event handlers
         console.log('[One-Click Blog Controller] Setting up global handlers...');
         this.setupGlobalHandlers();
@@ -29,6 +34,7 @@ class OneClickBlogController {
         // Make modules globally accessible for HTML onclick handlers
         window.nextUpPanel = this.nextUpPanel;
         window.scheduleManager = this.scheduleManager;
+        window.pipelineManager = this.pipelineManager;
         
         // Load initial data
         console.log('[One-Click Blog Controller] Loading initial data...');
@@ -75,6 +81,13 @@ class OneClickBlogController {
             
             // Load schedule data
             await this.scheduleManager.loadCurrentSchedule();
+            
+            // Initialize pipeline with Next Up post ID
+            const nextUpPostId = this.nextUpPanel.currentPostId;
+            if (nextUpPostId) {
+                console.log('[One-Click Blog Controller] Setting pipeline to Next Up post:', nextUpPostId);
+                await this.pipelineManager.setPostId(nextUpPostId);
+            }
             
             console.log('[One-Click Blog Controller] Initial data loaded');
         } catch (error) {
