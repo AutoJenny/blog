@@ -415,6 +415,23 @@ class AuthorFirstDraftsManager {
                 }
                 
                 document.getElementById('avoid-topics-display').textContent = 'No avoid topics defined';
+                
+                // Load existing draft content into the content editor
+                const contentEditor = document.getElementById('content-editor');
+                if (contentEditor && section.draft) {
+                    contentEditor.value = section.draft;
+                    contentEditor.disabled = false;
+                    updateWordCount();
+                    
+                    // Update last saved timestamp
+                    const lastSaved = document.getElementById('last-saved');
+                    if (lastSaved) {
+                        lastSaved.textContent = 'Loaded existing content';
+                    }
+                } else if (contentEditor) {
+                    contentEditor.value = '';
+                    contentEditor.disabled = false;
+                }
             }
         } catch (error) {
             console.error('Error loading section context:', error);

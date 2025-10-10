@@ -1502,12 +1502,14 @@ def execute_author_first_drafts(post_id, data):
     try:
         logger.info(f"Starting author first drafts generation for post {post_id}")
         
-        # Get all sections for this post
+        # Get all sections for this post that need draft content
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 SELECT id, section_order, section_heading, section_description, status, draft
                 FROM post_section
-                WHERE post_id = %s
+                WHERE post_id = %s 
+                AND section_order <= 7
+                AND (draft IS NULL OR draft = '' OR draft = '{}')
                 ORDER BY section_order
             """, (post_id,))
             
@@ -1588,7 +1590,7 @@ def execute_author_first_drafts(post_id, data):
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
                     UPDATE post_development 
-                    SET authoring_started_at = NOW()
+                    SET updated_at = NOW()
                     WHERE post_id = %s
                 """, (post_id,))
         
