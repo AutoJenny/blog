@@ -108,26 +108,43 @@ def parse_brainstorm_topics(content):
         if start_idx != -1 and end_idx != -1:
             json_str = content_clean[start_idx:end_idx + 1]
             parsed_data = json.loads(json_str)
+        elif start_idx != -1:
+            # JSON starts but doesn't end - try to fix truncated JSON
+            json_str = content_clean[start_idx:]
+            # Try to find the last complete object and close the array
+            last_brace = json_str.rfind('}')
+            if last_brace != -1:
+                json_str = json_str[:last_brace + 1] + ']'
+                try:
+                    parsed_data = json.loads(json_str)
+                except json.JSONDecodeError:
+                    parsed_data = None
+            else:
+                parsed_data = None
+        else:
+            parsed_data = None
             
-            if isinstance(parsed_data, list):
-                for item in parsed_data:
-                    if isinstance(item, dict):
-                        topic = {
-                            'title': item.get('title', ''),
-                            'description': item.get('description', ''),
-                            'category': item.get('category', 'general'),
-                            'word_count': item.get('word_count', 0)
-                        }
-                        topics.append(topic)
-                    elif isinstance(item, str):
-                        topics.append({
-                            'title': item,
-                            'description': '',
-                            'category': 'general',
-                            'word_count': len(item.split())
-                        })
-                return topics
+        if parsed_data and isinstance(parsed_data, list):
+            for item in parsed_data:
+                if isinstance(item, dict):
+                    topic = {
+                        'title': item.get('title', ''),
+                        'description': item.get('description', ''),
+                        'category': item.get('category', 'general'),
+                        'word_count': item.get('word_count', 0)
+                    }
+                    topics.append(topic)
+                elif isinstance(item, str):
+                    topics.append({
+                        'title': item,
+                        'description': '',
+                        'category': 'general',
+                        'word_count': len(item.split())
+                    })
+            return topics
     except json.JSONDecodeError:
+        pass
+    except Exception:
         pass
     
     # Step 2: Fallback to line-by-line parsing

@@ -54,7 +54,7 @@ def api_generate_brainstorm_topics():
             {'role': 'user', 'content': user_content}
         ]
         
-        response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages, max_tokens=8000)
+        response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages, max_tokens=6000)
         
         if response and 'content' in response:
             topics = parse_brainstorm_topics(response['content'])

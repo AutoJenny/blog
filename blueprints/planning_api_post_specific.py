@@ -277,22 +277,50 @@ def api_posts_idea_scope(post_id):
     elif request.method == 'POST':
         try:
             data = request.get_json()
-            idea_scope = data.get('idea_scope', '')
             
-            if not idea_scope:
-                return jsonify({'error': 'Idea scope is required'}), 400
+            # Handle both 'topics' and 'idea_scope' formats for backward compatibility
+            if 'topics' in data:
+                # Format topics as JSON for storage (brainstorm page format)
+                topics = data.get('topics', [])
+                if not topics:
+                    return jsonify({'error': 'No topics provided'}), 400
+                
+                idea_scope_data = {
+                    'generated_topics': topics,
+                    'generated_at': datetime.now().isoformat(),
+                    'total_count': len(topics)
+                }
+                idea_scope_json = json.dumps(idea_scope_data)
+                
+            elif 'idea_scope' in data:
+                # Direct idea_scope format
+                idea_scope_json = data.get('idea_scope', '')
+                if not idea_scope_json:
+                    return jsonify({'error': 'Idea scope is required'}), 400
+            else:
+                return jsonify({'error': 'Either topics or idea_scope is required'}), 400
             
             # Save to database
             with db_manager.get_cursor() as cursor:
-                cursor.execute("""
-                    UPDATE post_development 
-                    SET idea_scope = %s
-                    WHERE post_id = %s
-                """, (idea_scope, post_id))
+                # Check if post_development record exists
+                cursor.execute("SELECT id FROM post_development WHERE post_id = %s", (post_id,))
+                if not cursor.fetchone():
+                    # Create post_development record if it doesn't exist
+                    cursor.execute("""
+                        INSERT INTO post_development (post_id, idea_scope, created_at, updated_at)
+                        VALUES (%s, %s, NOW(), NOW())
+                    """, (post_id, idea_scope_json))
+                else:
+                    # Update existing record
+                    cursor.execute("""
+                        UPDATE post_development 
+                        SET idea_scope = %s, updated_at = NOW()
+                        WHERE post_id = %s
+                    """, (idea_scope_json, post_id))
             
             return jsonify({
                 'success': True,
-                'idea_scope': idea_scope
+                'message': 'Topics saved successfully' if 'topics' in data else 'Idea scope updated successfully'
             })
                 
         except Exception as e:
