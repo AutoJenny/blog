@@ -14,22 +14,37 @@ class OneClickBlogController {
         console.log('[One-Click Blog Controller] Initializing...');
         
         // Initialize micro-modules
+        console.log('[One-Click Blog Controller] Creating ScheduleManager...');
         this.scheduleManager = new ScheduleManager();
+        console.log('[One-Click Blog Controller] ScheduleManager created:', this.scheduleManager);
+        
+        console.log('[One-Click Blog Controller] Creating NextUpPanel...');
         this.nextUpPanel = new NextUpPanel();
+        console.log('[One-Click Blog Controller] NextUpPanel created:', this.nextUpPanel);
         
         // Set up global event handlers
+        console.log('[One-Click Blog Controller] Setting up global handlers...');
         this.setupGlobalHandlers();
         
         // Load initial data
+        console.log('[One-Click Blog Controller] Loading initial data...');
         this.loadInitialData();
         
-        console.log('[One-Click Blog Controller] Initialized successfully');
+        console.log('[One-Click Blog Controller] ✅ Initialized successfully');
+        console.log('[One-Click Blog Controller] Global showScheduleModal:', typeof window.showScheduleModal);
     }
 
     setupGlobalHandlers() {
         // Schedule button handler
         window.showScheduleModal = () => {
-            this.scheduleManager.showScheduleModal();
+            console.log('[One-Click Blog Controller] showScheduleModal() called globally');
+            console.log('[One-Click Blog Controller] scheduleManager:', this.scheduleManager);
+            if (this.scheduleManager) {
+                console.log('[One-Click Blog Controller] Calling scheduleManager.showScheduleModal()');
+                this.scheduleManager.showScheduleModal();
+            } else {
+                console.error('[One-Click Blog Controller] scheduleManager is null!');
+            }
         };
 
         // Schedule modal handlers
