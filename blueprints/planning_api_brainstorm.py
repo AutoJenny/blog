@@ -33,13 +33,13 @@ def api_generate_brainstorm_topics():
             """)
             prompt_data = cursor.fetchone()
             
-            if prompt_data:
-                system_prompt = prompt_data['system_prompt']
-                prompt_text = prompt_data['prompt_text']
-            else:
-                # Fallback prompts
-                system_prompt = "You are a creative brainstorming specialist. Generate diverse, engaging topics for blog posts."
-                prompt_text = "Generate {brainstorm_type} topics for a blog post about: {expanded_idea}"
+            if not prompt_data:
+                return jsonify({
+                    'error': 'No brainstorm_topics prompt found in database. Please add a proper prompt with JSON format specification.'
+                }), 500
+            
+            system_prompt = prompt_data['system_prompt']
+            prompt_text = prompt_data['prompt_text']
         
         # Generate topics using LLM
         llm_service = LLMService()
