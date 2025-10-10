@@ -232,7 +232,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
 
-            <!-- Panel 4: Output (Accordion - Open) -->
+            <!-- Panel 4: Batch Progress (Accordion - Collapsed) -->
+            <div class="batch-progress-panel" id="batch-progress-panel" style="display: none;">
+                <div class="panel-header" onclick="toggleBatchProgressAccordion()">
+                    <h4>Batch Generation Progress</h4>
+                    <div class="header-actions">
+                        <span id="progress-percent">0%</span>
+                        <i class="fas fa-chevron-up" id="batch-progress-accordion-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="panel-content" id="batch-progress-accordion-content" style="display: none;">
+                    <!-- Overall Progress Bar -->
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-text" id="progress-text">Ready to generate</div>
+                    </div>
+                    
+                    <!-- Individual Section Results -->
+                    <div class="section-results" id="section-results">
+                        <!-- Individual section results will appear here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel 5: Output (Accordion - Open) -->
             <div class="output-panel" id="output-panel">
                 <div class="panel-header" onclick="toggleOutputAccordion()">
                     <h4 id="current-section-title">Select a section to begin editing</h4>
@@ -501,6 +527,7 @@ document.addEventListener('DOMContentLoaded', function() {
 .llm-settings-panel,
 .llm-prompts-panel,
 .context-panel,
+.batch-progress-panel,
 .output-panel {
     background: #1e293b;
     border-radius: 8px;
@@ -541,6 +568,91 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .panel-content {
     margin-top: 1rem;
+}
+
+/* Batch Progress Panel Styles */
+.progress-container {
+    margin-bottom: 1rem;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #334155;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #3b82f6;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.section-results {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.section-result-item {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.section-result-item.success {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.section-result-item.error {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.section-result-item.generating {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.section-result-title {
+    color: #e2e8f0;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.section-result-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.section-result-status.success {
+    background: #10b981;
+    color: white;
+}
+
+.section-result-status.error {
+    background: #ef4444;
+    color: white;
+}
+
+.section-result-status.generating {
+    background: #3b82f6;
+    color: white;
 }
 
 .editor-header {
@@ -701,6 +813,8 @@ class AuthoringManager {
                 if (this.sections.length > 0) {
                     this.selectSection(this.sections[0].id);
                 }
+                // Auto-select all sections for batch generation
+                this.selectAllSections();
             }
         } catch (error) {
             console.error('Error loading sections:', error);
@@ -905,6 +1019,9 @@ class AuthoringManager {
             return;
         }
         
+        // Show progress panel
+        this.showBatchProgress(selectedIds);
+        
         // Disable the button during generation
         const generateBtn = document.getElementById('batch-generate-btn');
         const originalText = generateBtn.textContent;
@@ -917,11 +1034,11 @@ class AuthoringManager {
             // Generate content for each selected section
             for (let i = 0; i < selectedIds.length; i++) {
                 const sectionId = selectedIds[i];
-                const progress = Math.round(((i + 1) / selectedIds.length) * 100);
+                const section = this.sections.find(s => s.id === sectionId);
+                const sectionTitle = section ? section.title : `Section ${sectionId}`;
                 
                 // Update progress
-                generateBtn.textContent = `Generating... ${i + 1}/${selectedIds.length}`;
-                this.updateSectionProgress(sectionId, progress);
+                this.updateBatchProgress(i + 1, selectedIds.length, sectionId, sectionTitle, 'generating');
                 
                 try {
                     // Generate content for this section
@@ -937,10 +1054,11 @@ class AuthoringManager {
                     
                     if (data.success) {
                         console.log(`Generated content for section ${sectionId}`);
-                        // Update the section status to complete
+                        this.updateBatchProgress(i + 1, selectedIds.length, sectionId, sectionTitle, 'success');
                         this.updateSectionStatus(sectionId, 'complete');
                     } else {
                         console.error(`Failed to generate content for section ${sectionId}:`, data.error);
+                        this.updateBatchProgress(i + 1, selectedIds.length, sectionId, sectionTitle, 'error', data.error);
                         this.updateSectionStatus(sectionId, 'error');
                     }
                     
@@ -951,6 +1069,7 @@ class AuthoringManager {
                     
                 } catch (error) {
                     console.error(`Error generating content for section ${sectionId}:`, error);
+                    this.updateBatchProgress(i + 1, selectedIds.length, sectionId, sectionTitle, 'error', error.message);
                     this.updateSectionStatus(sectionId, 'error');
                 }
             }
@@ -992,6 +1111,92 @@ class AuthoringManager {
             }
         }
     }
+    
+    showBatchProgress(selectedIds) {
+        // Show the progress panel
+        const progressPanel = document.getElementById('batch-progress-panel');
+        if (progressPanel) {
+            progressPanel.style.display = 'block';
+        }
+        
+        // Initialize progress
+        this.updateBatchProgress(0, selectedIds.length, null, null, 'ready');
+        
+        // Clear previous results
+        const sectionResults = document.getElementById('section-results');
+        if (sectionResults) {
+            sectionResults.innerHTML = '';
+        }
+        
+        // Create result items for each section
+        selectedIds.forEach(sectionId => {
+            const section = this.sections.find(s => s.id === sectionId);
+            const sectionTitle = section ? section.title : `Section ${sectionId}`;
+            this.addSectionResultItem(sectionId, sectionTitle, 'pending');
+        });
+    }
+    
+    updateBatchProgress(currentIndex, totalSections, sectionId, sectionTitle, status, error = null) {
+        const progressFill = document.getElementById('progress-fill');
+        const progressPercent = document.getElementById('progress-percent');
+        const progressText = document.getElementById('progress-text');
+        
+        if (progressFill && progressPercent) {
+            const percent = Math.round((currentIndex / totalSections) * 100);
+            progressFill.style.width = `${percent}%`;
+            progressPercent.textContent = `${percent}%`;
+        }
+        
+        if (progressText) {
+            if (status === 'ready') {
+                progressText.textContent = 'Ready to generate';
+            } else if (status === 'generating') {
+                progressText.textContent = `Generating section ${currentIndex} of ${totalSections}...`;
+            } else if (status === 'success') {
+                progressText.textContent = `Completed section ${currentIndex} of ${totalSections}`;
+            } else if (status === 'error') {
+                progressText.textContent = `Error in section ${currentIndex} of ${totalSections}`;
+            }
+        }
+        
+        // Update individual section result
+        if (sectionId && sectionTitle) {
+            this.updateSectionResultItem(sectionId, sectionTitle, status, error);
+        }
+    }
+    
+    addSectionResultItem(sectionId, sectionTitle, status) {
+        const sectionResults = document.getElementById('section-results');
+        if (!sectionResults) return;
+        
+        const resultItem = document.createElement('div');
+        resultItem.className = `section-result-item ${status}`;
+        resultItem.id = `result-${sectionId}`;
+        
+        resultItem.innerHTML = `
+            <span class="section-result-title">${sectionTitle}</span>
+            <span class="section-result-status ${status}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>
+        `;
+        
+        sectionResults.appendChild(resultItem);
+    }
+    
+    updateSectionResultItem(sectionId, sectionTitle, status, error = null) {
+        const resultItem = document.getElementById(`result-${sectionId}`);
+        if (!resultItem) return;
+        
+        resultItem.className = `section-result-item ${status}`;
+        
+        const statusElement = resultItem.querySelector('.section-result-status');
+        if (statusElement) {
+            statusElement.className = `section-result-status ${status}`;
+            if (status === 'error' && error) {
+                statusElement.textContent = `Error: ${error}`;
+            } else {
+                statusElement.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+            }
+        }
+    }
 }
 
 // Additional Accordion Functions for new panels
@@ -1009,6 +1214,23 @@ function toggleContextAccordion() {
         icon.classList.remove('fa-chevron-down');
         icon.classList.add('fa-chevron-up');
         localStorage.setItem('context-accordion-state', 'closed');
+    }
+}
+
+function toggleBatchProgressAccordion() {
+    const content = document.getElementById('batch-progress-accordion-content');
+    const icon = document.getElementById('batch-progress-accordion-icon');
+    
+    if (content.style.display === 'none' || content.style.display === '') {
+        content.style.display = 'block';
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+        localStorage.setItem('batch-progress-accordion-state', 'open');
+    } else {
+        content.style.display = 'none';
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+        localStorage.setItem('batch-progress-accordion-state', 'closed');
     }
 }
 
