@@ -100,7 +100,6 @@ def parse_brainstorm_topics(content):
     try:
         # Clean up the content to extract JSON
         content_clean = content.strip()
-        logger.info(f"Parsing content: {repr(content_clean[:200])}")
         
         # Find JSON array boundaries
         start_idx = content_clean.find('[')
@@ -108,13 +107,7 @@ def parse_brainstorm_topics(content):
         
         if start_idx != -1 and end_idx != -1:
             json_str = content_clean[start_idx:end_idx + 1]
-            logger.info(f"Extracted JSON string: {repr(json_str[:200])}")
-            try:
-                parsed_data = json.loads(json_str)
-            except json.JSONDecodeError as e:
-                logger.error(f"JSON decode error: {e}")
-                logger.error(f"Problematic JSON: {repr(json_str)}")
-                raise
+            parsed_data = json.loads(json_str)
             
             if isinstance(parsed_data, list):
                 for item in parsed_data:

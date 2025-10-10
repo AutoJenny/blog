@@ -967,7 +967,7 @@ def execute_topic_brainstorming(post_id, data):
             {'role': 'user', 'content': user_content}
         ]
         
-        response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages, max_tokens=2000)
+        response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages, max_tokens=8000)
         
         if response and 'content' in response:
             topics = parse_brainstorm_topics(response['content'])
