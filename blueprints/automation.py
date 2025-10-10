@@ -126,11 +126,26 @@ def get_next_up():
                     else:
                         publish_date = wednesday
                     
+                    # Check if there's already a post for the selected idea
+                    existing_post_id = None
+                    cursor.execute("""
+                        SELECT p.id FROM post p
+                        JOIN post_development pd ON p.id = pd.post_id
+                        WHERE pd.idea_seed ILIKE %s AND p.status != 'deleted'
+                        ORDER BY p.created_at DESC
+                        LIMIT 1
+                    """, (f'%{selected_idea["idea_title"]}%',))
+                    
+                    existing_post = cursor.fetchone()
+                    if existing_post:
+                        existing_post_id = existing_post['id']
+                        logger.info(f"Found existing post {existing_post_id} for idea '{selected_idea['idea_title']}'")
+                    
                     # Insert the schedule with the selected idea
                     cursor.execute("""
                         INSERT INTO calendar_schedule 
-                        (year, week_number, scheduled_date, scheduled_time, publish_time, status, requires_approval, automation_enabled, idea_id)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        (year, week_number, scheduled_date, scheduled_time, publish_time, status, requires_approval, automation_enabled, idea_id, post_id)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         RETURNING scheduled_date, scheduled_time, publish_time, status, post_id, idea_id
                     """, (
                         current_week['year'], 
@@ -141,7 +156,8 @@ def get_next_up():
                         'planned',
                         True,
                         True,
-                        selected_idea['id']
+                        selected_idea['id'],
+                        existing_post_id
                     ))
                     
                     schedule_data = cursor.fetchone()
@@ -255,14 +271,30 @@ def select_idea():
             if not current_week:
                 return jsonify({'success': False, 'error': 'No current week found'}), 404
             
-            # Verify the idea exists and belongs to this week
+            # Verify the idea exists and belongs to this week, and get idea details
             cursor.execute("""
-                SELECT id FROM calendar_ideas 
+                SELECT id, idea_title, idea_description FROM calendar_ideas 
                 WHERE id = %s AND week_number = %s
             """, (idea_id, current_week['week_number']))
             
-            if not cursor.fetchone():
+            idea_data = cursor.fetchone()
+            if not idea_data:
                 return jsonify({'success': False, 'error': 'Idea not found for this week'}), 404
+            
+            # Check if there's already a post for this idea
+            existing_post_id = None
+            cursor.execute("""
+                SELECT p.id FROM post p
+                JOIN post_development pd ON p.id = pd.post_id
+                WHERE pd.idea_seed ILIKE %s AND p.status != 'deleted'
+                ORDER BY p.created_at DESC
+                LIMIT 1
+            """, (f'%{idea_data["idea_title"]}%',))
+            
+            existing_post = cursor.fetchone()
+            if existing_post:
+                existing_post_id = existing_post['id']
+                logger.info(f"Found existing post {existing_post_id} for idea '{idea_data['idea_title']}'")
             
             # Update or create schedule with selected idea
             cursor.execute("""
@@ -276,9 +308,9 @@ def select_idea():
                 # Update existing schedule
                 cursor.execute("""
                     UPDATE calendar_schedule 
-                    SET idea_id = %s, updated_at = NOW()
+                    SET idea_id = %s, post_id = %s, updated_at = NOW()
                     WHERE year = %s AND week_number = %s
-                """, (idea_id, current_week['year'], current_week['week_number']))
+                """, (idea_id, existing_post_id, current_week['year'], current_week['week_number']))
             else:
                 # Create new schedule with selected idea
                 from datetime import datetime, date, timedelta
@@ -308,8 +340,8 @@ def select_idea():
                     
                     cursor.execute("""
                         INSERT INTO calendar_schedule 
-                        (year, week_number, scheduled_date, scheduled_time, publish_time, status, requires_approval, automation_enabled, idea_id)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        (year, week_number, scheduled_date, scheduled_time, publish_time, status, requires_approval, automation_enabled, idea_id, post_id)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """, (
                         current_week['year'], 
                         current_week['week_number'],
@@ -319,7 +351,8 @@ def select_idea():
                         'planned',
                         True,
                         True,
-                        idea_id
+                        idea_id,
+                        existing_post_id
                     ))
             
             cursor.connection.commit()
