@@ -194,16 +194,22 @@ class PipelineManager {
         // Update existing substages with timestamps
         substages.forEach(substage => {
             const selectorName = substage.name.toLowerCase().replace(/ /g, '_');
+            console.log(`[Pipeline Manager] Looking for substage: "${substage.name}" -> "${selectorName}"`);
             const existingSubstage = substagesContainer.querySelector(`[data-substage="${selectorName}"]`);
+            console.log(`[Pipeline Manager] Found existing substage:`, existingSubstage);
             
             if (existingSubstage) {
                 // Update existing substage
                 const completedAtSpan = existingSubstage.querySelector('.completed-at');
+                console.log(`[Pipeline Manager] Found completed-at span:`, completedAtSpan);
+                console.log(`[Pipeline Manager] Substage completed_at:`, substage.completed_at);
                 
                 if (completedAtSpan && substage.completed_at) {
                     const timeAgo = this.formatTimeAgo(substage.completed_at);
+                    console.log(`[Pipeline Manager] Setting timestamp: "Completed ${timeAgo}"`);
                     completedAtSpan.textContent = `Completed ${timeAgo}`;
                 } else if (completedAtSpan) {
+                    console.log(`[Pipeline Manager] No timestamp available, keeping Loading...`);
                     completedAtSpan.textContent = 'Loading...';
                 }
                 

@@ -235,8 +235,9 @@ class OneClickBlogController {
             
             if (result.success) {
                 this.showNotification(`${substage} completed successfully!`, 'success');
-                // Refresh pipeline data
+                // Refresh pipeline data immediately
                 if (this.pipelineManager) {
+                    console.log(`[One-Click Blog Controller] Refreshing pipeline data for post ${postId}`);
                     await this.pipelineManager.loadPipelineData(postId);
                 }
             } else {
