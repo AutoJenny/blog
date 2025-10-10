@@ -34,7 +34,7 @@
                             <span class="schedule-date">Loading...</span>
                             <span class="schedule-relative">Loading...</span>
                         </div>
-                        <button class="schedule-btn" onclick="oneClickBlogManager.showScheduleModal()">
+                        <button class="schedule-btn" onclick="showScheduleModal()">
                             <i class="fas fa-clock"></i> Schedule
                         </button>
                     </div>
@@ -62,7 +62,7 @@
             </div>
             
             <div class="action-buttons">
-                <button class="btn btn-primary production-btn" id="production-btn" onclick="oneClickBlogManager.handleProductionAction()">
+                <button class="btn btn-primary production-btn" id="production-btn" onclick="handleProductionAction()">
                     <i class="fas fa-rocket"></i> <span class="btn-text">Start Production</span>
                 </button>
             </div>
@@ -627,7 +627,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Schedule Publication</h3>
-                <button class="modal-close" onclick="oneClickBlogManager.closeScheduleModal()">
+                <button class="modal-close" onclick="closeScheduleModal()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -654,17 +654,19 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="oneClickBlogManager.closeScheduleModal()">
+                <button class="btn btn-secondary" onclick="closeScheduleModal()">
                     Cancel
                 </button>
-                <button class="btn btn-primary" onclick="oneClickBlogManager.schedulePost()">
+                <button class="btn btn-primary" onclick="schedulePost()">
                     <i class="fas fa-calendar-check"></i> Schedule
                 </button>
             </div>
         </div>
     </div>
     
-    <!-- JavaScript -->
-    <script src="{{ url_for('static', filename='js/launchpad/one-click-blog.js') }}"></script>
+    <!-- One-Click Blog Micro-Modules -->
+    <script src="{{ url_for('static', filename='js/launchpad/schedule-management.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/launchpad/next-up-panel.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/launchpad/one-click-blog-controller.js') }}"></script>
 </body>
 </html>

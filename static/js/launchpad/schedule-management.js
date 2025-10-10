@@ -1,0 +1,181 @@
+/**
+ * Schedule Management Micro-Module
+ * Handles post scheduling functionality for One-Click Blog
+ */
+
+class ScheduleManager {
+    constructor() {
+        this.currentSchedule = null;
+        this.init();
+    }
+
+    init() {
+        console.log('[Schedule Manager] Initialized');
+    }
+
+    /**
+     * Load current schedule data from API
+     */
+    async loadCurrentSchedule() {
+        try {
+            const response = await fetch('/launchpad/one-click-blog/api/next-up');
+            const result = await response.json();
+            
+            if (result.success) {
+                this.currentSchedule = result.data;
+                console.log('[Schedule Manager] Loaded schedule:', this.currentSchedule.scheduled_date);
+                return this.currentSchedule;
+            }
+        } catch (error) {
+            console.error('[Schedule Manager] Error loading schedule:', error);
+        }
+        return null;
+    }
+
+    /**
+     * Show schedule modal with current data
+     */
+    async showScheduleModal() {
+        console.log('[Schedule Manager] Showing schedule modal');
+        
+        // Load fresh schedule data
+        await this.loadCurrentSchedule();
+        
+        // Show modal
+        const modal = document.getElementById('schedule-modal');
+        if (modal) {
+            modal.style.display = 'flex';
+        }
+        
+        // Populate modal with current data
+        this.populateScheduleModal();
+    }
+
+    /**
+     * Populate schedule modal with current schedule data
+     */
+    populateScheduleModal() {
+        if (!this.currentSchedule) {
+            console.error('[Schedule Manager] No schedule data available');
+            this.setDefaultSchedule();
+            return;
+        }
+
+        const scheduleDate = this.currentSchedule.scheduled_date;
+        console.log('[Schedule Manager] Populating modal with:', scheduleDate);
+
+        if (scheduleDate && scheduleDate !== 'Not scheduled') {
+            try {
+                // Parse "Oct 12, 2025" to "2025-10-12"
+                const dateObj = new Date(scheduleDate);
+                if (!isNaN(dateObj.getTime())) {
+                    const isoDate = dateObj.toISOString().split('T')[0];
+                    const dateInput = document.getElementById('publish-date');
+                    if (dateInput) {
+                        dateInput.value = isoDate;
+                        console.log('[Schedule Manager] ✅ Set date to:', isoDate);
+                    }
+                } else {
+                    console.error('[Schedule Manager] Invalid date format:', scheduleDate);
+                    this.setDefaultSchedule();
+                }
+            } catch (error) {
+                console.error('[Schedule Manager] Error parsing date:', error);
+                this.setDefaultSchedule();
+            }
+        } else {
+            this.setDefaultSchedule();
+        }
+
+        // Set default time
+        const timeInput = document.getElementById('publish-time');
+        if (timeInput) {
+            timeInput.value = '14:00';
+        }
+    }
+
+    /**
+     * Set default schedule (today's date)
+     */
+    setDefaultSchedule() {
+        const today = new Date();
+        const isoDate = today.toISOString().split('T')[0];
+        const dateInput = document.getElementById('publish-date');
+        if (dateInput) {
+            dateInput.value = isoDate;
+            console.log('[Schedule Manager] Set default date to:', isoDate);
+        }
+    }
+
+    /**
+     * Close schedule modal
+     */
+    closeScheduleModal() {
+        const modal = document.getElementById('schedule-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    /**
+     * Update schedule with new date/time
+     */
+    async updateSchedule(newDate, newTime) {
+        try {
+            console.log('[Schedule Manager] Updating schedule to:', newDate, newTime);
+            
+            const response = await fetch('/launchpad/one-click-blog/api/update-schedule', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    publish_date: newDate,
+                    publish_time: newTime
+                })
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                console.log('[Schedule Manager] ✅ Schedule updated successfully');
+                this.closeScheduleModal();
+                
+                // Refresh schedule data
+                await this.loadCurrentSchedule();
+                
+                // Notify other modules
+                this.notifyScheduleUpdated();
+                
+                return true;
+            } else {
+                console.error('[Schedule Manager] Update failed:', result.error);
+                return false;
+            }
+        } catch (error) {
+            console.error('[Schedule Manager] Error updating schedule:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Notify other modules that schedule was updated
+     */
+    notifyScheduleUpdated() {
+        // Dispatch custom event for other modules to listen to
+        const event = new CustomEvent('scheduleUpdated', {
+            detail: { schedule: this.currentSchedule }
+        });
+        document.dispatchEvent(event);
+    }
+
+    /**
+     * Get current schedule data
+     */
+    getCurrentSchedule() {
+        return this.currentSchedule;
+    }
+}
+
+// Export for use in other modules
+window.ScheduleManager = ScheduleManager;
