@@ -312,7 +312,7 @@ class OneClickBlogController {
                 'topic_brainstorming': `/planning/posts/${postId}/concept/brainstorm`,
                 'section_structure': `/planning/posts/${postId}/concept/section-structure`,
                 'topic_allocation': `/planning/posts/${postId}/concept/topic-allocation`,
-                'titling': `/planning/posts/${postId}/concept/titling`,
+                'section_titling': `/planning/posts/${postId}/concept/titling`,
                 'outline': `/planning/posts/${postId}/concept/outline`
             },
             'authoring': {
