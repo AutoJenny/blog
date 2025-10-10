@@ -1,5 +1,100 @@
 /* One-Click Blog Automation System - CSS Styles */
 
+/* Calendar Accordion in Next Up Panel */
+.calendar-accordion {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.calendar-header:hover {
+    background-color: #334155;
+}
+
+.calendar-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.calendar-icon {
+    color: #3b82f6;
+    font-size: 1.2rem;
+}
+
+.calendar-details h3 {
+    margin: 0;
+    color: #f1f5f9;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.calendar-status {
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.calendar-status.complete {
+    color: #10b981;
+}
+
+.calendar-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.calendar-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.calendar-content {
+    border-top: 1px solid #334155;
+    padding: 0;
+}
+
+.calendar-substages {
+    padding: 16px 20px;
+}
+
+.calendar-substages .substage {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    color: #cbd5e1;
+}
+
+.calendar-substages .substage i {
+    color: #10b981;
+    font-size: 0.9rem;
+}
+
+.calendar-substages .substage span:first-of-type {
+    font-weight: 500;
+}
+
+.completed-at {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin-left: auto;
+}
+
 /* Smooth transitions for instant UI updates */
 .selected-idea {
     transition: all 0.3s ease;

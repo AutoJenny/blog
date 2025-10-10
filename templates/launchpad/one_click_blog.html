@@ -22,6 +22,42 @@
         
         <!-- Next Up Panel -->
         <div class="next-up-panel">
+            <!-- Calendar Accordion -->
+            <div class="calendar-accordion">
+                <div class="calendar-header" onclick="toggleCalendarAccordion()">
+                    <div class="calendar-info">
+                        <i class="fas fa-calendar-alt calendar-icon"></i>
+                        <div class="calendar-details">
+                            <h3>Calendar</h3>
+                            <span class="calendar-status complete">Complete</span>
+                        </div>
+                    </div>
+                    <div class="calendar-controls">
+                        <div class="calendar-progress">
+                            <div class="progress-bar small">
+                                <div class="progress-fill" style="width: 100%;"></div>
+                            </div>
+                            <span class="progress-text">100%</span>
+                        </div>
+                        <i class="fas fa-chevron-down accordion-icon" id="calendar-chevron"></i>
+                    </div>
+                </div>
+                <div class="calendar-content" id="calendar-content" style="display: none;">
+                    <div class="calendar-substages">
+                        <div class="substage complete">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Calendar View</span>
+                            <span class="completed-at">Completed 2 hours ago</span>
+                        </div>
+                        <div class="substage complete">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Idea Generation</span>
+                            <span class="completed-at">Completed 2 hours ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="panel-header">
                 <h2><i class="fas fa-calendar-alt"></i> Next Up</h2>
                 <div class="week-info">
@@ -99,42 +135,6 @@
             </div>
             
             <div class="stages-container">
-                <!-- Calendar Stage -->
-                <div class="stage-accordion">
-                    <div class="stage-header" onclick="oneClickBlogManager.toggleStage('calendar')">
-                        <div class="stage-info">
-                            <i class="fas fa-calendar-alt stage-icon"></i>
-                            <div class="stage-details">
-                                <h3>Calendar</h3>
-                                <span class="stage-status complete">Complete</span>
-                            </div>
-                        </div>
-                        <div class="stage-controls">
-                            <div class="stage-progress">
-                                <div class="progress-bar small">
-                                    <div class="progress-fill" style="width: 100%;"></div>
-                                </div>
-                                <span class="progress-text">100%</span>
-                            </div>
-                            <i class="fas fa-chevron-down accordion-icon" id="calendar-chevron"></i>
-                        </div>
-                    </div>
-                    <div class="stage-content" id="calendar-content" style="display: none;">
-                        <div class="substages">
-                            <div class="substage complete">
-                                <i class="fas fa-check-circle"></i>
-                                <span>Calendar View</span>
-                                <span class="completed-at">Completed 2 hours ago</span>
-                            </div>
-                            <div class="substage complete">
-                                <i class="fas fa-check-circle"></i>
-                                <span>Idea Generation</span>
-                                <span class="completed-at">Completed 2 hours ago</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
                 <!-- Planning Stage -->
                 <div class="stage-accordion">
                     <div class="stage-header" onclick="oneClickBlogManager.toggleStage('concept')">
@@ -669,6 +669,22 @@
             </div>
         </div>
     </div>
+    
+    <!-- Calendar Accordion Function -->
+    <script>
+        function toggleCalendarAccordion() {
+            const content = document.getElementById('calendar-content');
+            const chevron = document.getElementById('calendar-chevron');
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                chevron.style.transform = 'rotate(180deg)';
+            } else {
+                content.style.display = 'none';
+                chevron.style.transform = 'rotate(0deg)';
+            }
+        }
+    </script>
     
     <!-- One-Click Blog Micro-Modules -->
     <script src="{{ url_for('static', filename='js/launchpad/schedule-management.js') }}?v={{ range(1000, 9999) | random }}"></script>
