@@ -462,7 +462,7 @@ def get_pipeline_status(post_id):
                 SELECT p.id, p.title, p.status, p.updated_at,
                        pd.sections, pd.topic_allocation, pd.section_structure,
                        pd.idea_scope, pd.structure_design_at, pd.allocation_completed_at,
-                       pd.refinement_completed_at
+                       pd.refinement_completed_at, pd.updated_at as sections_updated_at
                 FROM post p
                 LEFT JOIN post_development pd ON p.id = pd.post_id
                 WHERE p.id = %s
@@ -532,7 +532,7 @@ def get_pipeline_status(post_id):
                             {
                                 "name": "Section Titling", 
                                 "status": "complete" if post['sections'] else "pending",
-                                "completed_at": None  # No specific timestamp field for titling
+                                "completed_at": post['sections_updated_at'].isoformat() if post['sections'] and post['sections_updated_at'] else None
                             },
                             {
                                 "name": "Content Outline", 
@@ -902,6 +902,7 @@ def execute_substage(stage, substage):
     """Execute a specific substage (for automation)"""
     try:
         data = request.get_json()
+        logger.info(f"execute_substage called with stage={stage}, substage={substage}, data={data}, data type={type(data)}")
         post_id = data.get('post_id')
         
         if not post_id:
@@ -916,6 +917,7 @@ def execute_substage(stage, substage):
             """, (stage, substage))
             
             setting = cursor.fetchone()
+            logger.info(f"Setting for {stage}/{substage}: {setting}, type: {type(setting)}")
             automation_mode = setting['automation_mode'] if setting else 'manual'
             
             # If mode is 'hold', return error to trigger alert
@@ -933,6 +935,9 @@ def execute_substage(stage, substage):
                 return execute_section_structure(post_id, data)
             elif stage == 'planning' and substage == 'topic_allocation':
                 return execute_topic_allocation(post_id, data)
+            elif stage == 'planning' and substage == 'section_titling':
+                logger.info(f"About to call execute_section_titling with post_id={post_id}, data={data}")
+                return execute_section_titling(post_id, data)
             else:
                 return jsonify({
                     "success": False,
@@ -1022,6 +1027,175 @@ def execute_topic_allocation(post_id, data):
             
     except Exception as e:
         logger.error(f"Error executing topic allocation: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+def execute_section_titling(post_id, data):
+    """Execute section titling for a post using the same logic as template page"""
+    try:
+        logger.info(f"Starting section titling for post {post_id}, data type: {type(data)}")
+        
+        # Get post data - need topic allocation for generating section titles
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT p.title, pd.topic_allocation, pd.expanded_idea
+                FROM post p
+                LEFT JOIN post_development pd ON p.id = pd.post_id
+                WHERE p.id = %s
+            """, (post_id,))
+            
+            post = cursor.fetchone()
+            if not post:
+                logger.error(f"Post {post_id} not found")
+                return jsonify({"success": False, "error": "Post not found"}), 404
+            
+        logger.info(f"Post data retrieved: title={post['title']}, topic_allocation type={type(post['topic_allocation'])}, expanded_idea={post['expanded_idea']}")
+        
+        if not post['topic_allocation']:
+            logger.error(f"No topic allocation found for post {post_id}")
+            return jsonify({"success": False, "error": "No topic allocation found. Please run Topic Allocation first."}), 400
+            
+        # Instead of using mock request, create a direct function call
+        # Prepare the data for the API call
+        topic_allocation = post['topic_allocation']
+        if isinstance(topic_allocation, str):
+            try:
+                topic_allocation = json.loads(topic_allocation)
+            except json.JSONDecodeError:
+                topic_allocation = []
+        elif topic_allocation is None:
+            topic_allocation = []
+        
+        # Extract the allocations array from the topic allocation data
+        if isinstance(topic_allocation, dict) and 'allocations' in topic_allocation:
+            topic_allocation = topic_allocation['allocations']
+        
+        # Import the core logic from planning_sections
+        from blueprints.planning_sections import LLMService
+        import json
+        
+        # Call the core section titling logic directly
+        try:
+            # Load Section Titling prompt from database
+            logger.info("Loading Section Titling prompt from database")
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT system_prompt, prompt_text
+                    FROM llm_prompt 
+                    WHERE name = 'Section Titling'
+                    ORDER BY id DESC
+                    LIMIT 1
+                """)
+                prompt_data = cursor.fetchone()
+                
+                if prompt_data and prompt_data['system_prompt']:
+                    system_prompt = prompt_data['system_prompt']
+                    logger.info("Loaded system prompt from database")
+                else:
+                    logger.warning("Section Titling system prompt not found in database, using fallback")
+                    system_prompt = """You are a titling specialist. Your job is to craft short, poetic, evocative section titles that fit the supplied sections and their bullet topics."""
+                
+                if prompt_data and prompt_data['prompt_text']:
+                    prompt_text = prompt_data['prompt_text']
+                else:
+                    prompt_text = """Generate creative section titles for this post. Follow all constraints and output format exactly."""
+            
+            # Format the prompt with actual data
+            sections_text = ""
+            for i, allocation in enumerate(topic_allocation):
+                section_theme = allocation.get('section_theme', f'Section {i+1}')
+                sections_text += f"{i+1}. {section_theme}\n"
+            
+            formatted_prompt = f"""Generate creative section titles for this blog post.
+
+BLOG POST TOPIC: {post['expanded_idea']}
+
+SECTIONS TO TITLE:
+{sections_text.strip()}
+
+REQUIREMENTS:
+- Generate exactly {len(topic_allocation)} titles
+- Each title should be 2-4 words
+- Make titles poetic and evocative
+- Do not include the blog post topic in your titles
+
+OUTPUT FORMAT (JSON only):
+{{
+  "post_title": "{post['expanded_idea']}",
+  "sections": [
+    {", ".join([f'{{ "index": {i+1}, "original": "{allocation.get("section_theme", f"Section {i+1}")}", "title": "Your Creative Title Here" }}' for i, allocation in enumerate(topic_allocation)])}
+  ]
+}}"""
+            
+            # Call LLM service
+            llm_service = LLMService()
+            messages = [
+                {'role': 'system', 'content': system_prompt},
+                {'role': 'user', 'content': formatted_prompt}
+            ]
+            
+            response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages, max_tokens=4000)
+            
+            if response and 'content' in response:
+                # Parse the JSON response
+                content = response['content'].strip()
+                json_start = content.find('{')
+                json_end = content.rfind('}') + 1
+                
+                if json_start != -1 and json_end > json_start:
+                    json_content = content[json_start:json_end]
+                else:
+                    json_content = content
+                
+                try:
+                    result = json.loads(json_content)
+                    sections = result.get('sections', [])
+                    
+                    if not sections:
+                        return jsonify({
+                            'success': False,
+                            'error': 'No sections generated'
+                        }), 500
+                    
+                    # Save the generated sections to database
+                    sections_json = json.dumps({'sections': sections})
+                    with db_manager.get_cursor() as cursor:
+                        cursor.execute("""
+                            UPDATE post_development 
+                            SET sections = %s, updated_at = %s
+                            WHERE post_id = %s
+                        """, (sections_json, datetime.now(), post_id))
+                    
+                    logger.info(f"Section titling completed successfully for post {post_id}")
+                    return jsonify({
+                        'success': True,
+                        'sections': sections,
+                        'saved_to_database': True
+                    })
+                    
+                except json.JSONDecodeError as e:
+                    logger.error(f"Failed to parse LLM response as JSON: {e}")
+                    return jsonify({
+                        'success': False,
+                        'error': 'Invalid JSON response from LLM'
+                    }), 500
+            else:
+                logger.error("No content in LLM response")
+                return jsonify({
+                    'success': False,
+                    'error': 'No content in LLM response'
+                }), 500
+                
+        except Exception as e:
+            logger.error(f"Error in direct section titling: {e}")
+            return jsonify({
+                'success': False,
+                'error': f'Failed to generate section titles: {str(e)}'
+            }), 500
+            
+    except Exception as e:
+        logger.error(f"Error executing section titling: {e}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 def execute_topic_brainstorming(post_id, data):
