@@ -305,9 +305,9 @@ def api_allocate_topics():
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 UPDATE post_development 
-                SET topic_allocation = %s, updated_at = %s
+                SET topic_allocation = %s, allocation_completed_at = %s, updated_at = %s
                 WHERE post_id = %s
-            """, (json.dumps(allocations), datetime.now(), post_id))
+            """, (json.dumps(allocations), datetime.now(), datetime.now(), post_id))
         
         return jsonify({
             'success': True,

@@ -931,6 +931,8 @@ def execute_substage(stage, substage):
                 return execute_topic_brainstorming(post_id, data)
             elif stage == 'planning' and substage == 'section_structure':
                 return execute_section_structure(post_id, data)
+            elif stage == 'planning' and substage == 'topic_allocation':
+                return execute_topic_allocation(post_id, data)
             else:
                 return jsonify({
                     "success": False,
@@ -939,6 +941,89 @@ def execute_substage(stage, substage):
                 
     except Exception as e:
         logger.error(f"Error executing substage: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+def execute_topic_allocation(post_id, data):
+    """Execute topic allocation for a post using the same logic as template page"""
+    try:
+        # Get post data - need topics and section structure
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT p.title, pd.idea_scope, pd.section_structure
+                FROM post p
+                LEFT JOIN post_development pd ON p.id = pd.post_id
+                WHERE p.id = %s
+            """, (post_id,))
+            
+            post = cursor.fetchone()
+            if not post:
+                return jsonify({"success": False, "error": "Post not found"}), 404
+            
+            # Extract topics from idea_scope
+            topics = []
+            if post['idea_scope']:
+                try:
+                    idea_scope_data = json.loads(post['idea_scope']) if isinstance(post['idea_scope'], str) else post['idea_scope']
+                    topics = idea_scope_data.get('generated_topics', [])
+                except:
+                    pass
+            
+            # Extract section structure
+            sections = []
+            if post['section_structure']:
+                try:
+                    structure_data = json.loads(post['section_structure']) if isinstance(post['section_structure'], str) else post['section_structure']
+                    sections = structure_data.get('sections', [])
+                except:
+                    pass
+            
+        if not topics:
+            return jsonify({"success": False, "error": "No topics found. Please run Topic Brainstorming first."}), 400
+            
+        if not sections:
+            return jsonify({"success": False, "error": "No section structure found. Please run Section Structure first."}), 400
+            
+        # Use the same logic as the template page API
+        # Simple topic allocation logic - distribute topics evenly across sections
+        topics_per_section = len(topics) // len(sections)
+        remainder = len(topics) % len(sections)
+        
+        allocations = []
+        topic_index = 0
+        
+        for i, section in enumerate(sections):
+            section_topics = []
+            topics_for_this_section = topics_per_section + (1 if i < remainder else 0)
+            
+            for j in range(topics_for_this_section):
+                if topic_index < len(topics):
+                    section_topics.append(topics[topic_index])
+                    topic_index += 1
+            
+            allocations.append({
+                'section_id': section.get('id', f'section_{i+1}'),
+                'section_title': section.get('title', f'Section {i+1}'),
+                'topics': section_topics
+            })
+        
+        # Save to database (same as template page)
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                UPDATE post_development 
+                SET topic_allocation = %s, allocation_completed_at = NOW(), updated_at = NOW()
+                WHERE post_id = %s
+            """, (json.dumps(allocations), post_id))
+            
+            logger.info(f"Saved topic allocation to database for post {post_id}")
+        
+        return jsonify({
+            'success': True,
+            'allocations': allocations,
+            'saved_to_database': True
+        })
+            
+    except Exception as e:
+        logger.error(f"Error executing topic allocation: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 def execute_topic_brainstorming(post_id, data):

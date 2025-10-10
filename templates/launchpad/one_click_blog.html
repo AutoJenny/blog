@@ -207,10 +207,26 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="substage complete" data-substage="topic_allocation">
-                                <i class="fas fa-check-circle"></i>
-                                <span>Topic Allocation</span>
-                                <span class="completed-at">Loading...</span>
+                            <div class="substage complete automation-enabled" data-stage="planning" data-substage="topic_allocation">
+                                <div class="substage-info">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span class="substage-name">Topic Allocation</span>
+                                    <span class="completed-at">Loading...</span>
+                                </div>
+                                <div class="substage-automation" style="text-align: right;">
+                                    <span class="automation-mode manual" id="automation-mode-planning-topic_allocation">Manual</span>
+                                    <div class="automation-controls" style="display: inline-block; margin-left: 10px;">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="executeSubstage('planning', 'topic_allocation')" title="Run Now">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="toggleAutomationMode('planning', 'topic_allocation')" title="Toggle Mode">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                        <a href="#" class="btn btn-sm btn-outline-info" title="Edit" onclick="openSubstageEdit('planning', 'topic_allocation')">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
                             <div class="substage complete" data-substage="section_titling">
                                 <i class="fas fa-check-circle"></i>
