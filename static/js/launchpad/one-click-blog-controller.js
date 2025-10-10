@@ -343,8 +343,7 @@ class OneClickBlogController {
                 'topic_brainstorming': `/planning/posts/${postId}/concept/brainstorm`,
                 'section_structure': `/planning/posts/${postId}/concept/section-structure`,
                 'topic_allocation': `/planning/posts/${postId}/concept/topic-allocation`,
-                'section_titling': `/planning/posts/${postId}/concept/titling`,
-                'outline': `/planning/posts/${postId}/concept/outline`
+                'section_titling': `/planning/posts/${postId}/concept/titling`
             },
             'authoring': {
                 'author_first_drafts': `/authoring/posts/${postId}/sections/author-first-drafts`,

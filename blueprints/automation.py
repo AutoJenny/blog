@@ -533,11 +533,6 @@ def get_pipeline_status(post_id):
                                 "name": "Section Titling", 
                                 "status": "complete" if post['sections'] else "pending",
                                 "completed_at": post['sections_updated_at'].isoformat() if post['sections'] and post['sections_updated_at'] else None
-                            },
-                            {
-                                "name": "Content Outline", 
-                                "status": "complete" if planning_complete else "pending",
-                                "completed_at": None  # No specific timestamp field for outline
                             }
                         ]
                     },
