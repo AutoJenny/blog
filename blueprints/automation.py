@@ -1025,6 +1025,8 @@ def execute_topic_brainstorming(post_id, data):
                     
                     # Update idea_scope with new topics
                     idea_scope['generated_topics'] = topics
+                    idea_scope['generated_at'] = datetime.now().isoformat()
+                    idea_scope['total_count'] = len(topics)
                     
                     # Save back to database
                     cursor.execute("""
@@ -1218,6 +1220,14 @@ def execute_section_structure(post_id, data):
                 result_data = result
             
             if result_data.get('success'):
+                # Update the structure_design_at timestamp
+                with db_manager.get_cursor() as cursor:
+                    cursor.execute("""
+                        UPDATE post_development 
+                        SET structure_design_at = NOW()
+                        WHERE post_id = %s
+                    """, (post_id,))
+                
                 logger.info(f"Section structure generated successfully for post {post_id}")
                 return jsonify({
                     'success': True,
