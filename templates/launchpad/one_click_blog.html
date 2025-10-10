@@ -37,6 +37,9 @@
                         <button class="schedule-btn" onclick="showScheduleModal()">
                             <i class="fas fa-clock"></i> Schedule
                         </button>
+                        <button class="btn btn-sm btn-info" onclick="testScheduleManager()" style="margin-left: 10px;">
+                            <i class="fas fa-bug"></i> Test
+                        </button>
                     </div>
                 </div>
             </div>
@@ -665,8 +668,8 @@
     </div>
     
     <!-- One-Click Blog Micro-Modules -->
-    <script src="{{ url_for('static', filename='js/launchpad/schedule-management.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/launchpad/next-up-panel.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/launchpad/one-click-blog-controller.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/launchpad/schedule-management.js') }}?v={{ range(1000, 9999) | random }}"></script>
+    <script src="{{ url_for('static', filename='js/launchpad/next-up-panel.js') }}?v={{ range(1000, 9999) | random }}"></script>
+    <script src="{{ url_for('static', filename='js/launchpad/one-click-blog-controller.js') }}?v={{ range(1000, 9999) | random }}"></script>
 </body>
 </html>
