@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="editor-panel">
             <!-- LLM Module -->
             <div class="llm-module-container">
-                {% include 'includes/llm_module.html' %}
+                {% include 'authoring/includes/llm_module_authoring.html' %}
             </div>
             
             <!-- Section Editor -->
@@ -568,6 +568,10 @@ class AuthoringManager {
             if (data.success) {
                 this.sections = data.sections;
                 this.renderSections();
+                // Auto-load first section
+                if (this.sections.length > 0) {
+                    this.selectSection(this.sections[0].id);
+                }
             }
         } catch (error) {
             console.error('Error loading sections:', error);
@@ -860,6 +864,25 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             // Initialize new LLM module
             llmModule = initializeLLMModule('author_draft', window.postId, sectionId);
+            
+            // Add onGenerate callback to update content editor
+            if (llmModule && llmModule.onGenerate) {
+                const originalOnGenerate = llmModule.onGenerate;
+                llmModule.onGenerate = function(response) {
+                    // Call original callback
+                    if (originalOnGenerate) {
+                        originalOnGenerate(response);
+                    }
+                    
+                    // Update content editor with generated content
+                    const contentEditor = document.getElementById('content-editor');
+                    if (contentEditor && response.draft) {
+                        contentEditor.value = response.draft;
+                        contentEditor.disabled = false;
+                        updateWordCount();
+                    }
+                };
+            }
         }
     }
     
