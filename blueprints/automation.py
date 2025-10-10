@@ -74,47 +74,95 @@ def get_next_up():
             selected_idea = ideas[0]
             alternative_ideas = ideas[1:] if len(ideas) > 1 else []
             
-            # Format the response
+            # Get schedule data for current week
+            cursor.execute("""
+                SELECT scheduled_date, scheduled_time, publish_time, status, post_id
+                FROM calendar_schedule 
+                WHERE year = %s AND week_number = %s
+                ORDER BY scheduled_date ASC
+                LIMIT 1
+            """, (current_week['year'], current_week['week_number']))
+            
+            schedule_data = cursor.fetchone()
+            
+            # Determine production status based on post existence and schedule
+            production_status = "not_started"
+            scheduled_date = "Not scheduled"
+            scheduled_relative = ""
+            
+            if schedule_data:
+                if schedule_data['post_id']:
+                    # Post exists - check if it's published
+                    cursor.execute("SELECT status FROM post WHERE id = %s", (schedule_data['post_id'],))
+                    post_data = cursor.fetchone()
+                    if post_data and post_data['status'] == 'published':
+                        production_status = "completed"
+                    else:
+                        production_status = "in_progress"
+                else:
+                    production_status = "not_started"
+                
+                # Format schedule date
+                if schedule_data['scheduled_date']:
+                    from datetime import datetime, date
+                    scheduled_date_obj = schedule_data['scheduled_date']
+                    scheduled_date = scheduled_date_obj.strftime('%b %d, %Y')
+                    
+                    # Calculate relative time
+                    today = date.today()
+                    days_diff = (scheduled_date_obj - today).days
+                    
+                    if days_diff == 0:
+                        scheduled_relative = "Today"
+                    elif days_diff == 1:
+                        scheduled_relative = "Tomorrow"
+                    elif days_diff > 1:
+                        scheduled_relative = f"In {days_diff} days"
+                    elif days_diff == -1:
+                        scheduled_relative = "Yesterday"
+                    else:
+                        scheduled_relative = f"{abs(days_diff)} days ago"
+            
             data = {
-                "success": True,
-                "data": {
-                    "current_week": {
-                        "week_number": current_week['week_number'],
-                        "year": current_week['year'],
-                        "start_date": current_week['start_date'].strftime('%Y-%m-%d') if current_week['start_date'] else None,
-                        "end_date": current_week['end_date'].strftime('%Y-%m-%d') if current_week['end_date'] else None,
-                        "month_name": current_week['month_name']
-                    },
-                    "selected_idea": {
-                        "id": selected_idea['id'],
-                        "title": selected_idea['idea_title'],
-                        "description": selected_idea['idea_description'],
-                        "categories": [cat['name'] for cat in selected_idea['categories']] if selected_idea['categories'] else [],
-                        "priority": selected_idea['priority'],
-                        "seasonal_context": selected_idea['seasonal_context'],
-                        "content_type": selected_idea['content_type'],
-                        "tags": selected_idea['tags'] if selected_idea['tags'] else []
-                    },
-                    "alternative_ideas": [
-                        {
-                            "id": idea['id'],
-                            "title": idea['idea_title'],
-                            "description": idea['idea_description'],
-                            "categories": [cat['name'] for cat in idea['categories']] if idea['categories'] else [],
-                            "priority": idea['priority'],
-                            "seasonal_context": idea['seasonal_context'],
-                            "content_type": idea['content_type'],
-                            "tags": idea['tags'] if idea['tags'] else []
+                        "success": True,
+                        "data": {
+                            "current_week": {
+                                "week_number": current_week['week_number'],
+                                "year": current_week['year'],
+                                "start_date": current_week['start_date'].strftime('%Y-%m-%d') if current_week['start_date'] else None,
+                                "end_date": current_week['end_date'].strftime('%Y-%m-%d') if current_week['end_date'] else None,
+                                "month_name": current_week['month_name']
+                            },
+                            "selected_idea": {
+                                "id": selected_idea['id'],
+                                "title": selected_idea['idea_title'],
+                                "description": selected_idea['idea_description'],
+                                "categories": [cat['name'] for cat in selected_idea['categories']] if selected_idea['categories'] else [],
+                                "priority": selected_idea['priority'],
+                                "seasonal_context": selected_idea['seasonal_context'],
+                                "content_type": selected_idea['content_type'],
+                                "tags": selected_idea['tags'] if selected_idea['tags'] else []
+                            },
+                            "alternative_ideas": [
+                                {
+                                    "id": idea['id'],
+                                    "title": idea['idea_title'],
+                                    "description": idea['idea_description'],
+                                    "categories": [cat['name'] for cat in idea['categories']] if idea['categories'] else [],
+                                    "priority": idea['priority'],
+                                    "seasonal_context": idea['seasonal_context'],
+                                    "content_type": idea['content_type'],
+                                    "tags": idea['tags'] if idea['tags'] else []
+                                }
+                                for idea in alternative_ideas
+                            ],
+                            "production_status": production_status,
+                            "scheduled_date": scheduled_date,
+                            "scheduled_relative": scheduled_relative,
+                            "can_start_automation": True,
+                            "next_available_slot": "2025-10-15T09:00:00Z"  # Keep mock for now
                         }
-                        for idea in alternative_ideas
-                    ],
-                    "production_status": "in_progress",  # not_started, in_progress, completed, failed
-                    "scheduled_date": "Oct 15, 2025",  # Short format
-                    "scheduled_relative": "In 2 days",  # Human-readable relative time
-                    "can_start_automation": True,
-                    "next_available_slot": "2025-10-15T09:00:00Z"  # Keep mock for now
-                }
-            }
+                    }
             
             return jsonify(data)
             
