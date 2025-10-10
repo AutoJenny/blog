@@ -6,6 +6,10 @@ Mock implementation for UI development
 from flask import Blueprint, jsonify, request
 import json
 from datetime import datetime, timedelta
+from config.database import db_manager
+import logging
+
+logger = logging.getLogger(__name__)
 
 bp = Blueprint('automation', __name__, url_prefix='/launchpad/one-click-blog/api')
 
@@ -230,7 +234,7 @@ def get_next_up():
             "error": str(e)
         }), 500
 
-@bp.route('/api/select-idea', methods=['POST'])
+@bp.route('/select-idea', methods=['POST'])
 def select_idea():
     """Select an idea for the current week"""
     try:
