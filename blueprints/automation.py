@@ -201,6 +201,7 @@ def get_next_up():
                             "production_status": production_status,
                             "scheduled_date": scheduled_date,
                             "scheduled_relative": scheduled_relative,
+                            "post_id": schedule_data['post_id'] if schedule_data and schedule_data['post_id'] else None,
                             "can_start_automation": True,
                             "next_available_slot": "2025-10-15T09:00:00Z"  # Keep mock for now
                         }

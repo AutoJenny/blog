@@ -59,6 +59,7 @@ class NextUpPanel {
         this.updateAlternativeIdeas();
         this.updateScheduleDisplay(data);
         this.updateProductionButton(data.production_status);
+        this.updatePostId(data.post_id);
     }
 
     /**
@@ -98,6 +99,16 @@ class NextUpPanel {
         if (ideaCategories) ideaCategories.textContent = this.selectedIdea.categories.join(', ');
         if (ideaContentType) ideaContentType.textContent = this.selectedIdea.content_type;
         if (ideaPriority) ideaPriority.textContent = this.selectedIdea.priority;
+    }
+
+    /**
+     * Update Post ID display
+     */
+    updatePostId(postId) {
+        const postIdValue = document.querySelector('.post-id-value');
+        if (postIdValue) {
+            postIdValue.textContent = postId || 'Not assigned';
+        }
     }
 
     /**
