@@ -798,7 +798,7 @@ def dismiss_alert(alert_id):
     }
     return jsonify(mock_data)
 
-@bp.route('/api/substage-settings', methods=['GET'])
+@bp.route('/substage-settings', methods=['GET'])
 def get_substage_settings():
     """Get all substage automation settings"""
     try:
@@ -831,7 +831,7 @@ def get_substage_settings():
         logger.error(f"Error getting substage settings: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
-@bp.route('/api/substage-settings/<stage>/<substage>', methods=['PUT'])
+@bp.route('/substage-settings/<stage>/<substage>', methods=['PUT'])
 def update_substage_setting(stage, substage):
     """Update automation setting for a specific substage"""
     try:
@@ -866,7 +866,7 @@ def update_substage_setting(stage, substage):
         logger.error(f"Error updating substage setting: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
-@bp.route('/api/substage-execute/<stage>/<substage>', methods=['POST'])
+@bp.route('/substage-execute/<stage>/<substage>', methods=['POST'])
 def execute_substage(stage, substage):
     """Execute a specific substage (for automation)"""
     try:
