@@ -108,6 +108,7 @@ class NextUpPanel {
         const postIdValue = document.querySelector('.post-id-value');
         if (postIdValue) {
             postIdValue.textContent = postId || 'Not assigned';
+            postIdValue.classList.remove('checking');
         }
     }
 
@@ -272,13 +273,12 @@ class NextUpPanel {
         // Update Post ID optimistically - check if this idea has an existing post
         this.updatePostIdOptimistically(idea);
         
-        // Add visual feedback
+        // Add visual feedback with CSS classes
         const selectedIdeaContainer = document.querySelector('.selected-idea');
         if (selectedIdeaContainer) {
-            selectedIdeaContainer.style.transition = 'all 0.3s ease';
-            selectedIdeaContainer.style.backgroundColor = '#1e3a8a'; // Blue highlight
+            selectedIdeaContainer.classList.add('updating');
             setTimeout(() => {
-                selectedIdeaContainer.style.backgroundColor = '';
+                selectedIdeaContainer.classList.remove('updating');
             }, 500);
         }
     }
@@ -300,6 +300,7 @@ class NextUpPanel {
         const postIdElement = document.querySelector('.post-id-value');
         if (postIdElement) {
             postIdElement.textContent = 'Checking...';
+            postIdElement.classList.add('checking');
         }
     }
     
