@@ -462,7 +462,8 @@ def get_pipeline_status(post_id):
                 SELECT p.id, p.title, p.status, p.updated_at,
                        pd.sections, pd.topic_allocation, pd.section_structure,
                        pd.idea_scope, pd.structure_design_at, pd.allocation_completed_at,
-                       pd.refinement_completed_at, pd.updated_at as sections_updated_at
+                       pd.refinement_completed_at, pd.updated_at as sections_updated_at,
+                       pd.updated_at as authoring_updated_at
                 FROM post p
                 LEFT JOIN post_development pd ON p.id = pd.post_id
                 WHERE p.id = %s
@@ -540,7 +541,7 @@ def get_pipeline_status(post_id):
                         "status": "in_progress" if authoring_progress > 0 and authoring_progress < 100 else ("complete" if authoring_progress == 100 else "pending"),
                         "progress": authoring_progress,
                         "substages": [
-                            {"name": "Author First Drafts", "status": "in_progress" if authoring_progress > 0 else "pending", "progress": authoring_progress, "completed_at": post['updated_at'].isoformat() if authoring_progress > 0 and post['updated_at'] else None},
+                            {"name": "Author First Drafts", "status": "in_progress" if authoring_progress > 0 else "pending", "progress": authoring_progress, "completed_at": post['authoring_updated_at'].isoformat() if authoring_progress > 0 and post['authoring_updated_at'] else None},
                             {"name": "Image Concepts", "status": "pending"},
                             {"name": "Image Prompts", "status": "pending"}
                         ]
