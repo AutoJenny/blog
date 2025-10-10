@@ -946,10 +946,10 @@ def execute_substage(stage, substage):
 def execute_topic_allocation(post_id, data):
     """Execute topic allocation for a post using the same logic as template page"""
     try:
-        # Get post data - need topics and section structure
+        # Get post data - need section structure for generating section-specific topics
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
-                SELECT p.title, pd.idea_scope, pd.section_structure
+                SELECT p.title, pd.section_structure, pd.expanded_idea
                 FROM post p
                 LEFT JOIN post_development pd ON p.id = pd.post_id
                 WHERE p.id = %s
@@ -959,68 +959,66 @@ def execute_topic_allocation(post_id, data):
             if not post:
                 return jsonify({"success": False, "error": "Post not found"}), 404
             
-            # Extract topics from idea_scope
-            topics = []
-            if post['idea_scope']:
-                try:
-                    idea_scope_data = json.loads(post['idea_scope']) if isinstance(post['idea_scope'], str) else post['idea_scope']
-                    topics = idea_scope_data.get('generated_topics', [])
-                except:
-                    pass
-            
-            # Extract section structure
-            sections = []
-            if post['section_structure']:
-                try:
-                    structure_data = json.loads(post['section_structure']) if isinstance(post['section_structure'], str) else post['section_structure']
-                    sections = structure_data.get('sections', [])
-                except:
-                    pass
-            
-        if not topics:
-            return jsonify({"success": False, "error": "No topics found. Please run Topic Brainstorming first."}), 400
-            
-        if not sections:
+        if not post['section_structure']:
             return jsonify({"success": False, "error": "No section structure found. Please run Section Structure first."}), 400
             
-        # Use the same logic as the template page API
-        # Simple topic allocation logic - distribute topics evenly across sections
-        topics_per_section = len(topics) // len(sections)
-        remainder = len(topics) % len(sections)
+        # Call the unified section-specific topic generation API
+        from blueprints.planning_api_topic_allocation import api_generate_section_specific_topics
         
-        allocations = []
-        topic_index = 0
+        # Create a mock request object with the required data
+        class MockRequest:
+            def get_json(self):
+                return {'post_id': post_id}
         
-        for i, section in enumerate(sections):
-            section_topics = []
-            topics_for_this_section = topics_per_section + (1 if i < remainder else 0)
+        # Temporarily replace the global request object
+        import flask
+        original_request = flask.request
+        flask.request = MockRequest()
+        
+        try:
+            # Call the unified section-specific topic generation API
+            result = api_generate_section_specific_topics()
             
-            for j in range(topics_for_this_section):
-                if topic_index < len(topics):
-                    section_topics.append(topics[topic_index])
-                    topic_index += 1
+            # Handle Flask response
+            if isinstance(result, tuple):
+                status_code, result_data = result
+                if status_code != 200:
+                    return jsonify({
+                        'success': False,
+                        'error': result_data.get('error', 'Failed to generate section-specific topics')
+                    }), status_code
+                # If status is 200, result_data is the Flask response object
+                result_data = result_data.get_json() if hasattr(result_data, 'get_json') else result_data
+            else:
+                if hasattr(result, 'get_json'):
+                    result_data = result.get_json()
+                else:
+                    result_data = result
             
-            allocations.append({
-                'section_id': section.get('id', f'section_{i+1}'),
-                'section_title': section.get('title', f'Section {i+1}'),
-                'topics': section_topics
-            })
-        
-        # Save to database (same as template page)
-        with db_manager.get_cursor() as cursor:
-            cursor.execute("""
-                UPDATE post_development 
-                SET topic_allocation = %s, allocation_completed_at = NOW(), updated_at = NOW()
-                WHERE post_id = %s
-            """, (json.dumps(allocations), post_id))
-            
-            logger.info(f"Saved topic allocation to database for post {post_id}")
-        
-        return jsonify({
-            'success': True,
-            'allocations': allocations,
-            'saved_to_database': True
-        })
+            if result_data.get('success'):
+                # Update the allocation_completed_at timestamp
+                with db_manager.get_cursor() as cursor:
+                    cursor.execute("""
+                        UPDATE post_development 
+                        SET allocation_completed_at = NOW()
+                        WHERE post_id = %s
+                    """, (post_id,))
+                
+                logger.info(f"Section-specific topic allocation completed successfully for post {post_id}")
+                return jsonify({
+                    'success': True,
+                    'allocations': result_data.get('allocations'),
+                    'saved_to_database': True
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': result_data.get('error', 'Failed to generate section-specific topics')
+                }), 500
+                
+        finally:
+            # Restore original request object
+            flask.request = original_request
             
     except Exception as e:
         logger.error(f"Error executing topic allocation: {e}")
