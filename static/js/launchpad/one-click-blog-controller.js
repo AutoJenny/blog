@@ -26,6 +26,10 @@ class OneClickBlogController {
         console.log('[One-Click Blog Controller] Setting up global handlers...');
         this.setupGlobalHandlers();
         
+        // Make modules globally accessible for HTML onclick handlers
+        window.nextUpPanel = this.nextUpPanel;
+        window.scheduleManager = this.scheduleManager;
+        
         // Load initial data
         console.log('[One-Click Blog Controller] Loading initial data...');
         this.loadInitialData();
