@@ -299,7 +299,9 @@ class OneClickBlogController {
      * Open substage edit page
      */
     openSubstageEdit(stage, substage) {
+        console.log('[One-Click Blog Controller] openSubstageEdit called with:', stage, substage);
         const postId = this.pipelineManager?.currentPostId || this.nextUpPanel?.currentPostId;
+        console.log('[One-Click Blog Controller] postId:', postId);
         if (!postId) {
             console.error('[One-Click Blog Controller] No post ID available');
             this.showNotification('No post selected', 'error');
@@ -328,7 +330,9 @@ class OneClickBlogController {
         };
         
         const url = substageUrls[stage]?.[substage];
+        console.log('[One-Click Blog Controller] Generated URL:', url);
         if (url) {
+            console.log('[One-Click Blog Controller] Navigating to:', url);
             window.location.href = url;
         } else {
             console.error('[One-Click Blog Controller] Unknown substage:', stage, substage);
