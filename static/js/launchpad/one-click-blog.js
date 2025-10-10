@@ -277,24 +277,47 @@ class OneClickBlogManager {
     }
 
     async showScheduleModal() {
+        console.log('[One-Click Blog] showScheduleModal() called');
+        
+        // Show modal first with loading state
+        const modal = document.getElementById('schedule-modal');
+        modal.style.display = 'flex';
+        
         // Load current schedule data into the modal
         await this.loadCurrentScheduleData();
-        document.getElementById('schedule-modal').style.display = 'flex';
+        
+        console.log('[One-Click Blog] Schedule modal fully loaded');
     }
     
     async loadCurrentScheduleData() {
+        console.log('[One-Click Blog] loadCurrentScheduleData() called');
+        
         try {
             // Get fresh data from API instead of parsing display text
-            const response = await fetch('/launchpad/one-click-blog/api/next-up');
+            console.log('[One-Click Blog] Fetching data from API...');
+            const response = await fetch('/launchpad/one-click-blog/api/next-up?' + Date.now());
             const result = await response.json();
             
+            console.log('[One-Click Blog] API Response:', result);
+            
             if (result.success && result.data.scheduled_date && result.data.scheduled_date !== 'Not scheduled') {
+                console.log('[One-Click Blog] Processing scheduled_date:', result.data.scheduled_date);
+                
                 // Parse the API date format "Oct 12, 2025" to "2025-10-12"
                 const dateObj = new Date(result.data.scheduled_date);
+                console.log('[One-Click Blog] Parsed date object:', dateObj);
+                
                 if (!isNaN(dateObj.getTime())) {
                     const isoDate = dateObj.toISOString().split('T')[0];
-                    document.getElementById('publish-date').value = isoDate;
-                    console.log('[One-Click Blog] Loaded schedule date from API:', isoDate);
+                    console.log('[One-Click Blog] Setting publish-date to:', isoDate);
+                    
+                    const dateInput = document.getElementById('publish-date');
+                    if (dateInput) {
+                        dateInput.value = isoDate;
+                        console.log('[One-Click Blog] ✅ Date input set successfully');
+                    } else {
+                        console.error('[One-Click Blog] ❌ publish-date element not found');
+                    }
                 } else {
                     console.error('[One-Click Blog] Invalid date format from API:', result.data.scheduled_date);
                     this.setDefaultDate();
@@ -309,7 +332,13 @@ class OneClickBlogManager {
         }
         
         // Default time to 14:00
-        document.getElementById('publish-time').value = '14:00';
+        const timeInput = document.getElementById('publish-time');
+        if (timeInput) {
+            timeInput.value = '14:00';
+            console.log('[One-Click Blog] ✅ Time input set to 14:00');
+        } else {
+            console.error('[One-Click Blog] ❌ publish-time element not found');
+        }
     }
     
     setDefaultDate() {
