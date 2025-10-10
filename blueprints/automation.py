@@ -540,7 +540,7 @@ def get_pipeline_status(post_id):
                         "status": "in_progress" if authoring_progress > 0 and authoring_progress < 100 else ("complete" if authoring_progress == 100 else "pending"),
                         "progress": authoring_progress,
                         "substages": [
-                            {"name": "Author First Drafts", "status": "in_progress" if authoring_progress > 0 else "pending", "progress": authoring_progress},
+                            {"name": "Author First Drafts", "status": "in_progress" if authoring_progress > 0 else "pending", "progress": authoring_progress, "completed_at": post['updated_at'].isoformat() if authoring_progress > 0 and post['updated_at'] else None},
                             {"name": "Image Concepts", "status": "pending"},
                             {"name": "Image Prompts", "status": "pending"}
                         ]
