@@ -1,0 +1,444 @@
+"""
+One-Click Blog Automation API Endpoints
+Mock implementation for UI development
+"""
+
+from flask import Blueprint, jsonify, request
+import json
+from datetime import datetime, timedelta
+
+bp = Blueprint('automation', __name__, url_prefix='/launchpad/one-click-blog/api')
+
+@bp.route('/next-up', methods=['GET'])
+def get_next_up():
+    """Get next scheduled week and selected idea"""
+    mock_data = {
+        "success": True,
+        "data": {
+            "current_week": {
+                "week_number": 42,
+                "year": 2025,
+                "start_date": "2025-10-14",
+                "end_date": "2025-10-20",
+                "month_name": "Oct"
+            },
+            "selected_idea": {
+                "id": 123,
+                "title": "Halloween Traditions in Scottish Castles: Ghost Stories and Legends",
+                "description": "Explore the rich history of Halloween celebrations in historic Scottish castles, from ancient Celtic traditions to modern ghost tours and paranormal investigations.",
+                "categories": ["History", "Culture", "Halloween"],
+                "priority": "high"
+            },
+            "alternative_ideas": [
+                {
+                    "id": 124,
+                    "title": "Autumn Harvest Festivals in the Highlands",
+                    "description": "Traditional harvest celebrations and customs",
+                    "categories": ["Culture", "Seasonal"],
+                    "priority": "medium"
+                },
+                {
+                    "id": 125,
+                    "title": "Traditional Scottish Soups for Cold Weather",
+                    "description": "Hearty soups perfect for autumn and winter",
+                    "categories": ["Food", "Seasonal"],
+                    "priority": "medium"
+                },
+                {
+                    "id": 126,
+                    "title": "Historic Scottish Battles of October",
+                    "description": "Military history and battlefield tours",
+                    "categories": ["History", "Military"],
+                    "priority": "medium"
+                }
+            ],
+            "can_start_automation": True,
+            "next_available_slot": "2025-10-15T09:00:00Z"
+        }
+    }
+    return jsonify(mock_data)
+
+@bp.route('/pipeline-status/<int:post_id>', methods=['GET'])
+def get_pipeline_status(post_id):
+    """Get current pipeline state for a post"""
+    mock_data = {
+        "success": True,
+        "data": {
+            "post_id": post_id,
+            "title": "Welsh Myths and Legends",
+            "current_stage": "authoring",
+            "current_substage": "author-first-drafts",
+            "overall_progress": 67,
+            "stages": {
+                "calendar": {
+                    "status": "complete",
+                    "progress": 100,
+                    "substages": {
+                        "view": {"status": "complete", "completed_at": "2025-10-10T10:00:00Z"},
+                        "ideas": {"status": "complete", "completed_at": "2025-10-10T10:15:00Z"}
+                    }
+                },
+                "concept": {
+                    "status": "complete",
+                    "progress": 100,
+                    "substages": {
+                        "brainstorm": {"status": "complete", "completed_at": "2025-10-10T11:00:00Z"},
+                        "section-structure": {"status": "complete", "completed_at": "2025-10-10T12:00:00Z"},
+                        "topic-allocation": {"status": "complete", "completed_at": "2025-10-10T13:00:00Z"},
+                        "titling": {"status": "complete", "completed_at": "2025-10-10T14:00:00Z"},
+                        "outline": {"status": "complete", "completed_at": "2025-10-10T15:00:00Z"}
+                    }
+                },
+                "authoring": {
+                    "status": "in_progress",
+                    "progress": 60,
+                    "automation_mode": "manual",
+                    "substages": {
+                        "author-first-drafts": {"status": "in_progress", "progress": 80},
+                        "fix-language": {"status": "pending"},
+                        "image-concepts": {"status": "pending"},
+                        "image-prompts": {"status": "pending"},
+                        "image-captions": {"status": "pending"}
+                    }
+                },
+                "imaging": {
+                    "status": "pending",
+                    "progress": 0,
+                    "automation_mode": "auto",
+                    "substages": {
+                        "image-generation": {"status": "pending"},
+                        "optimise": {"status": "pending"}
+                    }
+                }
+            },
+            "estimated_completion": "2025-10-12T16:00:00Z",
+            "last_action_at": "2025-10-10T15:30:00Z",
+            "error_count": 0
+        }
+    }
+    return jsonify(mock_data)
+
+@bp.route('/blog-queue', methods=['GET'])
+def get_blog_queue():
+    """Get list of all posts with status (filterable)"""
+    filter_type = request.args.get('filter', 'all')
+    sort_by = request.args.get('sort', 'week')
+    page = int(request.args.get('page', 1))
+    limit = int(request.args.get('limit', 20))
+    
+    mock_posts = [
+        {
+            "post_id": 77,
+            "title": "Welsh Myths and Legends",
+            "week_number": 41,
+            "week_dates": "Oct 7-13, 2025",
+            "status": "in_progress",
+            "current_stage": "authoring",
+            "current_substage": "author-first-drafts",
+            "progress": 67,
+            "last_updated": "2025-10-10T15:30:00Z",
+            "automation_mode": "manual",
+            "can_resume": True,
+            "can_pause": True
+        },
+        {
+            "post_id": 78,
+            "title": "Halloween Traditions in Scottish Castles",
+            "week_number": 42,
+            "week_dates": "Oct 14-20, 2025",
+            "status": "pending",
+            "current_stage": "calendar",
+            "current_substage": "view",
+            "progress": 0,
+            "last_updated": "2025-10-10T16:00:00Z",
+            "automation_mode": "auto",
+            "can_resume": False,
+            "can_pause": False
+        },
+        {
+            "post_id": 76,
+            "title": "Scottish Highland Wildlife in Autumn",
+            "week_number": 40,
+            "week_dates": "Sep 30 - Oct 6, 2025",
+            "status": "published",
+            "current_stage": "published",
+            "current_substage": "clan.com",
+            "progress": 100,
+            "last_updated": "2025-10-07T14:00:00Z",
+            "automation_mode": "completed",
+            "can_resume": False,
+            "can_pause": False
+        }
+    ]
+    
+    # Apply filters
+    if filter_type != 'all':
+        mock_posts = [post for post in mock_posts if post['status'] == filter_type]
+    
+    # Apply sorting
+    if sort_by == 'week':
+        mock_posts.sort(key=lambda x: x['week_number'], reverse=True)
+    elif sort_by == 'status':
+        mock_posts.sort(key=lambda x: x['status'])
+    elif sort_by == 'progress':
+        mock_posts.sort(key=lambda x: x['progress'], reverse=True)
+    elif sort_by == 'updated':
+        mock_posts.sort(key=lambda x: x['last_updated'], reverse=True)
+    
+    # Apply pagination
+    start_idx = (page - 1) * limit
+    end_idx = start_idx + limit
+    paginated_posts = mock_posts[start_idx:end_idx]
+    
+    mock_data = {
+        "success": True,
+        "data": {
+            "posts": paginated_posts,
+            "pagination": {
+                "current_page": page,
+                "total_pages": (len(mock_posts) + limit - 1) // limit,
+                "total_posts": len(mock_posts),
+                "has_next": end_idx < len(mock_posts),
+                "has_prev": page > 1
+            },
+            "filters": {
+                "available": ["all", "draft", "in_progress", "scheduled", "published", "failed"],
+                "current": filter_type
+            },
+            "sort_options": {
+                "available": ["week", "status", "progress", "updated"],
+                "current": sort_by
+            }
+        }
+    }
+    return jsonify(mock_data)
+
+@bp.route('/alerts', methods=['GET'])
+def get_alerts():
+    """Get unread alerts for header"""
+    unread_only = request.args.get('unread_only', 'true').lower() == 'true'
+    
+    mock_alerts = [
+        {
+            "id": 1,
+            "alert_type": "stuck_post",
+            "severity": "warning",
+            "post_id": 76,
+            "title": "Post #76 Stuck at Image Generation",
+            "message": "Failed 3 times - needs manual attention",
+            "action_url": "/launchpad/one-click-blog?post=76",
+            "action_text": "View Post",
+            "created_at": "2025-10-10T14:30:00Z",
+            "is_read": False
+        },
+        {
+            "id": 2,
+            "alert_type": "ready_publish",
+            "severity": "info",
+            "post_id": 75,
+            "title": "Post #75 Ready for Publication",
+            "message": "Scheduled for today at 2:00 PM",
+            "action_url": "/launchpad/one-click-blog?post=75&action=publish",
+            "action_text": "Publish Now",
+            "created_at": "2025-10-10T13:00:00Z",
+            "is_read": False
+        },
+        {
+            "id": 3,
+            "alert_type": "completion",
+            "severity": "success",
+            "post_id": 74,
+            "title": "Post #74 Published Successfully",
+            "message": "Automation completed and published to Clan.com",
+            "action_url": "/launchpad/one-click-blog?post=74",
+            "action_text": "View Post",
+            "created_at": "2025-10-10T12:00:00Z",
+            "is_read": True
+        }
+    ]
+    
+    if unread_only:
+        mock_alerts = [alert for alert in mock_alerts if not alert['is_read']]
+    
+    mock_data = {
+        "success": True,
+        "data": {
+            "alerts": mock_alerts,
+            "unread_count": len([alert for alert in mock_alerts if not alert['is_read']])
+        }
+    }
+    return jsonify(mock_data)
+
+@bp.route('/start-automation', methods=['POST'])
+def start_automation():
+    """Initiate automation for a post (mock initially)"""
+    data = request.get_json()
+    
+    post_id = data.get('post_id')
+    idea_id = data.get('idea_id')
+    publish_time = data.get('publish_time')
+    require_approval = data.get('require_approval', True)
+    
+    mock_data = {
+        "success": True,
+        "data": {
+            "automation_id": f"auto_{post_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            "status": "started",
+            "estimated_completion": (datetime.now() + timedelta(hours=2)).isoformat() + "Z",
+            "current_stage": "calendar",
+            "message": "Automation started successfully"
+        }
+    }
+    return jsonify(mock_data)
+
+@bp.route('/toggle-mode', methods=['POST'])
+def toggle_mode():
+    """Toggle manual/auto mode for a stage"""
+    data = request.get_json()
+    
+    post_id = data.get('post_id')
+    stage = data.get('stage')
+    mode = data.get('mode')
+    
+    mock_data = {
+        "success": True,
+        "data": {
+            "stage": stage,
+            "mode": mode,
+            "message": "Mode updated successfully"
+        }
+    }
+    return jsonify(mock_data)
+
+@bp.route('/alert/dismiss/<int:alert_id>', methods=['POST'])
+def dismiss_alert(alert_id):
+    """Dismiss an alert"""
+    mock_data = {
+        "success": True,
+        "data": {
+            "alert_id": alert_id,
+            "message": "Alert dismissed successfully"
+        }
+    }
+    return jsonify(mock_data)
+
+@bp.route('/settings', methods=['GET'])
+def get_settings():
+    """Get automation settings"""
+    mock_data = {
+        "success": True,
+        "data": {
+            "default_automation_mode": {
+                "calendar": "auto",
+                "concept": "auto",
+                "authoring": "manual",
+                "imaging": "auto"
+            },
+            "retry_settings": {
+                "max_retries": 3,
+                "retry_delay_minutes": 5,
+                "exponential_backoff": True
+            },
+            "notification_preferences": {
+                "email": False,
+                "browser": True,
+                "sound": False
+            },
+            "publication_timing": {
+                "default_publish_time": "14:00",
+                "require_approval": True,
+                "auto_publish": False
+            },
+            "llm_providers": {
+                "calendar": "ollama",
+                "concept": "ollama",
+                "authoring": "ollama",
+                "imaging": "ollama"
+            }
+        }
+    }
+    return jsonify(mock_data)
+
+@bp.route('/settings', methods=['POST'])
+def save_settings():
+    """Save automation settings"""
+    data = request.get_json()
+    
+    mock_data = {
+        "success": True,
+        "data": {
+            "message": "Settings saved successfully",
+            "settings": data
+        }
+    }
+    return jsonify(mock_data)
+
+@bp.route('/post/<int:post_id>/pause', methods=['POST'])
+def pause_post(post_id):
+    """Pause automation for a post"""
+    mock_data = {
+        "success": True,
+        "data": {
+            "post_id": post_id,
+            "status": "paused",
+            "message": "Automation paused successfully"
+        }
+    }
+    return jsonify(mock_data)
+
+@bp.route('/post/<int:post_id>/resume', methods=['POST'])
+def resume_post(post_id):
+    """Resume automation for a post"""
+    mock_data = {
+        "success": True,
+        "data": {
+            "post_id": post_id,
+            "status": "resumed",
+            "message": "Automation resumed successfully"
+        }
+    }
+    return jsonify(mock_data)
+
+@bp.route('/post/<int:post_id>/delete', methods=['DELETE'])
+def delete_post(post_id):
+    """Delete a post"""
+    mock_data = {
+        "success": True,
+        "data": {
+            "post_id": post_id,
+            "message": "Post deleted successfully"
+        }
+    }
+    return jsonify(mock_data)
+
+@bp.route('/create-post', methods=['POST'])
+def create_post():
+    """Create a new post"""
+    data = request.get_json()
+    
+    mock_data = {
+        "success": True,
+        "data": {
+            "post_id": 79,
+            "title": data.get('title', 'New Post'),
+            "status": "pending",
+            "message": "Post created successfully"
+        }
+    }
+    return jsonify(mock_data)
+
+@bp.route('/analytics/<int:post_id>', methods=['GET'])
+def get_post_analytics(post_id):
+    """Get analytics for a published post"""
+    mock_data = {
+        "success": True,
+        "data": {
+            "post_id": post_id,
+            "views": 1250,
+            "clicks": 45,
+            "engagement_rate": 3.6,
+            "published_at": "2025-10-07T14:00:00Z",
+            "analytics_url": f"/analytics/posts/{post_id}"
+        }
+    }
+    return jsonify(mock_data)

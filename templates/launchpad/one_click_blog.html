@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One-Click Blog - Automated Blog Creation</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/launchpad/one-click-blog.css') }}">
+</head>
+<body>
+    {% include 'shared/header.html' %}
+    
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-magic"></i> One-Click Blog</h1>
+            <p>Automated End-to-End Blog Post Creation</p>
+        </div>
+        
+        <!-- Next Up Panel -->
+        <div class="next-up-panel">
+            <div class="panel-header">
+                <h2><i class="fas fa-calendar-alt"></i> Next Up</h2>
+                <div class="week-info">
+                    <span class="week-number">Week 42</span>
+                    <span class="week-dates">Oct 14-20, 2025</span>
+                </div>
+            </div>
+            
+            <div class="selected-idea">
+                <div class="idea-header">
+                    <h3>Selected Idea</h3>
+                    <button class="change-idea-btn" onclick="oneClickBlogManager.showIdeaSelector()">
+                        <i class="fas fa-sync-alt"></i> Change Idea
+                    </button>
+                </div>
+                <div class="idea-content">
+                    <h4>Halloween Traditions in Scottish Castles: Ghost Stories and Legends</h4>
+                    <p>Explore the rich history of Halloween celebrations in historic Scottish castles, from ancient Celtic traditions to modern ghost tours and paranormal investigations.</p>
+                    <div class="idea-tags">
+                        <span class="tag">History</span>
+                        <span class="tag">Culture</span>
+                        <span class="tag">Halloween</span>
+                        <span class="tag priority-high">High Priority</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="idea-alternatives" id="idea-alternatives" style="display: none;">
+                <h4>Alternative Ideas</h4>
+                <div class="alternatives-list">
+                    <div class="alternative-item" onclick="oneClickBlogManager.selectIdea(124)">
+                        <h5>Autumn Harvest Festivals in the Highlands</h5>
+                        <p>Traditional harvest celebrations and customs</p>
+                        <div class="alternative-tags">
+                            <span class="tag">Culture</span>
+                            <span class="tag">Seasonal</span>
+                        </div>
+                    </div>
+                    <div class="alternative-item" onclick="oneClickBlogManager.selectIdea(125)">
+                        <h5>Traditional Scottish Soups for Cold Weather</h5>
+                        <p>Hearty soups perfect for autumn and winter</p>
+                        <div class="alternative-tags">
+                            <span class="tag">Food</span>
+                            <span class="tag">Seasonal</span>
+                        </div>
+                    </div>
+                    <div class="alternative-item" onclick="oneClickBlogManager.selectIdea(126)">
+                        <h5>Historic Scottish Battles of October</h5>
+                        <p>Military history and battlefield tours</p>
+                        <div class="alternative-tags">
+                            <span class="tag">History</span>
+                            <span class="tag">Military</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-primary start-production-btn" onclick="oneClickBlogManager.startProduction()">
+                    <i class="fas fa-rocket"></i> Start Production
+                </button>
+                <button class="btn btn-secondary schedule-btn" onclick="oneClickBlogManager.showScheduleModal()">
+                    <i class="fas fa-clock"></i> Schedule
+                </button>
+            </div>
+            
+            <div class="timeline-indicator">
+                <div class="timeline-bar">
+                    <div class="timeline-progress" style="width: 15%;"></div>
+                </div>
+                <div class="timeline-labels">
+                    <span class="timeline-label current">Week 42</span>
+                    <span class="timeline-label">Week 43</span>
+                    <span class="timeline-label">Week 44</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pipeline Progress Tracker -->
+        <div class="pipeline-tracker">
+            <div class="panel-header">
+                <h2><i class="fas fa-cogs"></i> Pipeline Progress</h2>
+                <div class="overall-progress">
+                    <span class="progress-label">Overall Progress</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 67%;"></div>
+                    </div>
+                    <span class="progress-text">67%</span>
+                </div>
+            </div>
+            
+            <div class="stages-container">
+                <!-- Calendar Stage -->
+                <div class="stage-accordion">
+                    <div class="stage-header" onclick="oneClickBlogManager.toggleStage('calendar')">
+                        <div class="stage-info">
+                            <i class="fas fa-calendar-alt stage-icon"></i>
+                            <div class="stage-details">
+                                <h3>Calendar</h3>
+                                <span class="stage-status complete">Complete</span>
+                            </div>
+                        </div>
+                        <div class="stage-controls">
+                            <div class="stage-progress">
+                                <div class="progress-bar small">
+                                    <div class="progress-fill" style="width: 100%;"></div>
+                                </div>
+                                <span class="progress-text">100%</span>
+                            </div>
+                            <i class="fas fa-chevron-down accordion-icon" id="calendar-chevron"></i>
+                        </div>
+                    </div>
+                    <div class="stage-content" id="calendar-content" style="display: none;">
+                        <div class="substages">
+                            <div class="substage complete">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Calendar View</span>
+                                <span class="completed-at">Completed 2 hours ago</span>
+                            </div>
+                            <div class="substage complete">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Idea Generation</span>
+                                <span class="completed-at">Completed 2 hours ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Planning Stage -->
+                <div class="stage-accordion">
+                    <div class="stage-header" onclick="oneClickBlogManager.toggleStage('concept')">
+                        <div class="stage-info">
+                            <i class="fas fa-lightbulb stage-icon"></i>
+                            <div class="stage-details">
+                                <h3>Planning</h3>
+                                <span class="stage-status complete">Complete</span>
+                            </div>
+                        </div>
+                        <div class="stage-controls">
+                            <div class="stage-progress">
+                                <div class="progress-bar small">
+                                    <div class="progress-fill" style="width: 100%;"></div>
+                                </div>
+                                <span class="progress-text">100%</span>
+                            </div>
+                            <i class="fas fa-chevron-down accordion-icon" id="concept-chevron"></i>
+                        </div>
+                    </div>
+                    <div class="stage-content" id="concept-content" style="display: none;">
+                        <div class="substages">
+                            <div class="substage complete">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Topic Brainstorming</span>
+                                <span class="completed-at">Completed 1 hour ago</span>
+                            </div>
+                            <div class="substage complete">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Section Structure</span>
+                                <span class="completed-at">Completed 1 hour ago</span>
+                            </div>
+                            <div class="substage complete">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Topic Allocation</span>
+                                <span class="completed-at">Completed 45 minutes ago</span>
+                            </div>
+                            <div class="substage complete">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Section Titling</span>
+                                <span class="completed-at">Completed 30 minutes ago</span>
+                            </div>
+                            <div class="substage complete">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Content Outline</span>
+                                <span class="completed-at">Completed 15 minutes ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Authoring Stage -->
+                <div class="stage-accordion">
+                    <div class="stage-header" onclick="oneClickBlogManager.toggleStage('authoring')">
+                        <div class="stage-info">
+                            <i class="fas fa-pen-nib stage-icon"></i>
+                            <div class="stage-details">
+                                <h3>Authoring</h3>
+                                <span class="stage-status in-progress">In Progress</span>
+                            </div>
+                        </div>
+                        <div class="stage-controls">
+                            <div class="stage-progress">
+                                <div class="progress-bar small">
+                                    <div class="progress-fill" style="width: 60%;"></div>
+                                </div>
+                                <span class="progress-text">60%</span>
+                            </div>
+                            <div class="stage-actions">
+                                <button class="mode-toggle manual active" onclick="oneClickBlogManager.toggleMode('authoring', 'manual')">
+                                    <i class="fas fa-hand-paper"></i> Manual
+                                </button>
+                                <button class="mode-toggle auto" onclick="oneClickBlogManager.toggleMode('authoring', 'auto')">
+                                    <i class="fas fa-robot"></i> Auto
+                                </button>
+                                <button class="action-btn review" onclick="oneClickBlogManager.reviewStage('authoring')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="action-btn skip" onclick="oneClickBlogManager.skipStage('authoring')">
+                                    <i class="fas fa-forward"></i>
+                                </button>
+                            </div>
+                            <i class="fas fa-chevron-down accordion-icon" id="authoring-chevron"></i>
+                        </div>
+                    </div>
+                    <div class="stage-content" id="authoring-content" style="display: none;">
+                        <div class="substages">
+                            <div class="substage in-progress">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <span>Author First Drafts</span>
+                                <div class="substage-progress">
+                                    <div class="progress-bar micro">
+                                        <div class="progress-fill" style="width: 80%;"></div>
+                                    </div>
+                                    <span class="progress-text">80%</span>
+                                </div>
+                            </div>
+                            <div class="substage pending">
+                                <i class="fas fa-clock"></i>
+                                <span>Fix Language</span>
+                                <span class="estimated-time">~30 min</span>
+                            </div>
+                            <div class="substage pending">
+                                <i class="fas fa-clock"></i>
+                                <span>Image Concepts</span>
+                                <span class="estimated-time">~15 min</span>
+                            </div>
+                            <div class="substage pending">
+                                <i class="fas fa-clock"></i>
+                                <span>Image Prompts</span>
+                                <span class="estimated-time">~20 min</span>
+                            </div>
+                            <div class="substage pending">
+                                <i class="fas fa-clock"></i>
+                                <span>Image Captions</span>
+                                <span class="estimated-time">~10 min</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Imaging Stage -->
+                <div class="stage-accordion">
+                    <div class="stage-header" onclick="oneClickBlogManager.toggleStage('imaging')">
+                        <div class="stage-info">
+                            <i class="fas fa-magic stage-icon"></i>
+                            <div class="stage-details">
+                                <h3>Imaging</h3>
+                                <span class="stage-status pending">Pending</span>
+                            </div>
+                        </div>
+                        <div class="stage-controls">
+                            <div class="stage-progress">
+                                <div class="progress-bar small">
+                                    <div class="progress-fill" style="width: 0%;"></div>
+                                </div>
+                                <span class="progress-text">0%</span>
+                            </div>
+                            <div class="stage-actions">
+                                <button class="mode-toggle auto active" onclick="oneClickBlogManager.toggleMode('imaging', 'auto')">
+                                    <i class="fas fa-robot"></i> Auto
+                                </button>
+                                <button class="mode-toggle manual" onclick="oneClickBlogManager.toggleMode('imaging', 'manual')">
+                                    <i class="fas fa-hand-paper"></i> Manual
+                                </button>
+                                <button class="action-btn review" onclick="oneClickBlogManager.reviewStage('imaging')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="action-btn skip" onclick="oneClickBlogManager.skipStage('imaging')">
+                                    <i class="fas fa-forward"></i>
+                                </button>
+                            </div>
+                            <i class="fas fa-chevron-down accordion-icon" id="imaging-chevron"></i>
+                        </div>
+                    </div>
+                    <div class="stage-content" id="imaging-content" style="display: none;">
+                        <div class="substages">
+                            <div class="substage pending">
+                                <i class="fas fa-clock"></i>
+                                <span>Image Generation</span>
+                                <span class="estimated-time">~45 min</span>
+                            </div>
+                            <div class="substage pending">
+                                <i class="fas fa-clock"></i>
+                                <span>Optimise</span>
+                                <span class="estimated-time">~15 min</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pipeline-summary">
+                <div class="summary-item">
+                    <i class="fas fa-clock"></i>
+                    <span>Estimated Completion: <strong>Oct 12, 4:00 PM</strong></span>
+                </div>
+                <div class="summary-item">
+                    <i class="fas fa-history"></i>
+                    <span>Last Action: <strong>15 minutes ago</strong></span>
+                </div>
+                <div class="summary-item">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Errors: <strong>0</strong></span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Blog Queue Panel -->
+        <div class="blog-queue-panel">
+            <div class="panel-header">
+                <h2><i class="fas fa-list-alt"></i> Blog Queue</h2>
+                <div class="queue-controls">
+                    <div class="filters">
+                        <select class="filter-select" onchange="oneClickBlogManager.filterQueue(this.value)">
+                            <option value="all">All Posts</option>
+                            <option value="draft">Draft</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="scheduled">Scheduled</option>
+                            <option value="published">Published</option>
+                            <option value="failed">Failed</option>
+                        </select>
+                        <select class="sort-select" onchange="oneClickBlogManager.sortQueue(this.value)">
+                            <option value="week">Sort by Week</option>
+                            <option value="status">Sort by Status</option>
+                            <option value="progress">Sort by Progress</option>
+                            <option value="updated">Sort by Updated</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary create-post-btn" onclick="oneClickBlogManager.createNewPost()">
+                        <i class="fas fa-plus"></i> Create New Post
+                    </button>
+                </div>
+            </div>
+            
+            <div class="queue-list">
+                <!-- Post Card 1 -->
+                <div class="post-card">
+                    <div class="post-header">
+                        <div class="post-info">
+                            <h3>Welsh Myths and Legends</h3>
+                            <div class="post-meta">
+                                <span class="week-info">Week 41 • Oct 7-13, 2025</span>
+                                <span class="post-id">Post #77</span>
+                            </div>
+                        </div>
+                        <div class="post-status">
+                            <span class="status-badge in-progress">In Progress</span>
+                        </div>
+                    </div>
+                    
+                    <div class="post-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 67%;"></div>
+                        </div>
+                        <span class="progress-text">67% Complete</span>
+                    </div>
+                    
+                    <div class="post-details">
+                        <div class="current-stage">
+                            <i class="fas fa-pen-nib"></i>
+                            <span>Authoring • Author First Drafts</span>
+                        </div>
+                        <div class="last-updated">
+                            <i class="fas fa-clock"></i>
+                            <span>Updated 2 hours ago</span>
+                        </div>
+                        <div class="automation-mode">
+                            <i class="fas fa-hand-paper"></i>
+                            <span>Manual Mode</span>
+                        </div>
+                    </div>
+                    
+                    <div class="post-actions">
+                        <button class="action-btn view" onclick="oneClickBlogManager.viewPost(77)">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button class="action-btn resume" onclick="oneClickBlogManager.resumePost(77)">
+                            <i class="fas fa-play"></i> Resume
+                        </button>
+                        <button class="action-btn pause" onclick="oneClickBlogManager.pausePost(77)">
+                            <i class="fas fa-pause"></i> Pause
+                        </button>
+                        <button class="action-btn delete" onclick="oneClickBlogManager.deletePost(77)">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Post Card 2 -->
+                <div class="post-card">
+                    <div class="post-header">
+                        <div class="post-info">
+                            <h3>Halloween Traditions in Scottish Castles</h3>
+                            <div class="post-meta">
+                                <span class="week-info">Week 42 • Oct 14-20, 2025</span>
+                                <span class="post-id">Post #78</span>
+                            </div>
+                        </div>
+                        <div class="post-status">
+                            <span class="status-badge pending">Pending</span>
+                        </div>
+                    </div>
+                    
+                    <div class="post-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                        <span class="progress-text">0% Complete</span>
+                    </div>
+                    
+                    <div class="post-details">
+                        <div class="current-stage">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Calendar • View</span>
+                        </div>
+                        <div class="last-updated">
+                            <i class="fas fa-clock"></i>
+                            <span>Updated 5 minutes ago</span>
+                        </div>
+                        <div class="automation-mode">
+                            <i class="fas fa-robot"></i>
+                            <span>Auto Mode</span>
+                        </div>
+                    </div>
+                    
+                    <div class="post-actions">
+                        <button class="action-btn view" onclick="oneClickBlogManager.viewPost(78)">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button class="action-btn start" onclick="oneClickBlogManager.startPost(78)">
+                            <i class="fas fa-play"></i> Start
+                        </button>
+                        <button class="action-btn delete" onclick="oneClickBlogManager.deletePost(78)">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Post Card 3 -->
+                <div class="post-card">
+                    <div class="post-header">
+                        <div class="post-info">
+                            <h3>Scottish Highland Wildlife in Autumn</h3>
+                            <div class="post-meta">
+                                <span class="week-info">Week 40 • Sep 30 - Oct 6, 2025</span>
+                                <span class="post-id">Post #76</span>
+                            </div>
+                        </div>
+                        <div class="post-status">
+                            <span class="status-badge published">Published</span>
+                        </div>
+                    </div>
+                    
+                    <div class="post-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100%;"></div>
+                        </div>
+                        <span class="progress-text">100% Complete</span>
+                    </div>
+                    
+                    <div class="post-details">
+                        <div class="current-stage">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Published • Clan.com</span>
+                        </div>
+                        <div class="last-updated">
+                            <i class="fas fa-clock"></i>
+                            <span>Published 3 days ago</span>
+                        </div>
+                        <div class="automation-mode">
+                            <i class="fas fa-check"></i>
+                            <span>Completed</span>
+                        </div>
+                    </div>
+                    
+                    <div class="post-actions">
+                        <button class="action-btn view" onclick="oneClickBlogManager.viewPost(76)">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button class="action-btn analytics" onclick="oneClickBlogManager.viewAnalytics(76)">
+                            <i class="fas fa-chart-line"></i> Analytics
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pagination">
+                <button class="pagination-btn" disabled>
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                <span class="pagination-info">Page 1 of 3</span>
+                <button class="pagination-btn" onclick="oneClickBlogManager.nextPage()">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Settings Panel (Collapsible) -->
+        <div class="settings-panel">
+            <div class="panel-header" onclick="oneClickBlogManager.toggleSettings()">
+                <h2><i class="fas fa-cog"></i> Settings</h2>
+                <i class="fas fa-chevron-down accordion-icon" id="settings-chevron"></i>
+            </div>
+            <div class="settings-content" id="settings-content" style="display: none;">
+                <div class="settings-grid">
+                    <div class="setting-group">
+                        <h3>Default Automation Mode</h3>
+                        <div class="mode-settings">
+                            <div class="mode-setting">
+                                <label>Calendar</label>
+                                <select>
+                                    <option value="auto" selected>Auto</option>
+                                    <option value="manual">Manual</option>
+                                </select>
+                            </div>
+                            <div class="mode-setting">
+                                <label>Planning</label>
+                                <select>
+                                    <option value="auto" selected>Auto</option>
+                                    <option value="manual">Manual</option>
+                                </select>
+                            </div>
+                            <div class="mode-setting">
+                                <label>Authoring</label>
+                                <select>
+                                    <option value="auto">Auto</option>
+                                    <option value="manual" selected>Manual</option>
+                                </select>
+                            </div>
+                            <div class="mode-setting">
+                                <label>Imaging</label>
+                                <select>
+                                    <option value="auto" selected>Auto</option>
+                                    <option value="manual">Manual</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <h3>Retry Settings</h3>
+                        <div class="retry-settings">
+                            <div class="retry-setting">
+                                <label>Max Retries</label>
+                                <input type="number" value="3" min="1" max="10">
+                            </div>
+                            <div class="retry-setting">
+                                <label>Retry Delay (minutes)</label>
+                                <input type="number" value="5" min="1" max="60">
+                            </div>
+                            <div class="retry-setting">
+                                <label>
+                                    <input type="checkbox" checked> Exponential Backoff
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <h3>Publication Timing</h3>
+                        <div class="publication-settings">
+                            <div class="publication-setting">
+                                <label>Default Publish Time</label>
+                                <input type="time" value="14:00">
+                            </div>
+                            <div class="publication-setting">
+                                <label>
+                                    <input type="checkbox" checked> Require Approval
+                                </label>
+                            </div>
+                            <div class="publication-setting">
+                                <label>
+                                    <input type="checkbox"> Auto Publish When Complete
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <h3>Notifications</h3>
+                        <div class="notification-settings">
+                            <div class="notification-setting">
+                                <label>
+                                    <input type="checkbox" checked> Browser Notifications
+                                </label>
+                            </div>
+                            <div class="notification-setting">
+                                <label>
+                                    <input type="checkbox"> Email Notifications
+                                </label>
+                            </div>
+                            <div class="notification-setting">
+                                <label>
+                                    <input type="checkbox"> Sound Alerts
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-actions">
+                    <button class="btn btn-primary" onclick="oneClickBlogManager.saveSettings()">
+                        <i class="fas fa-save"></i> Save Settings
+                    </button>
+                    <button class="btn btn-secondary" onclick="oneClickBlogManager.resetSettings()">
+                        <i class="fas fa-undo"></i> Reset to Defaults
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Schedule Modal -->
+    <div class="modal" id="schedule-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Schedule Publication</h3>
+                <button class="modal-close" onclick="oneClickBlogManager.closeScheduleModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="schedule-form">
+                    <div class="form-group">
+                        <label>Publish Date</label>
+                        <input type="date" id="publish-date" value="2025-10-15">
+                    </div>
+                    <div class="form-group">
+                        <label>Publish Time</label>
+                        <input type="time" id="publish-time" value="14:00">
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="require-approval" checked> Require Manual Approval
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="auto-publish"> Auto Publish When Complete
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="oneClickBlogManager.closeScheduleModal()">
+                    Cancel
+                </button>
+                <button class="btn btn-primary" onclick="oneClickBlogManager.schedulePost()">
+                    <i class="fas fa-calendar-check"></i> Schedule
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/launchpad/one-click-blog.js') }}"></script>
+</body>
+</html>

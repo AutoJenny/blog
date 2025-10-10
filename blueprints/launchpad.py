@@ -2183,6 +2183,11 @@ def clan_post_html(post_id):
         logger.error(f"Error in clan_post_html for post {post_id}: {e}")
         return f"Error: {str(e)}", 500
 
+@bp.route('/one-click-blog')
+def one_click_blog():
+    """One-Click Blog automation page."""
+    return render_template('launchpad/one_click_blog.html')
+
 @bp.route('/health')
 def health():
     """Health check endpoint."""

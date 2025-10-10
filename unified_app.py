@@ -40,6 +40,9 @@ def create_app(config_name=None):
     from blueprints.launchpad_content import bp as launchpad_content_bp
     app.register_blueprint(launchpad_content_bp, url_prefix='/launchpad')
     
+    from blueprints.automation import bp as automation_bp
+    app.register_blueprint(automation_bp)
+    
     from blueprints.llm_actions import bp as llm_actions_bp
     app.register_blueprint(llm_actions_bp, url_prefix='/llm-actions')
     

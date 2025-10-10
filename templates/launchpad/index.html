@@ -959,6 +959,38 @@
                 </div>
             </div>
             
+            <!-- One-Click Blog Module -->
+            <div class="module-card active" style="border: 3px solid #8b5cf6; cursor: pointer;" onclick="window.location.href='/launchpad/one-click-blog'">
+                <div class="module-icon" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa);">
+                    <i class="fas fa-magic"></i>
+                </div>
+                <h2 class="module-title" style="color: #8b5cf6;">One-Click Blog</h2>
+                <p class="module-description">
+                    Automated end-to-end blog post creation. Triggers the entire blog pipeline 
+                    from concept to publication with a single click. Complete automation workflow.
+                </p>
+                <div class="module-stats">
+                    <div class="stat">
+                        <i class="fas fa-rocket"></i>
+                        <span id="automated-posts">Loading...</span> automated
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-cogs"></i>
+                        <span id="pipeline-steps">Loading...</span> steps
+                    </div>
+                </div>
+                <div class="module-actions">
+                    <button class="btn btn-primary" style="background: #8b5cf6; border-color: #8b5cf6;" onclick="event.stopPropagation(); window.location.href='/launchpad/one-click-blog'">
+                        <i class="fas fa-magic"></i>
+                        Launch Automation
+                    </button>
+                    <button class="btn btn-secondary" style="border-color: #8b5cf6; color: #8b5cf6;" onclick="event.stopPropagation(); window.location.href='/launchpad/one-click-blog'">
+                        <i class="fas fa-cog"></i>
+                        Configure
+                    </button>
+                </div>
+            </div>
+            
             <!-- Clan.com Publishing (Active Development) -->
             <div class="module-card active">
                 <div class="module-icon">
