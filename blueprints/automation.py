@@ -1530,50 +1530,109 @@ def execute_author_first_drafts(post_id, data):
             try:
                 logger.info(f"Generating draft for section {section_id}: {section_title}")
                 
-                # Call the authoring API endpoint for this section
-                from blueprints.authoring import api_generate_section_draft
-                
-                # Create a mock request object
-                class MockRequest:
-                    def get_json(self):
-                        return {}
-                
-                # Temporarily replace the global request object
-                import flask
-                original_request = flask.request
-                flask.request = MockRequest()
+                # Call the core LLM logic directly (same as authoring API)
+                from blueprints.authoring import LLMService
+                import json
                 
                 try:
-                    # Call the section draft generation API
-                    result = api_generate_section_draft(post_id, str(section_id))
+                    # Get the LLM prompt for section drafting
+                    with db_manager.get_cursor() as cursor:
+                        cursor.execute("""
+                            SELECT system_prompt, prompt_text
+                            FROM llm_prompt
+                            WHERE name = 'Section Drafting'
+                            ORDER BY id DESC
+                            LIMIT 1
+                        """)
+                        prompt_data = cursor.fetchone()
+                        
+                        if not prompt_data:
+                            raise Exception("Section Drafting prompt not found")
                     
-                    # Convert Flask response to dict if needed
-                    if hasattr(result, 'get_json'):
-                        result_data = result.get_json()
-                    else:
-                        result_data = result
+                    # Get post development data for context
+                    with db_manager.get_cursor() as cursor:
+                        cursor.execute("""
+                            SELECT expanded_idea, topic_allocation, sections
+                            FROM post_development
+                            WHERE post_id = %s
+                        """, (post_id,))
+                        dev_data = cursor.fetchone()
+                        
+                        if not dev_data:
+                            raise Exception("Post development data not found")
                     
-                    if result_data.get('success'):
+                    # Prepare prompt variables
+                    topic_allocation = dev_data['topic_allocation']
+                    if isinstance(topic_allocation, str):
+                        topic_allocation = json.loads(topic_allocation)
+                    
+                    # Find the section data
+                    current_section_data = None
+                    if topic_allocation and 'allocations' in topic_allocation:
+                        for allocation in topic_allocation['allocations']:
+                            if allocation.get('section_id') == f'section_{section["section_order"]}':
+                                current_section_data = allocation
+                                break
+                    
+                    if not current_section_data:
+                        raise Exception(f"Section data not found for section {section['section_order']}")
+                    
+                    # Build prompt variables
+                    prompt_vars = {
+                        'SELECTED_IDEA': dev_data.get('expanded_idea', ''),
+                        'EXPANDED_IDEA': dev_data.get('expanded_idea', ''),
+                        'SECTION_TITLE': section['section_heading'],
+                        'SECTION_SUBTITLE': section['section_description'] or '',
+                        'SECTION_GROUP': current_section_data.get('section_theme', f'Section {section["section_order"]}'),
+                        'GROUP_SUMMARY': current_section_data.get('section_description', ''),
+                        'SECTION_TOPICS': ', '.join(current_section_data.get('topics', [])),
+                        'AVOID_SECTIONS_DETAILED': ''  # Simplified for now
+                    }
+                    
+                    # Replace placeholders in prompt
+                    prompt_text = prompt_data['prompt_text']
+                    for key, value in prompt_vars.items():
+                        prompt_text = prompt_text.replace(f'[{key}]', str(value))
+                    
+                    # Call LLM service
+                    messages = [
+                        {'role': 'system', 'content': prompt_data['system_prompt']},
+                        {'role': 'user', 'content': prompt_text}
+                    ]
+                    
+                    llm_service = LLMService()
+                    llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+                    
+                    if llm_response and 'content' in llm_response:
+                        draft_content = llm_response['content'].strip()
+                        
+                        # Save the draft content to database
+                        with db_manager.get_cursor() as cursor:
+                            cursor.execute("""
+                                UPDATE post_section
+                                SET draft = %s, status = 'complete'
+                                WHERE id = %s
+                            """, (draft_content, section_id))
+                        
                         success_count += 1
                         results.append({
                             'section_id': section_id,
                             'section_title': section_title,
                             'success': True,
-                            'draft_content': result_data.get('draft_content', '')
+                            'draft_content': draft_content
                         })
                         logger.info(f"Successfully generated draft for section {section_id}")
                     else:
-                        results.append({
-                            'section_id': section_id,
-                            'section_title': section_title,
-                            'success': False,
-                            'error': result_data.get('error', 'Unknown error')
-                        })
-                        logger.error(f"Failed to generate draft for section {section_id}: {result_data.get('error')}")
+                        raise Exception("No content in LLM response")
                         
-                finally:
-                    # Restore original request object
-                    flask.request = original_request
+                except Exception as e:
+                    results.append({
+                        'section_id': section_id,
+                        'section_title': section_title,
+                        'success': False,
+                        'error': str(e)
+                    })
+                    logger.error(f"Error generating draft for section {section_id}: {e}")
                     
             except Exception as e:
                 logger.error(f"Error generating draft for section {section_id}: {e}")
