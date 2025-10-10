@@ -347,7 +347,6 @@ class OneClickBlogController {
             },
             'authoring': {
                 'author_first_drafts': `/authoring/posts/${postId}/sections/author-first-drafts`,
-                'fix_language': `/authoring/posts/${postId}/sections/fix-language`,
                 'image_concepts': `/authoring/posts/${postId}/sections/image-concepts`,
                 'image_prompts': `/authoring/posts/${postId}/sections/image-prompts`
             },

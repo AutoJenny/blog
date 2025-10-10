@@ -541,7 +541,6 @@ def get_pipeline_status(post_id):
                         "progress": authoring_progress,
                         "substages": [
                             {"name": "Author First Drafts", "status": "in_progress" if authoring_progress > 0 else "pending", "progress": authoring_progress},
-                            {"name": "Fix Language", "status": "pending"},
                             {"name": "Image Concepts", "status": "pending"},
                             {"name": "Image Prompts", "status": "pending"}
                         ]
