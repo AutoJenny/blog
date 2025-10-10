@@ -744,10 +744,22 @@ class AuthoringManager {
             </div>
         `;
         
-        // Add click handler
+        // Add click handler for section selection
         div.addEventListener('click', (e) => {
             if (e.target.type !== 'checkbox') {
                 this.selectSection(section.id);
+            }
+        });
+        
+        // Add checkbox change handler to maintain selectedSections Set
+        const checkbox = div.querySelector('.section-checkbox');
+        checkbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                this.selectedSections.add(section.id);
+                console.log(`Section ${section.id} selected. Total selected: ${this.selectedSections.size}`);
+            } else {
+                this.selectedSections.delete(section.id);
+                console.log(`Section ${section.id} deselected. Total selected: ${this.selectedSections.size}`);
             }
         });
         
@@ -880,12 +892,16 @@ class AuthoringManager {
             checkbox.checked = true;
             this.selectedSections.add(checkbox.dataset.sectionId);
         });
+        console.log(`All ${checkboxes.length} sections selected for batch generation`);
     }
     
     async batchGenerate() {
         const selectedIds = Array.from(this.selectedSections);
+        console.log(`Batch generate clicked. Selected sections: ${selectedIds.length}`, selectedIds);
+        
         if (selectedIds.length === 0) {
             console.log('No sections selected. Please select sections to generate first, or use "Select All" to select all sections.');
+            alert('No sections selected. Please select sections to generate first, or use "Select All" to select all sections.');
             return;
         }
         
