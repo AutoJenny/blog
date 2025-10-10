@@ -18,13 +18,20 @@ class ScheduleManager {
      */
     async loadCurrentSchedule() {
         try {
+            console.log('[Schedule Manager] loadCurrentSchedule() called');
             const response = await fetch('/launchpad/one-click-blog/api/next-up');
             const result = await response.json();
             
+            console.log('[Schedule Manager] API response:', result);
+            
             if (result.success) {
                 this.currentSchedule = result.data;
-                console.log('[Schedule Manager] Loaded schedule:', this.currentSchedule.scheduled_date);
+                console.log('[Schedule Manager] ✅ Loaded schedule data:', this.currentSchedule);
+                console.log('[Schedule Manager] scheduled_date:', this.currentSchedule.scheduled_date);
+                console.log('[Schedule Manager] scheduled_relative:', this.currentSchedule.scheduled_relative);
                 return this.currentSchedule;
+            } else {
+                console.error('[Schedule Manager] API returned error:', result.error);
             }
         } catch (error) {
             console.error('[Schedule Manager] Error loading schedule:', error);
@@ -55,6 +62,9 @@ class ScheduleManager {
      * Populate schedule modal with current schedule data
      */
     populateScheduleModal() {
+        console.log('[Schedule Manager] populateScheduleModal() called');
+        console.log('[Schedule Manager] currentSchedule:', this.currentSchedule);
+        
         if (!this.currentSchedule) {
             console.error('[Schedule Manager] No schedule data available');
             this.setDefaultSchedule();
@@ -62,18 +72,30 @@ class ScheduleManager {
         }
 
         const scheduleDate = this.currentSchedule.scheduled_date;
-        console.log('[Schedule Manager] Populating modal with:', scheduleDate);
+        console.log('[Schedule Manager] Populating modal with scheduleDate:', scheduleDate);
 
         if (scheduleDate && scheduleDate !== 'Not scheduled') {
             try {
                 // Parse "Oct 12, 2025" to "2025-10-12"
+                console.log('[Schedule Manager] Parsing date:', scheduleDate);
                 const dateObj = new Date(scheduleDate);
+                console.log('[Schedule Manager] Parsed dateObj:', dateObj);
+                console.log('[Schedule Manager] dateObj.getTime():', dateObj.getTime());
+                console.log('[Schedule Manager] isNaN check:', isNaN(dateObj.getTime()));
+                
                 if (!isNaN(dateObj.getTime())) {
                     const isoDate = dateObj.toISOString().split('T')[0];
+                    console.log('[Schedule Manager] ISO date:', isoDate);
+                    
                     const dateInput = document.getElementById('publish-date');
+                    console.log('[Schedule Manager] dateInput element:', dateInput);
+                    
                     if (dateInput) {
                         dateInput.value = isoDate;
-                        console.log('[Schedule Manager] ✅ Set date to:', isoDate);
+                        console.log('[Schedule Manager] ✅ Set date input value to:', isoDate);
+                        console.log('[Schedule Manager] Date input now shows:', dateInput.value);
+                    } else {
+                        console.error('[Schedule Manager] ❌ publish-date element not found');
                     }
                 } else {
                     console.error('[Schedule Manager] Invalid date format:', scheduleDate);
@@ -84,6 +106,7 @@ class ScheduleManager {
                 this.setDefaultSchedule();
             }
         } else {
+            console.log('[Schedule Manager] No valid schedule date, using default');
             this.setDefaultSchedule();
         }
 
@@ -91,6 +114,7 @@ class ScheduleManager {
         const timeInput = document.getElementById('publish-time');
         if (timeInput) {
             timeInput.value = '14:00';
+            console.log('[Schedule Manager] ✅ Set time input to 14:00');
         }
     }
 
