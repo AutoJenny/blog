@@ -179,7 +179,6 @@ body {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-bottom: 16px;
 }
 
 .alternative-item {
@@ -245,6 +244,16 @@ body {
     padding: 2px 6px;
 }
 
+.alternative-item .action-buttons {
+    display: none;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.alternative-item.expanded .action-buttons {
+    display: flex;
+}
+
 .alternative-item .select-btn {
     background: #8b5cf6;
     color: white;
@@ -254,17 +263,28 @@ body {
     font-size: 0.75rem;
     cursor: pointer;
     transition: all 0.2s ease;
-    margin-top: 8px;
-    display: none;
-}
-
-.alternative-item.expanded .select-btn {
-    display: inline-block;
 }
 
 .alternative-item .select-btn:hover {
     background: #7c3aed;
     border-color: #7c3aed;
+}
+
+.alternative-item .cancel-btn {
+    background: transparent;
+    color: #94a3b8;
+    border: 1px solid #475569;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.alternative-item .cancel-btn:hover {
+    background: #334155;
+    border-color: #64748b;
+    color: #e2e8f0;
 }
 
 .no-alternatives {

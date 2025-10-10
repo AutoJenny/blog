@@ -121,9 +121,14 @@ class OneClickBlogManager {
                         ${idea.content_type ? `<span class="tag">${idea.content_type.charAt(0).toUpperCase() + idea.content_type.slice(1)}</span>` : ''}
                         <span class="tag">${idea.priority === 'mandatory' ? 'Mandatory' : idea.priority === 'random' ? 'Random' : idea.priority}</span>
                     </div>
-                    <button class="select-btn" onclick="event.stopPropagation(); oneClickBlogManager.selectIdea(${idea.id})">
-                        <i class="fas fa-check"></i> Select
-                    </button>
+                    <div class="action-buttons">
+                        <button class="select-btn" onclick="event.stopPropagation(); oneClickBlogManager.selectIdea(${idea.id})">
+                            <i class="fas fa-check"></i> Select
+                        </button>
+                        <button class="cancel-btn" onclick="event.stopPropagation(); oneClickBlogManager.cancelIdeaSelection()">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
                 </div>
             `;
             
@@ -151,10 +156,15 @@ class OneClickBlogManager {
         }
     }
 
-    showIdeaSelector() {
-        // Since alternatives are always visible now, this button could be used for other actions
-        // For now, just show a notification that alternatives are always visible
-        this.showNotification('Alternative ideas are always visible below. Click any idea to expand details and select it.', 'info');
+    cancelIdeaSelection() {
+        console.log('[One-Click Blog] Cancelling idea selection');
+        
+        // Close all expanded alternatives
+        document.querySelectorAll('.alternative-item.expanded').forEach(item => {
+            item.classList.remove('expanded');
+        });
+        
+        this.showNotification('Idea selection cancelled', 'info');
     }
 
     selectIdea(ideaId) {
