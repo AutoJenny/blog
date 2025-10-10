@@ -85,6 +85,48 @@ def get_next_up():
             
             schedule_data = cursor.fetchone()
             
+            # If no schedule exists, create one dynamically for this week
+            if not schedule_data:
+                from datetime import datetime, date, timedelta
+                
+                # Calculate appropriate publish date within the current week
+                week_start = current_week['start_date']
+                week_end = current_week['end_date']
+                today = date.today()
+                
+                # Default to Wednesday of the week (middle of week) at 14:00
+                # If today is past Wednesday, schedule for next available day
+                if week_start and week_end:
+                    # Calculate Wednesday of this week
+                    days_since_monday = (week_start.weekday()) % 7  # Monday = 0
+                    wednesday = week_start + timedelta(days=(2 - days_since_monday))
+                    
+                    # If today is past Wednesday, schedule for Friday
+                    if today > wednesday:
+                        friday = wednesday + timedelta(days=2)
+                        publish_date = min(friday, week_end)
+                    else:
+                        publish_date = wednesday
+                    
+                    # Insert the schedule
+                    cursor.execute("""
+                        INSERT INTO calendar_schedule 
+                        (year, week_number, scheduled_date, scheduled_time, publish_time, status, requires_approval, automation_enabled)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                        RETURNING scheduled_date, scheduled_time, publish_time, status, post_id
+                    """, (
+                        current_week['year'], 
+                        current_week['week_number'],
+                        publish_date,
+                        '14:00:00',
+                        '14:00:00', 
+                        'planned',
+                        True,
+                        True
+                    ))
+                    
+                    schedule_data = cursor.fetchone()
+            
             # Determine production status based on post existence and schedule
             production_status = "not_started"
             scheduled_date = "Not scheduled"
