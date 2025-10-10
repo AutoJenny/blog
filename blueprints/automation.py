@@ -1509,7 +1509,6 @@ def execute_author_first_drafts(post_id, data):
                 FROM post_section
                 WHERE post_id = %s 
                 AND section_order <= 7
-                AND (draft IS NULL OR draft = '' OR draft = '{}')
                 ORDER BY section_order
             """, (post_id,))
             
