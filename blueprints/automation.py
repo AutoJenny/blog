@@ -214,6 +214,90 @@ def get_next_up():
             "error": str(e)
         }), 500
 
+@bp.route('/update-schedule', methods=['POST'])
+def update_schedule():
+    """Update the schedule for the current week's post"""
+    try:
+        from config.database import db_manager
+        import json
+        
+        data = request.get_json()
+        scheduled_date = data.get('scheduled_date')
+        scheduled_time = data.get('scheduled_time', '14:00:00')
+        requires_approval = data.get('requires_approval', True)
+        auto_publish = data.get('auto_publish', False)
+        
+        if not scheduled_date:
+            return jsonify({"success": False, "error": "Scheduled date is required"}), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Get current week
+            cursor.execute("""
+                SELECT week_number, year
+                FROM calendar_weeks 
+                WHERE is_current_week = TRUE
+                ORDER BY year DESC, week_number DESC
+                LIMIT 1
+            """)
+            current_week = cursor.fetchone()
+            
+            if not current_week:
+                return jsonify({"success": False, "error": "No current week found"}), 404
+            
+            # Check if schedule already exists for this week
+            cursor.execute("""
+                SELECT id FROM calendar_schedule 
+                WHERE year = %s AND week_number = %s
+            """, (current_week['year'], current_week['week_number']))
+            
+            existing_schedule = cursor.fetchone()
+            
+            if existing_schedule:
+                # Update existing schedule
+                cursor.execute("""
+                    UPDATE calendar_schedule 
+                    SET scheduled_date = %s,
+                        scheduled_time = %s,
+                        publish_time = %s,
+                        requires_approval = %s,
+                        updated_at = NOW()
+                    WHERE id = %s
+                """, (
+                    scheduled_date,
+                    scheduled_time,
+                    scheduled_time,
+                    requires_approval,
+                    existing_schedule['id']
+                ))
+                schedule_id = existing_schedule['id']
+            else:
+                # Insert new schedule
+                cursor.execute("""
+                    INSERT INTO calendar_schedule 
+                    (year, week_number, scheduled_date, scheduled_time, publish_time, status, requires_approval, automation_enabled)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id
+                """, (
+                    current_week['year'],
+                    current_week['week_number'],
+                    scheduled_date,
+                    scheduled_time,
+                    scheduled_time,
+                    'planned',
+                    requires_approval,
+                    True
+                ))
+                schedule_id = cursor.fetchone()['id']
+            
+            return jsonify({
+                "success": True,
+                "message": "Schedule updated successfully",
+                "schedule_id": schedule_id
+            })
+            
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @bp.route('/pipeline-status/<int:post_id>', methods=['GET'])
 def get_pipeline_status(post_id):
     """Get current pipeline state for a post"""

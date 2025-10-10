@@ -277,14 +277,38 @@ class OneClickBlogManager {
     }
 
     showScheduleModal() {
+        // Load current schedule data into the modal
+        this.loadCurrentScheduleData();
         document.getElementById('schedule-modal').style.display = 'flex';
+    }
+    
+    loadCurrentScheduleData() {
+        // Get current schedule data from the display
+        const scheduleDate = document.querySelector('.schedule-date').textContent;
+        const scheduleRelative = document.querySelector('.schedule-relative').textContent;
+        
+        // Parse the current date if it's not "Not scheduled"
+        if (scheduleDate && scheduleDate !== 'Not scheduled') {
+            // Convert "Oct 10, 2025" to "2025-10-10" format
+            const dateObj = new Date(scheduleDate);
+            if (!isNaN(dateObj.getTime())) {
+                document.getElementById('publish-date').value = dateObj.toISOString().split('T')[0];
+            }
+        } else {
+            // Default to today if no schedule
+            const today = new Date();
+            document.getElementById('publish-date').value = today.toISOString().split('T')[0];
+        }
+        
+        // Default time to 14:00
+        document.getElementById('publish-time').value = '14:00';
     }
 
     closeScheduleModal() {
         document.getElementById('schedule-modal').style.display = 'none';
     }
 
-    schedulePost() {
+    async schedulePost() {
         const publishDate = document.getElementById('publish-date').value;
         const publishTime = document.getElementById('publish-time').value;
         const requireApproval = document.getElementById('require-approval').checked;
@@ -297,8 +321,36 @@ class OneClickBlogManager {
             autoPublish
         });
         
-        this.closeScheduleModal();
-        this.showNotification('Post scheduled successfully', 'success');
+        try {
+            // Make API call to update schedule
+            const response = await fetch('/launchpad/one-click-blog/api/update-schedule', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    scheduled_date: publishDate,
+                    scheduled_time: publishTime,
+                    requires_approval: requireApproval,
+                    auto_publish: autoPublish
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.closeScheduleModal();
+                this.showNotification('Post scheduled successfully', 'success');
+                
+                // Refresh the Next Up data to show updated schedule
+                await this.loadNextUp();
+            } else {
+                this.showNotification(`Failed to schedule: ${result.error}`, 'error');
+            }
+        } catch (error) {
+            console.error('[One-Click Blog] Error scheduling post:', error);
+            this.showNotification('Failed to schedule post', 'error');
+        }
     }
 
     // ===== Pipeline Progress Methods =====
