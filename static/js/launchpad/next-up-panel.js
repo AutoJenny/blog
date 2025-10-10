@@ -187,6 +187,16 @@ class NextUpPanel {
         console.log('[Next Up Panel] Selecting idea:', ideaId);
         
         try {
+            // Find the selected idea from alternatives
+            const selectedIdea = this.alternativeIdeas.find(idea => idea.id == ideaId);
+            if (!selectedIdea) {
+                this.showNotification('Idea not found', 'error');
+                return;
+            }
+            
+            // IMMEDIATE UI UPDATE - Update the display optimistically
+            this.updateSelectedIdeaOptimistically(selectedIdea);
+            
             // Show loading state
             this.showNotification('Selecting idea...', 'info');
             
@@ -210,16 +220,102 @@ class NextUpPanel {
                     item.classList.remove('expanded');
                 });
                 
-                // Reload the data to reflect the new selection
-                await this.loadNextUpData();
+                // Update the internal data structure
+                this.selectedIdea = selectedIdea;
+                this.alternativeIdeas = this.alternativeIdeas.filter(idea => idea.id != ideaId);
+                
+                // Add the previous selected idea to alternatives
+                if (this.previousSelectedIdea) {
+                    this.alternativeIdeas.unshift(this.previousSelectedIdea);
+                }
+                
+                // Update alternatives display
+                this.updateAlternativeIdeas();
+                
+                // Get updated Post ID from server
+                await this.updatePostIdFromServer();
                 
                 this.showNotification('Idea selected successfully!', 'success');
             } else {
+                // Revert the optimistic update on failure
+                this.revertOptimisticUpdate();
                 this.showNotification(`Failed to select idea: ${result.error}`, 'error');
             }
         } catch (error) {
             console.error('[Next Up Panel] Error selecting idea:', error);
+            // Revert the optimistic update on error
+            this.revertOptimisticUpdate();
             this.showNotification('Error selecting idea. Please try again.', 'error');
+        }
+    }
+
+    /**
+     * Update selected idea optimistically (immediate UI update)
+     */
+    updateSelectedIdeaOptimistically(idea) {
+        // Store the previous selection for potential revert
+        this.previousSelectedIdea = this.selectedIdea;
+        
+        // Update the selected idea display immediately
+        const titleElement = document.querySelector('.idea-title');
+        const descriptionElement = document.querySelector('.idea-description');
+        const categoriesElement = document.querySelector('.idea-categories');
+        const contentTypeElement = document.querySelector('.idea-content-type');
+        const priorityElement = document.querySelector('.idea-priority');
+        
+        if (titleElement) titleElement.textContent = idea.title;
+        if (descriptionElement) descriptionElement.textContent = idea.description;
+        if (categoriesElement) categoriesElement.textContent = idea.categories.join(', ');
+        if (contentTypeElement) contentTypeElement.textContent = idea.content_type;
+        if (priorityElement) priorityElement.textContent = idea.priority;
+        
+        // Update Post ID optimistically - check if this idea has an existing post
+        this.updatePostIdOptimistically(idea);
+        
+        // Add visual feedback
+        const selectedIdeaContainer = document.querySelector('.selected-idea');
+        if (selectedIdeaContainer) {
+            selectedIdeaContainer.style.transition = 'all 0.3s ease';
+            selectedIdeaContainer.style.backgroundColor = '#1e3a8a'; // Blue highlight
+            setTimeout(() => {
+                selectedIdeaContainer.style.backgroundColor = '';
+            }, 500);
+        }
+    }
+    
+    /**
+     * Revert optimistic update on failure
+     */
+    revertOptimisticUpdate() {
+        if (this.previousSelectedIdea) {
+            this.updateSelectedIdeaOptimistically(this.previousSelectedIdea);
+            this.previousSelectedIdea = null;
+        }
+    }
+    
+    /**
+     * Update Post ID optimistically - show checking state
+     */
+    updatePostIdOptimistically(idea) {
+        const postIdElement = document.querySelector('.post-id-value');
+        if (postIdElement) {
+            postIdElement.textContent = 'Checking...';
+        }
+    }
+    
+    /**
+     * Update Post ID from server response
+     */
+    async updatePostIdFromServer() {
+        try {
+            const response = await fetch('/launchpad/one-click-blog/api/next-up');
+            const data = await response.json();
+            
+            if (data.success) {
+                this.updatePostId(data.data.post_id);
+            }
+        } catch (error) {
+            console.log('[Next Up Panel] Could not update Post ID from server');
         }
     }
 
