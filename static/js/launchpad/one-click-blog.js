@@ -276,32 +276,47 @@ class OneClickBlogManager {
         // This would open a detailed progress modal or navigate to progress page
     }
 
-    showScheduleModal() {
+    async showScheduleModal() {
         // Load current schedule data into the modal
-        this.loadCurrentScheduleData();
+        await this.loadCurrentScheduleData();
         document.getElementById('schedule-modal').style.display = 'flex';
     }
     
-    loadCurrentScheduleData() {
-        // Get current schedule data from the display
-        const scheduleDate = document.querySelector('.schedule-date').textContent;
-        const scheduleRelative = document.querySelector('.schedule-relative').textContent;
-        
-        // Parse the current date if it's not "Not scheduled"
-        if (scheduleDate && scheduleDate !== 'Not scheduled') {
-            // Convert "Oct 10, 2025" to "2025-10-10" format
-            const dateObj = new Date(scheduleDate);
-            if (!isNaN(dateObj.getTime())) {
-                document.getElementById('publish-date').value = dateObj.toISOString().split('T')[0];
+    async loadCurrentScheduleData() {
+        try {
+            // Get fresh data from API instead of parsing display text
+            const response = await fetch('/launchpad/one-click-blog/api/next-up');
+            const result = await response.json();
+            
+            if (result.success && result.data.scheduled_date && result.data.scheduled_date !== 'Not scheduled') {
+                // Parse the API date format "Oct 12, 2025" to "2025-10-12"
+                const dateObj = new Date(result.data.scheduled_date);
+                if (!isNaN(dateObj.getTime())) {
+                    const isoDate = dateObj.toISOString().split('T')[0];
+                    document.getElementById('publish-date').value = isoDate;
+                    console.log('[One-Click Blog] Loaded schedule date from API:', isoDate);
+                } else {
+                    console.error('[One-Click Blog] Invalid date format from API:', result.data.scheduled_date);
+                    this.setDefaultDate();
+                }
+            } else {
+                console.log('[One-Click Blog] No schedule found in API, using default');
+                this.setDefaultDate();
             }
-        } else {
-            // Default to today if no schedule
-            const today = new Date();
-            document.getElementById('publish-date').value = today.toISOString().split('T')[0];
+        } catch (error) {
+            console.error('[One-Click Blog] Error loading schedule data:', error);
+            this.setDefaultDate();
         }
         
         // Default time to 14:00
         document.getElementById('publish-time').value = '14:00';
+    }
+    
+    setDefaultDate() {
+        // Default to today if no schedule
+        const today = new Date();
+        document.getElementById('publish-date').value = today.toISOString().split('T')[0];
+        console.log('[One-Click Blog] Set default date to today:', today.toISOString().split('T')[0]);
     }
 
     closeScheduleModal() {
