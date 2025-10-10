@@ -926,28 +926,58 @@ def execute_topic_brainstorming(post_id, data):
             
             expanded_idea = post['expanded_idea'] or post['title']
             
-        # Call the existing brainstorm API logic
-        from blueprints.planning_api_brainstorm import api_generate_brainstorm_topics
+        if not expanded_idea:
+            return jsonify({"success": False, "error": "Expanded idea is required"}), 400
+            
+        # Call the brainstorm API logic directly
+        from blueprints.planning_llm import LLMService, parse_brainstorm_topics
         
-        # Create a mock request object with the required data
-        class MockRequest:
-            def get_json(self):
-                return {
-                    'expanded_idea': expanded_idea,
-                    'brainstorm_type': data.get('brainstorm_type', 'comprehensive'),
-                    'post_id': post_id
-                }
+        brainstorm_type = data.get('brainstorm_type', 'comprehensive')
         
-        # Temporarily replace request with our mock
-        import flask
-        original_request = flask.request
-        flask.request = MockRequest()
+        # Load prompt from database
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT system_prompt, prompt_text
+                FROM llm_prompt 
+                WHERE name = 'brainstorm_topics'
+                ORDER BY id DESC
+                LIMIT 1
+            """)
+            prompt_data = cursor.fetchone()
+            
+            if prompt_data:
+                system_prompt = prompt_data['system_prompt']
+                prompt_text = prompt_data['prompt_text']
+            else:
+                # Fallback prompts
+                system_prompt = "You are a creative brainstorming specialist. Generate diverse, engaging topics for blog posts."
+                prompt_text = "Generate {brainstorm_type} topics for a blog post about: {expanded_idea}"
         
-        try:
-            result = api_generate_brainstorm_topics()
-            return result
-        finally:
-            flask.request = original_request
+        # Generate topics using LLM
+        llm_service = LLMService()
+        
+        user_content = prompt_text.format(
+            brainstorm_type=brainstorm_type,
+            expanded_idea=expanded_idea
+        )
+        
+        messages = [
+            {'role': 'system', 'content': system_prompt},
+            {'role': 'user', 'content': user_content}
+        ]
+        
+        response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages, max_tokens=2000)
+        
+        if response and 'content' in response:
+            topics = parse_brainstorm_topics(response['content'])
+            
+            return jsonify({
+                'success': True,
+                'topics': topics,
+                'raw_content': response['content']
+            })
+        else:
+            return jsonify({'success': False, 'error': 'Failed to generate topics'}), 500
             
     except Exception as e:
         logger.error(f"Error executing topic brainstorming: {e}")
