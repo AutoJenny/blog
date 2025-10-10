@@ -70,13 +70,13 @@ def get_next_up():
                     "error": f"No ideas found for week {current_week['week_number']}"
                 }), 404
             
-            # Select the first idea as the selected one (highest priority)
-            selected_idea = ideas[0]
-            alternative_ideas = ideas[1:] if len(ideas) > 1 else []
+            # Determine selected idea: use idea_id from schedule if exists, otherwise first idea
+            selected_idea = None
+            alternative_ideas = []
             
             # Get schedule data for current week
             cursor.execute("""
-                SELECT scheduled_date, scheduled_time, publish_time, status, post_id
+                SELECT scheduled_date, scheduled_time, publish_time, status, post_id, idea_id
                 FROM calendar_schedule 
                 WHERE year = %s AND week_number = %s
                 ORDER BY scheduled_date ASC
@@ -84,6 +84,20 @@ def get_next_up():
             """, (current_week['year'], current_week['week_number']))
             
             schedule_data = cursor.fetchone()
+            
+            # Determine selected idea based on schedule or default to first idea
+            if schedule_data and schedule_data['idea_id']:
+                # Find the selected idea by ID
+                for idea in ideas:
+                    if idea['id'] == schedule_data['idea_id']:
+                        selected_idea = idea
+                        break
+                # All other ideas are alternatives
+                alternative_ideas = [idea for idea in ideas if idea['id'] != schedule_data['idea_id']]
+            else:
+                # No idea selected yet - use first idea as default
+                selected_idea = ideas[0]
+                alternative_ideas = ideas[1:] if len(ideas) > 1 else []
             
             # If no schedule exists, create one dynamically for this week
             if not schedule_data:
@@ -108,12 +122,12 @@ def get_next_up():
                     else:
                         publish_date = wednesday
                     
-                    # Insert the schedule
+                    # Insert the schedule with the selected idea
                     cursor.execute("""
                         INSERT INTO calendar_schedule 
-                        (year, week_number, scheduled_date, scheduled_time, publish_time, status, requires_approval, automation_enabled)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                        RETURNING scheduled_date, scheduled_time, publish_time, status, post_id
+                        (year, week_number, scheduled_date, scheduled_time, publish_time, status, requires_approval, automation_enabled, idea_id)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        RETURNING scheduled_date, scheduled_time, publish_time, status, post_id, idea_id
                     """, (
                         current_week['year'], 
                         current_week['week_number'],
@@ -122,7 +136,8 @@ def get_next_up():
                         '14:00:00', 
                         'planned',
                         True,
-                        True
+                        True,
+                        selected_idea['id']
                     ))
                     
                     schedule_data = cursor.fetchone()
@@ -214,6 +229,105 @@ def get_next_up():
             "success": False,
             "error": str(e)
         }), 500
+
+@bp.route('/api/select-idea', methods=['POST'])
+def select_idea():
+    """Select an idea for the current week"""
+    try:
+        data = request.get_json()
+        idea_id = data.get('idea_id')
+        
+        if not idea_id:
+            return jsonify({'success': False, 'error': 'Idea ID is required'}), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Get current week
+            cursor.execute("""
+                SELECT year, week_number FROM calendar_weeks 
+                WHERE is_current_week = TRUE
+            """)
+            current_week = cursor.fetchone()
+            
+            if not current_week:
+                return jsonify({'success': False, 'error': 'No current week found'}), 404
+            
+            # Verify the idea exists and belongs to this week
+            cursor.execute("""
+                SELECT id FROM calendar_ideas 
+                WHERE id = %s AND week_number = %s
+            """, (idea_id, current_week['week_number']))
+            
+            if not cursor.fetchone():
+                return jsonify({'success': False, 'error': 'Idea not found for this week'}), 404
+            
+            # Update or create schedule with selected idea
+            cursor.execute("""
+                SELECT id FROM calendar_schedule 
+                WHERE year = %s AND week_number = %s
+            """, (current_week['year'], current_week['week_number']))
+            
+            existing_schedule = cursor.fetchone()
+            
+            if existing_schedule:
+                # Update existing schedule
+                cursor.execute("""
+                    UPDATE calendar_schedule 
+                    SET idea_id = %s, updated_at = NOW()
+                    WHERE year = %s AND week_number = %s
+                """, (idea_id, current_week['year'], current_week['week_number']))
+            else:
+                # Create new schedule with selected idea
+                from datetime import datetime, date, timedelta
+                
+                # Calculate appropriate publish date within the current week
+                cursor.execute("""
+                    SELECT start_date, end_date FROM calendar_weeks 
+                    WHERE year = %s AND week_number = %s
+                """, (current_week['year'], current_week['week_number']))
+                
+                week_data = cursor.fetchone()
+                if week_data and week_data['start_date'] and week_data['end_date']:
+                    week_start = week_data['start_date']
+                    week_end = week_data['end_date']
+                    today = date.today()
+                    
+                    # Default to Wednesday of the week
+                    days_since_monday = (week_start.weekday()) % 7
+                    wednesday = week_start + timedelta(days=(2 - days_since_monday))
+                    
+                    # If today is past Wednesday, schedule for Friday
+                    if today > wednesday:
+                        friday = wednesday + timedelta(days=2)
+                        publish_date = min(friday, week_end)
+                    else:
+                        publish_date = wednesday
+                    
+                    cursor.execute("""
+                        INSERT INTO calendar_schedule 
+                        (year, week_number, scheduled_date, scheduled_time, publish_time, status, requires_approval, automation_enabled, idea_id)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """, (
+                        current_week['year'], 
+                        current_week['week_number'],
+                        publish_date,
+                        '14:00:00',
+                        '14:00:00', 
+                        'planned',
+                        True,
+                        True,
+                        idea_id
+                    ))
+            
+            cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Idea selected successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error selecting idea: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @bp.route('/update-schedule', methods=['POST'])
 def update_schedule():

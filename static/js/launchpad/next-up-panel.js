@@ -183,19 +183,44 @@ class NextUpPanel {
     /**
      * Select an alternative idea
      */
-    selectIdea(ideaId) {
+    async selectIdea(ideaId) {
         console.log('[Next Up Panel] Selecting idea:', ideaId);
         
-        // Close all expanded alternatives
-        document.querySelectorAll('.alternative-details').forEach(d => {
-            d.style.display = 'none';
-        });
-        document.querySelectorAll('.alternative-item').forEach(item => {
-            item.classList.remove('expanded');
-        });
-        
-        // Show notification
-        this.showNotification('Idea selection would be implemented here', 'info');
+        try {
+            // Show loading state
+            this.showNotification('Selecting idea...', 'info');
+            
+            // Call API to select the idea
+            const response = await fetch('/launchpad/one-click-blog/api/select-idea', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ idea_id: ideaId })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Close all expanded alternatives
+                document.querySelectorAll('.alternative-details').forEach(d => {
+                    d.style.display = 'none';
+                });
+                document.querySelectorAll('.alternative-item').forEach(item => {
+                    item.classList.remove('expanded');
+                });
+                
+                // Reload the data to reflect the new selection
+                await this.loadNextUpData();
+                
+                this.showNotification('Idea selected successfully!', 'success');
+            } else {
+                this.showNotification(`Failed to select idea: ${result.error}`, 'error');
+            }
+        } catch (error) {
+            console.error('[Next Up Panel] Error selecting idea:', error);
+            this.showNotification('Error selecting idea. Please try again.', 'error');
+        }
     }
 
     /**
