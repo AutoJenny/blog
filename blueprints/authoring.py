@@ -803,24 +803,27 @@ def api_generate_section_draft(post_id, section_id):
             draft_html, section_text_plain = process_llm_html_content(llm_response['content'])
             
             # Save generated content to database
-            # First try to update post_section table (only if section_id is numeric)
-            if section_id.isdigit():
-                cursor.execute("""
-                    UPDATE post_section 
-                    SET draft = %s, polished = %s, status = 'complete'
-                    WHERE post_id = %s AND id = %s
-                """, (draft_html, section_text_plain, post_id, int(section_id)))
-                
-                if cursor.rowcount == 0:
-                    # Section not found in post_section, create a new record
-                    cursor.execute("""
-                        INSERT INTO post_section (post_id, id, section_order, section_heading, section_description, draft, polished, status)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, 'complete')
-                    """, (post_id, int(section_id), section['section_order'], section['section_heading'], section['section_description'], draft_html, section_text_plain))
+            # Extract numeric section order from section_id (e.g., "section_2" -> 2)
+            if section_id.startswith('section_'):
+                section_order = int(section_id.split('_')[1])
+            elif section_id.isdigit():
+                section_order = int(section_id)
             else:
-                # For string IDs, we can't update post_section, so we'll just return the content
-                # In a real implementation, you might want to store this in a different table
-                pass
+                section_order = section.get('section_order', 1)
+            
+            # Try to update existing post_section record
+            cursor.execute("""
+                UPDATE post_section 
+                SET draft = %s, polished = %s, status = 'complete'
+                WHERE post_id = %s AND section_order = %s
+            """, (draft_html, section_text_plain, post_id, section_order))
+            
+            if cursor.rowcount == 0:
+                # Section not found in post_section, create a new record
+                cursor.execute("""
+                    INSERT INTO post_section (post_id, section_order, section_heading, section_description, draft, polished, status)
+                    VALUES (%s, %s, %s, %s, %s, %s, 'complete')
+                """, (post_id, section_order, section['section_heading'], section['section_description'], draft_html, section_text_plain))
             
             cursor.connection.commit()
             
