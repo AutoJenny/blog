@@ -654,8 +654,8 @@ class AuthoringManager {
         document.getElementById('regenerate-btn').disabled = false;
         
         // Load existing content if available
-        if (section.draft_content) {
-            document.getElementById('content-editor').value = section.draft_content;
+        if (section.draft) {
+            document.getElementById('content-editor').value = section.draft;
             this.updateWordCount();
         }
     }
@@ -922,8 +922,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Load existing draft content
                 const contentEditor = document.getElementById('content-editor');
-                if (section.draft_content) {
-                    contentEditor.value = section.draft_content;
+                if (section.draft) {
+                    contentEditor.value = section.draft;
                     contentEditor.disabled = false;
                     updateWordCount();
                 } else {

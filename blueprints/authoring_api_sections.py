@@ -183,6 +183,19 @@ def api_get_section(post_id, section_id):
                                 'image_alt_text': None,
                                 'selected_image_concept': None
                             }
+                            
+                            # Try to get draft content from post_section table
+                            cursor.execute("""
+                                SELECT draft, polished, status
+                                FROM post_section
+                                WHERE post_id = %s AND section_order = %s
+                            """, (post_id, section['section_order']))
+                            post_section_data = cursor.fetchone()
+                            
+                            if post_section_data:
+                                section['draft'] = post_section_data['draft']
+                                section['polished'] = post_section_data['polished']
+                                section['status'] = post_section_data['status']
                     except (json.JSONDecodeError, TypeError) as e:
                         logger.warning(f"Failed to parse sections from post_development: {e}")
             
