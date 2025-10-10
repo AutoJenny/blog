@@ -7,6 +7,12 @@ class PipelineManager {
     constructor(postId = null) {
         this.currentPostId = postId;
         this.stages = ['planning', 'authoring', 'imaging'];
+        // Map API stage names to template IDs
+        this.stageIdMap = {
+            'planning': 'concept',
+            'authoring': 'authoring', 
+            'imaging': 'imaging'
+        };
         this.init();
     }
 
@@ -143,8 +149,12 @@ class PipelineManager {
         
         // Update each stage
         this.stages.forEach(stage => {
+            console.log(`[Pipeline Manager] Processing stage: ${stage}`);
             if (data.stages[stage]) {
+                console.log(`[Pipeline Manager] Found stage data for ${stage}:`, data.stages[stage]);
                 this.updateStageDisplay(stage, data.stages[stage]);
+            } else {
+                console.log(`[Pipeline Manager] No data found for stage: ${stage}`);
             }
         });
         
@@ -155,16 +165,20 @@ class PipelineManager {
      * Update a specific stage's display
      */
     updateStageDisplay(stage, stageData) {
+        console.log(`[Pipeline Manager] Updating stage display for: ${stage}`);
+        const templateStageId = this.stageIdMap[stage];
+        console.log(`[Pipeline Manager] Mapped to template ID: ${templateStageId}`);
+        
         // Update stage status
-        const statusElement = document.querySelector(`#${stage}-content`)?.closest('.stage-accordion')?.querySelector('.stage-status');
+        const statusElement = document.querySelector(`#${templateStageId}-content`)?.closest('.stage-accordion')?.querySelector('.stage-status');
         if (statusElement) {
             statusElement.className = `stage-status ${stageData.status}`;
             statusElement.textContent = stageData.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
         }
         
         // Update stage progress
-        const progressBar = document.querySelector(`#${stage}-content`)?.closest('.stage-accordion')?.querySelector('.stage-progress .progress-fill');
-        const progressText = document.querySelector(`#${stage}-content`)?.closest('.stage-accordion')?.querySelector('.stage-progress .progress-text');
+        const progressBar = document.querySelector(`#${templateStageId}-content`)?.closest('.stage-accordion')?.querySelector('.stage-progress .progress-fill');
+        const progressText = document.querySelector(`#${templateStageId}-content`)?.closest('.stage-accordion')?.querySelector('.stage-progress .progress-text');
         if (progressBar && progressText) {
             progressBar.style.width = `${stageData.progress}%`;
             progressText.textContent = `${stageData.progress}%`;
@@ -172,7 +186,8 @@ class PipelineManager {
         
         // Update substages if available
         if (stageData.substages && stageData.substages.length > 0) {
-            this.updateSubstagesDisplay(stage, stageData.substages);
+            console.log(`[Pipeline Manager] Updating substages for stage: ${stage}`);
+            this.updateSubstagesDisplay(templateStageId, stageData.substages);
         }
     }
 
@@ -185,14 +200,23 @@ class PipelineManager {
         
         // Update existing substages with timestamps
         substages.forEach(substage => {
-            const existingSubstage = substagesContainer.querySelector(`[data-substage="${substage.name.toLowerCase().replace(/ /g, '_')}"]`);
+            const selectorName = substage.name.toLowerCase().replace(/ /g, '_');
+            console.log(`[Pipeline Manager] Looking for substage: "${substage.name}" -> "${selectorName}"`);
+            const existingSubstage = substagesContainer.querySelector(`[data-substage="${selectorName}"]`);
+            console.log(`[Pipeline Manager] Found existing substage:`, existingSubstage);
+            
             if (existingSubstage) {
                 // Update existing substage
                 const completedAtSpan = existingSubstage.querySelector('.completed-at');
+                console.log(`[Pipeline Manager] Found completed-at span:`, completedAtSpan);
+                console.log(`[Pipeline Manager] Substage completed_at:`, substage.completed_at);
+                
                 if (completedAtSpan && substage.completed_at) {
                     const timeAgo = this.formatTimeAgo(substage.completed_at);
+                    console.log(`[Pipeline Manager] Setting timestamp: "Completed ${timeAgo}"`);
                     completedAtSpan.textContent = `Completed ${timeAgo}`;
                 } else if (completedAtSpan) {
+                    console.log(`[Pipeline Manager] No timestamp available, keeping Loading...`);
                     completedAtSpan.textContent = 'Loading...';
                 }
                 
