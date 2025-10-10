@@ -12,51 +12,114 @@ bp = Blueprint('automation', __name__, url_prefix='/launchpad/one-click-blog/api
 @bp.route('/next-up', methods=['GET'])
 def get_next_up():
     """Get next scheduled week and selected idea"""
-    mock_data = {
-        "success": True,
-        "data": {
-            "current_week": {
-                "week_number": 42,
-                "year": 2025,
-                "start_date": "2025-10-14",
-                "end_date": "2025-10-20",
-                "month_name": "Oct"
-            },
-            "selected_idea": {
-                "id": 123,
-                "title": "Halloween Traditions in Scottish Castles: Ghost Stories and Legends",
-                "description": "Explore the rich history of Halloween celebrations in historic Scottish castles, from ancient Celtic traditions to modern ghost tours and paranormal investigations.",
-                "categories": ["History", "Culture", "Halloween"],
-                "priority": "high"
-            },
-            "alternative_ideas": [
-                {
-                    "id": 124,
-                    "title": "Autumn Harvest Festivals in the Highlands",
-                    "description": "Traditional harvest celebrations and customs",
-                    "categories": ["Culture", "Seasonal"],
-                    "priority": "medium"
-                },
-                {
-                    "id": 125,
-                    "title": "Traditional Scottish Soups for Cold Weather",
-                    "description": "Hearty soups perfect for autumn and winter",
-                    "categories": ["Food", "Seasonal"],
-                    "priority": "medium"
-                },
-                {
-                    "id": 126,
-                    "title": "Historic Scottish Battles of October",
-                    "description": "Military history and battlefield tours",
-                    "categories": ["History", "Military"],
-                    "priority": "medium"
+    try:
+        from config.database import db_manager
+        
+        # Get current week
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT week_number, start_date, end_date, month_name, year
+                FROM calendar_weeks 
+                WHERE is_current_week = TRUE
+                ORDER BY year DESC, week_number DESC
+                LIMIT 1
+            """)
+            current_week = cursor.fetchone()
+            
+            if not current_week:
+                return jsonify({
+                    "success": False,
+                    "error": "No current week found"
+                }), 404
+            
+            # Get ideas for current week
+            cursor.execute("""
+                SELECT ci.id, ci.idea_title, ci.idea_description, ci.priority,
+                       ci.seasonal_context, ci.content_type, ci.tags,
+                       COALESCE(
+                           json_agg(
+                               json_build_object(
+                                   'id', cc.id,
+                                   'name', cc.name,
+                                   'color', cc.color,
+                                   'icon', cc.icon
+                               )
+                           ) FILTER (WHERE cc.id IS NOT NULL), 
+                           '[]'::json
+                       ) as categories
+                FROM calendar_ideas ci
+                LEFT JOIN calendar_idea_categories cic ON ci.id = cic.idea_id
+                LEFT JOIN calendar_categories cc ON cic.category_id = cc.id
+                WHERE ci.week_number = %s
+                GROUP BY ci.id, ci.idea_title, ci.idea_description, ci.priority,
+                         ci.seasonal_context, ci.content_type, ci.tags
+                ORDER BY 
+                    CASE ci.priority 
+                        WHEN 'mandatory' THEN 1 
+                        WHEN 'random' THEN 2 
+                        ELSE 3 
+                    END,
+                    ci.id
+            """, (current_week['week_number'],))
+            
+            ideas = cursor.fetchall()
+            
+            if not ideas:
+                return jsonify({
+                    "success": False,
+                    "error": f"No ideas found for week {current_week['week_number']}"
+                }), 404
+            
+            # Select the first idea as the selected one (highest priority)
+            selected_idea = ideas[0]
+            alternative_ideas = ideas[1:] if len(ideas) > 1 else []
+            
+            # Format the response
+            data = {
+                "success": True,
+                "data": {
+                    "current_week": {
+                        "week_number": current_week['week_number'],
+                        "year": current_week['year'],
+                        "start_date": current_week['start_date'].strftime('%Y-%m-%d') if current_week['start_date'] else None,
+                        "end_date": current_week['end_date'].strftime('%Y-%m-%d') if current_week['end_date'] else None,
+                        "month_name": current_week['month_name']
+                    },
+                    "selected_idea": {
+                        "id": selected_idea['id'],
+                        "title": selected_idea['idea_title'],
+                        "description": selected_idea['idea_description'],
+                        "categories": [cat['name'] for cat in selected_idea['categories']] if selected_idea['categories'] else [],
+                        "priority": selected_idea['priority'],
+                        "seasonal_context": selected_idea['seasonal_context'],
+                        "content_type": selected_idea['content_type'],
+                        "tags": selected_idea['tags'] if selected_idea['tags'] else []
+                    },
+                    "alternative_ideas": [
+                        {
+                            "id": idea['id'],
+                            "title": idea['idea_title'],
+                            "description": idea['idea_description'],
+                            "categories": [cat['name'] for cat in idea['categories']] if idea['categories'] else [],
+                            "priority": idea['priority'],
+                            "seasonal_context": idea['seasonal_context'],
+                            "content_type": idea['content_type'],
+                            "tags": idea['tags'] if idea['tags'] else []
+                        }
+                        for idea in alternative_ideas
+                    ],
+                    "can_start_automation": True,
+                    "next_available_slot": "2025-10-15T09:00:00Z"  # Keep mock for now
                 }
-            ],
-            "can_start_automation": True,
-            "next_available_slot": "2025-10-15T09:00:00Z"
-        }
-    }
-    return jsonify(mock_data)
+            }
+            
+            return jsonify(data)
+            
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
 
 @bp.route('/pipeline-status/<int:post_id>', methods=['GET'])
 def get_pipeline_status(post_id):

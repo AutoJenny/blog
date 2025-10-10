@@ -28,50 +28,18 @@ class OneClickBlogManager {
     
     async loadNextUp() {
         try {
-            // Mock data for now - will be replaced with real API call
-            const mockData = {
-                current_week: {
-                    week_number: 42,
-                    year: 2025,
-                    start_date: "2025-10-14",
-                    end_date: "2025-10-20",
-                    month_name: "Oct"
-                },
-                selected_idea: {
-                    id: 123,
-                    title: "Halloween Traditions in Scottish Castles: Ghost Stories and Legends",
-                    description: "Explore the rich history of Halloween celebrations in historic Scottish castles, from ancient Celtic traditions to modern ghost tours and paranormal investigations.",
-                    categories: ["History", "Culture", "Halloween"],
-                    priority: "high"
-                },
-                alternative_ideas: [
-                    {
-                        id: 124,
-                        title: "Autumn Harvest Festivals in the Highlands",
-                        description: "Traditional harvest celebrations and customs",
-                        categories: ["Culture", "Seasonal"],
-                        priority: "medium"
-                    },
-                    {
-                        id: 125,
-                        title: "Traditional Scottish Soups for Cold Weather",
-                        description: "Hearty soups perfect for autumn and winter",
-                        categories: ["Food", "Seasonal"],
-                        priority: "medium"
-                    },
-                    {
-                        id: 126,
-                        title: "Historic Scottish Battles of October",
-                        description: "Military history and battlefield tours",
-                        categories: ["History", "Military"],
-                        priority: "medium"
-                    }
-                ]
-            };
+            const response = await fetch('/launchpad/one-click-blog/api/next-up');
+            const data = await response.json();
             
-            this.updateNextUpDisplay(mockData);
+            if (data.success) {
+                this.updateNextUpDisplay(data.data);
+            } else {
+                console.error('[One-Click Blog] Error loading next up data:', data.error);
+                this.showNotification('Failed to load calendar data', 'error');
+            }
         } catch (error) {
             console.error('[One-Click Blog] Error loading next up data:', error);
+            this.showNotification('Failed to load calendar data', 'error');
         }
     }
 
@@ -88,44 +56,123 @@ class OneClickBlogManager {
         // Update tags
         const tagsContainer = ideaContent.querySelector('.idea-tags');
         tagsContainer.innerHTML = '';
-        data.selected_idea.categories.forEach(category => {
-            const tag = document.createElement('span');
-            tag.className = 'tag';
-            tag.textContent = category;
-            tagsContainer.appendChild(tag);
-        });
+        
+        // Add category tags
+        if (data.selected_idea.categories && data.selected_idea.categories.length > 0) {
+            data.selected_idea.categories.forEach(category => {
+                const tag = document.createElement('span');
+                tag.className = 'tag';
+                tag.textContent = category;
+                tagsContainer.appendChild(tag);
+            });
+        }
+        
+        // Add content type tag if available
+        if (data.selected_idea.content_type) {
+            const contentTypeTag = document.createElement('span');
+            contentTypeTag.className = 'tag';
+            contentTypeTag.textContent = data.selected_idea.content_type.charAt(0).toUpperCase() + data.selected_idea.content_type.slice(1);
+            tagsContainer.appendChild(contentTypeTag);
+        }
         
         // Add priority tag
         const priorityTag = document.createElement('span');
         priorityTag.className = 'tag priority-high';
-        priorityTag.textContent = `${data.selected_idea.priority.charAt(0).toUpperCase() + data.selected_idea.priority.slice(1)} Priority`;
+        const priorityText = data.selected_idea.priority === 'mandatory' ? 'Mandatory' : 
+                           data.selected_idea.priority === 'random' ? 'Random' : 
+                           data.selected_idea.priority.charAt(0).toUpperCase() + data.selected_idea.priority.slice(1);
+        priorityTag.textContent = priorityText;
         tagsContainer.appendChild(priorityTag);
+        
+        // Update alternative ideas
+        this.updateAlternativeIdeas(data.alternative_ideas);
+        
+        // Update timeline labels
+        this.updateTimelineLabels(data.current_week.week_number);
+    }
+    
+    updateTimelineLabels(currentWeek) {
+        const timelineLabels = document.querySelectorAll('.timeline-label');
+        timelineLabels[0].textContent = `Week ${currentWeek}`;
+        timelineLabels[1].textContent = `Week ${currentWeek + 1}`;
+        timelineLabels[2].textContent = `Week ${currentWeek + 2}`;
+    }
+    
+    updateAlternativeIdeas(alternativeIdeas) {
+        const alternativesList = document.getElementById('alternatives-list');
+        
+        if (!alternativeIdeas || alternativeIdeas.length === 0) {
+            alternativesList.innerHTML = '<div class="no-alternatives">No alternative ideas available</div>';
+            return;
+        }
+        
+        alternativesList.innerHTML = '';
+        alternativeIdeas.forEach(idea => {
+            const alternativeItem = document.createElement('div');
+            alternativeItem.className = 'alternative-item';
+            alternativeItem.onclick = (e) => this.toggleAlternativeItem(e, idea);
+            
+            alternativeItem.innerHTML = `
+                <h5>${idea.title}</h5>
+                <div class="alternative-details">
+                    <p>${idea.description}</p>
+                    <div class="alternative-tags">
+                        ${idea.categories.map(cat => `<span class="tag">${cat}</span>`).join('')}
+                        ${idea.content_type ? `<span class="tag">${idea.content_type.charAt(0).toUpperCase() + idea.content_type.slice(1)}</span>` : ''}
+                        <span class="tag">${idea.priority === 'mandatory' ? 'Mandatory' : idea.priority === 'random' ? 'Random' : idea.priority}</span>
+                    </div>
+                    <button class="select-btn" onclick="event.stopPropagation(); oneClickBlogManager.selectIdea(${idea.id})">
+                        <i class="fas fa-check"></i> Select
+                    </button>
+                </div>
+            `;
+            
+            alternativesList.appendChild(alternativeItem);
+        });
+    }
+    
+    toggleAlternativeItem(event, idea) {
+        event.stopPropagation();
+        const item = event.currentTarget;
+        const isExpanded = item.classList.contains('expanded');
+        
+        // Close all other expanded items
+        document.querySelectorAll('.alternative-item.expanded').forEach(expandedItem => {
+            if (expandedItem !== item) {
+                expandedItem.classList.remove('expanded');
+            }
+        });
+        
+        // Toggle current item
+        if (isExpanded) {
+            item.classList.remove('expanded');
+        } else {
+            item.classList.add('expanded');
+        }
     }
 
     showIdeaSelector() {
-        const alternatives = document.getElementById('idea-alternatives');
-        const isVisible = alternatives.style.display !== 'none';
-        alternatives.style.display = isVisible ? 'none' : 'block';
-        
-        // Update button text
-        const button = document.querySelector('.change-idea-btn');
-        button.innerHTML = isVisible ? 
-            '<i class="fas fa-sync-alt"></i> Change Idea' : 
-            '<i class="fas fa-times"></i> Close';
+        // Since alternatives are always visible now, this button could be used for other actions
+        // For now, just show a notification that alternatives are always visible
+        this.showNotification('Alternative ideas are always visible below. Click any idea to expand details and select it.', 'info');
     }
 
     selectIdea(ideaId) {
         console.log(`[One-Click Blog] Selecting idea ${ideaId}`);
-        // Hide alternatives
-        document.getElementById('idea-alternatives').style.display = 'none';
         
-        // Reset button text
-        const button = document.querySelector('.change-idea-btn');
-        button.innerHTML = '<i class="fas fa-sync-alt"></i> Change Idea';
+        // Close all expanded alternatives
+        document.querySelectorAll('.alternative-item.expanded').forEach(item => {
+            item.classList.remove('expanded');
+        });
         
-        // Update display with selected idea
         // This would normally make an API call to update the selection
-        this.showNotification('Idea selected successfully', 'success');
+        // For now, simulate selecting the idea
+        this.showNotification(`Selected idea ${ideaId}. This would update the calendar selection.`, 'success');
+        
+        // In a real implementation, this would:
+        // 1. Call API to update the selected idea
+        // 2. Refresh the Next Up panel with new selection
+        // 3. Update the calendar ideas page if it's open
     }
 
     startProduction() {
