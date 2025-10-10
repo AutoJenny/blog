@@ -849,6 +849,37 @@ class AuthoringManager {
     }
 }
 
+// LLM Module Accordion Functions
+function toggleLLMSettingsAccordion() {
+    const content = document.getElementById('settings-accordion-content');
+    const icon = document.getElementById('settings-accordion-icon');
+    
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+    } else {
+        content.style.display = 'none';
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+    }
+}
+
+function toggleLLMPromptsAccordion() {
+    const content = document.getElementById('prompts-accordion-content');
+    const icon = document.getElementById('prompts-accordion-icon');
+    
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+    } else {
+        content.style.display = 'none';
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+    }
+}
+
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     const authoringManager = new AuthoringManager();
