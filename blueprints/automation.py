@@ -222,10 +222,15 @@ def update_schedule():
         import json
         
         data = request.get_json()
-        scheduled_date = data.get('scheduled_date')
-        scheduled_time = data.get('scheduled_time', '14:00:00')
+        print(f"[API] Received data: {data}")
+        
+        # Accept both field names for compatibility
+        scheduled_date = data.get('scheduled_date') or data.get('publish_date')
+        scheduled_time = data.get('scheduled_time') or data.get('publish_time', '14:00:00')
         requires_approval = data.get('requires_approval', True)
         auto_publish = data.get('auto_publish', False)
+        
+        print(f"[API] Parsed: scheduled_date={scheduled_date}, scheduled_time={scheduled_time}")
         
         if not scheduled_date:
             return jsonify({"success": False, "error": "Scheduled date is required"}), 400
