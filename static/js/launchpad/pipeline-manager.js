@@ -183,33 +183,62 @@ class PipelineManager {
         const substagesContainer = document.querySelector(`#${stage}-content .substages`);
         if (!substagesContainer) return;
         
-        substagesContainer.innerHTML = '';
-        
+        // Update existing substages with timestamps
         substages.forEach(substage => {
-            const substageElement = document.createElement('div');
-            substageElement.className = `substage ${substage.status}`;
-            
-            let icon = '<i class="fas fa-clock"></i>';
-            if (substage.status === 'complete') {
-                icon = '<i class="fas fa-check-circle"></i>';
-            } else if (substage.status === 'in-progress') {
-                icon = '<i class="fas fa-spinner fa-spin"></i>';
+            const existingSubstage = substagesContainer.querySelector(`[data-substage="${substage.name.toLowerCase().replace(/ /g, '_')}"]`);
+            if (existingSubstage) {
+                // Update existing substage
+                const completedAtSpan = existingSubstage.querySelector('.completed-at');
+                if (completedAtSpan && substage.completed_at) {
+                    const timeAgo = this.formatTimeAgo(substage.completed_at);
+                    completedAtSpan.textContent = `Completed ${timeAgo}`;
+                } else if (completedAtSpan) {
+                    completedAtSpan.textContent = 'Loading...';
+                }
+                
+                // Update status classes
+                existingSubstage.className = `substage ${substage.status}`;
+                
+                // Update icon
+                const icon = existingSubstage.querySelector('i');
+                if (icon) {
+                    if (substage.status === 'complete') {
+                        icon.className = 'fas fa-check-circle';
+                    } else if (substage.status === 'in-progress') {
+                        icon.className = 'fas fa-spinner fa-spin';
+                    } else {
+                        icon.className = 'fas fa-hourglass-half';
+                    }
+                }
+            } else {
+                // Create new substage if it doesn't exist
+                const substageElement = document.createElement('div');
+                substageElement.className = `substage ${substage.status}`;
+                substageElement.setAttribute('data-substage', substage.name.toLowerCase().replace(/ /g, '_'));
+                
+                let icon = '<i class="fas fa-clock"></i>';
+                if (substage.status === 'complete') {
+                    icon = '<i class="fas fa-check-circle"></i>';
+                } else if (substage.status === 'in-progress') {
+                    icon = '<i class="fas fa-spinner fa-spin"></i>';
+                }
+                
+                let timeInfo = '';
+                if (substage.completed_at) {
+                    const timeAgo = this.formatTimeAgo(substage.completed_at);
+                    timeInfo = `<span class="completed-at">Completed ${timeAgo}</span>`;
+                } else if (substage.estimated_time) {
+                    timeInfo = `<span class="estimated-time">${substage.estimated_time}</span>`;
+                }
+                
+                substageElement.innerHTML = `
+                    ${icon}
+                    <span>${substage.name}</span>
+                    ${timeInfo}
+                `;
+                
+                substagesContainer.appendChild(substageElement);
             }
-            
-            let timeInfo = '';
-            if (substage.completed_at) {
-                timeInfo = `<span class="completed-at">${substage.completed_at}</span>`;
-            } else if (substage.estimated_time) {
-                timeInfo = `<span class="estimated-time">${substage.estimated_time}</span>`;
-            }
-            
-            substageElement.innerHTML = `
-                ${icon}
-                <span>${substage.name}</span>
-                ${timeInfo}
-            `;
-            
-            substagesContainer.appendChild(substageElement);
         });
     }
 
@@ -237,6 +266,29 @@ class PipelineManager {
         }
         
         // Could show a notification here
+    }
+
+    /**
+     * Format timestamp as "X hours ago" or "X days ago"
+     */
+    formatTimeAgo(isoString) {
+        if (!isoString) return '';
+        
+        const date = new Date(isoString);
+        const now = new Date();
+        const seconds = Math.floor((now - date) / 1000);
+        
+        let interval = seconds / 31536000;
+        if (interval > 1) return Math.floor(interval) + " years ago";
+        interval = seconds / 2592000;
+        if (interval > 1) return Math.floor(interval) + " months ago";
+        interval = seconds / 86400;
+        if (interval > 1) return Math.floor(interval) + " days ago";
+        interval = seconds / 3600;
+        if (interval > 1) return Math.floor(interval) + " hours ago";
+        interval = seconds / 60;
+        if (interval > 1) return Math.floor(interval) + " minutes ago";
+        return Math.floor(seconds) + " seconds ago";
     }
 
     /**

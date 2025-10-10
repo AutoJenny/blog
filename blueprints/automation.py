@@ -457,10 +457,12 @@ def get_pipeline_status(post_id):
     """Get current pipeline state for a post"""
     try:
         with db_manager.get_cursor() as cursor:
-            # Get post basic info
+            # Get post basic info with timestamps
             cursor.execute("""
                 SELECT p.id, p.title, p.status, p.updated_at,
-                       pd.sections, pd.topic_allocation, pd.section_structure
+                       pd.sections, pd.topic_allocation, pd.section_structure,
+                       pd.idea_scope, pd.structure_design_at, pd.allocation_completed_at,
+                       pd.refinement_completed_at
                 FROM post p
                 LEFT JOIN post_development pd ON p.id = pd.post_id
                 WHERE p.id = %s
@@ -493,7 +495,16 @@ def get_pipeline_status(post_id):
                 overall_progress += 40
             overall_progress += int(authoring_progress * 0.6)
             
-            # Build response
+            # Extract topic brainstorming timestamp from idea_scope
+            topic_brainstorming_at = None
+            if post['idea_scope']:
+                try:
+                    idea_scope_data = json.loads(post['idea_scope']) if isinstance(post['idea_scope'], str) else post['idea_scope']
+                    topic_brainstorming_at = idea_scope_data.get('generated_at')
+                except:
+                    pass
+            
+            # Build response with actual timestamps
             data = {
                 "success": True,
                 "post_id": post_id,
@@ -503,11 +514,31 @@ def get_pipeline_status(post_id):
                         "status": "complete" if planning_complete else "in_progress",
                         "progress": 100 if planning_complete else 50,
                         "substages": [
-                            {"name": "Topic Brainstorming", "status": "complete" if post['topic_allocation'] else "pending"},
-                            {"name": "Section Structure", "status": "complete" if post['section_structure'] else "pending"},
-                            {"name": "Topic Allocation", "status": "complete" if post['topic_allocation'] else "pending"},
-                            {"name": "Titling", "status": "complete" if post['sections'] else "pending"},
-                            {"name": "Outline", "status": "complete" if planning_complete else "pending"}
+                            {
+                                "name": "Topic Brainstorming", 
+                                "status": "complete" if post['idea_scope'] else "pending",
+                                "completed_at": topic_brainstorming_at
+                            },
+                            {
+                                "name": "Section Structure", 
+                                "status": "complete" if post['section_structure'] else "pending",
+                                "completed_at": post['structure_design_at'].isoformat() if post['structure_design_at'] else None
+                            },
+                            {
+                                "name": "Topic Allocation", 
+                                "status": "complete" if post['topic_allocation'] else "pending",
+                                "completed_at": post['allocation_completed_at'].isoformat() if post['allocation_completed_at'] else None
+                            },
+                            {
+                                "name": "Section Titling", 
+                                "status": "complete" if post['sections'] else "pending",
+                                "completed_at": None  # No specific timestamp field for titling
+                            },
+                            {
+                                "name": "Content Outline", 
+                                "status": "complete" if planning_complete else "pending",
+                                "completed_at": None  # No specific timestamp field for outline
+                            }
                         ]
                     },
                     "authoring": {
