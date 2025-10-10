@@ -60,24 +60,6 @@ class OneClickBlogController {
         window.handleProductionAction = () => {
             this.handleProductionAction();
         };
-
-        // Test function for debugging
-        window.testScheduleManager = () => {
-            console.log('[One-Click Blog Controller] testScheduleManager() called');
-            console.log('[One-Click Blog Controller] scheduleManager:', this.scheduleManager);
-            if (this.scheduleManager) {
-                console.log('[One-Click Blog Controller] Testing scheduleManager.loadCurrentSchedule()');
-                this.scheduleManager.loadCurrentSchedule().then(schedule => {
-                    console.log('[One-Click Blog Controller] Test result:', schedule);
-                    if (schedule) {
-                        console.log('[One-Click Blog Controller] Schedule date:', schedule.scheduled_date);
-                        console.log('[One-Click Blog Controller] Schedule relative:', schedule.scheduled_relative);
-                    }
-                });
-            } else {
-                console.error('[One-Click Blog Controller] scheduleManager is null!');
-            }
-        };
     }
 
     async loadInitialData() {
