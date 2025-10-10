@@ -898,6 +898,8 @@ def execute_substage(stage, substage):
             # Execute the substage based on stage/substage
             if stage == 'planning' and substage == 'topic_brainstorming':
                 return execute_topic_brainstorming(post_id, data)
+            elif stage == 'planning' and substage == 'section_structure':
+                return execute_section_structure(post_id, data)
             else:
                 return jsonify({
                     "success": False,
@@ -1123,6 +1125,88 @@ def create_post():
         }
     }
     return jsonify(mock_data)
+
+def execute_section_structure(post_id, data):
+    """Execute section structure design for a post"""
+    try:
+        # Get post data and topics
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT p.title, pd.expanded_idea, pd.idea_scope
+                FROM post p
+                LEFT JOIN post_development pd ON p.id = pd.post_id
+                WHERE p.id = %s
+            """, (post_id,))
+            
+            post = cursor.fetchone()
+            if not post:
+                return jsonify({"success": False, "error": "Post not found"}), 404
+            
+            expanded_idea = post['expanded_idea'] or post['title']
+            
+            # Get topics from idea_scope
+            topics = []
+            if post['idea_scope']:
+                try:
+                    idea_scope_data = json.loads(post['idea_scope']) if isinstance(post['idea_scope'], str) else post['idea_scope']
+                    topics = idea_scope_data.get('generated_topics', [])
+                except:
+                    pass
+            
+        if not topics:
+            return jsonify({"success": False, "error": "No topics found. Please run topic brainstorming first."}), 400
+            
+        if not expanded_idea:
+            return jsonify({"success": False, "error": "Expanded idea is required"}), 400
+            
+        # Call the section structure API logic directly
+        from blueprints.planning_sections import api_design_section_structure
+        
+        # Create a mock request object with the required data
+        class MockRequest:
+            def get_json(self):
+                return {
+                    'topics': topics,
+                    'post_id': post_id,
+                    'expanded_idea': expanded_idea
+                }
+        
+        # Temporarily replace the global request object
+        import flask
+        original_request = flask.request
+        flask.request = MockRequest()
+        
+        try:
+            # Call the section structure API
+            result = api_design_section_structure()
+            
+            # Convert Flask response to dict if needed
+            if hasattr(result, 'get_json'):
+                result_data = result.get_json()
+            else:
+                result_data = result
+            
+            if result_data.get('success'):
+                logger.info(f"Section structure generated successfully for post {post_id}")
+                return jsonify({
+                    'success': True,
+                    'section_structure': result_data.get('section_structure'),
+                    'raw_response': result_data.get('raw_response'),
+                    'saved_to_database': True
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': result_data.get('error', 'Failed to generate section structure')
+                }), 500
+                
+        finally:
+            # Restore original request object
+            flask.request = original_request
+            
+    except Exception as e:
+        logger.error(f"Error executing section structure: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @bp.route('/analytics/<int:post_id>', methods=['GET'])
 def get_post_analytics(post_id):
