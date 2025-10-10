@@ -57,6 +57,8 @@
         {% elif blueprint_name == 'authoring' %}
             <script src="{{ url_for('static', filename='js/main.js') }}"></script>
             <script src="{{ url_for('static', filename='js/workflow-nav.js') }}"></script>
+            <script src="{{ url_for('static', filename='js/authoring/llm-settings-section-drafting.js') }}"></script>
+            <script src="{{ url_for('static', filename='js/authoring/llm-prompts-section-drafting.js') }}"></script>
         {% elif blueprint_name == 'imaging' %}
             <script src="{{ url_for('static', filename='js/imaging/imaging-core.js') }}"></script>
             <script src="{{ url_for('static', filename='js/imaging/imaging-ui.js') }}"></script>
