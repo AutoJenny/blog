@@ -45,12 +45,25 @@ export class ImageConceptsOutputPanel {
     window.addEventListener('sections:batch-generate', async (e) => {
       const ids = e.detail?.ids || [];
       console.log('[DEBUG] Batch generation started for sections:', ids);
-      for (const id of ids) { 
+      for (let i = 0; i < ids.length; i++) {
+        const id = ids[i];
         console.log('[DEBUG] Generating concepts for section:', id);
+        
+        // Update progress modal
+        this.updateBatchProgress(id, 'Generating...', (i + 1) / ids.length * 100);
+        
         await this.generateImageConcepts(id); 
         console.log('[DEBUG] Completed generation for section:', id);
+        
+        // Update progress modal
+        this.updateBatchProgress(id, 'Complete', (i + 1) / ids.length * 100);
       }
       console.log('[DEBUG] Batch generation completed for all sections');
+      
+      // Close progress modal after a short delay
+      setTimeout(() => {
+        this.closeBatchProgress();
+      }, 1000);
     });
   }
 
@@ -327,6 +340,43 @@ export class ImageConceptsOutputPanel {
     const content = document.getElementById('content-editor').value;
     await postJSON(`/authoring/api/posts/${this.postId}/sections/${this.current.id}/save-image-concepts`, { image_concepts: content });
     document.getElementById('last-saved').textContent = `Saved ${new Date().toLocaleTimeString()}`;
+  }
+
+  updateBatchProgress(sectionId, status, percentage) {
+    // Update section status in progress modal
+    const sectionItem = document.querySelector(`#batch-progress-modal .section-item[data-section-id="${sectionId}"]`);
+    if (sectionItem) {
+      const statusElement = sectionItem.querySelector('.section-status');
+      if (statusElement) {
+        statusElement.textContent = status;
+        statusElement.className = `section-status ${status.toLowerCase().replace(' ', '-')}`;
+      }
+    }
+    
+    // Update progress bar
+    const progressFill = document.getElementById('progress-fill');
+    const progressPercent = document.getElementById('progress-percent');
+    if (progressFill) {
+      progressFill.style.width = `${percentage}%`;
+    }
+    if (progressPercent) {
+      progressPercent.textContent = `${Math.round(percentage)}%`;
+    }
+  }
+  
+  closeBatchProgress() {
+    // Remove progress modal
+    const modal = document.getElementById('batch-progress-modal');
+    if (modal) {
+      modal.remove();
+    }
+    
+    // Re-enable Generate All button
+    const batchBtn = document.getElementById('batch-generate-btn');
+    if (batchBtn) {
+      batchBtn.disabled = false;
+      batchBtn.innerHTML = '<i class="fas fa-magic"></i> Generate All';
+    }
   }
 
   async generateImageConcepts(sectionId = null) {
