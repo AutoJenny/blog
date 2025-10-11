@@ -127,7 +127,7 @@ class LLMModule {
     
     updateImageConceptsOutput(result) {
         // Update the ImageConceptsOutputPanel with the generated concepts
-        if (window.ImageConceptsOutputPanel && result.image_concepts) {
+        if (result.image_concepts) {
             // Parse the JSON concepts
             try {
                 const conceptsData = typeof result.image_concepts === 'string' 
@@ -139,9 +139,16 @@ class LLMModule {
                 if (currentSection) {
                     currentSection.image_concepts = result.image_concepts;
                     
-                    // Trigger the output panel to refresh
+                    // Update the output panel display
                     if (window.imageConceptsOutputPanel) {
+                        // Show the updated section with new concepts
                         window.imageConceptsOutputPanel.show(currentSection);
+                        
+                        // Also update the raw editor for fallback
+                        const editor = document.getElementById('content-editor');
+                        if (editor) {
+                            editor.value = result.image_concepts;
+                        }
                     }
                 }
             } catch (error) {
