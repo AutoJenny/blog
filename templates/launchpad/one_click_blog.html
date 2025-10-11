@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>One-Click Blog - Automated Blog Creation</title>
+    {% from 'launchpad/includes/automation_substage.html' import automation_substage %}
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome for icons -->
@@ -289,48 +290,8 @@
                     </div>
                     <div class="stage-content" id="authoring-content" style="display: none;">
                         <div class="substages">
-                            <div class="substage in-progress automation-enabled" data-stage="authoring" data-substage="author_first_drafts">
-                                <div class="substage-info">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                    <span class="substage-name">Author First Drafts</span>
-                                    <span class="completed-at">Loading...</span>
-                                </div>
-                                <div class="substage-automation" style="text-align: right;">
-                                    <span class="automation-mode manual" id="automation-mode-authoring-author_first_drafts">Manual</span>
-                                    <div class="automation-controls" style="display: inline-block; margin-left: 10px;">
-                                        <button class="btn btn-sm btn-outline-primary" onclick="executeSubstage('authoring', 'author_first_drafts')" title="Run Now">
-                                            <i class="fas fa-play"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-secondary" onclick="toggleAutomationMode('authoring', 'author_first_drafts')" title="Toggle Mode">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                        <a href="/authoring/posts/69/sections/author-first-drafts" class="btn btn-sm btn-outline-info" title="Edit">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="substage in-progress automation-enabled" data-stage="authoring" data-substage="image_concepts">
-                                <div class="substage-info">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                    <span class="substage-name">Image Concepts</span>
-                                    <span class="completed-at">Loading...</span>
-                                </div>
-                                <div class="substage-automation" style="text-align: right;">
-                                    <span class="automation-mode manual" id="automation-mode-authoring-image_concepts">Manual</span>
-                                    <div class="automation-controls" style="display: inline-block; margin-left: 10px;">
-                                        <button class="btn btn-sm btn-outline-primary" onclick="executeSubstage('authoring', 'image_concepts')" title="Run Now">
-                                            <i class="fas fa-play"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-secondary" onclick="toggleAutomationMode('authoring', 'image_concepts')" title="Toggle Mode">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                        <a href="/authoring/posts/69/sections/image-concepts" class="btn btn-sm btn-outline-info" title="Edit">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
+                            {{ automation_substage('authoring', 'author_first_drafts', 'Author First Drafts', 'in-progress', 'Loading...') }}
+                            {{ automation_substage('authoring', 'image_concepts', 'Image Concepts', 'pending', 'Loading...') }}
                             <!-- Other substages will be populated dynamically by JavaScript -->
                         </div>
                     </div>
