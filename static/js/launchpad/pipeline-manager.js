@@ -57,7 +57,7 @@ class PipelineManager {
             const data = await response.json();
             
             if (data.success) {
-                this.populatePostSelector(data.posts);
+                this.populatePostSelector(data.data);
             } else {
                 console.error('[Pipeline Manager] Failed to load posts:', data.error);
             }
@@ -75,17 +75,21 @@ class PipelineManager {
         
         selector.innerHTML = '<option value="">Select a post...</option>';
         
-        posts.forEach(post => {
-            const option = document.createElement('option');
-            option.value = post.id;
-            option.textContent = `#${post.id} - ${post.title}`;
-            if (post.id === this.currentPostId) {
-                option.selected = true;
-            }
-            selector.appendChild(option);
-        });
-        
-        console.log('[Pipeline Manager] Populated selector with', posts.length, 'posts');
+        if (posts && Array.isArray(posts)) {
+            posts.forEach(post => {
+                const option = document.createElement('option');
+                option.value = post.id;
+                option.textContent = `#${post.id} - ${post.title}`;
+                if (post.id === this.currentPostId) {
+                    option.selected = true;
+                }
+                selector.appendChild(option);
+            });
+            
+            console.log('[Pipeline Manager] Populated selector with', posts.length, 'posts');
+        } else {
+            console.log('[Pipeline Manager] No posts data available');
+        }
     }
 
     /**
@@ -137,22 +141,31 @@ class PipelineManager {
      * Update the pipeline display with data
      */
     updatePipelineDisplay(data) {
-        console.log('[Pipeline Manager] Updating pipeline display');
+        console.log('[Pipeline Manager] Updating pipeline display with data:', data);
+        
+        if (!data || !data.data) {
+            console.error('[Pipeline Manager] Invalid data structure:', data);
+            return;
+        }
+        
+        const pipelineData = data.data;
         
         // Update overall progress
         const progressBar = document.querySelector('.overall-progress .progress-fill');
         const progressText = document.querySelector('.overall-progress .progress-text');
-        if (progressBar && progressText) {
-            progressBar.style.width = `${data.overall_progress}%`;
-            progressText.textContent = `${data.overall_progress}%`;
+        if (progressBar && progressText && pipelineData.overall_progress !== undefined) {
+            progressBar.style.width = `${pipelineData.overall_progress}%`;
+            progressText.textContent = `${pipelineData.overall_progress}%`;
         }
         
         // Update each stage
-        this.stages.forEach(stage => {
-            if (data.stages[stage]) {
-                this.updateStageDisplay(stage, data.stages[stage]);
-            }
-        });
+        if (pipelineData.stages) {
+            this.stages.forEach(stage => {
+                if (pipelineData.stages[stage]) {
+                    this.updateStageDisplay(stage, pipelineData.stages[stage]);
+                }
+            });
+        }
         
         console.log('[Pipeline Manager] Pipeline display updated');
     }
