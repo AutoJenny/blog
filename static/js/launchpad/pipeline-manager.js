@@ -247,6 +247,7 @@ class PipelineManager {
                     } else {
                         icon.className = 'fas fa-circle';
                     }
+                    console.log('[Pipeline Manager] Updated icon for', selectorName, 'to:', icon.className);
                 }
             } else {
                 console.log('[Pipeline Manager] Substage not found:', selectorName);
