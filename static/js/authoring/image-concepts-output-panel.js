@@ -44,7 +44,13 @@ export class ImageConceptsOutputPanel {
 
     window.addEventListener('sections:batch-generate', async (e) => {
       const ids = e.detail?.ids || [];
-      for (const id of ids) { await this.generateImageConcepts(id); }
+      console.log('[DEBUG] Batch generation started for sections:', ids);
+      for (const id of ids) { 
+        console.log('[DEBUG] Generating concepts for section:', id);
+        await this.generateImageConcepts(id); 
+        console.log('[DEBUG] Completed generation for section:', id);
+      }
+      console.log('[DEBUG] Batch generation completed for all sections');
     });
   }
 
@@ -326,16 +332,19 @@ export class ImageConceptsOutputPanel {
   async generateImageConcepts(sectionId = null) {
     const id = sectionId || (this.current?.id);
     if (!id) return;
+    console.log('[DEBUG] generateImageConcepts called for section:', id);
     const editor = document.getElementById('content-editor');
     editor.value = 'Generating image concepts…';
     editor.disabled = true;
 
     try {
+      console.log('[DEBUG] Making API call to generate concepts for section:', id);
       const res = await postJSON(`/authoring/api/posts/${this.postId}/sections/${id}/generate-image-concepts`, {});
+      console.log('[DEBUG] API response received:', res);
       editor.value = res.image_concepts || '(no concepts generated)';
     } catch (err) {
+      console.error('[DEBUG] Error generating image concepts:', err);
       editor.value = 'Error generating image concepts';
-      console.error(err);
     } finally {
       editor.disabled = false;
       this.updateWordCount();
