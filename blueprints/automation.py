@@ -463,7 +463,8 @@ def get_pipeline_status(post_id):
                        pd.sections, pd.topic_allocation, pd.section_structure,
                        pd.idea_scope, pd.structure_design_at, pd.allocation_completed_at,
                        pd.refinement_completed_at, pd.updated_at as sections_updated_at,
-                       pd.updated_at as authoring_updated_at
+                       pd.updated_at as authoring_updated_at,
+                       pd.updated_at as image_concepts_updated_at
                 FROM post p
                 LEFT JOIN post_development pd ON p.id = pd.post_id
                 WHERE p.id = %s
@@ -477,7 +478,8 @@ def get_pipeline_status(post_id):
             # Get section completion status
             cursor.execute("""
                 SELECT COUNT(*) as total,
-                       SUM(CASE WHEN draft IS NOT NULL AND draft != '' THEN 1 ELSE 0 END) as drafted
+                       SUM(CASE WHEN draft IS NOT NULL AND draft != '' THEN 1 ELSE 0 END) as drafted,
+                       SUM(CASE WHEN image_concepts IS NOT NULL AND image_concepts != '' THEN 1 ELSE 0 END) as image_concepts_count
                 FROM post_section
                 WHERE post_id = %s
             """, (post_id,))
@@ -542,7 +544,7 @@ def get_pipeline_status(post_id):
                         "progress": authoring_progress,
                         "substages": [
                             {"name": "Author First Drafts", "status": "in_progress" if authoring_progress > 0 else "pending", "progress": authoring_progress, "completed_at": post['authoring_updated_at'].isoformat() if authoring_progress > 0 and post['authoring_updated_at'] else None},
-                            {"name": "Image Concepts", "status": "pending"},
+                            {"name": "Image Concepts", "status": "complete" if section_stats and section_stats['image_concepts_count'] > 0 else "pending", "completed_at": post['image_concepts_updated_at'].isoformat() if section_stats and section_stats['image_concepts_count'] > 0 and post['image_concepts_updated_at'] else None},
                             {"name": "Image Prompts", "status": "pending"}
                         ]
                     },
@@ -936,6 +938,9 @@ def execute_substage(stage, substage):
             elif stage == 'authoring' and substage == 'author_first_drafts':
                 logger.info(f"About to call execute_author_first_drafts with post_id={post_id}, data={data}")
                 return execute_author_first_drafts(post_id, data)
+            elif stage == 'authoring' and substage == 'image_concepts':
+                logger.info(f"About to call execute_image_concepts with post_id={post_id}, data={data}")
+                return execute_image_concepts(post_id, data)
             else:
                 return jsonify({
                     "success": False,
@@ -1665,6 +1670,169 @@ def execute_author_first_drafts(post_id, data):
         
     except Exception as e:
         logger.error(f"Error executing author first drafts: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+def execute_image_concepts(post_id, data):
+    """Execute image concepts generation for all sections of a post"""
+    try:
+        logger.info(f"Starting image concepts generation for post {post_id}")
+        
+        # Get all sections for this post
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, section_order, section_heading, section_description, status, image_concepts
+                FROM post_section
+                WHERE post_id = %s 
+                AND section_order <= 7
+                ORDER BY section_order
+            """, (post_id,))
+            
+            sections = cursor.fetchall()
+            
+            if not sections:
+                return jsonify({"success": False, "error": "No sections found for this post"}), 404
+        
+        logger.info(f"Found {len(sections)} sections to generate image concepts for")
+        
+        # Generate image concepts for each section
+        results = []
+        success_count = 0
+        
+        for section in sections:
+            section_id = section['id']
+            section_title = section['section_heading']
+            
+            try:
+                logger.info(f"Generating image concepts for section {section_id}: {section_title}")
+                
+                # Call the core LLM logic directly (same as authoring API)
+                from blueprints.authoring import LLMService
+                import json
+                
+                try:
+                    # Get the image concepts prompt
+                    with db_manager.get_cursor() as cursor:
+                        cursor.execute("""
+                            SELECT system_prompt, prompt_text
+                            FROM llm_prompt
+                            WHERE name = 'Image Concepts Generation'
+                            ORDER BY id DESC
+                            LIMIT 1
+                        """)
+                        prompt_data = cursor.fetchone()
+                        
+                        if not prompt_data:
+                            raise Exception("Image Concepts prompt not found")
+                    
+                    # Get post development data for context
+                    with db_manager.get_cursor() as cursor:
+                        cursor.execute("""
+                            SELECT expanded_idea, topic_allocation, sections
+                            FROM post_development
+                            WHERE post_id = %s
+                        """, (post_id,))
+                        dev_data = cursor.fetchone()
+                        
+                        if not dev_data:
+                            raise Exception("Post development data not found")
+                    
+                    # Get section draft content
+                    with db_manager.get_cursor() as cursor:
+                        cursor.execute("""
+                            SELECT draft
+                            FROM post_section
+                            WHERE id = %s
+                        """, (section_id,))
+                        section_data = cursor.fetchone()
+                        
+                        if not section_data:
+                            raise Exception("Section data not found")
+                    
+                    # Prepare prompt variables
+                    prompt_vars = {
+                        'SECTION_TITLE': section['section_heading'],
+                        'SECTION_DESCRIPTION': section['section_description'] or '',
+                        'SECTION_CONTENT': section_data['draft'] or '',
+                        'POST_TITLE': dev_data.get('expanded_idea', ''),
+                        'POST_CONTEXT': dev_data.get('expanded_idea', '')
+                    }
+                    
+                    # Replace placeholders in prompt
+                    prompt_text = prompt_data['prompt_text']
+                    for key, value in prompt_vars.items():
+                        prompt_text = prompt_text.replace(f'[{key}]', str(value))
+                    
+                    # Call LLM service
+                    messages = [
+                        {'role': 'system', 'content': prompt_data['system_prompt']},
+                        {'role': 'user', 'content': prompt_text}
+                    ]
+                    
+                    llm_service = LLMService()
+                    llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+                    
+                    if llm_response and 'content' in llm_response:
+                        image_concepts = llm_response['content'].strip()
+                        
+                        # Save the image concepts to database
+                        with db_manager.get_cursor() as cursor:
+                            cursor.execute("""
+                                UPDATE post_section
+                                SET image_concepts = %s
+                                WHERE id = %s
+                            """, (image_concepts, section_id))
+                        
+                        success_count += 1
+                        results.append({
+                            'section_id': section_id,
+                            'section_title': section_title,
+                            'success': True,
+                            'image_concepts': image_concepts
+                        })
+                        logger.info(f"Successfully generated image concepts for section {section_id}")
+                    else:
+                        raise Exception("No content in LLM response")
+                        
+                except Exception as e:
+                    results.append({
+                        'section_id': section_id,
+                        'section_title': section_title,
+                        'success': False,
+                        'error': str(e)
+                    })
+                    logger.error(f"Error generating image concepts for section {section_id}: {e}")
+                    
+            except Exception as e:
+                logger.error(f"Error generating image concepts for section {section_id}: {e}")
+                results.append({
+                    'section_id': section_id,
+                    'section_title': section_title,
+                    'success': False,
+                    'error': str(e)
+                })
+        
+        # Update the authoring progress timestamp
+        if success_count > 0:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    UPDATE post_development 
+                    SET updated_at = NOW()
+                    WHERE post_id = %s
+                """, (post_id,))
+        
+        logger.info(f"Image concepts generation completed: {success_count}/{len(sections)} sections successful")
+        
+        return jsonify({
+            'success': True,
+            'total_sections': len(sections),
+            'successful_sections': success_count,
+            'failed_sections': len(sections) - success_count,
+            'results': results,
+            'message': f'Generated image concepts for {success_count} out of {len(sections)} sections'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error executing image concepts: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 @bp.route('/analytics/<int:post_id>', methods=['GET'])
