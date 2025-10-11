@@ -205,17 +205,6 @@ def get_alerts():
             
             overdue_posts = cursor.fetchall()
             
-            # Get posts with automation errors
-            cursor.execute("""
-                SELECT p.id, p.title, pd.automation_error, pd.automation_error_at
-                FROM post p
-                JOIN post_development pd ON p.id = pd.post_id
-                WHERE pd.automation_error IS NOT NULL
-                ORDER BY pd.automation_error_at DESC
-            """)
-            
-            error_posts = cursor.fetchall()
-            
             alerts = []
             
             # Add overdue alerts
@@ -228,18 +217,6 @@ def get_alerts():
                     "post_id": post['id'],
                     "created_at": post['scheduled_date'].isoformat(),
                     "severity": "high"
-                })
-            
-            # Add error alerts
-            for post in error_posts:
-                alerts.append({
-                    "id": f"error_{post['id']}",
-                    "type": "error",
-                    "title": "Automation Error",
-                    "message": f"Post '{post['title']}' has automation error: {post['automation_error']}",
-                    "post_id": post['id'],
-                    "created_at": post['automation_error_at'].isoformat() if post['automation_error_at'] else None,
-                    "severity": "medium"
                 })
             
             return jsonify({

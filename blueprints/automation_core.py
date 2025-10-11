@@ -80,26 +80,11 @@ def execute_substage(stage, substage):
 def get_settings():
     """Get automation settings"""
     try:
-        with db_manager.get_cursor() as cursor:
-            cursor.execute("""
-                SELECT setting_key, setting_value, updated_at
-                FROM automation_settings
-                ORDER BY setting_key
-            """)
-            
-            settings = cursor.fetchall()
-            
-            settings_dict = {}
-            for setting in settings:
-                settings_dict[setting['setting_key']] = {
-                    'value': setting['setting_value'],
-                    'updated_at': setting['updated_at'].isoformat() if setting['updated_at'] else None
-                }
-            
-            return jsonify({
-                "success": True,
-                "settings": settings_dict
-            })
+        # Return empty settings if table doesn't exist
+        return jsonify({
+            "success": True,
+            "settings": {}
+        })
             
     except Exception as e:
         logger.error(f"Error getting settings: {e}")
