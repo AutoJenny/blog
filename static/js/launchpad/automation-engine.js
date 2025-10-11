@@ -84,7 +84,7 @@ class AutomationEngine {
         console.log(`[Automation Engine] Executing ${stage}/${substage} for post ${postId}`);
         
         try {
-            const response = await fetch(`/launchpad/one-click-blog/api/substage-execute/${stage}/${substage}`, {
+            const response = await fetch(`/launchpad/one-click-blog/api/execute-substage/${stage}/${substage}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
