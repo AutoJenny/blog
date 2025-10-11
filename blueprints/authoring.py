@@ -891,21 +891,69 @@ def api_select_concept(post_id, section_id):
         logger.error(f"Error saving concept selection: {e}")
         return jsonify({'error': str(e)}), 500
 
-@bp.route('/api/posts/<int:post_id>/sections/<int:section_id>/generate-image-concepts', methods=['POST'])
+@bp.route('/api/posts/<int:post_id>/sections/<section_id>/generate-image-concepts', methods=['POST'])
 def api_generate_image_concepts(post_id, section_id):
     """Generate image concepts for a specific section"""
     try:
         with db_manager.get_cursor() as cursor:
-            # Get section data
-            cursor.execute("""
-                SELECT id, section_order, section_heading, section_description, 
-                       draft, polished, ideas_to_include, facts_to_include,
-                       highlighting, image_concepts, image_prompts, image_captions
-                FROM post_section
-                WHERE post_id = %s AND id = %s
-            """, (post_id, section_id))
+            # Get section data using the same logic as api_get_section
+            section = None
             
-            section = cursor.fetchone()
+            # First try post_section table (only if section_id is numeric)
+            if section_id.isdigit():
+                cursor.execute("""
+                    SELECT id, section_order, section_heading, section_description, 
+                           status, draft, polished, ideas_to_include, facts_to_include,
+                           highlighting, image_concepts, image_prompts, image_captions,
+                           image_alt_text, selected_image_concept
+                    FROM post_section
+                    WHERE post_id = %s AND id = %s
+                """, (post_id, int(section_id)))
+                section = cursor.fetchone()
+            
+            # If not found in post_section or section_id is not numeric, try post_development
+            if not section:
+                cursor.execute("""
+                    SELECT sections FROM post_development 
+                    WHERE post_id = %s AND sections IS NOT NULL
+                """, (post_id,))
+                result = cursor.fetchone()
+                
+                if result and result['sections']:
+                    try:
+                        sections_data = json.loads(result['sections'])
+                        if isinstance(sections_data, dict) and 'sections' in sections_data:
+                            sections_list = sections_data['sections']
+                        elif isinstance(sections_data, list):
+                            sections_list = sections_data
+                        else:
+                            sections_list = []
+                        
+                        # Find the section by ID
+                        for i, section_data in enumerate(sections_list):
+                            section_id_from_data = section_data.get('id', f'section_{i+1}')
+                            if section_id_from_data == section_id:
+                                section = {
+                                    'id': section_id_from_data,
+                                    'section_order': section_data.get('order', i+1),
+                                    'section_heading': section_data.get('title', f'Section {i+1}'),
+                                    'section_description': section_data.get('original', ''),
+                                    'status': 'draft',
+                                    'draft': None,
+                                    'polished': None,
+                                    'ideas_to_include': None,
+                                    'facts_to_include': None,
+                                    'highlighting': None,
+                                    'image_concepts': None,
+                                    'image_prompts': None,
+                                    'image_captions': None,
+                                    'image_alt_text': None,
+                                    'selected_image_concept': None
+                                }
+                                break
+                    except (json.JSONDecodeError, TypeError) as e:
+                        logger.warning(f"Failed to parse sections from post_development: {e}")
+            
             if not section:
                 return jsonify({'error': 'Section not found'}), 404
             
@@ -1025,14 +1073,52 @@ def api_generate_image_concepts(post_id, section_id):
             if not image_concepts:
                 return jsonify({'error': 'Failed to generate valid JSON'}), 500
             
-            # Save to database
+            # Save to database - update post_development.sections JSON
             cursor.execute("""
-                UPDATE post_section 
-                SET image_concepts = %s
-                WHERE post_id = %s AND id = %s
-            """, (image_concepts, post_id, section_id))
+                SELECT sections FROM post_development 
+                WHERE post_id = %s AND sections IS NOT NULL
+            """, (post_id,))
+            result = cursor.fetchone()
             
-            cursor.connection.commit()
+            if result and result['sections']:
+                try:
+                    sections_data = json.loads(result['sections'])
+                    if isinstance(sections_data, dict) and 'sections' in sections_data:
+                        sections_list = sections_data['sections']
+                    elif isinstance(sections_data, list):
+                        sections_list = sections_data
+                    else:
+                        sections_list = []
+                    
+                    # Find and update the section
+                    for i, section_data in enumerate(sections_list):
+                        section_id_from_data = section_data.get('id', f'section_{i+1}')
+                        if section_id_from_data == section_id:
+                            section_data['image_concepts'] = image_concepts
+                            break
+                    
+                    # Update the database
+                    cursor.execute("""
+                        UPDATE post_development 
+                        SET sections = %s
+                        WHERE post_id = %s
+                    """, (json.dumps(sections_data), post_id))
+                    
+                    cursor.connection.commit()
+                except (json.JSONDecodeError, TypeError) as e:
+                    logger.error(f"Error updating sections JSON: {e}")
+                    return jsonify({'error': 'Failed to update section data'}), 500
+            else:
+                # Fallback: try to update post_section if section_id is numeric
+                if section_id.isdigit():
+                    cursor.execute("""
+                        UPDATE post_section 
+                        SET image_concepts = %s
+                        WHERE post_id = %s AND id = %s
+                    """, (image_concepts, post_id, int(section_id)))
+                    cursor.connection.commit()
+                else:
+                    return jsonify({'error': 'No section data found to update'}), 404
             
             return jsonify({
                 'success': True,
