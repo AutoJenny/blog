@@ -43,6 +43,13 @@ class OneClickBlogController {
         window.pipelineManager = this.pipelineManager;
         window.automationEngine = this.automationEngine;
         
+        // Expose test function
+        window.testUpdateTimestamps = () => {
+            if (this.pipelineManager) {
+                this.pipelineManager.testUpdateTimestamps();
+            }
+        };
+        
         // Load initial data
         console.log('[One-Click Blog Controller] Loading initial data...');
         this.loadInitialData();

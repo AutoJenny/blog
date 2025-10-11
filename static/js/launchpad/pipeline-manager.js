@@ -179,7 +179,7 @@ class PipelineManager {
         }
         
         // Update substages if available
-        if (stageData.substages && stageData.substages.length > 0) {
+        if (stageData.substages && Object.keys(stageData.substages).length > 0) {
             this.updateSubstagesDisplay(templateStageId, stageData.substages);
         }
     }
@@ -188,27 +188,41 @@ class PipelineManager {
      * Update substages display
      */
     updateSubstagesDisplay(stage, substages) {
-        const substagesContainer = document.querySelector(`#${stage}-content .substages`);
-        if (!substagesContainer) return;
+        console.log('[Pipeline Manager] Updating substages display for stage:', stage, 'substages:', substages);
+        
+        // Handle both object and array formats
+        const substagesList = Array.isArray(substages) ? substages : Object.entries(substages).map(([key, data]) => ({
+            name: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            key: key,
+            ...data
+        }));
+        
+        console.log('[Pipeline Manager] Processed substages list:', substagesList);
         
         // Update existing substages with timestamps
-        substages.forEach(substage => {
-            const selectorName = substage.name.toLowerCase().replace(/ /g, '_');
-            const existingSubstage = substagesContainer.querySelector(`[data-substage="${selectorName}"]`);
+        substagesList.forEach(substage => {
+            const selectorName = substage.key || substage.name.toLowerCase().replace(/ /g, '_');
+            console.log('[Pipeline Manager] Looking for substage:', selectorName);
+            
+            // Look for existing substage anywhere in the document
+            const existingSubstage = document.querySelector(`[data-substage="${selectorName}"]`);
             
             if (existingSubstage) {
+                console.log('[Pipeline Manager] Found existing substage:', selectorName);
+                
                 // Update existing substage
                 const completedAtSpan = existingSubstage.querySelector('.completed-at');
                 
                 if (completedAtSpan && substage.completed_at) {
                     const timeAgo = this.formatTimeAgo(substage.completed_at);
                     completedAtSpan.textContent = `Completed ${timeAgo}`;
+                    console.log('[Pipeline Manager] Updated timestamp for', selectorName, 'to:', timeAgo);
                 } else if (completedAtSpan) {
                     completedAtSpan.textContent = 'Loading...';
                 }
                 
                 // Update status classes
-                existingSubstage.className = `substage ${substage.status}`;
+                existingSubstage.className = `substage ${substage.status} automation-enabled`;
                 
                 // Update icon
                 const icon = existingSubstage.querySelector('i');
@@ -218,37 +232,11 @@ class PipelineManager {
                     } else if (substage.status === 'in-progress') {
                         icon.className = 'fas fa-spinner fa-spin';
                     } else {
-                        icon.className = 'fas fa-hourglass-half';
+                        icon.className = 'fas fa-circle';
                     }
                 }
             } else {
-                // Create new substage if it doesn't exist
-                const substageElement = document.createElement('div');
-                substageElement.className = `substage ${substage.status}`;
-                substageElement.setAttribute('data-substage', substage.name.toLowerCase().replace(/ /g, '_'));
-                
-                let icon = '<i class="fas fa-clock"></i>';
-                if (substage.status === 'complete') {
-                    icon = '<i class="fas fa-check-circle"></i>';
-                } else if (substage.status === 'in-progress') {
-                    icon = '<i class="fas fa-spinner fa-spin"></i>';
-                }
-                
-                let timeInfo = '';
-                if (substage.completed_at) {
-                    const timeAgo = this.formatTimeAgo(substage.completed_at);
-                    timeInfo = `<span class="completed-at">Completed ${timeAgo}</span>`;
-                } else if (substage.estimated_time) {
-                    timeInfo = `<span class="estimated-time">${substage.estimated_time}</span>`;
-                }
-                
-                substageElement.innerHTML = `
-                    ${icon}
-                    <span>${substage.name}</span>
-                    ${timeInfo}
-                `;
-                
-                substagesContainer.appendChild(substageElement);
+                console.log('[Pipeline Manager] Substage not found:', selectorName);
             }
         });
     }
@@ -300,6 +288,34 @@ class PipelineManager {
         interval = seconds / 60;
         if (interval > 1) return Math.floor(interval) + " minutes ago";
         return Math.floor(seconds) + " seconds ago";
+    }
+
+    /**
+     * Manual test function to update timestamps
+     */
+    async testUpdateTimestamps() {
+        console.log('[Pipeline Manager] Testing manual timestamp update...');
+        
+        // Test with post ID 69
+        const postId = 69;
+        
+        try {
+            const response = await fetch(`/launchpad/one-click-blog/api/pipeline-status/${postId}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                console.log('[Pipeline Manager] API response:', data);
+                
+                // Update authoring substages
+                if (data.data.stages.authoring && data.data.stages.authoring.substages) {
+                    this.updateSubstagesDisplay('authoring', data.data.stages.authoring.substages);
+                }
+            } else {
+                console.error('[Pipeline Manager] API error:', data.error);
+            }
+        } catch (error) {
+            console.error('[Pipeline Manager] Test error:', error);
+        }
     }
 
     /**
