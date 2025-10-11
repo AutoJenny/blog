@@ -101,7 +101,6 @@ document.addEventListener('click', (event) => {
 {% block content %}
 {% include 'shared/blog_pipeline_header.html' %}
 
-{% block process_content %}
 <div class="authoring-workspace">
     <div class="workspace-container">
         {% include 'authoring/sections/sections_panel.html' %}
@@ -117,11 +116,9 @@ document.addEventListener('click', (event) => {
             
             {% set currentSubstage = 'image-prompts' %}
             {% include 'authoring/right/output_panel.html' %}
-                    </div>
-                </div>
-                    </div>
-{% endblock %}
-
+        </div>
+    </div>
+</div>
 {% include 'authoring/includes/llm_accordion_functions.html' %}
 <script type="module" src="/static/js/authoring/image-prompts.js"></script>
 <script src="/static/js/authoring/llm-settings_image_prompts.js"></script>
