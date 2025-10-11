@@ -46,6 +46,25 @@ def get_pipeline_status(post_id):
             
             section_stats = cursor.fetchone()
             
+            # Check image concepts completion from JSON data
+            image_concepts_complete = False
+            if post['sections']:
+                try:
+                    sections_data = json.loads(post['sections']) if isinstance(post['sections'], str) else post['sections']
+                    if isinstance(sections_data, dict) and 'sections' in sections_data:
+                        sections_list = sections_data['sections']
+                    elif isinstance(sections_data, list):
+                        sections_list = sections_data
+                    else:
+                        sections_list = []
+                    
+                    # Check if all sections have image_concepts
+                    total_sections = len(sections_list)
+                    sections_with_concepts = sum(1 for section in sections_list if section.get('image_concepts'))
+                    image_concepts_complete = total_sections > 0 and sections_with_concepts == total_sections
+                except (json.JSONDecodeError, TypeError):
+                    image_concepts_complete = False
+            
             # Calculate stage statuses
             planning_complete = bool(post['topic_allocation'] and post['section_structure'])
             authoring_progress = 0
@@ -108,7 +127,7 @@ def get_pipeline_status(post_id):
                                     "completed_at": post['updated_at'].isoformat() if post['updated_at'] else None
                                 },
                                 "image_concepts": {
-                                    "status": "complete" if section_stats['image_concepts_count'] == section_stats['total'] else ("in_progress" if section_stats['image_concepts_count'] > 0 else "pending"),
+                                    "status": "complete" if image_concepts_complete else ("in_progress" if post['sections'] else "pending"),
                                     "completed_at": post['authoring_updated_at'].isoformat() if post['authoring_updated_at'] else None
                                 }
                             }
