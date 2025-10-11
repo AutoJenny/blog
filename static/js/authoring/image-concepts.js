@@ -16,7 +16,10 @@ function initTabs() {
   if (saved) document.querySelector(`.tab-btn[data-tab="${saved}"]`)?.click();
 }
 
+console.log('[DEBUG] Image Concepts script loading...');
+
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('[DEBUG] Image Concepts DOMContentLoaded - starting initialization');
   initTabs();
 
   const postId = window.postId;
