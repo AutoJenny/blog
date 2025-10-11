@@ -22,18 +22,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const postId = window.postId;
   const output = new ImageConceptsOutputPanel({ postId });
 
+  // Initialize LLM module immediately for prompt loading
+  initializeLLMForSection('section_1'); // Initialize with first section ID
+
   const sectionsPanel = new SectionsPanel({
     postId,
     onSelect: (section) => {
       output.show(section);
-      // Initialize LLM module for the selected section
+      // Re-initialize LLM module for the selected section
       if (section && section.id) {
         initializeLLMForSection(section.id);
       }
     },
     onSelectMultiple: (sections) => {
       output.showMultiple(sections);
-      // Initialize LLM module for the first selected section
+      // Re-initialize LLM module for the first selected section
       if (sections && sections.length > 0 && sections[0].id) {
         initializeLLMForSection(sections[0].id);
       }
