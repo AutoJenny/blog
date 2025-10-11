@@ -39,7 +39,9 @@ def get_pipeline_status(post_id):
             cursor.execute("""
                 SELECT COUNT(*) as total,
                        SUM(CASE WHEN draft IS NOT NULL AND draft != '' THEN 1 ELSE 0 END) as drafted,
-                       SUM(CASE WHEN image_concepts IS NOT NULL AND image_concepts != '' THEN 1 ELSE 0 END) as image_concepts_count
+                       SUM(CASE WHEN image_concepts IS NOT NULL AND image_concepts != '' THEN 1 ELSE 0 END) as image_concepts_count,
+                       SUM(CASE WHEN image_prompts IS NOT NULL AND image_prompts != '' THEN 1 ELSE 0 END) as image_prompts_count,
+                       SUM(CASE WHEN image_captions IS NOT NULL AND image_captions != '' THEN 1 ELSE 0 END) as image_captions_count
                 FROM post_section
                 WHERE post_id = %s
             """, (post_id,))
@@ -128,6 +130,14 @@ def get_pipeline_status(post_id):
                                 },
                                 "image_concepts": {
                                     "status": "complete" if image_concepts_complete else ("in_progress" if post['sections'] else "pending"),
+                                    "completed_at": post['authoring_updated_at'].isoformat() if post['authoring_updated_at'] else None
+                                },
+                                "image_prompts": {
+                                    "status": "complete" if section_stats['image_prompts_count'] == section_stats['total'] else ("in_progress" if section_stats['image_prompts_count'] > 0 else "pending"),
+                                    "completed_at": post['authoring_updated_at'].isoformat() if post['authoring_updated_at'] else None
+                                },
+                                "image_captions": {
+                                    "status": "complete" if section_stats['image_captions_count'] == section_stats['total'] else ("in_progress" if section_stats['image_captions_count'] > 0 else "pending"),
                                     "completed_at": post['authoring_updated_at'].isoformat() if post['authoring_updated_at'] else None
                                 }
                             }
