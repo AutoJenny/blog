@@ -42,11 +42,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Function to initialize LLM module for current section
   function initializeLLMForSection(sectionId) {
-    // Initialize LLM module with image_concepts configuration
-    const llmModule = initializeLLMModule('image_concepts', postId, sectionId);
-    if (llmModule) {
-      window.llmModule = llmModule;
-    }
+    // Image Concepts doesn't use individual LLM module - it uses batch generation
+    // The LLM module is handled by the Batch Generation Progress button
+    console.log(`[Image Concepts] Skipping LLM module initialization for section ${sectionId} - using batch generation instead`);
   }
 });
 
