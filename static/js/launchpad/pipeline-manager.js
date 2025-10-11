@@ -242,12 +242,16 @@ class PipelineManager {
                 console.log('[Pipeline Manager] Found icon for', selectorName, ':', icon);
                 if (icon) {
                     const oldClass = icon.className;
+                    console.log('[Pipeline Manager] Checking status for', selectorName, ':', substage.status);
                     if (substage.status === 'complete') {
                         icon.className = 'fas fa-check-circle';
-                    } else if (substage.status === 'in-progress') {
+                        console.log('[Pipeline Manager] Set to complete icon');
+                    } else if (substage.status === 'in_progress') {
                         icon.className = 'fas fa-spinner fa-spin';
+                        console.log('[Pipeline Manager] Set to in_progress icon');
                     } else {
                         icon.className = 'fas fa-circle';
+                        console.log('[Pipeline Manager] Set to default icon for status:', substage.status);
                     }
                     console.log('[Pipeline Manager] Updated icon for', selectorName, 'from', oldClass, 'to:', icon.className);
                 } else {
