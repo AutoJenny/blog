@@ -49,19 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Make sections panel globally available for LLM module
   window.sectionsPanel = sectionsPanel;
 
-  // Handle Generate button in Output panel
-  document.getElementById('generate-prompt-btn')?.addEventListener('click', async () => {
-    const selectedSection = document.querySelector('.section-item.selected');
-    if (selectedSection) {
-      const sectionId = selectedSection.dataset.sectionId;
-      console.log(`[Image Concepts] Generate button clicked for section ${sectionId}`);
-      await output.generateImageConcepts(sectionId);
-    } else {
-      console.warn('[Image Concepts] No section selected for generation');
-      alert('Please select a section first');
-    }
-  });
-
   // Function to initialize LLM module for current section
   function initializeLLMForSection(sectionId) {
     // Initialize LLM module with image_concepts configuration

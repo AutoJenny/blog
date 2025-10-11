@@ -62,11 +62,11 @@ def api_get_sections(post_id):
                             'ideas_to_include': None,
                             'facts_to_include': None,
                             'highlighting': None,
-                            'image_concepts': None,
-                            'image_prompts': None,
-                            'image_captions': None,
-                            'image_alt_text': None,
-                            'selected_image_concept': None
+                            'image_concepts': section.get('image_concepts'),
+                            'image_prompts': section.get('image_prompts'),
+                            'image_captions': section.get('image_captions'),
+                            'image_alt_text': section.get('image_alt_text'),
+                            'selected_image_concept': section.get('selected_image_concept')
                         })
                 except (json.JSONDecodeError, TypeError) as e:
                     logger.warning(f"Failed to parse sections from post_development: {e}")
