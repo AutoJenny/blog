@@ -298,27 +298,39 @@ export class SectionsPanel {
 
   render() {
     const list = document.getElementById('sections-list');
-    if (!list) return;
+    if (!list) {
+      console.error('[SECTIONS PANEL] sections-list element not found!');
+      return;
+    }
     list.innerHTML = '';
     if (this.sections.length === 0) {
+      console.warn('[SECTIONS PANEL] No sections to render');
       list.innerHTML = '<div class="loading">No sections found</div>';
       return;
     }
     
+    console.log(`[SECTIONS PANEL] Rendering ${this.sections.length} sections`);
     // Use template for each section
-    this.sections.forEach(section => {
-      const sectionElement = this.createSectionFromTemplate(section);
-      list.appendChild(sectionElement);
+    this.sections.forEach((section, index) => {
+      try {
+        console.log(`[SECTIONS PANEL] Creating element for section ${index + 1}:`, section.id);
+        const sectionElement = this.createSectionFromTemplate(section);
+        list.appendChild(sectionElement);
+      } catch (error) {
+        console.error(`[SECTIONS PANEL] Error creating section ${index + 1}:`, error, section);
+      }
     });
     this.syncSelectionUI();
+    console.log('[SECTIONS PANEL] Render complete');
   }
 
   createSectionFromTemplate(section) {
+    console.log(`[SECTIONS PANEL] Creating template for section:`, section.id);
     // Create a template element with the section data
     const template = document.createElement('template');
     
     // Convert section data to template format
-    const effectiveStatus = (section.section_text && section.section_text.trim()) ? 'complete' : 'draft';
+    const effectiveStatus = (section.draft && section.draft.trim()) ? 'complete' : 'draft';
     
     // Parse selected image concept or image prompts based on current page
     let selectedConceptDisplay = '';
@@ -378,13 +390,13 @@ Key Elements: ${selectedConcept.key_visual_elements}`;
     
     const templateData = {
       id: section.id,
-      order: section.order,
-      title: section.title,
-      subtitle: section.subtitle,
-      section_text: section.section_text || '',
+      order: section.order || section.section_order,
+      title: section.title || section.section_heading,
+      subtitle: section.description || section.section_description,
+      section_text: section.draft || '',
       status: effectiveStatus,
       progress: section.progress || 0,
-      topics: section.topics || [],
+      topics: [], // No topics field in the data
       selected_image_concept: selectedConceptDisplay || selectedConceptId || ''
     };
     

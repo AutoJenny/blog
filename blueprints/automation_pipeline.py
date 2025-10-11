@@ -24,7 +24,8 @@ def get_pipeline_status(post_id):
                        pd.idea_scope, pd.structure_design_at, pd.allocation_completed_at,
                        pd.refinement_completed_at, pd.updated_at as sections_updated_at,
                        pd.updated_at as authoring_updated_at,
-                       pd.updated_at as image_concepts_updated_at
+                       pd.updated_at as image_concepts_updated_at,
+                       p.created_at as post_updated_at
                 FROM post p
                 LEFT JOIN post_development pd ON p.id = pd.post_id
                 WHERE p.id = %s
@@ -50,6 +51,13 @@ def get_pipeline_status(post_id):
             
             # Check image concepts completion from JSON data
             image_concepts_complete = False
+            image_prompts_complete = False
+            image_captions_complete = False
+            sections_with_concepts = 0
+            sections_with_prompts = 0
+            sections_with_captions = 0
+            total_sections = 0
+            
             if post['sections']:
                 try:
                     sections_data = json.loads(post['sections']) if isinstance(post['sections'], str) else post['sections']
@@ -60,12 +68,27 @@ def get_pipeline_status(post_id):
                     else:
                         sections_list = []
                     
-                    # Check if all sections have image_concepts
+                    # Check completion for all image-related fields
                     total_sections = len(sections_list)
                     sections_with_concepts = sum(1 for section in sections_list if section.get('image_concepts'))
+                    sections_with_prompts = sum(1 for section in sections_list if section.get('image_prompts'))
+                    sections_with_captions = sum(1 for section in sections_list if section.get('image_captions'))
+                    
+                    # Also check post_section table for integer-based sections
+                    if section_stats and section_stats['total'] > 0:
+                        # Use the higher count from either source
+                        total_sections = max(total_sections, section_stats['total'])
+                        sections_with_concepts = max(sections_with_concepts, section_stats['image_concepts_count'])
+                        sections_with_prompts = max(sections_with_prompts, section_stats['image_prompts_count'])
+                        sections_with_captions = max(sections_with_captions, section_stats['image_captions_count'])
+                    
                     image_concepts_complete = total_sections > 0 and sections_with_concepts == total_sections
+                    image_prompts_complete = total_sections > 0 and sections_with_prompts == total_sections
+                    image_captions_complete = total_sections > 0 and sections_with_captions == total_sections
                 except (json.JSONDecodeError, TypeError):
                     image_concepts_complete = False
+                    image_prompts_complete = False
+                    image_captions_complete = False
             
             # Calculate stage statuses
             planning_complete = bool(post['topic_allocation'] and post['section_structure'])
@@ -129,16 +152,16 @@ def get_pipeline_status(post_id):
                                     "completed_at": post['updated_at'].isoformat() if post['updated_at'] else None
                                 },
                                 "image_concepts": {
-                                    "status": "complete" if image_concepts_complete else ("in_progress" if post['sections'] else "pending"),
+                                    "status": "complete" if image_concepts_complete else ("in_progress" if sections_with_concepts > 0 else "pending"),
                                     "completed_at": post['authoring_updated_at'].isoformat() if post['authoring_updated_at'] else None
                                 },
                                 "image_prompts": {
-                                    "status": "complete" if section_stats['image_prompts_count'] == section_stats['total'] else ("in_progress" if section_stats['image_prompts_count'] > 0 else "pending"),
-                                    "completed_at": post['authoring_updated_at'].isoformat() if post['authoring_updated_at'] else None
+                                    "status": "complete" if image_prompts_complete else ("in_progress" if sections_with_prompts > 0 else "pending"),
+                                    "completed_at": post['sections_updated_at'].isoformat() if post['sections_updated_at'] else None
                                 },
                                 "image_captions": {
-                                    "status": "complete" if section_stats['image_captions_count'] == section_stats['total'] else ("in_progress" if section_stats['image_captions_count'] > 0 else "pending"),
-                                    "completed_at": post['authoring_updated_at'].isoformat() if post['authoring_updated_at'] else None
+                                    "status": "complete" if image_captions_complete else ("in_progress" if sections_with_captions > 0 else "pending"),
+                                    "completed_at": post['post_updated_at'].isoformat() if post['post_updated_at'] else None
                                 }
                             }
                         }

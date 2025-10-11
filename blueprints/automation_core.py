@@ -18,7 +18,9 @@ from blueprints.automation_execute import (
     execute_topic_brainstorming,
     execute_section_structure,
     execute_author_first_drafts,
-    execute_image_concepts
+    execute_image_concepts,
+    execute_image_prompts,
+    execute_image_captions
 )
 
 # Import other modules
@@ -61,6 +63,10 @@ def execute_substage(stage, substage):
                 result = execute_author_first_drafts(post_id, data)
             elif substage == 'image_concepts':
                 result = execute_image_concepts(post_id, data)
+            elif substage == 'image_prompts':
+                result = execute_image_prompts(post_id, data)
+            elif substage == 'image_captions':
+                result = execute_image_captions(post_id, data)
             else:
                 return jsonify({"success": False, "error": f"Unknown authoring substage: {substage}"}), 400
         else:

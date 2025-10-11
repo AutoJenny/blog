@@ -1451,28 +1451,66 @@ def api_generate_image(post_id, section_id):
         logger.error(f"Error generating image: {str(e)}")
         return jsonify({'success': False, 'error': str(e)})
 
-@bp.route('/api/posts/<int:post_id>/sections/<int:section_id>/generate-image-captions', methods=['POST'])
+@bp.route('/api/posts/<int:post_id>/sections/<section_id>/generate-image-captions', methods=['POST'])
 def api_generate_image_captions(post_id, section_id):
     """Generate image captions and alt text for a specific section"""
     try:
         with db_manager.get_cursor() as cursor:
-            # Get section data
-            cursor.execute("""
-                SELECT id, section_order, section_heading, section_description, 
-                       draft, polished, ideas_to_include, facts_to_include,
-                       highlighting, image_concepts, image_prompts, image_captions,
-                       selected_image_concept
-                FROM post_section
-                WHERE post_id = %s AND id = %s
-            """, (post_id, section_id))
+            # Handle both string and integer section IDs
+            if section_id.isdigit():
+                # Integer section ID - query post_section table
+                cursor.execute("""
+                    SELECT id, section_order, section_heading, section_description, 
+                           draft, polished, ideas_to_include, facts_to_include,
+                           highlighting, image_concepts, image_prompts, image_captions,
+                           selected_image_concept
+                    FROM post_section
+                    WHERE post_id = %s AND id = %s
+                """, (post_id, int(section_id)))
+                section = cursor.fetchone()
+            else:
+                # String section ID - query post_development.sections JSON
+                cursor.execute("""
+                    SELECT sections FROM post_development WHERE post_id = %s
+                """, (post_id,))
+                row = cursor.fetchone()
+                
+                if not row or not row['sections']:
+                    return jsonify({'error': 'Section not found'}), 404
+                
+                try:
+                    sections_data = json.loads(row['sections']) if isinstance(row['sections'], str) else row['sections']
+                    if isinstance(sections_data, dict) and 'sections' in sections_data:
+                        sections_list = sections_data['sections']
+                    elif isinstance(sections_data, list):
+                        sections_list = sections_data
+                    else:
+                        sections_list = []
+                    
+                    # Find the specific section
+                    section = next((s for s in sections_list if s.get('id') == section_id), None)
+                    if not section:
+                        # Try mapping section_1, section_2, etc. to index 1, 2, etc.
+                        if section_id.startswith('section_'):
+                            try:
+                                section_index = int(section_id.split('_')[1])
+                                section = next((s for s in sections_list if s.get('index') == section_index), None)
+                            except (ValueError, IndexError):
+                                pass
+                    
+                    if not section:
+                        return jsonify({'error': 'Section not found'}), 404
+                        
+                except (json.JSONDecodeError, TypeError) as e:
+                    logger.error(f"Error parsing sections JSON: {e}")
+                    return jsonify({'error': 'Failed to parse sections data'}), 500
             
-            section = cursor.fetchone()
             if not section:
                 return jsonify({'error': 'Section not found'}), 404
             
             # Get the selected concept details (EXCLUDE the title as it's too metaphorical)
             selected_concept_text = ''
-            if section['selected_image_concept'] and section['image_concepts']:
+            if section.get('selected_image_concept') and section.get('image_concepts'):
                 try:
                     concepts_data = json.loads(section['image_concepts'])
                     if concepts_data.get('concepts'):
@@ -1485,7 +1523,7 @@ def api_generate_image_captions(post_id, section_id):
                             selected_concept_text = f"{selected_concept['concept_description']}\nMood: {selected_concept['concept_mood']}\nKey Elements: {selected_concept['key_visual_elements']}"
                 except Exception as e:
                     logger.error(f"Error parsing selected concept: {e}")
-                    selected_concept_text = section['selected_image_concept']
+                    selected_concept_text = section.get('selected_image_concept', '')
             
             # Get the image captions prompt
             cursor.execute("""
@@ -1504,8 +1542,23 @@ def api_generate_image_captions(post_id, section_id):
             prompt_text = prompt_data['prompt_text']
             system_prompt = prompt_data['system_prompt']
             
+            # Use appropriate field names based on data source
+            if section_id.isdigit():
+                # From post_section table
+                section_title = section['section_heading']
+                section_description = section['section_description'] or ''
+                section_content = section.get('draft', '') or ''
+            else:
+                # From JSON data
+                section_title = section.get('title', '')
+                section_description = section.get('original', '') or ''
+                section_content = section.get('draft', '') or ''
+            
             # Replace placeholders with actual data
             prompt_text = prompt_text.replace('[data:selected_concept]', selected_concept_text)
+            prompt_text = prompt_text.replace('[SECTION_TITLE]', section_title)
+            prompt_text = prompt_text.replace('[SECTION_DESCRIPTION]', section_description)
+            prompt_text = prompt_text.replace('[SECTION_CONTENT]', section_content)
             
             # Prepare messages for LLM
             messages = []
@@ -1550,11 +1603,58 @@ def api_generate_image_captions(post_id, section_id):
                     raise ValueError("alt_text field is empty")
                 
                 # Save to database
-                cursor.execute("""
-                    UPDATE post_section 
-                    SET image_captions = %s, image_alt_text = %s
-                    WHERE post_id = %s AND id = %s
-                """, (parsed_json['caption'].strip(), parsed_json['alt_text'].strip(), post_id, section_id))
+                if section_id.isdigit():
+                    # Integer section ID - update post_section table
+                    cursor.execute("""
+                        UPDATE post_section 
+                        SET image_captions = %s, image_alt_text = %s
+                        WHERE post_id = %s AND id = %s
+                    """, (parsed_json['caption'].strip(), parsed_json['alt_text'].strip(), post_id, int(section_id)))
+                else:
+                    # String section ID - update post_development.sections JSON
+                    cursor.execute("""
+                        SELECT sections FROM post_development WHERE post_id = %s
+                    """, (post_id,))
+                    row = cursor.fetchone()
+                    
+                    if row and row['sections']:
+                        try:
+                            sections_data = json.loads(row['sections']) if isinstance(row['sections'], str) else row['sections']
+                            if isinstance(sections_data, dict) and 'sections' in sections_data:
+                                sections_list = sections_data['sections']
+                            elif isinstance(sections_data, list):
+                                sections_list = sections_data
+                            else:
+                                sections_list = []
+                            
+                            # Find and update the specific section
+                            for section in sections_list:
+                                if section.get('id') == section_id:
+                                    section['image_captions'] = parsed_json['caption'].strip()
+                                    section['image_alt_text'] = parsed_json['alt_text'].strip()
+                                    break
+                            else:
+                                # Try mapping section_1, section_2, etc. to index 1, 2, etc.
+                                if section_id.startswith('section_'):
+                                    try:
+                                        section_index = int(section_id.split('_')[1])
+                                        for section in sections_list:
+                                            if section.get('index') == section_index:
+                                                section['image_captions'] = parsed_json['caption'].strip()
+                                                section['image_alt_text'] = parsed_json['alt_text'].strip()
+                                                break
+                                    except (ValueError, IndexError):
+                                        pass
+                            
+                            # Update the database
+                            cursor.execute("""
+                                UPDATE post_development 
+                                SET sections = %s, updated_at = NOW()
+                                WHERE post_id = %s
+                            """, (json.dumps(sections_data), post_id))
+                        except (json.JSONDecodeError, TypeError) as e:
+                            logger.error(f"Error updating sections JSON for image captions: {e}")
+                            return jsonify({'error': 'Failed to update sections data'}), 500
                 
                 cursor.connection.commit()
                 
@@ -1841,11 +1941,57 @@ def api_generate_image_prompt_from_builder():
                 "base_concept": generated_prompt
             }
             
-            cursor.execute("""
-                UPDATE post_section 
-                SET image_prompts = %s
-                WHERE post_id = %s AND id = %s
-            """, (json.dumps(image_prompt_json), post_id, section_id))
+            # Handle both string and integer section IDs
+            if section_id.isdigit():
+                # Integer section ID - update post_section table
+                cursor.execute("""
+                    UPDATE post_section 
+                    SET image_prompts = %s
+                    WHERE post_id = %s AND id = %s
+                """, (json.dumps(image_prompt_json), post_id, int(section_id)))
+            else:
+                # String section ID - update post_development.sections JSON
+                cursor.execute("""
+                    SELECT sections FROM post_development WHERE post_id = %s
+                """, (post_id,))
+                row = cursor.fetchone()
+                
+                if row and row['sections']:
+                    try:
+                        sections_data = json.loads(row['sections']) if isinstance(row['sections'], str) else row['sections']
+                        if isinstance(sections_data, dict) and 'sections' in sections_data:
+                            sections_list = sections_data['sections']
+                        elif isinstance(sections_data, list):
+                            sections_list = sections_data
+                        else:
+                            sections_list = []
+                        
+                        # Find and update the specific section
+                        for section in sections_list:
+                            if section.get('id') == section_id:
+                                section['image_prompts'] = image_prompt_json
+                                break
+                        else:
+                            # Try mapping section_1, section_2, etc. to index 1, 2, etc.
+                            if section_id.startswith('section_'):
+                                try:
+                                    section_index = int(section_id.split('_')[1])
+                                    for section in sections_list:
+                                        if section.get('index') == section_index:
+                                            section['image_prompts'] = image_prompt_json
+                                            break
+                                except (ValueError, IndexError):
+                                    pass
+                        
+                        # Update the database
+                        cursor.execute("""
+                            UPDATE post_development 
+                            SET sections = %s, updated_at = NOW()
+                            WHERE post_id = %s
+                        """, (json.dumps(sections_data), post_id))
+                    except (json.JSONDecodeError, TypeError) as e:
+                        logger.error(f"Error updating sections JSON for image prompts: {e}")
+                        return jsonify({'error': 'Failed to update sections data'}), 500
             
             cursor.connection.commit()
             
