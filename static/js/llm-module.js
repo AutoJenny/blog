@@ -99,6 +99,9 @@ class LLMModule {
             } else if (this.config.resultsField === 'image_prompts') {
                 // For image prompts, update the ImagePromptsOutputPanel
                 this.updateImagePromptsOutput(result);
+            } else if (this.config.resultsField === 'image_concepts') {
+                // For image concepts, update the ImageConceptsOutputPanel
+                this.updateImageConceptsOutput(result);
             } else if (this.config.resultsField === 'generated_image') {
                 // For image generation, update the ImageGenerationOutputPanel
                 this.updateImageGenerationOutput(result);
@@ -122,6 +125,45 @@ class LLMModule {
         }
     }
     
+    updateImageConceptsOutput(result) {
+        // Update the ImageConceptsOutputPanel with the generated concepts
+        if (window.ImageConceptsOutputPanel && result.image_concepts) {
+            // Parse the JSON concepts
+            try {
+                const conceptsData = typeof result.image_concepts === 'string' 
+                    ? JSON.parse(result.image_concepts) 
+                    : result.image_concepts;
+                
+                // Find the current section and update it with the concepts
+                const currentSection = this.getCurrentSection();
+                if (currentSection) {
+                    currentSection.image_concepts = result.image_concepts;
+                    
+                    // Trigger the output panel to refresh
+                    if (window.imageConceptsOutputPanel) {
+                        window.imageConceptsOutputPanel.show(currentSection);
+                    }
+                }
+            } catch (error) {
+                console.error('Error parsing image concepts:', error);
+                this.uiManager.displayError('Error parsing generated concepts');
+            }
+        }
+    }
+    
+    getCurrentSection() {
+        // Get the currently selected section from the sections panel
+        const selectedSection = document.querySelector('.section-item.selected');
+        if (selectedSection) {
+            const sectionId = selectedSection.dataset.sectionId;
+            // Find the section data from the sections panel
+            if (window.sectionsPanel && window.sectionsPanel.sections) {
+                return window.sectionsPanel.sections.find(s => s.id === sectionId);
+            }
+        }
+        return null;
+    }
+
     updateImagePromptsOutput(result) {
         // Update the ImagePromptsOutputPanel with the generated result
         if (window.imagePromptsOutputPanel && result.image_prompt) {

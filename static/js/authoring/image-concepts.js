@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const postId = window.postId;
   const output = new ImageConceptsOutputPanel({ postId });
+  
+  // Make output panel globally available for LLM module
+  window.imageConceptsOutputPanel = output;
 
   // Initialize LLM module immediately for prompt loading
   initializeLLMForSection('section_1'); // Initialize with first section ID
@@ -42,6 +45,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   });
+  
+  // Make sections panel globally available for LLM module
+  window.sectionsPanel = sectionsPanel;
 
   // Function to initialize LLM module for current section
   function initializeLLMForSection(sectionId) {
