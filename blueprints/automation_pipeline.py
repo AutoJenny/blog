@@ -105,11 +105,11 @@ def get_pipeline_status(post_id):
                             "substages": {
                                 "author_first_drafts": {
                                     "status": "complete" if authoring_progress == 100 else ("in_progress" if authoring_progress > 0 else "pending"),
-                                    "completed_at": post['authoring_updated_at'].isoformat() if post['authoring_updated_at'] else None
+                                    "completed_at": post['updated_at'].isoformat() if post['updated_at'] else None
                                 },
                                 "image_concepts": {
                                     "status": "complete" if section_stats['image_concepts_count'] == section_stats['total'] else ("in_progress" if section_stats['image_concepts_count'] > 0 else "pending"),
-                                    "completed_at": post['image_concepts_updated_at'].isoformat() if post['image_concepts_updated_at'] else None
+                                    "completed_at": post['authoring_updated_at'].isoformat() if post['authoring_updated_at'] else None
                                 }
                             }
                         }

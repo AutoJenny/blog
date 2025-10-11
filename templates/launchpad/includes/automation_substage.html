@@ -20,7 +20,11 @@
             <button class="btn btn-sm btn-outline-secondary" onclick="toggleAutomationMode('{{ stage }}', '{{ substage }}')" title="Toggle Mode">
                 <i class="fas fa-cog"></i>
             </button>
-            <a href="/{{ stage }}/posts/69/sections/{{ substage.replace('_', '-') }}" class="btn btn-sm btn-outline-info" title="Edit">
+            {% if stage == 'planning' %}
+            <a href="/{{ stage }}/posts/69/concept/{{ substage }}" class="btn btn-sm btn-outline-info" title="Edit">
+            {% else %}
+            <a href="/{{ stage }}/posts/69/sections/{{ substage }}" class="btn btn-sm btn-outline-info" title="Edit">
+            {% endif %}
                 <i class="fas fa-edit"></i>
             </a>
         </div>
