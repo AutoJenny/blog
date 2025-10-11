@@ -49,6 +49,8 @@ export class ImageConceptsOutputPanel {
   }
 
   show(section) {
+    console.log('[DEBUG] ImageConceptsOutputPanel.show() called with section:', section);
+    console.log('[DEBUG] Section image_concepts:', section?.image_concepts);
     this.current = section || null;
     if (!section) return;
 
