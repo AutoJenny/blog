@@ -94,6 +94,12 @@ document.addEventListener('click', (event) => {
     }
 });
 </script>
+
+<!-- Image Prompts specific scripts -->
+{% include 'authoring/includes/llm_accordion_functions.html' %}
+<script type="module" src="/static/js/authoring/image-prompts.js"></script>
+<script src="/static/js/authoring/llm-settings_image_prompts.js"></script>
+<script src="/static/js/authoring/llm-prompts.js"></script>
 {% endblock %}
 
 {% block title %}Image Prompts - Section Authoring{% endblock %}
@@ -119,8 +125,4 @@ document.addEventListener('click', (event) => {
         </div>
     </div>
 </div>
-{% include 'authoring/includes/llm_accordion_functions.html' %}
-<script type="module" src="/static/js/authoring/image-prompts.js"></script>
-<script src="/static/js/authoring/llm-settings_image_prompts.js"></script>
-<script src="/static/js/authoring/llm-prompts.js"></script>
 {% endblock %}
