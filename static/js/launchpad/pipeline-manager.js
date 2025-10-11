@@ -239,7 +239,9 @@ class PipelineManager {
                 
                 // Update icon
                 const icon = existingSubstage.querySelector('i');
+                console.log('[Pipeline Manager] Found icon for', selectorName, ':', icon);
                 if (icon) {
+                    const oldClass = icon.className;
                     if (substage.status === 'complete') {
                         icon.className = 'fas fa-check-circle';
                     } else if (substage.status === 'in-progress') {
@@ -247,7 +249,9 @@ class PipelineManager {
                     } else {
                         icon.className = 'fas fa-circle';
                     }
-                    console.log('[Pipeline Manager] Updated icon for', selectorName, 'to:', icon.className);
+                    console.log('[Pipeline Manager] Updated icon for', selectorName, 'from', oldClass, 'to:', icon.className);
+                } else {
+                    console.error('[Pipeline Manager] No icon found for', selectorName);
                 }
             } else {
                 console.log('[Pipeline Manager] Substage not found:', selectorName);
