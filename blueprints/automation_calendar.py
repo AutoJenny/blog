@@ -10,7 +10,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-bp = Blueprint('automation_calendar', __name__, url_prefix='/launchpad/one-click-blog/api')
+bp = Blueprint('automation_calendar', __name__)
 
 @bp.route('/next-up', methods=['GET'])
 def get_next_up():

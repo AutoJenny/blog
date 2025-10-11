@@ -10,7 +10,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-bp = Blueprint('automation_pipeline', __name__, url_prefix='/launchpad/one-click-blog/api')
+bp = Blueprint('automation_pipeline', __name__)
 
 @bp.route('/pipeline-status/<int:post_id>', methods=['GET'])
 def get_pipeline_status(post_id):
@@ -134,7 +134,7 @@ def get_posts_in_development():
                        pd.topic_allocation, pd.section_structure, pd.idea_scope
                 FROM post p
                 LEFT JOIN post_development pd ON p.id = pd.post_id
-                WHERE p.status IN ('draft', 'in_progress', 'planned')
+                WHERE p.status IN ('draft', 'in_process')
                 ORDER BY p.updated_at DESC
             """)
             

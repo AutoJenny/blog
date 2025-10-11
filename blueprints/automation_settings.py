@@ -10,7 +10,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-bp = Blueprint('automation_settings', __name__, url_prefix='/launchpad/one-click-blog/api')
+bp = Blueprint('automation_settings', __name__)
 
 @bp.route('/start-automation', methods=['POST'])
 def start_automation():
