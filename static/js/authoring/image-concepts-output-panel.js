@@ -60,10 +60,17 @@ export class ImageConceptsOutputPanel {
     document.getElementById('section-topics-display').innerHTML = (section.topics||[]).map(t=>`<span class="topic-tag">${t}</span>`).join('');
 
     const editor = document.getElementById('content-editor');
-    editor.disabled = false;
-    document.getElementById('preview-btn').disabled = false;
-    document.getElementById('save-btn').disabled = false;
-    document.getElementById('regenerate-btn').disabled = false;
+    if (editor) editor.disabled = false;
+    
+    // Optional buttons that may not exist on all pages
+    const previewBtn = document.getElementById('preview-btn');
+    if (previewBtn) previewBtn.disabled = false;
+    
+    const saveBtn = document.getElementById('save-btn');
+    if (saveBtn) saveBtn.disabled = false;
+    
+    const regenerateBtn = document.getElementById('regenerate-btn');
+    if (regenerateBtn) regenerateBtn.disabled = false;
 
     // Display image concepts - try structured display first, fallback to textarea
     this.displayImageConcepts(section.image_concepts || '');
