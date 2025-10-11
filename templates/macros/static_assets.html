@@ -57,8 +57,13 @@
         {% elif blueprint_name == 'authoring' %}
             <script src="{{ url_for('static', filename='js/main.js') }}"></script>
             <script src="{{ url_for('static', filename='js/workflow-nav.js') }}"></script>
-            <script src="{{ url_for('static', filename='js/authoring/llm-settings-section-drafting.js') }}"></script>
-            <script src="{{ url_for('static', filename='js/authoring/llm-prompts-section-drafting.js') }}"></script>
+            {% if currentSubstage == 'image-concepts' %}
+                <script src="{{ url_for('static', filename='js/authoring/image-concepts.js') }}"></script>
+                <script src="{{ url_for('static', filename='js/authoring/image-concepts-output-panel.js') }}"></script>
+            {% else %}
+                <script src="{{ url_for('static', filename='js/authoring/llm-settings-section-drafting.js') }}"></script>
+                <script src="{{ url_for('static', filename='js/authoring/llm-prompts-section-drafting.js') }}"></script>
+            {% endif %}
         {% elif blueprint_name == 'imaging' %}
             <script src="{{ url_for('static', filename='js/imaging/imaging-core.js') }}"></script>
             <script src="{{ url_for('static', filename='js/imaging/imaging-ui.js') }}"></script>
