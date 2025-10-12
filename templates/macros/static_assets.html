@@ -38,7 +38,7 @@
     {% endif %}
 {% endmacro %}
 
-{% macro js_assets(blueprint_name=None) %}
+{% macro js_assets(blueprint_name=None, currentSubstage=None) %}
     {% if blueprint_name %}
         <!-- Blueprint-specific JavaScript -->
         {% if blueprint_name == 'core' %}
