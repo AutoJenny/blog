@@ -244,9 +244,9 @@ def authoring_post_overview(post_id):
         logger.error(f"Error in authoring_post_overview: {e}")
         return f"Error: {e}", 500
 
-@bp.route('/posts/<int:post_id>/sections/author-first-drafts')
-def authoring_sections_author_first_drafts(post_id):
-    """Author First Drafts - generate initial content for each section"""
+@bp.route('/posts/<int:post_id>/sections/drafting')
+def authoring_sections_drafting(post_id):
+    """Drafting - generate initial content for each section"""
     try:
         with db_manager.get_cursor() as cursor:
             # Get post details
@@ -263,14 +263,19 @@ def authoring_sections_author_first_drafts(post_id):
             return render_template('authoring/sections/drafting.html', 
                                  post_id=post_id,
                                  post=post,
-                                 page_title="Author First Drafts",
+                                 page_title="Drafting",
                                  blueprint_name='authoring',
                                  currentStage='authoring',
-                                 currentSubstage='author-first-drafts')
+                                 currentSubstage='drafting')
             
     except Exception as e:
-        logger.error(f"Error in authoring_sections_author_first_drafts: {e}")
+        logger.error(f"Error in authoring_sections_drafting: {e}")
         return f"Error: {e}", 500
+
+@bp.route('/posts/<int:post_id>/sections/author-first-drafts')
+def authoring_sections_author_first_drafts_deprecated(post_id):
+    """DEPRECATED: Redirect to new drafting route"""
+    return redirect(url_for('authoring.authoring_sections_drafting', post_id=post_id))
 
 @bp.route('/posts/<int:post_id>/sections')
 def authoring_sections(post_id):
@@ -288,8 +293,8 @@ def authoring_sections(post_id):
             if not post:
                 return "Post not found", 404
             
-            # Redirect to the proper author-first-drafts route
-            return redirect(url_for('authoring.authoring_sections_author_first_drafts', post_id=post_id))
+            # Redirect to the proper drafting route
+            return redirect(url_for('authoring.authoring_sections_drafting', post_id=post_id))
             
     except Exception as e:
         logger.error(f"Error in authoring_sections: {e}")
