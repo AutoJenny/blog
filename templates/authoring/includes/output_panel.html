@@ -1,0 +1,29 @@
+<!-- Output Panel - Self-contained include with CSS and JS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/authoring/output-panel.css') }}">
+
+<!-- Output Panel - Self-contained include -->
+<div class="output-panel" id="output-panel">
+    <div class="panel-header" onclick="toggleOutputAccordion()">
+        <h4><span class="panel-name-green">Output:</span> <span id="current-section-title">Select a section to begin editing</span></h4>
+        <div class="header-actions">
+            <button class="btn-secondary" id="preview-btn" disabled>Preview</button>
+            <button class="btn-primary" id="save-btn" disabled>Save</button>
+            <button class="btn-secondary" id="regenerate-btn" disabled>Regenerate</button>
+            <i class="fas fa-chevron-down" id="output-accordion-icon"></i>
+        </div>
+    </div>
+    
+    <div class="panel-content" id="output-accordion-content" style="display: block;">
+        <!-- Content Editor -->
+        <div class="content-editor">
+            <h5>Generated Content</h5>
+            <textarea id="content-editor" placeholder="Content will be generated here..." disabled></textarea>
+            <div class="editor-stats">
+                <span id="word-count">0 words</span>
+                <span id="last-saved">Not saved</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/authoring/output-panel.js') }}"></script>

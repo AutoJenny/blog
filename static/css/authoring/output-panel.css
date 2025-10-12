@@ -1,0 +1,115 @@
+/* Output Panel Styles */
+
+.output-panel {
+    background: #1e293b;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    padding: 1rem;
+}
+
+.output-panel .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #334155;
+    cursor: pointer;
+}
+
+.output-panel .panel-header h4 {
+    color: #f1f5f9;
+    margin: 0;
+    font-size: 1rem;
+}
+
+.output-panel .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.output-panel .header-actions i {
+    color: #94a3b8;
+    transition: color 0.2s ease;
+}
+
+.output-panel .header-actions i:hover {
+    color: #e2e8f0;
+}
+
+.output-panel .panel-content {
+    margin-top: 1rem;
+}
+
+/* Content Editor */
+.content-editor h5 {
+    color: #e2e8f0;
+    margin: 0 0 0.75rem 0;
+    font-size: 0.9rem;
+}
+
+#content-editor {
+    width: 100%;
+    min-height: 300px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 0.75rem;
+    color: #e2e8f0;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+#content-editor:disabled {
+    background: #1e293b;
+    color: #64748b;
+    cursor: not-allowed;
+}
+
+.editor-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+/* Button States */
+#save-btn:disabled,
+#regenerate-btn:disabled,
+#preview-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#save-btn:not(:disabled):hover,
+#regenerate-btn:not(:disabled):hover,
+#preview-btn:not(:disabled):hover {
+    opacity: 0.9;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .output-panel {
+        padding: 0.75rem;
+    }
+    
+    .output-panel .panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .output-panel .header-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    #content-editor {
+        min-height: 200px;
+        font-size: 0.85rem;
+    }
+}
