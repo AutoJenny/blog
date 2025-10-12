@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% from 'macros/static_assets.html' import css_assets, js_assets %}
+
+{% block css_assets %}
+{{ css_assets('authoring') }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/authoring/sections-panel.css') }}">
+    <style>
+  .authoring-workspace { padding:1rem; min-height:calc(100vh - 200px); }
+  .workspace-container { display:grid; grid-template-columns:350px 1fr; gap:1.5rem; max-width:1400px; margin:0 auto; }
+  @media (max-width:1200px){ .workspace-container { grid-template-columns:300px 1fr; } }
+  @media (max-width:768px){ .workspace-container { grid-template-columns:1fr; gap:1rem; } }
+  .editor-panel { display:flex; flex-direction:column; gap:1rem; }
+    </style>
+{% endblock %}
+
+{% block js_assets %}
+{{ js_assets('authoring') }}
+<script src="{{ url_for('static', filename='js/authoring/sections-panel.js') }}"></script>
+<script>
+    window.currentStage = 'authoring';
+                window.currentSubstage = 'image-prompts';
+  window.postId = {{ post_id|default(0) }};
+</script>
+{% endblock %}
+
+{% block title %}Image Prompts - Section Authoring{% endblock %}
+
+{% block content %}
+{% include 'shared/blog_pipeline_header.html' %}
+
+{% block process_content %}
+<div class="authoring-workspace">
+    <div class="workspace-container">
+        {% include 'authoring/includes/sections_panel.html' %}
+        <div class="editor-panel">
+            <!-- LLM Module -->
+            <div class="llm-module-container">
+                {% include 'authoring/includes/llm_module.html' %}
+            </div>
+            
+            <!-- Debugging Panel -->
+            {% include 'authoring/includes/debugging_panel.html' %}
+            
+                        {% set currentSubstage = 'image-prompts' %}
+            {% include 'authoring/right/output_panel.html' %}
+                    </div>
+                </div>
+                    </div>
+{% endblock %}
+
+{% include 'authoring/includes/llm_accordion_functions.html' %}
+<script type="module" src="/static/js/authoring/image-prompts.js"></script>
+
+<!-- Initialize Sections Panel -->
+<script>
+// Helper functions for Context panel updates (if needed)
+async function loadPostContext() {
+    try {
+        const response = await fetch(`/planning/api/posts/${window.postId}`);
+        const data = await response.json();
+        
+        if (data) {
+            // Selected idea (idea_seed from post_development)
+            if (data.post && data.post.idea_seed) {
+                const selectedIdeaDisplay = document.getElementById('selected-idea-display');
+                if (selectedIdeaDisplay) {
+                    selectedIdeaDisplay.textContent = data.post.idea_seed;
+                }
+            }
+            
+            // Expanded idea
+            if (data.post && data.post.expanded_idea) {
+                const expandedIdeaDisplay = document.getElementById('expanded-idea-display');
+                if (expandedIdeaDisplay) {
+                    expandedIdeaDisplay.textContent = data.post.expanded_idea;
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error loading post context:', error);
+    }
+}
+
+async function loadSectionContext(sectionId) {
+    try {
+        // Get section data
+        const sectionResponse = await fetch(`/authoring/api/posts/${window.postId}/sections/${sectionId}`);
+        const sectionData = await sectionResponse.json();
+        
+        if (sectionData.success && sectionData.section) {
+            const sectionOrder = sectionData.section.order;
+            
+            // Get planning data for this section from the main post data
+            const planningResponse = await fetch(`/planning/api/posts/${window.postId}`);
+            const planningData = await planningResponse.json();
+            
+            if (planningData.post && planningData.post.topic_allocation && planningData.post.topic_allocation.allocations) {
+                const sectionAllocation = planningData.post.topic_allocation.allocations.find(a => a.section_id === `section_${sectionOrder}`);
+                
+                if (sectionAllocation) {
+                    // Update section-specific displays if they exist
+                    const sectionTitleDisplay = document.getElementById('section-title-display');
+                    const sectionSubtitleDisplay = document.getElementById('section-subtitle-display');
+                    const sectionGroupDisplay = document.getElementById('section-group-display');
+                    const sectionGroupSummaryDisplay = document.getElementById('section-group-summary-display');
+                    const sectionTopicsDisplay = document.getElementById('section-topics-display');
+                    const avoidTopicsDisplay = document.getElementById('avoid-topics-display');
+                    
+                    if (sectionTitleDisplay) sectionTitleDisplay.textContent = sectionData.section.title || '-';
+                    if (sectionSubtitleDisplay) sectionSubtitleDisplay.textContent = sectionAllocation.section_theme || '-';
+                    if (sectionGroupDisplay) sectionGroupDisplay.textContent = sectionAllocation.section_theme || '-';
+                    if (sectionGroupSummaryDisplay) sectionGroupSummaryDisplay.textContent = sectionAllocation.allocation_reason || '-';
+                    
+                    if (sectionTopicsDisplay) {
+                        if (sectionAllocation.topics) {
+                            sectionTopicsDisplay.innerHTML = sectionAllocation.topics.map(topic => 
+                                `<span class="topic-tag">${topic}</span>`
+                            ).join('');
+                        } else {
+                            sectionTopicsDisplay.textContent = 'No topics found';
+                        }
+                    }
+                    
+                    if (avoidTopicsDisplay) {
+                        // Collect ALL topics from all other sections
+                        const otherSections = planningData.post.topic_allocation.allocations.filter(a => a.section_id !== `section_${sectionOrder}`);
+                        const allAvoidTopics = [];
+                        otherSections.forEach(section => {
+                            if (section.topics && section.topics.length > 0) {
+                                allAvoidTopics.push(...section.topics);
+                            }
+                        });
+                        
+                        if (allAvoidTopics.length > 0) {
+                            avoidTopicsDisplay.innerHTML = allAvoidTopics.map(topic => 
+                                `<span class="topic-tag avoid-topic">${topic}</span>`
+                            ).join('');
+                        } else {
+                            avoidTopicsDisplay.textContent = 'No avoid topics found';
+                        }
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error loading section context:', error);
+    }
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Image Prompts page loaded, initializing Sections Panel');
+    
+    // Initialize Sections Panel with callbacks
+    const sectionsPanel = new SectionsPanel({
+        postId: {{ post_id }},
+        onSectionSelect: async (data) => {
+            console.log('Section selected:', data);
+            
+            // Update any section-specific displays
+            await loadPostContext();
+            await loadSectionContext(data.sectionId);
+            
+            // Set global current section ID for other modules
+            window.currentSectionId = data.sectionId;
+            window.currentSelectedSectionId = data.sectionId;
+            
+            // Trigger any image prompts specific logic
+            if (typeof window.imagePromptsModule !== 'undefined' && window.imagePromptsModule.onSectionSelect) {
+                window.imagePromptsModule.onSectionSelect(data);
+            }
+        },
+        onBatchStart: (selectedIds) => {
+            console.log('Batch generation started:', selectedIds);
+            
+            // Show batch progress panel if it exists
+            const batchProgressPanel = document.getElementById('batch-progress-panel');
+            if (batchProgressPanel) {
+                batchProgressPanel.style.display = 'block';
+            }
+            
+            // Trigger any image prompts specific batch logic
+            if (typeof window.imagePromptsModule !== 'undefined' && window.imagePromptsModule.onBatchStart) {
+                window.imagePromptsModule.onBatchStart(selectedIds);
+            }
+        },
+        onBatchProgress: (progress) => {
+            console.log('Batch progress:', progress);
+            
+            // Update batch progress panel if it exists
+            const progressFill = document.getElementById('progress-fill');
+            const progressPercent = document.getElementById('progress-percent');
+            const progressText = document.getElementById('progress-text');
+            
+            if (progressFill && progressPercent) {
+                const percent = Math.round((progress.current / progress.total) * 100);
+                progressFill.style.width = `${percent}%`;
+                progressPercent.textContent = `${percent}%`;
+            }
+            
+            if (progressText) {
+                progressText.textContent = `Generating section ${progress.current} of ${progress.total}...`;
+            }
+            
+            // Trigger any image prompts specific progress logic
+            if (typeof window.imagePromptsModule !== 'undefined' && window.imagePromptsModule.onBatchProgress) {
+                window.imagePromptsModule.onBatchProgress(progress);
+            }
+        },
+        onBatchComplete: (result) => {
+            console.log('Batch generation completed:', result);
+            
+            // Hide batch progress panel if it exists
+            const batchProgressPanel = document.getElementById('batch-progress-panel');
+            if (batchProgressPanel) {
+                batchProgressPanel.style.display = 'none';
+            }
+            
+            // Trigger any image prompts specific completion logic
+            if (typeof window.imagePromptsModule !== 'undefined' && window.imagePromptsModule.onBatchComplete) {
+                window.imagePromptsModule.onBatchComplete(result);
+            }
+        }
+    });
+    
+    console.log('Sections Panel initialized successfully');
+});
+</script>
+{% endblock %}
