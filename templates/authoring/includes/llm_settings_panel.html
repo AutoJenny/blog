@@ -1,7 +1,10 @@
-<!-- LLM Settings Panel -->
+<!-- LLM Settings Panel - Self-contained include with CSS and JS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/authoring/llm-settings-panel.css') }}">
+
+<!-- LLM Settings Panel - Self-contained include -->
 <div class="llm-settings-panel" id="llm-settings-panel">
     <div class="panel-header" onclick="toggleLLMSettingsAccordion()">
-        <h4 id="settings-title">LLM Settings: Loading...</h4>
+        <h4><span class="panel-name-green">LLM Settings:</span> <span id="settings-title">Loading...</span></h4>
         <div class="header-actions">
             <i class="fas fa-chevron-up" id="settings-accordion-icon"></i>
         </div>
@@ -46,4 +49,4 @@
     </div>
 </div>
 
-
+<script src="{{ url_for('static', filename='js/authoring/llm-settings-panel.js') }}"></script>

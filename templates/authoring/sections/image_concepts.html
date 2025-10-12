@@ -3,7 +3,6 @@
 
 {% block css_assets %}
 {{ css_assets('authoring') }}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/authoring/sections-panel.css') }}">
     <style>
   .authoring-workspace { padding:1rem; min-height:calc(100vh - 200px); }
   .workspace-container { display:grid; grid-template-columns:350px 1fr; gap:1.5rem; max-width:1400px; margin:0 auto; }
@@ -16,7 +15,6 @@
 {% block js_assets %}
 {% set currentSubstage = 'image-concepts' %}
 {{ js_assets('authoring') }}
-<script src="{{ url_for('static', filename='js/authoring/sections-panel.js') }}"></script>
 <script>
     window.currentStage = 'authoring';
         window.currentSubstage = 'image-concepts';
@@ -32,8 +30,11 @@
 {% block process_content %}
 <div class="authoring-workspace">
     <div class="workspace-container">
-        {% include 'authoring/includes/sections_panel.html' %}
+        {% include 'shared/sections_panel.html' %}
         <div class="editor-panel">
+            <!-- LLM Settings Panel -->
+            {% include 'authoring/includes/llm_settings_panel.html' %}
+            
             <!-- LLM Module -->
             <div class="llm-module-container">
                 {% include 'authoring/includes/llm_module.html' %}
@@ -231,6 +232,27 @@ document.addEventListener('DOMContentLoaded', function() {
             if (typeof window.imageConceptsModule !== 'undefined' && window.imageConceptsModule.onBatchComplete) {
                 window.imageConceptsModule.onBatchComplete(result);
             }
+        }
+    });
+    
+    // Initialize LLM Settings Panel with callbacks
+    const llmSettingsPanel = new LLMSettingsPanel({
+        storageKey: 'image-concepts-llm-settings',
+        onSettingsChange: (settings) => {
+            console.log('[Image Concepts] LLM Settings changed:', settings);
+            // Settings can be used by other panels (LLM Module, Output)
+        },
+        onProviderChange: (settings) => {
+            console.log('[Image Concepts] Provider changed:', settings.provider);
+            // Could trigger model-specific behavior
+        },
+        onModelChange: (settings) => {
+            console.log('[Image Concepts] Model changed:', settings.model);
+            // Could update prompts or generation behavior
+        },
+        onParameterChange: (settings) => {
+            console.log('[Image Concepts] Parameters changed:', settings);
+            // Could affect generation quality/temperature
         }
     });
     
