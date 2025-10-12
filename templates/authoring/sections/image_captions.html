@@ -37,8 +37,8 @@
             <!-- LLM Prompts Panel -->
             {% include 'authoring/includes/llm_prompts_panel.html' %}
             
-            <!-- Debugging Panel -->
-            {% include 'authoring/includes/debugging_panel.html' %}
+            <!-- Context Panel -->
+            {% include 'authoring/includes/context_panel.html' %}
             
                         {% set currentSubstage = 'image-captions' %}
             {% include 'authoring/right/output_panel.html' %}
@@ -157,8 +157,8 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Section selected:', data);
             
             // Update any section-specific displays
-            await loadPostContext();
-            await loadSectionContext(data.sectionId);
+            await contextPanel.loadPostContext();
+            await contextPanel.loadSectionContext(data.sectionId);
             
             // Set global current section ID for other modules
             window.currentSectionId = data.sectionId;
@@ -262,6 +262,17 @@ document.addEventListener('DOMContentLoaded', function() {
         onPromptSave: (promptData) => {
             console.log('[Image Captions] Prompt saved:', promptData);
             // Prompt saved successfully
+        }
+    });
+    
+    // Initialize Context Panel with callbacks
+    const contextPanel = new ContextPanel({
+        postId: {{ post_id }},
+        onContextLoad: (type, data) => {
+            console.log(`[Image Captions] Context loaded (${type}):`, data);
+        },
+        onContextUpdate: (data) => {
+            console.log('[Image Captions] Context updated:', data);
         }
     });
     

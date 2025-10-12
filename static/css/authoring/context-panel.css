@@ -1,0 +1,107 @@
+/* Context Panel Styles */
+
+.context-panel {
+    background: #1e293b;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    padding: 1rem;
+}
+
+.context-panel .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #334155;
+    cursor: pointer;
+}
+
+.context-panel .panel-header h4 {
+    color: #f1f5f9;
+    margin: 0;
+    font-size: 1rem;
+}
+
+.context-panel .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.context-panel .header-actions i {
+    color: #94a3b8;
+    transition: color 0.2s ease;
+}
+
+.context-panel .header-actions i:hover {
+    color: #e2e8f0;
+}
+
+.context-panel .panel-content {
+    margin-top: 1rem;
+}
+
+.context-panel h5 {
+    color: #a5b4fc;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    margin-top: 1rem;
+}
+
+.context-panel h5:first-child {
+    margin-top: 0;
+}
+
+.context-item {
+    margin-bottom: 0.75rem;
+    padding: 0.5rem;
+    background: #0f172a;
+    border-radius: 4px;
+    border: 1px solid #334155;
+}
+
+.context-item:last-child {
+    margin-bottom: 0;
+}
+
+.context-item label {
+    display: block;
+    color: #94a3b8;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.context-item div,
+.context-item span {
+    color: #e2e8f0;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.context-item div {
+    min-height: 1.2em;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .context-panel {
+        padding: 0.75rem;
+    }
+    
+    .context-item {
+        padding: 0.375rem;
+    }
+    
+    .context-item label {
+        font-size: 0.75rem;
+    }
+    
+    .context-item div,
+    .context-item span {
+        font-size: 0.8rem;
+    }
+}

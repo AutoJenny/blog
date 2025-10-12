@@ -1,0 +1,52 @@
+<!-- Context Panel - Self-contained include with CSS and JS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/authoring/context-panel.css') }}">
+
+<!-- Context Panel - Self-contained include -->
+<div class="context-panel" id="context-panel">
+    <div class="panel-header" onclick="toggleContextAccordion()">
+        <h4><span class="panel-name-green">Context:</span></h4>
+        <div class="header-actions">
+            <i class="fas fa-chevron-up" id="context-accordion-icon"></i>
+        </div>
+    </div>
+    
+    <div class="panel-content" id="context-accordion-content" style="display: none;">
+        <h5>Post Context</h5>
+        <div class="context-item">
+            <label>Selected Idea:</label>
+            <div id="selected-idea-display">-</div>
+        </div>
+        <div class="context-item">
+            <label>Expanded Idea:</label>
+            <div id="expanded-idea-display">-</div>
+        </div>
+        
+        <h5>Section Context</h5>
+        <div class="context-item">
+            <label>Title:</label>
+            <span id="section-title-display">-</span>
+        </div>
+        <div class="context-item">
+            <label>Subtitle:</label>
+            <span id="section-subtitle-display">-</span>
+        </div>
+        <div class="context-item">
+            <label>Group:</label>
+            <div id="section-group-display">-</div>
+        </div>
+        <div class="context-item">
+            <label>Group Summary:</label>
+            <div id="section-group-summary-display">-</div>
+        </div>
+        <div class="context-item">
+            <label>Topics:</label>
+            <div id="section-topics-display">-</div>
+        </div>
+        <div class="context-item">
+            <label>Avoid Topics:</label>
+            <div id="avoid-topics-display">-</div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/authoring/context-panel.js') }}"></script>

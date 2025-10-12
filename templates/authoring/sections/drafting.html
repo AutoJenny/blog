@@ -40,53 +40,8 @@ document.addEventListener('DOMContentLoaded', function() {
             {% include 'authoring/includes/llm_prompts_panel.html' %}
 
 
-            <!-- Panel 3: Context (Accordion - Collapsed) -->
-            <div class="context-panel" id="context-panel">
-                <div class="panel-header" onclick="toggleContextAccordion()">
-                    <h4><span class="panel-name-green">Context:</span></h4>
-                    <div class="header-actions">
-                        <i class="fas fa-chevron-up" id="context-accordion-icon"></i>
-                    </div>
-                </div>
-                
-                <div class="panel-content" id="context-accordion-content" style="display: none;">
-                    <h5>Post Context</h5>
-                    <div class="context-item">
-                        <label>Selected Idea:</label>
-                        <div id="selected-idea-display">-</div>
-                    </div>
-                    <div class="context-item">
-                        <label>Expanded Idea:</label>
-                        <div id="expanded-idea-display">-</div>
-                    </div>
-                    
-                    <h5>Section Context</h5>
-                    <div class="context-item">
-                        <label>Title:</label>
-                        <span id="section-title-display">-</span>
-                    </div>
-                    <div class="context-item">
-                        <label>Subtitle:</label>
-                        <span id="section-subtitle-display">-</span>
-                    </div>
-                    <div class="context-item">
-                        <label>Group:</label>
-                        <div id="section-group-display">-</div>
-                    </div>
-                    <div class="context-item">
-                        <label>Group Summary:</label>
-                        <div id="section-group-summary-display">-</div>
-                    </div>
-                    <div class="context-item">
-                        <label>Topics:</label>
-                        <div id="section-topics-display">-</div>
-                    </div>
-                    <div class="context-item">
-                        <label>Avoid Topics:</label>
-                        <div id="avoid-topics-display">-</div>
-                    </div>
-                </div>
-            </div>
+            <!-- Panel 3: Context (Modular) -->
+            {% include 'authoring/includes/context_panel.html' %}
 
             <!-- Panel 4: Batch Progress (Accordion - Collapsed) -->
             <div class="batch-progress-panel" id="batch-progress-panel" style="display: none;">
@@ -509,32 +464,6 @@ class OutputPanelManager {
 }
 
 // Helper functions for Context panel updates
-    async function loadPostContext() {
-        try {
-            const response = await fetch(`/planning/api/posts/${window.postId}`);
-            const data = await response.json();
-            
-            if (data) {
-                // Selected idea (idea_seed from post_development)
-                if (data.post && data.post.idea_seed) {
-                    document.getElementById('selected-idea-display').textContent = data.post.idea_seed;
-                } else {
-                    document.getElementById('selected-idea-display').textContent = 'No selected idea found';
-                }
-                
-                // Expanded idea
-                if (data.post && data.post.expanded_idea) {
-                    document.getElementById('expanded-idea-display').textContent = data.post.expanded_idea;
-                } else {
-                    document.getElementById('expanded-idea-display').textContent = 'No expanded idea found';
-                }
-            }
-        } catch (error) {
-            console.error('Error loading post context:', error);
-            document.getElementById('selected-idea-display').textContent = 'Error loading';
-            document.getElementById('expanded-idea-display').textContent = 'Error loading';
-        }
-    }
     
     async function loadSectionContext(sectionId) {
         try {
@@ -680,6 +609,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Update current section ID for output panel
             outputPanelManager.currentSectionId = data.sectionId;
             
+            // Load Context panel data
+            await contextPanel.loadPostContext();
+            await contextPanel.loadSectionContext(data.sectionId);
+            
             // Initialize LLM module
             initializeLLMForSection(data.sectionId);
             
@@ -741,6 +674,108 @@ document.addEventListener('DOMContentLoaded', function() {
             // Prompt saved successfully
         }
     });
+    
+    // Initialize Context Panel with callbacks
+    const contextPanel = new ContextPanel({
+        postId: {{ post_id }},
+        onContextLoad: (type, data) => {
+            console.log(`[Drafting] Context loaded (${type}):`, data);
+        },
+        onContextUpdate: (data) => {
+            console.log('[Drafting] Context updated:', data);
+        }
+    });
+});
+
+// Accordion Functions for Context, Batch Progress, and Output panels
+function toggleContextAccordion() {
+    const content = document.getElementById('context-accordion-content');
+    const icon = document.getElementById('context-accordion-icon');
+    
+    if (content.style.display === 'none' || content.style.display === '') {
+        content.style.display = 'block';
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+        localStorage.setItem('context-accordion-state', 'open');
+    } else {
+        content.style.display = 'none';
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+        localStorage.setItem('context-accordion-state', 'closed');
+    }
+}
+
+function toggleBatchProgressAccordion() {
+    const content = document.getElementById('batch-progress-accordion-content');
+    const icon = document.getElementById('batch-progress-accordion-icon');
+    
+    if (content.style.display === 'none' || content.style.display === '') {
+        content.style.display = 'block';
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+        localStorage.setItem('batch-progress-accordion-state', 'open');
+    } else {
+        content.style.display = 'none';
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+        localStorage.setItem('batch-progress-accordion-state', 'closed');
+    }
+}
+
+function toggleOutputAccordion() {
+    const content = document.getElementById('output-accordion-content');
+    const icon = document.getElementById('output-accordion-icon');
+    
+    if (content.style.display === 'none' || content.style.display === '') {
+        content.style.display = 'block';
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+        localStorage.setItem('output-accordion-state', 'open');
+    } else {
+        content.style.display = 'none';
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+        localStorage.setItem('output-accordion-state', 'closed');
+    }
+}
+
+// Restore accordion states on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Restore Context accordion state
+    const contextState = localStorage.getItem('context-accordion-state');
+    if (contextState === 'open') {
+        const content = document.getElementById('context-accordion-content');
+        const icon = document.getElementById('context-accordion-icon');
+        if (content && icon) {
+            content.style.display = 'block';
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    }
+    
+    // Restore Batch Progress accordion state
+    const batchState = localStorage.getItem('batch-progress-accordion-state');
+    if (batchState === 'open') {
+        const content = document.getElementById('batch-progress-accordion-content');
+        const icon = document.getElementById('batch-progress-accordion-icon');
+        if (content && icon) {
+            content.style.display = 'block';
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    }
+    
+    // Restore Output accordion state
+    const outputState = localStorage.getItem('output-accordion-state');
+    if (outputState === 'open') {
+        const content = document.getElementById('output-accordion-content');
+        const icon = document.getElementById('output-accordion-icon');
+        if (content && icon) {
+            content.style.display = 'block';
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    }
 });
 </script>
 
