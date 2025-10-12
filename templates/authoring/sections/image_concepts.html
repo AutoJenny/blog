@@ -35,10 +35,8 @@
             <!-- LLM Settings Panel -->
             {% include 'authoring/includes/llm_settings_panel.html' %}
             
-            <!-- LLM Module -->
-            <div class="llm-module-container">
-                {% include 'authoring/includes/llm_module.html' %}
-            </div>
+            <!-- LLM Prompts Panel -->
+            {% include 'authoring/includes/llm_prompts_panel.html' %}
             
             <!-- Debugging Panel -->
             {% include 'authoring/includes/debugging_panel.html' %}
@@ -253,6 +251,28 @@ document.addEventListener('DOMContentLoaded', function() {
         onParameterChange: (settings) => {
             console.log('[Image Concepts] Parameters changed:', settings);
             // Could affect generation quality/temperature
+        }
+    });
+    
+    // Initialize LLM Prompts Panel with callbacks
+    const llmPromptsPanel = new LLMPromptsPanel({
+        postId: {{ post_id }},
+        onPromptChange: (prompt) => {
+            console.log('[Image Concepts] LLM Prompt changed:', prompt);
+            // Prompt changes can trigger other panel updates
+        },
+        onGenerate: (data) => {
+            console.log('[Image Concepts] Generate requested:', data);
+            // This would trigger the actual image concepts generation process
+            // Could integrate with existing LLM module or Output panel
+        },
+        onPromptLoad: (prompt) => {
+            console.log('[Image Concepts] Prompt loaded:', prompt);
+            // Prompt loaded successfully
+        },
+        onPromptSave: (promptData) => {
+            console.log('[Image Concepts] Prompt saved:', promptData);
+            // Prompt saved successfully
         }
     });
     

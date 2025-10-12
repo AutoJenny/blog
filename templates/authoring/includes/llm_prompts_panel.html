@@ -1,0 +1,45 @@
+<!-- LLM Prompts Panel - Self-contained include with CSS and JS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/authoring/llm-prompts-panel.css') }}">
+
+<!-- LLM Prompts Panel - Self-contained include -->
+<div class="llm-prompts-panel" id="llm-prompts-panel">
+    <div class="panel-header" onclick="toggleLLMPromptsAccordion()">
+        <h4><span class="panel-name-green">LLM Prompts:</span> <span id="prompt-title">Loading...</span></h4>
+        <div class="header-actions">
+            <button class="btn btn-primary btn-sm" id="generate-btn">
+                <i class="fas fa-magic"></i> Generate
+            </button>
+            <i class="fas fa-chevron-up" id="prompts-accordion-icon"></i>
+        </div>
+    </div>
+    
+    <div class="panel-content" id="prompts-accordion-content" style="display: none;">
+        <!-- Prompt Display -->
+        <div id="llm-prompt-display" class="prompt-display">
+            <!-- LLM prompt will appear here -->
+        </div>
+        
+        <!-- Prompt Edit Form -->
+        <div id="llm-prompt-edit" class="prompt-edit" style="display: none;">
+            <div class="form-group">
+                <label for="system-prompt-edit">System Prompt</label>
+                <textarea id="system-prompt-edit" rows="4" placeholder="System prompt..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="user-prompt-edit">User Prompt</label>
+                <textarea id="user-prompt-edit" rows="8" placeholder="User prompt..."></textarea>
+            </div>
+            <div class="prompt-actions">
+                <button class="btn btn-secondary" id="save-prompt-btn">Save</button>
+                <button class="btn btn-secondary" id="cancel-edit-btn">Cancel</button>
+            </div>
+        </div>
+        
+        <!-- Edit Controls -->
+        <div class="prompt-actions" id="prompt-actions">
+            <button class="btn btn-secondary" id="edit-prompt-btn">Edit Prompt</button>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/authoring/llm-prompts-panel.js') }}"></script>

@@ -36,46 +36,9 @@ document.addEventListener('DOMContentLoaded', function() {
             <!-- Panel 1: LLM Settings (Accordion - Collapsed) -->
             {% include 'authoring/includes/llm_settings_panel.html' %}
 
-            <!-- Panel 2: LLM Prompts (Accordion - Collapsed) -->
-            <div class="llm-prompts-panel" id="llm-prompts-panel">
-                <div class="panel-header" onclick="toggleLLMPromptsAccordion()">
-                    <h4><span class="panel-name-green">LLM Prompts:</span> <span id="prompt-title">Loading...</span></h4>
-                    <div class="header-actions">
-                        <button class="btn btn-primary btn-sm" id="generate-btn">
-                            <i class="fas fa-magic"></i> Generate
-                        </button>
-                        <i class="fas fa-chevron-up" id="prompts-accordion-icon"></i>
-                    </div>
-                </div>
-                
-                <div class="panel-content" id="prompts-accordion-content" style="display: none;">
-                    <!-- Prompt Display -->
-                    <div id="llm-prompt-display" class="prompt-display">
-                        <!-- LLM prompt will appear here -->
-                    </div>
-                    
-                    <!-- Prompt Edit Form -->
-                    <div id="llm-prompt-edit" class="prompt-edit" style="display: none;">
-                        <div class="form-group">
-                            <label for="system-prompt-edit">System Prompt</label>
-                            <textarea id="system-prompt-edit" rows="4" placeholder="System prompt..."></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="user-prompt-edit">User Prompt</label>
-                            <textarea id="user-prompt-edit" rows="8" placeholder="User prompt..."></textarea>
-                        </div>
-                        <div class="prompt-actions">
-                            <button class="btn btn-secondary" id="save-prompt-btn">Save</button>
-                            <button class="btn btn-secondary" id="cancel-edit-btn">Cancel</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Edit Controls -->
-                    <div class="prompt-actions" id="prompt-actions">
-                        <button class="btn btn-secondary" id="edit-prompt-btn">Edit Prompt</button>
-                    </div>
-                </div>
-            </div>
+            <!-- Panel 2: LLM Prompts (Modular) -->
+            {% include 'authoring/includes/llm_prompts_panel.html' %}
+
 
             <!-- Panel 3: Context (Accordion - Collapsed) -->
             <div class="context-panel" id="context-panel">
@@ -754,6 +717,28 @@ document.addEventListener('DOMContentLoaded', function() {
         onParameterChange: (settings) => {
             console.log('[Drafting] Parameters changed:', settings);
             // Could affect generation quality/temperature
+        }
+    });
+    
+    // Initialize LLM Prompts Panel with callbacks
+    const llmPromptsPanel = new LLMPromptsPanel({
+        postId: {{ post_id }},
+        onPromptChange: (prompt) => {
+            console.log('[Drafting] LLM Prompt changed:', prompt);
+            // Prompt changes can trigger other panel updates
+        },
+        onGenerate: (data) => {
+            console.log('[Drafting] Generate requested:', data);
+            // This would trigger the actual generation process
+            // Could integrate with existing LLM module or Output panel
+        },
+        onPromptLoad: (prompt) => {
+            console.log('[Drafting] Prompt loaded:', prompt);
+            // Prompt loaded successfully
+        },
+        onPromptSave: (promptData) => {
+            console.log('[Drafting] Prompt saved:', promptData);
+            // Prompt saved successfully
         }
     });
 });
