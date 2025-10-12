@@ -43,31 +43,8 @@ document.addEventListener('DOMContentLoaded', function() {
             <!-- Panel 3: Context (Modular) -->
             {% include 'authoring/includes/context_panel.html' %}
 
-            <!-- Panel 4: Batch Progress (Accordion - Collapsed) -->
-            <div class="batch-progress-panel" id="batch-progress-panel" style="display: none;">
-                <div class="panel-header" onclick="toggleBatchProgressAccordion()">
-                    <h4><span class="panel-name-green">Batch Progress:</span></h4>
-                    <div class="header-actions">
-                        <span id="progress-percent">0%</span>
-                        <i class="fas fa-chevron-up" id="batch-progress-accordion-icon"></i>
-                    </div>
-                </div>
-                
-                <div class="panel-content" id="batch-progress-accordion-content" style="display: none;">
-                    <!-- Overall Progress Bar -->
-                    <div class="progress-container">
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
-                        </div>
-                        <div class="progress-text" id="progress-text">Ready to generate</div>
-                    </div>
-                    
-                    <!-- Individual Section Results -->
-                    <div class="section-results" id="section-results">
-                        <!-- Individual section results will appear here -->
-                    </div>
-                </div>
-            </div>
+            <!-- Panel 4: Batch Progress (Modular) -->
+            {% include 'authoring/includes/batch_progress_panel.html' %}
 
             <!-- Panel 5: Output (Accordion - Open) -->
             <div class="output-panel" id="output-panel">
@@ -620,7 +597,7 @@ document.addEventListener('DOMContentLoaded', function() {
             await loadSectionDraft(data.sectionId);
         },
         onBatchStart: (selectedIds) => {
-            document.getElementById('batch-progress-panel').style.display = 'block';
+            batchProgressPanel.startBatch(selectedIds, 'generate');
         },
         onBatchProgress: (progress) => {
             // Update Batch Progress panel
@@ -683,6 +660,23 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         onContextUpdate: (data) => {
             console.log('[Drafting] Context updated:', data);
+        }
+    });
+    
+    // Initialize Batch Progress Panel with callbacks
+    const batchProgressPanel = new BatchProgressPanel({
+        postId: {{ post_id }},
+        onBatchStart: (batch) => {
+            console.log('[Drafting] Batch started:', batch);
+        },
+        onBatchProgress: (data) => {
+            console.log('[Drafting] Batch progress:', data);
+        },
+        onBatchComplete: (data) => {
+            console.log('[Drafting] Batch completed:', data);
+        },
+        onBatchCancel: (batch) => {
+            console.log('[Drafting] Batch cancelled:', batch);
         }
     });
 });

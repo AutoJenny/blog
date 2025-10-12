@@ -40,7 +40,10 @@
             <!-- Context Panel -->
             {% include 'authoring/includes/context_panel.html' %}
             
-                        {% set currentSubstage = 'image-prompts' %}
+            <!-- Batch Progress Panel -->
+            {% include 'authoring/includes/batch_progress_panel.html' %}
+            
+            {% set currentSubstage = 'image-prompts' %}
             {% include 'authoring/right/output_panel.html' %}
                     </div>
                 </div>
@@ -172,48 +175,16 @@ document.addEventListener('DOMContentLoaded', function() {
         onBatchStart: (selectedIds) => {
             console.log('Batch generation started:', selectedIds);
             
-            // Show batch progress panel if it exists
-            const batchProgressPanel = document.getElementById('batch-progress-panel');
-            if (batchProgressPanel) {
-                batchProgressPanel.style.display = 'block';
-            }
+            // Start batch progress tracking
+            batchProgressPanel.startBatch(selectedIds, 'generate');
             
             // Trigger any image prompts specific batch logic
             if (typeof window.imagePromptsModule !== 'undefined' && window.imagePromptsModule.onBatchStart) {
                 window.imagePromptsModule.onBatchStart(selectedIds);
             }
         },
-        onBatchProgress: (progress) => {
-            console.log('Batch progress:', progress);
-            
-            // Update batch progress panel if it exists
-            const progressFill = document.getElementById('progress-fill');
-            const progressPercent = document.getElementById('progress-percent');
-            const progressText = document.getElementById('progress-text');
-            
-            if (progressFill && progressPercent) {
-                const percent = Math.round((progress.current / progress.total) * 100);
-                progressFill.style.width = `${percent}%`;
-                progressPercent.textContent = `${percent}%`;
-            }
-            
-            if (progressText) {
-                progressText.textContent = `Generating section ${progress.current} of ${progress.total}...`;
-            }
-            
-            // Trigger any image prompts specific progress logic
-            if (typeof window.imagePromptsModule !== 'undefined' && window.imagePromptsModule.onBatchProgress) {
-                window.imagePromptsModule.onBatchProgress(progress);
-            }
-        },
         onBatchComplete: (result) => {
             console.log('Batch generation completed:', result);
-            
-            // Hide batch progress panel if it exists
-            const batchProgressPanel = document.getElementById('batch-progress-panel');
-            if (batchProgressPanel) {
-                batchProgressPanel.style.display = 'none';
-            }
             
             // Trigger any image prompts specific completion logic
             if (typeof window.imagePromptsModule !== 'undefined' && window.imagePromptsModule.onBatchComplete) {
@@ -273,6 +244,23 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         onContextUpdate: (data) => {
             console.log('[Image Prompts] Context updated:', data);
+        }
+    });
+    
+    // Initialize Batch Progress Panel with callbacks
+    const batchProgressPanel = new BatchProgressPanel({
+        postId: {{ post_id }},
+        onBatchStart: (batch) => {
+            console.log('[Image Prompts] Batch started:', batch);
+        },
+        onBatchProgress: (data) => {
+            console.log('[Image Prompts] Batch progress:', data);
+        },
+        onBatchComplete: (data) => {
+            console.log('[Image Prompts] Batch completed:', data);
+        },
+        onBatchCancel: (batch) => {
+            console.log('[Image Prompts] Batch cancelled:', batch);
         }
     });
     

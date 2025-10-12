@@ -1,0 +1,30 @@
+<!-- Batch Progress Panel - Self-contained include with CSS and JS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/authoring/batch-progress-panel.css') }}">
+
+<!-- Batch Progress Panel - Self-contained include -->
+<div class="batch-progress-panel" id="batch-progress-panel" style="display: none;">
+    <div class="panel-header" onclick="toggleBatchProgressAccordion()">
+        <h4><span class="panel-name-green">Batch Progress:</span></h4>
+        <div class="header-actions">
+            <span id="progress-percent">0%</span>
+            <i class="fas fa-chevron-up" id="batch-progress-accordion-icon"></i>
+        </div>
+    </div>
+    
+    <div class="panel-content" id="batch-progress-accordion-content" style="display: none;">
+        <!-- Overall Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+            </div>
+            <div class="progress-text" id="progress-text">Ready to generate</div>
+        </div>
+        
+        <!-- Individual Section Results -->
+        <div class="section-results" id="section-results">
+            <!-- Individual section results will appear here -->
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/authoring/batch-progress-panel.js') }}"></script>
