@@ -1,7 +1,8 @@
-<!-- Debugging Panel - Image Generation specific -->
+<!-- Debugging Panel - Image Generation specific; self-contained include with CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/debugging-panel.css') }}">
 <div class="debugging-panel">
     <div class="accordion-header" onclick="toggleDebuggingAccordion()">
-        <h5>Debugging</h5>
+        <h5><span class="panel-name-green">Debugging</span></h5>
         <div class="accordion-toggle">
             <i class="fas fa-chevron-down" id="debugging-accordion-icon"></i>
         </div>
@@ -46,4 +47,7 @@
         </div>
     </div>
 </div>
+<script>
+// Optional: placeholder for future debugging-panel specific JS
+</script>
 

@@ -106,7 +106,8 @@ class PromptConstructionPanel {
     updateTitle(status = 'Ready') {
         const title = document.getElementById('prompt-title');
         if (title) {
-            title.textContent = `Prompt Construction: ${status}`;
+            // Preserve green module name and show status in normal color
+            title.innerHTML = `<span class="panel-name-green">Generated Image Prompts:</span> ${status}`;
         }
     }
 

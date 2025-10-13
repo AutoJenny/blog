@@ -1,7 +1,8 @@
-<!-- Imaging Model Selection Panel - Independent from authoring -->
+<!-- Imaging Model Selection Panel - Self-contained include with CSS and JS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/model-selection.css') }}">
 <div class="model-selection-panel" id="model-selection-panel">
     <div class="panel-header" onclick="toggleModelSelectionAccordion()">
-        <h4 id="model-title">Model Selection: Loading...</h4>
+        <h4 id="model-title"><span class="panel-name-green">Modal Selection:</span> Loading...</h4>
         <div class="header-actions">
             <button type="button" id="generate-image-btn" class="btn btn-primary btn-sm" onclick="event.stopPropagation(); window.imageGenerationHandler?.handleGenerateImage();">
                 <i class="fas fa-magic"></i> Generate Image
@@ -105,5 +106,7 @@
         <!-- Action Buttons - Generate button moved to header -->
     </div>
 </div>
+
+<script src="{{ url_for('static', filename='js/imaging/model-selection.js') }}"></script>
 
 

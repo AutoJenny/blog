@@ -1,4 +1,5 @@
-<!-- Header -->
+<!-- Header (self-contained) -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shared/site-header.css') }}">
 <header class="header-gradient shadow-lg border-b border-dark-border py-4">
     <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-nowrap items-center justify-between h-16 space-x-6">
@@ -80,6 +81,7 @@
     </nav>
 </header>
 
+<!-- Uses static/css/shared/site-header.css -->
 <style>
     .header-gradient {
         background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
@@ -314,6 +316,7 @@
     }
 </style>
 
+<script src="{{ url_for('static', filename='js/shared/site-header.js') }}"></script>
 <script>
     // Navigation dropdown functionality
     document.addEventListener('DOMContentLoaded', function() {

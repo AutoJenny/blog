@@ -247,8 +247,8 @@ function setupModelSelection() {
         if (config.model) {
             dropdown.value = config.model;
             console.log('[Imaging Core] Model config loaded:', config.model, config.parameters);
-            // updateModelParameters removed - using template HTML with LoRA controls
-            updateTitle(config.model);
+            // Emit model-changed event; panel module will update its own title
+            document.dispatchEvent(new CustomEvent('imaging:model-changed', { detail: { model: config.model } }));
             console.log('[Imaging Core] Set dropdown to:', config.model);
             console.log('[Imaging Core] Dropdown value after setting:', dropdown.value);
             
@@ -263,8 +263,8 @@ function setupModelSelection() {
     dropdown.addEventListener('change', function() {
         const model = this.value;
         console.log('[Imaging Core] Model changed to:', model);
-        // updateModelParameters removed - using template HTML with LoRA controls
-        updateTitle(model);
+        // Emit model-changed event; panel module will update its own title
+        document.dispatchEvent(new CustomEvent('imaging:model-changed', { detail: { model } }));
         saveModelSelection({ model, parameters: getCurrentParameters() });
     });
 }
@@ -294,17 +294,7 @@ async function saveModelSelection(config) {
 }
 
 
-function updateTitle(model) {
-    const titleElement = document.getElementById('model-title');
-    if (titleElement) {
-        const modelNames = {
-            'sdxl-lora': 'SDXL LoRA',
-            'dall-e-3': 'DALL-E 3',
-            'dall-e-2': 'DALL-E 2'
-        };
-        titleElement.textContent = `Model Selection: ${modelNames[model] || model}`;
-    }
-}
+// Title updates are owned by the Model Selection panel module.
 
 function getCurrentParameters() {
     const params = {};

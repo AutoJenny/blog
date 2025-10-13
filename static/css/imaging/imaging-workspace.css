@@ -1,0 +1,49 @@
+/* Imaging Workspace Styles - Common workspace layout and panel coordination */
+
+.imaging-workspace {
+    padding: 1rem;
+    min-height: calc(100vh - 200px);
+}
+
+.workspace-container {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.editor-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Panel Container Styles */
+.model-selection-container,
+.prompt-construction-container {
+    background: #1e293b;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    padding: 1rem;
+}
+
+/* Panel Name Green Styling */
+.panel-name-green {
+    color: #10b981;
+    font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .workspace-container {
+        grid-template-columns: 300px 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .workspace-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}

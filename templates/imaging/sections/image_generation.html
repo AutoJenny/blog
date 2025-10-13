@@ -2,15 +2,10 @@
 {% from 'macros/static_assets.html' import css_assets, js_assets %}
 
 {% block css_assets %}
-{{ css_assets('authoring') }}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/authoring/sections-panel.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/image-generation.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/output-panel.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/model-selection.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/prompt-construction.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/debugging-panel.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/data-tab.css') }}">
+{{ super() }}
 {{ css_assets('imaging') }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/image-generation.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/data-tab.css') }}">
 {% endblock %}
 
 {% block js_assets %}
@@ -29,10 +24,9 @@
 {% block content %}
 {% include 'shared/blog_pipeline_header.html' %}
 
-{% block process_content %}
 <div class="imaging-workspace">
     <div class="workspace-container">
-        {% include 'imaging/includes/sections_panel_imaging.html' %}
+        {% include 'shared/sections_panel.html' %}
         <div class="editor-panel">
             <!-- Model Selection Panel -->
             <div class="model-selection-container">
@@ -47,12 +41,13 @@
             <!-- Debugging Panel -->
             {% include 'imaging/includes/debugging_panel_image_generation.html' %}
             
-            {% set currentSubstage = 'image-generation' %}
+            <!-- Output Panel -->
             {% include 'imaging/right/output_panel_image_generation.html' %}
         </div>
     </div>
 </div>
-{% endblock %}
 
-<!-- Streamlined initialization - handled by imaging-core.js and imaging-ui.js -->
+<!-- Imaging Workspace Styles and Scripts -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/imaging-workspace.css') }}">
+<script src="{{ url_for('static', filename='js/imaging/imaging-workspace.js') }}"></script>
 {% endblock %}

@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 
+{% block css_assets %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shared/dark-theme.css') }}">
+{% endblock %}
+
 {% block title %}Content Calendar - Planning - BlogForge{% endblock %}
 
 {% block content %}

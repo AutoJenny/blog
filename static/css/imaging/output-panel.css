@@ -14,10 +14,9 @@
       border-bottom: 1px solid #334155;
     }
     
-    .viewer-header h4 {
-      color: #e2e8f0;
-      margin: 0;
-      font-size: 1.1rem;
+#current-section-title .panel-name-green {
+      color: #10b981 !important;
+      font-weight: 600;
     }
     
     .image-display-area {

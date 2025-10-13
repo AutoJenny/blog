@@ -122,10 +122,18 @@ class ModelSelectionPanel {
         console.log('[Model Selection] Parameters collected:', this.parameters);
     }
 
-    updateTitle() {
+    updateTitle(status = 'Ready') {
         const title = document.getElementById('model-title');
         if (title) {
-            title.textContent = 'Model Selection: Ready';
+            const modelSelect = document.getElementById('image-model-select');
+            const model = modelSelect ? modelSelect.value : '';
+            const modelNames = {
+                'sdxl-lora': 'SDXL LoRA',
+                'dall-e-3': 'DALL-E 3',
+                'dall-e-2': 'DALL-E 2'
+            };
+            const display = modelNames[model] || model || status;
+            title.innerHTML = `<span class="panel-name-green">Model Selection:</span> ${display}`;
         }
     }
 
@@ -255,6 +263,12 @@ class ModelSelectionPanel {
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     window.modelSelectionPanel = new ModelSelectionPanel();
+    // Respond to global imaging events (from imaging-core)
+    document.addEventListener('imaging:model-changed', function(e) {
+        if (window.modelSelectionPanel) {
+            window.modelSelectionPanel.updateTitle();
+        }
+    });
 });
 
 // Accordion functionality

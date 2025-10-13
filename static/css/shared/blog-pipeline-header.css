@@ -1,0 +1,263 @@
+/* Unified Blog Pipeline Header Styles (self-contained) */
+.blog-pipeline-header {
+    margin-bottom: 1rem;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 1rem;
+}
+
+.main-title-line {
+    margin-bottom: 0.5rem;
+}
+
+.pipeline-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin: 0;
+    text-align: center;
+}
+
+/* Post Details Line */
+.post-details-line {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 1rem;
+    flex-wrap: wrap;
+}
+
+.status-label, .date-label {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-value, .date-value {
+    color: #e2e8f0;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.status-value {
+    padding: 0.2rem 0.5rem;
+    background: #0f172a;
+    border-radius: 4px;
+    border: 1px solid #334155;
+}
+
+/* Main Stage Navigation */
+.main-stages-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #1e293b;
+    border-radius: 6px;
+    border: 1px solid #334155;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.main-stages-left {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.main-stages-right {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.stage-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.stage-btn:hover {
+    background: #334155;
+    border-color: #64748b;
+    color: #e2e8f0;
+}
+
+.stage-btn.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+.stage-btn.old-interface {
+    border-color: #f59e0b;
+    color: #f59e0b;
+}
+
+.stage-btn.old-interface:hover {
+    background: #f59e0b;
+    color: white;
+}
+
+.stage-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    color: #64748b;
+    border-color: #475569;
+}
+
+.stage-btn.disabled:hover {
+    background: transparent;
+    border-color: #475569;
+    color: #64748b;
+}
+
+/* Sub-stages with Subtitle and Tabs */
+.sub-stages-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #0f172a;
+    border-radius: 6px;
+    border: 1px solid #334155;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.sub-stages {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.sub-stage-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.sub-stage-btn {
+    padding: 0.4rem 0.8rem;
+    background: transparent;
+    border: 1px solid #475569;
+    border-radius: 4px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+}
+
+.sub-stage-btn:hover {
+    background: #334155;
+    border-color: #64748b;
+    color: #e2e8f0;
+}
+
+.sub-stage-btn.active {
+    background: #06b6d4;
+    border-color: #06b6d4;
+    color: white;
+}
+
+.sub-stage-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    color: #64748b;
+    border-color: #475569;
+}
+
+.sub-stage-btn.disabled:hover {
+    background: transparent;
+    border-color: #475569;
+    color: #64748b;
+}
+
+/* Subtitle */
+.subtitle {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    font-style: italic;
+    text-align: center;
+    flex: 1;
+    min-width: 200px;
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    background: transparent;
+    border: 1px solid #475569;
+    border-radius: 4px;
+    color: #94a3b8;
+    font-weight: 500;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    background: #334155;
+    border-color: #64748b;
+    color: #e2e8f0;
+}
+
+.tab-btn.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+/* Tab Content */
+.tab-content {
+    position: relative;
+}
+
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .post-details-line {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .main-stages-line {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    .main-stages-left { justify-content: center; }
+    .main-stages-right { justify-content: center; }
+    .sub-stages-line { flex-direction: column; align-items: stretch; }
+    .sub-stages { justify-content: center; }
+    .subtitle { min-width: auto; margin: 0.5rem 0; }
+    .tab-buttons { justify-content: center; }
+}
+
+

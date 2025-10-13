@@ -2,6 +2,7 @@
 
 {% block css_assets %}
 {{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shared/dark-theme.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/llm-module.css') }}">
 {% endblock %}
 
