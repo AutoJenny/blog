@@ -978,22 +978,32 @@ def api_generate_image_concepts(post_id, section_id):
                         for i, section_data in enumerate(sections_list):
                             section_id_from_data = section_data.get('id', f'section_{i+1}')
                             if section_id_from_data == section_id:
+                                section_order = section_data.get('order', i+1)
+                                
+                                # Get section content from post_section table
+                                cursor.execute("""
+                                    SELECT draft, polished, status
+                                    FROM post_section
+                                    WHERE post_id = %s AND section_order = %s
+                                """, (post_id, section_order))
+                                post_section_data = cursor.fetchone()
+                                
                                 section = {
                                     'id': section_id_from_data,
-                                    'section_order': section_data.get('order', i+1),
+                                    'section_order': section_order,
                                     'section_heading': section_data.get('title', f'Section {i+1}'),
                                     'section_description': section_data.get('original', ''),
-                                    'status': 'draft',
-                                    'draft': None,
-                                    'polished': None,
+                                    'status': post_section_data['status'] if post_section_data else 'draft',
+                                    'draft': post_section_data['draft'] if post_section_data else None,
+                                    'polished': post_section_data['polished'] if post_section_data else None,
                                     'ideas_to_include': None,
                                     'facts_to_include': None,
                                     'highlighting': None,
-                                    'image_concepts': None,
-                                    'image_prompts': None,
-                                    'image_captions': None,
-                                    'image_alt_text': None,
-                                    'selected_image_concept': None
+                                    'image_concepts': section_data.get('image_concepts'),
+                                    'image_prompts': section_data.get('image_prompts'),
+                                    'image_captions': section_data.get('image_captions'),
+                                    'image_alt_text': section_data.get('image_alt_text'),
+                                    'selected_image_concept': section_data.get('selected_image_concept')
                                 }
                                 break
                     except (json.JSONDecodeError, TypeError) as e:

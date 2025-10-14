@@ -81,32 +81,50 @@ class ContextPanel {
                 // Update section context displays
                 const sectionTitleDisplay = document.getElementById('section-title-display');
                 if (sectionTitleDisplay) {
-                    sectionTitleDisplay.textContent = section.title || '-';
+                    sectionTitleDisplay.textContent = section.title || section.section_heading || '-';
                 }
                 
                 const sectionSubtitleDisplay = document.getElementById('section-subtitle-display');
                 if (sectionSubtitleDisplay) {
-                    sectionSubtitleDisplay.textContent = section.subtitle || '-';
+                    sectionSubtitleDisplay.textContent = section.description || section.section_description || '-';
                 }
                 
                 const sectionGroupDisplay = document.getElementById('section-group-display');
                 if (sectionGroupDisplay) {
-                    sectionGroupDisplay.textContent = section.group || '-';
+                    sectionGroupDisplay.textContent = section.section_heading || section.title || '-';
                 }
                 
                 const sectionGroupSummaryDisplay = document.getElementById('section-group-summary-display');
                 if (sectionGroupSummaryDisplay) {
-                    sectionGroupSummaryDisplay.textContent = section.group_summary || '-';
+                    sectionGroupSummaryDisplay.textContent = section.section_description || section.description || '-';
                 }
                 
                 const sectionTopicsDisplay = document.getElementById('section-topics-display');
                 if (sectionTopicsDisplay) {
-                    sectionTopicsDisplay.textContent = section.topics || '-';
+                    // Handle topics as array or string
+                    let topicsText = '-';
+                    if (section.topics) {
+                        if (Array.isArray(section.topics)) {
+                            topicsText = section.topics.join(', ');
+                        } else {
+                            topicsText = section.topics;
+                        }
+                    }
+                    sectionTopicsDisplay.textContent = topicsText;
                 }
                 
                 const avoidTopicsDisplay = document.getElementById('avoid-topics-display');
                 if (avoidTopicsDisplay) {
                     avoidTopicsDisplay.textContent = section.avoid_topics || '-';
+                }
+                
+                // Add section content display for LLM prompt data
+                const sectionContentDisplay = document.getElementById('section-content-display');
+                if (sectionContentDisplay) {
+                    const content = section.polished || section.draft || '-';
+                    // Strip HTML tags for display
+                    const plainText = content.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+                    sectionContentDisplay.textContent = plainText.substring(0, 200) + (plainText.length > 200 ? '...' : '');
                 }
                 
                 this.callbacks.onContextLoad('section', section);
