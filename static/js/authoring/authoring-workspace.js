@@ -249,8 +249,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const sectionsPanel = new SectionsPanel({
         postId: window.postId,
         onSectionSelect: async (data) => {
-            // Load section into output panel
-            if (typeof outputPanel !== 'undefined') {
+            // Load section into appropriate output panel
+            if (window.currentSubstage === 'image-concepts') {
+                if (window.imageConceptsOutputPanel) {
+                    window.imageConceptsOutputPanel.show({
+                        id: data.sectionId,
+                        title: data.section.title,
+                        subtitle: data.section.subtitle,
+                        order: data.section.order,
+                        topics: data.section.topics,
+                        image_concepts: data.section.image_concepts || '',
+                        selected_image_concept: data.section.selected_image_concept || ''
+                    });
+                }
+            } else if (typeof outputPanel !== 'undefined') {
                 outputPanel.loadSection(data.sectionId, data.section);
             }
             
@@ -263,8 +275,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Initialize LLM module
             initializeLLMForSection(data.sectionId);
             
-            // Load existing draft
-            await loadSectionDraft(data.sectionId);
+            // Load existing draft (skip for image-concepts specialized UI)
+            if (window.currentSubstage !== 'image-concepts') {
+                await loadSectionDraft(data.sectionId);
+            }
         },
         onBatchStart: (selectedIds) => {
             if (typeof batchProgressPanel !== 'undefined') {
