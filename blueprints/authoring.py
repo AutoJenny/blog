@@ -1040,8 +1040,11 @@ def api_generate_image_concepts(post_id, section_id):
                         topic_allocation = json.loads(topic_result['topic_allocation'])
                     
                     # Get topics for this section
-                    section_topics = topic_allocation.get(str(section['section_order']), [])
-                    topics = section_topics if isinstance(section_topics, list) else []
+                    allocations = topic_allocation.get('allocations', [])
+                    for allocation in allocations:
+                        if allocation.get('section_id') == section_id:
+                            topics = allocation.get('topics', [])
+                            break
                 except Exception as e:
                     logger.error(f"Error parsing topic_allocation: {e}")
             
@@ -1068,7 +1071,8 @@ def api_generate_image_concepts(post_id, section_id):
             prompt_text = prompt_text.replace('[data:title]', section['section_heading'] or '')
             prompt_text = prompt_text.replace('[data:subtitle]', section['section_description'] or '')
             prompt_text = prompt_text.replace('[data:section_text]', section['polished'] or section['draft'] or '')
-            prompt_text = prompt_text.replace('[data:topics]', '\n'.join([f'- {topic}' for topic in topics]))
+            topics_text = '\n'.join([f'- {topic}' for topic in topics])
+            prompt_text = prompt_text.replace('[data:topics]', topics_text)
             
             # Prepare messages for LLM
             messages = []
