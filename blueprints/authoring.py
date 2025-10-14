@@ -871,7 +871,7 @@ def api_save_image_concepts(post_id, section_id):
         logger.error(f"Error saving image concepts: {e}")
         return jsonify({'error': str(e)}), 500
 
-@bp.route('/api/posts/<int:post_id>/sections/<int:section_id>/select-concept', methods=['POST'])
+@bp.route('/api/posts/<int:post_id>/sections/<section_id>/select-concept', methods=['POST'])
 def api_select_concept(post_id, section_id):
     """Save the selected image concept for a specific section"""
     try:
@@ -879,18 +879,55 @@ def api_select_concept(post_id, section_id):
         concept_id = data.get('concept_id', '')
         
         with db_manager.get_cursor() as cursor:
-            cursor.execute("""
-                UPDATE post_section 
-                SET selected_image_concept = %s
-                WHERE post_id = %s AND id = %s
-            """, (concept_id, post_id, section_id))
-            
-            cursor.connection.commit()
-            
-            return jsonify({
-                'success': True,
-                'message': 'Concept selection saved successfully'
-            })
+            if str(section_id).isdigit():
+                # Numeric section id -> update post_section
+                cursor.execute(
+                    """
+                    UPDATE post_section 
+                    SET selected_image_concept = %s
+                    WHERE post_id = %s AND id = %s
+                    """,
+                    (concept_id, post_id, int(section_id))
+                )
+                cursor.connection.commit()
+            else:
+                # String id (e.g., section_1) -> update post_development.sections JSON
+                cursor.execute("""
+                    SELECT sections FROM post_development WHERE post_id = %s
+                """, (post_id,))
+                row = cursor.fetchone()
+                if not row or not row['sections']:
+                    return jsonify({'error': 'Section data not found'}), 404
+                try:
+                    sections_data = row['sections'] if isinstance(row['sections'], dict) else json.loads(row['sections'])
+                    if isinstance(sections_data, dict) and 'sections' in sections_data:
+                        sections_list = sections_data['sections']
+                    elif isinstance(sections_data, list):
+                        sections_list = sections_data
+                    else:
+                        sections_list = []
+                    # Find by id
+                    target = next((s for s in sections_list if s.get('id') == section_id), None)
+                    if not target and section_id.startswith('section_'):
+                        try:
+                            idx = int(section_id.split('_')[1])
+                            target = next((s for s in sections_list if s.get('index') == idx), None)
+                        except Exception:
+                            target = None
+                    if not target:
+                        return jsonify({'error': 'Section not found'}), 404
+                    target['selected_image_concept'] = concept_id
+                    # Persist back
+                    cursor.execute(
+                        """
+                        UPDATE post_development 
+                        SET sections = %s, updated_at = NOW()
+                        WHERE post_id = %s
+                        """,
+                        (json.dumps(sections_data), post_id)
+                    )
+                    cursor.connection.commit()
+            return jsonify({'success': True, 'message': 'Concept selection saved successfully'})
             
     except Exception as e:
         logger.error(f"Error saving concept selection: {e}")
