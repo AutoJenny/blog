@@ -1,0 +1,32 @@
+  .optimization-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+  .optimization-panel .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #334155;
+    cursor: pointer;
+  }
+  .optimization-panel .panel-header h4 { margin: 0; color: #e2e8f0; }
+  .optimization-panel .panel-header .header-actions { display: flex; gap: .5rem; align-items: center; }
+  .optimization-panel .panel-content { padding: 1rem; }
+  .optimization-controls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+  .control-group { display: flex; flex-direction: column; gap: .25rem; }
+  .control-row { display: flex; gap: 1rem; align-items: center; margin-top: .25rem; }
+  .control-group label { color: #cbd5e1; font-size: .9rem; }
+  .control-group input, .control-group select { background: #0f172a; color: #e2e8f0; border: 1px solid #334155; border-radius: 6px; padding: .5rem; }
+  .control-group input[type="range"] { padding: 0; height: 6px; background: #334155; }
+  .control-group input[type="range"]::-webkit-slider-thumb { appearance: none; width: 18px; height: 18px; background: #3b82f6; border-radius: 50%; cursor: pointer; }
+  .control-group input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: #3b82f6; border-radius: 50%; cursor: pointer; border: none; }
+  .help-text { color: #64748b; font-size: .8rem; margin-top: .25rem; font-style: italic; }
+  .optimization-help { color: #94a3b8; font-size: .9rem; margin-top: .5rem; padding: 1rem; background: #0f172a; border: 1px solid #334155; border-radius: 6px; }
+  .optimization-help h5 { color: #e2e8f0; margin: 0 0 .75rem 0; font-size: .95rem; }
+  .optimization-help ul { margin: 0; padding-left: 1.25rem; line-height: 1.4; }
+  .optimization-help code { background: #1e293b; padding: .125rem .25rem; border-radius: 3px; font-family: monospace; font-size: .8rem; color: #e2e8f0; }
+  .panel-name-green { color: #10b981 !important; font-weight: 600; }
+

@@ -1,0 +1,102 @@
+<!-- Optimization Panel - Self-contained include with CSS and JS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/optimization-panel.css') }}">
+<script src="{{ url_for('static', filename='js/imaging/optimization-panel.js') }}"></script>
+
+<div class="optimization-panel" id="optimization-panel">
+  <div class="panel-header" onclick="toggleOptimizationAccordion()">
+    <h4><span class="panel-name-green">Optimize Images:</span> <span id="optimization-status">Ready</span></h4>
+    <div class="header-actions">
+      <button type="button" id="optimize-selected-btn" class="btn btn-primary btn-sm">
+        <i class="fas fa-wand-magic-sparkles"></i> Optimize Selected
+      </button>
+      <button type="button" id="optimize-all-btn" class="btn btn-secondary btn-sm">
+        <i class="fas fa-bolt"></i> Optimize All
+      </button>
+      <i class="fas fa-chevron-up" id="optimization-accordion-icon"></i>
+    </div>
+  </div>
+
+  <div class="panel-content" id="optimization-accordion-content" style="display: none;">
+    <div class="optimization-controls">
+      <div class="control-group">
+        <label for="opt-preset">Preset</label>
+        <select id="opt-preset">
+          <option value="blog" selected>Blog (Original Settings)</option>
+          <option value="custom">Custom Settings</option>
+        </select>
+      </div>
+      
+      <div class="control-group">
+        <label for="opt-quality">JPEG Quality</label>
+        <input type="number" id="opt-quality" min="10" max="100" value="50" title="Current implementation uses 50% quality">
+        <small class="help-text">Current: 50% (as per implementation)</small>
+      </div>
+      
+      <div class="control-group">
+        <label for="opt-overlay-text">AI Text Overlay</label>
+        <input type="text" id="opt-overlay-text" value="AI-generated image" placeholder="AI-generated image">
+        <small class="help-text">Bottom-left text with grey color (128,128,128,180)</small>
+      </div>
+      
+      <div class="control-group">
+        <label for="opt-text-position">Text Position</label>
+        <select id="opt-text-position">
+          <option value="bottom-left" selected>Bottom Left (20px margin)</option>
+          <option value="bottom-right">Bottom Right</option>
+          <option value="top-left">Top Left</option>
+          <option value="top-right">Top Right</option>
+        </select>
+      </div>
+      
+      <div class="control-group">
+        <label for="opt-text-size">Text Size</label>
+        <input type="number" id="opt-text-size" min="8" max="32" value="16" title="Font size in pixels">
+        <small class="help-text">Arial font, 16px default</small>
+      </div>
+      
+      <div class="control-row">
+        <label class="checkbox-inline"><input type="checkbox" id="opt-watermark" checked> Watermark (Bottom-right)</label>
+        <label class="checkbox-inline"><input type="checkbox" id="opt-text-overlay" checked> Text Overlay</label>
+      </div>
+      
+      <div class="control-group">
+        <label for="opt-watermark-size">Watermark Size</label>
+        <select id="opt-watermark-size">
+          <option value="auto" selected>Auto (min 200px, max 25% width)</option>
+          <option value="small">Small (100px)</option>
+          <option value="medium">Medium (150px)</option>
+          <option value="large">Large (250px)</option>
+        </select>
+        <small class="help-text">Current: min(200px, image.width/4)</small>
+      </div>
+      
+      <div class="control-group">
+        <label for="opt-watermark-margin">Watermark Margin</label>
+        <input type="number" id="opt-watermark-margin" min="0" max="50" value="10" title="Margin from edges in pixels">
+        <small class="help-text">Current: 10px margin</small>
+      </div>
+      
+      <div class="control-group">
+        <label for="opt-bg-opacity">Background Opacity</label>
+        <input type="range" id="opt-bg-opacity" min="0" max="100" value="20" title="Grey background behind watermark">
+        <span id="opt-bg-opacity-value">20%</span>
+        <small class="help-text">Grey background behind watermark (current: 20%)</small>
+      </div>
+    </div>
+
+    <div class="optimization-help">
+      <h5>Current Implementation Settings:</h5>
+      <ul>
+        <li><strong>Source:</strong> <code>static/content/posts/{post_id}/sections/{section_id}/raw/{section_id}.png</code></li>
+        <li><strong>Watermark:</strong> <code>static/images/site/clan-watermark.png</code></li>
+        <li><strong>Output:</strong> <code>static/content/posts/{post_id}/sections/{section_id}/optimized/{section_id}.jpg</code></li>
+        <li><strong>Quality:</strong> 50% JPEG compression</li>
+        <li><strong>Watermark Position:</strong> Bottom-right, 10px margin</li>
+        <li><strong>Text Position:</strong> Bottom-left, 20px margin</li>
+        <li><strong>Background:</strong> Grey rounded rectangle behind watermark (20% opacity)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
