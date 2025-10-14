@@ -234,23 +234,45 @@ class ImagingSectionsPanel {
                     }
                 }
 
-                const payload = {
-                    image_prompt,
-                    model_name: window.ImagingUtils?.getState('selectedModel') || 'sdxl-lora',
-                    parameters: {}
-                };
-
-                const resp = await fetch(`/imaging/api/image-generation/posts/${this.postId}/sections/${sectionId}/generate-image`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                // Use different API based on current substage
+                let resp;
+                if (window.currentSubstage === 'optimise') {
+                    // On optimize page, call optimization API
+                    const optParams = {
+                        quality: 50,
+                        overlay_text: 'AI-generated image',
+                        watermark: true,
+                        text_overlay: true
+                    };
+                    resp = await fetch(`/imaging/api/optimize/posts/${this.postId}/sections/${sectionId}/optimize-image`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(optParams)
+                    });
+                } else {
+                    // On image-generation page, call image generation API
+                    const payload = {
+                        image_prompt,
+                        model_name: window.ImagingUtils?.getState('selectedModel') || 'sdxl-lora',
+                        parameters: {}
+                    };
+                    resp = await fetch(`/imaging/api/image-generation/posts/${this.postId}/sections/${sectionId}/generate-image`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                }
 
                 const data = await resp.json();
                 if (data.success) {
                     // Update output panel immediately if this section is highlighted
-                    if (window.imagingOutputPanel && this.currentSectionId === sectionId && data.image_path) {
-                        window.imagingOutputPanel.onImageGenerated?.(data.image_path);
+                    const imagePath = data.image_path || data.optimized_path; // Handle both APIs
+                    if (window.imagingOutputPanel && this.currentSectionId === sectionId && imagePath) {
+                        if (window.currentSubstage === 'optimise') {
+                            window.imagingOutputPanel.onImageOptimized?.(imagePath);
+                        } else {
+                            window.imagingOutputPanel.onImageGenerated?.(imagePath);
+                        }
                     }
                     this.callbacks.onBatchProgress({ current: i + 1, total: selectedIds.length, sectionId, sectionTitle, status: 'success' });
                 } else {
