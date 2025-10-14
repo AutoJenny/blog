@@ -1,0 +1,19 @@
+<!-- Output Panel: Image Concepts (Self-contained) -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/authoring/output-panel-image-concepts.css') }}">
+
+<div class="output-panel" id="output-panel-image-concepts">
+    <div class="panel-header" onclick="toggleOutputAccordion()">
+        <h4><span class="panel-name-green">Output:</span> <span id="current-section-title">Select a section to begin editing</span></h4>
+        <div class="header-actions">
+            <button class="btn-secondary" id="regenerate-btn" disabled>Regenerate</button>
+            <i class="fas fa-chevron-down" id="output-accordion-icon"></i>
+        </div>
+    </div>
+
+    <div class="panel-content" id="output-accordion-content" style="display: block;">
+        {% include 'authoring/includes/image_concepts_display.html' %}
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/authoring/output-panel-image-concepts.js') }}"></script>
+

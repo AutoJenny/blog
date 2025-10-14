@@ -1,0 +1,4 @@
+.output-panel .panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;padding-bottom:.5rem;border-bottom:1px solid #334155}
+.output-panel .header-actions{display:flex;gap:.5rem}
+.panel-name-green{color:#16a34a}
+
