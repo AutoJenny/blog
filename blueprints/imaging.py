@@ -132,11 +132,23 @@ def imaging_generate_sdxl_image(image_prompt, post_id, section_id, parameters):
         logger.error(f"SDXL generation error: {str(e)}")
         return {'success': False, 'error': str(e)}
 
-def optimize_image_with_watermark(post_id, section_id):
+def optimize_image_with_watermark(post_id, section_id, params=None):
     """Optimize image with watermark and AI caption"""
     try:
         from PIL import Image, ImageDraw, ImageFont
         import os
+        
+        # Default parameters
+        if params is None:
+            params = {}
+            
+        quality = params.get('quality', 50)
+        overlay_text = params.get('overlay_text', 'AI-generated image')
+        text_size = params.get('text_size', 16)
+        watermark_enabled = params.get('watermark', True)
+        text_overlay_enabled = params.get('text_overlay', True)
+        watermark_margin = params.get('watermark_margin', 10)
+        bg_opacity = params.get('bg_opacity', 20)
         
         # Paths
         raw_image_path = f"static/content/posts/{post_id}/sections/{section_id}/raw/{section_id}.png"
@@ -148,78 +160,81 @@ def optimize_image_with_watermark(post_id, section_id):
         if not os.path.exists(raw_image_path):
             return {'success': False, 'error': f'Raw image not found: {raw_image_path}'}
         
-        # Check if watermark exists
-        if not os.path.exists(watermark_path):
-            return {'success': False, 'error': f'Watermark not found: {watermark_path}'}
-        
         # Create optimized directory
         os.makedirs(optimized_dir, exist_ok=True)
         
         # Load images
         image = Image.open(raw_image_path)
-        watermark = Image.open(watermark_path)
         
         # Convert to RGBA if needed
         if image.mode != 'RGBA':
             image = image.convert('RGBA')
         
-        # Add watermark (bottom-right)
-        watermark_width = min(200, image.width // 4)
-        watermark_height = int(watermark.height * (watermark_width / watermark.width))
-        watermark_resized = watermark.resize((watermark_width, watermark_height), Image.Resampling.LANCZOS)
+        # Add watermark if enabled
+        if watermark_enabled:
+            # Check if watermark exists
+            if not os.path.exists(watermark_path):
+                return {'success': False, 'error': f'Watermark not found: {watermark_path}'}
+            
+            watermark = Image.open(watermark_path)
+            
+            # Add watermark (bottom-right)
+            watermark_width = min(200, image.width // 4)
+            watermark_height = int(watermark.height * (watermark_width / watermark.width))
+            watermark_resized = watermark.resize((watermark_width, watermark_height), Image.Resampling.LANCZOS)
+            
+            # Create watermark with alpha
+            watermark_with_alpha = Image.new('RGBA', watermark_resized.size, (0, 0, 0, 0))
+            watermark_with_alpha.paste(watermark_resized, (0, 0))
+            
+            # Calculate position (bottom-right with margin)
+            x = image.width - watermark_width - watermark_margin
+            y = image.height - watermark_height - watermark_margin
+            
+            # Create grey background with specified opacity
+            opacity_value = int(255 * (bg_opacity / 100))
+            grey_bg = Image.new('RGBA', (watermark_width + 20, watermark_height + 20), (128, 128, 128, opacity_value))
+            
+            # Paste grey background first
+            bg_x = x - 10
+            bg_y = y - 10
+            image.paste(grey_bg, (bg_x, bg_y), grey_bg)
+            
+            # Paste watermark
+            image.paste(watermark_with_alpha, (x, y), watermark_with_alpha)
         
-        # Create watermark with alpha
-        watermark_with_alpha = Image.new('RGBA', watermark_resized.size, (0, 0, 0, 0))
-        watermark_with_alpha.paste(watermark_resized, (0, 0))
-        
-        # Calculate position (bottom-right with 10px margin)
-        margin = 10
-        x = image.width - watermark_width - margin
-        y = image.height - watermark_height - margin
-        
-        # Create grey background with 80% transparency (20% opacity)
-        grey_bg = Image.new('RGBA', (watermark_width + 20, watermark_height + 20), (128, 128, 128, 51))
-        
-        # Paste grey background first
-        bg_x = x - 10
-        bg_y = y - 10
-        image.paste(grey_bg, (bg_x, bg_y), grey_bg)
-        
-        # Paste watermark
-        image.paste(watermark_with_alpha, (x, y), watermark_with_alpha)
-        
-        # Add AI-generated text (bottom-left)
-        draw = ImageDraw.Draw(image)
-        
-        # Try to get font
-        try:
-            font = ImageFont.truetype("/System/Library/Fonts/Arial.ttf", 16)
-        except:
+        # Add AI-generated text if enabled
+        if text_overlay_enabled:
+            draw = ImageDraw.Draw(image)
+            
+            # Try to get font
             try:
-                font = ImageFont.load_default()
+                font = ImageFont.truetype("/System/Library/Fonts/Arial.ttf", text_size)
             except:
-                font = None
-        
-        text = "AI-generated image"
-        text_color = (128, 128, 128, 180)  # Grey with transparency
-        
-        # Calculate text position (bottom-left with 20px padding)
-        if font:
-            bbox = draw.textbbox((0, 0), text, font=font)
-            text_width = bbox[2] - bbox[0]
-            text_height = bbox[3] - bbox[1]
-        else:
-            text_width = len(text) * 8  # Approximate width
-            text_height = 16
-        
-        text_x = 20
-        text_y = image.height - text_height - 20
-        
-        # Draw text
-        if font:
-            draw.text((text_x, text_y), text, fill=text_color, font=font)
-        else:
-            draw.text((text_x, text_y), text, fill=text_color)
+                try:
+                    font = ImageFont.load_default()
+                except:
+                    font = None
+            
+            text_color = (128, 128, 128, 180)  # Grey with transparency
+            
+            # Calculate text position (bottom-left with 20px padding)
+            if font:
+                bbox = draw.textbbox((0, 0), overlay_text, font=font)
+                text_width = bbox[2] - bbox[0]
+                text_height = bbox[3] - bbox[1]
+            else:
+                text_width = len(overlay_text) * 8  # Approximate width
+                text_height = text_size
+            
+            text_x = 20
+            text_y = image.height - text_height - 20
+            
+            # Draw text
+            if font:
+                draw.text((text_x, text_y), overlay_text, fill=text_color, font=font)
+            else:
+                draw.text((text_x, text_y), overlay_text, fill=text_color)
         
         # Convert to RGB for JPG saving
         if image.mode == 'RGBA':
@@ -228,8 +243,8 @@ def optimize_image_with_watermark(post_id, section_id):
             rgb_image.paste(image, mask=image.split()[-1])  # Use alpha channel as mask
             image = rgb_image
         
-        # Save as JPG with 50% quality
-        image.save(optimized_image_path, 'JPEG', quality=50, optimize=True)
+        # Save as JPG with specified quality
+        image.save(optimized_image_path, 'JPEG', quality=quality, optimize=True)
         
         return {
             'success': True,
@@ -603,6 +618,9 @@ def imaging_model_selection():
 def imaging_optimize_image(post_id, section_id):
     """Optimize image with watermark and caption for a specific section"""
     try:
+        # Get parameters from request
+        params = request.get_json() or {}
+        
         # Resolve section_id: if numeric, use directly; if like section_1, map to section_order = 1
         resolved_section_id = None
         if section_id.isdigit():
@@ -640,8 +658,8 @@ def imaging_optimize_image(post_id, section_id):
             if not section:
                 return jsonify({'success': False, 'error': 'Section not found'})
         
-        # Optimize the image
-        result = optimize_image_with_watermark(post_id, resolved_section_id)
+        # Optimize the image with parameters
+        result = optimize_image_with_watermark(post_id, resolved_section_id, params)
         
         if result['success']:
             return jsonify({
