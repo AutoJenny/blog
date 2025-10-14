@@ -871,6 +871,78 @@ def api_save_image_concepts(post_id, section_id):
         logger.error(f"Error saving image concepts: {e}")
         return jsonify({'error': str(e)}), 500
 
+@bp.route('/api/posts/<int:post_id>/sections/<section_id>/save-image-prompt', methods=['POST'])
+def api_save_image_prompt(post_id, section_id):
+    """Save the generated image prompt for a specific section"""
+    try:
+        data = request.get_json()
+        image_prompt = data.get('image_prompt', '')
+        
+        if not image_prompt:
+            return jsonify({'error': 'Missing image_prompt'}), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Create a JSON structure similar to the existing image_prompts format
+            image_prompt_json = {
+                "image_prompt": image_prompt,
+                "dimensions": "1792x1024",  # Default dimensions
+                "style": "inkwash and watercolour",
+                "base_concept": image_prompt
+            }
+            
+            # Handle both string and integer section IDs
+            if str(section_id).isdigit():
+                # Integer section ID - update post_section table
+                cursor.execute("""
+                    UPDATE post_section 
+                    SET image_prompts = %s
+                    WHERE post_id = %s AND id = %s
+                """, (json.dumps(image_prompt_json), post_id, int(section_id)))
+            else:
+                # String section ID - update post_development.sections JSON
+                cursor.execute("""
+                    SELECT sections FROM post_development WHERE post_id = %s
+                """, (post_id,))
+                row = cursor.fetchone()
+                
+                if row and row['sections']:
+                    try:
+                        sections_data = json.loads(row['sections']) if isinstance(row['sections'], str) else row['sections']
+                        if isinstance(sections_data, dict) and 'sections' in sections_data:
+                            sections_list = sections_data['sections']
+                        elif isinstance(sections_data, list):
+                            sections_list = sections_data
+                        else:
+                            sections_list = []
+                        
+                        # Find the section by ID
+                        for section in sections_list:
+                            if section.get('id') == section_id:
+                                section['image_prompts'] = image_prompt_json
+                                break
+                        
+                        # Update the sections data
+                        cursor.execute("""
+                            UPDATE post_development 
+                            SET sections = %s, updated_at = NOW()
+                            WHERE post_id = %s
+                        """, (json.dumps(sections_data), post_id))
+                        
+                    except (json.JSONDecodeError, TypeError) as e:
+                        logger.error(f"Error parsing sections JSON: {e}")
+                        return jsonify({'error': 'Failed to update section data'}), 500
+                else:
+                    return jsonify({'error': 'Section data not found'}), 404
+            
+        return jsonify({
+            'success': True,
+            'message': 'Image prompt saved successfully'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error saving image prompt: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @bp.route('/api/posts/<int:post_id>/sections/<section_id>/select-concept', methods=['POST'])
 def api_select_concept(post_id, section_id):
     """Save the selected image concept for a specific section"""
