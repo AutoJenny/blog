@@ -12,6 +12,7 @@
 {% block js_assets %}
 {{ js_assets('imaging') }}
 <script src="{{ url_for('static', filename='js/imaging/imaging-workspace.js') }}"></script>
+<script src="{{ url_for('static', filename='js/imaging/sections-panel.js') }}"></script>
 <script>
     window.currentStage = 'imaging';
     window.currentSubstage = 'image-generation';

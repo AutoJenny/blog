@@ -67,20 +67,8 @@ function toggleModelSelectionAccordion() {
     }
 }
 
-function togglePromptConstructionAccordion() {
-    const content = document.getElementById('prompt-construction-accordion-content');
-    const icon = document.getElementById('prompt-construction-accordion-icon');
-    
-    if (content.style.display === 'none') {
-        content.style.display = 'block';
-        icon.className = 'fas fa-chevron-up';
-        localStorage.setItem('prompt-construction-accordion-state', 'open');
-    } else {
-        content.style.display = 'none';
-        icon.className = 'fas fa-chevron-down';
-        localStorage.setItem('prompt-construction-accordion-state', 'closed');
-    }
-}
+// Note: Prompt Construction accordion is managed by its own self-contained module
+// to avoid ID/key mismatches and duplicate state handling.
 
 function toggleDebuggingAccordion() {
     const content = document.getElementById('debugging-accordion-content');
@@ -121,16 +109,7 @@ function restoreImagingAccordionStates() {
         }
     }
     
-    // Restore Prompt Construction accordion state
-    const promptState = localStorage.getItem('prompt-construction-accordion-state');
-    if (promptState === 'open') {
-        const content = document.getElementById('prompt-construction-accordion-content');
-        const icon = document.getElementById('prompt-construction-accordion-icon');
-        if (content && icon) {
-            content.style.display = 'block';
-            icon.className = 'fas fa-chevron-up';
-        }
-    }
+    // Prompt Construction accordion state is restored by its own module
     
     // Restore Debugging accordion state
     const debuggingState = localStorage.getItem('debugging-accordion-state');
@@ -157,9 +136,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Panel modules self-initialize on DOMContentLoaded via their own JS files
     // No need to explicitly instantiate them here to avoid duplicate variable errors
     
-    // Initialize Sections Panel with simple callbacks
-    if (typeof SectionsPanel !== 'undefined') {
-        const sectionsPanel = new SectionsPanel({
+    // Initialize Imaging Sections Panel with simple callbacks
+    if (typeof ImagingSectionsPanel !== 'undefined') {
+        const sectionsPanel = new ImagingSectionsPanel({
             postId: window.postId,
             onSectionSelect: async (data) => {
                 console.log('Section selected:', data);
@@ -173,9 +152,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        console.log('Sections Panel initialized successfully');
+        console.log('Imaging Sections Panel initialized successfully');
     } else {
-        console.error('SectionsPanel class not found');
+        console.error('ImagingSectionsPanel class not found');
     }
     
     console.log('All imaging panels initialized successfully');
@@ -184,5 +163,5 @@ document.addEventListener('DOMContentLoaded', function() {
 // Export functions for global access
 window.toggleImagingInputDetailsAccordion = toggleImagingInputDetailsAccordion;
 window.toggleModelSelectionAccordion = toggleModelSelectionAccordion;
-window.togglePromptConstructionAccordion = togglePromptConstructionAccordion;
+// Prompt Construction toggle is exported by its own module
 window.toggleDebuggingAccordion = toggleDebuggingAccordion;

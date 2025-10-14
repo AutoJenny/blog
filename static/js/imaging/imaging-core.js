@@ -187,10 +187,7 @@ function setupSectionControls() {
         });
     }
     
-    const batchGenerateBtn = document.getElementById('batch-generate-btn');
-    if (batchGenerateBtn) {
-        batchGenerateBtn.addEventListener('click', () => startBatchImageGeneration());
-    }
+    // Batch generation is handled by ImagingSectionsPanel; avoid double-binding here
 }
 
 function filterSections(filter) {
