@@ -349,6 +349,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Make contextPanel globally available
+    window.contextPanel = contextPanel;
+    
     // Initialize Batch Progress Panel with callbacks
     const batchProgressPanel = new BatchProgressPanel({
         postId: window.postId,

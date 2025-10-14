@@ -82,9 +82,13 @@ def api_get_sections(post_id):
             topic_allocation = {}
             if topic_result and topic_result['topic_allocation']:
                 try:
-                    topic_allocation = json.loads(topic_result['topic_allocation'])
-                except (json.JSONDecodeError, TypeError):
-                    logger.warning("Failed to parse topic allocation")
+                    # Check if it's already a dict (parsed by DB driver) or needs JSON parsing
+                    if isinstance(topic_result['topic_allocation'], dict):
+                        topic_allocation = topic_result['topic_allocation']
+                    else:
+                        topic_allocation = json.loads(topic_result['topic_allocation'])
+                except (json.JSONDecodeError, TypeError) as e:
+                    logger.warning(f"Failed to parse topic allocation: {e}")
             
             # Add topics to sections if available
             if topic_allocation and 'allocations' in topic_allocation:
@@ -200,6 +204,37 @@ def api_get_section(post_id, section_id):
                         logger.warning(f"Failed to parse sections from post_development: {e}")
             
             if section:
+                # Add topics to section if available
+                cursor.execute("""
+                    SELECT topic_allocation FROM post_development 
+                    WHERE post_id = %s AND topic_allocation IS NOT NULL
+                """, (post_id,))
+                topic_result = cursor.fetchone()
+                
+                if topic_result and topic_result['topic_allocation']:
+                    try:
+                        # Check if it's already a dict (parsed by DB driver) or needs JSON parsing
+                        if isinstance(topic_result['topic_allocation'], dict):
+                            topic_allocation = topic_result['topic_allocation']
+                        else:
+                            topic_allocation = json.loads(topic_result['topic_allocation'])
+                        
+                        # Find matching allocation for this section
+                        if topic_allocation and 'allocations' in topic_allocation:
+                            allocations = topic_allocation['allocations']
+                            section_id = section['id']
+                            for allocation in allocations:
+                                if allocation.get('section_id') == section_id:
+                                    section['topics'] = allocation.get('topics', [])
+                                    break
+                            if 'topics' not in section:
+                                section['topics'] = []
+                    except (json.JSONDecodeError, TypeError) as e:
+                        logger.warning(f"Failed to parse topic allocation in api_get_section: {e}")
+                        section['topics'] = []
+                else:
+                    section['topics'] = []
+                
                 return jsonify({
                     'success': True,
                     'section': section
