@@ -1,0 +1,31 @@
+<!-- Optimized Output Panel - Self-contained include with CSS and JS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/output-panel.css') }}">
+<script src="{{ url_for('static', filename='js/imaging/output-panel-optimize.js') }}"></script>
+
+<div class="image-results-viewer">
+  <div class="viewer-header">
+    <h4 id="current-section-title"><span class="panel-name-green">Optimized Output:</span> Select a section to view optimized images</h4>
+    <div class="header-actions">
+      <!-- No generate button needed for optimize page -->
+    </div>
+  </div>
+
+  <!-- Image Display Area -->
+  <div id="image-display-area" class="image-display-area">
+    <div class="no-selection-message">
+      <i class="fas fa-image" style="font-size: 3rem; color: #64748b; margin-bottom: 1rem;"></i>
+      <p style="color: #94a3b8; font-size: 1.1rem;">Select a section to view its optimized images</p>
+    </div>
+  </div>
+
+  <div class="output-help">
+    <h5>Optimized Images (Output)</h5>
+    <p>These are the processed images with watermark and optimization applied.</p>
+    <ul>
+      <li><strong>Source:</strong> <code>static/content/posts/{post_id}/sections/{section_id}/optimized/{section_id}.jpg</code></li>
+      <li><strong>Format:</strong> JPEG (compressed, watermarked)</li>
+      <li><strong>Quality:</strong> 50% compression</li>
+      <li><strong>Features:</strong> Watermark, AI text overlay, grey background</li>
+    </ul>
+  </div>
+</div>

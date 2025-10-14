@@ -32,6 +32,11 @@
   <div class="workspace-container">
     {% include 'shared/sections_panel.html' %}
     <div class="editor-panel">
+      <!-- Input Image Panel -->
+      <div class="input-image-container">
+        {% include 'imaging/includes/input_image_panel.html' %}
+      </div>
+
       <!-- Optimization Panel -->
       <div class="optimization-container">
         {% include 'imaging/includes/optimization_panel.html' %}
@@ -42,7 +47,7 @@
       {% include 'imaging/includes/debugging_panel_image_generation.html' %}
 
       <!-- Output Panel -->
-      {% include 'imaging/right/output_panel_image_generation.html' %}
+      {% include 'imaging/includes/output_panel_optimize.html' %}
     </div>
   </div>
   </div>

@@ -1,0 +1,33 @@
+<!-- Input Image Panel - Self-contained include with CSS and JS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/input-image-panel.css') }}">
+<script src="{{ url_for('static', filename='js/imaging/input-image-panel.js') }}"></script>
+
+<div class="input-image-panel" id="input-image-panel">
+  <div class="panel-header" onclick="toggleInputImageAccordion()">
+    <h4><span class="panel-name-green">Input Images:</span> <span id="input-image-status">Select a section to view raw images</span></h4>
+    <div class="header-actions">
+      <i class="fas fa-chevron-up" id="input-image-accordion-icon"></i>
+    </div>
+  </div>
+  
+  <div class="panel-content" id="input-image-accordion-content" style="display: none;">
+    <div class="input-image-display">
+      <div id="input-image-area" class="input-image-area">
+        <div class="no-selection-message">
+          <i class="fas fa-image" style="font-size: 3rem; color: #64748b; margin-bottom: 1rem;"></i>
+          <p style="color: #94a3b8; font-size: 1.1rem;">Select a section to view its raw images</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-image-help">
+      <h5>Raw Images (Input)</h5>
+      <p>These are the unprocessed images generated in the previous step that will be optimized and watermarked.</p>
+      <ul>
+        <li><strong>Source:</strong> <code>static/content/posts/{post_id}/sections/{section_id}/raw/{section_id}.png</code></li>
+        <li><strong>Format:</strong> PNG (original AI generation)</li>
+        <li><strong>Status:</strong> Ready for optimization</li>
+      </ul>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,141 @@
+.input-image-panel {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.input-image-panel .panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid #334155;
+}
+
+.input-image-panel .panel-header h4 {
+  margin: 0;
+  color: #e2e8f0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.input-image-panel .panel-header .header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.input-image-panel .panel-header .header-actions .fas {
+  color: #94a3b8;
+  font-size: 1rem;
+  transition: transform 0.2s ease;
+}
+
+.input-image-panel .panel-header .header-actions .fa-chevron-up {
+  transform: rotate(0deg);
+}
+
+.input-image-panel .panel-header .header-actions .fa-chevron-down {
+  transform: rotate(180deg);
+}
+
+.input-image-panel .panel-content {
+  padding: 1rem;
+  display: none; /* Hidden by default */
+}
+
+.input-image-display {
+  margin-bottom: 1rem;
+}
+
+.input-image-area {
+  min-height: 200px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.input-image-area .no-selection-message {
+  text-align: center;
+  color: #94a3b8;
+}
+
+.input-image-area .image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  width: 100%;
+}
+
+.input-image-area .image-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.input-image-area .image-card img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.input-image-area .image-caption {
+  margin: 0.5rem 0 0 0;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.input-image-help {
+  padding: 1rem;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+}
+
+.input-image-help h5 {
+  color: #e2e8f0;
+  margin: 0 0 0.75rem 0;
+  font-size: 0.95rem;
+}
+
+.input-image-help p {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  margin: 0 0 0.75rem 0;
+  line-height: 1.4;
+}
+
+.input-image-help ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.input-image-help li {
+  margin-bottom: 0.25rem;
+}
+
+.input-image-help code {
+  background: #1e293b;
+  padding: 0.125rem 0.25rem;
+  border-radius: 3px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.8rem;
+  color: #e2e8f0;
+}
+
+/* Green panel name */
+.input-image-panel .panel-name-green {
+  color: #10b981 !important;
+  font-weight: 600;
+}

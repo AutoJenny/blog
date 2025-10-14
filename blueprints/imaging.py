@@ -703,6 +703,51 @@ def imaging_optimize_all_images(post_id):
         logger.error(f"Error optimizing all images: {str(e)}")
         return jsonify({'success': False, 'error': str(e)})
 
+@bp.route('/api/posts/<int:post_id>/sections/<section_id>/raw-image')
+def imaging_get_raw_image(post_id, section_id):
+    """Get raw image path for a section, accepting both numeric and string section IDs"""
+    try:
+        # Resolve section_id: if numeric, use directly; if like section_1, map to section_order = 1
+        resolved_section_id = None
+        if section_id.isdigit():
+            resolved_section_id = int(section_id)
+        else:
+            # Try to parse trailing number from patterns like section_1
+            import re
+            m = re.search(r'(\d+)$', section_id)
+            if m:
+                section_order = int(m.group(1))
+                with db_manager.get_cursor() as cursor:
+                    cursor.execute(
+                        """
+                        SELECT id FROM post_section
+                        WHERE post_id = %s AND section_order = %s
+                        """,
+                        (post_id, section_order),
+                    )
+                    row = cursor.fetchone()
+                    if row:
+                        resolved_section_id = row['id']
+
+        if resolved_section_id is None:
+            return jsonify({'success': False, 'error': f'Unable to resolve section id: {section_id}'}), 400
+
+        # Check for raw image
+        raw_path = f"static/content/posts/{post_id}/sections/{resolved_section_id}/raw/{resolved_section_id}.png"
+        
+        if os.path.exists(raw_path):
+            return jsonify({
+                'success': True,
+                'path': f"/static/content/posts/{post_id}/sections/{resolved_section_id}/raw/{resolved_section_id}.png",
+                'type': 'raw'
+            })
+        else:
+            return jsonify({'success': False, 'message': 'No raw image found for this section'})
+
+    except Exception as e:
+        logger.error(f"Error getting raw image: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)})
+
 @bp.route('/api/posts/<int:post_id>/sections/<section_id>/image')
 def imaging_get_section_image(post_id, section_id):
     """Get persisted image path for a section, accepting both numeric and string section IDs"""
