@@ -6,6 +6,9 @@ import json
 import os
 import requests
 
+# Import the same sections API function used by authoring
+from blueprints.authoring_api_sections import api_get_sections as sections_api_func
+
 logger = logging.getLogger(__name__)
 
 def imaging_generate_dalle_image(image_prompt, post_id, section_id, parameters):
@@ -344,26 +347,8 @@ def api_get_post(post_id):
 
 @bp.route('/api/posts/<int:post_id>/sections')
 def api_get_sections(post_id):
-    """Get sections data for imaging workflow"""
-    try:
-        with db_manager.get_cursor() as cursor:
-            cursor.execute("""
-                SELECT id, section_order, section_heading, section_description,
-                       image_prompts, image_captions, selected_image_concept
-                FROM post_section
-                WHERE post_id = %s
-                ORDER BY section_order
-            """, (post_id,))
-            
-            sections = cursor.fetchall()
-            
-            return jsonify({
-                'success': True,
-                'sections': [dict(section) for section in sections]
-            })
-    except Exception as e:
-        logger.error(f"Error getting sections data: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+    """Get sections data for imaging workflow - use same logic as authoring"""
+    return sections_api_func(post_id)
 
 @bp.route('/prompts/image-generation', methods=['GET', 'PUT'])
 def imaging_prompts_image_generation():
@@ -481,6 +466,68 @@ def imaging_generate_image(post_id, section_id):
                 
     except Exception as e:
         logger.error(f"Error generating image: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)})
+
+# Accept string section IDs like "section_1" and map to numeric via section_order
+@bp.route('/api/image-generation/posts/<int:post_id>/sections/<section_id>/generate-image', methods=['POST'])
+def imaging_generate_image_flexible(post_id, section_id):
+    """Generate image accepting string section IDs (e.g., section_1). Maps to post_section by section_order."""
+    try:
+        data = request.get_json() or {}
+        model_name = data.get('model_name', 'dall-e-3')
+        parameters = data.get('parameters', {})
+        image_prompt = data.get('image_prompt', '')
+
+        if not image_prompt:
+            return jsonify({'success': False, 'error': 'No image prompt provided'})
+
+        # Resolve section_id: if numeric, use directly; if like section_1, map to section_order = 1
+        resolved_section_id = None
+        if section_id.isdigit():
+            resolved_section_id = int(section_id)
+        else:
+            # Try to parse trailing number from patterns like section_1
+            import re
+            m = re.search(r'(\d+)$', section_id)
+            if m:
+                section_order = int(m.group(1))
+                with db_manager.get_cursor() as cursor:
+                    cursor.execute(
+                        """
+                        SELECT id FROM post_section
+                        WHERE post_id = %s AND section_order = %s
+                        """,
+                        (post_id, section_order),
+                    )
+                    row = cursor.fetchone()
+                    if row:
+                        resolved_section_id = row['id']
+
+        if resolved_section_id is None:
+            return jsonify({'success': False, 'error': f'Unable to resolve section id: {section_id}'}), 400
+
+        # Route to appropriate image generation function based on model
+        if model_name.startswith('dall-e') or model_name.startswith('openai'):
+            result = imaging_generate_dalle_image(image_prompt, post_id, resolved_section_id, parameters)
+        elif model_name.startswith('sdxl'):
+            result = imaging_generate_sdxl_image(image_prompt, post_id, resolved_section_id, parameters)
+        else:
+            return jsonify({'success': False, 'error': f'Unsupported model: {model_name}'})
+
+        if result['success']:
+            return jsonify(
+                {
+                    'success': True,
+                    'image_path': result['image_path'],
+                    'resolved_section_id': resolved_section_id,
+                    'message': 'Image generated successfully',
+                }
+            )
+        else:
+            return jsonify({'success': False, 'error': result['error']})
+
+    except Exception as e:
+        logger.error(f"Error generating image (flex): {str(e)}")
         return jsonify({'success': False, 'error': str(e)})
 
 @bp.route('/api/model-selection', methods=['GET', 'POST'])
@@ -654,4 +701,56 @@ def imaging_optimize_all_images(post_id):
         
     except Exception as e:
         logger.error(f"Error optimizing all images: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@bp.route('/api/posts/<int:post_id>/sections/<section_id>/image')
+def imaging_get_section_image(post_id, section_id):
+    """Get persisted image path for a section, accepting both numeric and string section IDs"""
+    try:
+        # Resolve section_id: if numeric, use directly; if like section_1, map to section_order = 1
+        resolved_section_id = None
+        if section_id.isdigit():
+            resolved_section_id = int(section_id)
+        else:
+            # Try to parse trailing number from patterns like section_1
+            import re
+            m = re.search(r'(\d+)$', section_id)
+            if m:
+                section_order = int(m.group(1))
+                with db_manager.get_cursor() as cursor:
+                    cursor.execute(
+                        """
+                        SELECT id FROM post_section
+                        WHERE post_id = %s AND section_order = %s
+                        """,
+                        (post_id, section_order),
+                    )
+                    row = cursor.fetchone()
+                    if row:
+                        resolved_section_id = row['id']
+
+        if resolved_section_id is None:
+            return jsonify({'success': False, 'error': f'Unable to resolve section id: {section_id}'}), 400
+
+        # Check for existing images in order of preference: optimized > raw
+        optimized_path = f"static/content/posts/{post_id}/sections/{resolved_section_id}/optimized/{resolved_section_id}.jpg"
+        raw_path = f"static/content/posts/{post_id}/sections/{resolved_section_id}/raw/{resolved_section_id}.png"
+        
+        if os.path.exists(optimized_path):
+            return jsonify({
+                'success': True,
+                'path': f"/static/content/posts/{post_id}/sections/{resolved_section_id}/optimized/{resolved_section_id}.jpg",
+                'type': 'optimized'
+            })
+        elif os.path.exists(raw_path):
+            return jsonify({
+                'success': True,
+                'path': f"/static/content/posts/{post_id}/sections/{resolved_section_id}/raw/{resolved_section_id}.png",
+                'type': 'raw'
+            })
+        else:
+            return jsonify({'success': False, 'message': 'No image found for this section'})
+
+    except Exception as e:
+        logger.error(f"Error getting section image: {str(e)}")
         return jsonify({'success': False, 'error': str(e)})

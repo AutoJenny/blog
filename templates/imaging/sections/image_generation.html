@@ -6,10 +6,12 @@
 {{ css_assets('imaging') }}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/image-generation.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/data-tab.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/imaging-workspace.css') }}">
 {% endblock %}
 
 {% block js_assets %}
 {{ js_assets('imaging') }}
+<script src="{{ url_for('static', filename='js/imaging/imaging-workspace.js') }}"></script>
 <script>
     window.currentStage = 'imaging';
     window.currentSubstage = 'image-generation';
@@ -47,7 +49,4 @@
     </div>
 </div>
 
-<!-- Imaging Workspace Styles and Scripts -->
-<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/imaging-workspace.css') }}">
-<script src="{{ url_for('static', filename='js/imaging/imaging-workspace.js') }}"></script>
 {% endblock %}

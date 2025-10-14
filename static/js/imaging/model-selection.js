@@ -140,40 +140,105 @@ class ModelSelectionPanel {
     async handleGenerateImage() {
         console.log('[Model Selection] Generate image button clicked');
         
+        // Check if a section is selected
+        if (!window.currentSectionId) {
+            alert('Please select a section first');
+            return;
+        }
+        
         // Collect current parameters
         this.collectParameters();
         
-        if (window.imagingOutputPanel) {
-            try {
-                // Disable button during generation
-                const generateBtn = document.getElementById('generate-image-btn');
-                if (generateBtn) {
-                    generateBtn.disabled = true;
-                    generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+        try {
+            // Disable button during generation
+            const generateBtn = document.getElementById('generate-image-btn');
+            if (generateBtn) {
+                generateBtn.disabled = true;
+                generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            }
+            
+            // Get the current prompt from prompt construction panel
+            const promptText = this.getCurrentPrompt();
+            if (!promptText) {
+                throw new Error('No prompt available. Please generate a prompt first.');
+            }
+            
+            // Call the imaging API to generate image (flex endpoint accepts string ids like section_1)
+            const endpoint = `/imaging/api/image-generation/posts/${window.postId}/sections/${window.currentSectionId}/generate-image`;
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    // Backend expects image_prompt and model_name
+                    image_prompt: promptText,
+                    model_name: this.currentModel,
+                    parameters: this.parameters
+                })
+            });
+            
+            // Check if response is HTML (404 error page)
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('text/html')) {
+                throw new Error('Image generation API not implemented yet. Please check backend implementation.');
+            }
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                console.log('[Model Selection] Image generated successfully');
+                
+                // Update output panel with new image
+                if (window.imagingOutputPanel) {
+                    window.imagingOutputPanel.onImageGenerated({ image_path: data.image_path });
                 }
                 
-                await window.imagingOutputPanel.handleGenerateButton();
-                
-                // Re-enable button
-                if (generateBtn) {
-                    generateBtn.disabled = false;
-                    generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Image';
-                }
-            } catch (error) {
-                console.error('[Model Selection] Error generating image:', error);
-                alert('Error generating image: ' + error.message);
-                
-                // Re-enable button on error
-                const generateBtn = document.getElementById('generate-image-btn');
-                if (generateBtn) {
-                    generateBtn.disabled = false;
-                    generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Image';
+                alert('Image generated successfully!');
+            } else {
+                throw new Error(data.error || 'Failed to generate image');
+            }
+            
+        } catch (error) {
+            console.error('[Model Selection] Error generating image:', error);
+            alert('Error generating image: ' + error.message);
+        } finally {
+            // Re-enable button
+            const generateBtn = document.getElementById('generate-image-btn');
+            if (generateBtn) {
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Image';
+            }
+        }
+    }
+    
+    getCurrentPrompt() {
+        // Try to get prompt from imaging prompt construction panel
+        const promptTextEl = document.querySelector('.prompt-text');
+        if (promptTextEl && promptTextEl.textContent.trim()) {
+            console.log('[Model Selection] Found prompt from Generated Image Prompts panel:', promptTextEl.textContent.trim());
+            return promptTextEl.textContent.trim();
+        }
+        
+        // Fallback: Get from sections data if available
+        if (window.currentSectionId && window.sectionsData) {
+            const section = window.sectionsData.find(s => s.id == window.currentSectionId);
+            if (section && section.image_prompts) {
+                // Handle JSON object
+                if (typeof section.image_prompts === 'object') {
+                    return section.image_prompts.image_prompt || '';
+                } else if (typeof section.image_prompts === 'string') {
+                    try {
+                        const parsed = JSON.parse(section.image_prompts);
+                        return parsed.image_prompt || section.image_prompts;
+                    } catch (e) {
+                        return section.image_prompts;
+                    }
                 }
             }
-        } else {
-            console.error('[Model Selection] Output panel not available');
-            alert('Output panel not available');
         }
+        
+        return null;
     }
 
     async loadSavedConfiguration() {
@@ -192,7 +257,7 @@ class ModelSelectionPanel {
                 this.updateParameterValues();
                 this.updateTitle();
                 
-                console.log('[Model Selection] Configuration loaded from database:', config);
+                console.log('[Model Selection] Configuration loaded from database:', data);
             } else {
                 // Use defaults
                 this.updateModelParameters();
@@ -263,12 +328,24 @@ class ModelSelectionPanel {
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     window.modelSelectionPanel = new ModelSelectionPanel();
+    
     // Respond to global imaging events (from imaging-core)
     document.addEventListener('imaging:model-changed', function(e) {
         if (window.modelSelectionPanel) {
             window.modelSelectionPanel.updateTitle();
         }
     });
+    
+    // Restore accordion state
+    const savedState = localStorage.getItem('imaging-model-accordion-state');
+    if (savedState === 'open') {
+        const content = document.getElementById('model-accordion-content');
+        const icon = document.getElementById('model-accordion-icon');
+        if (content && icon) {
+            content.style.display = 'block';
+            icon.className = 'fas fa-chevron-up';
+        }
+    }
 });
 
 // Accordion functionality
@@ -286,22 +363,6 @@ function toggleModelSelectionAccordion() {
         localStorage.setItem('imaging-model-accordion-state', 'closed');
     }
 }
-
-// Restore accordion state on page load
-document.addEventListener('DOMContentLoaded', function() {
-    const savedState = localStorage.getItem('imaging-model-accordion-state');
-    if (savedState === 'open') {
-        const content = document.getElementById('model-accordion-content');
-        const icon = document.getElementById('model-accordion-icon');
-        if (content && icon) {
-            content.style.display = 'block';
-            icon.className = 'fas fa-chevron-up';
-        }
-    }
-    
-    // Set up slider value displays
-    setupSliderDisplays();
-});
 
 // Set up slider value displays
 function setupSliderDisplays() {

@@ -104,8 +104,11 @@ class ImageGenerationHandler {
     displayExistingIfAny() {
         try {
             if (!this.currentPostId || !this.currentSectionId) return;
-            const imagePath = `/static/content/posts/${this.currentPostId}/sections/${this.currentSectionId}/raw/${this.currentSectionId}.png`;
-            this.updateImageDisplay(imagePath);
+            
+            // Skip automatic image loading for now to avoid 404 errors
+            // Images will be displayed when generated via the Generate button
+            console.log('[Image Generation Handler] Skipping automatic image loading for section:', this.currentSectionId);
+            
         } catch (e) {
             console.warn('[Image Generation Handler] displayExistingIfAny failed:', e);
         }
@@ -171,10 +174,11 @@ class ImageGenerationHandler {
             if (data.success && data.sections) {
                 const section = data.sections.find(s => s.id == this.currentSectionId);
                 if (section && section.image_prompts) {
-                    const promptData = JSON.parse(section.image_prompts);
-                    if (promptData.image_prompt) {
-                        console.log('[Image Generation Handler] Found prompt from API:', promptData.image_prompt);
-                        return promptData.image_prompt;
+                    // image_prompts is plain text, not JSON
+                    const promptText = section.image_prompts.trim();
+                    if (promptText && !promptText.includes("I'm ready to assist") && !promptText.includes("Please provide")) {
+                        console.log('[Image Generation Handler] Found prompt from API:', promptText);
+                        return promptText;
                     }
                 }
             }

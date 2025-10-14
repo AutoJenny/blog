@@ -1,5 +1,6 @@
 <!-- Imaging Model Selection Panel - Self-contained include with CSS and JS -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/model-selection.css') }}">
+<script src="{{ url_for('static', filename='js/imaging/model-selection.js') }}"></script>
 <div class="model-selection-panel" id="model-selection-panel">
     <div class="panel-header" onclick="toggleModelSelectionAccordion()">
         <h4 id="model-title"><span class="panel-name-green">Modal Selection:</span> Loading...</h4>
@@ -106,7 +107,5 @@
         <!-- Action Buttons - Generate button moved to header -->
     </div>
 </div>
-
-<script src="{{ url_for('static', filename='js/imaging/model-selection.js') }}"></script>
 
 

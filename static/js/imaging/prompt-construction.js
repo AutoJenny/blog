@@ -174,6 +174,17 @@ class PromptConstructionPanel {
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     window.promptConstructionPanel = new PromptConstructionPanel();
+    
+    // Restore accordion state
+    const savedState = localStorage.getItem('imaging-prompt-accordion-state');
+    if (savedState === 'open') {
+        const content = document.getElementById('prompt-accordion-content');
+        const icon = document.getElementById('prompt-accordion-icon');
+        if (content && icon) {
+            content.style.display = 'block';
+            icon.className = 'fas fa-chevron-up';
+        }
+    }
 });
 
 // Accordion functionality
@@ -191,16 +202,3 @@ function togglePromptConstructionAccordion() {
         localStorage.setItem('imaging-prompt-accordion-state', 'closed');
     }
 }
-
-// Restore accordion state on page load
-document.addEventListener('DOMContentLoaded', function() {
-    const savedState = localStorage.getItem('imaging-prompt-accordion-state');
-    if (savedState === 'open') {
-        const content = document.getElementById('prompt-accordion-content');
-        const icon = document.getElementById('prompt-accordion-icon');
-        if (content && icon) {
-            content.style.display = 'block';
-            icon.className = 'fas fa-chevron-up';
-        }
-    }
-});

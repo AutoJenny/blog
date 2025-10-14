@@ -154,44 +154,28 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize imaging workspace
     window.ImagingUtils.init();
     
-    // Initialize Sections Panel with callbacks
+    // Panel modules self-initialize on DOMContentLoaded via their own JS files
+    // No need to explicitly instantiate them here to avoid duplicate variable errors
+    
+    // Initialize Sections Panel with simple callbacks
     if (typeof SectionsPanel !== 'undefined') {
         const sectionsPanel = new SectionsPanel({
             postId: window.postId,
             onSectionSelect: async (data) => {
                 console.log('Section selected:', data);
-                
-                // Set global current section ID for other modules
                 window.currentSectionId = data.sectionId;
-                window.currentSelectedSectionId = data.sectionId;
                 
-                // Update imaging state
-                window.ImagingUtils.updateState('currentSection', data.sectionId);
-                
-                // Trigger any imaging-specific logic
-                if (typeof window.imageGenerationModule !== 'undefined' && window.imageGenerationModule.onSectionSelect) {
-                    window.imageGenerationModule.onSectionSelect(data);
-                }
-            },
-            onBatchStart: (selectedIds) => {
-                console.log('Batch generation started:', selectedIds);
-                
-                // Trigger any imaging-specific batch logic
-                if (typeof window.imageGenerationModule !== 'undefined' && window.imageGenerationModule.onBatchStart) {
-                    window.imageGenerationModule.onBatchStart(selectedIds);
-                }
-            },
-            onBatchComplete: (result) => {
-                console.log('Batch generation completed:', result);
-                
-                // Trigger any imaging-specific completion logic
-                if (typeof window.imageGenerationModule !== 'undefined' && window.imageGenerationModule.onBatchComplete) {
-                    window.imageGenerationModule.onBatchComplete(result);
+                // Update output panel if it exists
+                if (window.imagingOutputPanel) {
+                    window.imagingOutputPanel.loadSectionImages(data.sectionId);
+                    window.imagingOutputPanel.updateSectionTitle(data.sectionTitle || `Section ${data.sectionId}`);
                 }
             }
         });
         
         console.log('Sections Panel initialized successfully');
+    } else {
+        console.error('SectionsPanel class not found');
     }
     
     console.log('All imaging panels initialized successfully');

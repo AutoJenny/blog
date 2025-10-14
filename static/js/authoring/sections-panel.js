@@ -30,11 +30,30 @@ class SectionsPanel {
     
     async loadSections() {
         try {
-            const response = await fetch(`/authoring/api/posts/${this.postId}/sections`);
+            // Determine the correct API endpoint based on current stage
+            const apiEndpoint = window.currentStage === 'imaging' 
+                ? `/imaging/api/posts/${this.postId}/sections`
+                : `/authoring/api/posts/${this.postId}/sections`;
+            
+            const response = await fetch(apiEndpoint);
             const data = await response.json();
             
             if (data.success) {
                 this.sections = data.sections;
+                
+                // Map imaging API format to authoring API format if needed
+                if (window.currentStage === 'imaging') {
+                    this.sections = this.sections.map(section => ({
+                        id: section.id,
+                        title: section.section_heading || `Section ${section.id}`,
+                        subtitle: section.section_description || '',
+                        order: section.section_order || section.id,
+                        status: 'draft', // Default status for imaging
+                        topics: [], // No topics in imaging API
+                        ...section // Keep original fields
+                    }));
+                }
+                
                 this.renderSections();
                 // Auto-load first section
                 if (this.sections.length > 0) {

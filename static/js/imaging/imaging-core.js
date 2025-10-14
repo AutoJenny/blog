@@ -216,8 +216,6 @@ function selectSection(sectionId) {
         selectedSection.classList.add('selected');
     }
     
-    updateOutputPanel();
-    
     // Dispatch custom event for other components to listen to
     const event = new CustomEvent('sectionSelected', {
         detail: { sectionId: sectionId }
@@ -360,10 +358,11 @@ async function startBatchImageGeneration() {
                 // Resolve prompt for this section
                 let imagePrompt = '';
                 if (section && section.image_prompts) {
-                    try {
-                        const parsed = JSON.parse(section.image_prompts);
-                        imagePrompt = parsed.image_prompt || '';
-                    } catch (_) { /* ignore */ }
+                    // image_prompts is plain text, not JSON
+                    const promptText = section.image_prompts.trim();
+                    if (promptText && !promptText.includes("I'm ready to assist") && !promptText.includes("Please provide")) {
+                        imagePrompt = promptText;
+                    }
                 }
 
                 if (!imagePrompt) {
@@ -480,48 +479,6 @@ function completeBatchGeneration(successCount, errorCount) {
         const modal = document.getElementById('imaging-batch-progress-modal');
         if (modal && modal.parentNode) modal.parentNode.removeChild(modal);
     }, 1500);
-}
-
-// Output panel
-function updateOutputPanel() {
-    const title = document.getElementById('current-section-title');
-    const imageDisplayArea = document.getElementById('image-display-area');
-    
-    if (title && currentSection) {
-        const section = sections.find(s => s.id === currentSection);
-        title.textContent = section ? (section.section_heading || section.title || `Section ${currentSection}`) : `Section ${currentSection}`;
-        
-        // Check for images in the section's raw directory
-        if (imageDisplayArea) {
-            const imagePath = `/static/content/posts/${window.postId}/sections/${currentSection}/raw/${currentSection}.png`;
-            
-            // Create image element to test if it exists
-            const img = new Image();
-            img.onload = function() {
-                // Image exists, display it
-                imageDisplayArea.innerHTML = `
-                    <div style="text-align: center;">
-                        <img src="${imagePath}" alt="Section ${currentSection} image" class="section-image">
-                        <div class="image-info">
-                            <p><strong>Image Path:</strong> ${imagePath}</p>
-                            <p><strong>Section:</strong> ${currentSection}</p>
-                        </div>
-                    </div>
-                `;
-            };
-            img.onerror = function() {
-                // Image doesn't exist, show no image message
-                imageDisplayArea.innerHTML = `
-                    <div class="no-selection-message">
-                        <i class="fas fa-image" style="font-size: 3rem; color: #64748b; margin-bottom: 1rem;"></i>
-                        <p style="color: #94a3b8; font-size: 1.1rem;">No image generated yet for this section</p>
-                        <p style="color: #64748b; font-size: 0.9rem;">Expected path: ${imagePath}</p>
-                    </div>
-                `;
-            };
-            img.src = imagePath;
-        }
-    }
 }
 
 // Generate image - handled by ImageGenerationHandler

@@ -1,5 +1,6 @@
 <!-- Prompt Construction Panel - Self-contained include with CSS and JS -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/prompt-construction.css') }}">
+<script src="{{ url_for('static', filename='js/imaging/prompt-construction.js') }}"></script>
 
 <div class="prompt-construction-panel">
     <div class="panel-header" onclick="togglePromptConstructionAccordion()">
@@ -34,8 +35,6 @@
     </div>
 </div>
 
-<script src="{{ url_for('static', filename='js/imaging/prompt-construction.js') }}"></script>
-
 <script>
 // Generated Image Prompts Panel - Display functionality
 document.addEventListener('DOMContentLoaded', function() {
@@ -65,6 +64,28 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem(`imaging_selected_section_${postId}`, String(sectionId));
         } catch (_) { /* ignore */ }
     });
+});
+
+// Clear any invalid cached data on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Clear any invalid cached section IDs (numeric IDs like "803" are no longer valid)
+    try {
+        const postId = window.postId || 60;
+        const stored = localStorage.getItem(`imaging_selected_section_${postId}`);
+        if (stored && /^\d+$/.test(stored)) {
+            console.log('[Generated Prompts] Clearing invalid numeric section ID from localStorage:', stored);
+            localStorage.removeItem(`imaging_selected_section_${postId}`);
+        }
+    } catch (e) { /* ignore */ }
+    
+    // Clear any invalid cached sections data
+    if (window.sectionsData && window.sectionsData.length > 0) {
+        const hasNumericIds = window.sectionsData.some(s => /^\d+$/.test(s.id));
+        if (hasNumericIds) {
+            console.log('[Generated Prompts] Clearing invalid numeric section IDs from window.sectionsData');
+            window.sectionsData = null;
+        }
+    }
 });
 
 function setupSectionSelectionListener() {
@@ -127,15 +148,14 @@ async function initializePanel() {
         const postId = window.postId || 60;
         const stored = localStorage.getItem(`imaging_selected_section_${postId}`);
         if (stored) {
-            // Re-select in UI if element exists, so visual state and other listeners update
+            // Check if the stored section ID is valid (should be string like "section_1", not numeric like "803")
             const el = document.querySelector(`.section-item[data-section-id="${stored}"]`);
             if (el) {
                 el.click(); // triggers the normal selection flow and events
             } else {
-                // Fallback: update prompt display and notify listeners
-                await displayPromptForSection(stored);
-                const evt = new CustomEvent('sectionSelected', { detail: { sectionId: stored } });
-                document.dispatchEvent(evt);
+                // Invalid cached section ID - clear it and don't try to restore
+                console.log('[Generated Prompts] Clearing invalid cached section ID:', stored);
+                localStorage.removeItem(`imaging_selected_section_${postId}`);
             }
         }
     } catch (e) { /* ignore */ }
@@ -203,6 +223,10 @@ async function fetchSectionData(sectionId, { forceReload = false } = {}) {
         if (sectionData) {
             console.log('[Generated Prompts] Found section in window.sectionsData:', sectionData);
             return sectionData;
+        } else {
+            // If section not found in cached data, it might be old format - clear cache
+            console.log('[Generated Prompts] Section not found in cached data, clearing cache');
+            window.sectionsData = null;
         }
     }
     
@@ -225,14 +249,29 @@ function displaySinglePrompt(sectionData) {
     const container = document.getElementById('generated-prompts-container');
     
     if (sectionData.image_prompts) {
-        try {
-            const promptData = JSON.parse(sectionData.image_prompts);
+        let promptData = sectionData.image_prompts;
+        
+        // Handle both JSON object and plain text
+        if (typeof promptData === 'string') {
+            try {
+                promptData = JSON.parse(promptData);
+            } catch (e) {
+                // If not valid JSON, treat as plain text
+                promptData = { image_prompt: promptData.trim() };
+            }
+        }
+        
+        // Extract the actual prompt
+        const promptText = promptData.image_prompt || promptData;
+        
+        if (promptText && typeof promptText === 'string' && 
+            !promptText.includes("I'm ready to assist") && 
+            !promptText.includes("Please provide")) {
             const promptElement = createPromptElement(sectionData, promptData);
             container.innerHTML = '';
             container.appendChild(promptElement);
-        } catch (error) {
-            console.error('[Generated Prompts] Error parsing image_prompts JSON:', error);
-            showNoPromptMessage(sectionData.id, 'Error parsing prompt data');
+        } else {
+            showNoPromptMessage(sectionData.id, 'No valid prompt generated yet');
         }
     } else {
         showNoPromptMessage(sectionData.id, 'No image prompt generated');
@@ -246,27 +285,34 @@ function createPromptElement(sectionData, promptData = null) {
     
     // Parse prompt data if not provided
     if (!promptData && sectionData.image_prompts) {
-        try {
-            promptData = JSON.parse(sectionData.image_prompts);
-        } catch (error) {
-            console.error('[Generated Prompts] Error parsing prompt data:', error);
-            promptData = null;
+        if (typeof sectionData.image_prompts === 'object') {
+            promptData = sectionData.image_prompts;
+        } else {
+            try {
+                promptData = JSON.parse(sectionData.image_prompts);
+            } catch (e) {
+                promptData = { image_prompt: sectionData.image_prompts };
+            }
         }
     }
     
-    if (promptData && promptData.image_prompt) {
+    const imagePrompt = promptData?.image_prompt || promptData;
+    
+    if (imagePrompt && typeof imagePrompt === 'string') {
         element.innerHTML = `
             <div class="prompt-header">
                 <h6 class="section-title">${sectionData.section_heading || `Section ${sectionData.id}`}</h6>
                 <div class="prompt-meta">
-                    <span class="prompt-length">${promptData.image_prompt.length} characters</span>
+                    <span class="prompt-length">${imagePrompt.length} characters</span>
                     ${promptData.dimensions ? `<span class="prompt-dimensions">${promptData.dimensions}</span>` : ''}
                 </div>
             </div>
             <div class="prompt-content">
-                <div class="prompt-text">${promptData.image_prompt}</div>
+                <div class="prompt-text">${imagePrompt}</div>
             </div>
             ${promptData.style ? `<div class="prompt-style"><strong>Style:</strong> ${promptData.style}</div>` : ''}
+            ${promptData.base_concept && promptData.base_concept !== imagePrompt ? 
+                `<div class="prompt-base"><strong>Base Concept:</strong> ${promptData.base_concept}</div>` : ''}
         `;
     } else {
         element.innerHTML = `

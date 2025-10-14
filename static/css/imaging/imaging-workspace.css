@@ -21,7 +21,8 @@
 
 /* Panel Container Styles */
 .model-selection-container,
-.prompt-construction-container {
+.prompt-construction-container,
+.image-results-viewer {
     background: #1e293b;
     border-radius: 8px;
     border: 1px solid #334155;
