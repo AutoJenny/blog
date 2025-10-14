@@ -47,19 +47,39 @@
     if (el) el.textContent = text;
   }
 
+  const ACCORDION_STATE_KEY = 'imaging-optimization-accordion-state';
+
   window.toggleOptimizationAccordion = function(){
     const content = document.getElementById('optimization-accordion-content');
     const icon = document.getElementById('optimization-accordion-icon');
     if (!content || !icon) return;
     const open = (content.style.display === 'block');
-    content.style.display = open ? 'none' : 'block';
-    icon.className = open ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+    const nextOpen = !open;
+    content.style.display = nextOpen ? 'block' : 'none';
+    icon.className = nextOpen ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+    try { localStorage.setItem(ACCORDION_STATE_KEY, nextOpen ? 'open' : 'closed'); } catch(_){}
   };
 
   onReady(function(){
     const postId = window.postId;
     const btnSel = document.getElementById('optimize-selected-btn');
     const btnAll = document.getElementById('optimize-all-btn');
+
+    // Restore accordion state
+    try {
+      const st = localStorage.getItem(ACCORDION_STATE_KEY);
+      const content = document.getElementById('optimization-accordion-content');
+      const icon = document.getElementById('optimization-accordion-icon');
+      if (content && icon) {
+        if (st === 'open') {
+          content.style.display = 'block';
+          icon.className = 'fas fa-chevron-down';
+        } else {
+          content.style.display = 'none';
+          icon.className = 'fas fa-chevron-up';
+        }
+      }
+    } catch(_) {}
 
     // Range slider value display
     const bgOpacityRange = document.getElementById('opt-bg-opacity');

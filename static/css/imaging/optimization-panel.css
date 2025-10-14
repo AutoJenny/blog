@@ -30,3 +30,7 @@
   .optimization-help code { background: #1e293b; padding: .125rem .25rem; border-radius: 3px; font-family: monospace; font-size: .8rem; color: #e2e8f0; }
   .panel-name-green { color: #10b981 !important; font-weight: 600; }
 
+  /* Watermark preview */
+  .watermark-preview .watermark-preview-box { background: #0b1220; border: 1px solid #334155; border-radius: 6px; padding: .5rem; display: flex; align-items: center; justify-content: center; min-height: 80px; }
+  .watermark-preview img { max-width: 100%; height: auto; opacity: .9; }
+
