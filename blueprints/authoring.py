@@ -1915,6 +1915,36 @@ def api_save_imaging_model_selection():
         logger.error(f"Error saving imaging model selection: {e}")
         return jsonify({'error': str(e)}), 500
 
+@bp.route('/api/posts/<int:post_id>/imaging-model-selection', methods=['GET'])
+def api_get_imaging_model_selection(post_id):
+    """Get imaging model selection for a post"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT imaging_model_selection 
+                FROM post_development 
+                WHERE post_id = %s
+            """, (post_id,))
+            
+            row = cursor.fetchone()
+            
+            if row and row['imaging_model_selection']:
+                model_selection = row['imaging_model_selection']
+            else:
+                model_selection = 'sdxl-lora'  # Default fallback
+            
+            return jsonify({
+                'success': True,
+                'model_selection': model_selection
+            })
+            
+    except Exception as e:
+        logger.error(f"Error getting imaging model selection: {e}")
+        return jsonify({
+            'success': True,
+            'model_selection': 'sdxl-lora'  # Default fallback on error
+        })
+
 @bp.route('/api/save-system-prompt', methods=['POST'])
 def api_save_system_prompt():
     """Save system prompt for Image Prompts Generation"""

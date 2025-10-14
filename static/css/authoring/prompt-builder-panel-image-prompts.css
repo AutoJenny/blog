@@ -1,0 +1,299 @@
+/* Prompt Builder Panel for Image Prompts - Dark Theme Styling */
+
+.prompt-builder-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.prompt-builder-panel .panel-header {
+    background: #0f172a;
+    padding: 1rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #334155;
+    transition: background-color 0.2s ease;
+}
+
+.prompt-builder-panel .panel-header:hover {
+    background: #1e293b;
+}
+
+.prompt-builder-panel .panel-header h4 {
+    margin: 0;
+    color: #f1f5f9;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.prompt-builder-panel .panel-name-green {
+    color: #10b981;
+    font-weight: 700;
+}
+
+.prompt-builder-panel .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.prompt-builder-panel .btn-primary {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.prompt-builder-panel .btn-primary:hover:not(:disabled) {
+    background: #2563eb;
+}
+
+.prompt-builder-panel .btn-primary:disabled {
+    background: #64748b;
+    cursor: not-allowed;
+}
+
+.prompt-builder-panel .btn-secondary {
+    background: #475569;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.prompt-builder-panel .btn-secondary:hover:not(:disabled) {
+    background: #64748b;
+}
+
+.prompt-builder-panel .btn-secondary:disabled {
+    background: #64748b;
+    cursor: not-allowed;
+}
+
+.prompt-builder-panel .panel-content {
+    padding: 1rem;
+    background: #1e293b;
+}
+
+.prompt-builder-panel .panel-content h5 {
+    color: #e2e8f0;
+    margin: 0 0 0.75rem 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.prompt-builder-panel .selected-concept-section,
+.prompt-builder-panel .model-configuration-section,
+.prompt-builder-panel .prompt-construction-section,
+.prompt-builder-panel .batch-generation-section {
+    margin-bottom: 1.5rem;
+}
+
+.prompt-builder-panel .selected-concept-section:last-child,
+.prompt-builder-panel .model-configuration-section:last-child,
+.prompt-builder-panel .prompt-construction-section:last-child,
+.prompt-builder-panel .batch-generation-section:last-child {
+    margin-bottom: 0;
+}
+
+/* Selected Concept Display */
+.prompt-builder-panel .concept-display {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 0.75rem;
+    min-height: 60px;
+}
+
+.prompt-builder-panel .concept-placeholder {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.prompt-builder-panel .concept-text {
+    color: #f1f5f9;
+    line-height: 1.5;
+}
+
+/* Model Configuration */
+.prompt-builder-panel .model-info {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 0.75rem;
+}
+
+.prompt-builder-panel .model-selection,
+.prompt-builder-panel .character-limit,
+.prompt-builder-panel .style-guidelines {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.prompt-builder-panel .model-selection:last-child,
+.prompt-builder-panel .character-limit:last-child,
+.prompt-builder-panel .style-guidelines:last-child {
+    margin-bottom: 0;
+}
+
+.prompt-builder-panel .model-info label {
+    color: #cbd5e1;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.prompt-builder-panel .model-info span {
+    color: #f1f5f9;
+    font-size: 0.875rem;
+}
+
+/* Prompt Construction */
+.prompt-builder-panel .form-group {
+    margin-bottom: 1rem;
+}
+
+.prompt-builder-panel .form-group label {
+    display: block;
+    color: #cbd5e1;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.prompt-builder-panel textarea {
+    width: 100%;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 0.75rem;
+    color: #f1f5f9;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    resize: vertical;
+    min-height: 100px;
+}
+
+.prompt-builder-panel textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.prompt-builder-panel textarea:disabled {
+    background: #1e293b;
+    color: #64748b;
+    cursor: not-allowed;
+}
+
+.prompt-builder-panel textarea:read-only {
+    background: #0f172a;
+    color: #f1f5f9;
+}
+
+/* Character Count Display */
+.prompt-builder-panel .character-count-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+}
+
+.prompt-builder-panel .character-count-display span:first-child {
+    color: #94a3b8;
+}
+
+.prompt-builder-panel .character-status {
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+}
+
+.prompt-builder-panel .character-status.success {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.prompt-builder-panel .character-status.warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.prompt-builder-panel .character-status.error {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+/* Prompt Actions */
+.prompt-builder-panel .prompt-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Batch Generation */
+.prompt-builder-panel .batch-info {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 0.75rem;
+}
+
+.prompt-builder-panel .batch-info p {
+    color: #94a3b8;
+    font-size: 0.875rem;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Accordion Animation */
+.prompt-builder-panel .panel-content {
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.prompt-builder-panel .panel-content.collapsed {
+    max-height: 0;
+    padding: 0 1rem;
+    border-top: none;
+}
+
+.prompt-builder-panel .fa-chevron-down {
+    transition: transform 0.3s ease;
+    color: #94a3b8;
+}
+
+.prompt-builder-panel .fa-chevron-down.rotated {
+    transform: rotate(180deg);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .prompt-builder-panel .panel-header {
+        padding: 0.75rem;
+    }
+    
+    .prompt-builder-panel .panel-content {
+        padding: 0.75rem;
+    }
+    
+    .prompt-builder-panel .prompt-actions {
+        flex-direction: column;
+    }
+    
+    .prompt-builder-panel .btn-primary,
+    .prompt-builder-panel .btn-secondary {
+        width: 100%;
+    }
+}

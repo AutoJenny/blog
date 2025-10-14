@@ -1,267 +1,196 @@
 /**
- * Image Prompts Output Panel
- * Handles sophisticated DB-driven image prompt generation with character limits
+ * Image Prompts Output Panel - Simplified Results Display
+ * Handles display and saving of generated image prompts
  */
 
 class ImagePromptsOutputPanel {
-    constructor(options = {}) {
-        this.postId = options.postId || window.postId;
+    constructor(postId) {
+        this.postId = postId;
         this.currentSection = null;
-        this.selectedConcept = null;
-        this.generatedPrompt = null;
-        this.modelSettings = {
-            model: 'sdxl-lora',
-            limit: 400,
-            style: 'inkwash and watercolour'
-        };
+        this.currentPrompt = null;
+        this.currentMetadata = null;
         
-        this.initializeElements();
-        this.bindEvents();
-        this.loadModelSettings();
+        this.init();
     }
-    
-    initializeElements() {
-        this.elements = {
-            panel: document.getElementById('image-prompts-output-panel'),
-            sectionTitle: document.getElementById('current-section-title'),
-            conceptText: document.getElementById('concept-text'),
-            generatedPromptText: document.getElementById('generated-prompt-text'),
-            characterCount: document.getElementById('character-count'),
-            modelLimit: document.getElementById('character-limit'),
-            selectedModel: document.getElementById('selected-model'),
-            styleGuidelines: document.getElementById('style-guidelines'),
-            generateBtn: document.getElementById('generate-prompt-btn'),
-            editBtn: document.getElementById('edit-prompt-btn'),
-            regenerateBtn: document.getElementById('regenerate-prompt-btn'),
-            saveBtn: document.getElementById('save-prompt-btn'),
-            accordionContent: document.getElementById('image-prompts-accordion-content'),
-            accordionIcon: document.getElementById('image-prompts-accordion-icon')
-        };
+
+    init() {
+        this.setupEventListeners();
+        this.setupAccordion();
+        console.log('[ImagePromptsOutputPanel] Initialized for post:', this.postId);
     }
-    
-    bindEvents() {
-        // Generate button
-        this.elements.generateBtn.addEventListener('click', () => this.generatePrompt());
-        
-        // Edit button
-        this.elements.editBtn.addEventListener('click', () => this.toggleEditMode());
-        
-        // Regenerate button
-        this.elements.regenerateBtn.addEventListener('click', () => this.generatePrompt());
-        
-        // Save button
-        this.elements.saveBtn.addEventListener('click', () => this.savePrompt());
-        
-        // Character count monitoring
-        this.elements.generatedPromptText.addEventListener('input', () => this.updateCharacterCount());
-        
+
+    setupEventListeners() {
+        // Save prompt button
+        const saveBtn = document.getElementById('save-prompt-btn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => this.savePrompt());
+        }
+
+        // Regenerate prompt button
+        const regenerateBtn = document.getElementById('regenerate-prompt-btn');
+        if (regenerateBtn) {
+            regenerateBtn.addEventListener('click', () => this.regeneratePrompt());
+        }
+
+        // Listen for prompt generation events from prompt builder
+        window.addEventListener('promptGenerated', (event) => {
+            this.onPromptGenerated(event.detail);
+        });
+
         // Listen for section selection events
         window.addEventListener('sectionSelected', (event) => {
             this.onSectionSelected(event.detail.section);
         });
+
+        // Listen for batch generation events
+        window.addEventListener('sections:batch-generate', (event) => {
+            this.onBatchGenerate(event.detail.ids);
+        });
     }
-    
-    async loadModelSettings() {
-        try {
-            const response = await fetch(`/authoring/api/posts/${this.postId}/imaging-model-selection`);
-            const data = await response.json();
-            
-            if (data.success && data.model_selection) {
-                this.modelSettings.model = data.model_selection;
-                this.updateModelSettings();
-            }
-        } catch (error) {
-            console.error('Error loading model settings:', error);
+
+    setupAccordion() {
+        const header = document.querySelector('#image-prompts-output-panel .panel-header');
+        const content = document.getElementById('image-prompts-accordion-content');
+        const icon = document.getElementById('image-prompts-accordion-icon');
+
+        if (header && content && icon) {
+            header.addEventListener('click', () => {
+                const isCollapsed = content.style.display === 'none';
+                content.style.display = isCollapsed ? 'block' : 'none';
+                icon.classList.toggle('rotated', !isCollapsed);
+            });
         }
     }
-    
-    updateModelSettings() {
-        const modelLimits = {
-            'dall-e-3': 4000,
-            'dall-e-2': 1000,
-            'sdxl-lora': 400,
-            'gpt-image-1': 2000,
-        };
-        
-        this.modelSettings.limit = modelLimits[this.modelSettings.model] || 400;
-        
-        this.elements.selectedModel.textContent = this.modelSettings.model.toUpperCase();
-        this.elements.modelLimit.textContent = `${this.modelSettings.limit} chars`;
-    }
-    
+
     onSectionSelected(section) {
         this.currentSection = section;
-        this.elements.sectionTitle.textContent = section.title || section.section_heading || 'Unknown Section';
-        
-        // Load selected concept for this section
-        this.loadSelectedConcept(section);
-        
-        // Load existing image prompt if available
+        this.updateSectionTitle(section.title || section.section_heading || 'Unknown Section');
         this.loadExistingPrompt(section);
+        this.updateButtonStates();
+        console.log('[ImagePromptsOutputPanel] Section selected:', section.id);
     }
-    
-    async loadSelectedConcept(section) {
-        try {
-            // Get the selected concept from the section data
-            const selectedConcept = section.selected_image_concept;
-            
-            if (selectedConcept) {
-                this.selectedConcept = selectedConcept;
-                this.elements.conceptText.textContent = selectedConcept;
-                this.elements.generateBtn.disabled = false;
-            } else {
-                this.selectedConcept = null;
-                this.elements.conceptText.textContent = 'No concept selected. Please select a concept on the Image Concepts page first.';
-                this.elements.generateBtn.disabled = true;
-            }
-        } catch (error) {
-            console.error('Error loading selected concept:', error);
-            this.elements.conceptText.textContent = 'Error loading concept';
+
+    updateSectionTitle(title) {
+        const titleElement = document.getElementById('current-section-title');
+        if (titleElement) {
+            titleElement.textContent = title;
         }
     }
-    
-    async loadExistingPrompt(section) {
-        try {
-            const imagePrompts = section.image_prompts;
+
+    loadExistingPrompt(section) {
+        const textarea = document.getElementById('generated-prompt-textarea');
+        const charCount = document.getElementById('char-count');
+        
+        if (!textarea || !charCount) return;
+
+        // Check if section has existing image prompts
+        if (section.image_prompts) {
+            let promptText = '';
             
-            if (imagePrompts) {
-                let promptData;
-                if (typeof imagePrompts === 'string') {
-                    promptData = JSON.parse(imagePrompts);
-                } else {
-                    promptData = imagePrompts;
+            if (typeof section.image_prompts === 'string') {
+                try {
+                    const parsed = JSON.parse(section.image_prompts);
+                    promptText = parsed.image_prompt || parsed.prompt || section.image_prompts;
+                } catch (e) {
+                    promptText = section.image_prompts;
                 }
-                
-                this.generatedPrompt = promptData.image_prompt || promptData;
-                this.elements.generatedPromptText.value = this.generatedPrompt;
-                this.updateCharacterCount();
-                this.elements.editBtn.disabled = false;
-                this.elements.regenerateBtn.disabled = false;
-                this.elements.saveBtn.disabled = false;
-            } else {
-                this.generatedPrompt = null;
-                this.elements.generatedPromptText.value = '';
-                this.updateCharacterCount();
-                this.elements.editBtn.disabled = true;
-                this.elements.regenerateBtn.disabled = true;
-                this.elements.saveBtn.disabled = true;
+            } else if (typeof section.image_prompts === 'object') {
+                promptText = section.image_prompts.image_prompt || section.image_prompts.prompt || '';
             }
-        } catch (error) {
-            console.error('Error loading existing prompt:', error);
-        }
-    }
-    
-    async generatePrompt() {
-        if (!this.selectedConcept) {
-            alert('Please select a concept on the Image Concepts page first.');
-            return;
+            
+            textarea.value = promptText;
+            charCount.textContent = `${promptText.length} chars`;
+            
+            // Update metadata if available
+            this.updateMetadata(section.image_prompts);
+            
+        } else {
+            textarea.value = '';
+            charCount.textContent = '0 chars';
+            this.clearMetadata();
         }
         
-        this.setLoading(true);
-        
-        try {
-            // Get the current LLM settings
-            const llmSettings = await this.getLLMSettings();
-            
-            // Prepare the compiled prompt using the sophisticated DB-driven protocol
-            const compiledPrompt = this.buildCompiledPrompt();
-            
-            const response = await fetch('/api/generate-image-prompt-from-builder', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    compiled_prompt: compiledPrompt,
-                    llm_provider: llmSettings.provider,
-                    llm_model: llmSettings.model,
-                    temperature: llmSettings.temperature,
-                    max_tokens: llmSettings.max_tokens,
-                    post_id: this.postId,
-                    section_id: this.currentSection.id
-                })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                this.generatedPrompt = data.image_prompt;
-                this.elements.generatedPromptText.value = this.generatedPrompt;
-                this.updateCharacterCount();
-                this.elements.editBtn.disabled = false;
-                this.elements.regenerateBtn.disabled = false;
-                this.elements.saveBtn.disabled = false;
-                
-                console.log('Image prompt generated successfully:', this.generatedPrompt);
-            } else {
-                throw new Error(data.error || 'Failed to generate image prompt');
-            }
-        } catch (error) {
-            console.error('Error generating image prompt:', error);
-            alert(`Error generating image prompt: ${error.message}`);
-        } finally {
-            this.setLoading(false);
-        }
+        this.updateButtonStates();
     }
-    
-    buildCompiledPrompt() {
-        // Build the sophisticated prompt using the DB-driven protocol
-        return `Convert the Selected Concept into a single detailed image prompt.
 
-REQUIREMENTS:
-- Use only the elements provided in the Selected Concept
-- Expand into visual composition, atmosphere, and lighting without adding new objects or ideas
-- MAXIMUM ${this.modelSettings.limit} CHARACTERS TOTAL - COUNT YOUR CHARACTERS
-- Output must be one coherent sentence, with no labels, commentary, or extra formatting
-
-Selected Concept:
-${this.selectedConcept}
-
-Output exactly ${this.modelSettings.limit} characters or less:`;
-    }
-    
-    async getLLMSettings() {
-        try {
-            const response = await fetch(`/authoring/api/posts/${this.postId}/llm-settings`);
-            const data = await response.json();
-            
-            if (data.success) {
-                return {
-                    provider: data.settings.provider || 'Ollama',
-                    model: data.settings.model || 'llama3.2:latest',
-                    temperature: data.settings.temperature || 0.7,
-                    max_tokens: data.settings.max_tokens || 2000
-                };
-            }
-        } catch (error) {
-            console.error('Error loading LLM settings:', error);
-        }
+    updateMetadata(promptData) {
+        const modelElement = document.getElementById('prompt-model');
+        const charCountElement = document.getElementById('prompt-character-count');
+        const styleElement = document.getElementById('prompt-style');
+        const timeElement = document.getElementById('prompt-generated-time');
         
-        // Fallback settings
-        return {
-            provider: 'Ollama',
-            model: 'llama3.2:latest',
-            temperature: 0.7,
-            max_tokens: 2000
-        };
-    }
-    
-    toggleEditMode() {
-        const isReadonly = this.elements.generatedPromptText.readOnly;
-        this.elements.generatedPromptText.readOnly = !isReadonly;
-        this.elements.editBtn.textContent = isReadonly ? 'Done Editing' : 'Edit Prompt';
-        
-        if (!isReadonly) {
-            this.elements.generatedPromptText.focus();
+        if (typeof promptData === 'object' && promptData) {
+            if (modelElement) modelElement.textContent = promptData.model || '-';
+            if (charCountElement) charCountElement.textContent = promptData.character_count || '-';
+            if (styleElement) styleElement.textContent = promptData.style || '-';
+            if (timeElement) timeElement.textContent = promptData.generated_at || '-';
+        } else {
+            this.clearMetadata();
         }
     }
-    
+
+    clearMetadata() {
+        const elements = ['prompt-model', 'prompt-character-count', 'prompt-style', 'prompt-generated-time'];
+        elements.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) element.textContent = '-';
+        });
+    }
+
+    onPromptGenerated(detail) {
+        console.log('[ImagePromptsOutputPanel] Prompt generated:', detail);
+        
+        this.currentPrompt = detail.prompt;
+        this.currentMetadata = detail.metadata;
+        
+        // Update display
+        const textarea = document.getElementById('generated-prompt-textarea');
+        const charCount = document.getElementById('char-count');
+        
+        if (textarea) {
+            textarea.value = detail.prompt;
+        }
+        
+        if (charCount) {
+            charCount.textContent = `${detail.prompt.length} chars`;
+        }
+        
+        // Update metadata
+        if (detail.metadata) {
+            this.updateMetadata(detail.metadata);
+        }
+        
+        // Update last saved status
+        const lastSaved = document.getElementById('last-saved');
+        if (lastSaved) {
+            lastSaved.textContent = 'Generated';
+        }
+        
+        this.updateButtonStates();
+    }
+
+    updateButtonStates() {
+        const saveBtn = document.getElementById('save-prompt-btn');
+        const regenerateBtn = document.getElementById('regenerate-prompt-btn');
+        
+        const hasPrompt = this.currentPrompt || (this.currentSection && this.currentSection.image_prompts);
+        
+        if (saveBtn) saveBtn.disabled = !hasPrompt;
+        if (regenerateBtn) regenerateBtn.disabled = !this.currentSection;
+    }
+
     async savePrompt() {
-        if (!this.generatedPrompt) {
-            alert('No prompt to save');
+        if (!this.currentSection || !this.currentPrompt) {
+            console.warn('[ImagePromptsOutputPanel] No section or prompt to save');
             return;
         }
-        
+
+        const saveBtn = document.getElementById('save-prompt-btn');
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+        }
+
         try {
             const response = await fetch(`/authoring/api/posts/${this.postId}/sections/${this.currentSection.id}/save-image-prompt`, {
                 method: 'POST',
@@ -269,78 +198,78 @@ Output exactly ${this.modelSettings.limit} characters or less:`;
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    image_prompt: this.elements.generatedPromptText.value
+                    image_prompt: this.currentPrompt,
+                    metadata: this.currentMetadata
                 })
             });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                this.generatedPrompt = this.elements.generatedPromptText.value;
-                console.log('Image prompt saved successfully');
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('[ImagePromptsOutputPanel] Prompt saved successfully:', data);
+                
+                // Update last saved status
+                const lastSaved = document.getElementById('last-saved');
+                if (lastSaved) {
+                    lastSaved.textContent = 'Saved';
+                }
+                
+                // Update section data
+                if (this.currentSection) {
+                    this.currentSection.image_prompts = this.currentPrompt;
+                }
+                
             } else {
-                throw new Error(data.error || 'Failed to save image prompt');
+                const error = await response.json();
+                console.error('[ImagePromptsOutputPanel] Error saving prompt:', error);
+                alert('Error saving prompt: ' + (error.error || 'Unknown error'));
             }
         } catch (error) {
-            console.error('Error saving image prompt:', error);
-            alert(`Error saving image prompt: ${error.message}`);
+            console.error('[ImagePromptsOutputPanel] Error saving prompt:', error);
+            alert('Error saving prompt: ' + error.message);
+        } finally {
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save';
+            }
         }
     }
-    
-    updateCharacterCount() {
-        const text = this.elements.generatedPromptText.value;
-        const count = text.length;
-        const limit = this.modelSettings.limit;
+
+    regeneratePrompt() {
+        // Trigger prompt builder to regenerate
+        if (window.promptBuilderPanel && this.currentSection) {
+            window.promptBuilderPanel.generatePrompt();
+        }
+    }
+
+    async onBatchGenerate(sectionIds) {
+        console.log('[ImagePromptsOutputPanel] Batch generation started for sections:', sectionIds);
         
-        this.elements.characterCount.textContent = `${count} characters`;
+        // The actual generation is handled by the prompt builder panel
+        // This panel just needs to be ready to receive the results
         
-        // Update styling based on character count
-        this.elements.characterCount.className = '';
-        if (count > limit) {
-            this.elements.characterCount.classList.add('error');
-        } else if (count > limit * 0.9) {
-            this.elements.characterCount.classList.add('warning');
-        } else if (count > limit * 0.7) {
-            this.elements.characterCount.classList.add('success');
+        // Update last saved status to show batch processing
+        const lastSaved = document.getElementById('last-saved');
+        if (lastSaved) {
+            lastSaved.textContent = 'Batch processing...';
         }
-    }
-    
-    setLoading(loading) {
-        if (loading) {
-            this.elements.panel.classList.add('loading');
-            this.elements.generateBtn.disabled = true;
-            this.elements.generateBtn.textContent = 'Generating...';
-        } else {
-            this.elements.panel.classList.remove('loading');
-            this.elements.generateBtn.disabled = false;
-            this.elements.generateBtn.textContent = 'Generate Prompt';
-        }
-    }
-    
-    show(section) {
-        this.onSectionSelected(section);
     }
 }
 
-// Global functions for accordion control
+// Global accordion function
 function toggleImagePromptsOutputAccordion() {
     const content = document.getElementById('image-prompts-accordion-content');
     const icon = document.getElementById('image-prompts-accordion-icon');
     
-    if (content.style.display === 'none') {
-        content.style.display = 'block';
-        icon.classList.remove('rotated');
-    } else {
-        content.style.display = 'none';
-        icon.classList.add('rotated');
+    if (content && icon) {
+        const isCollapsed = content.style.display === 'none';
+        content.style.display = isCollapsed ? 'block' : 'none';
+        icon.classList.toggle('rotated', !isCollapsed);
     }
 }
 
-// Initialize the panel when DOM is loaded
+// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    if (window.postId) {
-        window.imagePromptsOutputPanel = new ImagePromptsOutputPanel({
-            postId: window.postId
-        });
+    if (window.postId && window.currentSubstage === 'image-prompts') {
+        window.imagePromptsOutputPanel = new ImagePromptsOutputPanel(window.postId);
     }
 });

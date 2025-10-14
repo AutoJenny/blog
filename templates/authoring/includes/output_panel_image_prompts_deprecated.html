@@ -1,0 +1,59 @@
+<!-- Image Prompts Output Panel - Self-contained include with CSS and JS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/authoring/output-panel-image-prompts.css') }}">
+
+<div class="output-panel" id="image-prompts-output-panel">
+    <div class="panel-header" onclick="toggleImagePromptsOutputAccordion()">
+        <h4><span class="panel-name-green">Output:</span> <span id="current-section-title">Select a section to generate image prompts</span></h4>
+        <div class="header-actions">
+            <button class="btn-primary" id="generate-prompt-btn">Generate Prompt</button>
+            <i class="fas fa-chevron-down" id="image-prompts-accordion-icon"></i>
+        </div>
+    </div>
+    
+    <div class="panel-content" id="image-prompts-accordion-content" style="display: block;">
+        <!-- Selected Concept Display -->
+        <div class="selected-concept-display" id="selected-concept-display">
+            <h5>Selected Concept:</h5>
+            <div class="concept-text" id="concept-text">No concept selected</div>
+        </div>
+        
+        <!-- Generated Prompt Display -->
+        <div class="generated-prompt-display" id="generated-prompt-display">
+            <h5>Generated Image Prompt:</h5>
+            <div class="prompt-container">
+                <textarea id="generated-prompt-text" placeholder="Image prompt will be generated here..." readonly></textarea>
+                <div class="prompt-stats">
+                    <span id="character-count">0 characters</span>
+                    <span id="model-limit">Limit: 400 chars</span>
+                    <span id="prompt-status">Not generated</span>
+                </div>
+            </div>
+            <div class="prompt-actions">
+                <button class="btn-secondary" id="edit-prompt-btn" disabled>Edit Prompt</button>
+                <button class="btn-primary" id="regenerate-prompt-btn" disabled>Regenerate</button>
+                <button class="btn-success" id="save-prompt-btn" disabled>Save Prompt</button>
+            </div>
+        </div>
+        
+        <!-- Prompt Settings Display -->
+        <div class="prompt-settings-display" id="prompt-settings-display">
+            <h5>Prompt Settings:</h5>
+            <div class="settings-grid">
+                <div class="setting-item">
+                    <label>Model:</label>
+                    <span id="selected-model">SDXL-LoRA</span>
+                </div>
+                <div class="setting-item">
+                    <label>Character Limit:</label>
+                    <span id="character-limit">400</span>
+                </div>
+                <div class="setting-item">
+                    <label>Style Guidelines:</label>
+                    <span id="style-guidelines">inkwash and watercolour</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/authoring/output-panel-image-prompts.js') }}"></script>

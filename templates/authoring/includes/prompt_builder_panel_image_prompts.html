@@ -1,0 +1,70 @@
+<!-- Prompt Builder Panel for Image Prompts - Self-contained include with CSS and JS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/authoring/prompt-builder-panel-image-prompts.css') }}">
+
+<div class="prompt-builder-panel" id="prompt-builder-panel">
+    <div class="panel-header" onclick="togglePromptBuilderAccordion()">
+        <h4><span class="panel-name-green">Prompt Builder:</span> <span id="prompt-builder-section-title">Select a section to build prompts</span></h4>
+        <div class="header-actions">
+            <button class="btn-primary" id="generate-prompt-btn" disabled>Generate Prompt</button>
+            <i class="fas fa-chevron-down" id="prompt-builder-accordion-icon"></i>
+        </div>
+    </div>
+    
+    <div class="panel-content" id="prompt-builder-accordion-content" style="display: block;">
+        <!-- Selected Concept Display -->
+        <div class="selected-concept-section">
+            <h5>Selected Concept:</h5>
+            <div id="selected-concept-display" class="concept-display">
+                <div class="concept-placeholder">No concept selected. Please go to Image Concepts page to select one.</div>
+            </div>
+        </div>
+
+        <!-- Model Configuration -->
+        <div class="model-configuration-section">
+            <h5>Model Configuration:</h5>
+            <div class="model-info">
+                <div class="model-selection">
+                    <label>Selected Model:</label>
+                    <span id="current-model-display">Loading...</span>
+                </div>
+                <div class="character-limit">
+                    <label>Character Limit:</label>
+                    <span id="character-limit-display">Loading...</span>
+                </div>
+                <div class="style-guidelines">
+                    <label>Style Guidelines:</label>
+                    <span id="style-guidelines-display">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prompt Construction -->
+        <div class="prompt-construction-section">
+            <h5>Prompt Construction:</h5>
+            <div class="prompt-builder">
+                <div class="form-group">
+                    <label for="compiled-prompt-textarea">Compiled Prompt Preview</label>
+                    <textarea id="compiled-prompt-textarea" rows="4" placeholder="Compiled prompt will appear here..." readonly></textarea>
+                    <div class="character-count-display">
+                        <span id="character-count">0 / 400 chars</span>
+                        <span id="character-status" class="success">Ready</span>
+                    </div>
+                </div>
+                <div class="prompt-actions">
+                    <button class="btn-secondary" id="edit-compiled-prompt-btn" disabled>Edit</button>
+                    <button class="btn-primary" id="regenerate-compiled-prompt-btn" disabled>Regenerate</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Batch Generation Support -->
+        <div class="batch-generation-section">
+            <h5>Batch Generation:</h5>
+            <div class="batch-info">
+                <p>This panel supports batch generation across all sections. Use the "Generate All" button in the Sections panel to process multiple sections.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/authoring/prompt-builder-panel-image-prompts.js') }}"></script>

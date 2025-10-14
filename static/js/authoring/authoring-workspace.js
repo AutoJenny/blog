@@ -262,6 +262,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         selected_image_concept: data.section.selected_image_concept || ''
                     });
                 }
+            } else if (window.currentSubstage === 'image-prompts') {
+                // Emit sectionSelected event for PromptBuilderPanel and ImagePromptsOutputPanel
+                window.dispatchEvent(new CustomEvent('sectionSelected', {
+                    detail: { section: data.section }
+                }));
             } else if (typeof outputPanel !== 'undefined') {
                 outputPanel.loadSection(data.sectionId, data.section);
             }
@@ -275,8 +280,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Initialize LLM module
             initializeLLMForSection(data.sectionId);
             
-            // Load existing draft (skip for image-concepts specialized UI)
-            if (window.currentSubstage !== 'image-concepts') {
+            // Load existing draft (skip for specialized UIs)
+            if (window.currentSubstage !== 'image-concepts' && window.currentSubstage !== 'image-prompts') {
                 await loadSectionDraft(data.sectionId);
             }
         },
@@ -317,6 +322,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Initialize LLM Prompts Panel with callbacks
+    // Skip generic LLMPromptsPanel on image-prompts (specialized PromptBuilderPanel is used)
+    if (window.currentSubstage !== 'image-prompts') {
     const llmPromptsPanel = new LLMPromptsPanel({
         postId: window.postId,
         onPromptChange: (prompt) => {
@@ -337,6 +344,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Prompt saved successfully
         }
     });
+    }
     
     // Initialize Context Panel with callbacks
     const contextPanel = new ContextPanel({
@@ -370,8 +378,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Initialize Output Panel with callbacks
-    // Skip generic OutputPanel on image-concepts (specialized panel is used)
-    if (window.currentSubstage !== 'image-concepts') {
+    // Skip generic OutputPanel on image-concepts and image-prompts (specialized panels are used)
+    if (window.currentSubstage !== 'image-concepts' && window.currentSubstage !== 'image-prompts') {
     const outputPanel = new OutputPanel({
         postId: window.postId,
         onContentChange: (content) => {
