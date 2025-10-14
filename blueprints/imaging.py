@@ -599,24 +599,49 @@ def imaging_model_selection():
         logger.error(f"Error with model selection: {e}")
         return jsonify({'error': str(e)}), 500
 
-@bp.route('/api/optimize/posts/<int:post_id>/sections/<int:section_id>/optimize-image', methods=['POST'])
+@bp.route('/api/optimize/posts/<int:post_id>/sections/<section_id>/optimize-image', methods=['POST'])
 def imaging_optimize_image(post_id, section_id):
     """Optimize image with watermark and caption for a specific section"""
     try:
+        # Resolve section_id: if numeric, use directly; if like section_1, map to section_order = 1
+        resolved_section_id = None
+        if section_id.isdigit():
+            resolved_section_id = int(section_id)
+        else:
+            # Try to parse trailing number from patterns like section_1
+            import re
+            m = re.search(r'(\d+)$', section_id)
+            if m:
+                section_order = int(m.group(1))
+                with db_manager.get_cursor() as cursor:
+                    cursor.execute(
+                        """
+                        SELECT id FROM post_section
+                        WHERE post_id = %s AND section_order = %s
+                        """,
+                        (post_id, section_order),
+                    )
+                    row = cursor.fetchone()
+                    if row:
+                        resolved_section_id = row['id']
+
+        if resolved_section_id is None:
+            return jsonify({'success': False, 'error': f'Unable to resolve section id: {section_id}'}), 400
+
         # Verify section exists
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 SELECT id, section_order, section_heading
                 FROM post_section
                 WHERE id = %s AND post_id = %s
-            """, (section_id, post_id))
+            """, (resolved_section_id, post_id))
             
             section = cursor.fetchone()
             if not section:
                 return jsonify({'success': False, 'error': 'Section not found'})
         
         # Optimize the image
-        result = optimize_image_with_watermark(post_id, section_id)
+        result = optimize_image_with_watermark(post_id, resolved_section_id)
         
         if result['success']:
             return jsonify({

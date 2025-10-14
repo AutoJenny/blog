@@ -17,7 +17,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (currentPostId) {
         console.log('[Imaging Core] Loading sections and setting up model selection');
         loadSections();
-        setupModelSelection();
+        
+        // Only setup model selection on image-generation page (not optimise)
+        if (window.currentSubstage === 'image-generation') {
+            setupModelSelection();
+        } else {
+            console.log('[Imaging Core] Skipping model selection setup for substage:', window.currentSubstage);
+        }
     } else {
         console.error('[Imaging Core] No post ID found');
     }
