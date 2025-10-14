@@ -1707,6 +1707,52 @@ def api_save_image_captions(post_id, section_id):
         logger.error(f"Error saving image captions: {e}")
         return jsonify({'error': str(e)}), 500
 
+# ===============================
+# UI Preferences (DB-backed state)
+# ===============================
+
+@bp.route('/api/ui/preferences/<pref_key>', methods=['GET', 'POST'])
+def authoring_ui_preferences(pref_key):
+    """Get/Set UI preferences (accordion states, etc.) in ui_user_preferences.
+    Note: No auth; store under user_id=0 and is_global=true to respect no-login rule.
+    """
+    try:
+        with db_manager.get_cursor() as cursor:
+            if request.method == 'GET':
+                cursor.execute(
+                    """
+                    SELECT preference_value
+                    FROM ui_user_preferences
+                    WHERE user_id = 0 AND preference_key = %s
+                    """,
+                    (pref_key,)
+                )
+                row = cursor.fetchone()
+                if not row:
+                    return jsonify({'success': True, 'value': None})
+                return jsonify({'success': True, 'value': row['preference_value']})
+
+            # POST - upsert
+            data = request.get_json() or {}
+            value = data.get('value')
+            value_json = json.dumps(value) if not isinstance(value, str) else value
+
+            cursor.execute(
+                """
+                INSERT INTO ui_user_preferences (user_id, preference_key, preference_value, preference_type, category, is_global)
+                VALUES (0, %s, %s, 'json', 'authoring_ui', true)
+                ON CONFLICT (user_id, preference_key)
+                DO UPDATE SET preference_value = EXCLUDED.preference_value, updated_at = NOW()
+                """,
+                (pref_key, value_json)
+            )
+            cursor.connection.commit()
+            return jsonify({'success': True})
+
+    except Exception as e:
+        logger.error(f"Error handling UI preference {pref_key}: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @bp.route('/api/save-imaging-model-selection', methods=['POST'])
 def api_save_imaging_model_selection():
     """Save imaging model selection for persistence across stages"""

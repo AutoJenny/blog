@@ -11,7 +11,8 @@ class LLMPromptsPanel {
         // Detect page type and get configuration
         this.pageType = this.detectPageType();
         this.config = this.getPageConfig();
-        this.storageKey = `${this.pageType}-llm-prompts`;
+        this.storageKey = `${this.pageType}-llm-prompts`; // legacy key (will not be used)
+        this.currentPrompt = { system_prompt: '', prompt_text: '' }; // in-memory source of truth
         
         // Callbacks for external communication
         this.callbacks = {
@@ -39,7 +40,7 @@ class LLMPromptsPanel {
     init() {
         this.bindElements();
         this.setupEventListeners();
-        this.loadPromptState();
+        // Do not use localStorage; rely on DB-backed API
         this.loadPromptFromAPI();
         this.restoreAccordionState();
     }
@@ -135,7 +136,11 @@ class LLMPromptsPanel {
             
             if (data.success && data.prompt) {
                 const prompt = data.prompt;
-                this.updatePromptDisplay(prompt.system_prompt || '', prompt.prompt_text || '');
+                this.currentPrompt = {
+                    system_prompt: prompt.system_prompt || '',
+                    prompt_text: (prompt.prompt_text || prompt.text || '')
+                };
+                this.updatePromptDisplay(this.currentPrompt.system_prompt, this.currentPrompt.prompt_text);
                 this.updatePromptTitle(prompt.name || this.config.resultsTitle);
                 this.callbacks.onPromptLoad(prompt);
             } else {
@@ -180,8 +185,9 @@ class LLMPromptsPanel {
         this.editPromptBtn.textContent = 'Cancel Edit';
         this.editPromptBtn.classList.add('btn-secondary');
         
-        // Load current prompt data into edit form
-        this.loadPromptIntoEditForm();
+        // Load current prompt data into edit form from in-memory API data
+        if (this.systemPromptEdit) this.systemPromptEdit.value = this.currentPrompt.system_prompt || '';
+        if (this.userPromptEdit) this.userPromptEdit.value = this.currentPrompt.prompt_text || '';
         
         console.log(`[LLM Prompts Panel] Started editing for ${this.pageType}`);
     }
@@ -205,7 +211,7 @@ class LLMPromptsPanel {
         const userPrompt = this.userPromptEdit?.value || '';
         
         try {
-            // Save to API
+            // Save to API (DB only)
             const response = await fetch(this.config.promptEndpoint, {
                 method: 'PUT',
                 headers: {
@@ -220,22 +226,15 @@ class LLMPromptsPanel {
             const data = await response.json();
             
             if (data.success) {
-                // Save to localStorage as backup
-                const promptData = {
-                    systemPrompt: systemPrompt,
-                    userPrompt: userPrompt,
-                    timestamp: new Date().toISOString()
-                };
-                localStorage.setItem(this.storageKey, JSON.stringify(promptData));
-                
-                // Update display
+                // Update in-memory and display
+                this.currentPrompt = { system_prompt: systemPrompt, prompt_text: userPrompt };
                 this.updatePromptDisplay(systemPrompt, userPrompt);
                 
                 // Exit edit mode
                 this.cancelEdit();
                 
                 // Emit callback
-                this.callbacks.onPromptSave(promptData);
+                this.callbacks.onPromptSave(this.currentPrompt);
                 
                 console.log(`[LLM Prompts Panel] Prompt saved for ${this.pageType}`);
             } else {
@@ -246,22 +245,7 @@ class LLMPromptsPanel {
         }
     }
 
-    loadPromptIntoEditForm() {
-        const saved = localStorage.getItem(this.storageKey);
-        if (saved) {
-            try {
-                const promptData = JSON.parse(saved);
-                if (this.systemPromptEdit) {
-                    this.systemPromptEdit.value = promptData.systemPrompt || '';
-                }
-                if (this.userPromptEdit) {
-                    this.userPromptEdit.value = promptData.userPrompt || '';
-                }
-            } catch (error) {
-                console.error(`[LLM Prompts Panel] Error loading prompt data:`, error);
-            }
-        }
-    }
+    loadPromptIntoEditForm() { /* deprecated - no localStorage */ }
 
     updatePromptDisplay(systemPrompt, userPrompt) {
         if (this.promptDisplay) {
@@ -278,17 +262,7 @@ class LLMPromptsPanel {
         }
     }
 
-    loadPromptState() {
-        const saved = localStorage.getItem(this.storageKey);
-        if (saved) {
-            try {
-                const promptData = JSON.parse(saved);
-                this.updatePromptDisplay(promptData.systemPrompt, promptData.userPrompt);
-            } catch (error) {
-                console.error(`[LLM Prompts Panel] Error loading prompt state:`, error);
-            }
-        }
-    }
+    loadPromptState() { /* deprecated - no localStorage */ }
 
     handleGenerate() {
         // Emit callback for generation - let parent handle the actual generation
@@ -301,17 +275,22 @@ class LLMPromptsPanel {
         console.log(`[LLM Prompts Panel] Generate requested for ${this.pageType}`);
     }
 
-    restoreAccordionState() {
-        const savedState = localStorage.getItem('llm-prompts-accordion-state');
-        if (savedState === 'open') {
-            const content = document.getElementById('prompts-accordion-content');
-            const icon = document.getElementById('prompts-accordion-icon');
-            if (content && icon) {
-                content.style.display = 'block';
-                icon.classList.remove('fa-chevron-up');
-                icon.classList.add('fa-chevron-down');
+    async restoreAccordionState() {
+        try {
+            const key = `llm-prompts-accordion-state-${this.pageType}`;
+            const resp = await fetch(`/authoring/api/ui/preferences/${encodeURIComponent(key)}`);
+            const data = await resp.json();
+            const state = data && data.value ? (typeof data.value === 'string' ? data.value : (data.value.state||'')) : '';
+            if (state === 'open') {
+                const content = document.getElementById('prompts-accordion-content');
+                const icon = document.getElementById('prompts-accordion-icon');
+                if (content && icon) {
+                    content.style.display = 'block';
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                }
             }
-        }
+        } catch(_) {}
     }
 
     // Public API methods
@@ -343,12 +322,24 @@ function toggleLLMPromptsAccordion() {
         content.style.display = 'block';
         icon.classList.remove('fa-chevron-up');
         icon.classList.add('fa-chevron-down');
-        localStorage.setItem('llm-prompts-accordion-state', 'open');
+        try {
+            const substage = window.currentSubstage || 'drafting';
+            const key = `llm-prompts-accordion-state-${substage}`;
+            fetch(`/authoring/api/ui/preferences/${encodeURIComponent(key)}`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ value: 'open' })
+            });
+        } catch(_) {}
     } else {
         content.style.display = 'none';
         icon.classList.remove('fa-chevron-down');
         icon.classList.add('fa-chevron-up');
-        localStorage.setItem('llm-prompts-accordion-state', 'closed');
+        try {
+            const substage = window.currentSubstage || 'drafting';
+            const key = `llm-prompts-accordion-state-${substage}`;
+            fetch(`/authoring/api/ui/preferences/${encodeURIComponent(key)}`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ value: 'closed' })
+            });
+        } catch(_) {}
     }
 }
 
