@@ -437,7 +437,24 @@ class ImageConceptsOutputPanel {
       console.log('[DEBUG] Making API call to generate concepts for section:', id);
       const res = await postJSON(`/authoring/api/posts/${this.postId}/sections/${id}/generate-image-concepts`, {});
       console.log('[DEBUG] API response received:', res);
-      editor.value = res.image_concepts || '(no concepts generated)';
+      
+      if (res.success && res.image_concepts) {
+        // Update the textarea
+        editor.value = res.image_concepts;
+        
+        // Update the visual concept cards
+        this.displayImageConcepts(res.image_concepts);
+        
+        // Update the current section data if this is the currently displayed section
+        if (this.current && this.current.id === id) {
+          this.current.image_concepts = res.image_concepts;
+        }
+        
+        console.log('[DEBUG] Image concepts generated and displayed successfully');
+      } else {
+        editor.value = res.error || '(no concepts generated)';
+        console.error('[DEBUG] API returned error:', res.error);
+      }
     } catch (err) {
       console.error('[DEBUG] Error generating image concepts:', err);
       editor.value = 'Error generating image concepts';

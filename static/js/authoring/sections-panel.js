@@ -184,6 +184,11 @@ class SectionsPanel {
         // Emit batch start event
         this.callbacks.onBatchStart(selectedIds);
         
+        // Emit custom event for specialized panels
+        window.dispatchEvent(new CustomEvent('sections:batch-generate', {
+            detail: { ids: selectedIds }
+        }));
+        
         // Disable the button during generation
         const generateBtn = document.getElementById('batch-generate-btn');
         const originalText = generateBtn.textContent;

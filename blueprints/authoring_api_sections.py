@@ -177,11 +177,11 @@ def api_get_section(post_id, section_id):
                                 'ideas_to_include': None,
                                 'facts_to_include': None,
                                 'highlighting': None,
-                                'image_concepts': None,
-                                'image_prompts': None,
-                                'image_captions': None,
-                                'image_alt_text': None,
-                                'selected_image_concept': None
+                                'image_concepts': target_section.get('image_concepts'),  # Use actual data from JSON
+                                'image_prompts': target_section.get('image_prompts'),  # Use actual data from JSON
+                                'image_captions': target_section.get('image_captions'),  # Use actual data from JSON
+                                'image_alt_text': target_section.get('image_alt_text'),  # Use actual data from JSON
+                                'selected_image_concept': target_section.get('selected_image_concept')  # Use actual data from JSON
                             }
                             
                             # Try to get draft content from post_section table

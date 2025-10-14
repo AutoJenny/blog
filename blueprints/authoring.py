@@ -927,6 +927,9 @@ def api_select_concept(post_id, section_id):
                         (json.dumps(sections_data), post_id)
                     )
                     cursor.connection.commit()
+                except Exception as e:
+                    logger.error(f"Error updating selected_image_concept in sections JSON: {e}")
+                    return jsonify({'error': 'Failed to update section selection'}), 500
             return jsonify({'success': True, 'message': 'Concept selection saved successfully'})
             
     except Exception as e:
