@@ -20,6 +20,11 @@
       try {
         const res = await optimizeSection(postId, id, params);
         results.push({ id, success: !!res.success, data: res });
+        
+        // Update output panel if this section is currently selected
+        if (window.optimizedOutputPanel && window.optimizedOutputPanel.currentSectionId === id && res.success) {
+          window.optimizedOutputPanel.onImageOptimized(res.optimized_path);
+        }
       } catch (e) {
         results.push({ id, success: false, error: String(e) });
       }
