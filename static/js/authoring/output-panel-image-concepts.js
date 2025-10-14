@@ -1,6 +1,4 @@
-// Image Concepts Output Panel - specialized renderer
-import { ImageConceptsOutputPanel } from './image-concepts-output-panel.js';
-
+// Image Concepts Output Panel - specialized renderer (non-module)
 (function(){
   document.addEventListener('DOMContentLoaded', () => {
     if (window.currentSubstage !== 'image-concepts') return;

@@ -1,6 +1,29 @@
-import { postJSON, getJSON } from './api.js';
+// Image Concepts Output Panel - Non-module global implementation
+// Provides: window.ImageConceptsOutputPanel and window.selectConcept
 
-export class ImageConceptsOutputPanel {
+(function(global){
+
+async function getJSON(url) {
+  const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+  if (!res.ok) throw new Error(`GET ${url} failed: ${res.status}`);
+  return await res.json();
+}
+
+async function postJSON(url, body) {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body || {})
+  });
+  if (!res.ok) throw new Error(`POST ${url} failed: ${res.status}`);
+  return await res.json();
+}
+
+async function saveSelectedConcept(postId, sectionId, conceptId) {
+  return postJSON(`/authoring/api/posts/${postId}/sections/${sectionId}/select-concept`, { concept_id: conceptId });
+}
+
+class ImageConceptsOutputPanel {
   constructor({ postId }) {
     this.postId = postId;
     this.current = null;
@@ -38,8 +61,6 @@ export class ImageConceptsOutputPanel {
   bind() {
     const editor = document.getElementById('content-editor');
     editor?.addEventListener('input', () => this.updateWordCount());
-
-    document.getElementById('save-btn')?.addEventListener('click', () => this.save());
     document.getElementById('regenerate-btn')?.addEventListener('click', () => this.regenerate());
 
     window.addEventListener('sections:batch-generate', async (e) => {
@@ -65,6 +86,29 @@ export class ImageConceptsOutputPanel {
         this.closeBatchProgress();
       }, 1000);
     });
+
+    // Global selection handler
+    global.selectConcept = async (conceptId, sectionId) => {
+      try {
+        const container = document.getElementById('concepts-container');
+        if (!container) return;
+        container.querySelectorAll('.concept-card').forEach(card => {
+          const isSelected = card.dataset.conceptId === conceptId && card.dataset.sectionId === sectionId;
+          card.classList.toggle('selected', isSelected);
+          const btn = card.querySelector('.btn-select');
+          if (btn) {
+            btn.classList.toggle('selected', isSelected);
+            btn.textContent = isSelected ? 'Selected' : 'Select';
+          }
+        });
+        await saveSelectedConcept(this.postId, sectionId, conceptId);
+        if (this.current && this.current.id === sectionId) {
+          this.current.selected_image_concept = conceptId;
+        }
+      } catch (e) {
+        console.error('Error saving selected concept:', e);
+      }
+    };
   }
 
   show(section) {
@@ -335,11 +379,13 @@ export class ImageConceptsOutputPanel {
     if (wc) wc.textContent = `${n} words`;
   }
 
+  // Optional raw save (not used in cards mode)
   async save() {
     if (!this.current) return;
-    const content = document.getElementById('content-editor').value;
+    const content = document.getElementById('content-editor')?.value || '';
     await postJSON(`/authoring/api/posts/${this.postId}/sections/${this.current.id}/save-image-concepts`, { image_concepts: content });
-    document.getElementById('last-saved').textContent = `Saved ${new Date().toLocaleTimeString()}`;
+    const last = document.getElementById('last-saved');
+    if (last) last.textContent = `Saved ${new Date().toLocaleTimeString()}`;
   }
 
   updateBatchProgress(sectionId, status, percentage) {
@@ -406,3 +452,8 @@ export class ImageConceptsOutputPanel {
     return this.generateImageConcepts(sectionId);
   }
 }
+
+// Expose globally
+global.ImageConceptsOutputPanel = ImageConceptsOutputPanel;
+
+})(window);

@@ -353,6 +353,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Initialize Output Panel with callbacks
+    // Skip generic OutputPanel on image-concepts (specialized panel is used)
+    if (window.currentSubstage !== 'image-concepts') {
     const outputPanel = new OutputPanel({
         postId: window.postId,
         onContentChange: (content) => {
@@ -372,6 +374,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('[Drafting] Section loaded:', sectionId, sectionData.title);
         }
     });
+    }
     
     console.log('All panels initialized successfully');
 });

@@ -20,6 +20,8 @@
         window.currentSubstage = 'image-concepts';
   window.postId = {{ post_id|default(0) }};
 </script>
+<!-- Ensure specialized scripts load after the asset stack -->
+<script src="{{ url_for('static', filename='js/authoring/image-concepts-output-panel.js') }}"></script>
 {% endblock %}
 
 {% block title %}Image Concepts - Section Authoring{% endblock %}
