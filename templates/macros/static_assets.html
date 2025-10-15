@@ -26,6 +26,10 @@
             <link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/main.css') }}">
             <link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/navigation.css') }}">
             <link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/imaging.css') }}">
+        {% elif blueprint_name == 'header' %}
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/main.css') }}">
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/nav.dist.css') }}">
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/header/header-workspace.css') }}">
         {% else %}
             <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/main.css') }}">
         {% endif %}
