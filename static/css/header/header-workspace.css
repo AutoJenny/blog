@@ -1,8 +1,9 @@
 /* Header Workspace CSS - Main layout for header stage */
 
 .header-workspace {
-    padding: 1rem;
-    min-height: calc(100vh - 200px);
+    padding: 0.5rem 1rem;
+    min-height: auto;
+    margin-top: 0;
 }
 
 .header-workspace .workspace-container {
