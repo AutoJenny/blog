@@ -80,75 +80,6 @@ async function loadPostContext() {
     }
 }
 
-// Load section context data
-async function loadSectionContext(sectionId) {
-    try {
-        const response = await fetch(`/authoring/api/posts/${window.postId}/sections/${sectionId}`);
-        const data = await response.json();
-        
-        if (data.success && data.section) {
-            const section = data.section;
-            
-            // Update section fields
-            const sectionTitleElement = document.getElementById('dev-section-title');
-            if (sectionTitleElement) {
-                sectionTitleElement.textContent = section.title || section.section_heading || '-';
-            }
-            
-            const sectionSubtitleElement = document.getElementById('dev-section-subtitle');
-            if (sectionSubtitleElement) {
-                sectionSubtitleElement.textContent = section.description || section.section_description || '-';
-            }
-            
-            const sectionGroupElement = document.getElementById('dev-section-group');
-            if (sectionGroupElement) {
-                sectionGroupElement.textContent = section.section_heading || section.title || '-';
-            }
-            
-            // Update group summary with accordion
-            const groupSummaryElement = document.getElementById('dev-group-summary');
-            const groupSummaryPreview = document.getElementById('dev-group-summary-preview');
-            if (groupSummaryElement && groupSummaryPreview) {
-                const groupSummary = section.section_description || section.description || 'No group summary found';
-                groupSummaryElement.textContent = groupSummary;
-                
-                // Create preview (first 100 characters)
-                const preview = groupSummary.length > 100 
-                    ? groupSummary.substring(0, 100) + '...' 
-                    : groupSummary;
-                groupSummaryPreview.textContent = preview;
-            }
-            
-            // Update topics
-            const sectionTopicsElement = document.getElementById('dev-section-topics');
-            if (sectionTopicsElement) {
-                if (section.topics && Array.isArray(section.topics)) {
-                    sectionTopicsElement.textContent = section.topics.join(', ');
-                } else {
-                    sectionTopicsElement.textContent = 'No topics found';
-                }
-            }
-            
-            // Update avoid topics
-            const avoidTopicsElement = document.getElementById('dev-avoid-topics');
-            if (avoidTopicsElement) {
-                if (section.avoid_topics && Array.isArray(section.avoid_topics)) {
-                    avoidTopicsElement.textContent = section.avoid_topics.join(', ');
-                } else {
-                    avoidTopicsElement.textContent = 'No avoid topics found';
-                }
-            }
-        }
-    } catch (error) {
-        console.error('[Mini-Preview Panel] Error loading section context:', error);
-        // Set error states for section fields
-        const sectionFields = ['dev-section-title', 'dev-section-subtitle', 'dev-section-group', 'dev-group-summary', 'dev-section-topics', 'dev-avoid-topics'];
-        sectionFields.forEach(fieldId => {
-            const element = document.getElementById(fieldId);
-            if (element) element.textContent = 'Error loading';
-        });
-    }
-}
 
 // Initialize the panel
 document.addEventListener('DOMContentLoaded', function() {
@@ -160,16 +91,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load initial data
     loadPostContext();
     
-    // Listen for section selection events
-    window.addEventListener('sectionSelected', function(event) {
-        if (event.detail && event.detail.section) {
-            loadSectionContext(event.detail.section.id);
-        }
-    });
+    // Note: Only Post Content is shown in this panel per requirements
 });
 
 // Export functions for external use
 window.switchPreviewTab = switchPreviewTab;
 window.toggleFieldAccordion = toggleFieldAccordion;
 window.loadPostContext = loadPostContext;
-window.loadSectionContext = loadSectionContext;
