@@ -193,6 +193,10 @@ class ImagePromptsOutputPanel {
     }
 
     async generateImagePrompt() {
+        console.log('[DEBUG] generateImagePrompt called');
+        console.log('[DEBUG] this.currentSection:', this.currentSection);
+        console.log('[DEBUG] window.promptBuilderPanel:', window.promptBuilderPanel);
+        
         if (!this.currentSection) {
             console.warn('[ImagePromptsOutputPanel] No section selected');
             return;
@@ -216,6 +220,12 @@ class ImagePromptsOutputPanel {
             let conceptContent = null;
             if (window.promptBuilderPanel && window.promptBuilderPanel.selectedConceptContent) {
                 conceptContent = window.promptBuilderPanel.selectedConceptContent;
+                console.log('[DEBUG] Found concept content:', conceptContent);
+            } else {
+                console.log('[DEBUG] No concept content found. promptBuilderPanel:', window.promptBuilderPanel);
+                if (window.promptBuilderPanel) {
+                    console.log('[DEBUG] selectedConceptContent:', window.promptBuilderPanel.selectedConceptContent);
+                }
             }
 
             if (!conceptContent) {
