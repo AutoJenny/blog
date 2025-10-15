@@ -267,6 +267,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.dispatchEvent(new CustomEvent('sectionSelected', {
                     detail: { section: data.section }
                 }));
+            } else if (window.currentSubstage === 'image-captions') {
+                // Emit sectionSelected event for ImageCaptionsOutputPanel
+                window.dispatchEvent(new CustomEvent('sectionSelected', {
+                    detail: { section: data.section }
+                }));
             } else if (typeof outputPanel !== 'undefined') {
                 outputPanel.loadSection(data.sectionId, data.section);
             }
