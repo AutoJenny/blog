@@ -55,16 +55,11 @@ def api_generate_title_summary(post_id):
                 return jsonify({'error': 'Post not found'}), 404
             
             # TODO: Implement LLM generation for titles and summary
-            # For now, return placeholder data
-            title_options = [
-                f"Celtic Mythology: {post_data['idea_seed'] or 'Ancient Legends'}",
-                f"Exploring {post_data['idea_seed'] or 'Celtic Heritage'}: A Deep Dive",
-                f"The Mystical World of {post_data['idea_seed'] or 'Celtic Traditions'}"
-            ]
-            
-            subtitle = f"Discover the rich heritage and timeless wisdom of {post_data['idea_seed'] or 'Celtic culture'}"
-            slug = re.sub(r'[^a-zA-Z0-9\s-]', '', title_options[0]).lower().replace(' ', '-')
-            summary = f"An exploration of {post_data['idea_seed'] or 'Celtic mythology'} and its enduring influence on modern culture."
+            # For now, return empty data that will be populated by actual generation
+            title_options = []
+            subtitle = ""
+            slug = ""
+            summary = ""
             
             return jsonify({
                 'success': True,
@@ -85,13 +80,13 @@ def api_generate_header_image(post_id):
         data = request.get_json()
         
         # TODO: Implement header image generation
-        # For now, return placeholder data
+        # For now, return empty data that will be populated by actual generation
         return jsonify({
             'success': True,
-            'image_path': '/static/images/placeholder-header.jpg',
-            'caption': 'Celtic mythology illustration',
-            'alt_text': 'Ancient Celtic symbols and mythological figures',
-            'title': 'Celtic Heritage'
+            'image_path': '',
+            'caption': '',
+            'alt_text': '',
+            'title': ''
         })
         
     except Exception as e:
@@ -117,10 +112,10 @@ def api_generate_seo_meta(post_id):
                 return jsonify({'error': 'Post not found'}), 404
             
             # TODO: Implement LLM generation for SEO meta
-            # For now, return placeholder data
-            meta_title = f"{post_data['title'] or 'Celtic Mythology'} | Clan.com Blog"
-            meta_description = f"Explore {post_data['idea_seed'] or 'Celtic mythology'} and discover ancient wisdom. {post_data['summary'] or 'A comprehensive guide to Celtic heritage.'}"
-            meta_tags = "celtic mythology, ancient wisdom, heritage, folklore, culture"
+            # For now, return empty data that will be populated by actual generation
+            meta_title = ""
+            meta_description = ""
+            meta_tags = ""
             
             return jsonify({
                 'success': True,
