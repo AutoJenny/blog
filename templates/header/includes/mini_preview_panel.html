@@ -1,0 +1,36 @@
+<!-- Mini-Preview Panel -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/mini-preview-panel.css') }}">
+
+<div class="mini-preview-panel" id="mini-preview-panel">
+    <div class="panel-header">
+        <h4><span class="panel-name-green">Mini-Preview:</span> <span id="mini-preview-status">Post Preview</span></h4>
+    </div>
+    <div class="panel-content">
+        <div class="preview-tabs">
+            <div class="tab-buttons">
+                <button class="tab-button active" data-tab="development" onclick="switchPreviewTab('development')">
+                    Development
+                </button>
+                <button class="tab-button" data-tab="final" onclick="switchPreviewTab('final')">
+                    Final
+                </button>
+            </div>
+            
+            <div class="tab-content">
+                <div class="tab-pane active" id="development-tab">
+                    <div class="preview-content" id="development-preview">
+                        <!-- Development preview content will be populated here -->
+                    </div>
+                </div>
+                
+                <div class="tab-pane" id="final-tab">
+                    <div class="preview-content" id="final-preview">
+                        <!-- Final preview content will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/header/mini-preview-panel.js') }}"></script>
