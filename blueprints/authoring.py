@@ -2021,12 +2021,16 @@ def api_generate_image_prompt_from_builder():
     try:
         data = request.get_json()
         compiled_prompt = data.get('compiled_prompt')
+        post_id = data.get('post_id')
+        section_id = data.get('section_id')
+        
+        logger.info(f"[DEBUG] API received: post_id={post_id}, section_id={section_id}")
+        logger.info(f"[DEBUG] Compiled prompt: {compiled_prompt[:100]}...")
+        
         llm_provider = data.get('llm_provider', 'Ollama')
         llm_model = data.get('llm_model', 'llama3.2:latest')
         temperature = data.get('temperature', 0.7)
         max_tokens = data.get('max_tokens', 2000)
-        post_id = data.get('post_id')
-        section_id = data.get('section_id')
         
         if not compiled_prompt:
             return jsonify({'error': 'Missing compiled_prompt'}), 400
@@ -2202,7 +2206,8 @@ def api_generate_image_prompt_from_builder():
             
             cursor.connection.commit()
             
-            logger.info(f"Generated image prompt saved for post {post_id}, section {section_id}")
+            logger.info(f"[DEBUG] Generated prompt: {generated_prompt[:100]}...")
+            logger.info(f"[DEBUG] Saved to database for post {post_id}, section {section_id}")
             
             return jsonify({
                 'success': True,
