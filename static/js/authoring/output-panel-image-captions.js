@@ -147,7 +147,13 @@ class ImageCaptionsOutputPanel {
         const hasSection = this.currentSection !== null;
         const hasCaptions = this.captionTextarea?.value.trim() || this.altTextarea?.value.trim();
         
-        if (this.generateBtn) this.generateBtn.disabled = !hasSection;
+        console.log('[DEBUG] updateButtonStates - hasSection:', hasSection, 'hasCaptions:', hasCaptions);
+        console.log('[DEBUG] updateButtonStates - currentSection:', this.currentSection);
+        
+        if (this.generateBtn) {
+            console.log('[DEBUG] Setting generateBtn disabled to:', !hasSection);
+            this.generateBtn.disabled = !hasSection;
+        }
         if (this.saveBtn) this.saveBtn.disabled = !hasCaptions;
         if (this.regenerateBtn) this.regenerateBtn.disabled = !hasSection;
     }
