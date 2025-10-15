@@ -40,6 +40,53 @@ function toggleFieldAccordion(fieldId) {
     }
 }
 
+// Load sections data
+async function loadSections() {
+    try {
+        const response = await fetch(`/authoring/api/posts/${window.postId}/sections`);
+        const data = await response.json();
+        
+        if (data.success && data.sections) {
+            const sectionsContainer = document.getElementById('sections-container');
+            if (sectionsContainer) {
+                sectionsContainer.innerHTML = '';
+                
+                data.sections.forEach(section => {
+                    const sectionItem = document.createElement('div');
+                    sectionItem.className = 'section-item';
+                    sectionItem.innerHTML = `
+                        <div class="section-header" onclick="toggleSectionAccordion('section-${section.id}')">
+                            <div class="section-title">${section.title || section.section_heading || `Section ${section.id}`}</div>
+                            <i class="fas fa-chevron-down section-chevron" id="section-${section.id}-chevron"></i>
+                        </div>
+                        <div class="section-content collapsed" id="section-${section.id}-content">
+                            <div class="section-draft">${section.draft || section.section_text || 'No draft content available'}</div>
+                        </div>
+                    `;
+                    sectionsContainer.appendChild(sectionItem);
+                });
+            }
+        }
+    } catch (error) {
+        console.error('[Mini-Preview Panel] Error loading sections:', error);
+        const sectionsContainer = document.getElementById('sections-container');
+        if (sectionsContainer) {
+            sectionsContainer.innerHTML = '<div class="content-field"><div class="field-value">Error loading sections</div></div>';
+        }
+    }
+}
+
+// Toggle section accordion
+function toggleSectionAccordion(sectionId) {
+    const content = document.getElementById(`${sectionId}-content`);
+    const chevron = document.getElementById(`${sectionId}-chevron`);
+    
+    if (content && chevron) {
+        content.classList.toggle('collapsed');
+        chevron.classList.toggle('open');
+    }
+}
+
 // Load post context data
 async function loadPostContext() {
     try {
@@ -90,6 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Load initial data
     loadPostContext();
+    loadSections();
     
     // Note: Only Post Content is shown in this panel per requirements
 });
@@ -97,4 +145,6 @@ document.addEventListener('DOMContentLoaded', function() {
 // Export functions for external use
 window.switchPreviewTab = switchPreviewTab;
 window.toggleFieldAccordion = toggleFieldAccordion;
+window.toggleSectionAccordion = toggleSectionAccordion;
 window.loadPostContext = loadPostContext;
+window.loadSections = loadSections;
