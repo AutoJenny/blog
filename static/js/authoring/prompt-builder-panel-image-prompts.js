@@ -183,6 +183,7 @@ class PromptBuilderPanel {
     }
 
     onSectionSelected(section) {
+        console.log('[DEBUG] PromptBuilderPanel received section:', section);
         this.currentSection = section;
         this.updateSectionTitle(section.title || section.section_heading || 'Unknown Section');
         this.loadSelectedConcept(section);
@@ -198,11 +199,14 @@ class PromptBuilderPanel {
     }
 
     loadSelectedConcept(section) {
+        console.log('[DEBUG] loadSelectedConcept called with section:', section);
         const conceptDisplay = document.getElementById('selected-concept-display');
         if (!conceptDisplay) return;
 
         const selectedConceptId = section.selected_image_concept;
         const imageConcepts = section.image_concepts;
+        console.log('[DEBUG] selectedConceptId:', selectedConceptId);
+        console.log('[DEBUG] imageConcepts:', imageConcepts);
         
         if (selectedConceptId && imageConcepts) {
             try {
