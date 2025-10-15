@@ -238,7 +238,7 @@ class ImagePromptsOutputPanel {
             const compiledPrompt = window.promptBuilderPanel?.buildCompiledPrompt(conceptContent, config) || 
                                   `Create an image showing: ${conceptContent.description}`;
             
-            const response = await fetch('/api/generate-image-prompt-from-builder', {
+            const response = await fetch('/authoring/api/generate-image-prompt-from-builder', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -381,7 +381,7 @@ class PromptBuilderPanel {
             const config = this.modelConfig[this.modelSelection] || this.modelConfig['sdxl-lora'];
             const compiledPrompt = this.buildCompiledPrompt(this.selectedConceptContent, config);
             
-            const response = await fetch('/api/generate-image-prompt-from-builder', {
+            const response = await fetch('/authoring/api/generate-image-prompt-from-builder', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
