@@ -281,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
             initializeLLMForSection(data.sectionId);
             
             // Load existing draft (skip for specialized UIs)
-            if (window.currentSubstage !== 'image-concepts' && window.currentSubstage !== 'image-prompts') {
+            if (window.currentSubstage !== 'image-concepts' && window.currentSubstage !== 'image-prompts' && window.currentSubstage !== 'image-captions') {
                 await loadSectionDraft(data.sectionId);
             }
         },
@@ -370,8 +370,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Initialize Output Panel with callbacks
-    // Skip generic OutputPanel on image-concepts and image-prompts (specialized panels are used)
-    if (window.currentSubstage !== 'image-concepts' && window.currentSubstage !== 'image-prompts') {
+    // Skip generic OutputPanel on image-concepts, image-prompts, and image-captions (specialized panels are used)
+    if (window.currentSubstage !== 'image-concepts' && window.currentSubstage !== 'image-prompts' && window.currentSubstage !== 'image-captions') {
     const outputPanel = new OutputPanel({
         postId: window.postId,
         onContentChange: (content) => {
