@@ -442,6 +442,8 @@ class PromptBuilderPanel {
             try {
                 // Find section data
                 const section = window.sectionsData?.find(s => s.id === sectionId);
+                console.log('[DEBUG] Batch: Looking for section', sectionId, 'in window.sectionsData:', window.sectionsData);
+                console.log('[DEBUG] Batch: Found section:', section);
                 if (!section || !section.selected_image_concept) {
                     console.warn('[PromptBuilderPanel] Skipping section without concept:', sectionId);
                     continue;
