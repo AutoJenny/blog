@@ -54,81 +54,9 @@ class ImagePromptsOutputPanel {
         const icon = document.getElementById('image-prompts-accordion-icon');
 
         if (header && content && icon) {
-            // Restore accordion state from DB
-            this.restoreAccordionState();
-            
-            header.addEventListener('click', () => {
-                this.toggleAccordion();
-            });
-        }
-    }
-
-    async restoreAccordionState() {
-        try {
-            const key = `image-prompts-output-accordion-state-image-prompts`;
-            const resp = await fetch(`/authoring/api/ui/preferences/${encodeURIComponent(key)}`);
-            const data = await resp.json();
-            const state = data && data.value ? (typeof data.value === 'string' ? data.value : (data.value.state||'')) : '';
-            
-            const content = document.getElementById('image-prompts-accordion-content');
-            const icon = document.getElementById('image-prompts-accordion-icon');
-            
-            if (state === 'open') {
-                if (content && icon) {
-                    content.style.display = 'block';
-                    icon.classList.remove('fa-chevron-up');
-                    icon.classList.add('fa-chevron-down');
-                }
-            } else {
-                if (content && icon) {
-                    content.style.display = 'none';
-                    icon.classList.remove('fa-chevron-down');
-                    icon.classList.add('fa-chevron-up');
-                }
-            }
-        } catch (error) {
-            console.error('[ImagePromptsOutputPanel] Error restoring accordion state:', error);
-        }
-    }
-
-    async toggleAccordion() {
-        const content = document.getElementById('image-prompts-accordion-content');
-        const icon = document.getElementById('image-prompts-accordion-icon');
-        
-        if (!content || !icon) return;
-
-        const isCollapsed = content.style.display === 'none';
-        
-        if (isCollapsed) {
+            // Keep output panel permanently open (no accordion functionality)
             content.style.display = 'block';
-            icon.classList.remove('fa-chevron-up');
-            icon.classList.add('fa-chevron-down');
-            // Save open state to DB
-            try {
-                const key = `image-prompts-output-accordion-state-image-prompts`;
-                await fetch(`/authoring/api/ui/preferences/${encodeURIComponent(key)}`, {
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ value: 'open' })
-                });
-            } catch (error) {
-                console.error('[ImagePromptsOutputPanel] Error saving accordion state:', error);
-            }
-        } else {
-            content.style.display = 'none';
-            icon.classList.remove('fa-chevron-down');
-            icon.classList.add('fa-chevron-up');
-            // Save closed state to DB
-            try {
-                const key = `image-prompts-output-accordion-state-image-prompts`;
-                await fetch(`/authoring/api/ui/preferences/${encodeURIComponent(key)}`, {
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ value: 'closed' })
-                });
-            } catch (error) {
-                console.error('[ImagePromptsOutputPanel] Error saving accordion state:', error);
-            }
+            icon.style.display = 'none'; // Hide the chevron icon since it's not functional
         }
     }
 
@@ -325,11 +253,9 @@ class ImagePromptsOutputPanel {
     }
 }
 
-// Global accordion function
+// Global accordion function (disabled for output panel)
 function toggleImagePromptsOutputAccordion() {
-    if (window.imagePromptsOutputPanel) {
-        window.imagePromptsOutputPanel.toggleAccordion();
-    }
+    // Output panel is permanently open - no accordion functionality
 }
 
 // Initialize when DOM is ready
