@@ -5,31 +5,41 @@
     min-height: calc(100vh - 200px);
 }
 
-.workspace-container {
-    display: grid;
-    grid-template-columns: 350px 1fr;
+.header-workspace .workspace-container {
+    display: grid !important;
+    grid-template-columns: 350px 1fr !important;
     gap: 1.5rem;
     max-width: 1400px;
     margin: 0 auto;
+    border: 2px solid #10b981; /* Debug border */
+    min-height: 500px; /* Debug min height */
 }
 
 @media (max-width: 1200px) {
-    .workspace-container {
-        grid-template-columns: 300px 1fr;
+    .header-workspace .workspace-container {
+        grid-template-columns: 300px 1fr !important;
     }
 }
 
 @media (max-width: 768px) {
-    .workspace-container {
-        grid-template-columns: 1fr;
+    .header-workspace .workspace-container {
+        grid-template-columns: 1fr !important;
         gap: 1rem;
     }
 }
 
-.editor-panel {
+.header-workspace .editor-panel {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    border: 2px solid #3b82f6; /* Debug border for right panel */
+    background: rgba(59, 130, 246, 0.1); /* Debug background */
+    padding: 1rem;
+}
+
+.header-workspace .mini-preview-panel {
+    border: 2px solid #ef4444; /* Debug border for left panel */
+    background: rgba(239, 68, 68, 0.1); /* Debug background */
 }
 
 /* Panel styling */
