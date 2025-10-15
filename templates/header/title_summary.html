@@ -28,8 +28,21 @@ document.addEventListener('DOMContentLoaded', function() {
         
         <!-- Right Panel: Content -->
         <div class="editor-panel">
+            <!-- LLM Settings Panel -->
+            {% include 'authoring/includes/llm_settings_panel.html' %}
+            
+            <!-- Uber Generate Button -->
+            <div class="uber-generate-section">
+                <button class="btn-primary btn-large" id="uber-generate-btn">
+                    <i class="fas fa-magic"></i> Generate All (Title, Subtitle, Summary, Slug)
+                </button>
+            </div>
+            
             <!-- Title Generation Panel -->
             {% include 'header/includes/title_generation_panel.html' %}
+
+            <!-- Subtitle Panel -->
+            {% include 'header/includes/subtitle_panel.html' %}
             
             <!-- Summary Generation Panel -->
             {% include 'header/includes/summary_generation_panel.html' %}

@@ -4,8 +4,77 @@ from config.database import db_manager
 import logging
 import json
 import re
+import requests
+import os
 
 logger = logging.getLogger(__name__)
+
+class LLMService:
+    """Service for interacting with LLM providers."""
+    
+    def __init__(self):
+        self.providers = {
+            'openai': {
+                'base_url': 'https://api.openai.com/v1',
+                'api_key': os.getenv('OPENAI_API_KEY')
+            },
+            'ollama': {
+                'base_url': 'http://localhost:11434'
+            }
+        }
+    
+    def execute_llm_request(self, provider, model, messages, api_key=None):
+        """Execute LLM request."""
+        try:
+            if provider == 'openai':
+                headers = {
+                    'Authorization': f'Bearer {api_key or self.providers["openai"]["api_key"]}',
+                    'Content-Type': 'application/json'
+                }
+                data = {
+                    'model': model,
+                    'messages': messages,
+                    'temperature': 0.7,
+                    'max_tokens': 2000
+                }
+                response = requests.post(
+                    f"{self.providers[provider]['base_url']}/chat/completions",
+                    headers=headers,
+                    json=data,
+                    timeout=30
+                )
+            elif provider == 'ollama':
+                data = {
+                    'model': model,
+                    'messages': messages,
+                    'stream': False,
+                    'options': {
+                        'num_predict': 4000
+                    }
+                }
+                response = requests.post(
+                    f"{self.providers[provider]['base_url']}/api/chat",
+                    json=data,
+                    timeout=60
+                )
+            else:
+                return {'error': f'Unknown provider: {provider}'}
+            
+            if response.status_code == 200:
+                result = response.json()
+                if provider == 'openai':
+                    return {'content': result['choices'][0]['message']['content']}
+                elif provider == 'ollama':
+                    return {'content': result['message']['content']}
+            else:
+                return {'error': f'API request failed: {response.status_code} - {response.text}'}
+                
+        except Exception as e:
+            logger.error(f"Error executing LLM request: {e}")
+            return {'error': str(e)}
+
+# Initialize LLM service
+llm_service = LLMService()
 
 bp = Blueprint('header', __name__, url_prefix='/header')
 
@@ -36,6 +105,274 @@ def header_final_review(post_id):
     return render_template('header/final_review.html', post_id=post_id, blueprint_name='header')
 
 # API endpoints
+@bp.route('/api/prompts/<int:step_id>')
+def api_get_prompts(step_id):
+    """Get system and task prompts for a workflow step"""
+    try:
+        logger.info(f"Getting prompts for step_id: {step_id}")
+        with db_manager.get_cursor() as cursor:
+            # Get prompts from workflow_step_prompt table
+            cursor.execute("""
+                SELECT 
+                    sp.system_prompt,
+                    tp.prompt_text as task_prompt
+                FROM workflow_step_prompt wsp
+                LEFT JOIN llm_prompt sp ON sp.id = wsp.system_prompt_id
+                LEFT JOIN llm_prompt tp ON tp.id = wsp.task_prompt_id
+                WHERE wsp.step_id = %s
+            """, (step_id,))
+            
+            result = cursor.fetchone()
+            
+            if result:
+                return jsonify({
+                    'success': True,
+                    'system_prompt': result.get('system_prompt', '') or '',
+                    'task_prompt': result.get('task_prompt', '') or ''
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'No prompts found for this step'
+                }), 404
+                
+    except Exception as e:
+        logger.error(f"Error getting prompts for step {step_id}: {e}")
+        logger.error(f"Exception type: {type(e)}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/prompts/<int:step_id>', methods=['POST'])
+def api_save_prompts(step_id):
+    """Save system and task prompts for a workflow step"""
+    try:
+        data = request.get_json()
+        system_prompt = data.get('system_prompt', '')
+        task_prompt = data.get('task_prompt', '')
+        
+        with db_manager.get_cursor() as cursor:
+            # Get current prompt IDs
+            cursor.execute("""
+                SELECT system_prompt_id, task_prompt_id
+                FROM workflow_step_prompt
+                WHERE step_id = %s
+            """, (step_id,))
+            
+            result = cursor.fetchone()
+            
+            if result:
+                system_prompt_id, task_prompt_id = result
+                
+                # Update system prompt
+                if system_prompt_id:
+                    cursor.execute("""
+                        UPDATE llm_prompt 
+                        SET system_prompt = %s, updated_at = CURRENT_TIMESTAMP
+                        WHERE id = %s
+                    """, (system_prompt, system_prompt_id))
+                else:
+                    # Create new system prompt
+                    cursor.execute("""
+                        INSERT INTO llm_prompt (name, description, system_prompt)
+                        VALUES (%s, %s, %s)
+                        RETURNING id
+                    """, (f'System Prompt Step {step_id}', f'System prompt for step {step_id}', system_prompt))
+                    system_prompt_id = cursor.fetchone()[0]
+                
+                # Update task prompt
+                if task_prompt_id:
+                    cursor.execute("""
+                        UPDATE llm_prompt 
+                        SET prompt_text = %s, updated_at = CURRENT_TIMESTAMP
+                        WHERE id = %s
+                    """, (task_prompt, task_prompt_id))
+                else:
+                    # Create new task prompt
+                    cursor.execute("""
+                        INSERT INTO llm_prompt (name, description, prompt_text, step_id)
+                        VALUES (%s, %s, %s, %s)
+                        RETURNING id
+                    """, (f'Task Prompt Step {step_id}', f'Task prompt for step {step_id}', task_prompt, step_id))
+                    task_prompt_id = cursor.fetchone()[0]
+                
+                # Update workflow_step_prompt link
+                cursor.execute("""
+                    UPDATE workflow_step_prompt
+                    SET system_prompt_id = %s, task_prompt_id = %s, updated_at = CURRENT_TIMESTAMP
+                    WHERE step_id = %s
+                """, (system_prompt_id, task_prompt_id, step_id))
+                
+                return jsonify({'success': True})
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'No workflow step found'
+                }), 404
+                
+    except Exception as e:
+        logger.error(f"Error saving prompts for step {step_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/generate-titles', methods=['POST'])
+def api_generate_titles(post_id):
+    """Generate three title options based on Development tab content using LLM"""
+    try:
+        data = request.get_json()
+        idea_seed = data.get('idea_seed', '')
+        expanded_idea = data.get('expanded_idea', '')
+        section_content = data.get('section_content', '')
+        
+        logger.info(f"Generating titles for post {post_id} with content: idea_seed={idea_seed[:50]}...")
+        
+        # Get prompts from database for step 60 (Title Generation)
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT 
+                    sp.system_prompt,
+                    tp.prompt_text as task_prompt
+                FROM workflow_step_prompt wsp
+                LEFT JOIN llm_prompt sp ON sp.id = wsp.system_prompt_id
+                LEFT JOIN llm_prompt tp ON tp.id = wsp.task_prompt_id
+                WHERE wsp.step_id = 60
+            """)
+            
+            result = cursor.fetchone()
+            
+            if not result:
+                return jsonify({'error': 'No prompts found for title generation'}), 404
+            
+            system_prompt = result.get('system_prompt', '')
+            task_prompt = result.get('task_prompt', '')
+        
+        # Replace placeholders in task prompt with actual data
+        prompt_vars = {
+            'idea_seed': idea_seed,
+            'expanded_idea': expanded_idea,
+            'section_content': section_content
+        }
+        
+        # Replace [data:field] placeholders
+        for key, value in prompt_vars.items():
+            task_prompt = task_prompt.replace(f'[data:{key}]', str(value))
+        
+        # Prepare messages for LLM
+        messages = [
+            {'role': 'system', 'content': system_prompt},
+            {'role': 'user', 'content': task_prompt}
+        ]
+        
+        # Execute LLM request
+        logger.info(f"Calling LLM for title generation with system prompt: {system_prompt[:100]}...")
+        llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+        
+        if 'error' in llm_response:
+            logger.error(f"LLM generation failed: {llm_response['error']}")
+            return jsonify({'error': f'LLM generation failed: {llm_response["error"]}'}), 500
+        
+        generated_content = llm_response['content'].strip()
+        logger.info(f"LLM response: {generated_content[:200]}...")
+        
+        # Parse JSON response
+        try:
+            # Extract JSON array from response
+            json_match = re.search(r'\[.*?\]', generated_content, re.DOTALL)
+            if json_match:
+                json_str = json_match.group(0)
+                title_options = json.loads(json_str)
+                
+                if not isinstance(title_options, list) or len(title_options) != 3:
+                    raise ValueError("Response must be an array of exactly 3 titles")
+                
+                # Clean up titles
+                title_options = [title.strip().strip('"').strip("'") for title in title_options]
+                
+                return jsonify({
+                    'success': True,
+                    'title_options': title_options,
+                    'selected_index': 0
+                })
+            else:
+                raise ValueError("No JSON array found in response")
+                
+        except (json.JSONDecodeError, ValueError) as e:
+            logger.error(f"Failed to parse LLM response as JSON: {e}")
+            logger.error(f"Raw response: {generated_content}")
+            return jsonify({'error': f'Failed to parse LLM response: {str(e)}'}), 500
+        
+    except Exception as e:
+        logger.error(f"Error generating titles for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/save-selected-title', methods=['POST'])
+def api_save_selected_title(post_id):
+    """Save the selected title and title options to database"""
+    try:
+        data = request.get_json()
+        title = data.get('title', '')
+        title_index = data.get('title_index', 0)
+        title_options = data.get('title_options', [])
+        
+        with db_manager.get_cursor() as cursor:
+            # Update post table with selected title and options
+            cursor.execute("""
+                UPDATE post 
+                SET title = %s, title_choices = %s, updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+            """, (title, json.dumps(title_options), post_id))
+            
+            return jsonify({'success': True})
+            
+    except Exception as e:
+        logger.error(f"Error saving selected title for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/get-titles')
+def api_get_titles(post_id):
+    """Get existing title options and selected title"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT title, title_choices
+                FROM post 
+                WHERE id = %s
+            """, (post_id,))
+            
+            result = cursor.fetchone()
+            
+            if result:
+                title = result.get('title', '') or ''
+                title_choices = result.get('title_choices', '') or '[]'
+                
+                try:
+                    title_options = json.loads(title_choices)
+                except:
+                    title_options = []
+                
+                # Find selected index
+                selected_index = 0
+                if title and title_options:
+                    try:
+                        selected_index = title_options.index(title)
+                    except ValueError:
+                        selected_index = 0
+                
+                return jsonify({
+                    'success': True,
+                    'title_options': title_options,
+                    'selected_title': title,
+                    'selected_index': selected_index
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'Post not found'
+                }), 404
+                
+    except Exception as e:
+        logger.error(f"Error getting titles for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @bp.route('/api/posts/<int:post_id>/generate-title-summary', methods=['POST'])
 def api_generate_title_summary(post_id):
     """Generate multiple title options, subtitle, slug, summary"""

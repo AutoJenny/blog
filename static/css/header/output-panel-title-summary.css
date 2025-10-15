@@ -1,0 +1,92 @@
+/* Output Panel Title Summary CSS */
+.output-panel .panel-name-green {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.output-panel .panel-content.collapsed {
+    display: none;
+}
+
+.output-panel .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.75rem;
+    background: #334155;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+}
+
+.output-panel .panel-header:hover {
+    background: #475569;
+}
+
+.output-panel .panel-header h4 {
+    margin: 0;
+    color: #f1f5f9;
+    font-size: 1rem;
+}
+
+.output-panel .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.output-panel .header-actions i {
+    color: #94a3b8;
+    transition: transform 0.2s;
+}
+
+.output-panel .header-actions i.open {
+    transform: rotate(180deg);
+}
+
+.output-panel .panel-content {
+    padding: 1rem;
+    background: #1e293b;
+    border-radius: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.output-panel .output-display {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.output-panel .title-display h3 {
+    margin: 0 0 0.5rem 0;
+    color: #f1f5f9;
+    font-size: 1.25rem;
+}
+
+.output-panel .title-display p {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 0.875rem;
+}
+
+.output-panel .summary-display p {
+    margin: 0;
+    color: #e2e8f0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.output-panel .slug-display p {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 0.875rem;
+}
+
+.output-panel .slug-display strong {
+    color: #f1f5f9;
+}
+
+.output-panel #generated-slug {
+    color: #3b82f6;
+    font-weight: 500;
+}

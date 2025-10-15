@@ -1,0 +1,9 @@
+.subtitle-panel .panel-header h4 .panel-name-green { color: #10b981; }
+.subtitle-panel .panel-content.collapsed { display: none; }
+.subtitle-panel .subtitle-editor label { color: #10b981; font-size: 0.85rem; }
+.subtitle-panel .subtitle-editor input { width: 100%; padding: 0.5rem; background: #0f172a; color: #e2e8f0; border: 1px solid #334155; border-radius: 4px; }
+.subtitle-panel .panel-header { display:flex; justify-content: space-between; align-items:center; cursor:pointer; }
+.subtitle-panel .panel-header .fa-chevron-down { transition: transform 0.2s; color:#94a3b8; }
+.subtitle-panel .panel-header .fa-chevron-down.open { transform: rotate(180deg); }
+
+

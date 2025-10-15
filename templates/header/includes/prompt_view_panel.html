@@ -1,0 +1,55 @@
+<!-- Cut-down Prompt View Panel -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/prompt-view-panel.css') }}">
+
+<div class="prompt-view-panel" id="prompt-view-panel-{{ panel_type }}">
+    <div class="panel-header" onclick="togglePromptViewAccordion('{{ panel_type }}')">
+        <h4><span class="panel-name-green">Prompts:</span> <span id="prompt-view-status-{{ panel_type }}">System & Task Prompts</span></h4>
+        <div class="header-actions">
+            <button class="btn-secondary btn-small" id="edit-prompts-btn-{{ panel_type }}">Edit</button>
+            <i class="fas fa-chevron-down" id="prompt-view-accordion-icon-{{ panel_type }}"></i>
+        </div>
+    </div>
+    <div class="panel-content" id="prompt-view-content-{{ panel_type }}">
+        <div class="prompt-sections">
+            <!-- System Prompt Section -->
+            <div class="prompt-section">
+                <div class="prompt-header">
+                    <h5>System Prompt</h5>
+                    <span class="prompt-source">Database</span>
+                </div>
+                <div class="prompt-content" id="system-prompt-{{ panel_type }}">
+                    <div class="prompt-text">Loading system prompt...</div>
+                </div>
+            </div>
+            
+            <!-- Task Prompt Section -->
+            <div class="prompt-section">
+                <div class="prompt-header">
+                    <h5>Task Prompt</h5>
+                    <span class="prompt-source">Database</span>
+                </div>
+                <div class="prompt-content" id="task-prompt-{{ panel_type }}">
+                    <div class="prompt-text">Loading task prompt...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Edit Mode (hidden by default) -->
+        <div class="prompt-edit-mode" id="prompt-edit-mode-{{ panel_type }}" style="display: none;">
+            <div class="edit-section">
+                <label for="system-prompt-edit-{{ panel_type }}">System Prompt:</label>
+                <textarea id="system-prompt-edit-{{ panel_type }}" rows="4" placeholder="System prompt..."></textarea>
+            </div>
+            <div class="edit-section">
+                <label for="task-prompt-edit-{{ panel_type }}">Task Prompt:</label>
+                <textarea id="task-prompt-edit-{{ panel_type }}" rows="6" placeholder="Task prompt..."></textarea>
+            </div>
+            <div class="edit-actions">
+                <button class="btn-primary btn-small" id="save-prompts-btn-{{ panel_type }}">Save</button>
+                <button class="btn-secondary btn-small" id="cancel-edit-btn-{{ panel_type }}">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/header/prompt-view-panel.js') }}"></script>

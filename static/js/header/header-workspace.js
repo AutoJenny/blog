@@ -7,11 +7,75 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('[Header Workspace] Initializing...');
     
+    // Initialize Uber Generate button
+    initUberGenerate();
+    
     // Initialize all panels
     // Panel initialization will be added as panels are developed
     
     console.log('[Header Workspace] All panels initialized');
 });
+
+// Uber Generate functionality
+function initUberGenerate() {
+    const uberBtn = document.getElementById('uber-generate-btn');
+    if (!uberBtn) return;
+
+    uberBtn.addEventListener('click', async function() {
+        console.log('[Uber Generate] Starting generation of all header elements');
+        
+        // Disable button during generation
+        uberBtn.disabled = true;
+        uberBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+        
+        try {
+            // Make single API call to generate all elements
+            const response = await fetch(`/header/api/posts/${window.postId}/generate-title-summary`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({})
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                console.log('[Uber Generate] Success, emitting events to all panels');
+                
+                // Emit custom event with all generated data
+                const event = new CustomEvent('uberGenerateTitleSummary', {
+                    detail: {
+                        title_options: data.title_options || [],
+                        subtitle: data.subtitle || '',
+                        summary: data.summary || '',
+                        slug: data.slug || ''
+                    }
+                });
+                
+                document.dispatchEvent(event);
+                
+                // Show success message
+                uberBtn.innerHTML = '<i class="fas fa-check"></i> Generated Successfully!';
+                setTimeout(() => {
+                    uberBtn.innerHTML = '<i class="fas fa-magic"></i> Generate All (Title, Subtitle, Summary, Slug)';
+                }, 2000);
+                
+            } else {
+                throw new Error(data.error || 'Generation failed');
+            }
+            
+        } catch (error) {
+            console.error('[Uber Generate] Error:', error);
+            uberBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Generation Failed';
+            setTimeout(() => {
+                uberBtn.innerHTML = '<i class="fas fa-magic"></i> Generate All (Title, Subtitle, Summary, Slug)';
+            }, 3000);
+        } finally {
+            uberBtn.disabled = false;
+        }
+    });
+}
 
 // Accordion toggle functions
 function toggleTitleGenerationAccordion() {

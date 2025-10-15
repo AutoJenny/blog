@@ -1,0 +1,184 @@
+/* Prompt View Panel CSS */
+.prompt-view-panel .panel-name-green {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.prompt-view-panel .panel-content.collapsed {
+    display: none;
+}
+
+.prompt-view-panel .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.75rem;
+    background: #334155;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+}
+
+.prompt-view-panel .panel-header:hover {
+    background: #475569;
+}
+
+.prompt-view-panel .panel-header h4 {
+    margin: 0;
+    color: #f1f5f9;
+    font-size: 1rem;
+}
+
+.prompt-view-panel .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.prompt-view-panel .header-actions i {
+    color: #94a3b8;
+    transition: transform 0.2s;
+}
+
+.prompt-view-panel .header-actions i.open {
+    transform: rotate(180deg);
+}
+
+.btn-small {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.prompt-view-panel .panel-content {
+    padding: 1rem;
+    background: #1e293b;
+    border-radius: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.prompt-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.prompt-section {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 0.375rem;
+    overflow: hidden;
+}
+
+.prompt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    background: #334155;
+    border-bottom: 1px solid #475569;
+}
+
+.prompt-header h5 {
+    margin: 0;
+    color: #8b5cf6;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.prompt-source {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    background: #1e293b;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+}
+
+.prompt-content {
+    padding: 0.75rem;
+}
+
+.prompt-text {
+    color: #e2e8f0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* Edit Mode */
+.prompt-edit-mode {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 0.375rem;
+}
+
+.edit-section {
+    margin-bottom: 1rem;
+}
+
+.edit-section:last-of-type {
+    margin-bottom: 0;
+}
+
+.edit-section label {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: #10b981;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.edit-section textarea {
+    width: 100%;
+    padding: 0.5rem;
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 0.375rem;
+    color: #f1f5f9;
+    font-size: 0.875rem;
+    font-family: inherit;
+    resize: vertical;
+}
+
+.edit-section textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.edit-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+}
+
+.btn-secondary {
+    background: #64748b;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #475569;
+}

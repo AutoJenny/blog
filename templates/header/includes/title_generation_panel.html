@@ -10,12 +10,12 @@
         </div>
     </div>
     <div class="panel-content" id="title-generation-content">
+        <!-- Prompt View Panel -->
+        {% set panel_type = 'title' %}
+        {% include 'header/includes/prompt_view_panel.html' %}
+        
         <div class="title-options" id="title-options">
             <!-- Title options will be populated dynamically -->
-        </div>
-        <div class="subtitle-section">
-            <label for="subtitle-input">Subtitle:</label>
-            <input type="text" id="subtitle-input" placeholder="Subtitle will be generated...">
         </div>
     </div>
 </div>
