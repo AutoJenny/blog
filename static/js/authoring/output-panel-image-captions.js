@@ -27,11 +27,17 @@ class ImageCaptionsOutputPanel {
         this.lastSavedSpan = document.getElementById('last-saved-captions');
         this.accordionIcon = document.getElementById('image-captions-accordion-icon');
         this.content = document.getElementById('image-captions-content');
+        
+        console.log('[DEBUG] ImageCaptionsOutputPanel bindElements - generateBtn:', this.generateBtn);
     }
 
     setupEventListeners() {
+        console.log('[DEBUG] ImageCaptionsOutputPanel setupEventListeners - generateBtn:', this.generateBtn);
         if (this.generateBtn) {
+            console.log('[DEBUG] Adding click listener to generate button');
             this.generateBtn.addEventListener('click', () => this.generateCaptions());
+        } else {
+            console.warn('[DEBUG] Generate button not found!');
         }
         
         if (this.saveBtn) {
