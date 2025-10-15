@@ -126,6 +126,22 @@
     line-height: 1.5;
 }
 
+.prompt-builder-panel .concept-description {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.prompt-builder-panel .concept-mood {
+    margin-bottom: 0.25rem;
+    color: #cbd5e1;
+    font-size: 0.875rem;
+}
+
+.prompt-builder-panel .concept-elements {
+    color: #cbd5e1;
+    font-size: 0.875rem;
+}
+
 /* Model Configuration */
 .prompt-builder-panel .model-info {
     background: #0f172a;

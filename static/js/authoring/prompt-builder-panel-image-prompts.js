@@ -207,16 +207,54 @@ class PromptBuilderPanel {
         const conceptDisplay = document.getElementById('selected-concept-display');
         if (!conceptDisplay) return;
 
-        const selectedConcept = section.selected_image_concept;
+        const selectedConceptId = section.selected_image_concept;
+        const imageConcepts = section.image_concepts;
         
-        if (selectedConcept) {
-            conceptDisplay.innerHTML = `
-                <div class="concept-text">${selectedConcept}</div>
-            `;
+        if (selectedConceptId && imageConcepts) {
+            try {
+                // Parse the image concepts JSON
+                const conceptsData = typeof imageConcepts === 'string' ? JSON.parse(imageConcepts) : imageConcepts;
+                
+                // Find the selected concept
+                let selectedConcept = null;
+                if (conceptsData.concepts && Array.isArray(conceptsData.concepts)) {
+                    selectedConcept = conceptsData.concepts.find(c => c.concept_id === selectedConceptId);
+                }
+                
+                if (selectedConcept) {
+                    // Display the descriptive elements (not the title)
+                    conceptDisplay.innerHTML = `
+                        <div class="concept-text">
+                            <div class="concept-description">${selectedConcept.concept_description}</div>
+                            <div class="concept-mood">Mood: ${selectedConcept.concept_mood}</div>
+                            <div class="concept-elements">Key Elements: ${selectedConcept.key_visual_elements}</div>
+                        </div>
+                    `;
+                    
+                    // Store the descriptive content for use in compiled prompt
+                    this.selectedConceptContent = {
+                        description: selectedConcept.concept_description,
+                        mood: selectedConcept.concept_mood,
+                        elements: selectedConcept.key_visual_elements
+                    };
+                } else {
+                    conceptDisplay.innerHTML = `
+                        <div class="concept-placeholder">Selected concept "${selectedConceptId}" not found in concepts data.</div>
+                    `;
+                    this.selectedConceptContent = null;
+                }
+            } catch (error) {
+                console.error('[PromptBuilderPanel] Error parsing image concepts:', error);
+                conceptDisplay.innerHTML = `
+                    <div class="concept-placeholder">Error parsing concepts data: ${error.message}</div>
+                `;
+                this.selectedConceptContent = null;
+            }
         } else {
             conceptDisplay.innerHTML = `
                 <div class="concept-placeholder">No concept selected. Please go to Image Concepts page to select one.</div>
             `;
+            this.selectedConceptContent = null;
         }
         
         // Update compiled prompt preview
@@ -227,10 +265,9 @@ class PromptBuilderPanel {
         const textarea = document.getElementById('compiled-prompt-textarea');
         if (!textarea || !this.currentSection) return;
 
-        const selectedConcept = this.currentSection.selected_image_concept;
-        if (selectedConcept) {
+        if (this.selectedConceptContent) {
             const config = this.modelConfig[this.modelSelection] || this.modelConfig['sdxl-lora'];
-            const compiledPrompt = this.buildCompiledPrompt(selectedConcept, config);
+            const compiledPrompt = this.buildCompiledPrompt(this.selectedConceptContent, config);
             textarea.value = compiledPrompt;
         } else {
             textarea.value = '';
@@ -239,16 +276,29 @@ class PromptBuilderPanel {
         this.updateCharacterCount();
     }
 
-    buildCompiledPrompt(concept, config) {
-        // Build sophisticated prompt with character limit awareness
-        const basePrompt = `Create an image showing: ${concept}`;
+    buildCompiledPrompt(conceptContent, config) {
+        // Build sophisticated prompt with character limit awareness using descriptive content
+        const basePrompt = `Create an image showing: ${conceptContent.description}`;
+        const moodPrompt = `Mood: ${conceptContent.mood}`;
+        const elementsPrompt = `Key Elements: ${conceptContent.elements}`;
         const stylePrompt = `Style: ${config.style}`;
-        const fullPrompt = `${basePrompt}. ${stylePrompt}`;
+        
+        const fullPrompt = `${basePrompt}. ${moodPrompt}. ${elementsPrompt}. ${stylePrompt}`;
         
         // If over limit, truncate intelligently
         if (fullPrompt.length > config.limit) {
-            const truncatedConcept = concept.substring(0, config.limit - stylePrompt.length - 20);
-            return `Create an image showing: ${truncatedConcept}. ${stylePrompt}`;
+            // Prioritize description, then mood, then elements
+            let truncatedPrompt = `Create an image showing: ${conceptContent.description}`;
+            
+            if (truncatedPrompt.length + moodPrompt.length + 2 <= config.limit) {
+                truncatedPrompt += `. ${moodPrompt}`;
+            }
+            
+            if (truncatedPrompt.length + stylePrompt.length + 2 <= config.limit) {
+                truncatedPrompt += `. ${stylePrompt}`;
+            }
+            
+            return truncatedPrompt;
         }
         
         return fullPrompt;
@@ -285,11 +335,11 @@ class PromptBuilderPanel {
         const editBtn = document.getElementById('edit-compiled-prompt-btn');
         const regenerateBtn = document.getElementById('regenerate-compiled-prompt-btn');
         
-        const hasConcept = this.currentSection && this.currentSection.selected_image_concept;
+        const hasConceptContent = this.selectedConceptContent !== null;
         
-        if (generateBtn) generateBtn.disabled = !hasConcept;
-        if (editBtn) editBtn.disabled = !hasConcept;
-        if (regenerateBtn) regenerateBtn.disabled = !hasConcept;
+        if (generateBtn) generateBtn.disabled = !hasConceptContent;
+        if (editBtn) editBtn.disabled = !hasConceptContent;
+        if (regenerateBtn) regenerateBtn.disabled = !hasConceptContent;
     }
 
     toggleEditMode() {
@@ -314,8 +364,8 @@ class PromptBuilderPanel {
     }
 
     async generatePrompt() {
-        if (!this.currentSection || !this.currentSection.selected_image_concept) {
-            console.warn('[PromptBuilderPanel] No section or concept selected');
+        if (!this.currentSection || !this.selectedConceptContent) {
+            console.warn('[PromptBuilderPanel] No section or concept content selected');
             return;
         }
 
@@ -327,7 +377,7 @@ class PromptBuilderPanel {
 
         try {
             const config = this.modelConfig[this.modelSelection] || this.modelConfig['sdxl-lora'];
-            const compiledPrompt = this.buildCompiledPrompt(this.currentSection.selected_image_concept, config);
+            const compiledPrompt = this.buildCompiledPrompt(this.selectedConceptContent, config);
             
             const response = await fetch('/api/generate-image-prompt-from-builder', {
                 method: 'POST',
@@ -338,6 +388,7 @@ class PromptBuilderPanel {
                     post_id: this.postId,
                     section_id: this.currentSection.id,
                     selected_concept: this.currentSection.selected_image_concept,
+                    concept_content: this.selectedConceptContent,
                     imaging_model: this.modelSelection,
                     character_limit: config.limit,
                     compiled_prompt: compiledPrompt,
