@@ -1,0 +1,39 @@
+<!-- Image Captions Output Panel -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/authoring/output-panel-image-captions.css') }}">
+
+<div class="output-panel" id="output-panel-image-captions">
+    <div class="panel-header" onclick="toggleImageCaptionsOutputAccordion()">
+        <h4><span class="panel-name-green">Output:</span> <span id="current-section-title">Select a section to generate image captions</span></h4>
+        <div class="header-actions">
+            <button class="btn-primary" id="generate-captions-btn" disabled>Generate</button>
+            <button class="btn-primary" id="save-captions-btn" disabled>Save</button>
+            <button class="btn-secondary" id="regenerate-captions-btn" disabled>Regenerate</button>
+            <i class="fas fa-chevron-down" id="image-captions-accordion-icon"></i>
+        </div>
+    </div>
+    
+    <div class="panel-content" id="image-captions-content">
+        <div class="captions-form">
+            <div class="form-group">
+                <label for="caption-text">Image Caption:</label>
+                <textarea id="caption-text" placeholder="Generated caption will appear here..." rows="4"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="alt-text">Alt Text:</label>
+                <textarea id="alt-text" placeholder="Generated alt text will appear here..." rows="2"></textarea>
+            </div>
+            
+            <div class="form-actions">
+                <div class="word-count">
+                    <span id="caption-word-count">0 words</span>
+                </div>
+                <div class="last-saved">
+                    <span id="last-saved-captions">Not saved</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/authoring/output-panel-image-captions.js') }}"></script>
