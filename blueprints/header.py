@@ -13,27 +13,27 @@ bp = Blueprint('header', __name__, url_prefix='/header')
 @bp.route('/posts/<int:post_id>/title-summary')
 def header_title_summary(post_id):
     """Title & Summary substage - Generate post title, subtitle, slug, and summary"""
-    return render_template('header/title_summary.html', post_id=post_id)
+    return render_template('header/title_summary.html', post_id=post_id, blueprint_name='header')
 
 @bp.route('/posts/<int:post_id>/header-image')
 def header_header_image(post_id):
     """Header Image substage - Create header image with caption and alt text"""
-    return render_template('header/header_image.html', post_id=post_id)
+    return render_template('header/header_image.html', post_id=post_id, blueprint_name='header')
 
 @bp.route('/posts/<int:post_id>/seo-meta')
 def header_seo_meta(post_id):
     """SEO & Meta substage - Generate SEO metadata including meta title, description, and tags"""
-    return render_template('header/seo_meta.html', post_id=post_id)
+    return render_template('header/seo_meta.html', post_id=post_id, blueprint_name='header')
 
 @bp.route('/posts/<int:post_id>/publishing-details')
 def header_publishing_details(post_id):
     """Publishing Details substage - Set author, word count, publish date, and status"""
-    return render_template('header/publishing_details.html', post_id=post_id)
+    return render_template('header/publishing_details.html', post_id=post_id, blueprint_name='header')
 
 @bp.route('/posts/<int:post_id>/final-review')
 def header_final_review(post_id):
     """Final Review substage - Review and finalize all header elements before publishing"""
-    return render_template('header/final_review.html', post_id=post_id)
+    return render_template('header/final_review.html', post_id=post_id, blueprint_name='header')
 
 # API endpoints
 @bp.route('/api/posts/<int:post_id>/generate-title-summary', methods=['POST'])
