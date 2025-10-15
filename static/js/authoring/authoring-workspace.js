@@ -322,8 +322,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Initialize LLM Prompts Panel with callbacks
-    // Skip generic LLMPromptsPanel on image-prompts (specialized PromptBuilderPanel is used)
-    if (window.currentSubstage !== 'image-prompts') {
     const llmPromptsPanel = new LLMPromptsPanel({
         postId: window.postId,
         onPromptChange: (prompt) => {
@@ -344,7 +342,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Prompt saved successfully
         }
     });
-    }
     
     // Initialize Context Panel with callbacks
     const contextPanel = new ContextPanel({
