@@ -304,6 +304,248 @@ def api_generate_titles(post_id):
         logger.error(f"Error generating titles for post {post_id}: {e}")
         return jsonify({'error': str(e)}), 500
 
+@bp.route('/api/posts/<int:post_id>/generate-subtitle', methods=['POST'])
+def api_generate_subtitle(post_id):
+    """Generate subtitle based on Development tab content and selected title using LLM"""
+    try:
+        data = request.get_json()
+        idea_seed = data.get('idea_seed', '')
+        expanded_idea = data.get('expanded_idea', '')
+        selected_title = data.get('selected_title', '')
+        section_content = data.get('section_content', '')
+        
+        logger.info(f"Generating subtitle for post {post_id} with title: {selected_title[:50]}...")
+        
+        # Get prompts from database for step 61 (Subtitle Generation)
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT 
+                    sp.system_prompt,
+                    tp.prompt_text as task_prompt
+                FROM workflow_step_prompt wsp
+                LEFT JOIN llm_prompt sp ON sp.id = wsp.system_prompt_id
+                LEFT JOIN llm_prompt tp ON tp.id = wsp.task_prompt_id
+                WHERE wsp.step_id = 61
+            """)
+            
+            result = cursor.fetchone()
+            
+            if not result:
+                return jsonify({'error': 'No prompts found for subtitle generation'}), 404
+            
+            system_prompt = result.get('system_prompt', '')
+            task_prompt = result.get('task_prompt', '')
+        
+        # Replace placeholders in task prompt with actual data
+        prompt_vars = {
+            'idea_seed': idea_seed,
+            'expanded_idea': expanded_idea,
+            'selected_title': selected_title,
+            'section_content': section_content
+        }
+        
+        # Replace [data:field] placeholders
+        for key, value in prompt_vars.items():
+            task_prompt = task_prompt.replace(f'[data:{key}]', str(value))
+        
+        # Prepare messages for LLM
+        messages = [
+            {'role': 'system', 'content': system_prompt},
+            {'role': 'user', 'content': task_prompt}
+        ]
+        
+        # Execute LLM request
+        logger.info(f"Calling LLM for subtitle generation with system prompt: {system_prompt[:100]}...")
+        llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+        
+        if 'error' in llm_response:
+            logger.error(f"LLM generation failed: {llm_response['error']}")
+            return jsonify({'error': f'LLM generation failed: {llm_response["error"]}'}), 500
+        
+        generated_subtitle = llm_response['content'].strip()
+        logger.info(f"LLM response: {generated_subtitle}")
+        
+        return jsonify({
+            'success': True,
+            'subtitle': generated_subtitle
+        })
+        
+    except Exception as e:
+        logger.error(f"Error generating subtitle for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/generate-title-summary', methods=['POST'])
+def api_generate_title_summary(post_id):
+    """Generate all header elements (title, subtitle, summary, slug) in one call"""
+    try:
+        # Get content from Development tab
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT 
+                    pd.idea_seed,
+                    pd.expanded_idea,
+                    p.title,
+                    p.title_choices
+                FROM post_development pd
+                JOIN post p ON p.id = pd.post_id
+                WHERE pd.post_id = %s
+            """, (post_id,))
+            
+            result = cursor.fetchone()
+            
+            if not result:
+                return jsonify({'error': 'No post development data found'}), 404
+            
+            idea_seed = result.get('idea_seed', '')
+            expanded_idea = result.get('expanded_idea', '')
+            current_title = result.get('title', '')
+            title_choices = result.get('title_choices', '[]')
+            
+            # Get section content
+            cursor.execute("""
+                SELECT section_heading, draft
+                FROM post_section
+                WHERE post_id = %s
+                ORDER BY section_order
+            """, (post_id,))
+            
+            sections = cursor.fetchall()
+            section_content = '\n'.join([f"{s.get('section_heading', '')}: {s.get('draft', '')}" for s in sections])
+        
+        logger.info(f"Generating all header elements for post {post_id}")
+        
+        # Generate titles using the same logic as api_generate_titles
+        # Get prompts from database for step 60 (Title Generation)
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT 
+                    sp.system_prompt,
+                    tp.prompt_text as task_prompt
+                FROM workflow_step_prompt wsp
+                LEFT JOIN llm_prompt sp ON sp.id = wsp.system_prompt_id
+                LEFT JOIN llm_prompt tp ON tp.id = wsp.task_prompt_id
+                WHERE wsp.step_id = 60
+            """)
+            
+            result = cursor.fetchone()
+            
+            if not result:
+                return jsonify({'error': 'No prompts found for title generation'}), 404
+            
+            system_prompt = result.get('system_prompt', '')
+            task_prompt = result.get('task_prompt', '')
+        
+        # Replace placeholders in task prompt with actual data
+        prompt_vars = {
+            'idea_seed': idea_seed,
+            'expanded_idea': expanded_idea,
+            'section_content': section_content
+        }
+        
+        # Replace [data:field] placeholders
+        for key, value in prompt_vars.items():
+            task_prompt = task_prompt.replace(f'[data:{key}]', str(value))
+        
+        # Prepare messages for LLM
+        messages = [
+            {'role': 'system', 'content': system_prompt},
+            {'role': 'user', 'content': task_prompt}
+        ]
+        
+        # Execute LLM request for titles
+        logger.info(f"Calling LLM for title generation")
+        llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+        
+        if 'error' in llm_response:
+            logger.error(f"LLM generation failed: {llm_response['error']}")
+            return jsonify({'error': f'LLM generation failed: {llm_response["error"]}'}), 500
+        
+        generated_content = llm_response['content'].strip()
+        
+        # Parse JSON response for titles
+        try:
+            json_match = re.search(r'\[.*?\]', generated_content, re.DOTALL)
+            if json_match:
+                json_str = json_match.group(0)
+                title_options = json.loads(json_str)
+                
+                if not isinstance(title_options, list) or len(title_options) != 3:
+                    raise ValueError("Response must be an array of exactly 3 titles")
+                
+                # Clean up titles
+                title_options = [title.strip().strip('"').strip("'") for title in title_options]
+                selected_title = title_options[0]
+            else:
+                raise ValueError("No JSON array found in response")
+                
+        except (json.JSONDecodeError, ValueError) as e:
+            logger.error(f"Failed to parse LLM response as JSON: {e}")
+            return jsonify({'error': f'Failed to parse LLM response: {str(e)}'}), 500
+        
+        # Generate subtitle using the same logic as api_generate_subtitle
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT 
+                    sp.system_prompt,
+                    tp.prompt_text as task_prompt
+                FROM workflow_step_prompt wsp
+                LEFT JOIN llm_prompt sp ON sp.id = wsp.system_prompt_id
+                LEFT JOIN llm_prompt tp ON tp.id = wsp.task_prompt_id
+                WHERE wsp.step_id = 61
+            """)
+            
+            result = cursor.fetchone()
+            
+            if not result:
+                return jsonify({'error': 'No prompts found for subtitle generation'}), 404
+            
+            system_prompt = result.get('system_prompt', '')
+            task_prompt = result.get('task_prompt', '')
+        
+        # Replace placeholders in task prompt with actual data
+        prompt_vars = {
+            'idea_seed': idea_seed,
+            'expanded_idea': expanded_idea,
+            'selected_title': selected_title,
+            'section_content': section_content
+        }
+        
+        # Replace [data:field] placeholders
+        for key, value in prompt_vars.items():
+            task_prompt = task_prompt.replace(f'[data:{key}]', str(value))
+        
+        # Prepare messages for LLM
+        messages = [
+            {'role': 'system', 'content': system_prompt},
+            {'role': 'user', 'content': task_prompt}
+        ]
+        
+        # Execute LLM request for subtitle
+        logger.info(f"Calling LLM for subtitle generation")
+        llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+        
+        if 'error' in llm_response:
+            logger.error(f"LLM generation failed: {llm_response['error']}")
+            return jsonify({'error': f'LLM generation failed: {llm_response["error"]}'}), 500
+        
+        subtitle = llm_response['content'].strip()
+        
+        # TODO: Generate summary and slug
+        summary = "Generated summary placeholder"
+        slug = "generated-slug-placeholder"
+        
+        return jsonify({
+            'success': True,
+            'title_options': title_options,
+            'subtitle': subtitle,
+            'summary': summary,
+            'slug': slug
+        })
+        
+    except Exception as e:
+        logger.error(f"Error generating all header elements for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @bp.route('/api/posts/<int:post_id>/save-selected-title', methods=['POST'])
 def api_save_selected_title(post_id):
     """Save the selected title and title options to database"""
@@ -371,43 +613,6 @@ def api_get_titles(post_id):
                 
     except Exception as e:
         logger.error(f"Error getting titles for post {post_id}: {e}")
-        return jsonify({'error': str(e)}), 500
-
-@bp.route('/api/posts/<int:post_id>/generate-title-summary', methods=['POST'])
-def api_generate_title_summary(post_id):
-    """Generate multiple title options, subtitle, slug, summary"""
-    try:
-        data = request.get_json()
-        
-        # Get post data for context
-        with db_manager.get_cursor() as cursor:
-            cursor.execute("""
-                SELECT title, summary, expanded_idea, idea_seed
-                FROM post_development 
-                WHERE post_id = %s
-            """, (post_id,))
-            
-            post_data = cursor.fetchone()
-            if not post_data:
-                return jsonify({'error': 'Post not found'}), 404
-            
-            # TODO: Implement LLM generation for titles and summary
-            # For now, return empty data that will be populated by actual generation
-            title_options = []
-            subtitle = ""
-            slug = ""
-            summary = ""
-            
-            return jsonify({
-                'success': True,
-                'title_options': title_options,
-                'subtitle': subtitle,
-                'slug': slug,
-                'summary': summary
-            })
-            
-    except Exception as e:
-        logger.error(f"Error generating title and summary: {e}")
         return jsonify({'error': str(e)}), 500
 
 @bp.route('/api/posts/<int:post_id>/generate-header-image', methods=['POST'])
