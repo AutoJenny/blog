@@ -141,36 +141,42 @@ class ImagePromptsOutputPanel {
         });
     }
 
-    onPromptGenerated(detail) {
-        console.log('[ImagePromptsOutputPanel] Prompt generated:', detail);
+    displayPrompt(prompt, metadata) {
+        console.log('[ImagePromptsOutputPanel] Displaying prompt:', prompt?.substring(0, 50) + '...');
         
-        this.currentPrompt = detail.prompt;
-        this.currentMetadata = detail.metadata;
+        this.currentPrompt = prompt;
+        this.currentMetadata = metadata;
         
         // Update display
         const textarea = document.getElementById('generated-prompt-textarea');
         const charCount = document.getElementById('char-count');
         
         if (textarea) {
-            textarea.value = detail.prompt;
+            textarea.value = prompt;
         }
         
         if (charCount) {
-            charCount.textContent = `${detail.prompt.length} chars`;
+            charCount.textContent = `${prompt.length} chars`;
         }
         
         // Update metadata
-        if (detail.metadata) {
-            this.updateMetadata(detail.metadata);
+        if (metadata) {
+            this.updateMetadata(metadata);
         }
         
         // Update last saved status
         const lastSaved = document.getElementById('last-saved');
         if (lastSaved) {
-            lastSaved.textContent = 'Generated';
+            lastSaved.textContent = 'Generated just now';
         }
         
         this.updateButtonStates();
+    }
+
+    onPromptGenerated(detail) {
+        console.log('[ImagePromptsOutputPanel] Prompt generated:', detail);
+        
+        this.displayPrompt(detail.prompt, detail.metadata);
     }
 
     updateButtonStates() {
