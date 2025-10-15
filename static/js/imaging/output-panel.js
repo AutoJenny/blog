@@ -39,15 +39,25 @@ class ImagingOutputPanel {
         this.currentSectionId = sectionId;
         
         try {
-            // Try to load persisted image for this section
-            const response = await fetch(`/imaging/api/posts/${window.postId}/sections/${sectionId}/image`);
+            // Determine which endpoint to use based on current substage
+            let apiEndpoint;
+            if (window.currentSubstage === 'image-generation') {
+                apiEndpoint = `/imaging/api/posts/${window.postId}/sections/${sectionId}/raw-image`;
+                console.log('[Imaging Output Panel] Using raw-image endpoint for image-generation stage');
+            } else {
+                apiEndpoint = `/imaging/api/posts/${window.postId}/sections/${sectionId}/image`;
+                console.log('[Imaging Output Panel] Using persisted image endpoint for', window.currentSubstage, 'stage');
+            }
+            
+            // Try to load image for this section
+            const response = await fetch(apiEndpoint);
             const data = await response.json();
             
             if (data.success && data.path) {
-                console.log('[Imaging Output Panel] Found persisted image:', data.path);
+                console.log('[Imaging Output Panel] Found image:', data.path);
                 this.displayPersistedImage(data.path, data.type);
             } else {
-                console.log('[Imaging Output Panel] No persisted image found, showing placeholder');
+                console.log('[Imaging Output Panel] No image found, showing placeholder');
                 this.displayNoImages();
             }
         } catch (error) {
