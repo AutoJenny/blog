@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Header - SEO & Meta{% endblock %}
+
+{% block content %}
+<script>
+    window.currentStage = 'header';
+    window.currentSubstage = 'seo-meta';
+    window.postId = {{ post_id }};
+</script>
+
+{% include 'shared/blog_pipeline_header.html' %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const headerContent = document.querySelector('.header-workspace');
+    const processTab = document.getElementById('process-tab');
+    if (headerContent && processTab) {
+        processTab.appendChild(headerContent);
+    }
+});
+</script>
+
+<div class="header-workspace">
+    <div class="workspace-container">
+        <!-- Left Panel: Progress/Navigation -->
+        {% include 'header/includes/progress_panel.html' %}
+        
+        <!-- Right Panel: Content -->
+        <div class="editor-panel">
+            <!-- Meta Title Panel -->
+            {% include 'header/includes/meta_title_panel.html' %}
+            
+            <!-- Meta Description Panel -->
+            {% include 'header/includes/meta_description_panel.html' %}
+            
+            <!-- Meta Tags Panel -->
+            {% include 'header/includes/meta_tags_panel.html' %}
+            
+            <!-- SEO Analysis Panel -->
+            {% include 'header/includes/seo_analysis_panel.html' %}
+            
+            <!-- Output Panel -->
+            {% include 'header/includes/output_panel_seo_meta.html' %}
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/header-workspace.css') }}">
+<script src="{{ url_for('static', filename='js/header/header-workspace.js') }}"></script>
+{% endblock %}

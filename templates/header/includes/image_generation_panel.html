@@ -1,0 +1,23 @@
+<!-- Image Generation Panel -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/image-generation-panel.css') }}">
+
+<div class="image-generation-panel" id="image-generation-panel">
+    <div class="panel-header" onclick="toggleImageGenerationAccordion()">
+        <h4><span class="panel-name-green">Header Image Generation:</span> <span id="image-generation-status">Generate header image</span></h4>
+        <div class="header-actions">
+            <button class="btn-primary" id="generate-image-btn">Generate</button>
+            <i class="fas fa-chevron-down" id="image-generation-accordion-icon"></i>
+        </div>
+    </div>
+    <div class="panel-content" id="image-generation-content">
+        <div class="image-prompt">
+            <label for="image-prompt-input">Image Prompt:</label>
+            <textarea id="image-prompt-input" placeholder="Celtic mythology illustration with ancient symbols..."></textarea>
+        </div>
+        <div class="image-preview">
+            <img id="generated-image" src="/static/images/placeholder-header.jpg" alt="Generated header image">
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/header/image-generation-panel.js') }}"></script>

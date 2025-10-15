@@ -1,0 +1,34 @@
+<!-- Title Generation Panel -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/title-generation-panel.css') }}">
+
+<div class="title-generation-panel" id="title-generation-panel">
+    <div class="panel-header" onclick="toggleTitleGenerationAccordion()">
+        <h4><span class="panel-name-green">Title Generation:</span> <span id="title-generation-status">Generate multiple title options</span></h4>
+        <div class="header-actions">
+            <button class="btn-primary" id="generate-titles-btn">Generate</button>
+            <i class="fas fa-chevron-down" id="title-generation-accordion-icon"></i>
+        </div>
+    </div>
+    <div class="panel-content" id="title-generation-content">
+        <div class="title-options">
+            <div class="title-option">
+                <input type="radio" name="title-selection" value="1" id="title-1">
+                <label for="title-1">Celtic Mythology: Ancient Legends</label>
+            </div>
+            <div class="title-option">
+                <input type="radio" name="title-selection" value="2" id="title-2">
+                <label for="title-2">Exploring Celtic Heritage: A Deep Dive</label>
+            </div>
+            <div class="title-option">
+                <input type="radio" name="title-selection" value="3" id="title-3">
+                <label for="title-3">The Mystical World of Celtic Traditions</label>
+            </div>
+        </div>
+        <div class="subtitle-section">
+            <label for="subtitle-input">Subtitle:</label>
+            <input type="text" id="subtitle-input" placeholder="Discover the rich heritage and timeless wisdom...">
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/header/title-generation-panel.js') }}"></script>

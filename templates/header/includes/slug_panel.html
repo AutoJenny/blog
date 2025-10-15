@@ -1,0 +1,24 @@
+<!-- Slug Panel -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/slug-panel.css') }}">
+
+<div class="slug-panel" id="slug-panel">
+    <div class="panel-header" onclick="toggleSlugAccordion()">
+        <h4><span class="panel-name-green">URL Slug:</span> <span id="slug-status">Generate URL-friendly slug</span></h4>
+        <div class="header-actions">
+            <button class="btn-secondary" id="generate-slug-btn">Generate</button>
+            <i class="fas fa-chevron-down" id="slug-accordion-icon"></i>
+        </div>
+    </div>
+    <div class="panel-content" id="slug-content">
+        <div class="slug-editor">
+            <label for="slug-input">URL Slug:</label>
+            <input type="text" id="slug-input" placeholder="celtic-mythology-ancient-legends">
+            <div class="slug-preview">
+                <span class="url-prefix">clan.com/blog/</span>
+                <span id="slug-preview">celtic-mythology-ancient-legends</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/header/slug-panel.js') }}"></script>

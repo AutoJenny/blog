@@ -39,6 +39,11 @@
                 <i class="fas fa-magic"></i>
                 Imaging
             </a>
+            <a href="{{ url_for('header.header_title_summary', post_id=post_id) }}" 
+               class="stage-btn" data-stage="header">
+                <i class="fas fa-heading"></i>
+                Header
+            </a>
         </div>
         <div class="main-stages-right">
             <a href="{{ url_for('planning.planning_old_interface', post_id=post_id) }}" 
@@ -118,6 +123,30 @@
                 <a href="{{ url_for('imaging.imaging_sections_optimise', post_id=post_id) }}" 
                    class="sub-stage-btn" data-substage="optimise">
                     Optimise
+                </a>
+            </div>
+            
+            <!-- Header sub-stages -->
+            <div class="sub-stage-group" data-stage="header">
+                <a href="{{ url_for('header.header_title_summary', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="title-summary">
+                    Title & Summary
+                </a>
+                <a href="{{ url_for('header.header_header_image', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="header-image">
+                    Header Image
+                </a>
+                <a href="{{ url_for('header.header_seo_meta', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="seo-meta">
+                    SEO & Meta
+                </a>
+                <a href="{{ url_for('header.header_publishing_details', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="publishing-details">
+                    Publishing Details
+                </a>
+                <a href="{{ url_for('header.header_final_review', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="final-review">
+                    Final Review
                 </a>
             </div>
         </div>

@@ -1,0 +1,185 @@
+/* Header Workspace CSS - Main layout for header stage */
+
+.header-workspace {
+    padding: 1rem;
+    min-height: calc(100vh - 200px);
+}
+
+.workspace-container {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+@media (max-width: 1200px) {
+    .workspace-container {
+        grid-template-columns: 300px 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .workspace-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+.editor-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Panel styling */
+.panel-name-green {
+    color: #10b981;
+    font-weight: 600;
+}
+
+/* Accordion styling */
+.panel-content {
+    padding: 1rem;
+    background: #1e293b;
+    border-radius: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.panel-content.collapsed {
+    display: none;
+}
+
+.panel-header {
+    cursor: pointer;
+    padding: 0.75rem;
+    background: #334155;
+    border-radius: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.panel-header:hover {
+    background: #475569;
+}
+
+.panel-header h4 {
+    margin: 0;
+    color: #f1f5f9;
+    font-size: 1rem;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.header-actions i {
+    color: #94a3b8;
+    transition: transform 0.2s;
+}
+
+.header-actions i.open {
+    transform: rotate(180deg);
+}
+
+/* Button styling */
+.btn-primary, .btn-secondary {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+}
+
+.btn-secondary {
+    background: #64748b;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #475569;
+}
+
+.btn-primary:disabled, .btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Form styling */
+input, textarea, select {
+    width: 100%;
+    padding: 0.5rem;
+    background: #0f172a;
+    border: 1px solid #475569;
+    border-radius: 0.375rem;
+    color: #f1f5f9;
+    font-size: 0.875rem;
+}
+
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+label {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: #cbd5e1;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Progress panel specific */
+.progress-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+}
+
+.step.completed {
+    background: #065f46;
+    color: #10b981;
+}
+
+.step.current {
+    background: #1e40af;
+    color: #60a5fa;
+}
+
+.step.pending {
+    background: #374151;
+    color: #9ca3af;
+}
+
+.step i {
+    font-size: 0.875rem;
+}
+
+.step span {
+    font-size: 0.875rem;
+    font-weight: 500;
+}

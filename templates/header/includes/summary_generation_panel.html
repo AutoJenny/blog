@@ -1,0 +1,22 @@
+<!-- Summary Generation Panel -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/summary-generation-panel.css') }}">
+
+<div class="summary-generation-panel" id="summary-generation-panel">
+    <div class="panel-header" onclick="toggleSummaryGenerationAccordion()">
+        <h4><span class="panel-name-green">Summary Generation:</span> <span id="summary-generation-status">Generate blog post summary</span></h4>
+        <div class="header-actions">
+            <button class="btn-primary" id="generate-summary-btn">Generate</button>
+            <i class="fas fa-chevron-down" id="summary-generation-accordion-icon"></i>
+        </div>
+    </div>
+    <div class="panel-content" id="summary-generation-content">
+        <div class="summary-editor">
+            <textarea id="summary-textarea" placeholder="An exploration of Celtic mythology and its enduring influence on modern culture..."></textarea>
+            <div class="word-count">
+                <span id="summary-word-count">0 words</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/header/summary-generation-panel.js') }}"></script>

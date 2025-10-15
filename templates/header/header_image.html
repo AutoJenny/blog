@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Header - Header Image{% endblock %}
+
+{% block content %}
+<script>
+    window.currentStage = 'header';
+    window.currentSubstage = 'header-image';
+    window.postId = {{ post_id }};
+</script>
+
+{% include 'shared/blog_pipeline_header.html' %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const headerContent = document.querySelector('.header-workspace');
+    const processTab = document.getElementById('process-tab');
+    if (headerContent && processTab) {
+        processTab.appendChild(headerContent);
+    }
+});
+</script>
+
+<div class="header-workspace">
+    <div class="workspace-container">
+        <!-- Left Panel: Progress/Navigation -->
+        {% include 'header/includes/progress_panel.html' %}
+        
+        <!-- Right Panel: Content -->
+        <div class="editor-panel">
+            <!-- Image Generation Panel -->
+            {% include 'header/includes/image_generation_panel.html' %}
+            
+            <!-- Image Details Panel -->
+            {% include 'header/includes/image_details_panel.html' %}
+            
+            <!-- Image Preview Panel -->
+            {% include 'header/includes/image_preview_panel.html' %}
+            
+            <!-- Output Panel -->
+            {% include 'header/includes/output_panel_header_image.html' %}
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/header-workspace.css') }}">
+<script src="{{ url_for('static', filename='js/header/header-workspace.js') }}"></script>
+{% endblock %}

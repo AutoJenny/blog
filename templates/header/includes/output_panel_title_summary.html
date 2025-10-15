@@ -1,0 +1,28 @@
+<!-- Output Panel Title Summary -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/output-panel-title-summary.css') }}">
+
+<div class="output-panel" id="output-panel-title-summary">
+    <div class="panel-header" onclick="toggleTitleSummaryOutputAccordion()">
+        <h4><span class="panel-name-green">Output:</span> <span id="title-summary-output-status">Title & Summary Results</span></h4>
+        <div class="header-actions">
+            <button class="btn-primary" id="save-title-summary-btn">Save</button>
+            <i class="fas fa-chevron-down" id="title-summary-output-accordion-icon"></i>
+        </div>
+    </div>
+    <div class="panel-content" id="title-summary-output-content">
+        <div class="output-display">
+            <div class="title-display">
+                <h3 id="selected-title">Celtic Mythology: Ancient Legends</h3>
+                <p id="selected-subtitle">Discover the rich heritage and timeless wisdom of Celtic culture</p>
+            </div>
+            <div class="summary-display">
+                <p id="generated-summary">An exploration of Celtic mythology and its enduring influence on modern culture.</p>
+            </div>
+            <div class="slug-display">
+                <p><strong>URL:</strong> clan.com/blog/<span id="generated-slug">celtic-mythology-ancient-legends</span></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/header/output-panel-title-summary.js') }}"></script>

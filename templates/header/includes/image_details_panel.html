@@ -1,0 +1,28 @@
+<!-- Image Details Panel -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/image-details-panel.css') }}">
+
+<div class="image-details-panel" id="image-details-panel">
+    <div class="panel-header" onclick="toggleImageDetailsAccordion()">
+        <h4><span class="panel-name-green">Image Details:</span> <span id="image-details-status">Caption and alt text</span></h4>
+        <div class="header-actions">
+            <button class="btn-secondary" id="generate-details-btn">Generate</button>
+            <i class="fas fa-chevron-down" id="image-details-accordion-icon"></i>
+        </div>
+    </div>
+    <div class="panel-content" id="image-details-content">
+        <div class="image-caption">
+            <label for="image-caption-input">Caption:</label>
+            <textarea id="image-caption-input" placeholder="Celtic mythology illustration"></textarea>
+        </div>
+        <div class="image-alt-text">
+            <label for="image-alt-input">Alt Text:</label>
+            <textarea id="image-alt-input" placeholder="Ancient Celtic symbols and mythological figures"></textarea>
+        </div>
+        <div class="image-title">
+            <label for="image-title-input">Image Title:</label>
+            <input type="text" id="image-title-input" placeholder="Celtic Heritage">
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/header/image-details-panel.js') }}"></script>
