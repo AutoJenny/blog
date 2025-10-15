@@ -212,8 +212,29 @@ class SectionsPanel {
                 });
                 
                 try {
+                    // Determine API endpoint based on current substage
+                    let apiEndpoint;
+                    switch (window.currentSubstage) {
+                        case 'drafting':
+                            apiEndpoint = `/authoring/api/posts/${this.postId}/sections/${sectionId}/generate`;
+                            break;
+                        case 'image-concepts':
+                            apiEndpoint = `/authoring/api/posts/${this.postId}/sections/${sectionId}/generate-image-concepts`;
+                            break;
+                        case 'image-prompts':
+                            apiEndpoint = `/authoring/api/generate-image-prompt-from-builder`;
+                            break;
+                        case 'image-captions':
+                            apiEndpoint = `/authoring/api/posts/${this.postId}/sections/${sectionId}/generate-image-captions`;
+                            break;
+                        default:
+                            apiEndpoint = `/authoring/api/posts/${this.postId}/sections/${sectionId}/generate`;
+                    }
+                    
+                    console.log(`[Sections Panel] Batch generating for ${window.currentSubstage}, using endpoint: ${apiEndpoint}`);
+                    
                     // Generate content for this section
-                    const response = await fetch(`/authoring/api/posts/${this.postId}/sections/${sectionId}/generate`, {
+                    const response = await fetch(apiEndpoint, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
