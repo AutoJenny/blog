@@ -328,11 +328,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('[Drafting] LLM Prompt changed:', prompt);
             // Prompt changes can trigger other panel updates
         },
-        onGenerate: (data) => {
-            console.log('[Drafting] Generate requested:', data);
-            // This would trigger the actual generation process
-            // Could integrate with existing LLM module or Output panel
-        },
         onPromptLoad: (prompt) => {
             console.log('[Drafting] Prompt loaded:', prompt);
             // Prompt loaded successfully

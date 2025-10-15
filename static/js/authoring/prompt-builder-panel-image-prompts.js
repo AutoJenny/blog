@@ -69,12 +69,6 @@ class PromptBuilderPanel {
     }
 
     setupEventListeners() {
-        // Generate prompt button
-        const generateBtn = document.getElementById('generate-prompt-btn');
-        if (generateBtn) {
-            generateBtn.addEventListener('click', () => this.generatePrompt());
-        }
-
         // Edit compiled prompt button
         const editBtn = document.getElementById('edit-compiled-prompt-btn');
         if (editBtn) {
@@ -331,13 +325,11 @@ class PromptBuilderPanel {
     }
 
     updateButtonStates() {
-        const generateBtn = document.getElementById('generate-prompt-btn');
         const editBtn = document.getElementById('edit-compiled-prompt-btn');
         const regenerateBtn = document.getElementById('regenerate-compiled-prompt-btn');
         
         const hasConceptContent = this.selectedConceptContent !== null;
         
-        if (generateBtn) generateBtn.disabled = !hasConceptContent;
         if (editBtn) editBtn.disabled = !hasConceptContent;
         if (regenerateBtn) regenerateBtn.disabled = !hasConceptContent;
     }

@@ -20,6 +20,12 @@ class ImagePromptsOutputPanel {
     }
 
     setupEventListeners() {
+        // Generate prompt button
+        const generateBtn = document.getElementById('generate-image-prompt-btn');
+        if (generateBtn) {
+            generateBtn.addEventListener('click', () => this.generateImagePrompt());
+        }
+
         // Save prompt button
         const saveBtn = document.getElementById('save-prompt-btn');
         if (saveBtn) {
@@ -29,7 +35,7 @@ class ImagePromptsOutputPanel {
         // Regenerate prompt button
         const regenerateBtn = document.getElementById('regenerate-prompt-btn');
         if (regenerateBtn) {
-            regenerateBtn.addEventListener('click', () => this.regeneratePrompt());
+            regenerateBtn.addEventListener('click', () => this.generateImagePrompt());
         }
 
         // Listen for prompt generation events from prompt builder
@@ -168,13 +174,104 @@ class ImagePromptsOutputPanel {
     }
 
     updateButtonStates() {
+        const generateBtn = document.getElementById('generate-image-prompt-btn');
         const saveBtn = document.getElementById('save-prompt-btn');
         const regenerateBtn = document.getElementById('regenerate-prompt-btn');
         
+        const hasSection = this.currentSection !== null;
         const hasPrompt = this.currentPrompt || (this.currentSection && this.currentSection.image_prompts);
         
+        if (generateBtn) generateBtn.disabled = !hasSection;
         if (saveBtn) saveBtn.disabled = !hasPrompt;
-        if (regenerateBtn) regenerateBtn.disabled = !this.currentSection;
+        if (regenerateBtn) regenerateBtn.disabled = !hasSection;
+    }
+
+    async generateImagePrompt() {
+        if (!this.currentSection) {
+            console.warn('[ImagePromptsOutputPanel] No section selected');
+            return;
+        }
+
+        const generateBtn = document.getElementById('generate-image-prompt-btn');
+        const regenerateBtn = document.getElementById('regenerate-prompt-btn');
+        
+        // Set loading state
+        if (generateBtn) {
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Generating...';
+        }
+        if (regenerateBtn) {
+            regenerateBtn.disabled = true;
+            regenerateBtn.textContent = 'Generating...';
+        }
+
+        try {
+            // Get concept content from prompt builder panel if available
+            let conceptContent = null;
+            if (window.promptBuilderPanel && window.promptBuilderPanel.selectedConceptContent) {
+                conceptContent = window.promptBuilderPanel.selectedConceptContent;
+            }
+
+            if (!conceptContent) {
+                throw new Error('No concept content available. Please select a concept in the Image Prompt Builder panel.');
+            }
+
+            const config = window.promptBuilderPanel?.modelConfig?.[window.promptBuilderPanel?.modelSelection] || 
+                          { limit: 400, style: 'inkwash and watercolour' };
+            
+            const compiledPrompt = window.promptBuilderPanel?.buildCompiledPrompt(conceptContent, config) || 
+                                  `Create an image showing: ${conceptContent.description}`;
+            
+            const response = await fetch('/api/generate-image-prompt-from-builder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    post_id: this.postId,
+                    section_id: this.currentSection.id,
+                    selected_concept: this.currentSection.selected_image_concept,
+                    concept_content: conceptContent,
+                    imaging_model: window.promptBuilderPanel?.modelSelection || 'sdxl-lora',
+                    character_limit: config.limit,
+                    compiled_prompt: compiledPrompt,
+                    style_guidelines: config.style
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Generation failed: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log('[ImagePromptsOutputPanel] Generation response:', data);
+            
+            if (data.image_prompt) {
+                this.currentPrompt = data.image_prompt;
+                this.currentMetadata = data;
+                this.displayPrompt(data.image_prompt, data);
+                this.updateButtonStates();
+            } else {
+                throw new Error('No prompt generated');
+            }
+            
+        } catch (error) {
+            console.error('[ImagePromptsOutputPanel] Error generating prompt:', error);
+            const textarea = document.getElementById('generated-prompt-textarea');
+            if (textarea) {
+                textarea.value = `Error generating prompt: ${error.message}`;
+            }
+        } finally {
+            // Reset loading state
+            if (generateBtn) {
+                generateBtn.disabled = false;
+                generateBtn.textContent = 'Generate';
+            }
+            if (regenerateBtn) {
+                regenerateBtn.disabled = false;
+                regenerateBtn.textContent = 'Regenerate';
+            }
+        }
     }
 
     async savePrompt() {

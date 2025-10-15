@@ -27,6 +27,7 @@ class OutputPanel {
         this.saveBtn = null;
         this.regenerateBtn = null;
         this.previewBtn = null;
+        this.generateBtn = null;
         
         this.init();
     }
@@ -46,6 +47,7 @@ class OutputPanel {
         this.saveBtn = document.getElementById('save-btn');
         this.regenerateBtn = document.getElementById('regenerate-btn');
         this.previewBtn = document.getElementById('preview-btn');
+        this.generateBtn = document.getElementById('generate-btn');
     }
 
     setupEventListeners() {
@@ -75,6 +77,13 @@ class OutputPanel {
         if (this.previewBtn) {
             this.previewBtn.addEventListener('click', () => {
                 this.callbacks.onPreview(this.getContent());
+            });
+        }
+        
+        // Generate button
+        if (this.generateBtn) {
+            this.generateBtn.addEventListener('click', () => {
+                this.generateSection();
             });
         }
     }
@@ -181,16 +190,99 @@ class OutputPanel {
         console.log(`[Output Panel] Regenerate requested for section ${this.currentSectionId}`);
     }
 
+    async generateSection() {
+        if (!this.currentSectionId) return;
+        
+        const substage = window.currentSubstage;
+        console.log(`[Output Panel] Generate requested for section ${this.currentSectionId}, substage: ${substage}`);
+        
+        // Set loading state
+        this.setLoading(true);
+        if (this.generateBtn) {
+            this.generateBtn.disabled = true;
+            this.generateBtn.textContent = 'Generating...';
+        }
+        
+        try {
+            let response;
+            let endpoint;
+            
+            // Route to appropriate API endpoint based on substage
+            switch (substage) {
+                case 'drafting':
+                    endpoint = `/api/posts/${this.postId}/sections/${this.currentSectionId}/generate`;
+                    response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({})
+                    });
+                    break;
+                    
+                case 'image-captions':
+                    endpoint = `/api/posts/${this.postId}/sections/${this.currentSectionId}/generate-image-captions`;
+                    response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({})
+                    });
+                    break;
+                    
+                default:
+                    throw new Error(`No generation endpoint defined for substage: ${substage}`);
+            }
+            
+            if (!response.ok) {
+                throw new Error(`Generation failed: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log(`[Output Panel] Generation response:`, data);
+            
+            // Update content editor with generated content
+            let generatedContent = '';
+            if (substage === 'drafting') {
+                generatedContent = data.content || data.draft || '';
+            } else if (substage === 'image-captions') {
+                generatedContent = data.image_captions || data.captions || '';
+            }
+            
+            if (generatedContent) {
+                this.setContent(generatedContent);
+                this.updateWordCount();
+                this.enableButtons();
+                
+                if (this.lastSaved) {
+                    this.lastSaved.textContent = 'Generated just now';
+                }
+            }
+            
+        } catch (error) {
+            console.error('[Output Panel] Error generating content:', error);
+            if (this.contentEditor) {
+                this.contentEditor.value = `Error generating content: ${error.message}`;
+            }
+        } finally {
+            // Reset loading state
+            this.setLoading(false);
+            if (this.generateBtn) {
+                this.generateBtn.disabled = false;
+                this.generateBtn.textContent = 'Generate';
+            }
+        }
+    }
+
     enableButtons() {
         if (this.saveBtn) this.saveBtn.disabled = false;
         if (this.regenerateBtn) this.regenerateBtn.disabled = false;
         if (this.previewBtn) this.previewBtn.disabled = false;
+        if (this.generateBtn) this.generateBtn.disabled = false;
     }
 
     disableButtons() {
         if (this.saveBtn) this.saveBtn.disabled = true;
         if (this.regenerateBtn) this.regenerateBtn.disabled = true;
         if (this.previewBtn) this.previewBtn.disabled = true;
+        if (this.generateBtn) this.generateBtn.disabled = true;
     }
 
     setLoading(isLoading) {

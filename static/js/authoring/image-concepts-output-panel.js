@@ -62,6 +62,7 @@ class ImageConceptsOutputPanel {
     const editor = document.getElementById('content-editor');
     editor?.addEventListener('input', () => this.updateWordCount());
     document.getElementById('regenerate-btn')?.addEventListener('click', () => this.regenerate());
+    document.getElementById('generate-concepts-btn')?.addEventListener('click', () => this.generateImageConcepts());
 
     window.addEventListener('sections:batch-generate', async (e) => {
       const ids = e.detail?.ids || [];
@@ -134,6 +135,9 @@ class ImageConceptsOutputPanel {
     
     const regenerateBtn = document.getElementById('regenerate-btn');
     if (regenerateBtn) regenerateBtn.disabled = false;
+
+    const generateBtn = document.getElementById('generate-concepts-btn');
+    if (generateBtn) generateBtn.disabled = false;
 
     // Display image concepts - try structured display first, fallback to textarea
     this.displayImageConcepts(section.image_concepts || '');

@@ -17,13 +17,11 @@ class LLMPromptsPanel {
         // Callbacks for external communication
         this.callbacks = {
             onPromptChange: options.onPromptChange || (() => {}),
-            onGenerate: options.onGenerate || (() => {}),
             onPromptLoad: options.onPromptLoad || (() => {}),
             onPromptSave: options.onPromptSave || (() => {})
         };
         
         // DOM elements
-        this.generateBtn = null;
         this.editPromptBtn = null;
         this.savePromptBtn = null;
         this.cancelEditBtn = null;
@@ -96,7 +94,6 @@ class LLMPromptsPanel {
     }
 
     bindElements() {
-        this.generateBtn = document.getElementById('generate-btn');
         this.editPromptBtn = document.getElementById('edit-prompt-btn');
         this.savePromptBtn = document.getElementById('save-prompt-btn');
         this.cancelEditBtn = document.getElementById('cancel-edit-btn');
@@ -108,11 +105,6 @@ class LLMPromptsPanel {
     }
 
     setupEventListeners() {
-        // Generate button
-        this.generateBtn?.addEventListener('click', () => {
-            this.handleGenerate();
-        });
-
         // Edit prompt button
         this.editPromptBtn?.addEventListener('click', () => {
             this.toggleEdit();
@@ -263,17 +255,6 @@ class LLMPromptsPanel {
     }
 
     loadPromptState() { /* deprecated - no localStorage */ }
-
-    handleGenerate() {
-        // Emit callback for generation - let parent handle the actual generation
-        this.callbacks.onGenerate({
-            pageType: this.pageType,
-            config: this.config,
-            postId: this.postId
-        });
-        
-        console.log(`[LLM Prompts Panel] Generate requested for ${this.pageType}`);
-    }
 
     async restoreAccordionState() {
         try {
