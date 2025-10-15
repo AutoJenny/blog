@@ -440,10 +440,17 @@ class PromptBuilderPanel {
         // Process each section sequentially
         for (const sectionId of sectionIds) {
             try {
-                // Find section data
-                const section = window.sectionsData?.find(s => s.id === sectionId);
-                console.log('[DEBUG] Batch: Looking for section', sectionId, 'in window.sectionsData:', window.sectionsData);
-                console.log('[DEBUG] Batch: Found section:', section);
+                // Fetch section data from API (same as individual selection)
+                const response = await fetch(`/authoring/api/posts/${this.postId}/sections/${sectionId}`);
+                if (!response.ok) {
+                    console.warn('[PromptBuilderPanel] Failed to fetch section data for:', sectionId);
+                    continue;
+                }
+                
+                const data = await response.json();
+                const section = data.section;
+                console.log('[DEBUG] Batch: Fetched section data for', sectionId, ':', section);
+                
                 if (!section || !section.selected_image_concept) {
                     console.warn('[PromptBuilderPanel] Skipping section without concept:', sectionId);
                     continue;
@@ -452,6 +459,9 @@ class PromptBuilderPanel {
                 // Temporarily set current section for generation
                 const originalSection = this.currentSection;
                 this.currentSection = section;
+                
+                // Load concept content for this section
+                this.loadSelectedConcept(section);
                 
                 // Generate prompt for this section
                 await this.generatePrompt();
