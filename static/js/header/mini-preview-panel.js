@@ -60,7 +60,7 @@ async function loadSections() {
                             <i class="fas fa-chevron-down section-chevron" id="section-${section.id}-chevron"></i>
                         </div>
                         <div class="section-content collapsed" id="section-${section.id}-content">
-                            <div class="section-draft">${section.draft || section.section_text || 'No draft content available'}</div>
+                            <div class="section-draft">${section.draft || section.polished || section.section_description || 'No draft content available'}</div>
                         </div>
                     `;
                     sectionsContainer.appendChild(sectionItem);
