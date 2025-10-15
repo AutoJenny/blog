@@ -76,6 +76,7 @@ class ImageCaptionsOutputPanel {
     }
 
     onSectionSelected(event) {
+        console.log('[DEBUG] ImageCaptionsOutputPanel received sectionSelected event:', event);
         const section = event.detail.section;
         this.currentSection = section;
         this.updateSectionTitle(section.title || section.section_heading || 'Unknown Section');
@@ -146,6 +147,7 @@ class ImageCaptionsOutputPanel {
     }
 
     async generateCaptions() {
+        console.log('[DEBUG] generateCaptions called, currentSection:', this.currentSection);
         if (!this.currentSection) {
             console.warn('[ImageCaptionsOutputPanel] No section selected');
             return;
