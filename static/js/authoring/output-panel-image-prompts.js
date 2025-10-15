@@ -239,6 +239,12 @@ class ImagePromptsOutputPanel {
                 })
             });
 
+            console.log('[ImagePromptsOutputPanel] API request sent with:', {
+                compiled_prompt: compiledPrompt,
+                concept_content: conceptContent,
+                section_id: this.currentSection.id
+            });
+
             if (!response.ok) {
                 throw new Error(`Generation failed: ${response.statusText}`);
             }

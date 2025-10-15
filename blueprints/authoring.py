@@ -2206,7 +2206,7 @@ def api_generate_image_prompt_from_builder():
             
             return jsonify({
                 'success': True,
-                'generated_prompt': generated_prompt,
+                'image_prompt': generated_prompt,
                 'message': 'Image prompt generated and saved successfully'
             })
             
