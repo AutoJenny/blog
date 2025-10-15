@@ -212,11 +212,16 @@ class PromptBuilderPanel {
             try {
                 // Parse the image concepts JSON
                 const conceptsData = typeof imageConcepts === 'string' ? JSON.parse(imageConcepts) : imageConcepts;
+                console.log('[DEBUG] Parsed conceptsData:', conceptsData);
                 
                 // Find the selected concept
                 let selectedConcept = null;
                 if (conceptsData.concepts && Array.isArray(conceptsData.concepts)) {
+                    console.log('[DEBUG] Found concepts array with', conceptsData.concepts.length, 'items');
                     selectedConcept = conceptsData.concepts.find(c => c.concept_id === selectedConceptId);
+                    console.log('[DEBUG] Found selectedConcept:', selectedConcept);
+                } else {
+                    console.log('[DEBUG] No concepts array found in conceptsData');
                 }
                 
                 if (selectedConcept) {
@@ -235,6 +240,7 @@ class PromptBuilderPanel {
                         mood: selectedConcept.concept_mood,
                         elements: selectedConcept.key_visual_elements
                     };
+                    console.log('[DEBUG] Set selectedConceptContent:', this.selectedConceptContent);
                 } else {
                     conceptDisplay.innerHTML = `
                         <div class="concept-placeholder">Selected concept "${selectedConceptId}" not found in concepts data.</div>
