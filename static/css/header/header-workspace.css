@@ -8,9 +8,9 @@
 .header-workspace .workspace-container {
     display: grid !important;
     grid-template-columns: 350px 1fr !important;
-    gap: 1.5rem;
-    max-width: 1400px;
-    margin: 0 auto;
+    gap: 1.5rem !important;
+    max-width: 1400px !important;
+    margin: 0 auto !important;
     border: 2px solid #10b981; /* Debug border */
     min-height: 500px; /* Debug min height */
 }
