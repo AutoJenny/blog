@@ -210,7 +210,7 @@ class OutputPanel {
             // Route to appropriate API endpoint based on substage
             switch (substage) {
                 case 'drafting':
-                    endpoint = `/api/posts/${this.postId}/sections/${this.currentSectionId}/generate`;
+                    endpoint = `/authoring/api/posts/${this.postId}/sections/${this.currentSectionId}/generate`;
                     response = await fetch(endpoint, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -219,7 +219,7 @@ class OutputPanel {
                     break;
                     
                 case 'image-captions':
-                    endpoint = `/api/posts/${this.postId}/sections/${this.currentSectionId}/generate-image-captions`;
+                    endpoint = `/authoring/api/posts/${this.postId}/sections/${this.currentSectionId}/generate-image-captions`;
                     response = await fetch(endpoint, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
