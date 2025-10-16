@@ -1,0 +1,84 @@
+/* Header Image Details Panel - minimal styles to avoid 404 and ensure layout */
+
+.image-details-panel {
+  margin-top: 1rem;
+}
+
+.image-details-panel .panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background: #0b1220;
+  border: 1px solid #233047;
+  border-radius: 6px;
+}
+
+.image-details-panel .panel-header h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: #e5e7eb;
+}
+
+.image-details-panel .panel-header .panel-name-green {
+  color: #10b981; /* green for panel name only */
+}
+
+.image-details-panel .panel-content {
+  border: 1px solid #233047;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  padding: 0.75rem;
+  background: #0f172a;
+}
+
+.image-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.image-preview {
+  background: #0b1220;
+  border: 1px solid #233047;
+  border-radius: 6px;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-meta {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.image-meta label {
+  display: block;
+  color: #9ca3af;
+  font-size: 0.8rem;
+  margin-bottom: 0.25rem;
+}
+
+.image-meta input,
+.image-meta textarea {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  color: #e5e7eb;
+  background: #0b1220;
+  border: 1px solid #233047;
+  border-radius: 4px;
+}
+
+.image-meta textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.image-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+

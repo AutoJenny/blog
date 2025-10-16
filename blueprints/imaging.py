@@ -57,18 +57,24 @@ def imaging_generate_dalle_image(image_prompt, post_id, section_id, parameters):
         if image_response.status_code != 200:
             return {'success': False, 'error': f'Failed to download image: {image_response.status_code}'}
         
-        # Create directory structure (main raw directory)
-        image_dir = f"static/content/posts/{post_id}/sections/{section_id}/raw"
+        # Create directory structure - support both sections and header
+        if section_id == 'header':
+            image_dir = f"static/content/posts/{post_id}/header/raw"
+            filename = "header.png"
+        else:
+            image_dir = f"static/content/posts/{post_id}/sections/{section_id}/raw"
+            filename = f"{section_id}.png"
+        
         os.makedirs(image_dir, exist_ok=True)
         
-        # Save image with section-based naming
-        image_path = f"{image_dir}/{section_id}.png"
+        # Save image
+        image_path = f"{image_dir}/{filename}"
         with open(image_path, 'wb') as f:
             f.write(image_response.content)
         
         return {
             'success': True,
-            'image_path': f"/static/content/posts/{post_id}/sections/{section_id}/raw/{section_id}.png",
+            'image_path': f"/static/content/posts/{post_id}/header/raw/{filename}" if section_id == 'header' else f"/static/content/posts/{post_id}/sections/{section_id}/raw/{filename}",
             'local_path': image_path
         }
         
@@ -115,9 +121,13 @@ def imaging_generate_sdxl_image(image_prompt, post_id, section_id, parameters):
         if result.returncode != 0:
             return {'success': False, 'error': f'SDXL generation failed: {result.stderr}'}
         
-        # The script should have created the image file in the main raw directory
-        image_path = f"/static/content/posts/{post_id}/sections/{section_id}/raw/{section_id}.png"
-        local_path = f"static/content/posts/{post_id}/sections/{section_id}/raw/{section_id}.png"
+        # The script should have created the image file - support both sections and header
+        if section_id == 'header':
+            image_path = f"/static/content/posts/{post_id}/header/raw/header.png"
+            local_path = f"static/content/posts/{post_id}/header/raw/header.png"
+        else:
+            image_path = f"/static/content/posts/{post_id}/sections/{section_id}/raw/{section_id}.png"
+            local_path = f"static/content/posts/{post_id}/sections/{section_id}/raw/{section_id}.png"
         
         if os.path.exists(local_path):
             return {
@@ -150,11 +160,17 @@ def optimize_image_with_watermark(post_id, section_id, params=None):
         watermark_margin = params.get('watermark_margin', 10)
         bg_opacity = params.get('bg_opacity', 20)
         
-        # Paths
-        raw_image_path = f"static/content/posts/{post_id}/sections/{section_id}/raw/{section_id}.png"
+        # Paths - support both sections and header
+        if section_id == 'header':
+            raw_image_path = f"static/content/posts/{post_id}/header/raw/header.png"
+            optimized_dir = f"static/content/posts/{post_id}/header/optimized"
+            optimized_image_path = f"{optimized_dir}/header.jpg"
+        else:
+            raw_image_path = f"static/content/posts/{post_id}/sections/{section_id}/raw/{section_id}.png"
+            optimized_dir = f"static/content/posts/{post_id}/sections/{section_id}/optimized"
+            optimized_image_path = f"{optimized_dir}/{section_id}.jpg"
+        
         watermark_path = "static/images/site/clan-watermark.png"
-        optimized_dir = f"static/content/posts/{post_id}/sections/{section_id}/optimized"
-        optimized_image_path = f"{optimized_dir}/{section_id}.jpg"
         
         # Check if raw image exists
         if not os.path.exists(raw_image_path):
@@ -248,7 +264,7 @@ def optimize_image_with_watermark(post_id, section_id, params=None):
         
         return {
             'success': True,
-            'optimized_path': f"/static/content/posts/{post_id}/sections/{section_id}/optimized/{section_id}.jpg",
+            'optimized_path': f"/{optimized_image_path}",
             'message': 'Image optimized successfully'
         }
         

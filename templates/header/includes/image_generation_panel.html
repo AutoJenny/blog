@@ -1,23 +1,56 @@
-<!-- Image Generation Panel -->
-<link rel="stylesheet" href="{{ url_for('static', filename='css/header/image-generation-panel.css') }}">
+<!-- Header Image Generation Panel -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/image-generation-panel.css') }}?v={{ range(1000, 9999) | random }}">
 
 <div class="image-generation-panel" id="image-generation-panel">
     <div class="panel-header" onclick="toggleImageGenerationAccordion()">
-        <h4><span class="panel-name-green">Header Image Generation:</span> <span id="image-generation-status">Generate header image</span></h4>
+        <h4><span class="panel-name-green">Header Image Generation:</span> <span id="image-generation-status">Ready to generate</span></h4>
         <div class="header-actions">
-            <button class="btn-primary" id="generate-image-btn">Generate</button>
+            <button class="btn-primary" id="compile-prompt-btn" onclick="console.log('Compile button clicked'); window.headerImageGenerationPanel?.compileHeaderPrompt()">Compile Prompt</button>
+            <button class="btn-primary" id="generate-header-btn" disabled>Generate</button>
             <i class="fas fa-chevron-down" id="image-generation-accordion-icon"></i>
         </div>
     </div>
     <div class="panel-content" id="image-generation-content">
-        <div class="image-prompt">
-            <label for="image-prompt-input">Image Prompt:</label>
-            <textarea id="image-prompt-input" placeholder="Image prompt will be generated..."></textarea>
+        <!-- Model Selection -->
+        <div class="model-selection">
+            <label for="model-select">Image Model:</label>
+            <select id="model-select">
+                <option value="dall-e-3">DALL-E 3</option>
+                <option value="sdxl">SDXL</option>
+            </select>
         </div>
+        
+        <!-- Compiled Prompt Display -->
+        <div class="compiled-prompt">
+            <label for="compiled-prompt-textarea">Compiled Prompt:</label>
+            <textarea id="compiled-prompt-textarea" placeholder="Click 'Compile Prompt' to generate a prompt from all section image prompts..."></textarea>
+        </div>
+        
+        <!-- Source Prompts Summary -->
+        <div class="source-prompts">
+            <div class="source-prompts-header" onclick="toggleSourcePrompts()">
+                <h5>Source Section Prompts <i class="fas fa-chevron-down" id="source-prompts-icon"></i></h5>
+            </div>
+            <div class="source-prompts-content collapsed" id="source-prompts-content">
+                <div id="source-prompts-list">
+                    <!-- Source prompts will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Generation Progress -->
+        <div class="generation-progress" id="generation-progress" style="display: none;">
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            <p>Generating header image...</p>
+        </div>
+        
+        <!-- Image Preview -->
         <div class="image-preview">
             <img id="generated-image" src="/static/images/placeholder.jpg" alt="Generated header image">
         </div>
     </div>
 </div>
 
-<script src="{{ url_for('static', filename='js/header/image-generation-panel.js') }}"></script>
+<script src="{{ url_for('static', filename='js/header/image-generation-panel.js') }}?v={{ range(1000, 9999) | random }}"></script>

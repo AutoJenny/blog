@@ -6,6 +6,7 @@
         <h4><span class="panel-name-green">Image Details:</span> <span id="image-details-status">Caption and alt text</span></h4>
         <div class="header-actions">
             <button class="btn-secondary" id="generate-details-btn">Generate</button>
+            <button class="btn-primary" id="save-details-btn">Save</button>
             <i class="fas fa-chevron-down" id="image-details-accordion-icon"></i>
         </div>
     </div>
@@ -25,4 +26,4 @@
     </div>
 </div>
 
-<script src="{{ url_for('static', filename='js/header/image-details-panel.js') }}"></script>
+<script src="{{ url_for('static', filename='js/header/image-details-panel.js') }}?v={{ range(1000, 9999) | random }}"></script>
