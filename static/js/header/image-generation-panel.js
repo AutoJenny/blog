@@ -1,5 +1,7 @@
 // Header Image Generation Panel JavaScript
 
+console.log('[HeaderImageGenerationPanel] Script loading...');
+
 class HeaderImageGenerationPanel {
     constructor() {
         this.postId = window.postId;
@@ -233,5 +235,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Initialize the panel
+    console.log('[HeaderImageGenerationPanel] Initializing panel...');
     window.headerImageGenerationPanel = new HeaderImageGenerationPanel();
+    console.log('[HeaderImageGenerationPanel] Panel initialized:', window.headerImageGenerationPanel);
 });
