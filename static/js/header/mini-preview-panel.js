@@ -54,13 +54,31 @@ async function loadSections() {
                 data.sections.forEach(section => {
                     const sectionItem = document.createElement('div');
                     sectionItem.className = 'section-item';
+                    
+                    // Build section content - Description + Draft Content only
+                    let sectionContent = '';
+                    
+                    // Add description if available
+                    if (section.description) {
+                        sectionContent += `<div class="section-description"><strong>Description:</strong> ${section.description}</div>`;
+                    }
+                    
+                    // Add draft content if available
+                    if (section.draft) {
+                        sectionContent += `<div class="section-draft"><strong>Draft Content:</strong><div class="draft-text">${section.draft}</div></div>`;
+                    } else if (section.polished) {
+                        sectionContent += `<div class="section-draft"><strong>Polished Content:</strong><div class="draft-text">${section.polished}</div></div>`;
+                    } else {
+                        sectionContent += `<div class="section-draft"><em>No draft content available yet</em></div>`;
+                    }
+                    
                     sectionItem.innerHTML = `
                         <div class="section-header" onclick="toggleSectionAccordion('section-${section.id}')">
                             <div class="section-title">${section.title || section.section_heading || `Section ${section.id}`}</div>
                             <i class="fas fa-chevron-down section-chevron" id="section-${section.id}-chevron"></i>
                         </div>
                         <div class="section-content collapsed" id="section-${section.id}-content">
-                            <div class="section-draft">${section.draft || section.polished || section.section_description || 'No draft content available'}</div>
+                            ${sectionContent}
                         </div>
                     `;
                     sectionsContainer.appendChild(sectionItem);

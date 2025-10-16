@@ -295,3 +295,49 @@
     max-height: 200px;
     overflow-y: auto;
 }
+
+/* Section content styling - Description + Draft Content only */
+.section-description,
+.section-draft {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: #0f172a;
+    border: 1px solid #374151;
+    border-radius: 0.375rem;
+}
+
+.section-description:last-child,
+.section-draft:last-child {
+    margin-bottom: 0;
+}
+
+.section-description strong,
+.section-draft strong {
+    color: #10b981;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.section-description {
+    color: #e2e8f0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.draft-text {
+    background: #1e293b;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    border: 1px solid #475569;
+    margin-top: 0.5rem;
+    color: #e2e8f0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 300px;
+    overflow-y: auto;
+}

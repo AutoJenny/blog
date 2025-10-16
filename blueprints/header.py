@@ -939,3 +939,120 @@ def api_get_header_data(post_id):
     except Exception as e:
         logger.error(f"Error getting header data: {e}")
         return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/generate-summary', methods=['POST'])
+def api_generate_summary(post_id):
+    """Generate summary for a post using LLM"""
+    try:
+        data = request.get_json()
+        content = data.get('content', '')
+        
+        if not content:
+            return jsonify({'error': 'No content provided'}), 400
+        
+        # Get prompts from database for step 62 (Summary Generation)
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT 
+                    sp.system_prompt,
+                    tp.prompt_text as task_prompt
+                FROM workflow_step_prompt wsp
+                JOIN llm_prompt sp ON wsp.system_prompt_id = sp.id
+                JOIN llm_prompt tp ON wsp.task_prompt_id = tp.id
+                WHERE wsp.step_id = 62
+            """)
+            result = cursor.fetchone()
+            
+            if not result:
+                return jsonify({'error': 'Summary generation prompts not found'}), 404
+            
+            system_prompt = result.get('system_prompt', '')
+            task_prompt = result.get('task_prompt', '')
+        
+        # Use LLM service to generate summary
+        llm_service = LLMService()
+        
+        # Format the prompt with the content
+        formatted_prompt = task_prompt.format(content=content)
+        
+        # Prepare messages for LLM
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": formatted_prompt}
+        ]
+        
+        # Generate summary using LLM
+        try:
+            llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+            
+            if 'error' in llm_response:
+                logger.error(f"LLM generation failed: {llm_response['error']}")
+                raise Exception("LLM failed")
+            
+            summary = llm_response.get('content', '').strip()
+            
+            if not summary:
+                raise Exception("Empty response")
+                
+        except Exception as e:
+            logger.error(f"LLM service error: {e}")
+            # NO FALLBACK - fail cleanly instead of generating generic fluff
+            return jsonify({'error': f'LLM generation failed: {str(e)}'}), 500
+        
+        return jsonify({
+            'success': True,
+            'summary': summary.strip()
+        })
+        
+    except Exception as e:
+        logger.error(f"Error generating summary for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/get-summary', methods=['GET'])
+def api_get_summary(post_id):
+    """Get summary from post table"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT summary FROM post WHERE id = %s
+            """, (post_id,))
+            result = cursor.fetchone()
+            
+            if not result:
+                return jsonify({'error': 'Post not found'}), 404
+            
+            return jsonify({
+                'success': True,
+                'summary': result.get('summary', '')
+            })
+            
+    except Exception as e:
+        logger.error(f"Error getting summary for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/save-summary', methods=['POST'])
+def api_save_summary(post_id):
+    """Save summary to post table"""
+    try:
+        data = request.get_json()
+        summary = data.get('summary', '')
+        
+        if not summary:
+            return jsonify({'error': 'No summary provided'}), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Update post table with summary
+            cursor.execute("""
+                UPDATE post 
+                SET summary = %s, updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+            """, (summary, post_id))
+            
+            if cursor.rowcount == 0:
+                return jsonify({'error': 'Post not found'}), 404
+            
+            return jsonify({'success': True})
+            
+    except Exception as e:
+        logger.error(f"Error saving summary for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500

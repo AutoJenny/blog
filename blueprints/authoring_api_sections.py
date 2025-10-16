@@ -46,22 +46,42 @@ def api_get_sections(post_id):
                         sections_list = []
                     
                     # Convert to post_section format and add frontend-compatible fields
+                    # First get post_section data to merge with post_development data
+                    cursor.execute("""
+                        SELECT id, section_order, section_heading, section_description, 
+                               status, draft, polished, ideas_to_include, facts_to_include,
+                               highlighting, image_concepts, image_prompts, image_captions,
+                               image_alt_text, selected_image_concept
+                        FROM post_section
+                        WHERE post_id = %s
+                        ORDER BY section_order
+                    """, (post_id,))
+                    post_section_data = cursor.fetchall()
+                    
+                    # Create a lookup dict for post_section data by order
+                    post_section_lookup = {}
+                    for ps_section in post_section_data:
+                        post_section_lookup[ps_section['section_order']] = ps_section
+                    
                     sections = []
                     for i, section in enumerate(sections_list):
+                        section_order = section.get('order', i+1)
+                        ps_section = post_section_lookup.get(section_order, {})
+                        
                         sections.append({
                             'id': section.get('id', f'section_{i+1}'),
-                            'section_order': section.get('order', i+1),
+                            'section_order': section_order,
                             'section_heading': section.get('title', f'Section {i+1}'),
                             'section_description': section.get('original', ''),
                             'title': section.get('title', f'Section {i+1}'),  # Frontend-compatible field
                             'description': section.get('original', ''),  # Frontend-compatible field
-                            'order': section.get('order', i+1),  # Frontend-compatible field
-                            'status': 'draft',
-                            'draft': None,
-                            'polished': None,
-                            'ideas_to_include': None,
-                            'facts_to_include': None,
-                            'highlighting': None,
+                            'order': section_order,  # Frontend-compatible field
+                            'status': ps_section.get('status', 'draft'),
+                            'draft': ps_section.get('draft'),  # Use actual draft content from post_section
+                            'polished': ps_section.get('polished'),  # Use actual polished content from post_section
+                            'ideas_to_include': ps_section.get('ideas_to_include'),
+                            'facts_to_include': ps_section.get('facts_to_include'),
+                            'highlighting': ps_section.get('highlighting'),
                             'image_concepts': section.get('image_concepts'),
                             'image_prompts': section.get('image_prompts'),
                             'image_captions': section.get('image_captions'),

@@ -152,22 +152,22 @@ class LLMSettingsPanel {
     }
 
     saveSettings() {
+        // Settings are not persisted since localStorage is banned
         const settings = this.getSettings();
-        localStorage.setItem(this.storageKey, JSON.stringify(settings));
-        console.log('[LLM Settings Panel] Settings saved:', settings);
+        console.log('[LLM Settings Panel] Settings updated (not persisted):', settings);
     }
 
     loadSettings() {
-        const saved = localStorage.getItem(this.storageKey);
-        if (saved) {
-            try {
-                const settings = JSON.parse(saved);
-                this.setSettings(settings);
-                console.log('[LLM Settings Panel] Settings loaded:', settings);
-            } catch (error) {
-                console.error('[LLM Settings Panel] Error loading settings:', error);
-            }
-        }
+        // Use default settings since localStorage is banned
+        const defaultSettings = {
+            provider: 'Ollama',
+            model: 'llama3.2:latest',
+            temperature: 0.7,
+            maxTokens: 2000
+        };
+        
+        this.setSettings(defaultSettings);
+        console.log('[LLM Settings Panel] Default settings loaded:', defaultSettings);
     }
 
     updateProviderInfo() {
@@ -232,14 +232,24 @@ function toggleLLMSettingsAccordion() {
         content.style.display = 'block';
         icon.classList.remove('fa-chevron-up');
         icon.classList.add('fa-chevron-down');
-        localStorage.setItem('llm-settings-accordion-state', 'open');
     } else {
         content.style.display = 'none';
         icon.classList.remove('fa-chevron-down');
         icon.classList.add('fa-chevron-up');
-        localStorage.setItem('llm-settings-accordion-state', 'closed');
     }
 }
+
+// Initialize LLM Settings Panel when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the LLM Settings Panel
+    const llmSettingsPanel = new LLMSettingsPanel({
+        containerId: 'llm-settings-panel',
+        storageKey: 'llm-settings'
+    });
+    
+    // Make it globally accessible if needed
+    window.llmSettingsPanel = llmSettingsPanel;
+});
 
 // Export for module usage
 if (typeof module !== 'undefined' && module.exports) {
