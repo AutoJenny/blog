@@ -6,6 +6,7 @@ import json
 import re
 import requests
 import os
+from slugify import slugify
 
 logger = logging.getLogger(__name__)
 
@@ -589,9 +590,11 @@ def api_generate_title_summary(post_id):
             logger.error(f"Failed to parse LLM response as JSON: {e}")
             return jsonify({'error': f'Failed to parse LLM response: {str(e)}'}), 500
         
-        # TODO: Generate summary and slug
+        # Generate summary (placeholder for now)
         summary = "Generated summary placeholder"
-        slug = "generated-slug-placeholder"
+        
+        # Generate slug from the selected title
+        slug = slugify(title_options[0] if title_options else "default-title")
         
         return jsonify({
             'success': True,
@@ -1055,4 +1058,83 @@ def api_save_summary(post_id):
             
     except Exception as e:
         logger.error(f"Error saving summary for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/generate-slug', methods=['POST'])
+def api_generate_slug(post_id):
+    """Generate slug from selected title using Python slugify"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get the selected title from the post
+            cursor.execute("""
+                SELECT title FROM post WHERE id = %s
+            """, (post_id,))
+            result = cursor.fetchone()
+            
+            if not result:
+                return jsonify({'error': 'Post not found'}), 404
+            
+            title = result.get('title', '')
+            if not title:
+                return jsonify({'error': 'No title found to generate slug from'}), 400
+            
+            # Generate slug from title using Python slugify
+            generated_slug = slugify(title)
+            
+            return jsonify({
+                'success': True,
+                'slug': generated_slug
+            })
+            
+    except Exception as e:
+        logger.error(f"Error generating slug for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/get-slug', methods=['GET'])
+def api_get_slug(post_id):
+    """Get slug from post table"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT slug FROM post WHERE id = %s
+            """, (post_id,))
+            result = cursor.fetchone()
+            
+            if not result:
+                return jsonify({'error': 'Post not found'}), 404
+            
+            return jsonify({
+                'success': True,
+                'slug': result.get('slug', '')
+            })
+            
+    except Exception as e:
+        logger.error(f"Error getting slug for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/save-slug', methods=['POST'])
+def api_save_slug(post_id):
+    """Save slug to post table"""
+    try:
+        data = request.get_json()
+        slug = data.get('slug', '')
+        
+        if not slug:
+            return jsonify({'error': 'No slug provided'}), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Update post table with slug
+            cursor.execute("""
+                UPDATE post 
+                SET slug = %s, updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+            """, (slug, post_id))
+            
+            if cursor.rowcount == 0:
+                return jsonify({'error': 'Post not found'}), 404
+            
+            return jsonify({'success': True})
+            
+    except Exception as e:
+        logger.error(f"Error saving slug for post {post_id}: {e}")
         return jsonify({'error': str(e)}), 500

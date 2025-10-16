@@ -100,9 +100,26 @@
   function updateSummaryStatus(summary) {
     const statusElement = document.getElementById('summary-generation-status');
     if (statusElement && summary) {
-      // Show first line of summary in header
+      // Show first line or two of summary in header (max 80 characters)
       const firstLine = summary.split('\n')[0].trim();
-      statusElement.textContent = firstLine;
+      let displayText = firstLine;
+      
+      // If first line is very short, try to include part of second line
+      if (firstLine.length < 40 && summary.includes('\n')) {
+        const lines = summary.split('\n');
+        const secondLine = lines[1]?.trim() || '';
+        if (secondLine) {
+          const combined = `${firstLine} ${secondLine}`;
+          displayText = combined.length <= 80 ? combined : firstLine;
+        }
+      }
+      
+      // Truncate if too long and add ellipsis
+      if (displayText.length > 80) {
+        displayText = displayText.substring(0, 77) + '...';
+      }
+      
+      statusElement.textContent = displayText;
     }
   }
 
