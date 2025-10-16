@@ -196,6 +196,56 @@
     border-color: #3b82f6;
 }
 
+/* Subtitle Options Styling */
+.subtitle-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.subtitle-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 0.375rem;
+    transition: all 0.2s;
+}
+
+.subtitle-option:hover {
+    background: #1e293b;
+    border-color: #475569;
+}
+
+.subtitle-option input[type="radio"] {
+    margin: 0;
+    margin-top: 0.125rem;
+    width: auto;
+    accent-color: #3b82f6;
+}
+
+.subtitle-option label {
+    margin: 0;
+    color: #e2e8f0;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    cursor: pointer;
+    flex: 1;
+}
+
+.subtitle-option input[type="radio"]:checked + label {
+    color: #3b82f6;
+    font-weight: 600;
+}
+
+.subtitle-option:has(input[type="radio"]:checked) {
+    background: #1e293b;
+    border-color: #3b82f6;
+}
+
 .error-message {
     color: #ef4444;
     font-size: 0.875rem;

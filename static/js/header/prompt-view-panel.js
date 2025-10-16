@@ -1,13 +1,7 @@
 // Prompt View Panel JavaScript
 (function() {
   // Global functions for accordion toggle
-  window.togglePromptViewAccordion = function(panelType) {
-    const content = document.getElementById(`prompt-view-content-${panelType}`);
-    const icon = document.getElementById(`prompt-view-accordion-icon-${panelType}`);
-    if (!content || !icon) return;
-    content.classList.toggle('collapsed');
-    icon.classList.toggle('open');
-  };
+  // Note: togglePromptViewAccordion is now managed by HeaderAccordionManager
 
   // Initialize prompt view panel
   function initPromptViewPanel(panelType, stepId) {

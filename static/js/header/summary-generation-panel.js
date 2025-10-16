@@ -1,12 +1,6 @@
 // Summary Generation Panel JS
 (function() {
-  function toggleSummaryGenerationAccordion() {
-    const content = document.getElementById('summary-generation-content');
-    const icon = document.getElementById('summary-generation-accordion-icon');
-    if (!content || !icon) return;
-    content.classList.toggle('collapsed');
-    icon.classList.toggle('open');
-  }
+  // Note: toggleSummaryGenerationAccordion is now managed by HeaderAccordionManager
 
   function generateSummary() {
     console.log('[Summary Generation Panel] Individual generate clicked');
@@ -16,6 +10,14 @@
     if (textarea) {
       textarea.value = 'Generated summary (individual)';
       updateWordCount();
+      updateSummaryStatus('Generated summary (individual)');
+    }
+  }
+
+  function updateSummaryStatus(summary) {
+    const statusElement = document.getElementById('summary-generation-status');
+    if (statusElement && summary) {
+      statusElement.textContent = summary;
     }
   }
 
@@ -35,18 +37,28 @@
       if (textarea) {
         textarea.value = event.detail.summary;
         updateWordCount();
+        updateSummaryStatus(event.detail.summary);
       }
     }
   }
 
   // Initialize
-  document.addEventListener('DOMContentLoaded', function() {
-    // Initialize accordion as open by default
-    const content = document.getElementById('summary-generation-content');
-    const icon = document.getElementById('summary-generation-accordion-icon');
-    if (content && icon) {
-      content.classList.remove('collapsed');
-      icon.classList.add('open');
+  document.addEventListener('DOMContentLoaded', async function() {
+    // Initialize accordion with database-backed state persistence
+    if (window.headerAccordionManager) {
+      await window.headerAccordionManager.initializeAccordion(
+        'summary-generation',
+        'summary-generation-content',
+        'summary-generation-accordion-icon'
+      );
+    } else {
+      // Fallback: Initialize accordion as open by default
+      const content = document.getElementById('summary-generation-content');
+      const icon = document.getElementById('summary-generation-accordion-icon');
+      if (content && icon) {
+        content.classList.remove('collapsed');
+        icon.classList.add('open');
+      }
     }
     
     const generateBtn = document.getElementById('generate-summary-btn');
@@ -64,5 +76,5 @@
   });
 
   // Expose to window for inline onclick
-  window.toggleSummaryGenerationAccordion = toggleSummaryGenerationAccordion;
+  // window.toggleSummaryGenerationAccordion = toggleSummaryGenerationAccordion; // Now managed by HeaderAccordionManager
 })();

@@ -1,12 +1,6 @@
 // Title Generation Panel JS
 (function() {
-  function toggleTitleGenerationAccordion() {
-    const content = document.getElementById('title-generation-content');
-    const icon = document.getElementById('title-generation-accordion-icon');
-    if (!content || !icon) return;
-    content.classList.toggle('collapsed');
-    icon.classList.toggle('open');
-  }
+  // Note: toggleTitleGenerationAccordion is now managed by HeaderAccordionManager
 
   function generateTitles() {
     console.log('[Title Generation Panel] Individual generate clicked');
@@ -74,6 +68,7 @@
       radio.addEventListener('change', function() {
         if (this.checked) {
           saveSelectedTitle(title, index);
+          updateTitleStatus(title);
         }
       });
     });
@@ -81,6 +76,14 @@
     // Save the initially selected title
     if (titles[selectedIndex]) {
       saveSelectedTitle(titles[selectedIndex], selectedIndex);
+      updateTitleStatus(titles[selectedIndex]);
+    }
+  }
+
+  function updateTitleStatus(selectedTitle) {
+    const statusElement = document.getElementById('title-generation-status');
+    if (statusElement && selectedTitle) {
+      statusElement.textContent = selectedTitle;
     }
   }
 
@@ -147,13 +150,22 @@
   }
 
   // Initialize
-  document.addEventListener('DOMContentLoaded', function() {
-    // Initialize accordion as open by default
-    const content = document.getElementById('title-generation-content');
-    const icon = document.getElementById('title-generation-accordion-icon');
-    if (content && icon) {
-      content.classList.remove('collapsed');
-      icon.classList.add('open');
+  document.addEventListener('DOMContentLoaded', async function() {
+    // Initialize accordion with database-backed state persistence
+    if (window.headerAccordionManager) {
+      await window.headerAccordionManager.initializeAccordion(
+        'title-generation',
+        'title-generation-content',
+        'title-generation-accordion-icon'
+      );
+    } else {
+      // Fallback: Initialize accordion as open by default
+      const content = document.getElementById('title-generation-content');
+      const icon = document.getElementById('title-generation-accordion-icon');
+      if (content && icon) {
+        content.classList.remove('collapsed');
+        icon.classList.add('open');
+      }
     }
     
     const generateBtn = document.getElementById('generate-titles-btn');
@@ -169,5 +181,5 @@
   });
 
   // Expose to window for inline onclick
-  window.toggleTitleGenerationAccordion = toggleTitleGenerationAccordion;
+  // window.toggleTitleGenerationAccordion = toggleTitleGenerationAccordion; // Now managed by HeaderAccordionManager
 })();

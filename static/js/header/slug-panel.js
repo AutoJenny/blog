@@ -1,12 +1,6 @@
 // Slug Panel JS
 (function() {
-  function toggleSlugAccordion() {
-    const content = document.getElementById('slug-content');
-    const icon = document.getElementById('slug-accordion-icon');
-    if (!content || !icon) return;
-    content.classList.toggle('collapsed');
-    icon.classList.toggle('open');
-  }
+  // Note: toggleSlugAccordion is now managed by HeaderAccordionManager
 
   function generateSlug() {
     console.log('[Slug Panel] Individual generate clicked');
@@ -16,6 +10,14 @@
     if (input) {
       input.value = 'generated-slug-individual';
       updateSlugPreview();
+      updateSlugStatus('generated-slug-individual');
+    }
+  }
+
+  function updateSlugStatus(slug) {
+    const statusElement = document.getElementById('slug-status');
+    if (statusElement && slug) {
+      statusElement.textContent = slug;
     }
   }
 
@@ -24,6 +26,7 @@
     const preview = document.getElementById('slug-preview');
     if (input && preview) {
       preview.textContent = input.value || 'no-slug-generated';
+      updateSlugStatus(input.value || 'no-slug-generated');
     }
   }
 
@@ -34,18 +37,28 @@
       if (input) {
         input.value = event.detail.slug;
         updateSlugPreview();
+        updateSlugStatus(event.detail.slug);
       }
     }
   }
 
   // Initialize
-  document.addEventListener('DOMContentLoaded', function() {
-    // Initialize accordion as open by default
-    const content = document.getElementById('slug-content');
-    const icon = document.getElementById('slug-accordion-icon');
-    if (content && icon) {
-      content.classList.remove('collapsed');
-      icon.classList.add('open');
+  document.addEventListener('DOMContentLoaded', async function() {
+    // Initialize accordion with database-backed state persistence
+    if (window.headerAccordionManager) {
+      await window.headerAccordionManager.initializeAccordion(
+        'slug',
+        'slug-content',
+        'slug-accordion-icon'
+      );
+    } else {
+      // Fallback: Initialize accordion as open by default
+      const content = document.getElementById('slug-content');
+      const icon = document.getElementById('slug-accordion-icon');
+      if (content && icon) {
+        content.classList.remove('collapsed');
+        icon.classList.add('open');
+      }
     }
     
     const generateBtn = document.getElementById('generate-slug-btn');
@@ -63,5 +76,5 @@
   });
 
   // Expose to window for inline onclick
-  window.toggleSlugAccordion = toggleSlugAccordion;
+  // window.toggleSlugAccordion = toggleSlugAccordion; // Now managed by HeaderAccordionManager
 })();

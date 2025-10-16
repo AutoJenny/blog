@@ -1,12 +1,6 @@
 // Output Panel Title Summary JS
 (function() {
-  function toggleTitleSummaryOutputAccordion() {
-    const content = document.getElementById('title-summary-output-content');
-    const icon = document.getElementById('title-summary-output-accordion-icon');
-    if (!content || !icon) return;
-    content.classList.toggle('collapsed');
-    icon.classList.toggle('open');
-  }
+  // Note: toggleTitleSummaryOutputAccordion is now managed by HeaderAccordionManager
 
   function saveTitleSummary() {
     console.log('[Output Panel] Save clicked');
@@ -70,7 +64,16 @@
   }
 
   // Initialize
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', async function() {
+    // Initialize accordion with database-backed state persistence
+    if (window.headerAccordionManager) {
+      await window.headerAccordionManager.initializeAccordion(
+        'title-summary-output',
+        'title-summary-output-content',
+        'title-summary-output-accordion-icon'
+      );
+    }
+    
     const saveBtn = document.getElementById('save-title-summary-btn');
     if (saveBtn) {
       saveBtn.addEventListener('click', saveTitleSummary);
@@ -85,5 +88,5 @@
   });
 
   // Expose to window for inline onclick
-  window.toggleTitleSummaryOutputAccordion = toggleTitleSummaryOutputAccordion;
+  // window.toggleTitleSummaryOutputAccordion = toggleTitleSummaryOutputAccordion; // Now managed by HeaderAccordionManager
 })();

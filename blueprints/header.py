@@ -306,7 +306,7 @@ def api_generate_titles(post_id):
 
 @bp.route('/api/posts/<int:post_id>/generate-subtitle', methods=['POST'])
 def api_generate_subtitle(post_id):
-    """Generate subtitle based on Development tab content and selected title using LLM"""
+    """Generate multiple subtitle options based on Development tab content and selected title using LLM"""
     try:
         data = request.get_json()
         idea_seed = data.get('idea_seed', '')
@@ -314,7 +314,7 @@ def api_generate_subtitle(post_id):
         selected_title = data.get('selected_title', '')
         section_content = data.get('section_content', '')
         
-        logger.info(f"Generating subtitle for post {post_id} with title: {selected_title[:50]}...")
+        logger.info(f"Generating subtitles for post {post_id} with title: {selected_title[:50]}...")
         
         # Get prompts from database for step 61 (Subtitle Generation)
         with db_manager.get_cursor() as cursor:
@@ -335,6 +335,12 @@ def api_generate_subtitle(post_id):
             
             system_prompt = result.get('system_prompt', '')
             task_prompt = result.get('task_prompt', '')
+        
+        # Modify the task prompt to request multiple subtitle options
+        task_prompt = task_prompt.replace(
+            'CRITICAL: Return ONLY the subtitle text.',
+            'CRITICAL: Return ONLY a JSON array of exactly 3 subtitle options. Format: ["subtitle1", "subtitle2", "subtitle3"]'
+        )
         
         # Replace placeholders in task prompt with actual data
         prompt_vars = {
@@ -362,16 +368,37 @@ def api_generate_subtitle(post_id):
             logger.error(f"LLM generation failed: {llm_response['error']}")
             return jsonify({'error': f'LLM generation failed: {llm_response["error"]}'}), 500
         
-        generated_subtitle = llm_response['content'].strip()
-        logger.info(f"LLM response: {generated_subtitle}")
+        generated_content = llm_response['content'].strip()
+        logger.info(f"LLM response: {generated_content}")
+        
+        # Parse JSON response for subtitles
+        try:
+            json_match = re.search(r'\[.*?\]', generated_content, re.DOTALL)
+            if json_match:
+                json_str = json_match.group(0)
+                subtitle_options = json.loads(json_str)
+                
+                if not isinstance(subtitle_options, list) or len(subtitle_options) != 3:
+                    raise ValueError("Response must be an array of exactly 3 subtitles")
+                
+                # Clean up subtitles
+                subtitle_options = [subtitle.strip().strip('"').strip("'") for subtitle in subtitle_options]
+                selected_subtitle = subtitle_options[0]
+            else:
+                raise ValueError("No JSON array found in response")
+                
+        except (json.JSONDecodeError, ValueError) as e:
+            logger.error(f"Failed to parse LLM response as JSON: {e}")
+            return jsonify({'error': f'Failed to parse LLM response: {str(e)}'}), 500
         
         return jsonify({
             'success': True,
-            'subtitle': generated_subtitle
+            'subtitle_options': subtitle_options,
+            'selected_index': 0
         })
         
     except Exception as e:
-        logger.error(f"Error generating subtitle for post {post_id}: {e}")
+        logger.error(f"Error generating subtitles for post {post_id}: {e}")
         return jsonify({'error': str(e)}), 500
 
 @bp.route('/api/posts/<int:post_id>/generate-title-summary', methods=['POST'])
@@ -520,6 +547,18 @@ def api_generate_title_summary(post_id):
             {'role': 'user', 'content': task_prompt}
         ]
         
+        # Modify the task prompt to request multiple subtitle options
+        task_prompt = task_prompt.replace(
+            'CRITICAL: Return ONLY the subtitle text.',
+            'CRITICAL: Return ONLY a JSON array of exactly 3 subtitle options. Format: ["subtitle1", "subtitle2", "subtitle3"]'
+        )
+        
+        # Prepare messages for LLM
+        messages = [
+            {'role': 'system', 'content': system_prompt},
+            {'role': 'user', 'content': task_prompt}
+        ]
+        
         # Execute LLM request for subtitle
         logger.info(f"Calling LLM for subtitle generation")
         llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
@@ -528,7 +567,27 @@ def api_generate_title_summary(post_id):
             logger.error(f"LLM generation failed: {llm_response['error']}")
             return jsonify({'error': f'LLM generation failed: {llm_response["error"]}'}), 500
         
-        subtitle = llm_response['content'].strip()
+        generated_content = llm_response['content'].strip()
+        
+        # Parse JSON response for subtitles
+        try:
+            json_match = re.search(r'\[.*?\]', generated_content, re.DOTALL)
+            if json_match:
+                json_str = json_match.group(0)
+                subtitle_options = json.loads(json_str)
+                
+                if not isinstance(subtitle_options, list) or len(subtitle_options) != 3:
+                    raise ValueError("Response must be an array of exactly 3 subtitles")
+                
+                # Clean up subtitles
+                subtitle_options = [subtitle.strip().strip('"').strip("'") for subtitle in subtitle_options]
+                selected_subtitle = subtitle_options[0]
+            else:
+                raise ValueError("No JSON array found in response")
+                
+        except (json.JSONDecodeError, ValueError) as e:
+            logger.error(f"Failed to parse LLM response as JSON: {e}")
+            return jsonify({'error': f'Failed to parse LLM response: {str(e)}'}), 500
         
         # TODO: Generate summary and slug
         summary = "Generated summary placeholder"
@@ -537,13 +596,73 @@ def api_generate_title_summary(post_id):
         return jsonify({
             'success': True,
             'title_options': title_options,
-            'subtitle': subtitle,
+            'subtitle_options': subtitle_options,
+            'subtitle_selected_index': 0,
             'summary': summary,
             'slug': slug
         })
         
     except Exception as e:
         logger.error(f"Error generating all header elements for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/save-selected-subtitle', methods=['POST'])
+def api_save_selected_subtitle(post_id):
+    """Save the selected subtitle and subtitle options to database"""
+    try:
+        data = request.get_json()
+        subtitle = data.get('subtitle', '')
+        subtitle_index = data.get('subtitle_index', 0)
+        
+        logger.info(f"Saving selected subtitle for post {post_id}: {subtitle[:50]}...")
+        
+        with db_manager.get_cursor() as cursor:
+            # Update post table with selected subtitle
+            cursor.execute("""
+                UPDATE post 
+                SET subtitle = %s, updated_at = NOW()
+                WHERE id = %s
+            """, (subtitle, post_id))
+            
+            cursor.connection.commit()
+        
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        logger.error(f"Error saving selected subtitle for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/get-subtitles', methods=['GET'])
+def api_get_subtitles(post_id):
+    """Get existing subtitles from database"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT subtitle
+                FROM post
+                WHERE id = %s
+            """, (post_id,))
+            
+            result = cursor.fetchone()
+            
+            if not result:
+                return jsonify({'success': True, 'subtitle_options': [], 'selected_index': 0})
+            
+            subtitle = result.get('subtitle', '')
+            
+            if subtitle:
+                # For now, return a single subtitle as the first option
+                # In the future, we could store subtitle_options in a separate field
+                return jsonify({
+                    'success': True,
+                    'subtitle_options': [subtitle],
+                    'selected_index': 0
+                })
+            else:
+                return jsonify({'success': True, 'subtitle_options': [], 'selected_index': 0})
+        
+    except Exception as e:
+        logger.error(f"Error getting subtitles for post {post_id}: {e}")
         return jsonify({'error': str(e)}), 500
 
 @bp.route('/api/posts/<int:post_id>/save-selected-title', methods=['POST'])
