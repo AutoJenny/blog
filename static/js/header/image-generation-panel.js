@@ -42,11 +42,17 @@ class HeaderImageGenerationPanel {
             this.updateStatus('Compiling prompts...');
             this.compileBtn.disabled = true;
             
+            // Get selected model
+            const selectedModel = this.modelSelect ? this.modelSelect.value : 'dall-e-3';
+            
             const response = await fetch(`/header/api/posts/${this.postId}/compile-header-prompt`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
-                }
+                },
+                body: JSON.stringify({
+                    model: selectedModel
+                })
             });
             
             const data = await response.json();

@@ -1123,6 +1123,9 @@ def api_save_slug(post_id):
 def api_compile_header_prompt(post_id):
     """Compile all section image prompts into a single header prompt using LLM"""
     try:
+        # Get the selected model from request data
+        data = request.get_json() or {}
+        selected_model = data.get('model', 'dall-e-3')
         with db_manager.get_cursor() as cursor:
             # Get all section image prompts for this post from post_development.sections JSON
             cursor.execute("""
@@ -1182,11 +1185,24 @@ def api_compile_header_prompt(post_id):
             for section in sections_with_prompts:
                 section_prompts_text += f"Section {section['section_order']}: {section['image_prompts']}\n\n"
             
+            # Determine style guidelines based on selected model
+            style_guidelines = ""
+            if selected_model == 'dall-e-3':
+                style_guidelines = "Use 'photorealistic' style"
+            elif selected_model == 'sdxl':
+                style_guidelines = "Use 'inkwash and watercolour' style"
+            else:
+                style_guidelines = "Use 'photorealistic' style"  # Default
+            
             # Use LLM service to compile prompts
             llm_service = LLMService()
             
-            # Format the prompt with the section prompts
-            formatted_prompt = task_prompt.format(section_prompts=section_prompts_text.strip())
+            # Format the prompt with the section prompts and style guidelines
+            formatted_prompt = task_prompt.format(
+                section_prompts=section_prompts_text.strip(),
+                style_guidelines=style_guidelines,
+                model=selected_model
+            )
             
             # Prepare messages for LLM
             messages = [
