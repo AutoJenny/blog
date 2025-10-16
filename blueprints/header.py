@@ -1188,11 +1188,11 @@ def api_compile_header_prompt(post_id):
             # Determine style guidelines based on selected model
             style_guidelines = ""
             if selected_model == 'dall-e-3':
-                style_guidelines = "Use 'photorealistic' style"
+                style_guidelines = "Use 'photorealistic' style with brushstrokes fading to white edges"
             elif selected_model == 'sdxl':
-                style_guidelines = "Use 'inkwash and watercolour' style"
+                style_guidelines = "Use 'inkwash and watercolour' style with brushstrokes fading to white edges"
             else:
-                style_guidelines = "Use 'photorealistic' style"  # Default
+                style_guidelines = "Use 'photorealistic' style with brushstrokes fading to white edges"  # Default
             
             # Use LLM service to compile prompts
             llm_service = LLMService()
@@ -1222,6 +1222,10 @@ def api_compile_header_prompt(post_id):
                 
                 if not compiled_prompt:
                     raise Exception("Empty response")
+                    
+                # Ensure brushstrokes fading to white edges is included
+                if "brushstrokes fading to white edges" not in compiled_prompt.lower():
+                    compiled_prompt += " with brushstrokes fading to white edges"
                     
             except Exception as e:
                 logger.error(f"LLM service error: {e}")
