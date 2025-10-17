@@ -225,12 +225,7 @@ class HeaderPromptBuilderPanel {
         // Display formatted list - only descriptions
         const conceptsList = concepts.map(concept => `
             <div class="concept-item">
-                <div class="concept-header">
-                    <strong>${concept.section_title}</strong>
-                </div>
-                <div class="concept-details">
-                    <div class="concept-description">${concept.concept_description}</div>
-                </div>
+                <div class="concept-description">${concept.concept_description}</div>
             </div>
         `).join('');
         

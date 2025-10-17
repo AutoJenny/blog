@@ -545,13 +545,33 @@ def execute_image_concepts(post_id, data):
                     if llm_response and 'content' in llm_response:
                         image_concepts = llm_response['content'].strip()
                         
-                        # Save the image concepts to database
+                        # Save the image concepts to database with auto-selection
                         with db_manager.get_cursor() as cursor:
-                            cursor.execute("""
-                                UPDATE post_section
-                                SET image_concepts = %s
-                                WHERE id = %s
-                            """, (image_concepts, section_id))
+                            # Auto-select first concept if no selection exists
+                            try:
+                                concepts_data = json.loads(image_concepts)
+                                if concepts_data.get('concepts') and len(concepts_data['concepts']) > 0:
+                                    first_concept_id = concepts_data['concepts'][0]['concept_id']
+                                    
+                                    cursor.execute("""
+                                        UPDATE post_section
+                                        SET image_concepts = %s, selected_image_concept = %s
+                                        WHERE id = %s
+                                    """, (image_concepts, first_concept_id, section_id))
+                                    logger.info(f"Auto-selected concept {first_concept_id} for section {section_id}")
+                                else:
+                                    cursor.execute("""
+                                        UPDATE post_section
+                                        SET image_concepts = %s
+                                        WHERE id = %s
+                                    """, (image_concepts, section_id))
+                            except Exception as e:
+                                logger.error(f"Error auto-selecting concept for section {section_id}: {e}")
+                                cursor.execute("""
+                                    UPDATE post_section
+                                    SET image_concepts = %s
+                                    WHERE id = %s
+                                """, (image_concepts, section_id))
                         
                         success_count += 1
                         results.append({

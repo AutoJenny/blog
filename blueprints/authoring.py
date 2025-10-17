@@ -1226,6 +1226,17 @@ def api_generate_image_concepts(post_id, section_id):
                         section_id_from_data = section_data.get('id', f'section_{i+1}')
                         if section_id_from_data == section_id:
                             section_data['image_concepts'] = image_concepts
+                            
+                            # Auto-select the first concept if no selection exists
+                            if not section_data.get('selected_image_concept'):
+                                try:
+                                    concepts_data = json.loads(image_concepts)
+                                    if concepts_data.get('concepts') and len(concepts_data['concepts']) > 0:
+                                        first_concept_id = concepts_data['concepts'][0]['concept_id']
+                                        section_data['selected_image_concept'] = first_concept_id
+                                        logger.info(f"Auto-selected concept {first_concept_id} for section {section_id}")
+                                except Exception as e:
+                                    logger.error(f"Error auto-selecting concept for section {section_id}: {e}")
                             break
                     
                     # Update the database
@@ -1242,11 +1253,32 @@ def api_generate_image_concepts(post_id, section_id):
             else:
                 # Fallback: try to update post_section if section_id is numeric
                 if section_id.isdigit():
-                    cursor.execute("""
-                        UPDATE post_section 
-                        SET image_concepts = %s
-                        WHERE post_id = %s AND id = %s
-                    """, (image_concepts, post_id, int(section_id)))
+                    # Auto-select first concept if no selection exists
+                    try:
+                        concepts_data = json.loads(image_concepts)
+                        if concepts_data.get('concepts') and len(concepts_data['concepts']) > 0:
+                            first_concept_id = concepts_data['concepts'][0]['concept_id']
+                            
+                            cursor.execute("""
+                                UPDATE post_section 
+                                SET image_concepts = %s, selected_image_concept = %s
+                                WHERE post_id = %s AND id = %s
+                            """, (image_concepts, first_concept_id, post_id, int(section_id)))
+                            logger.info(f"Auto-selected concept {first_concept_id} for numeric section {section_id}")
+                        else:
+                            cursor.execute("""
+                                UPDATE post_section 
+                                SET image_concepts = %s
+                                WHERE post_id = %s AND id = %s
+                            """, (image_concepts, post_id, int(section_id)))
+                    except Exception as e:
+                        logger.error(f"Error auto-selecting concept for numeric section {section_id}: {e}")
+                        cursor.execute("""
+                            UPDATE post_section 
+                            SET image_concepts = %s
+                            WHERE post_id = %s AND id = %s
+                        """, (image_concepts, post_id, int(section_id)))
+                    
                     cursor.connection.commit()
                 else:
                     return jsonify({'error': 'No section data found to update'}), 404
