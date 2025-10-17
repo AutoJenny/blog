@@ -1,6 +1,5 @@
 <!-- Prompt Builder Panel for Image Prompts - Self-contained include with CSS and JS -->
-<link rel="stylesheet" href="{{ url_for('static', filename='css/authoring/prompt-builder-panel-image-prompts.css') }}">
-
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/prompt-builder-panel-image-prompts.css') }}">
 <div class="prompt-builder-panel" id="prompt-builder-panel">
     <div class="panel-header">
         <h4><span class="panel-name-green">Image Prompt Builder:</span> <span id="prompt-builder-section-title">Select a section to build prompts</span></h4>
@@ -11,12 +10,12 @@
     
     <div class="panel-content" id="prompt-builder-accordion-content" style="display: block;">
         <!-- Selected Concept Display -->
-        <div class="selected-concept-section">
-            <h5>Selected Concept:</h5>
-            <div id="selected-concept-display" class="concept-display">
-                <div class="concept-placeholder">No concept selected. Please go to Image Concepts page to select one.</div>
+            <div class="input-prompts-section">
+                <h5>Input Prompts:</h5>
+                <div id="input-prompts-display" class="prompts-display">
+                    <div class="prompts-placeholder">Loading image concepts from all sections...</div>
+                </div>
             </div>
-        </div>
 
         <!-- Model Configuration -->
         <div class="model-configuration-section">

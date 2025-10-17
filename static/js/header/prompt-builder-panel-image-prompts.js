@@ -22,6 +22,7 @@ class HeaderPromptBuilderPanel {
         this.setupEventListeners();
         this.setupAccordion();
         this.updateModelDisplay();
+        this.loadAllImageConcepts();
         console.log('[HeaderPromptBuilderPanel] Initialized for post:', this.postId);
     }
 
@@ -136,6 +137,115 @@ class HeaderPromptBuilderPanel {
         }
     }
 
+    async loadAllImageConcepts() {
+        try {
+            console.log('[HeaderPromptBuilderPanel] Loading all image concepts for post:', this.postId);
+            
+            // Fetch all sections for this post
+            const response = await fetch(`/authoring/api/posts/${this.postId}/sections`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch sections: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            const sections = data.sections || [];
+            
+            console.log('[HeaderPromptBuilderPanel] Found sections:', sections.length);
+            
+            // Extract only SELECTED image concepts from all sections
+            const selectedConcepts = [];
+            sections.forEach(section => {
+                if (section.image_concepts && section.selected_image_concept) {
+                    try {
+                        const conceptsData = typeof section.image_concepts === 'string' 
+                            ? JSON.parse(section.image_concepts) 
+                            : section.image_concepts;
+                        
+                        if (conceptsData.concepts && Array.isArray(conceptsData.concepts)) {
+                            // Find only the SELECTED concept for this section
+                            const selectedConcept = conceptsData.concepts.find(
+                                concept => concept.concept_id === section.selected_image_concept
+                            );
+                            
+                            if (selectedConcept) {
+                                selectedConcepts.push({
+                                    section_id: section.id,
+                                    section_title: section.title || section.section_heading || `Section ${section.id}`,
+                                    concept_id: selectedConcept.concept_id,
+                                    concept_title: selectedConcept.concept_title,
+                                    concept_description: selectedConcept.concept_description,
+                                    concept_mood: selectedConcept.concept_mood,
+                                    key_visual_elements: selectedConcept.key_visual_elements
+                                });
+                            }
+                        }
+                    } catch (error) {
+                        console.warn('[HeaderPromptBuilderPanel] Error parsing concepts for section:', section.id, error);
+                    }
+                }
+            });
+            
+            console.log('[HeaderPromptBuilderPanel] Extracted selected concepts:', selectedConcepts.length);
+            
+            // Store concepts for LLM consumption
+            this.allImageConcepts = selectedConcepts;
+            
+            // Update display
+            this.updateInputPromptsDisplay(selectedConcepts);
+            
+        } catch (error) {
+            console.error('[HeaderPromptBuilderPanel] Error loading image concepts:', error);
+            this.updateInputPromptsDisplay([]);
+        }
+    }
+
+    updateInputPromptsDisplay(concepts) {
+        const display = document.getElementById('input-prompts-display');
+        if (!display) return;
+        
+        if (concepts.length === 0) {
+            display.innerHTML = `
+                <div class="prompts-placeholder">No selected image concepts found. Please select concepts in the Image Concepts stage first.</div>
+            `;
+            return;
+        }
+        
+        // Create JSON representation for LLM - only descriptions
+        const conceptsJson = {
+            total_sections: concepts.length,
+            concepts: concepts.map(concept => ({
+                section: concept.section_title,
+                description: concept.concept_description
+            }))
+        };
+        
+        // Store JSON for LLM consumption
+        this.conceptsJson = JSON.stringify(conceptsJson, null, 2);
+        
+        // Display formatted list - only descriptions
+        const conceptsList = concepts.map(concept => `
+            <div class="concept-item">
+                <div class="concept-header">
+                    <strong>${concept.section_title}</strong>
+                </div>
+                <div class="concept-details">
+                    <div class="concept-description">${concept.concept_description}</div>
+                </div>
+            </div>
+        `).join('');
+        
+        display.innerHTML = `
+            <div class="concepts-summary">
+                <div class="concepts-count">Found ${concepts.length} image concepts from ${new Set(concepts.map(c => c.section_id)).size} sections</div>
+                <div class="concepts-list">
+                    ${conceptsList}
+                </div>
+            </div>
+        `;
+        
+        console.log('[HeaderPromptBuilderPanel] Updated input prompts display with', concepts.length, 'concepts');
+    }
+
     updateModelDisplay() {
         const config = this.modelConfig[this.currentModel] || this.modelConfig['sdxl-lora'];
         
@@ -212,9 +322,44 @@ class HeaderPromptBuilderPanel {
 
     async generatePrompt() {
         console.log('[HeaderPromptBuilderPanel] Generate prompt requested');
-        // This would integrate with header-specific prompt generation
-        // For now, just show that it's working
-        alert('Prompt generation for header image - this will be implemented');
+        
+        if (!this.conceptsJson) {
+            alert('No image concepts available. Please ensure concepts are generated in the Image Concepts stage first.');
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/header/api/posts/${this.postId}/compile-header-prompt`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    concepts_json: this.conceptsJson,
+                    model: this.currentModel
+                })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('[HeaderPromptBuilderPanel] Prompt compiled successfully:', data);
+                
+                // Update compiled prompt display
+                const textarea = document.getElementById('compiled-prompt-textarea');
+                if (textarea && data.compiled_prompt) {
+                    textarea.value = data.compiled_prompt;
+                    this.updateCharacterCount();
+                }
+                
+            } else {
+                const error = await response.json();
+                console.error('[HeaderPromptBuilderPanel] Error compiling prompt:', error);
+                alert('Error compiling prompt: ' + (error.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('[HeaderPromptBuilderPanel] Error generating prompt:', error);
+            alert('Error generating prompt: ' + error.message);
+        }
     }
 }
 
