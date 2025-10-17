@@ -1460,3 +1460,52 @@ def api_save_image_details(post_id):
     except Exception as e:
         logger.error(f"Error saving image details for post {post_id}: {e}")
         return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/ui/preferences/<key>', methods=['GET', 'POST'])
+def api_ui_preferences(key):
+    """Handle UI preferences for header stage"""
+    try:
+        if request.method == 'GET':
+            # Get preference value
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT value FROM ui_user_preferences 
+                    WHERE user_id = 1 AND key = %s
+                """, (key,))
+                result = cursor.fetchone()
+                
+                if result:
+                    return jsonify({
+                        'success': True,
+                        'value': result[0]
+                    })
+                else:
+                    return jsonify({
+                        'success': True,
+                        'value': None
+                    })
+        
+        elif request.method == 'POST':
+            # Save preference value
+            data = request.get_json()
+            value = data.get('value')
+            
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO ui_user_preferences (user_id, key, value, created_at, updated_at)
+                    VALUES (1, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                    ON CONFLICT (user_id, key) 
+                    DO UPDATE SET value = %s, updated_at = CURRENT_TIMESTAMP
+                """, (key, value, value))
+            
+            return jsonify({
+                'success': True,
+                'message': 'Preference saved'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error handling UI preference {key}: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to handle preference: {str(e)}'
+        }), 500

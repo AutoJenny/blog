@@ -23,6 +23,15 @@ class ModelSelectionPanel {
                 this.updateModelParameters();
                 this.saveConfiguration();
                 console.log('[Model Selection] Model changed to:', this.currentModel);
+                
+                // Emit custom event for other panels to listen to
+                const event = new CustomEvent('modelSelectionChanged', {
+                    detail: {
+                        model: this.currentModel,
+                        parameters: this.parameters
+                    }
+                });
+                document.dispatchEvent(event);
             });
         }
         
@@ -256,6 +265,15 @@ class ModelSelectionPanel {
                 this.updateModelParameters();
                 this.updateParameterValues();
                 this.updateTitle();
+                
+                // Emit initial model selection event
+                const event = new CustomEvent('modelSelectionChanged', {
+                    detail: {
+                        model: this.currentModel,
+                        parameters: this.parameters
+                    }
+                });
+                document.dispatchEvent(event);
                 
                 console.log('[Model Selection] Configuration loaded from database:', data);
             } else {
