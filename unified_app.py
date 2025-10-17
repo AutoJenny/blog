@@ -19,6 +19,16 @@ def create_app(config_name=None):
     # Enable CORS for all routes
     CORS(app, origins=config_class.CORS_ORIGINS, supports_credentials=True)
     
+    # Add response headers to prevent HTML caching
+    @app.after_request
+    def add_header(response):
+        # Don't cache HTML pages
+        if response.content_type and 'text/html' in response.content_type:
+            response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+            response.headers['Pragma'] = 'no-cache'
+            response.headers['Expires'] = '0'
+        return response
+    
     # Configure logging
     logging.basicConfig(
         level=getattr(logging, config_class.LOG_LEVEL),
