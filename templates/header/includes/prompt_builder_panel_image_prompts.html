@@ -36,6 +36,63 @@
             </div>
         </div>
 
+        <!-- Prompt Assembly -->
+        <div class="prompt-assembly-section">
+            <h5 class="section-title-green">Prompt Assembly:</h5>
+            
+            <!-- Step 1: Input Data -->
+            <div class="assembly-step">
+                <h6>Step 1: Section Image Prompts</h6>
+                <div class="section-prompts-container" id="section-prompts-container">
+                    <div class="loading-placeholder">Loading section prompts...</div>
+                </div>
+            </div>
+            
+            <!-- Step 2: System Instructions -->
+            <div class="assembly-step">
+                <h6>Step 2: System Instructions</h6>
+                <div class="system-prompt-display" id="system-prompt-display">
+                    <div class="loading-placeholder">Loading system prompt...</div>
+                </div>
+            </div>
+            
+            <!-- Step 3: Task Template -->
+            <div class="assembly-step">
+                <h6>Step 3: Task Template</h6>
+                <div class="task-template-display" id="task-template-display">
+                    <div class="loading-placeholder">Loading task template...</div>
+                </div>
+                <div class="style-settings">
+                    <div class="form-group">
+                        <label for="assembly-model-select">Model Style:</label>
+                        <select id="assembly-model-select">
+                            <option value="dall-e-3">DALL-E 3 (Photorealistic)</option>
+                            <option value="sdxl">SDXL (Inkwash & Watercolour)</option>
+                        </select>
+                    </div>
+                    <div class="requirements-checklist">
+                        <h6>Requirements:</h6>
+                        <label><input type="checkbox" id="req-watercolor" checked> Gentle warm pastel watercolor</label>
+                        <label><input type="checkbox" id="req-brushstrokes" checked> Brushstrokes fading to white edges</label>
+                        <label><input type="checkbox" id="req-elements" checked> Combine 3-4 visual elements maximum</label>
+                        <label><input type="checkbox" id="req-collage" checked> Visual collage with distinct zones</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 4: Compiled Result -->
+            <div class="assembly-step">
+                <h6>Step 4: Compiled Prompt</h6>
+                <div class="compiled-result" id="compiled-result">
+                    <div class="loading-placeholder">Click "Compile Prompt" to generate...</div>
+                </div>
+                <div class="assembly-actions">
+                    <button class="btn-primary" id="compile-assembly-btn">Compile Prompt</button>
+                    <button class="btn-secondary" id="preview-assembly-btn" disabled>Preview Template</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Prompt Construction -->
         <div class="prompt-construction-section">
             <h5>Prompt Construction:</h5>

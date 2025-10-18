@@ -1241,6 +1241,68 @@ def api_compile_header_prompt(post_id):
         logger.error(f"Error compiling header prompt for post {post_id}: {e}")
         return jsonify({'error': str(e)}), 500
 
+@bp.route('/api/posts/<int:post_id>/prompt-assembly-data', methods=['GET'])
+def api_get_prompt_assembly_data(post_id):
+    """Get system/task prompts and section data for Prompt Assembly display"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get system and task prompts for header compilation (step 64)
+            cursor.execute("""
+                SELECT 
+                    sp.system_prompt,
+                    tp.prompt_text as task_prompt
+                FROM workflow_step_prompt wsp
+                JOIN llm_prompt sp ON wsp.system_prompt_id = sp.id
+                JOIN llm_prompt tp ON wsp.task_prompt_id = tp.id
+                WHERE wsp.step_id = 64
+            """)
+            prompt_result = cursor.fetchone()
+            
+            if not prompt_result:
+                return jsonify({'error': 'Header prompt compilation prompts not found'}), 404
+            
+            # Get section image prompts from post_development.sections
+            cursor.execute("""
+                SELECT sections FROM post_development 
+                WHERE post_id = %s AND sections IS NOT NULL
+            """, (post_id,))
+            sections_result = cursor.fetchone()
+            
+            sections_with_prompts = []
+            if sections_result and sections_result['sections']:
+                try:
+                    sections_data = json.loads(sections_result['sections'])
+                    if isinstance(sections_data, dict) and 'sections' in sections_data:
+                        sections_list = sections_data['sections']
+                    elif isinstance(sections_data, list):
+                        sections_list = sections_data
+                    else:
+                        sections_list = []
+                    
+                    # Extract image prompts from sections
+                    for section in sections_list:
+                        if section.get('image_prompts') and isinstance(section['image_prompts'], dict):
+                            image_prompt = section['image_prompts'].get('image_prompt', '')
+                            if image_prompt:
+                                sections_with_prompts.append({
+                                    'section_order': section.get('index', 0),
+                                    'section_title': section.get('title', f'Section {section.get("index", 0)}'),
+                                    'image_prompt': image_prompt
+                                })
+                except (json.JSONDecodeError, TypeError) as e:
+                    logger.warning(f"Failed to parse sections data: {e}")
+            
+            return jsonify({
+                'success': True,
+                'system_prompt': prompt_result.get('system_prompt', ''),
+                'task_prompt': prompt_result.get('task_prompt', ''),
+                'sections': sections_with_prompts
+            })
+            
+    except Exception as e:
+        logger.error(f"Error getting prompt assembly data for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @bp.route('/api/posts/<int:post_id>/generate-header-image', methods=['POST'])
 def api_generate_header_image(post_id):
     """Generate header image with custom dimensions and automatic watermarking"""

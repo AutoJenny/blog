@@ -292,3 +292,244 @@
 #prompt-builder-accordion-icon.fa-chevron-up {
     transform: rotate(180deg);
 }
+
+/* Prompt Assembly Section */
+.prompt-assembly-section {
+    margin-bottom: 20px;
+    background: #0f0f0f;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 20px;
+}
+
+.section-title-green {
+    color: #4CAF50;
+    margin-bottom: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    display: block;
+}
+
+.assembly-step {
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.assembly-step:not(:last-child)::after {
+    content: "↓";
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #4CAF50;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.assembly-step h6 {
+    color: #fff;
+    margin-bottom: 10px;
+    font-size: 13px;
+    font-weight: bold;
+    border-bottom: 1px solid #333;
+    padding-bottom: 5px;
+}
+
+/* Step 1: Section Prompts */
+.section-prompts-container {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 15px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.section-prompt-item {
+    margin-bottom: 12px;
+    padding: 10px;
+    background: #0f0f0f;
+    border: 1px solid #333;
+    border-radius: 4px;
+    transition: border-color 0.2s;
+}
+
+.section-prompt-item:hover {
+    border-color: #4CAF50;
+}
+
+.section-prompt-item:last-child {
+    margin-bottom: 0;
+}
+
+.section-prompt-header {
+    color: #4CAF50;
+    font-weight: bold;
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+.section-prompt-text {
+    color: #fff;
+    font-size: 12px;
+    line-height: 1.4;
+    background: transparent;
+    border: none;
+    width: 100%;
+    resize: vertical;
+    min-height: 40px;
+    font-family: 'Courier New', monospace;
+}
+
+.section-prompt-text:focus {
+    outline: none;
+    border: 1px solid #4CAF50;
+    border-radius: 3px;
+    padding: 4px;
+}
+
+/* Step 2: System Instructions */
+.system-prompt-display {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 15px;
+    color: #ccc;
+    font-size: 12px;
+    line-height: 1.5;
+    font-style: italic;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+/* Step 3: Task Template */
+.task-template-display {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 15px;
+    color: #fff;
+    font-size: 12px;
+    line-height: 1.5;
+    font-family: 'Courier New', monospace;
+    margin-bottom: 15px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.template-placeholder {
+    background: #FFC107;
+    color: #000;
+    padding: 2px 4px;
+    border-radius: 2px;
+    font-weight: bold;
+}
+
+.style-settings {
+    background: #0f0f0f;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 15px;
+}
+
+.style-settings .form-group {
+    margin-bottom: 15px;
+}
+
+.style-settings label {
+    color: #888;
+    font-size: 12px;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.style-settings select {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 8px;
+    color: #fff;
+    font-size: 12px;
+    width: 100%;
+}
+
+.style-settings select:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+.requirements-checklist {
+    margin-top: 15px;
+}
+
+.requirements-checklist h6 {
+    color: #4CAF50;
+    margin-bottom: 10px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.requirements-checklist label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    color: #fff;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.requirements-checklist input[type="checkbox"] {
+    accent-color: #4CAF50;
+}
+
+/* Step 4: Compiled Result */
+.compiled-result {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 15px;
+    color: #fff;
+    font-size: 12px;
+    line-height: 1.5;
+    font-family: 'Courier New', monospace;
+    min-height: 100px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.assembly-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn-primary {
+    padding: 8px 16px;
+    background: #4CAF50;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background: #45a049;
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.loading-placeholder {
+    color: #888;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+    font-size: 12px;
+}

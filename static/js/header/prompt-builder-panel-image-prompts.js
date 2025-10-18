@@ -23,6 +23,7 @@ class HeaderPromptBuilderPanel {
         this.setupAccordion();
         this.updateModelDisplay();
         this.loadAllImageConcepts();
+        this.loadPromptAssemblyData();
         console.log('[HeaderPromptBuilderPanel] Initialized for post:', this.postId);
     }
 
@@ -51,6 +52,28 @@ class HeaderPromptBuilderPanel {
         if (textarea) {
             textarea.addEventListener('input', () => this.updateCharacterCount());
         }
+
+        // Prompt Assembly event listeners
+        const compileAssemblyBtn = document.getElementById('compile-assembly-btn');
+        if (compileAssemblyBtn) {
+            compileAssemblyBtn.addEventListener('click', () => this.compileAssemblyPrompt());
+        }
+
+        const previewAssemblyBtn = document.getElementById('preview-assembly-btn');
+        if (previewAssemblyBtn) {
+            previewAssemblyBtn.addEventListener('click', () => this.previewAssemblyTemplate());
+        }
+
+        const assemblyModelSelect = document.getElementById('assembly-model-select');
+        if (assemblyModelSelect) {
+            assemblyModelSelect.addEventListener('change', () => this.updateAssemblyStyleSettings());
+        }
+
+        // Requirements checkboxes
+        const reqCheckboxes = document.querySelectorAll('.requirements-checklist input[type="checkbox"]');
+        reqCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', () => this.updateAssemblyStyleSettings());
+        });
     }
 
     setupAccordion() {
@@ -354,6 +377,226 @@ class HeaderPromptBuilderPanel {
         } catch (error) {
             console.error('[HeaderPromptBuilderPanel] Error generating prompt:', error);
             alert('Error generating prompt: ' + error.message);
+        }
+    }
+
+    // Prompt Assembly Methods
+    async loadPromptAssemblyData() {
+        try {
+            console.log('[HeaderPromptBuilderPanel] Loading prompt assembly data...');
+            
+            const response = await fetch(`/header/api/posts/${this.postId}/prompt-assembly-data`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch prompt assembly data: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('[HeaderPromptBuilderPanel] Prompt assembly data loaded:', data);
+            
+            // Update Step 1: Section Prompts
+            this.updateSectionPromptsDisplay(data.sections || []);
+            
+            // Update Step 2: System Instructions
+            this.updateSystemPromptDisplay(data.system_prompt || '');
+            
+            // Update Step 3: Task Template
+            this.updateTaskTemplateDisplay(data.task_prompt || '');
+            
+            // Enable preview button
+            const previewBtn = document.getElementById('preview-assembly-btn');
+            if (previewBtn) {
+                previewBtn.disabled = false;
+            }
+            
+        } catch (error) {
+            console.error('[HeaderPromptBuilderPanel] Error loading prompt assembly data:', error);
+            this.showAssemblyError('Failed to load prompt assembly data');
+        }
+    }
+
+    updateSectionPromptsDisplay(sections) {
+        const container = document.getElementById('section-prompts-container');
+        if (!container) return;
+        
+        if (sections.length === 0) {
+            container.innerHTML = '<div class="loading-placeholder">No section prompts found</div>';
+            return;
+        }
+        
+        const promptsHtml = sections.map(section => `
+            <div class="section-prompt-item">
+                <div class="section-prompt-header">${section.section_title}</div>
+                <textarea class="section-prompt-text" data-section-order="${section.section_order}">${section.image_prompt}</textarea>
+            </div>
+        `).join('');
+        
+        container.innerHTML = promptsHtml;
+        
+        // Add event listeners to editable textareas
+        const textareas = container.querySelectorAll('.section-prompt-text');
+        textareas.forEach(textarea => {
+            textarea.addEventListener('input', () => this.updateAssemblyStyleSettings());
+        });
+    }
+
+    updateSystemPromptDisplay(systemPrompt) {
+        const display = document.getElementById('system-prompt-display');
+        if (!display) return;
+        
+        display.textContent = systemPrompt || 'System prompt not found';
+    }
+
+    updateTaskTemplateDisplay(taskPrompt) {
+        const display = document.getElementById('task-template-display');
+        if (!display) return;
+        
+        // Highlight placeholders in the template
+        let formattedPrompt = taskPrompt || 'Task template not found';
+        
+        // Highlight {section_prompts} placeholder
+        formattedPrompt = formattedPrompt.replace(
+            /\{section_prompts\}/g, 
+            '<span class="template-placeholder">{section_prompts}</span>'
+        );
+        
+        // Highlight {style_guidelines} placeholder
+        formattedPrompt = formattedPrompt.replace(
+            /\{style_guidelines\}/g, 
+            '<span class="template-placeholder">{style_guidelines}</span>'
+        );
+        
+        // Highlight {model} placeholder
+        formattedPrompt = formattedPrompt.replace(
+            /\{model\}/g, 
+            '<span class="template-placeholder">{model}</span>'
+        );
+        
+        display.innerHTML = formattedPrompt;
+    }
+
+    updateAssemblyStyleSettings() {
+        const modelSelect = document.getElementById('assembly-model-select');
+        const reqCheckboxes = document.querySelectorAll('.requirements-checklist input[type="checkbox"]');
+        
+        if (!modelSelect || !reqCheckboxes.length) return;
+        
+        const selectedModel = modelSelect.value;
+        const checkedRequirements = Array.from(reqCheckboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.nextSibling.textContent.trim());
+        
+        console.log('[HeaderPromptBuilderPanel] Assembly style settings updated:', {
+            model: selectedModel,
+            requirements: checkedRequirements
+        });
+    }
+
+    previewAssemblyTemplate() {
+        const sections = this.getSectionPromptsFromAssembly();
+        const modelSelect = document.getElementById('assembly-model-select');
+        const taskTemplateDisplay = document.getElementById('task-template-display');
+        
+        if (!sections.length || !modelSelect || !taskTemplateDisplay) {
+            alert('Unable to preview template - missing data');
+            return;
+        }
+        
+        // Format section prompts for preview
+        const sectionPromptsText = sections.map(section => 
+            `Section ${section.order}: ${section.prompt}`
+        ).join('\n\n');
+        
+        // Get style guidelines based on model
+        const selectedModel = modelSelect.value;
+        let styleGuidelines = '';
+        if (selectedModel === 'dall-e-3') {
+            styleGuidelines = "Use 'photorealistic' style with brushstrokes fading to white edges";
+        } else if (selectedModel === 'sdxl') {
+            styleGuidelines = "Use 'inkwash and watercolour' style with brushstrokes fading to white edges";
+        }
+        
+        // Show preview in compiled result
+        const compiledResult = document.getElementById('compiled-result');
+        if (compiledResult) {
+            const previewText = `PREVIEW - Template filled with current data:\n\n` +
+                `Section Prompts:\n${sectionPromptsText}\n\n` +
+                `Style Guidelines: ${styleGuidelines}\n\n` +
+                `Model: ${selectedModel}`;
+            
+            compiledResult.textContent = previewText;
+        }
+    }
+
+    getSectionPromptsFromAssembly() {
+        const textareas = document.querySelectorAll('.section-prompt-text');
+        return Array.from(textareas).map(textarea => ({
+            order: textarea.dataset.sectionOrder,
+            prompt: textarea.value.trim()
+        })).filter(section => section.prompt);
+    }
+
+    async compileAssemblyPrompt() {
+        try {
+            console.log('[HeaderPromptBuilderPanel] Compiling assembly prompt...');
+            
+            const sections = this.getSectionPromptsFromAssembly();
+            if (sections.length === 0) {
+                alert('No section prompts available to compile');
+                return;
+            }
+            
+            const modelSelect = document.getElementById('assembly-model-select');
+            const selectedModel = modelSelect ? modelSelect.value : 'dall-e-3';
+            
+            // Format section prompts for API
+            const sectionPromptsText = sections.map(section => 
+                `Section ${section.order}: ${section.prompt}`
+            ).join('\n\n');
+            
+            const response = await fetch(`/header/api/posts/${this.postId}/compile-header-prompt`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    model: selectedModel,
+                    section_prompts: sectionPromptsText
+                })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('[HeaderPromptBuilderPanel] Assembly prompt compiled:', data);
+                
+                // Update compiled result display
+                const compiledResult = document.getElementById('compiled-result');
+                if (compiledResult && data.compiled_prompt) {
+                    compiledResult.textContent = data.compiled_prompt;
+                }
+                
+                // Update main compiled prompt textarea
+                const textarea = document.getElementById('compiled-prompt-textarea');
+                if (textarea && data.compiled_prompt) {
+                    textarea.value = data.compiled_prompt;
+                    this.updateCharacterCount();
+                }
+                
+            } else {
+                const error = await response.json();
+                console.error('[HeaderPromptBuilderPanel] Error compiling assembly prompt:', error);
+                this.showAssemblyError('Error compiling prompt: ' + (error.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('[HeaderPromptBuilderPanel] Error compiling assembly prompt:', error);
+            this.showAssemblyError('Error compiling prompt: ' + error.message);
+        }
+    }
+
+    showAssemblyError(message) {
+        const compiledResult = document.getElementById('compiled-result');
+        if (compiledResult) {
+            compiledResult.textContent = `ERROR: ${message}`;
+            compiledResult.style.color = '#f44336';
         }
     }
 }
