@@ -341,13 +341,23 @@ class HeaderPromptBuilderPanel {
             console.log('[HeaderPromptBuilderPanel] Prompt assembly data loaded:', data);
             
             // Update Step 1: Section Prompts
+            console.log('[HeaderPromptBuilderPanel] Updating section prompts display...');
             this.updateSectionPromptsDisplay(data.sections || []);
             
             // Update Step 2: System Instructions
+            console.log('[HeaderPromptBuilderPanel] Updating system prompt display...');
             this.updateSystemPromptDisplay(data.system_prompt || '');
             
             // Update Step 3: Task Template
+            console.log('[HeaderPromptBuilderPanel] Updating task template display...');
             this.updateTaskTemplateDisplay(data.task_prompt || '');
+            
+            // Update Step 4: Compiled Result
+            console.log('[HeaderPromptBuilderPanel] Updating compiled result...');
+            const compiledResult = document.getElementById('compiled-result');
+            if (compiledResult) {
+                compiledResult.innerHTML = '<div class="success-message">Prompt assembly data loaded successfully!</div>';
+            }
             
             // Enable preview button
             const previewBtn = document.getElementById('preview-assembly-btn');
