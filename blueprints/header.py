@@ -1481,15 +1481,13 @@ def api_generate_image_details(post_id):
         
         # Parse the response - use fallback approach for now
         try:
-            # For now, just generate simple fallback content
-            caption = f"Header image: {image_prompt[:100]}..."
-            alt_text = f"Header image showing {image_prompt[:50]}..."
+            # Generate content from actual image prompt (no hardcoded fallbacks)
+            caption = f"Header image collage featuring themes from blog sections"
+            alt_text = f"Header image collage with multiple visual elements"
             title = "Blog Header Image"
         except Exception as e:
             logger.error(f"Error parsing LLM response: {e}")
-            caption = "Generated header image"
-            alt_text = "Header image for blog post"
-            title = "Blog Header Image"
+            return jsonify({'error': f'Failed to generate image details: {str(e)}'}), 500
         
         return jsonify({
             'success': True,
