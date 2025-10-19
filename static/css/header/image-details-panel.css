@@ -1,84 +1,133 @@
-/* Header Image Details Panel - minimal styles to avoid 404 and ensure layout */
+/* Header Image Details Panel Styles */
 
 .image-details-panel {
-  margin-top: 1rem;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    margin-bottom: 20px;
 }
 
-.image-details-panel .panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem 0.75rem;
-  background: #0b1220;
-  border: 1px solid #233047;
-  border-radius: 6px;
+.panel-header {
+    background: #2a2a2a;
+    padding: 15px 20px;
+    border-bottom: 1px solid #333;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.image-details-panel .panel-header h4 {
-  margin: 0;
-  font-size: 1rem;
-  color: #e5e7eb;
+.panel-header h4 {
+    margin: 0;
+    color: #fff;
 }
 
-.image-details-panel .panel-header .panel-name-green {
-  color: #10b981; /* green for panel name only */
+.panel-name-green {
+    color: #4CAF50;
+    font-weight: bold;
 }
 
-.image-details-panel .panel-content {
-  border: 1px solid #233047;
-  border-top: none;
-  border-radius: 0 0 6px 6px;
-  padding: 0.75rem;
-  background: #0f172a;
+.header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }
 
-.image-details-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+.panel-content {
+    padding: 20px;
 }
 
+.panel-content.collapsed {
+    display: none;
+}
+
+/* Form Fields */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    color: #888;
+    font-size: 12px;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    background: #0f0f0f;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 8px 12px;
+    color: #fff;
+    font-size: 13px;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.form-group textarea {
+    min-height: 80px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+/* Image Preview */
 .image-preview {
-  background: #0b1220;
-  border: 1px solid #233047;
-  border-radius: 6px;
-  min-height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    text-align: center;
+    margin-bottom: 20px;
 }
 
-.image-meta {
-  display: grid;
-  gap: 0.5rem;
+.image-preview img {
+    max-width: 100%;
+    max-height: 200px;
+    border: 1px solid #333;
+    border-radius: 4px;
+    background: #0f0f0f;
 }
 
-.image-meta label {
-  display: block;
-  color: #9ca3af;
-  font-size: 0.8rem;
-  margin-bottom: 0.25rem;
+/* Action Buttons */
+.btn-primary {
+    padding: 8px 16px;
+    background: #4CAF50;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
-.image-meta input,
-.image-meta textarea {
-  width: 100%;
-  padding: 0.5rem 0.6rem;
-  color: #e5e7eb;
-  background: #0b1220;
-  border: 1px solid #233047;
-  border-radius: 4px;
+.btn-primary:hover {
+    background: #45a049;
 }
 
-.image-meta textarea {
-  min-height: 90px;
-  resize: vertical;
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
-.image-actions {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+/* Accordion Icon */
+#image-details-accordion-icon {
+    color: #888;
+    transition: transform 0.2s;
 }
 
+#image-details-accordion-icon.fa-chevron-down {
+    transform: rotate(0deg);
+}
 
+#image-details-accordion-icon.fa-chevron-up {
+    transform: rotate(180deg);
+}
+
+#image-details-accordion-icon.open {
+    transform: rotate(180deg);
+}
