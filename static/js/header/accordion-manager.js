@@ -3,7 +3,7 @@
 
 class HeaderAccordionManager {
   constructor() {
-    this.baseUrl = '/authoring/api/ui/preferences';
+    this.baseUrl = '/header/api/ui/preferences';
   }
 
   /**

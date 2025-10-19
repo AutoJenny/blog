@@ -1537,14 +1537,14 @@ def api_ui_preferences(key):
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
                     SELECT preference_value FROM ui_user_preferences 
-                    WHERE user_id = 1 AND preference_key = %s
+                    WHERE user_id = 0 AND preference_key = %s
                 """, (key,))
                 result = cursor.fetchone()
                 
                 if result:
                     return jsonify({
                         'success': True,
-                        'value': result[0]
+                        'value': result['preference_value']
                     })
                 else:
                     return jsonify({
@@ -1560,7 +1560,7 @@ def api_ui_preferences(key):
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
                     INSERT INTO ui_user_preferences (user_id, preference_key, preference_value, preference_type, created_at, updated_at)
-                    VALUES (1, %s, %s, 'string', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                    VALUES (0, %s, %s, 'string', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
                     ON CONFLICT (user_id, preference_key) 
                     DO UPDATE SET preference_value = %s, updated_at = CURRENT_TIMESTAMP
                 """, (key, value, value))

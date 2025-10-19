@@ -54,16 +54,6 @@ class HeaderPromptBuilderPanel {
         }
 
         // Prompt Assembly event listeners
-        const compileAssemblyBtn = document.getElementById('compile-assembly-btn');
-        if (compileAssemblyBtn) {
-            compileAssemblyBtn.addEventListener('click', () => this.compileAssemblyPrompt());
-        }
-
-        const previewAssemblyBtn = document.getElementById('preview-assembly-btn');
-        if (previewAssemblyBtn) {
-            previewAssemblyBtn.addEventListener('click', () => this.previewAssemblyTemplate());
-        }
-
         const assemblyModelSelect = document.getElementById('assembly-model-select');
         if (assemblyModelSelect) {
             assemblyModelSelect.addEventListener('change', () => this.updateAssemblyStyleSettings());
@@ -472,6 +462,43 @@ class HeaderPromptBuilderPanel {
         );
         
         display.innerHTML = formattedPrompt;
+        
+        // Automatically update Step 4 with compiled result
+        this.updateCompiledResultDisplay(taskPrompt);
+    }
+
+    updateCompiledResultDisplay(taskPrompt) {
+        const compiledResult = document.getElementById('compiled-result');
+        if (!compiledResult) return;
+        
+        // Get actual data to replace placeholders
+        const sectionPrompts = this.getSectionPromptsFromAssembly();
+        const modelSelect = document.getElementById('assembly-model-select');
+        const selectedModel = modelSelect ? modelSelect.value : 'dall-e-3';
+        
+        // Replace placeholders with actual data
+        let compiledPrompt = taskPrompt || 'Task template not found';
+        
+        // Replace {section_prompts} with actual section prompts
+        if (sectionPrompts.length > 0) {
+            const promptsText = sectionPrompts.map(prompt => prompt.trim()).join(' ');
+            compiledPrompt = compiledPrompt.replace(/\{section_prompts\}/g, promptsText);
+        }
+        
+        // Replace {model} with selected model
+        compiledPrompt = compiledPrompt.replace(/\{model\}/g, selectedModel);
+        
+        // Replace {style_guidelines} with current requirements
+        const requirements = this.getCurrentRequirements();
+        compiledPrompt = compiledPrompt.replace(/\{style_guidelines\}/g, requirements);
+        
+        compiledResult.innerHTML = `<div class="compiled-content">${compiledPrompt}</div>`;
+    }
+
+    getCurrentRequirements() {
+        const checkboxes = document.querySelectorAll('.requirements-checklist input[type="checkbox"]:checked');
+        const requirements = Array.from(checkboxes).map(cb => cb.nextSibling.textContent.trim());
+        return requirements.join(', ');
     }
 
     updateAssemblyStyleSettings() {
@@ -484,6 +511,13 @@ class HeaderPromptBuilderPanel {
         const checkedRequirements = Array.from(reqCheckboxes)
             .filter(cb => cb.checked)
             .map(cb => cb.nextSibling.textContent.trim());
+        
+        // Update Step 4 with current settings
+        const taskTemplate = document.getElementById('task-template-display');
+        if (taskTemplate) {
+            const taskPrompt = taskTemplate.textContent || taskTemplate.innerText;
+            this.updateCompiledResultDisplay(taskPrompt);
+        }
         
         console.log('[HeaderPromptBuilderPanel] Assembly style settings updated:', {
             model: selectedModel,
