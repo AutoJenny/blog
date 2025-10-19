@@ -3,6 +3,8 @@
  * Adapted for header stage with model selection communication
  */
 
+console.log('[HeaderPromptBuilderPanel] Script loaded');
+
 class HeaderPromptBuilderPanel {
     constructor(postId) {
         this.postId = postId;
@@ -323,9 +325,14 @@ class HeaderPromptBuilderPanel {
     // Prompt Assembly Methods
     async loadPromptAssemblyData() {
         try {
-            console.log('[HeaderPromptBuilderPanel] Loading prompt assembly data...');
+            console.log('[HeaderPromptBuilderPanel] Loading prompt assembly data for post:', this.postId);
             
-            const response = await fetch(`/header/api/posts/${this.postId}/prompt-assembly-data`);
+            const url = `/header/api/posts/${this.postId}/prompt-assembly-data`;
+            console.log('[HeaderPromptBuilderPanel] Fetching from URL:', url);
+            
+            const response = await fetch(url);
+            console.log('[HeaderPromptBuilderPanel] Response status:', response.status);
+            
             if (!response.ok) {
                 throw new Error(`Failed to fetch prompt assembly data: ${response.status}`);
             }
@@ -594,7 +601,15 @@ function togglePromptBuilderAccordion() {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('[HeaderPromptBuilderPanel] DOM loaded, checking initialization...');
+    console.log('[HeaderPromptBuilderPanel] window.postId:', window.postId);
+    console.log('[HeaderPromptBuilderPanel] window.currentSubstage:', window.currentSubstage);
+    
     if (window.postId && window.currentSubstage === 'header-image') {
+        console.log('[HeaderPromptBuilderPanel] Initializing panel...');
         window.headerPromptBuilderPanel = new HeaderPromptBuilderPanel(window.postId);
+        console.log('[HeaderPromptBuilderPanel] Panel initialized:', window.headerPromptBuilderPanel);
+    } else {
+        console.log('[HeaderPromptBuilderPanel] Not initializing - missing postId or wrong substage');
     }
 });
