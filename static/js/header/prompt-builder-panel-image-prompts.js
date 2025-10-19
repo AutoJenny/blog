@@ -82,71 +82,21 @@ class HeaderPromptBuilderPanel {
     }
 
     async restoreAccordionState() {
-        try {
-            const key = `prompt-builder-accordion-state-header-image-prompts`;
-            const resp = await fetch(`/header/api/ui/preferences/${encodeURIComponent(key)}`);
-            const data = await resp.json();
-            const state = data && data.value ? (typeof data.value === 'string' ? data.value : (data.value.state||'')) : '';
-            
-            const content = document.getElementById('prompt-builder-accordion-content');
-            const icon = document.getElementById('prompt-builder-accordion-icon');
-            
-            if (state === 'open') {
-                if (content && icon) {
-                    content.style.display = 'block';
-                    icon.classList.remove('fa-chevron-up');
-                    icon.classList.add('fa-chevron-down');
-                }
-            } else {
-                if (content && icon) {
-                    content.style.display = 'none';
-                    icon.classList.remove('fa-chevron-down');
-                    icon.classList.add('fa-chevron-up');
-                }
-            }
-        } catch (error) {
-            console.error('[HeaderPromptBuilderPanel] Error restoring accordion state:', error);
+        // Use the global accordion manager for consistency
+        if (window.headerAccordionManager) {
+            await window.headerAccordionManager.initializeAccordion(
+                'prompt-builder',
+                'prompt-builder-accordion-content',
+                'prompt-builder-accordion-icon'
+            );
         }
     }
 
     async toggleAccordion() {
-        const content = document.getElementById('prompt-builder-accordion-content');
-        const icon = document.getElementById('prompt-builder-accordion-icon');
-        
-        if (!content || !icon) return;
-
-        const isCollapsed = content.style.display === 'none';
-        
-        if (isCollapsed) {
-            content.style.display = 'block';
-            icon.classList.remove('fa-chevron-up');
-            icon.classList.add('fa-chevron-down');
-            // Save open state to DB
-            try {
-                const key = `prompt-builder-accordion-state-header-image-prompts`;
-                await fetch(`/header/api/ui/preferences/${encodeURIComponent(key)}`, {
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ value: 'open' })
-                });
-            } catch (error) {
-                console.error('[HeaderPromptBuilderPanel] Error saving accordion state:', error);
-            }
-        } else {
-            content.style.display = 'none';
-            icon.classList.remove('fa-chevron-down');
-            icon.classList.add('fa-chevron-up');
-            // Save closed state to DB
-            try {
-                const key = `prompt-builder-accordion-state-header-image-prompts`;
-                await fetch(`/header/api/ui/preferences/${encodeURIComponent(key)}`, {
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ value: 'closed' })
-                });
-            } catch (error) {
-                console.error('[HeaderPromptBuilderPanel] Error saving accordion state:', error);
-            }
+        // Use the global accordion manager for consistency
+        const functionName = 'togglePromptBuilderAccordion';
+        if (window[functionName]) {
+            await window[functionName]();
         }
     }
 
