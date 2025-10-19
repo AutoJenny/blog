@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <!-- JavaScript for Prompt Builder Panel -->
-<script src="{{ url_for('static', filename='js/header/prompt-builder-panel-image-prompts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/header/prompt-builder-panel-image-prompts.js') }}?v={{ range(1000, 9999) | random }}"></script>
 
 <script src="{{ url_for('static', filename='js/header/header-workspace.js') }}"></script>
 {% endblock %}
