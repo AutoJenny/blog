@@ -1322,6 +1322,13 @@ def api_generate_header_image(post_id):
         if model_name == 'dall-e-3':
             # DALL-E uses predefined sizes, closest to 2358x1048 is 1792x1024
             parameters['size'] = '1792x1024'
+            # Fix quality parameter for DALL-E (must be string, not number)
+            if 'quality' in parameters and isinstance(parameters['quality'], int):
+                parameters['quality'] = 'hd' if parameters['quality'] > 50 else 'standard'
+            else:
+                parameters['quality'] = 'standard'
+            # Set style parameter
+            parameters['style'] = 'natural'
         else:
             # SDXL can use custom dimensions
             parameters['width'] = 2358
@@ -1531,8 +1538,8 @@ def api_ui_preferences(key):
             # Get preference value
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
-                    SELECT value FROM ui_user_preferences 
-                    WHERE user_id = 1 AND key = %s
+                    SELECT preference_value FROM ui_user_preferences 
+                    WHERE user_id = 1 AND preference_key = %s
                 """, (key,))
                 result = cursor.fetchone()
                 
@@ -1554,10 +1561,10 @@ def api_ui_preferences(key):
             
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
-                    INSERT INTO ui_user_preferences (user_id, key, value, created_at, updated_at)
-                    VALUES (1, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-                    ON CONFLICT (user_id, key) 
-                    DO UPDATE SET value = %s, updated_at = CURRENT_TIMESTAMP
+                    INSERT INTO ui_user_preferences (user_id, preference_key, preference_value, preference_type, created_at, updated_at)
+                    VALUES (1, %s, %s, 'string', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                    ON CONFLICT (user_id, preference_key) 
+                    DO UPDATE SET preference_value = %s, updated_at = CURRENT_TIMESTAMP
                 """, (key, value, value))
             
             return jsonify({
