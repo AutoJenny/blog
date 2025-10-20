@@ -13,6 +13,7 @@ The Sections Image Generation page now features a comprehensive model-aware imag
 ### Supported Models
 - **SDXL LoRA**: Local model with LoRA support, optimized for short tag-style prompts (400 char limit)
 - **DALL-E 3**: OpenAI model with descriptive prompts (4000 char limit)
+- **GPT-Image-1**: OpenAI's latest image generation model with enhanced quality and control (2000 char limit)
 - **DALL-E 2**: OpenAI model with stricter limits (1000 char limit)
 
 ### Prompt Rendering System
@@ -352,6 +353,13 @@ Content-Type: application/json
   - Size: 1792x1024 (default)
   - Quality: standard (default)
   - Style: natural (default)
+
+- **GPT-Image-1**:
+  - Size: 1024x1024 (default)
+  - Quality: medium (default)
+  - Number of Images: 1 (default)
+  - Seed: Random (optional)
+  - Background: Default (optional)
 
 ### Database Constraints
 - **Section References**: Foreign key constraints to `post_section` table

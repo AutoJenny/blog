@@ -93,11 +93,9 @@ def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters):
         # Extract parameters
         size = parameters.get('size', '1024x1024')
         quality = parameters.get('quality', 'standard')
-        style = parameters.get('style', 'natural')
         n = parameters.get('n', 1)
         seed = parameters.get('seed')
         background = parameters.get('background')
-        response_format = parameters.get('response_format', 'url')
         
         # Build API request
         headers = {
@@ -110,9 +108,7 @@ def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters):
             'prompt': image_prompt,
             'size': size,
             'n': n,
-            'quality': quality,
-            'style': style,
-            'response_format': response_format
+            'quality': quality
         }
         
         # Add optional parameters if provided
@@ -130,15 +126,28 @@ def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters):
         
         result = response.json()
         
+        logger.info(f"GPT-Image-1 API response: {result}")
+        
         if 'data' not in result or not result['data']:
             return {'success': False, 'error': 'No image data returned from GPT-Image-1'}
         
-        # Download the image
-        image_url = result['data'][0]['url']
-        image_response = requests.get(image_url, timeout=30)
-        
-        if image_response.status_code != 200:
-            return {'success': False, 'error': f'Failed to download image: {image_response.status_code}'}
+        # Handle both URL and base64 responses
+        image_data = result['data'][0]
+        if 'url' in image_data:
+            # Download the image from URL
+            image_url = image_data['url']
+            image_response = requests.get(image_url, timeout=30)
+            
+            if image_response.status_code != 200:
+                return {'success': False, 'error': f'Failed to download image: {image_response.status_code}'}
+            
+            image_content = image_response.content
+        elif 'b64_json' in image_data:
+            # Handle base64 encoded image
+            import base64
+            image_content = base64.b64decode(image_data['b64_json'])
+        else:
+            return {'success': False, 'error': 'No valid image data found in GPT-Image-1 response'}
         
         # Create directory structure - support both sections and header
         if section_id == 'header':
@@ -153,7 +162,7 @@ def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters):
         # Save image
         image_path = f"{image_dir}/{filename}"
         with open(image_path, 'wb') as f:
-            f.write(image_response.content)
+            f.write(image_content)
         
         return {
             'success': True,

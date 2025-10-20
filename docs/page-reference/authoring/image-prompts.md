@@ -155,6 +155,7 @@ The page typically uses shared authoring APIs for LLM assistance and persistence
 ## Interplay with Imaging
 
 - Imaging page consumes `image_prompts` and applies model-specific rendering and parameters.
+- Compatible with all supported models: SDXL LoRA, DALL-E 3, GPT-Image-1, and DALL-E 2.
 - No direct calls to generation APIs here; the UI should not expose imaging controls.
 
 ## Related Pages
