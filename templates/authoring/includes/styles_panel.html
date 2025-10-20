@@ -1,20 +1,26 @@
 <!-- Styles Panel - Self-contained include with CSS and JS -->
 <link rel="stylesheet" href="/static/css/authoring/styles-panel.css">
 
-<section class="panel panel-styles">
-  <h2 class="panel-title">Image Styles (Post-wide)</h2>
-  <div class="panel-body">
-    <div id="styles-list"></div>
-    <div class="styles-actions">
-      <button id="create-style-btn" class="btn btn-primary">Create Style</button>
-      <button id="activate-style-btn" class="btn btn-secondary" disabled>Activate Selected</button>
+<div class="styles-panel" id="styles-panel">
+    <div class="panel-header" onclick="toggleStylesAccordion()">
+        <h4><span class="panel-name-green">Image Styles:</span> <span id="styles-title">Loading...</span></h4>
+        <div class="header-actions">
+            <i class="fas fa-chevron-up" id="styles-accordion-icon"></i>
+        </div>
     </div>
-    <textarea id="style-json-editor" rows="8" placeholder="Style JSON will appear here..."></textarea>
-    <div class="styles-help-text">
-      Styles apply to all sections in this post. Manage variants and choose one active style.
+    
+    <div class="panel-content" id="styles-accordion-content" style="display: none;">
+        <div id="styles-list"></div>
+        <div class="styles-actions">
+            <button id="create-style-btn" class="btn btn-primary">Create Style</button>
+            <button id="activate-style-btn" class="btn btn-secondary" disabled>Activate Selected</button>
+        </div>
+        <textarea id="style-json-editor" rows="8" placeholder="Style JSON will appear here..."></textarea>
+        <div class="styles-help-text">
+            Styles apply to all sections in this post. Manage variants and choose one active style.
+        </div>
     </div>
-  </div>
-</section>
+</div>
 
 <script src="/static/js/authoring/styles-panel.js"></script>
 

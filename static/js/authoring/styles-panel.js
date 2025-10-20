@@ -47,6 +47,7 @@ class StylesPanel {
         
         this.renderStyles(styles);
         this.autoPopulateFirstStyle(styles);
+        this.updateTitle(styles);
     }
 
     renderStyles(styles) {
@@ -112,6 +113,9 @@ class StylesPanel {
                 editor.value = '{}';
             }
         }
+        
+        // Update the title with the selected style name
+        this.updateTitleWithStyle(style.name);
     }
 
     autoPopulateFirstStyle(styles) {
@@ -162,6 +166,38 @@ class StylesPanel {
             console.error('[Styles Panel] Error activating style:', e);
             alert('Failed to activate style');
         }
+    }
+
+    updateTitle(styles) {
+        const activeStyle = styles.find(s => s.is_active);
+        if (activeStyle) {
+            this.updateTitleWithStyle(activeStyle.name);
+        } else {
+            this.updateTitleWithStyle('None');
+        }
+    }
+
+    updateTitleWithStyle(styleName) {
+        const titleElement = document.getElementById('styles-title');
+        if (titleElement) {
+            titleElement.textContent = styleName;
+        }
+    }
+}
+
+// Accordion function for styles panel
+function toggleStylesAccordion() {
+    const content = document.getElementById('styles-accordion-content');
+    const icon = document.getElementById('styles-accordion-icon');
+    
+    if (content.style.display === 'none' || content.style.display === '') {
+        content.style.display = 'block';
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+    } else {
+        content.style.display = 'none';
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
     }
 }
 
