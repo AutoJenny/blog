@@ -1,0 +1,128 @@
+/**
+ * Styles Panel CSS - Self-contained styling for post-wide image styles management
+ * Follows the same pattern as other authoring panels
+ */
+
+.panel-styles {
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.panel-styles .panel-title {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 0.75rem 1rem;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    border-bottom: 1px solid #475569;
+    border-radius: 8px 8px 0 0;
+}
+
+.panel-styles .panel-body {
+    padding: 1rem;
+}
+
+.style-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.style-row:hover {
+    background-color: #334155;
+}
+
+.style-row input[type="radio"] {
+    accent-color: #7c3aed;
+}
+
+.style-row span {
+    color: #e2e8f0;
+    font-size: 0.9rem;
+}
+
+.styles-actions {
+    margin-top: 0.75rem;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.styles-actions .btn {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.styles-actions .btn-primary {
+    background-color: #7c3aed;
+    color: white;
+}
+
+.styles-actions .btn-primary:hover {
+    background-color: #6d28d9;
+}
+
+.styles-actions .btn-secondary {
+    background-color: #475569;
+    color: #e2e8f0;
+}
+
+.styles-actions .btn-secondary:hover:not(:disabled) {
+    background-color: #64748b;
+}
+
+.styles-actions .btn-secondary:disabled {
+    background-color: #374151;
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+#style-json-editor {
+    width: 100%;
+    margin-top: 0.75rem;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    background: #1e293b;
+    color: #e2e8f0;
+    border: 1px solid #475569;
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    resize: vertical;
+    min-height: 120px;
+}
+
+#style-json-editor:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+}
+
+.styles-help-text {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #94a3b8;
+    line-height: 1.4;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .styles-actions {
+        flex-direction: column;
+    }
+    
+    .styles-actions .btn {
+        width: 100%;
+    }
+}
