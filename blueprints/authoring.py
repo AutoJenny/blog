@@ -1188,7 +1188,17 @@ def api_generate_image_concepts(post_id, section_id):
                         # Find the section by ID
                         for i, section_data in enumerate(sections_list):
                             section_id_from_data = section_data.get('id', f'section_{i+1}')
+                            
+                            # Handle both numeric IDs (1,2,3) and string IDs (section_1, section_2, etc.)
+                            section_matches = False
                             if section_id_from_data == section_id:
+                                section_matches = True
+                            elif section_id.startswith('section_') and str(section_id_from_data) == section_id.replace('section_', ''):
+                                section_matches = True
+                            elif section_id.isdigit() and str(section_id_from_data) == section_id:
+                                section_matches = True
+                            
+                            if section_matches:
                                 section_order = section_data.get('order', i+1)
                                 
                                 # Get section content from post_section table
