@@ -825,6 +825,42 @@ def imaging_render_prompt(post_id, section_id, model_key):
         logger.error(f"Error rendering prompt: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@bp.route('/api/debug-prompt/posts/<int:post_id>/sections/<int:section_id>', methods=['GET'])
+def imaging_debug_prompt(post_id, section_id):
+    """Debug endpoint to test prompt parsing"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT image_prompts FROM post_section 
+                WHERE id = %s AND post_id = %s
+            """, (section_id, post_id))
+            
+            result = cursor.fetchone()
+            if not result:
+                return jsonify({'error': 'Section not found'})
+            
+            prompt_data = result['image_prompts']
+            
+            # Test parsing
+            from modules.prompt_renderers import parse_legacy_prompt
+            
+            if isinstance(prompt_data, dict):
+                prompt_text = prompt_data.get('image_prompt', '') or prompt_data.get('base_concept', '')
+                canonical = parse_legacy_prompt(prompt_text)
+            else:
+                canonical = parse_legacy_prompt(prompt_data)
+            
+            return jsonify({
+                'raw_data': prompt_data,
+                'raw_type': type(prompt_data).__name__,
+                'extracted_text': prompt_text if isinstance(prompt_data, dict) else prompt_data,
+                'canonical': canonical.to_dict(),
+                'canonical_subject': canonical.subject
+            })
+            
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
 @bp.route('/api/generation-events', methods=['GET'])
 def imaging_get_generation_events():
     """Get generation events for audit/debugging"""

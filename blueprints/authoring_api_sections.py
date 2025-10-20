@@ -69,7 +69,7 @@ def api_get_sections(post_id):
                         ps_section = post_section_lookup.get(section_order, {})
                         
                         sections.append({
-                            'id': section.get('id', f'section_{i+1}'),
+                            'id': ps_section.get('id', f'section_{i+1}'),  # Use database ID from post_section
                             'section_order': section_order,
                             'section_heading': section.get('title', f'Section {i+1}'),
                             'section_description': section.get('original', ''),

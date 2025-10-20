@@ -64,8 +64,17 @@ class PromptService:
                 if not result or not result['image_prompts']:
                     return CanonicalPrompt({})
                 
-                prompt_text = result['image_prompts']
-                return parse_legacy_prompt(prompt_text)
+                prompt_data = result['image_prompts']
+                
+                # Handle both string and dict formats
+                if isinstance(prompt_data, str):
+                    return parse_legacy_prompt(prompt_data)
+                elif isinstance(prompt_data, dict):
+                    # Extract the main prompt text from the dictionary
+                    prompt_text = prompt_data.get('image_prompt', '') or prompt_data.get('base_concept', '')
+                    return parse_legacy_prompt(prompt_text)
+                else:
+                    return CanonicalPrompt({})
                 
         except Exception as e:
             logger.error(f"Error getting canonical prompt for section {section_id}: {e}")
@@ -134,7 +143,17 @@ class PromptService:
             # Compile prompts from all sections
             section_prompts = []
             for section in sections:
-                canonical = parse_legacy_prompt(section['image_prompts'])
+                # Handle both string and dict formats for image_prompts
+                prompt_data = section['image_prompts']
+                if isinstance(prompt_data, str):
+                    canonical = parse_legacy_prompt(prompt_data)
+                elif isinstance(prompt_data, dict):
+                    # Extract the main prompt text from the dictionary
+                    prompt_text = prompt_data.get('image_prompt', '') or prompt_data.get('base_concept', '')
+                    canonical = parse_legacy_prompt(prompt_text)
+                else:
+                    canonical = CanonicalPrompt({})
+                
                 if canonical.subject:
                     section_prompts.append(canonical.subject)
             
