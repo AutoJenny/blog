@@ -246,9 +246,32 @@ OUTPUT FORMAT (JSON only):
                             raise ValueError(f"Section {i} missing required keys: index, original, title. Available: {list(section.keys())}")
                     
                     logger.info(f"Successfully validated {len(sections)} sections")
+                    
+                    # Merge topics from topic allocation with generated titles
+                    enhanced_sections = []
+                    for i, section in enumerate(sections):
+                        # Find matching topic allocation by index
+                        matching_allocation = None
+                        for allocation in topic_allocation:
+                            if allocation.get('section_id') == f'section_{i+1}':
+                                matching_allocation = allocation
+                                break
+                        
+                        # Create enhanced section with topics
+                        enhanced_section = {
+                            'id': i + 1,
+                            'index': section.get('index', i + 1),
+                            'title': section.get('title', f'Section {i+1}'),
+                            'subtitle': section.get('original', ''),
+                            'order': section.get('index', i + 1),
+                            'topics': matching_allocation.get('topics', []) if matching_allocation else []
+                        }
+                        enhanced_sections.append(enhanced_section)
+                    
+                    logger.info(f"Enhanced {len(enhanced_sections)} sections with topics")
                     return jsonify({
                         'success': True,
-                        'sections': sections,
+                        'sections': enhanced_sections,
                         'raw_response': response['content']
                     })
                     
