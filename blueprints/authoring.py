@@ -461,30 +461,169 @@ def authoring_sections_image_captions(post_id):
 
 @bp.route('/posts/<int:post_id>/sections/image_generation')
 def authoring_sections_image_generation(post_id):
-    """Image generation step - Step 59"""
+    """Deprecated: redirect to imaging sections image-generation page"""
     try:
-        with db_manager.get_cursor() as cursor:
-            # Get post details
-            cursor.execute("""
-                SELECT id, title, status, created_at, updated_at
-                FROM post 
-                WHERE id = %s
-            """, (post_id,))
-            post = cursor.fetchone()
-            
-            if not post:
-                return "Post not found", 404
-            
-            return render_template('authoring/sections/image_generation.html', 
-                                 post_id=post_id,
-                                 post=post,
-                                 page_title="Image Generation",
-                                 blueprint_name='authoring')
-            
+        return redirect(url_for('imaging.imaging_sections_image_generation', post_id=post_id), code=302)
     except Exception as e:
-        logger.error(f"Error in authoring_sections_image_generation: {e}")
+        logger.error(f"Error redirecting authoring_sections_image_generation: {e}")
         return f"Error: {e}", 500
 
+# -----------------------------
+# Post-wide Imaging Styles APIs
+# Storage: post.extra_settings->'imaging'->'styles' (array of {name, style_json}) and 'activeIndex'
+# -----------------------------
+
+def _get_post_extra_settings(cursor, post_id):
+    cursor.execute("""
+        SELECT extra_settings
+        FROM post
+        WHERE id = %s
+    """, (post_id,))
+    row = cursor.fetchone()
+    return row['extra_settings'] if row else None
+
+def _set_post_extra_settings(cursor, post_id, extra_settings):
+    cursor.execute("""
+        UPDATE post
+        SET extra_settings = %s, updated_at = CURRENT_TIMESTAMP
+        WHERE id = %s
+    """, (json.dumps(extra_settings), post_id))
+
+@bp.route('/api/posts/<int:post_id>/styles', methods=['GET'])
+def api_list_post_styles(post_id):
+    """List imaging styles for a post (active first)"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            extra = _get_post_extra_settings(cursor, post_id) or {}
+            imaging = (extra or {}).get('imaging', {})
+            styles = imaging.get('styles', []) or []
+            active_index = imaging.get('activeIndex', 0)
+
+            # annotate with is_active
+            enriched = []
+            for i, s in enumerate(styles):
+                styled = dict(s)
+                styled['is_active'] = (i == active_index)
+                enriched.append(styled)
+
+            if enriched:
+                ordered = [enriched[active_index]] + [s for i, s in enumerate(enriched) if i != active_index]
+            else:
+                ordered = []
+            return jsonify({'styles': ordered, 'activeIndex': active_index})
+    except Exception as e:
+        logger.error(f"Error listing styles: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/styles/active', methods=['GET'])
+def api_get_active_style(post_id):
+    """Get the active imaging style for a post"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            extra = _get_post_extra_settings(cursor, post_id) or {}
+            imaging = (extra or {}).get('imaging', {})
+            styles = imaging.get('styles', []) or []
+            active_index = imaging.get('activeIndex', 0)
+            active = styles[active_index] if styles and 0 <= active_index < len(styles) else None
+            return jsonify({'active_style': active, 'activeIndex': active_index})
+    except Exception as e:
+        logger.error(f"Error getting active style: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/styles', methods=['POST'])
+def api_create_style(post_id):
+    """Create a new imaging style variant for a post"""
+    try:
+        data = request.get_json(force=True) or {}
+        name = data.get('name') or 'Default'
+        style_json = data.get('style_json') or {}
+        make_active = bool(data.get('activate', True))
+
+        with db_manager.get_cursor() as cursor:
+            extra = _get_post_extra_settings(cursor, post_id) or {}
+            imaging = extra.get('imaging') or {}
+            styles = imaging.get('styles') or []
+
+            styles.append({'name': name, 'style_json': style_json})
+            if make_active:
+                imaging['activeIndex'] = len(styles) - 1
+            imaging['styles'] = styles
+            extra['imaging'] = imaging
+
+            _set_post_extra_settings(cursor, post_id, extra)
+            cursor.connection.commit()
+
+            return jsonify({'success': True, 'activeIndex': imaging.get('activeIndex', 0), 'count': len(styles)})
+    except Exception as e:
+        logger.error(f"Error creating style: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/styles/<int:style_index>/activate', methods=['POST'])
+def api_activate_style(post_id, style_index):
+    """Activate an existing style by index"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            extra = _get_post_extra_settings(cursor, post_id) or {}
+            imaging = extra.get('imaging') or {}
+            styles = imaging.get('styles') or []
+
+            if not styles or style_index < 0 or style_index >= len(styles):
+                return jsonify({'error': 'Invalid style index'}), 400
+
+            imaging['activeIndex'] = style_index
+            extra['imaging'] = imaging
+            _set_post_extra_settings(cursor, post_id, extra)
+            cursor.connection.commit()
+            return jsonify({'success': True, 'activeIndex': style_index})
+    except Exception as e:
+        logger.error(f"Error activating style: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# Save per-section image prompt JSON (core only; no generation here)
+@bp.route('/api/posts/<int:post_id>/sections/<int:section_id>/save-image-prompt', methods=['POST'])
+def api_save_image_prompt(post_id, section_id):
+    """Persist structured image prompt JSON for a section in post_section.image_prompts"""
+    try:
+        data = request.get_json(force=True) or {}
+        if not isinstance(data, dict):
+            return jsonify({'error': 'Payload must be a JSON object'}), 400
+
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id FROM post_section
+                WHERE id = %s AND post_id = %s
+            """, (section_id, post_id))
+            if not cursor.fetchone():
+                return jsonify({'error': 'Section not found for post'}), 404
+
+            cursor.execute("""
+                UPDATE post_section
+                SET image_prompts = %s, updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s AND post_id = %s
+            """, (json.dumps(data), section_id, post_id))
+
+            cursor.connection.commit()
+            return jsonify({'success': True})
+    except Exception as e:
+        logger.error(f"Error saving image prompt: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# Read-only model prompt preview (no image generation)
+@bp.route('/api/render-prompt-preview', methods=['POST'])
+def api_render_prompt_preview():
+    """Render a model-specific prompt preview by combining section core prompt and active post style."""
+    try:
+        from modules.prompt_service import prompt_service
+        data = request.get_json(force=True) or {}
+        post_id = int(data.get('post_id'))
+        section_id = int(data.get('section_id'))
+        model_key = data.get('model_key') or 'dall-e-3'
+
+        rendered, debug = prompt_service.render_prompt_for_model(post_id, section_id, model_key, use_override=True)
+        return jsonify({'rendered_prompt': rendered, 'debug': debug})
+    except Exception as e:
+        logger.error(f"Error rendering prompt preview: {e}")
+        return jsonify({'error': str(e)}), 500
 @bp.route('/test-sections')
 def test_sections():
     """Test page for sections loading"""
@@ -872,7 +1011,7 @@ def api_save_image_concepts(post_id, section_id):
         return jsonify({'error': str(e)}), 500
 
 @bp.route('/api/posts/<int:post_id>/sections/<section_id>/save-image-prompt', methods=['POST'])
-def api_save_image_prompt(post_id, section_id):
+def api_save_image_prompt_legacy(post_id, section_id):
     """Save the generated image prompt for a specific section"""
     try:
         data = request.get_json()
@@ -2184,14 +2323,16 @@ def api_generate_image_prompt_from_builder():
                 "base_concept": generated_prompt
             }
             
-            # Handle both string and integer section IDs
-            if section_id.isdigit():
-                # Integer section ID - update post_section table
+            # Handle both numeric and legacy string section IDs robustly
+            section_id_str = str(section_id)
+            is_numeric_id = section_id_str.isdigit()
+            if is_numeric_id:
+                # Numeric section ID (int or numeric string) - update post_section table
                 cursor.execute("""
                     UPDATE post_section 
                     SET image_prompts = %s
                     WHERE post_id = %s AND id = %s
-                """, (json.dumps(image_prompt_json), post_id, int(section_id)))
+                """, (json.dumps(image_prompt_json), post_id, int(section_id_str)))
             else:
                 # String section ID - update post_development.sections JSON
                 cursor.execute("""

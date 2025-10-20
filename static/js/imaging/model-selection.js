@@ -324,7 +324,9 @@ class ModelSelectionPanel {
     async loadSavedConfiguration() {
         try {
             console.log('[Model Selection] Loading saved configuration from database');
-            const response = await fetch('/imaging/api/model-selection');
+            const pid = window.postId || '';
+            const url = pid ? `/imaging/api/model-selection?post_id=${encodeURIComponent(pid)}` : '/imaging/api/model-selection';
+            const response = await fetch(url);
             const data = await response.json();
             
             if (data.success) {
@@ -347,6 +349,13 @@ class ModelSelectionPanel {
                 document.dispatchEvent(event);
                 
                 console.log('[Model Selection] Configuration loaded from database:', data);
+
+                // Persist selection per-post to ensure backend coherence (even if unchanged)
+                try {
+                    await this.saveConfiguration();
+                } catch (e) {
+                    console.warn('[Model Selection] Could not persist selection on load:', e);
+                }
             } else {
                 // Use defaults
                 this.updateModelParameters();
@@ -382,7 +391,8 @@ class ModelSelectionPanel {
             
             const configData = {
                 model: this.currentModel,
-                parameters: this.parameters
+                parameters: this.parameters,
+                post_id: window.postId || null
             };
             
             const response = await fetch('/imaging/api/model-selection', {

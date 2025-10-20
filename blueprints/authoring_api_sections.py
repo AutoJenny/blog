@@ -82,11 +82,12 @@ def api_get_sections(post_id):
                             'ideas_to_include': ps_section.get('ideas_to_include'),
                             'facts_to_include': ps_section.get('facts_to_include'),
                             'highlighting': ps_section.get('highlighting'),
-                            'image_concepts': section.get('image_concepts'),
-                            'image_prompts': section.get('image_prompts'),
-                            'image_captions': section.get('image_captions'),
-                            'image_alt_text': section.get('image_alt_text'),
-                            'selected_image_concept': section.get('selected_image_concept')
+                            # Prefer DB-backed values from post_section when available (reflects Regenerate updates)
+                            'image_concepts': ps_section.get('image_concepts', section.get('image_concepts')),
+                            'image_prompts': ps_section.get('image_prompts', section.get('image_prompts')),
+                            'image_captions': ps_section.get('image_captions', section.get('image_captions')),
+                            'image_alt_text': ps_section.get('image_alt_text', section.get('image_alt_text')),
+                            'selected_image_concept': ps_section.get('selected_image_concept', section.get('selected_image_concept'))
                         })
                 except (json.JSONDecodeError, TypeError) as e:
                     logger.warning(f"Failed to parse sections from post_development: {e}")

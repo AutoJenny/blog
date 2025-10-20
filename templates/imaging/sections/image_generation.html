@@ -22,6 +22,33 @@
     window.imagingStage = true;
     window.imagingSubstage = 'image-generation';
 </script>
+<script>
+    // Console noise filter for imaging page (toggle with window.DEBUG=true)
+    (function(){
+        try {
+            window.DEBUG = window.DEBUG === true;
+            const originalLog = console.log;
+            const noisyPrefixes = [
+                '[Data Tab]',
+                '[Blog Pipeline Header]',
+                '[Imaging Output Panel]',
+                '[Imaging Core]',
+                'Section selected:',
+                'Navigation update - currentStage:'
+            ];
+            console.log = function(){
+                if (window.DEBUG) return originalLog.apply(console, arguments);
+                const first = arguments && arguments[0] !== undefined ? String(arguments[0]) : '';
+                const important = first.startsWith('[Generated Prompts]') ||
+                                  first.startsWith('[Prompt Preview]') ||
+                                  first.startsWith('[Image Generation Handler]') ||
+                                  first.startsWith('[Model Selection]');
+                const suppress = noisyPrefixes.some(p => first.startsWith(p));
+                if (important && !suppress) return originalLog.apply(console, arguments);
+            };
+        } catch (_) {}
+    })();
+</script>
 {% endblock %}
 
 {% block title %}Image Generation - Imaging Workflow{% endblock %}

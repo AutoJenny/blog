@@ -616,68 +616,85 @@ def imaging_generate_image_flexible(post_id, section_id):
 
 @bp.route('/api/model-selection', methods=['GET', 'POST'])
 def imaging_model_selection():
-    """Get or save model selection configuration"""
+    """Get or save model selection configuration (per-post persistent)"""
     try:
         if request.method == 'GET':
-            # Load saved model selection from ui_user_preferences
+            # Prefer per-post selection from post_development; fallback to ui_user_preferences
+            post_id = request.args.get('post_id', type=int)
             with db_manager.get_cursor() as cursor:
-                cursor.execute("""
+                if post_id:
+                    cursor.execute(
+                        """
+                        SELECT imaging_model_selection 
+                        FROM post_development 
+                        WHERE post_id = %s
+                        """,
+                        (post_id,)
+                    )
+                    row = cursor.fetchone()
+                    if row and row.get('imaging_model_selection'):
+                        return jsonify({'success': True, 'model': row['imaging_model_selection'], 'parameters': {}})
+
+                # Fallback to global preference
+                cursor.execute(
+                    """
                     SELECT preference_value FROM ui_user_preferences 
                     WHERE preference_key = 'imaging_model_selection'
-                """)
-                result = cursor.fetchone()
-                
-                if result:
-                    config = json.loads(result['preference_value'])
-                    return jsonify({
-                        'success': True,
-                        'model': config.get('model', 'sdxl-lora'),
-                        'parameters': config.get('parameters', {})
-                    })
-                else:
-                    # Return default configuration
-                    return jsonify({
-                        'success': True,
-                        'model': 'sdxl-lora',
-                        'parameters': {
-                            'image_dimensions': '1024x1024',
-                            'steps': 20,
-                            'cfg': 7,
-                            'seed': None
-                        }
-                    })
+                    """
+                )
+                pref = cursor.fetchone()
+                if pref:
+                    config = json.loads(pref['preference_value'])
+                    return jsonify({'success': True, 'model': config.get('model', 'sdxl-lora'), 'parameters': config.get('parameters', {})})
+
+                # Default
+                return jsonify({'success': True, 'model': 'sdxl-lora', 'parameters': {}})
         
         elif request.method == 'POST':
-            # Save model selection to ui_user_preferences
+            # Save per-post selection to post_development; also update ui_user_preferences for global default
             data = request.get_json()
             model = data.get('model', 'sdxl-lora')
             parameters = data.get('parameters', {})
-            
-            config_data = {
-                'model': model,
-                'parameters': parameters,
-                'last_used': '2024-01-01T12:00:00Z'
-            }
-            
+            post_id = data.get('post_id')
+
             with db_manager.get_cursor() as cursor:
-                # Insert or update in ui_user_preferences
-                try:
-                    result = cursor.execute("""
-                        INSERT INTO ui_user_preferences (user_id, preference_key, preference_value, preference_type, category, is_global)
-                        VALUES (1, 'imaging_model_selection', %s, 'json', 'imaging', false)
-                        ON CONFLICT (user_id, preference_key) 
-                        DO UPDATE SET preference_value = %s, updated_at = NOW()
-                    """, (json.dumps(config_data), json.dumps(config_data)))
-                    cursor.connection.commit()  # Explicit commit
-                    logger.info(f"Successfully saved model selection: {config_data}, result: {result}")
-                except Exception as db_error:
-                    logger.error(f"Database error saving model selection: {db_error}")
-                    return jsonify({'success': False, 'error': str(db_error)}), 500
-                
-                return jsonify({
-                    'success': True,
-                    'message': 'Model selection saved successfully'
-                })
+                if post_id:
+                    # Update per-post selection
+                    cursor.execute(
+                        """
+                        UPDATE post_development
+                        SET imaging_model_selection = %s, updated_at = NOW()
+                        WHERE post_id = %s
+                        """,
+                        (model, post_id)
+                    )
+                    # If no row updated, attempt insert minimal row (best-effort)
+                    if cursor.rowcount == 0:
+                        try:
+                            cursor.execute(
+                                """
+                                INSERT INTO post_development (post_id, imaging_model_selection, created_at, updated_at)
+                                VALUES (%s, %s, NOW(), NOW())
+                                """,
+                                (post_id, model)
+                            )
+                        except Exception as _ignore:
+                            logger.warning(f"Could not insert post_development for post_id={post_id}: {_ignore}")
+
+                # Also update global preference for convenience
+                config_data = {'model': model, 'parameters': parameters}
+                cursor.execute(
+                    """
+                    INSERT INTO ui_user_preferences (user_id, preference_key, preference_value, preference_type, category, is_global)
+                    VALUES (1, 'imaging_model_selection', %s, 'json', 'imaging', false)
+                    ON CONFLICT (user_id, preference_key)
+                    DO UPDATE SET preference_value = EXCLUDED.preference_value, updated_at = NOW()
+                    """,
+                    (json.dumps(config_data),)
+                )
+                cursor.connection.commit()
+
+                return jsonify({'success': True, 'message': 'Model selection saved for post'})
                 
     except Exception as e:
         logger.error(f"Error with model selection: {e}")

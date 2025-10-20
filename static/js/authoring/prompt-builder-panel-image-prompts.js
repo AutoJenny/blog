@@ -81,6 +81,12 @@ class PromptBuilderPanel {
             regenerateBtn.addEventListener('click', () => this.generatePrompt());
         }
 
+        // Preview prompt button
+        const previewBtn = document.getElementById('preview-prompt-btn');
+        if (previewBtn) {
+            previewBtn.addEventListener('click', () => this.generatePromptPreview());
+        }
+
         // Listen for section selection events
         window.addEventListener('sectionSelected', (event) => {
             this.onSectionSelected(event.detail.section);
@@ -89,6 +95,11 @@ class PromptBuilderPanel {
         // Listen for batch generation events
         window.addEventListener('sections:batch-generate', (event) => {
             this.onBatchGenerate(event.detail.ids);
+        });
+
+        // Listen for prompt preview events
+        document.addEventListener('authoring:prompt:preview', (event) => {
+            this.onPromptPreview(event.detail);
         });
 
         // Character count monitoring
@@ -337,11 +348,13 @@ class PromptBuilderPanel {
     updateButtonStates() {
         const editBtn = document.getElementById('edit-compiled-prompt-btn');
         const regenerateBtn = document.getElementById('regenerate-compiled-prompt-btn');
+        const previewBtn = document.getElementById('preview-prompt-btn');
         
         const hasConceptContent = this.selectedConceptContent !== null;
         
         if (editBtn) editBtn.disabled = !hasConceptContent;
         if (regenerateBtn) regenerateBtn.disabled = !hasConceptContent;
+        if (previewBtn) previewBtn.disabled = !hasConceptContent;
     }
 
     toggleEditMode() {
@@ -478,6 +491,34 @@ class PromptBuilderPanel {
         }
         
         console.log('[PromptBuilderPanel] Batch generation completed');
+    }
+
+    onPromptPreview(data) {
+        const textarea = document.getElementById('compiled-prompt-textarea');
+        if (!textarea) return;
+        
+        if (data.rendered_prompt) {
+            textarea.value = data.rendered_prompt;
+            this.updateCharacterCount();
+            
+            // Show debug info if available
+            if (data.debug) {
+                console.log('[PromptBuilderPanel] Preview debug:', data.debug);
+            }
+        } else if (data.error) {
+            textarea.value = `Error: ${data.error}`;
+            this.updateCharacterCount();
+        }
+    }
+
+    async generatePromptPreview() {
+        if (!this.currentSection) return;
+        
+        try {
+            await window.PromptPreview.renderPreview(this.currentSection.id, this.modelSelection);
+        } catch (error) {
+            console.error('[PromptBuilderPanel] Error generating preview:', error);
+        }
     }
 }
 

@@ -1,0 +1,76 @@
+<section class="panel panel-styles">
+  <h2 class="panel-title">Image Styles (Post-wide)</h2>
+  <div class="panel-body">
+    <div id="styles-list"></div>
+    <div class="styles-actions" style="margin-top:0.75rem; display:flex; gap:0.5rem;">
+      <button id="create-style-btn" class="btn btn-primary">Create Style</button>
+      <button id="activate-style-btn" class="btn btn-secondary" disabled>Activate Selected</button>
+    </div>
+    <textarea id="style-json-editor" rows="8" style="width:100%; margin-top:0.75rem; font-family:monospace;"></textarea>
+    <div style="margin-top:0.5rem; font-size:0.9rem; color:#bbb;">
+      Styles apply to all sections in this post. Manage variants and choose one active style.
+    </div>
+  </div>
+</section>
+
+<script>
+document.addEventListener('authoring:styles:loaded', function(e){
+  const data = e.detail || {};
+  const styles = (data.styles || []).map(s => ({ name: s.name, style_json: s.style_json, is_active: s.is_active }));
+  const list = document.getElementById('styles-list');
+  if(!list) return;
+  list.innerHTML = '';
+  styles.forEach((s, idx) => {
+    const row = document.createElement('div');
+    row.className = 'style-row';
+    row.style = 'display:flex; align-items:center; gap:0.5rem; padding:0.25rem 0;';
+    const radio = document.createElement('input');
+    radio.type = 'radio';
+    radio.name = 'style-select';
+    radio.value = String(idx);
+    if(s.is_active) radio.checked = true;
+    const label = document.createElement('span');
+    label.textContent = s.name || 'Unnamed Style';
+    if(s.is_active){
+      const badge = document.createElement('span');
+      badge.textContent = 'Active';
+      badge.style = 'margin-left:0.5rem; color:#7bf; font-size:0.85rem;';
+      label.appendChild(badge);
+    }
+    row.appendChild(radio);
+    row.appendChild(label);
+    row.addEventListener('click', () => {
+      radio.checked = true;
+      document.getElementById('activate-style-btn').disabled = false;
+      try {
+        document.getElementById('style-json-editor').value = JSON.stringify(s.style_json || {}, null, 2);
+      } catch { document.getElementById('style-json-editor').value = '{}'; }
+    });
+    list.appendChild(row);
+  });
+});
+
+document.addEventListener('DOMContentLoaded', function(){
+  const createBtn = document.getElementById('create-style-btn');
+  const activateBtn = document.getElementById('activate-style-btn');
+  const editor = document.getElementById('style-json-editor');
+  if(createBtn){
+    createBtn.addEventListener('click', async () => {
+      let name = prompt('Name this style variant:', 'Default');
+      if(name === null) return;
+      let payload = {};
+      try { payload = JSON.parse(editor.value || '{}'); } catch { alert('Invalid JSON'); return; }
+      await window.AuthoringStyles.createStyle(name, payload, true);
+    });
+  }
+  if(activateBtn){
+    activateBtn.addEventListener('click', async () => {
+      const selected = document.querySelector('input[name="style-select"]:checked');
+      if(!selected) return;
+      await window.AuthoringStyles.activateStyle(Number(selected.value));
+    });
+  }
+});
+</script>
+
+

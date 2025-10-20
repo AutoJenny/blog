@@ -52,29 +52,68 @@ class PromptService:
             self.model_specs_cache = {}
     
     def get_canonical_prompt(self, post_id: int, section_id: int) -> CanonicalPrompt:
-        """Get canonical prompt for a section, handling legacy formats"""
+        """Get canonical prompt for a section, handling legacy formats and merging active post-wide style"""
         try:
             with db_manager.get_cursor() as cursor:
+                # Load per-section prompt core
                 cursor.execute("""
                     SELECT image_prompts FROM post_section 
                     WHERE id = %s AND post_id = %s
                 """, (section_id, post_id))
-                
-                result = cursor.fetchone()
-                if not result or not result['image_prompts']:
-                    return CanonicalPrompt({})
-                
-                prompt_data = result['image_prompts']
-                
-                # Handle both string and dict formats
-                if isinstance(prompt_data, str):
-                    return parse_legacy_prompt(prompt_data)
-                elif isinstance(prompt_data, dict):
-                    # Extract the main prompt text from the dictionary
-                    prompt_text = prompt_data.get('image_prompt', '') or prompt_data.get('base_concept', '')
-                    return parse_legacy_prompt(prompt_text)
+                section_row = cursor.fetchone()
+
+                # Load active post-wide style from post.extra_settings
+                cursor.execute("""
+                    SELECT extra_settings FROM post WHERE id = %s
+                """, (post_id,))
+                post_row = cursor.fetchone()
+                extra = (post_row or {}).get('extra_settings') if post_row else None
+                imaging = (extra or {}).get('imaging', {}) if isinstance(extra, dict) else {}
+                styles = imaging.get('styles', []) if isinstance(imaging, dict) else []
+                active_index = imaging.get('activeIndex', 0) if isinstance(imaging, dict) else 0
+                active_style = styles[active_index] if styles and 0 <= active_index < len(styles) else None
+                style_json = (active_style or {}).get('style_json') if isinstance(active_style, dict) else None
+
+                if not section_row or not section_row['image_prompts']:
+                    # If no per-section prompt, still return canonical with style applied if present
+                    base = {}
                 else:
-                    return CanonicalPrompt({})
+                    prompt_data = section_row['image_prompts']
+                    # Handle both string and dict formats
+                    if isinstance(prompt_data, str):
+                        canonical = parse_legacy_prompt(prompt_data)
+                        # Enrich with style if available
+                        base = canonical.to_dict()
+                    elif isinstance(prompt_data, dict):
+                        # Try best-effort extraction from common keys
+                        prompt_text = prompt_data.get('image_prompt', '') or prompt_data.get('base_concept', '')
+                        canonical = parse_legacy_prompt(prompt_text)
+                        base = canonical.to_dict()
+                    else:
+                        base = {}
+
+                # Merge active style (if any) into canonical fields without mutating per-section storage
+                if isinstance(style_json, dict):
+                    # Map style keys to canonical fields where appropriate
+                    if 'medium' in style_json and not base.get('style'):
+                        base['style'] = style_json['medium']
+                    if 'composition' in style_json and not base.get('composition'):
+                        base['composition'] = style_json['composition']
+                    if 'lighting' in style_json and not base.get('lighting'):
+                        base['lighting'] = style_json['lighting']
+                    if 'palette' in style_json and not base.get('colors'):
+                        colors = style_json.get('palette')
+                        if isinstance(colors, list):
+                            base['colors'] = colors
+                    # Constraints/negatives
+                    constraints = style_json.get('constraints')
+                    if constraints and not base.get('constraints'):
+                        base['constraints'] = constraints
+                    negatives = style_json.get('negatives')
+                    if negatives and not base.get('negatives'):
+                        base['negatives'] = negatives
+
+                return CanonicalPrompt(base)
                 
         except Exception as e:
             logger.error(f"Error getting canonical prompt for section {section_id}: {e}")
@@ -116,12 +155,25 @@ class PromptService:
             return False
     
     def render_header_prompt_for_model(self, post_id: int, model_key: str, use_override: bool = True) -> Tuple[str, Dict[str, Any]]:
-        """Render header prompt for specific model by compiling prompts from all sections"""
+        """Render header prompt for specific model by compiling prompts from all sections and merging active post style"""
         try:
             # Get model constraints
             model_spec = self.model_specs_cache.get(model_key, {})
             constraints = model_spec.get('constraints', {'max_prompt_chars': 1000})
             
+            # Load active post-wide style
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT extra_settings FROM post WHERE id = %s
+                """, (post_id,))
+                post_row = cursor.fetchone()
+            extra = (post_row or {}).get('extra_settings') if post_row else None
+            imaging = (extra or {}).get('imaging', {}) if isinstance(extra, dict) else {}
+            styles = imaging.get('styles', []) if isinstance(imaging, dict) else []
+            active_index = imaging.get('activeIndex', 0) if isinstance(imaging, dict) else 0
+            active_style = styles[active_index] if styles and 0 <= active_index < len(styles) else None
+            style_json = (active_style or {}).get('style_json') if isinstance(active_style, dict) else None
+
             # Get all sections for the post
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
@@ -164,7 +216,7 @@ class PromptService:
                     'error': 'No valid prompts found in sections'
                 }
             
-            # Create a collage-style prompt
+            # Create a collage-style prompt (base subject)
             if model_key == 'sdxl-lora':
                 # For SDXL, create a tag-style collage
                 collage_prompt = f"collage composition featuring: {', '.join(section_prompts[:5])}, artistic illustration, pen and ink watercolor style"
@@ -172,12 +224,24 @@ class PromptService:
                 # For DALL-E, create a descriptive collage
                 collage_prompt = f"A collage-style header image combining elements from: {'; '.join(section_prompts[:3])}. Create a cohesive composition that represents the overall theme of the blog post."
             
+            # Merge active style into canonical before rendering
+            base = {'subject': collage_prompt}
+            if isinstance(style_json, dict):
+                if 'medium' in style_json:
+                    base['style'] = style_json['medium']
+                if 'composition' in style_json:
+                    base['composition'] = style_json['composition']
+                if 'lighting' in style_json:
+                    base['lighting'] = style_json['lighting']
+                if 'palette' in style_json and isinstance(style_json.get('palette'), list):
+                    base['colors'] = style_json['palette']
+                if 'constraints' in style_json:
+                    base['constraints'] = style_json['constraints']
+                if 'negatives' in style_json:
+                    base['negatives'] = style_json['negatives']
+
             # Render for model
-            rendered_prompt = render_prompt_for_model(
-                CanonicalPrompt({'subject': collage_prompt}), 
-                model_key, 
-                constraints
-            )
+            rendered_prompt = render_prompt_for_model(CanonicalPrompt(base), model_key, constraints)
             
             return rendered_prompt, {
                 'source': 'header_collage',
