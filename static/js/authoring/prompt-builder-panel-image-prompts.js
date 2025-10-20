@@ -9,10 +9,10 @@ class PromptBuilderPanel {
         this.currentSection = null;
         this.modelSelection = null;
         this.modelConfig = {
-            'sdxl-lora': { limit: 400, style: 'inkwash and watercolour' },
-            'dalle-3': { limit: 4000, style: 'photorealistic' },
-            'dalle-2': { limit: 1000, style: 'artistic' },
-            'gpt-image': { limit: 2000, style: 'detailed descriptive' }
+            'sdxl-lora': { limit: 400, style: 'Loading...' },
+            'dall-e-3': { limit: 4000, style: 'Loading...' },
+            'dall-e-2': { limit: 1000, style: 'Loading...' },
+            'gpt-image-1': { limit: 2000, style: 'Loading...' }
         };
         this.isEditMode = false;
         
@@ -21,6 +21,7 @@ class PromptBuilderPanel {
 
     init() {
         this.loadModelSelection();
+        this.loadActiveStyle();
         this.setupEventListeners();
         this.setupAccordion();
         console.log('[PromptBuilderPanel] Initialized for post:', this.postId);
@@ -41,6 +42,45 @@ class PromptBuilderPanel {
         }
         
         this.updateModelDisplay();
+    }
+
+    async loadActiveStyle() {
+        try {
+            const response = await fetch(`/authoring/api/posts/${this.postId}/styles/active`);
+            if (response.ok) {
+                const data = await response.json();
+                const activeStyle = data.active_style;
+                
+                if (activeStyle && activeStyle.name) {
+                    // Update all model configs with the active style name
+                    Object.keys(this.modelConfig).forEach(modelKey => {
+                        this.modelConfig[modelKey].style = activeStyle.name;
+                    });
+                    
+                    console.log('[PromptBuilderPanel] Loaded active style:', activeStyle.name);
+                    this.updateModelDisplay();
+                } else {
+                    console.log('[PromptBuilderPanel] No active style found, using defaults');
+                }
+            } else {
+                console.error('[PromptBuilderPanel] Error loading active style:', response.status);
+            }
+        } catch (error) {
+            console.error('[PromptBuilderPanel] Error loading active style:', error);
+        }
+    }
+
+    onStylesLoaded(data) {
+        const activeStyle = data.styles?.[data.activeIndex];
+        if (activeStyle && activeStyle.name) {
+            // Update all model configs with the active style name
+            Object.keys(this.modelConfig).forEach(modelKey => {
+                this.modelConfig[modelKey].style = activeStyle.name;
+            });
+            
+            console.log('[PromptBuilderPanel] Updated style from styles panel:', activeStyle.name);
+            this.updateModelDisplay();
+        }
     }
 
     updateModelDisplay() {
@@ -69,6 +109,11 @@ class PromptBuilderPanel {
     }
 
     setupEventListeners() {
+        // Listen for style changes from the styles panel
+        document.addEventListener('authoring:styles:loaded', (e) => {
+            this.onStylesLoaded(e.detail);
+        });
+        
         // Edit compiled prompt button
         const editBtn = document.getElementById('edit-compiled-prompt-btn');
         if (editBtn) {
