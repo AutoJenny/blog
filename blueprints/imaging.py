@@ -630,6 +630,75 @@ def imaging_model_selection():
         logger.error(f"Error with model selection: {e}")
         return jsonify({'error': str(e)}), 500
 
+@bp.route('/api/model-specs', methods=['GET'])
+def imaging_get_model_specs():
+    """Get model specifications and parameter defaults for UI"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get all image generation models from llm_model table
+            cursor.execute("""
+                SELECT lm.id, lm.name, lm.description, lm.api_params, lp.name as provider_name
+                FROM llm_model lm
+                JOIN llm_provider lp ON lm.provider_id = lp.id
+                WHERE lm.api_params->>'type' = 'image'
+                ORDER BY lm.name
+            """)
+            models = cursor.fetchall()
+            
+            # Get parameter defaults for each model
+            cursor.execute("""
+                SELECT model_key, param_key, default_value, param_type, min_value, max_value, options
+                FROM model_param_default
+                ORDER BY model_key, param_key
+            """)
+            param_defaults = cursor.fetchall()
+            
+            # Organize parameter defaults by model
+            params_by_model = {}
+            for param in param_defaults:
+                model_key = param['model_key']
+                if model_key not in params_by_model:
+                    params_by_model[model_key] = []
+                params_by_model[model_key].append({
+                    'key': param['param_key'],
+                    'default_value': param['default_value'],
+                    'type': param['param_type'],
+                    'min_value': param['min_value'],
+                    'max_value': param['max_value'],
+                    'options': param['options']
+                })
+            
+            # Build response with model specs
+            model_specs = []
+            for model in models:
+                model_key = model['name']
+                api_params = model['api_params'] or {}
+                
+                spec = {
+                    'model_key': model_key,
+                    'name': model['name'],
+                    'description': model['description'],
+                    'provider': model['provider_name'],
+                    'supports_lora': model_key == 'sdxl-lora',
+                    'constraints': {
+                        'max_prompt_chars': api_params.get('max_prompt_chars', 1000),
+                        'supported_sizes': api_params.get('sizes', []),
+                        'supported_qualities': api_params.get('quality', []),
+                        'supported_styles': api_params.get('style', [])
+                    },
+                    'parameters': params_by_model.get(model_key, [])
+                }
+                model_specs.append(spec)
+            
+            return jsonify({
+                'success': True,
+                'models': model_specs
+            })
+            
+    except Exception as e:
+        logger.error(f"Error getting model specs: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @bp.route('/api/optimize/posts/<int:post_id>/sections/<section_id>/optimize-image', methods=['POST'])
 def imaging_optimize_image(post_id, section_id):
     """Optimize image with watermark and caption for a specific section"""

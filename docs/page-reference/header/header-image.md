@@ -313,3 +313,4 @@ Content-Type: application/json
 - **[Workflow Navigation System](../workflow_navigation_system.md)**: Workflow system documentation
 - **[API Reference](../api_reference.md)**: Complete API documentation
 - **[Header Stage Overview](./README.md)**: Header stage documentation
+ 

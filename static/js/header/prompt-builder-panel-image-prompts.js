@@ -623,3 +623,4 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('[HeaderPromptBuilderPanel] Not initializing - missing postId or wrong substage');
     }
 });
+

@@ -1576,3 +1576,86 @@ def api_ui_preferences(key):
             'success': False,
             'error': f'Failed to handle preference: {str(e)}'
         }), 500
+
+@bp.route('/api/posts/<int:post_id>/test-field', methods=['GET'])
+def api_test_field(post_id):
+    """New endpoint for Step 4 field - replicates Step 3 content"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get the task prompt (same as Step 3)
+            cursor.execute("""
+                SELECT 
+                    sp.system_prompt,
+                    tp.prompt_text as task_prompt
+                FROM workflow_step_prompt wsp
+                JOIN llm_prompt sp ON wsp.system_prompt_id = sp.id
+                JOIN llm_prompt tp ON wsp.task_prompt_id = tp.id
+                WHERE wsp.step_id = 64
+            """)
+            prompt_result = cursor.fetchone()
+            
+            if not prompt_result:
+                return jsonify({
+                    'success': False,
+                    'content': 'Header prompt compilation prompts not found'
+                }), 404
+            
+            task_prompt = prompt_result['task_prompt']
+            
+            # Get sections data (same as Step 3)
+            cursor.execute("""
+                SELECT sections FROM post_development 
+                WHERE post_id = %s AND sections IS NOT NULL
+            """, (post_id,))
+            sections_result = cursor.fetchone()
+            
+            # Replace placeholders with actual data (show the actual prompt sent to LLM)
+            formatted_content = task_prompt
+            
+            if sections_result and sections_result['sections']:
+                try:
+                    import json
+                    sections_data = json.loads(sections_result['sections'])
+                    if isinstance(sections_data, dict) and 'sections' in sections_data:
+                        sections_list = sections_data['sections']
+                    elif isinstance(sections_data, list):
+                        sections_list = sections_data
+                    else:
+                        sections_list = []
+                    
+                    section_prompts_text = ""
+                    for section in sections_list:
+                        if section.get('image_prompts') and isinstance(section['image_prompts'], dict):
+                            image_prompt = section['image_prompts'].get('image_prompt', '')
+                            if image_prompt:
+                                section_prompts_text += f"Section {section.get('index', 0)}: {image_prompt}\n\n"
+                    
+                    # Replace the placeholder with actual section prompts
+                    formatted_content = formatted_content.replace('{section_prompts}', section_prompts_text.strip())
+                    logger.info(f"Replaced section_prompts with {len(section_prompts_text)} characters")
+                except Exception as e:
+                    logger.error(f"Error parsing sections data: {str(e)}")
+            else:
+                logger.warning("No sections data found for replacement")
+            
+            # Highlight placeholders (same as Step 3)
+            formatted_content = formatted_content.replace(
+                '{style_guidelines}', 
+                '<span class="template-placeholder">{style_guidelines}</span>'
+            )
+            formatted_content = formatted_content.replace(
+                '{model}', 
+                '<span class="template-placeholder">{model}</span>'
+            )
+            
+            return jsonify({
+                'success': True,
+                'content': formatted_content
+            })
+            
+    except Exception as e:
+        logger.error(f"Error in test-field endpoint: {str(e)}")
+        return jsonify({
+            'success': False,
+            'content': f'Error: {str(e)}'
+        }), 500
