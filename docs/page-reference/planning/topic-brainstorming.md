@@ -9,7 +9,7 @@ The Topic Brainstorming page (`/planning/posts/<id>/concept/brainstorm`) is the 
 - **Primary Function**: Generate diverse topic ideas based on expanded idea from calendar stage
 - **Input Data**: `expanded_idea` from `post_development` table
 - **Output Data**: Array of topic objects stored in `idea_scope.generated_topics` JSON field
-- **Workflow Position**: Second step in concept development (after calendar ideas, before section structure)
+- **Workflow Position**: Second step in concept development (after idea generation, before section structure)
 
 ## Technical Architecture
 

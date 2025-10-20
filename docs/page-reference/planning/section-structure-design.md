@@ -9,7 +9,7 @@ The Section Structure Design page (`/planning/posts/<id>/concept/section-structu
 - **Primary Function**: Design logical section structure based on generated topics
 - **Input Data**: Topics from `idea_scope.generated_topics` and `expanded_idea` from previous stages
 - **Output Data**: Section structure stored in `post_development.section_structure` JSON field
-- **Workflow Position**: Third step in concept development (after brainstorming, before topic allocation)
+- **Workflow Position**: Third step in concept development (after brainstorming, before section ideas)
 
 ## Technical Architecture
 

@@ -9,7 +9,7 @@ The Calendar Ideas page (`/planning/posts/<id>/calendar/ideas`) serves as the in
 - **Primary Function**: Select and confirm calendar ideas to create blog post foundations
 - **Data Source**: `calendar_ideas` table filtered by week number
 - **Output**: Creates or updates `post` records with `idea_seed` and `expanded_idea` fields
-- **Workflow Position**: First step in planning stage (before concept development)
+- **Workflow Position**: First step in concept development (now part of concept workflow)
 
 ## Technical Architecture
 

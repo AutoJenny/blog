@@ -2,14 +2,14 @@
 
 ## Overview
 
-The Section Titling page (`/planning/posts/<id>/concept/titling`) is the final stage in the concept development workflow. It takes the topic allocation from the previous stage and generates imaginative, engaging titles and descriptions for each section based on their topics and the context of the whole post.
+The Section Titling page (`/planning/posts/<id>/concept/titling`) is the final stage in the concept development workflow. It takes the section ideas from the previous stage and generates imaginative, engaging titles and descriptions for each section based on their topics and the context of the whole post.
 
 ## Purpose and Scope
 
 - **Primary Function**: Generate creative, engaging section titles and descriptions
-- **Input Data**: Topic allocation from `post_development.topic_allocation` and `expanded_idea`
+- **Input Data**: Section ideas from `post_development.topic_allocation` and `expanded_idea`
 - **Output Data**: Final section structure stored in `post_section` table and `post_development.sections`
-- **Workflow Position**: Final step in concept development (after topic allocation, before authoring)
+- **Workflow Position**: Final step in concept development (after section ideas, before authoring)
 
 ## Technical Architecture
 
