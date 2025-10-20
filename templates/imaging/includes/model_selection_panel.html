@@ -16,6 +16,7 @@
             <select id="image-model-select" name="image_model">
                 <option value="sdxl-lora">SDXL LoRA (Local)</option>
                 <option value="dall-e-3">DALL-E 3 (OpenAI)</option>
+                <option value="gpt-image-1">GPT-Image-1 (OpenAI)</option>
                 <option value="dall-e-2">DALL-E 2 (OpenAI)</option>
             </select>
         </div>
@@ -96,6 +97,51 @@
                     <select id="dalle-style" name="style">
                         <option value="natural">Natural</option>
                         <option value="vivid">Vivid</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- GPT-Image-1 Parameters (hidden by default) -->
+            <div class="parameter-group" id="gpt-image-1-params" style="display: none;">
+                <h5>GPT-Image-1 Settings</h5>
+                <div class="param-row">
+                    <label for="gpt-image-size">Size:</label>
+                    <select id="gpt-image-size" name="size">
+                        <option value="1024x1024">1024x1024 (Square)</option>
+                        <option value="1792x1024">1792x1024 (Landscape)</option>
+                        <option value="1024x1792">1024x1792 (Portrait)</option>
+                        <option value="512x512">512x512 (Small)</option>
+                        <option value="256x256">256x256 (Thumbnail)</option>
+                    </select>
+                </div>
+                <div class="param-row">
+                    <label for="gpt-image-quality">Quality:</label>
+                    <select id="gpt-image-quality" name="quality">
+                        <option value="standard">Standard</option>
+                        <option value="hd">HD</option>
+                    </select>
+                </div>
+                <div class="param-row">
+                    <label for="gpt-image-style">Style:</label>
+                    <select id="gpt-image-style" name="style">
+                        <option value="natural">Natural (Photorealistic)</option>
+                        <option value="vivid">Vivid (Artistic)</option>
+                    </select>
+                </div>
+                <div class="param-row">
+                    <label for="gpt-image-n">Number of Images:</label>
+                    <input type="number" id="gpt-image-n" name="n" min="1" max="10" value="1">
+                </div>
+                <div class="param-row">
+                    <label for="gpt-image-seed">Seed (Optional):</label>
+                    <input type="number" id="gpt-image-seed" name="seed" placeholder="Leave empty for random">
+                </div>
+                <div class="param-row">
+                    <label for="gpt-image-background">Background:</label>
+                    <select id="gpt-image-background" name="background">
+                        <option value="">Default</option>
+                        <option value="transparent">Transparent</option>
+                        <option value="white">White</option>
                     </select>
                 </div>
             </div>

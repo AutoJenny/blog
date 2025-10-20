@@ -82,6 +82,89 @@ def imaging_generate_dalle_image(image_prompt, post_id, section_id, parameters):
         logger.error(f"DALL-E generation error: {str(e)}")
         return {'success': False, 'error': str(e)}
 
+def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters):
+    """Generate image using GPT-Image-1 API"""
+    try:
+        # Load OpenAI API key from environment
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            return {'success': False, 'error': 'OPENAI_API_KEY not found in environment'}
+        
+        # Extract parameters
+        size = parameters.get('size', '1024x1024')
+        quality = parameters.get('quality', 'standard')
+        style = parameters.get('style', 'natural')
+        n = parameters.get('n', 1)
+        seed = parameters.get('seed')
+        background = parameters.get('background')
+        response_format = parameters.get('response_format', 'url')
+        
+        # Build API request
+        headers = {
+            'Authorization': f'Bearer {api_key}',
+            'Content-Type': 'application/json'
+        }
+        
+        data = {
+            'model': 'gpt-image-1',
+            'prompt': image_prompt,
+            'size': size,
+            'n': n,
+            'quality': quality,
+            'style': style,
+            'response_format': response_format
+        }
+        
+        # Add optional parameters if provided
+        if seed is not None:
+            data['seed'] = seed
+        if background:
+            data['background'] = background
+        
+        # Call OpenAI API
+        response = requests.post('https://api.openai.com/v1/images/generations', 
+                               headers=headers, json=data, timeout=60)
+        
+        if response.status_code != 200:
+            return {'success': False, 'error': f'GPT-Image-1 API error: {response.status_code} - {response.text}'}
+        
+        result = response.json()
+        
+        if 'data' not in result or not result['data']:
+            return {'success': False, 'error': 'No image data returned from GPT-Image-1'}
+        
+        # Download the image
+        image_url = result['data'][0]['url']
+        image_response = requests.get(image_url, timeout=30)
+        
+        if image_response.status_code != 200:
+            return {'success': False, 'error': f'Failed to download image: {image_response.status_code}'}
+        
+        # Create directory structure - support both sections and header
+        if section_id == 'header':
+            image_dir = f"static/content/posts/{post_id}/header/raw"
+            filename = "header.png"
+        else:
+            image_dir = f"static/content/posts/{post_id}/sections/{section_id}/raw"
+            filename = f"{section_id}.png"
+        
+        os.makedirs(image_dir, exist_ok=True)
+        
+        # Save image
+        image_path = f"{image_dir}/{filename}"
+        with open(image_path, 'wb') as f:
+            f.write(image_response.content)
+        
+        return {
+            'success': True,
+            'image_path': f"/static/content/posts/{post_id}/header/raw/{filename}" if section_id == 'header' else f"/static/content/posts/{post_id}/sections/{section_id}/raw/{filename}",
+            'local_path': image_path
+        }
+        
+    except Exception as e:
+        logger.error(f"GPT-Image-1 generation error: {str(e)}")
+        return {'success': False, 'error': str(e)}
+
 def imaging_generate_sdxl_image(image_prompt, post_id, section_id, parameters):
     """Generate image using SDXL - imaging standalone version"""
     try:
@@ -500,7 +583,9 @@ def imaging_generate_image(post_id, section_id):
             start_time = time.time()
             
             # Route to appropriate image generation function based on model
-            if model_name.startswith('dall-e') or model_name.startswith('openai'):
+            if model_name == 'gpt-image-1':
+                result = imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters)
+            elif model_name.startswith('dall-e') or model_name.startswith('openai'):
                 result = imaging_generate_dalle_image(image_prompt, post_id, section_id, parameters)
             elif model_name.startswith('sdxl'):
                 result = imaging_generate_sdxl_image(image_prompt, post_id, section_id, parameters)
@@ -591,7 +676,9 @@ def imaging_generate_image_flexible(post_id, section_id):
             return jsonify({'success': False, 'error': f'Unable to resolve section id: {section_id}'}), 400
 
         # Route to appropriate image generation function based on model
-        if model_name.startswith('dall-e') or model_name.startswith('openai'):
+        if model_name == 'gpt-image-1':
+            result = imaging_generate_gpt_image_1(image_prompt, post_id, resolved_section_id, parameters)
+        elif model_name.startswith('dall-e') or model_name.startswith('openai'):
             result = imaging_generate_dalle_image(image_prompt, post_id, resolved_section_id, parameters)
         elif model_name.startswith('sdxl'):
             result = imaging_generate_sdxl_image(image_prompt, post_id, resolved_section_id, parameters)

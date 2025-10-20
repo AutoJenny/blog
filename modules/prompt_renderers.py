@@ -271,6 +271,71 @@ class DALLE2Renderer(PromptRenderer):
         
         return self._enforce_length_limit(prompt)
 
+class GPTImage1Renderer(PromptRenderer):
+    """Renderer for GPT-Image-1 - similar to DALL-E 3 but optimized for newer model"""
+    
+    def render(self, canonical: CanonicalPrompt) -> str:
+        """Render canonical prompt for GPT-Image-1"""
+        parts = []
+        
+        # Start with subject (most important)
+        if canonical.subject:
+            parts.append(canonical.subject)
+        else:
+            parts.append("an image")
+        
+        # Add scene context
+        if canonical.scene:
+            parts.append(f"set in {canonical.scene}")
+        
+        # Add style (GPT-Image-1 handles style well)
+        if canonical.style:
+            parts.append(f"in {canonical.style} style")
+        
+        # Add composition
+        if canonical.composition:
+            parts.append(f"with {canonical.composition} composition")
+        
+        # Add mood
+        if canonical.mood:
+            parts.append(f"conveying {canonical.mood}")
+        
+        # Add lighting
+        if canonical.lighting:
+            parts.append(f"{canonical.lighting} lighting")
+        
+        # Add colors
+        if canonical.colors:
+            color_str = " and ".join(canonical.colors)
+            parts.append(f"using {color_str} colors")
+        
+        # Add keywords naturally
+        if canonical.keywords:
+            keyword_str = ", ".join(canonical.keywords)
+            parts.append(f"featuring {keyword_str}")
+        
+        # Add constraints as descriptive elements
+        if canonical.constraints:
+            constraint_str = ", ".join(canonical.constraints)
+            parts.append(constraint_str)
+        
+        # Join with natural connectors
+        prompt = ", ".join(parts)
+        
+        # Clean up grammar
+        prompt = self._clean_grammar(prompt)
+        
+        return self._enforce_length_limit(prompt)
+    
+    def _clean_grammar(self, prompt: str) -> str:
+        """Clean up grammar and flow"""
+        import re
+        # Remove double spaces
+        prompt = re.sub(r'\s+', ' ', prompt)
+        # Remove trailing commas
+        prompt = re.sub(r',\s*$', '', prompt)
+        return prompt.strip()
+
 class PromptRendererFactory:
     """Factory for creating model-specific renderers"""
     
@@ -283,6 +348,8 @@ class PromptRendererFactory:
             return DALLE3Renderer(model_key, constraints)
         elif model_key == 'dall-e-2':
             return DALLE2Renderer(model_key, constraints)
+        elif model_key == 'gpt-image-1':
+            return GPTImage1Renderer(model_key, constraints)
         else:
             # Default to DALL-E 3 renderer for unknown models
             logger.warning(f"Unknown model {model_key}, using DALL-E 3 renderer")
