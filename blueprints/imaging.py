@@ -825,6 +825,40 @@ def imaging_render_prompt(post_id, section_id, model_key):
         logger.error(f"Error rendering prompt: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@bp.route('/api/generation-events', methods=['GET'])
+def imaging_get_generation_events():
+    """Get generation events for audit/debugging"""
+    try:
+        from modules.prompt_service import prompt_service
+        
+        # Get query parameters
+        post_id = request.args.get('post_id', type=int)
+        section_id = request.args.get('section_id', type=int)
+        model_key = request.args.get('model_key')
+        limit = request.args.get('limit', 100, type=int)
+        
+        events = prompt_service.get_generation_events(
+            post_id=post_id,
+            section_id=section_id,
+            model_key=model_key,
+            limit=limit
+        )
+        
+        return jsonify({
+            'success': True,
+            'events': events,
+            'count': len(events)
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting generation events: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@bp.route('/admin/generation-events')
+def imaging_admin_generation_events():
+    """Admin page for viewing generation events"""
+    return render_template('imaging/admin/generation_events.html')
+
 @bp.route('/api/optimize/posts/<int:post_id>/sections/<section_id>/optimize-image', methods=['POST'])
 def imaging_optimize_image(post_id, section_id):
     """Optimize image with watermark and caption for a specific section"""
