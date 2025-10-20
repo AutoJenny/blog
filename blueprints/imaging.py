@@ -455,12 +455,30 @@ def imaging_save_llm_config():
 
 @bp.route('/api/image-generation/posts/<int:post_id>/sections/<int:section_id>/generate-image', methods=['POST'])
 def imaging_generate_image(post_id, section_id):
-    """Generate image for a specific section - imaging standalone version"""
+    """Generate image for a specific section - imaging standalone version with model-aware rendering"""
     try:
+        import time
+        from modules.prompt_service import prompt_service
+        
         data = request.get_json()
         model_name = data.get('model_name', 'dall-e-3')
         parameters = data.get('parameters', {})
-        image_prompt = data.get('image_prompt', '')
+        use_renderer = data.get('use_renderer', True)  # Feature flag
+        
+        # Get rendered prompt using the new system
+        if use_renderer:
+            rendered_prompt, debug_info = prompt_service.render_prompt_for_model(
+                post_id, section_id, model_name, use_override=True
+            )
+            
+            if not rendered_prompt:
+                return jsonify({'success': False, 'error': 'No prompt available for this section'})
+            
+            image_prompt = rendered_prompt
+        else:
+            # Fallback to original prompt from request
+            image_prompt = data.get('image_prompt', '')
+            debug_info = {'source': 'fallback', 'model_key': model_name}
         
         # Validate that we have a prompt
         if not image_prompt:
@@ -478,6 +496,9 @@ def imaging_generate_image(post_id, section_id):
             if not section:
                 return jsonify({'success': False, 'error': 'Section not found'})
             
+            # Start timing
+            start_time = time.time()
+            
             # Route to appropriate image generation function based on model
             if model_name.startswith('dall-e') or model_name.startswith('openai'):
                 result = imaging_generate_dalle_image(image_prompt, post_id, section_id, parameters)
@@ -486,13 +507,45 @@ def imaging_generate_image(post_id, section_id):
             else:
                 return jsonify({'success': False, 'error': f'Unsupported model: {model_name}'})
             
+            # Calculate generation time
+            generation_time_ms = int((time.time() - start_time) * 1000)
+            
             if result['success']:
+                # Log generation event
+                prompt_service.log_generation_event(
+                    post_id=post_id,
+                    section_id=section_id,
+                    model_key=model_name,
+                    params=parameters,
+                    prompt_text=image_prompt,
+                    rendered_prompt=image_prompt,
+                    result_path=result['image_path'],
+                    success=True,
+                    generation_time_ms=generation_time_ms
+                )
+                
                 return jsonify({
                     'success': True,
                     'image_path': result['image_path'],
-                    'message': 'Image generated successfully'
+                    'message': 'Image generated successfully',
+                    'debug_info': debug_info,
+                    'generation_time_ms': generation_time_ms
                 })
             else:
+                # Log failed generation event
+                prompt_service.log_generation_event(
+                    post_id=post_id,
+                    section_id=section_id,
+                    model_key=model_name,
+                    params=parameters,
+                    prompt_text=image_prompt,
+                    rendered_prompt=image_prompt,
+                    result_path='',
+                    success=False,
+                    error_message=result['error'],
+                    generation_time_ms=generation_time_ms
+                )
+                
                 return jsonify({'success': False, 'error': result['error']})
                 
     except Exception as e:
@@ -697,6 +750,79 @@ def imaging_get_model_specs():
             
     except Exception as e:
         logger.error(f"Error getting model specs: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@bp.route('/api/prompt-override/posts/<int:post_id>/sections/<int:section_id>/<model_key>', methods=['GET', 'POST', 'DELETE'])
+def imaging_prompt_override(post_id, section_id, model_key):
+    """Handle model-specific prompt overrides"""
+    try:
+        from modules.prompt_service import prompt_service
+        
+        if request.method == 'GET':
+            # Get override for specific model
+            override = prompt_service.get_prompt_override(post_id, section_id, model_key)
+            return jsonify({
+                'success': True,
+                'override': override,
+                'has_override': override is not None
+            })
+        
+        elif request.method == 'POST':
+            # Save override
+            data = request.get_json()
+            prompt_text = data.get('prompt_text', '')
+            
+            if not prompt_text.strip():
+                return jsonify({'success': False, 'error': 'Prompt text cannot be empty'}), 400
+            
+            success = prompt_service.save_prompt_override(post_id, section_id, model_key, prompt_text)
+            
+            if success:
+                return jsonify({
+                    'success': True,
+                    'message': 'Prompt override saved successfully'
+                })
+            else:
+                return jsonify({'success': False, 'error': 'Failed to save override'}), 500
+        
+        elif request.method == 'DELETE':
+            # Delete override (deactivate)
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    UPDATE image_prompt_override 
+                    SET active = FALSE, updated_at = CURRENT_TIMESTAMP
+                    WHERE post_id = %s AND section_id = %s AND model_key = %s
+                """, (post_id, section_id, model_key))
+                cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Prompt override deleted successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error with prompt override: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@bp.route('/api/render-prompt/posts/<int:post_id>/sections/<int:section_id>/<model_key>', methods=['GET'])
+def imaging_render_prompt(post_id, section_id, model_key):
+    """Render prompt for specific model with debug info"""
+    try:
+        from modules.prompt_service import prompt_service
+        
+        # Get rendered prompt with debug info
+        rendered_prompt, debug_info = prompt_service.render_prompt_for_model(
+            post_id, section_id, model_key, use_override=True
+        )
+        
+        return jsonify({
+            'success': True,
+            'rendered_prompt': rendered_prompt,
+            'debug_info': debug_info
+        })
+        
+    except Exception as e:
+        logger.error(f"Error rendering prompt: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @bp.route('/api/optimize/posts/<int:post_id>/sections/<section_id>/optimize-image', methods=['POST'])
