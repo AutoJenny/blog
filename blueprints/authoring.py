@@ -1373,7 +1373,17 @@ def api_generate_image_concepts(post_id, section_id):
                     # Find and update the section
                     for i, section_data in enumerate(sections_list):
                         section_id_from_data = section_data.get('id', f'section_{i+1}')
-                        if section_id_from_data == section_id:
+                        
+                        # Handle both numeric IDs (1,2,3) and string IDs (section_1, section_2, etc.)
+                        section_matches = False
+                        if str(section_id_from_data) == str(section_id):
+                            section_matches = True
+                        elif section_id.startswith('section_') and str(section_id_from_data) == section_id.replace('section_', ''):
+                            section_matches = True
+                        elif section_id.isdigit() and str(section_id_from_data) == section_id:
+                            section_matches = True
+                        
+                        if section_matches:
                             section_data['image_concepts'] = image_concepts
                             
                             # Auto-select the first concept if no selection exists
