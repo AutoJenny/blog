@@ -1,5 +1,31 @@
 # Sections Image Generation - Technical Reference
 
+## Model-Aware Imaging System
+
+The Sections Image Generation page now features a comprehensive model-aware imaging system that provides:
+
+### Model Specifications
+- **Dynamic Model Loading**: Models are loaded from the database via `/imaging/api/model-specs`
+- **Parameter Visibility**: UI parameters show/hide based on model capabilities
+- **Constraint Display**: Character limits and supported options are shown inline
+- **Model-Specific Rendering**: Prompts are automatically optimized for each model
+
+### Supported Models
+- **SDXL LoRA**: Local model with LoRA support, optimized for short tag-style prompts (400 char limit)
+- **DALL-E 3**: OpenAI model with descriptive prompts (4000 char limit)
+- **DALL-E 2**: OpenAI model with stricter limits (1000 char limit)
+
+### Prompt Rendering System
+- **Canonical Prompts**: Legacy prompts are converted to a standardized format
+- **Model-Specific Renderers**: Each model has optimized prompt rendering
+- **Override Support**: Custom prompts can be saved per model
+- **Character Budgeting**: Automatic truncation with ellipsis when limits are exceeded
+
+### Event Logging
+- **Generation Events**: All image generation activities are logged to `image_generation_event` table
+- **Audit Trail**: Includes model, parameters, prompts, timing, and success status
+- **Admin Interface**: Available at `/imaging/admin/generation-events`
+
 ## Page Overview
 
 **URL**: `/imaging/posts/<int:post_id>/sections/image-generation`  

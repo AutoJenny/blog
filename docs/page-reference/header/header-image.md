@@ -1,5 +1,26 @@
 # Header Image Page - Technical Reference
 
+## Model-Aware Header Imaging
+
+The Header Image page now integrates with the model-aware imaging system:
+
+### Shared Model Selection
+- **Cross-Page Consistency**: Model selection is shared between Sections Imaging and Header Imaging
+- **Unified API**: Both pages use the same model specifications and selection endpoints
+- **Persistent Configuration**: Model choice persists across page navigation
+
+### Header-Specific Rendering
+- **Collage Prompts**: Header images use a collage-style prompt compiled from all section prompts
+- **Model-Specific Optimization**: 
+  - SDXL: Tag-style collage with artistic enhancements
+  - DALL-E: Descriptive collage with natural language
+- **Automatic Compilation**: Combines prompts from all sections with image prompts
+
+### Event Logging
+- **Header Events**: Header image generation is logged to `image_generation_event` table
+- **Section ID**: Uses `NULL` for section_id to distinguish from section images
+- **Audit Trail**: Includes collage compilation details and generation timing
+
 ## Page Overview
 
 **URL**: `/header/posts/<int:post_id>/header-image`  
