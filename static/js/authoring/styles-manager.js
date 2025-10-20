@@ -9,8 +9,11 @@
 
   async function loadStyles(){
     try {
+      console.log('[Styles Manager] Loading styles for post:', postId);
       const data = await fetchJSON(`/authoring/api/posts/${postId}/styles`);
+      console.log('[Styles Manager] Styles loaded:', data);
       window.authoringStyles = data;
+      console.log('[Styles Manager] Dispatching authoring:styles:loaded event');
       document.dispatchEvent(new CustomEvent('authoring:styles:loaded', { detail: data }));
     } catch(err){ console.error('Failed to load styles', err); }
   }

@@ -14,11 +14,18 @@
 </section>
 
 <script>
+console.log('[Styles Panel] Script loaded, setting up event listener...');
+
 document.addEventListener('authoring:styles:loaded', function(e){
+  console.log('[Styles Panel] Event received:', e.detail);
   const data = e.detail || {};
   const styles = (data.styles || []).map(s => ({ name: s.name, style_json: s.style_json, is_active: s.is_active }));
   const list = document.getElementById('styles-list');
-  if(!list) return;
+  if(!list) {
+    console.error('[Styles Panel] styles-list element not found');
+    return;
+  }
+  console.log('[Styles Panel] Rendering', styles.length, 'styles');
   list.innerHTML = '';
   styles.forEach((s, idx) => {
     const row = document.createElement('div');
@@ -40,14 +47,37 @@ document.addEventListener('authoring:styles:loaded', function(e){
     row.appendChild(radio);
     row.appendChild(label);
     row.addEventListener('click', () => {
+      console.log('[Styles Panel] Style clicked:', s.name);
       radio.checked = true;
-      document.getElementById('activate-style-btn').disabled = false;
-      try {
-        document.getElementById('style-json-editor').value = JSON.stringify(s.style_json || {}, null, 2);
-      } catch { document.getElementById('style-json-editor').value = '{}'; }
+      const activateBtn = document.getElementById('activate-style-btn');
+      if(activateBtn) activateBtn.disabled = false;
+      const editor = document.getElementById('style-json-editor');
+      if(editor) {
+        try {
+          editor.value = JSON.stringify(s.style_json || {}, null, 2);
+          console.log('[Styles Panel] JSON populated:', s.style_json);
+        } catch(e) { 
+          console.error('[Styles Panel] JSON error:', e);
+          editor.value = '{}'; 
+        }
+      }
     });
     list.appendChild(row);
   });
+  
+  // Auto-populate the first style's JSON
+  if(styles.length > 0) {
+    const firstStyle = styles[0];
+    const editor = document.getElementById('style-json-editor');
+    if(editor && firstStyle.style_json) {
+      try {
+        editor.value = JSON.stringify(firstStyle.style_json, null, 2);
+        console.log('[Styles Panel] Auto-populated first style JSON');
+      } catch(e) {
+        console.error('[Styles Panel] Auto-populate error:', e);
+      }
+    }
+  }
 });
 
 document.addEventListener('DOMContentLoaded', function(){
