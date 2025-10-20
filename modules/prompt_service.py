@@ -106,6 +106,78 @@ class PromptService:
             logger.error(f"Error saving prompt override: {e}")
             return False
     
+    def render_header_prompt_for_model(self, post_id: int, model_key: str, use_override: bool = True) -> Tuple[str, Dict[str, Any]]:
+        """Render header prompt for specific model by compiling prompts from all sections"""
+        try:
+            # Get model constraints
+            model_spec = self.model_specs_cache.get(model_key, {})
+            constraints = model_spec.get('constraints', {'max_prompt_chars': 1000})
+            
+            # Get all sections for the post
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, section_heading, image_prompts
+                    FROM post_section 
+                    WHERE post_id = %s AND image_prompts IS NOT NULL AND image_prompts != ''
+                    ORDER BY section_order
+                """, (post_id,))
+                
+                sections = cursor.fetchall()
+            
+            if not sections:
+                return "", {
+                    'source': 'error',
+                    'model_key': model_key,
+                    'error': 'No sections with prompts found'
+                }
+            
+            # Compile prompts from all sections
+            section_prompts = []
+            for section in sections:
+                canonical = parse_legacy_prompt(section['image_prompts'])
+                if canonical.subject:
+                    section_prompts.append(canonical.subject)
+            
+            if not section_prompts:
+                return "", {
+                    'source': 'error',
+                    'model_key': model_key,
+                    'error': 'No valid prompts found in sections'
+                }
+            
+            # Create a collage-style prompt
+            if model_key == 'sdxl-lora':
+                # For SDXL, create a tag-style collage
+                collage_prompt = f"collage composition featuring: {', '.join(section_prompts[:5])}, artistic illustration, pen and ink watercolor style"
+            else:
+                # For DALL-E, create a descriptive collage
+                collage_prompt = f"A collage-style header image combining elements from: {'; '.join(section_prompts[:3])}. Create a cohesive composition that represents the overall theme of the blog post."
+            
+            # Render for model
+            rendered_prompt = render_prompt_for_model(
+                CanonicalPrompt({'subject': collage_prompt}), 
+                model_key, 
+                constraints
+            )
+            
+            return rendered_prompt, {
+                'source': 'header_collage',
+                'model_key': model_key,
+                'section_count': len(sections),
+                'char_count': len(rendered_prompt),
+                'max_chars': constraints.get('max_prompt_chars', 1000),
+                'truncated': len(rendered_prompt) >= constraints.get('max_prompt_chars', 1000),
+                'sections_used': len(section_prompts)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error rendering header prompt for {model_key}: {e}")
+            return "", {
+                'source': 'error',
+                'model_key': model_key,
+                'error': str(e)
+            }
+
     def render_prompt_for_model(self, post_id: int, section_id: int, model_key: str, use_override: bool = True) -> Tuple[str, Dict[str, Any]]:
         """Render prompt for specific model, using override if available"""
         try:

@@ -1303,14 +1303,55 @@ def api_get_prompt_assembly_data(post_id):
         logger.error(f"Error getting prompt assembly data for post {post_id}: {e}")
         return jsonify({'error': str(e)}), 500
 
+@bp.route('/api/model-specs', methods=['GET'])
+def header_get_model_specs():
+    """Get model specifications for header imaging (shared with imaging blueprint)"""
+    try:
+        # Reuse the imaging blueprint's model specs endpoint
+        from blueprints.imaging import imaging_get_model_specs
+        return imaging_get_model_specs()
+    except Exception as e:
+        logger.error(f"Error getting model specs: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@bp.route('/api/model-selection', methods=['GET', 'POST'])
+def header_model_selection():
+    """Get or save model selection configuration (shared with imaging blueprint)"""
+    try:
+        # Reuse the imaging blueprint's model selection endpoint
+        from blueprints.imaging import imaging_model_selection
+        return imaging_model_selection()
+    except Exception as e:
+        logger.error(f"Error with model selection: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @bp.route('/api/posts/<int:post_id>/generate-header-image', methods=['POST'])
 def api_generate_header_image(post_id):
-    """Generate header image with custom dimensions and automatic watermarking"""
+    """Generate header image with custom dimensions and automatic watermarking using model-aware renderers"""
     try:
+        import time
+        from modules.prompt_service import prompt_service
+        
         data = request.get_json()
-        image_prompt = data.get('image_prompt', '')
         model_name = data.get('model_name', 'dall-e-3')
         parameters = data.get('parameters', {})
+        use_renderer = data.get('use_renderer', True)  # Feature flag
+        
+        # Get rendered prompt using the new system
+        if use_renderer:
+            # For header images, we need to compile a collage prompt from all sections
+            rendered_prompt, debug_info = prompt_service.render_header_prompt_for_model(
+                post_id, model_name, use_override=True
+            )
+            
+            if not rendered_prompt:
+                return jsonify({'error': 'No sections available to create header prompt'}), 400
+            
+            image_prompt = rendered_prompt
+        else:
+            # Fallback to original prompt from request
+            image_prompt = data.get('image_prompt', '')
+            debug_info = {'source': 'fallback', 'model_key': model_name}
         
         if not image_prompt:
             return jsonify({'error': 'No image prompt provided'}), 400
@@ -1334,13 +1375,33 @@ def api_generate_header_image(post_id):
             parameters['width'] = 2358
             parameters['height'] = 1048
         
+        # Start timing
+        start_time = time.time()
+        
         # Generate raw image
         if model_name == 'dall-e-3':
             result = imaging_generate_dalle_image(image_prompt, post_id, 'header', parameters)
         else:
-            result = imaging_generate_sdxl_image(image_prompt, post_id, 'header', parameters)
+            # For SDXL, use a special section_id for headers (use post_id as section_id)
+            result = imaging_generate_sdxl_image(image_prompt, post_id, post_id, parameters)
+        
+        # Calculate generation time
+        generation_time_ms = int((time.time() - start_time) * 1000)
         
         if not result.get('success'):
+            # Log failed generation event
+            prompt_service.log_generation_event(
+                post_id=post_id,
+                section_id=None,  # Header images don't have section_id
+                model_key=model_name,
+                params=parameters,
+                prompt_text=image_prompt,
+                rendered_prompt=image_prompt,
+                result_path='',
+                success=False,
+                error_message=result.get('error', 'Image generation failed'),
+                generation_time_ms=generation_time_ms
+            )
             return jsonify({'error': result.get('error', 'Image generation failed')}), 500
         
         # Apply watermarking/optimization
@@ -1350,36 +1411,79 @@ def api_generate_header_image(post_id):
             logger.warning(f"Watermarking failed: {watermark_result.get('error')}")
             # Continue without watermarking
         
-        # Create image table record
+        # Create or update image table record
         with db_manager.get_cursor() as cursor:
+            # Check if header image already exists
             cursor.execute("""
-                INSERT INTO image (filename, original_filename, path, image_prompt, alt_text, caption)
-                VALUES (%s, %s, %s, %s, %s, %s)
-                RETURNING id
-            """, (
-                'header.jpg',
-                'header.png', 
-                watermark_result.get('optimized_path', result.get('image_path')),
-                image_prompt,
-                'Header image for blog post',
-                'Generated header image'
-            ))
+                SELECT header_image_id FROM post WHERE id = %s
+            """, (post_id,))
             
-            image_id = cursor.fetchone()['id']
+            existing_image_id = cursor.fetchone()
             
-            # Update post table with header image reference
-            cursor.execute("""
-                UPDATE post 
-                SET header_image_id = %s, updated_at = CURRENT_TIMESTAMP
-                WHERE id = %s
-            """, (image_id, post_id))
+            if existing_image_id and existing_image_id['header_image_id']:
+                # Update existing image record
+                cursor.execute("""
+                    UPDATE image 
+                    SET filename = %s, original_filename = %s, path = %s, 
+                        image_prompt = %s, alt_text = %s, caption = %s,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                """, (
+                    'header.jpg',
+                    'original_header.png', 
+                    watermark_result.get('optimized_path', result.get('image_path')),
+                    image_prompt,
+                    'Header image for blog post',
+                    'Generated header image',
+                    existing_image_id['header_image_id']
+                ))
+                
+                image_id = existing_image_id['header_image_id']
+            else:
+                # Create new image record
+                cursor.execute("""
+                    INSERT INTO image (filename, original_filename, path, image_prompt, alt_text, caption)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    RETURNING id
+                """, (
+                    'header.jpg',
+                    'original_header.png', 
+                    watermark_result.get('optimized_path', result.get('image_path')),
+                    image_prompt,
+                    'Header image for blog post',
+                    'Generated header image'
+                ))
+                
+                image_id = cursor.fetchone()['id']
+                
+                # Update post table with header image reference
+                cursor.execute("""
+                    UPDATE post 
+                    SET header_image_id = %s, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                """, (image_id, post_id))
+            
+            # Log successful generation event
+            prompt_service.log_generation_event(
+                post_id=post_id,
+                section_id=None,  # Header images don't have section_id
+                model_key=model_name,
+                params=parameters,
+                prompt_text=image_prompt,
+                rendered_prompt=image_prompt,
+                result_path=watermark_result.get('optimized_path', result.get('image_path')),
+                success=True,
+                generation_time_ms=generation_time_ms
+            )
             
             return jsonify({
                 'success': True,
                 'image_id': image_id,
                 'raw_path': result.get('image_path'),
                 'optimized_path': watermark_result.get('optimized_path', result.get('image_path')),
-                'dimensions': {'width': 2358, 'height': 1048}
+                'dimensions': {'width': 2358, 'height': 1048},
+                'debug_info': debug_info,
+                'generation_time_ms': generation_time_ms
             })
             
     except Exception as e:
