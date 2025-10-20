@@ -64,10 +64,6 @@
                    class="sub-stage-btn" data-substage="view">
                     Calendar View
                 </a>
-                <a href="{{ url_for('planning.planning_calendar_ideas', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="ideas">
-                    Idea Generation
-                </a>
                 <a href="{{ url_for('planning.planning_calendar_ideas_week', week_number=39) }}" 
                    class="sub-stage-btn" data-substage="ideas-week">
                     Week Ideas
@@ -76,6 +72,10 @@
             
             <!-- Planning sub-stages -->
             <div class="sub-stage-group" data-stage="concept">
+                <a href="{{ url_for('planning.planning_calendar_ideas', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="ideas">
+                    Idea Generation
+                </a>
                 <a href="{{ url_for('planning.planning_concept_brainstorm', post_id=post_id) }}" 
                    class="sub-stage-btn" data-substage="brainstorm">
                     Topic Brainstorming
@@ -86,7 +86,7 @@
                 </a>
                 <a href="{{ url_for('planning.planning_concept_topic_allocation', post_id=post_id) }}" 
                    class="sub-stage-btn" data-substage="topic-allocation">
-                    Topic Allocation
+                    Section Ideas
                 </a>
                 <a href="{{ url_for('planning.planning_concept_titling', post_id=post_id) }}" 
                    class="sub-stage-btn" data-substage="titling">

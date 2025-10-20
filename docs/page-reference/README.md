@@ -18,7 +18,7 @@ page-reference/
 ├── planning/                    # Planning Stage
 │   ├── topic-brainstorming.md   # Topic Brainstorming substage
 │   ├── section-structure.md     # Section Structure Design substage
-│   ├── topic-allocation.md      # Topic Allocation substage
+│   ├── topic-allocation.md      # Section Ideas substage (renamed from Topic Allocation)
 │   └── section-titling.md       # Section Titling substage
 ├── authoring/                   # Authoring Stage
 │   ├── drafting.md              # Drafting substage
@@ -50,7 +50,7 @@ The BlogForge CMS follows a structured 5-stage workflow for blog creation:
 **Purpose**: Content structure and topic development
 - **Topic Brainstorming**: Generate 50+ topic ideas
 - **Section Structure Design**: Create logical content organization
-- **Topic Allocation**: Distribute topics across sections
+- **Section Ideas**: Generate new topics for each section (renamed from Topic Allocation)
 - **Section Titling**: Create compelling section titles
 
 ### 3. Authoring Stage

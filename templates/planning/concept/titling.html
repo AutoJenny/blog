@@ -378,11 +378,11 @@ async function loadTopicAllocation() {
                 console.log('First section:', generatedGroups[0]?.section_theme);
             } else {
                 console.log('No topic allocation found');
-                displayTopicAllocationError('No topic allocation found. Please go back to Topic Allocation to generate topics first.');
+                displayTopicAllocationError('No section ideas found. Please go back to Section Ideas to generate topics first.');
             }
         } else {
             console.error('Error loading topic allocation:', data.error);
-            displayTopicAllocationError('No topic allocation found. Please go back to Topic Allocation to generate topics first.');
+            displayTopicAllocationError('No section ideas found. Please go back to Section Ideas to generate topics first.');
         }
     } catch (error) {
         console.error('Error loading topic allocation:', error);
@@ -394,7 +394,7 @@ function displayTopicAllocation(allocations) {
     const allocationDisplay = document.getElementById('topic-allocation-display');
     
     if (!allocations || allocations.length === 0) {
-        allocationDisplay.innerHTML = '<div class="no-allocation">No topic allocation available. Please go back to Topic Allocation to generate topics first.</div>';
+        allocationDisplay.innerHTML = '<div class="no-allocation">No section ideas available. Please go back to Section Ideas to generate topics first.</div>';
         return;
     }
     
@@ -438,7 +438,7 @@ async function startTitling() {
     console.log('startTitling() called');
     
     if (!generatedGroups || generatedGroups.length === 0) {
-        alert('No topic allocation available. Please go back to Topic Allocation to generate topics first.');
+        alert('No section ideas available. Please go back to Section Ideas to generate topics first.');
         return;
     }
     

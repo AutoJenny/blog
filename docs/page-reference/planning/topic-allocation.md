@@ -1,4 +1,6 @@
-# Topic Allocation Page - Technical Documentation
+# Section Ideas Page - Technical Documentation
+
+> **Note**: This page was previously called "Topic Allocation" but has been renamed to "Section Ideas" for clarity. Despite the old name, this page actually **generates new section-specific topics** rather than allocating existing ones.
 
 ## Overview
 
