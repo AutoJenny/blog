@@ -7,12 +7,14 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/image-generation.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/data-tab.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/imaging-workspace.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/prompt-preview-panel.css') }}">
 {% endblock %}
 
 {% block js_assets %}
 {{ js_assets('imaging') }}
 <script src="{{ url_for('static', filename='js/imaging/imaging-workspace.js') }}"></script>
 <script src="{{ url_for('static', filename='js/imaging/sections-panel.js') }}"></script>
+<script src="{{ url_for('static', filename='js/imaging/prompt-preview-panel.js') }}"></script>
 <script>
     window.currentStage = 'imaging';
     window.currentSubstage = 'image-generation';

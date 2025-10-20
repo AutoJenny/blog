@@ -4,6 +4,7 @@ class ModelSelectionPanel {
     constructor() {
         this.currentModel = 'sdxl-lora';
         this.parameters = {};
+        this.modelSpecs = {};
         this.init();
     }
 
@@ -11,7 +12,50 @@ class ModelSelectionPanel {
         console.log('[Model Selection] Initializing model selection panel');
         
         this.setupEventListeners();
-        this.loadSavedConfiguration();
+        this.loadModelSpecs().then(() => {
+            this.loadSavedConfiguration();
+        });
+    }
+
+    async loadModelSpecs() {
+        try {
+            console.log('[Model Selection] Loading model specifications');
+            const response = await fetch('/imaging/api/model-specs');
+            const data = await response.json();
+            
+            if (data.success) {
+                this.modelSpecs = {};
+                data.models.forEach(model => {
+                    this.modelSpecs[model.model_key] = model;
+                });
+                
+                console.log('[Model Selection] Loaded model specs:', this.modelSpecs);
+                this.updateModelSelectOptions();
+            } else {
+                console.error('[Model Selection] Failed to load model specs:', data.error);
+            }
+        } catch (error) {
+            console.error('[Model Selection] Error loading model specs:', error);
+        }
+    }
+
+    updateModelSelectOptions() {
+        const modelSelect = document.getElementById('image-model-select');
+        if (!modelSelect) return;
+        
+        // Clear existing options
+        modelSelect.innerHTML = '';
+        
+        // Add options from model specs
+        Object.values(this.modelSpecs).forEach(model => {
+            const option = document.createElement('option');
+            option.value = model.model_key;
+            option.textContent = `${model.name} (${model.provider})`;
+            modelSelect.appendChild(option);
+        });
+        
+        // Set current model
+        modelSelect.value = this.currentModel;
     }
 
     setupEventListeners() {
@@ -28,7 +72,8 @@ class ModelSelectionPanel {
                 const event = new CustomEvent('modelSelectionChanged', {
                     detail: {
                         model: this.currentModel,
-                        parameters: this.parameters
+                        parameters: this.parameters,
+                        modelSpec: this.modelSpecs[this.currentModel]
                     }
                 });
                 document.dispatchEvent(event);
@@ -47,67 +92,90 @@ class ModelSelectionPanel {
         if (!parametersContainer) return;
         
         console.log('[Model Selection] Updating parameters for model:', this.currentModel);
-        console.log('[Model Selection] Parameters container HTML before:', parametersContainer.innerHTML.substring(0, 200));
         
-        let parametersHTML = '';
-        
-        if (this.currentModel === 'sdxl-lora') {
-            parametersHTML = `
-                <div class="parameter-group">
-                    <label for="image-dimensions">Image Dimensions:</label>
-                    <select id="image-dimensions" name="image_dimensions">
-                        <option value="1024x1024">1024x1024 (Square)</option>
-                        <option value="1792x1024">1792x1024 (Landscape)</option>
-                        <option value="1024x1792">1024x1792 (Portrait)</option>
-                    </select>
-                </div>
-                <div class="parameter-group">
-                    <label for="steps">Steps:</label>
-                    <input type="number" id="steps" name="steps" min="10" max="50" value="20">
-                </div>
-                <div class="parameter-group">
-                    <label for="cfg">CFG Scale:</label>
-                    <input type="number" id="cfg" name="cfg" min="1" max="20" step="0.5" value="7">
-                </div>
-                <div class="parameter-group">
-                    <label for="seed">Seed (optional):</label>
-                    <input type="number" id="seed" name="seed" min="0" max="999999999" placeholder="Random">
-                </div>
-            `;
-        } else if (this.currentModel.startsWith('dall-e')) {
-            parametersHTML = `
-                <div class="parameter-group">
-                    <label for="image-size">Image Size:</label>
-                    <select id="image-size" name="image_size">
-                        <option value="1024x1024">1024x1024 (Square)</option>
-                        <option value="1792x1024">1792x1024 (Landscape)</option>
-                        <option value="1024x1792">1024x1792 (Portrait)</option>
-                    </select>
-                </div>
-                <div class="parameter-group">
-                    <label for="quality">Quality:</label>
-                    <select id="quality" name="quality">
-                        <option value="standard">Standard</option>
-                        <option value="hd">HD</option>
-                    </select>
-                </div>
-                <div class="parameter-group">
-                    <label for="style">Style:</label>
-                    <select id="style" name="style">
-                        <option value="vivid">Vivid</option>
-                        <option value="natural">Natural</option>
-                    </select>
-                </div>
-            `;
+        const modelSpec = this.modelSpecs[this.currentModel];
+        if (!modelSpec) {
+            console.warn('[Model Selection] No model spec found for:', this.currentModel);
+            return;
         }
         
-        // Don't overwrite the HTML - it's already in the template
-        // parametersContainer.innerHTML = parametersHTML;
+        // Clear existing parameters
+        parametersContainer.innerHTML = '';
         
-        console.log('[Model Selection] Parameters container HTML after:', parametersContainer.innerHTML.substring(0, 200));
+        // Add model constraints info
+        const constraintsInfo = document.createElement('div');
+        constraintsInfo.className = 'model-constraints';
+        constraintsInfo.innerHTML = `
+            <div class="constraints-header">
+                <h5>Model Constraints</h5>
+                <span class="constraint-badge">Max: ${modelSpec.constraints.max_prompt_chars} chars</span>
+            </div>
+        `;
+        parametersContainer.appendChild(constraintsInfo);
+        
+        // Add parameters based on model spec
+        modelSpec.parameters.forEach(param => {
+            const paramGroup = document.createElement('div');
+            paramGroup.className = 'parameter-group';
+            
+            let inputHTML = '';
+            
+            if (param.type === 'string' && param.options) {
+                // Dropdown for string with options
+                inputHTML = `
+                    <label for="${param.key}">${this.formatParamLabel(param.key)}:</label>
+                    <select id="${param.key}" name="${param.key}">
+                        ${param.options.map(option => 
+                            `<option value="${option}" ${option === param.default_value ? 'selected' : ''}>${option}</option>`
+                        ).join('')}
+                    </select>
+                `;
+            } else if (param.type === 'integer' || param.type === 'decimal') {
+                // Number input with min/max
+                const step = param.type === 'decimal' ? '0.1' : '1';
+                inputHTML = `
+                    <label for="${param.key}">${this.formatParamLabel(param.key)}:</label>
+                    <input type="number" id="${param.key}" name="${param.key}" 
+                           min="${param.min_value || ''}" max="${param.max_value || ''}" 
+                           step="${step}" value="${param.default_value}">
+                `;
+            } else {
+                // Text input
+                inputHTML = `
+                    <label for="${param.key}">${this.formatParamLabel(param.key)}:</label>
+                    <input type="text" id="${param.key}" name="${param.key}" value="${param.default_value || ''}">
+                `;
+            }
+            
+            paramGroup.innerHTML = inputHTML;
+            parametersContainer.appendChild(paramGroup);
+        });
+        
+        // Add LoRA controls if model supports it
+        if (modelSpec.supports_lora) {
+            const loraGroup = document.createElement('div');
+            loraGroup.className = 'parameter-group lora-group';
+            loraGroup.innerHTML = `
+                <h5>LoRA Settings</h5>
+                <div class="lora-item" data-lora-id="aether-watercolor">
+                    <span class="lora-name">Aether Watercolor & Ink</span>
+                    <input type="range" id="lora-scale-aether" name="lora_scale" 
+                           min="0" max="2" step="0.1" value="0.85">
+                    <span id="lora-scale-value">0.85</span>
+                </div>
+            `;
+            parametersContainer.appendChild(loraGroup);
+        }
         
         // Add event listeners to new parameter inputs
         this.setupParameterListeners();
+        
+        // Update title with model info
+        this.updateTitle();
+    }
+
+    formatParamLabel(key) {
+        return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
 
     setupParameterListeners() {
@@ -166,13 +234,7 @@ class ModelSelectionPanel {
                 generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
             }
             
-            // Get the current prompt from prompt construction panel
-            const promptText = this.getCurrentPrompt();
-            if (!promptText) {
-                throw new Error('No prompt available. Please generate a prompt first.');
-            }
-            
-            // Call the imaging API to generate image (flex endpoint accepts string ids like section_1)
+            // Call the imaging API to generate image with new renderer system
             const endpoint = `/imaging/api/image-generation/posts/${window.postId}/sections/${window.currentSectionId}/generate-image`;
             const response = await fetch(endpoint, {
                 method: 'POST',
@@ -180,10 +242,9 @@ class ModelSelectionPanel {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    // Backend expects image_prompt and model_name
-                    image_prompt: promptText,
                     model_name: this.currentModel,
-                    parameters: this.parameters
+                    parameters: this.parameters,
+                    use_renderer: true  // Use new renderer system
                 })
             });
             
@@ -197,13 +258,23 @@ class ModelSelectionPanel {
             
             if (data.success) {
                 console.log('[Model Selection] Image generated successfully');
+                console.log('[Model Selection] Debug info:', data.debug_info);
                 
                 // Update output panel with new image
                 if (window.imagingOutputPanel) {
-                    window.imagingOutputPanel.onImageGenerated({ image_path: data.image_path });
+                    window.imagingOutputPanel.onImageGenerated({ 
+                        image_path: data.image_path,
+                        debug_info: data.debug_info,
+                        generation_time_ms: data.generation_time_ms
+                    });
                 }
                 
-                alert('Image generated successfully!');
+                // Show success message with renderer info
+                const source = data.debug_info?.source || 'unknown';
+                const charCount = data.debug_info?.char_count || 0;
+                const maxChars = data.debug_info?.max_chars || 0;
+                
+                alert(`Image generated successfully!\n\nRenderer: ${source}\nPrompt length: ${charCount}/${maxChars} chars\nGeneration time: ${data.generation_time_ms}ms`);
             } else {
                 throw new Error(data.error || 'Failed to generate image');
             }
