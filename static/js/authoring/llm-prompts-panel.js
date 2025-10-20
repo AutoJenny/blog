@@ -13,6 +13,8 @@ class LLMPromptsPanel {
         this.config = this.getPageConfig();
         this.storageKey = `${this.pageType}-llm-prompts`; // legacy key (will not be used)
         this.currentPrompt = { system_prompt: '', prompt_text: '' }; // in-memory source of truth
+        this.currentModelKey = '';
+        this.currentMaxChars = null;
         
         // Callbacks for external communication
         this.callbacks = {
@@ -41,6 +43,8 @@ class LLMPromptsPanel {
         // Do not use localStorage; rely on DB-backed API
         this.loadPromptFromAPI();
         this.restoreAccordionState();
+        // Reflect current model constraints if available
+        this.setupModelInfoListener();
     }
 
     detectPageType() {
@@ -84,9 +88,10 @@ class LLMPromptsPanel {
                 allowEdit: true
             },
             'image_generation': {
-                promptEndpoint: '/authoring/api/llm/prompts/image-generation',
-                resultsTitle: 'Generated Image',
-                allowEdit: false
+                // On Imaging page, show the Image Prompts template and allow editing
+                promptEndpoint: '/authoring/api/llm/prompts/image-prompts',
+                resultsTitle: 'Generated Image Prompts',
+                allowEdit: true
             }
         };
         
@@ -101,7 +106,7 @@ class LLMPromptsPanel {
         this.promptDisplay = document.getElementById('llm-prompt-display');
         this.systemPromptEdit = document.getElementById('system-prompt-edit');
         this.userPromptEdit = document.getElementById('user-prompt-edit');
-        this.promptTitle = document.getElementById('prompt-title');
+        this.promptTitle = document.getElementById('llm-prompt-title');
     }
 
     setupEventListeners() {
@@ -121,6 +126,61 @@ class LLMPromptsPanel {
         });
     }
 
+    setupModelInfoListener() {
+        // Listen for imaging model selection changes to render model-aware info
+        document.addEventListener('modelSelectionChanged', async (event) => {
+            try {
+                const detail = event?.detail || {};
+                let modelKey = detail.model || '';
+                let spec = detail.modelSpec || null;
+
+                // If spec missing, fetch model specs and derive
+                if (!spec && modelKey) {
+                    try {
+                        const r = await fetch('/imaging/api/model-specs');
+                        const d = await r.json();
+                        if (d && d.success && Array.isArray(d.models)) {
+                            spec = d.models.find(m => m.model_key === modelKey) || null;
+                        }
+                    } catch (_) { /* ignore */ }
+                }
+
+                const maxChars = spec?.constraints?.max_prompt_chars || '';
+
+                // Cache current model info for substitutions
+                this.currentModelKey = modelKey;
+                this.currentMaxChars = typeof maxChars === 'number' ? maxChars : (parseInt(maxChars, 10) || null);
+
+                // Create or update an info banner under the display
+                const container = document.getElementById('llm-prompt-display');
+                if (container) {
+                    let info = document.getElementById('llm-model-info');
+                    if (!info) {
+                        info = document.createElement('div');
+                        info.id = 'llm-model-info';
+                        info.style.marginTop = '0.5rem';
+                        info.style.fontSize = '0.85rem';
+                        info.style.color = '#94a3b8';
+                        container.parentNode && container.parentNode.insertBefore(info, container);
+                    }
+                    info.innerHTML = `
+                        <div class="llm-model-info-row">
+                            <span style="background:#334155;color:#e2e8f0;border-radius:4px;padding:2px 6px;margin-right:6px;">Model: ${this.escapeHtml(modelKey)}</span>
+                            ${maxChars ? `<span style="background:#334155;color:#e2e8f0;border-radius:4px;padding:2px 6px;">Max prompt: ${maxChars} chars</span>` : ''}
+                        </div>
+                    `;
+                }
+
+                // Re-render the prompt display with model-aware substitutions (without refetching)
+                if (this.currentPrompt) {
+                    const sys = this.applyModelAwareSubstitutions(this.currentPrompt.system_prompt || '');
+                    const usr = this.applyModelAwareSubstitutions(this.currentPrompt.prompt_text || '');
+                    this.updatePromptDisplay(sys, usr);
+                }
+            } catch (_) { /* ignore */ }
+        });
+    }
+
     async loadPromptFromAPI() {
         try {
             const response = await fetch(this.config.promptEndpoint);
@@ -132,7 +192,28 @@ class LLMPromptsPanel {
                     system_prompt: prompt.system_prompt || '',
                     prompt_text: (prompt.prompt_text || prompt.text || '')
                 };
-                this.updatePromptDisplay(this.currentPrompt.system_prompt, this.currentPrompt.prompt_text);
+
+                // Attempt model-aware substitutions on initial load
+                try {
+                    if (!this.currentMaxChars) {
+                        const select = document.getElementById('image-model-select');
+                        const modelKey = select ? select.value : '';
+                        if (modelKey) {
+                            const r = await fetch('/imaging/api/model-specs');
+                            const d = await r.json();
+                            if (d && d.success && Array.isArray(d.models)) {
+                                const spec = d.models.find(m => m.model_key === modelKey);
+                                const maxChars = spec?.constraints?.max_prompt_chars || '';
+                                this.currentModelKey = modelKey;
+                                this.currentMaxChars = typeof maxChars === 'number' ? maxChars : (parseInt(maxChars, 10) || null);
+                            }
+                        }
+                    }
+                } catch (_) { /* ignore */ }
+
+                const sys = this.applyModelAwareSubstitutions(this.currentPrompt.system_prompt);
+                const usr = this.applyModelAwareSubstitutions(this.currentPrompt.prompt_text);
+                this.updatePromptDisplay(sys, usr);
                 this.updatePromptTitle(prompt.name || this.config.resultsTitle);
                 this.callbacks.onPromptLoad(prompt);
             } else {
@@ -151,6 +232,32 @@ class LLMPromptsPanel {
         if (this.promptTitle) {
             this.promptTitle.textContent = title;
         }
+    }
+
+    // Utility: escape HTML to prevent injection in info banner
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = String(text ?? '');
+        return div.innerHTML;
+    }
+
+    // Apply simple model-aware substitutions to displayed prompts (non-destructive)
+    applyModelAwareSubstitutions(text) {
+        if (!text || !this.currentMaxChars) return text;
+        let t = String(text);
+        const max = this.currentMaxChars;
+        // Replace common range caps like "380–400 characters" or "380-400 characters"
+        t = t.replace(/\b\d{2,4}\s*[–-]\s*\d{2,4}\s*characters?/gi, `up to ${max} characters`);
+        // Replace phrases like "exceeds 400 characters"
+        t = t.replace(/exceeds\s+\d{2,4}\s*characters?/gi, `exceeds ${max} characters`);
+        // Replace "≤ 400" or "<= 400"
+        t = t.replace(/(?:≤|<=)\s*\d{2,4}\b/gi, `≤ ${max}`);
+        // Replace solitary "400 characters" with "{max} characters" for typical caps (<= 1000)
+        t = t.replace(/\b(\d{2,4})\s*characters\b/gi, (m, p1) => {
+            const n = parseInt(p1, 10);
+            return n <= 1000 ? `${max} characters` : m;
+        });
+        return t;
     }
 
     toggleEdit() {
@@ -241,14 +348,17 @@ class LLMPromptsPanel {
 
     updatePromptDisplay(systemPrompt, userPrompt) {
         if (this.promptDisplay) {
+            // Apply model-aware substitutions at display-time
+            const sys = this.applyModelAwareSubstitutions(systemPrompt);
+            const usr = this.applyModelAwareSubstitutions(userPrompt);
             this.promptDisplay.innerHTML = `
                 <div class="prompt-section">
                     <h6>System Prompt:</h6>
-                    <div class="prompt-content">${systemPrompt || 'No system prompt set'}</div>
+                    <div class="prompt-content">${sys || 'No system prompt set'}</div>
                 </div>
                 <div class="prompt-section">
                     <h6>User Prompt:</h6>
-                    <div class="prompt-content">${userPrompt || 'No user prompt set'}</div>
+                    <div class="prompt-content">${usr || 'No user prompt set'}</div>
                 </div>
             `;
         }

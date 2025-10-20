@@ -42,6 +42,16 @@
             <div class="llm-prompts-container">
                 {% include 'authoring/includes/llm_prompts_panel.html' %}
             </div>
+        <script>
+        // Initialize LLM Prompts panel on Imaging page
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                if (typeof LLMPromptsPanel !== 'undefined') {
+                    window.imagingLlmp = new LLMPromptsPanel({ postId: window.postId });
+                }
+            } catch (e) { console.error('[Imaging] Failed to init LLM Prompts panel:', e); }
+        });
+        </script>
 
             <!-- Prompt Construction Panel -->
             <div class="prompt-construction-container">

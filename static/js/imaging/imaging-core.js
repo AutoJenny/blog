@@ -125,6 +125,15 @@ Key Elements: ${selectedConcept.key_visual_elements}`;
     // Add event listeners for accordion functionality
     setupAccordionListeners();
     setupSectionControls();
+
+    // Auto-select the first section after render if none selected
+    const alreadySelected = document.querySelector('.section-item.selected[data-section-id]');
+    if (!alreadySelected) {
+        const first = document.querySelector('.section-item[data-section-id]');
+        if (first) {
+            selectSection(first.getAttribute('data-section-id'));
+        }
+    }
 }
 
 function setupAccordionListeners() {

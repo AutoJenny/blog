@@ -70,6 +70,23 @@ class PromptPreviewPanel {
                 this.updatePreview();
             }
         });
+
+        // Trigger a render once both section and model are available (initial load)
+        const tryInitialRender = () => {
+            if (!this.currentSectionId) {
+                const selected = document.querySelector('.section-item.selected[data-section-id]');
+                if (selected) this.currentSectionId = selected.getAttribute('data-section-id');
+            }
+            if (!this.currentModel) {
+                const modelSelect = document.getElementById('image-model-select');
+                if (modelSelect) this.currentModel = modelSelect.value;
+            }
+            if (this.currentSectionId && this.currentModel) {
+                this.updatePreview();
+            }
+        };
+        setTimeout(tryInitialRender, 150);
+        setTimeout(tryInitialRender, 400);
     }
 
     async updatePreview() {

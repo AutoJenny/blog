@@ -68,24 +68,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Clear any invalid cached data on page load
 document.addEventListener('DOMContentLoaded', function() {
-    // Clear any invalid cached section IDs (numeric IDs like "803" are no longer valid)
-    try {
-        const postId = window.postId || 60;
-        const stored = localStorage.getItem(`imaging_selected_section_${postId}`);
-        if (stored && /^\d+$/.test(stored)) {
-            console.log('[Generated Prompts] Clearing invalid numeric section ID from localStorage:', stored);
-            localStorage.removeItem(`imaging_selected_section_${postId}`);
-        }
-    } catch (e) { /* ignore */ }
-    
-    // Clear any invalid cached sections data
-    if (window.sectionsData && window.sectionsData.length > 0) {
-        const hasNumericIds = window.sectionsData.some(s => /^\d+$/.test(s.id));
-        if (hasNumericIds) {
-            console.log('[Generated Prompts] Clearing invalid numeric section IDs from window.sectionsData');
-            window.sectionsData = null;
-        }
-    }
+    // Accept numeric section IDs; do not clear cached numeric IDs
+    // Keep any cached selection to restore user context
 });
 
 function setupSectionSelectionListener() {
@@ -148,17 +132,25 @@ async function initializePanel() {
         const postId = window.postId || 60;
         const stored = localStorage.getItem(`imaging_selected_section_${postId}`);
         if (stored) {
-            // Check if the stored section ID is valid (should be string like "section_1", not numeric like "803")
+            // Check if the stored section ID exists (numeric IDs like "803" are valid)
             const el = document.querySelector(`.section-item[data-section-id="${stored}"]`);
             if (el) {
                 el.click(); // triggers the normal selection flow and events
             } else {
-                // Invalid cached section ID - clear it and don't try to restore
-                console.log('[Generated Prompts] Clearing invalid cached section ID:', stored);
+                // If cached selection is invalid, clear it; we'll auto-select first section below
                 localStorage.removeItem(`imaging_selected_section_${postId}`);
             }
         }
     } catch (e) { /* ignore */ }
+
+    // If still no selection, auto-select the first section to populate panels
+    const stillNoneSelected = !document.querySelector('.section-item.selected[data-section-id]');
+    if (stillNoneSelected) {
+        const first = document.querySelector('.section-item[data-section-id]');
+        if (first) {
+            first.click();
+        }
+    }
 }
 
 async function displayPromptForSection(sectionId, { forceReload = false } = {}) {
@@ -217,16 +209,22 @@ async function displayPromptsForMultipleSections(sectionIds) {
 }
 
 async function fetchSectionData(sectionId, { forceReload = false } = {}) {
-    // First try to find in window.sectionsData (from the data tab)
+    // Prefer fresh imaging API data unless cache has image_prompts for this section
     if (!forceReload && window.sectionsData && window.sectionsData.length > 0) {
-        const sectionData = window.sectionsData.find(s => s.id == sectionId);
-        if (sectionData) {
-            console.log('[Generated Prompts] Found section in window.sectionsData:', sectionData);
-            return sectionData;
+        const cached = window.sectionsData.find(s => s.id == sectionId);
+        if (cached) {
+            const hasPrompts = !!(cached.image_prompts && (
+                (typeof cached.image_prompts === 'string' && cached.image_prompts.trim().length > 0) ||
+                (typeof cached.image_prompts === 'object' && (cached.image_prompts.image_prompt || cached.image_prompts.base_concept))
+            ));
+            if (hasPrompts) {
+                console.log('[Generated Prompts] Using cached section with image_prompts');
+                return cached;
+            } else {
+                console.log('[Generated Prompts] Cached section lacks image_prompts; fetching fresh from imaging API');
+            }
         } else {
-            // If section not found in cached data, it might be old format - clear cache
-            console.log('[Generated Prompts] Section not found in cached data, clearing cache');
-            window.sectionsData = null;
+            console.log('[Generated Prompts] Section not found in cached data; fetching fresh from imaging API');
         }
     }
     
@@ -238,7 +236,7 @@ async function fetchSectionData(sectionId, { forceReload = false } = {}) {
     
     if (data.success && data.sections) {
         const sectionData = data.sections.find(s => s.id == sectionId);
-        console.log('[Generated Prompts] Found section via API:', sectionData);
+        console.log('[Generated Pro mpts] Found section via API:', sectionData);
         return sectionData;
     }
     
