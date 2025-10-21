@@ -44,8 +44,9 @@ def api_generate_image_prompt_from_builder():
         if not post_id or not section_id:
             return jsonify({'error': 'Missing post_id or section_id'}), 400
         
-        # Get post data for context
+        # Get section data from post_section table
         with db_manager.get_cursor() as cursor:
+            # Get post data for context
             cursor.execute("""
                 SELECT title, subtitle, summary FROM post WHERE id = %s
             """, (post_id,))
@@ -56,43 +57,20 @@ def api_generate_image_prompt_from_builder():
             
             # Get section data
             cursor.execute("""
-                SELECT sections FROM post_development WHERE post_id = %s
-            """, (post_id,))
-            dev_row = cursor.fetchone()
+                SELECT id, section_order, section_heading, section_description, 
+                       status, draft, polished, ideas_to_include, facts_to_include,
+                       highlighting, image_concepts, image_prompts, image_captions,
+                       image_alt_text, selected_image_concept
+                FROM post_section
+                WHERE post_id = %s AND id = %s
+            """, (post_id, section_id))
+            section = cursor.fetchone()
             
-            if not dev_row or not dev_row['sections']:
-                return jsonify({'error': 'Section data not found'}), 404
+            if not section:
+                return jsonify({'error': 'Section not found'}), 404
             
-            # Parse sections data
-            sections_data = dev_row['sections']
-            if isinstance(sections_data, str):
-                sections_data = json.loads(sections_data)
-            
-            if isinstance(sections_data, dict) and 'sections' in sections_data:
-                sections_list = sections_data['sections']
-                section = None
-                for s in sections_list:
-                    if str(s.get('id')) == str(section_id):
-                        section = s
-                        break
-                
-                if not section:
-                    return jsonify({'error': 'Section not found'}), 404
-            else:
-                return jsonify({'error': 'Invalid sections data'}), 500
-            
-            # Get topics from topic_allocation
+            # Set topics to empty for now (topic allocation system removed)
             topics = []
-            try:
-                if 'topic_allocation' in sections_data:
-                    allocation = sections_data['topic_allocation']
-                    if isinstance(allocation, dict) and 'sections' in allocation:
-                        for s in allocation['sections']:
-                            if str(s.get('id')) == str(section_id):
-                                topics = allocation.get('topics', [])
-                                break
-            except Exception as e:
-                logger.error(f"Error parsing topic_allocation: {e}")
             
             # Get the image prompts prompt
             cursor.execute("""
@@ -118,8 +96,8 @@ def api_generate_image_prompt_from_builder():
             # Replace placeholders with actual data
             prompt_text = prompt_text.replace('[data:idea_seed]', post_data['title'] or '')
             prompt_text = prompt_text.replace('[data:expanded_idea]', post_data['subtitle'] or '')
-            prompt_text = prompt_text.replace('[data:title]', section['title'] or '')
-            prompt_text = prompt_text.replace('[data:subtitle]', section['subtitle'] or '')
+            prompt_text = prompt_text.replace('[data:title]', section['section_heading'] or '')
+            prompt_text = prompt_text.replace('[data:subtitle]', section['section_description'] or '')
             prompt_text = prompt_text.replace('[data:section_text]', section.get('polished') or section.get('draft') or '')
             prompt_text = prompt_text.replace('[data:selected_concept]', compiled_prompt or '')
             topics_text = '\n'.join([f'- {topic}' for topic in topics])
@@ -218,34 +196,21 @@ def api_generate_image_prompt_from_builder():
             
             # Save to database
             try:
-                # Update the sections data with the generated prompt
-                sections_data = dev_row['sections']
-                if isinstance(sections_data, str):
-                    sections_data = json.loads(sections_data)
+                # Update the post_section table with the generated prompt
+                image_prompts_json = json.dumps({
+                    'image_prompt': generated_prompt,
+                    'base_concept': compiled_prompt
+                })
                 
-                if isinstance(sections_data, dict) and 'sections' in sections_data:
-                    sections_list = sections_data['sections']
-                    for s in sections_list:
-                        if str(s.get('id')) == str(section_id):
-                            s['image_prompts'] = {
-                                'image_prompt': generated_prompt,
-                                'base_concept': compiled_prompt
-                            }
-                            break
+                cursor.execute("""
+                    UPDATE post_section 
+                    SET image_prompts = %s 
+                    WHERE post_id = %s AND id = %s
+                """, (image_prompts_json, post_id, section_id))
                     
-                    # Update the database
-                    cursor.execute("""
-                        UPDATE post_development 
-                        SET sections = %s 
-                        WHERE post_id = %s
-                    """, (json.dumps(sections_data), post_id))
-                else:
-                    logger.error("Invalid sections data structure")
-                    return jsonify({'error': 'Failed to update sections data'}), 500
-                    
-            except (json.JSONDecodeError, TypeError) as e:
-                logger.error(f"Error updating sections JSON for image prompts: {e}")
-                return jsonify({'error': 'Failed to update sections data'}), 500
+            except Exception as e:
+                logger.error(f"Error updating post_section for image prompts: {e}")
+                return jsonify({'error': 'Failed to update section data'}), 500
             
             cursor.connection.commit()
             
@@ -344,8 +309,8 @@ def api_get_llm_prompt_details(post_id, section_id):
             # Replace placeholders with actual data
             prompt_text = prompt_text.replace('[data:idea_seed]', post_data['title'] or '')
             prompt_text = prompt_text.replace('[data:expanded_idea]', post_data['subtitle'] or '')
-            prompt_text = prompt_text.replace('[data:title]', section['title'] or '')
-            prompt_text = prompt_text.replace('[data:subtitle]', section['subtitle'] or '')
+            prompt_text = prompt_text.replace('[data:title]', section['section_heading'] or '')
+            prompt_text = prompt_text.replace('[data:subtitle]', section['section_description'] or '')
             prompt_text = prompt_text.replace('[data:section_text]', section.get('polished') or section.get('draft') or '')
             
             # Get the selected concept for [data:selected_concept]
