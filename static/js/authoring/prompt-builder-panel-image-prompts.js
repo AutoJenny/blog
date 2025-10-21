@@ -392,13 +392,7 @@ class PromptBuilderPanel {
             if (this.sectionsLLMData && this.sectionsLLMData[config.sectionId]) {
                 const exactLLMInput = this.sectionsLLMData[config.sectionId];
                 
-                // Update the display with the exact raw HTTP request
-                const llmInputDisplay = document.getElementById('llm-input-display');
-                if (llmInputDisplay) {
-                    llmInputDisplay.value = exactLLMInput;
-                }
-                
-                console.log('[PromptBuilderPanel] Displayed pre-loaded raw HTTP request:', exactLLMInput.substring(0, 200) + '...');
+                console.log('[PromptBuilderPanel] Pre-loaded raw HTTP request available:', exactLLMInput.substring(0, 200) + '...');
                 return;
             }
             
@@ -407,25 +401,16 @@ class PromptBuilderPanel {
             if (response.ok) {
                 const data = await response.json();
                 if (data.success && data.raw_http_request) {
-                    // Display the EXACT raw HTTP request that goes to the LLM
+                    // Raw HTTP request available
                     const exactLLMInput = data.raw_http_request;
                     
-                    // Update the display with the exact raw HTTP request
-                    const llmInputDisplay = document.getElementById('llm-input-display');
-                    if (llmInputDisplay) {
-                        llmInputDisplay.value = exactLLMInput;
-                    }
-                    
-                    console.log('[PromptBuilderPanel] Displayed exact raw HTTP request:', exactLLMInput.substring(0, 200) + '...');
+                    console.log('[PromptBuilderPanel] Raw HTTP request available:', exactLLMInput.substring(0, 200) + '...');
                     return;
                 }
             }
             
-            // Fallback: if no stored messages, show placeholder
-            const llmInputDisplay = document.getElementById('llm-input-display');
-            if (llmInputDisplay) {
-                llmInputDisplay.value = 'No LLM messages stored yet. Generate a prompt to see the exact input sent to the LLM.';
-            }
+            // Fallback: if no stored messages
+            console.log('[PromptBuilderPanel] No LLM messages stored yet');
             
         } catch (error) {
             console.error('[PromptBuilderPanel] Error preparing LLM message:', error);
@@ -499,10 +484,8 @@ class PromptBuilderPanel {
     
     
     clearLLMInputDisplay() {
-        const llmInputDisplay = document.getElementById('llm-input-display');
-        if (llmInputDisplay) {
-            llmInputDisplay.value = '';
-        }
+        // No longer managing the duplicate field
+        console.log('[PromptBuilderPanel] clearLLMInputDisplay called');
     }
 
     buildCompiledPrompt(conceptContent, config) {
