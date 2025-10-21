@@ -72,7 +72,7 @@ def api_generate_image_prompt_from_builder():
             # Set topics to empty for now (topic allocation system removed)
             topics = []
             
-            # Get the image prompts prompt
+            # Get the user-configured image prompts prompt (not hardcoded)
             cursor.execute("""
                 SELECT prompt_text, system_prompt
                 FROM llm_prompt 
@@ -83,7 +83,7 @@ def api_generate_image_prompt_from_builder():
             
             prompt_data = cursor.fetchone()
             if not prompt_data:
-                return jsonify({'error': 'Image Prompts prompt not found'}), 404
+                return jsonify({'error': 'User-configured Image Prompts prompt not found. Please configure prompts in the LLM Prompts panel first.'}), 404
             
             # Build the prompt with actual data
             prompt_text = prompt_data['prompt_text']
@@ -289,7 +289,7 @@ def api_get_llm_prompt_details(post_id, section_id):
             except Exception as e:
                 logger.error(f"Error parsing topic_allocation: {e}")
             
-            # Get the image prompts prompt template
+            # Get the user-configured image prompts prompt template
             cursor.execute("""
                 SELECT prompt_text, system_prompt
                 FROM llm_prompt 
@@ -300,7 +300,7 @@ def api_get_llm_prompt_details(post_id, section_id):
             
             prompt_data = cursor.fetchone()
             if not prompt_data:
-                return jsonify({'error': 'Image Prompts prompt not found'}), 404
+                return jsonify({'error': 'User-configured Image Prompts prompt not found. Please configure prompts in the LLM Prompts panel first.'}), 404
             
             # Build the user prompt with actual data
             prompt_text = prompt_data['prompt_text']
