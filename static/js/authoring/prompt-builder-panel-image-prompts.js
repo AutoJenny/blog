@@ -374,7 +374,7 @@ class PromptBuilderPanel {
             textarea.value = compiledPrompt;
             
             // Prepare and display the actual LLM message that will be sent
-            this.prepareLLMInputDisplay(compiledPrompt, config);
+            this.prepareLLMInputDisplay(compiledPrompt, { ...config, sectionId: this.currentSection.id });
         } else {
             textarea.value = '';
             this.clearLLMInputDisplay();
@@ -387,33 +387,36 @@ class PromptBuilderPanel {
         console.log('[PromptBuilderPanel] prepareLLMInputDisplay called');
         
         try {
-            // Get the system and user prompts from the database
-            const response = await fetch('/authoring/api/llm/prompts/image-prompts');
+            // Get the stored raw messages from the database
+            const response = await fetch(`/authoring/api/posts/${this.postId}/sections/${config.sectionId}/intercepted-message`);
             if (response.ok) {
                 const data = await response.json();
-                if (data.success && data.prompt) {
-                    const systemPrompt = data.prompt.system_prompt || '';
-                    const userPromptTemplate = data.prompt.prompt_text || '';
-                    
-                    // Prepare the actual user message with placeholder substitution
-                    const userMessage = this.prepareUserMessage(userPromptTemplate, compiledPrompt);
-                    
-                    // Build the complete LLM message that will be sent
+                if (data.success && data.raw_messages) {
+                    // Format the raw messages for display
                     let completeMessage = '';
-                    if (systemPrompt) {
-                        completeMessage += `SYSTEM MESSAGE:\n${systemPrompt}\n\n`;
-                    }
-                    completeMessage += `USER MESSAGE:\n${userMessage}`;
+                    data.raw_messages.forEach((message, index) => {
+                        const role = message.role || 'unknown';
+                        const content = message.content || '';
+                        completeMessage += `${role.toUpperCase()} MESSAGE:\n${content}\n\n`;
+                    });
                     
-                    // Update the display
+                    // Update the display with the exact raw messages
                     const llmInputDisplay = document.getElementById('llm-input-display');
                     if (llmInputDisplay) {
-                        llmInputDisplay.value = completeMessage;
+                        llmInputDisplay.value = completeMessage.trim();
                     }
                     
-                    console.log('[PromptBuilderPanel] Prepared LLM message:', completeMessage.substring(0, 200) + '...');
+                    console.log('[PromptBuilderPanel] Displayed stored raw messages:', completeMessage.substring(0, 200) + '...');
+                    return;
                 }
             }
+            
+            // Fallback: if no stored messages, show placeholder
+            const llmInputDisplay = document.getElementById('llm-input-display');
+            if (llmInputDisplay) {
+                llmInputDisplay.value = 'No LLM messages stored yet. Generate a prompt to see the exact input sent to the LLM.';
+            }
+            
         } catch (error) {
             console.error('[PromptBuilderPanel] Error preparing LLM message:', error);
             this.clearLLMInputDisplay();

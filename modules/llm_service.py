@@ -43,10 +43,16 @@ class LLMService:
     def execute_llm_request(self, provider, model, messages, api_key=None, intercept_context=None):
         """Execute LLM request with message interception capability."""
         try:
-            # INTERCEPT: Store the actual message being sent to LLM
-            intercepted_message = self._format_intercepted_message(provider, model, messages, api_key)
+            # STEP 1: Store the exact message structure in database
             if intercept_context:
+                intercepted_message = self._format_intercepted_message(provider, model, messages, api_key)
                 self._store_intercepted_message(intercepted_message, intercept_context)
+                # Store the raw messages array as JSON for retrieval
+                self._store_raw_messages(messages, intercept_context)
+            
+            # STEP 2: Retrieve the stored messages to ensure we send exactly what was stored
+            if intercept_context:
+                messages = self._retrieve_raw_messages(intercept_context) or messages
             
             if provider == 'openai':
                 headers = {
@@ -160,7 +166,7 @@ class LLMService:
             
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
-                    SELECT intercepted_message, created_at
+                    SELECT intercepted_message, raw_messages, created_at
                     FROM llm_message_intercepts 
                     WHERE post_id = %s AND section_id = %s
                     ORDER BY created_at DESC
@@ -171,12 +177,81 @@ class LLMService:
                 if result:
                     return {
                         'message': result['intercepted_message'],
+                        'raw_messages': result['raw_messages'],
                         'created_at': result['created_at']
                     }
                 return None
                 
         except Exception as e:
             logger.error(f"Error retrieving intercepted message: {e}")
+            return None
+    
+    def _store_raw_messages(self, messages, context):
+        """Store the raw messages array as JSON for exact retrieval."""
+        try:
+            from config.database import db_manager
+            import json
+            
+            post_id = context.get('post_id')
+            section_id = context.get('section_id')
+            
+            # Section ID must be numeric
+            if not isinstance(section_id, int) and not (isinstance(section_id, str) and section_id.isdigit()):
+                logger.error(f"Invalid section_id: {section_id}. Must be numeric.")
+                return
+            
+            section_id = int(section_id)
+            
+            # Serialize messages to JSON
+            messages_json = json.dumps(messages)
+            
+            with db_manager.get_cursor() as cursor:
+                # Update the existing row to add raw_messages column
+                cursor.execute("""
+                    UPDATE llm_message_intercepts
+                    SET raw_messages = %s
+                    WHERE post_id = %s AND section_id = %s
+                """, (messages_json, post_id, section_id))
+                
+                cursor.connection.commit()
+                logger.info(f"Stored raw messages for post {post_id}, section {section_id}")
+                
+        except Exception as e:
+            logger.error(f"Error storing raw messages: {e}")
+    
+    def _retrieve_raw_messages(self, context):
+        """Retrieve the stored raw messages array."""
+        try:
+            from config.database import db_manager
+            import json
+            
+            post_id = context.get('post_id')
+            section_id = context.get('section_id')
+            
+            # Section ID must be numeric
+            if not isinstance(section_id, int) and not (isinstance(section_id, str) and section_id.isdigit()):
+                logger.error(f"Invalid section_id: {section_id}. Must be numeric.")
+                return None
+            
+            section_id = int(section_id)
+            
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT raw_messages
+                    FROM llm_message_intercepts 
+                    WHERE post_id = %s AND section_id = %s
+                    ORDER BY created_at DESC
+                    LIMIT 1
+                """, (post_id, section_id))
+                
+                result = cursor.fetchone()
+                if result and result['raw_messages']:
+                    # raw_messages is already a Python object (JSONB), no need to parse
+                    return result['raw_messages']
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error retrieving raw messages: {e}")
             return None
 
 

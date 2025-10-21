@@ -613,12 +613,14 @@ def api_get_intercepted_message(post_id, section_id):
             return jsonify({
                 'success': True,
                 'message': intercepted_data['message'],
+                'raw_messages': intercepted_data['raw_messages'],
                 'created_at': intercepted_data['created_at'].isoformat() if intercepted_data['created_at'] else None
             })
         else:
             return jsonify({
                 'success': True,
                 'message': None,
+                'raw_messages': None,
                 'created_at': None
             })
             

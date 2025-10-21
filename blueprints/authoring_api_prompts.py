@@ -225,9 +225,16 @@ def api_generate_image_prompt_from_builder():
                 style_text = '\n'.join(style_parts)
                 logger.info(f"[DEBUG] Style text: {style_text}")
             
-            # Append style information to prompt if available
-            if style_text:
-                prompt_text += f"\n\nStyle Guidelines:\n{style_text}"
+            # Replace [data:style] placeholder with actual style information
+            if '[data:style]' in prompt_text:
+                if style_text:
+                    prompt_text = prompt_text.replace('[data:style]', style_text)
+                else:
+                    prompt_text = prompt_text.replace('[data:style]', '')
+            else:
+                # If placeholder not found, append style information to prompt
+                if style_text:
+                    prompt_text += f"\n\nStyle Guidelines:\n{style_text}"
             
             # Prepare messages for LLM
             messages = []
@@ -521,9 +528,16 @@ def api_get_llm_prompt_details(post_id, section_id):
                 style_text = '\n'.join(style_parts)
                 logger.info(f"[DEBUG] Style text: {style_text}")
             
-            # Append style information to prompt if available
-            if style_text:
-                prompt_text += f"\n\nStyle Guidelines:\n{style_text}"
+            # Replace [data:style] placeholder with actual style information
+            if '[data:style]' in prompt_text:
+                if style_text:
+                    prompt_text = prompt_text.replace('[data:style]', style_text)
+                else:
+                    prompt_text = prompt_text.replace('[data:style]', '')
+            else:
+                # If placeholder not found, append style information to prompt
+                if style_text:
+                    prompt_text += f"\n\nStyle Guidelines:\n{style_text}"
             
             # Get active style details
             style_details = "No style information available"
