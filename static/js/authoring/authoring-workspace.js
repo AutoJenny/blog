@@ -249,6 +249,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const sectionsPanel = new SectionsPanel({
         postId: window.postId,
         onSectionSelect: async (data) => {
+            console.log('[DEBUG] AuthoringWorkspace received onSectionSelect callback:', data);
+            console.log('[DEBUG] Current substage:', window.currentSubstage);
+            
             // Load section into appropriate output panel
             if (window.currentSubstage === 'image-concepts') {
                 if (window.imageConceptsOutputPanel) {
@@ -264,6 +267,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } else if (window.currentSubstage === 'image-prompts') {
                 // Emit sectionSelected event for PromptBuilderPanel and ImagePromptsOutputPanel
+                console.log('[DEBUG] Dispatching sectionSelected event for image-prompts with section:', data.section);
                 window.dispatchEvent(new CustomEvent('sectionSelected', {
                     detail: { section: data.section }
                 }));
