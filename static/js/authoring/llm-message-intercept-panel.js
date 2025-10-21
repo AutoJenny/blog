@@ -106,11 +106,44 @@ class LLMMessageInterceptPanel {
         console.log('[LLMMessageIntercept] Auto-loading current section data');
         
         try {
-            // Force load the data for section 824 (the section we're working with)
-            const sectionId = 824;
-            console.log('[LLMMessageIntercept] Force loading data for section:', sectionId);
+            // Get the currently selected section dynamically
+            let currentSectionId = null;
             
-            // Directly fetch and display the stored data
+            // Try to get from sections panel first
+            if (window.sectionsPanel && window.sectionsPanel.sections && window.sectionsPanel.sections.length > 0) {
+                // Find the currently selected section
+                const selectedSection = window.sectionsPanel.sections.find(section => 
+                    section.classList && section.classList.contains('selected')
+                );
+                if (selectedSection) {
+                    currentSectionId = selectedSection.id;
+                } else {
+                    // If no section is explicitly selected, use the first one
+                    currentSectionId = window.sectionsPanel.sections[0].id;
+                }
+            }
+            
+            // Fallback: try to get from URL or other sources
+            if (!currentSectionId) {
+                const urlMatch = window.location.pathname.match(/\/sections\/(\d+)/);
+                if (urlMatch) {
+                    currentSectionId = parseInt(urlMatch[1]);
+                }
+            }
+            
+            if (currentSectionId) {
+                console.log('[LLMMessageIntercept] Auto-loading data for section:', currentSectionId);
+                await this.loadAndDisplaySectionData(currentSectionId);
+            } else {
+                console.log('[LLMMessageIntercept] No current section identified');
+            }
+        } catch (error) {
+            console.error('[LLMMessageIntercept] Error auto-loading current section data:', error);
+        }
+    }
+    
+    async loadAndDisplaySectionData(sectionId) {
+        try {
             const response = await fetch(`/authoring/api/posts/${window.postId}/sections/${sectionId}/intercepted-message`);
             
             if (response.ok) {
@@ -123,60 +156,26 @@ class LLMMessageInterceptPanel {
                     this.isReady = true;
                     this.updateMessage(exactLLMInput, `Raw HTTP Request (${data.created_at ? new Date(data.created_at).toLocaleString() : 'unknown time'})`, true);
                     
-                    console.log('[LLMMessageIntercept] Successfully loaded stored Welsh mythology data');
+                    console.log(`[LLMMessageIntercept] Successfully loaded stored data for section ${sectionId}`);
                 } else {
-                    console.log('[LLMMessageIntercept] No stored data found for section', sectionId);
+                    console.log(`[LLMMessageIntercept] No stored data found for section ${sectionId}`);
+                    this.updateMessage('No LLM messages stored yet. Generate a prompt to see the exact input sent to the LLM.', 'No data available', false);
                 }
             } else {
-                console.error('[LLMMessageIntercept] Failed to load data:', response.statusText);
+                console.error(`[LLMMessageIntercept] Failed to load data for section ${sectionId}:`, response.statusText);
+                this.updateMessage('Error loading stored data. Please try again.', 'Error', false);
             }
         } catch (error) {
-            console.error('[LLMMessageIntercept] Error auto-loading current section data:', error);
+            console.error(`[LLMMessageIntercept] Error loading section ${sectionId} data:`, error);
+            this.updateMessage('Error loading stored data. Please try again.', 'Error', false);
         }
     }
     
     async assembleMessageForSection(section) {
         console.log('[LLMMessageIntercept] Loading intercepted message for section:', section.id);
         
-        try {
-            // Use pre-loaded LLM data if available
-            if (this.sectionsLLMData && this.sectionsLLMData[section.id]) {
-                const exactLLMInput = this.sectionsLLMData[section.id];
-                this.currentMessage = exactLLMInput;
-                this.isReady = true;
-                this.updateMessage(exactLLMInput, `Raw HTTP Request (pre-loaded)`, true);
-                
-                console.log('[LLMMessageIntercept] Displayed pre-loaded raw HTTP request');
-                return;
-            }
-            
-            // Fallback: Load the actual intercepted message from the database
-            const response = await fetch(`/authoring/api/posts/${window.postId}/sections/${section.id}/intercepted-message`);
-            
-            if (!response.ok) {
-                throw new Error(`Failed to load intercepted message: ${response.statusText}`);
-            }
-            
-            const data = await response.json();
-            
-            if (data.success && data.raw_http_request) {
-                // Display the exact raw HTTP request that goes to the LLM
-                const exactLLMInput = data.raw_http_request;
-                this.currentMessage = exactLLMInput;
-                this.isReady = true;
-                this.updateMessage(exactLLMInput, `Raw HTTP Request (${data.created_at ? new Date(data.created_at).toLocaleString() : 'unknown time'})`, true);
-                
-                console.log('[LLMMessageIntercept] Loaded raw HTTP request');
-            } else {
-                // No intercepted message yet - show placeholder
-                this.updateMessage('', 'No LLM call made yet - raw HTTP request will appear here after generation', false);
-                console.log('[LLMMessageIntercept] No intercepted message found yet');
-            }
-            
-        } catch (error) {
-            console.error('[LLMMessageIntercept] Error loading intercepted message:', error);
-            this.updateMessage('', 'Error loading intercepted message', false);
-        }
+        // Use the centralized method to load and display section data
+        await this.loadAndDisplaySectionData(section.id);
     }
     
     assembleMessageForCurrentSection() {
