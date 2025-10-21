@@ -229,7 +229,14 @@ class ImagePromptsOutputPanel {
             // Use the prompt builder's generation method
             await window.promptBuilderPanel.generatePrompt();
             
-            // The prompt builder will handle the LLM call and trigger the intercept panel refresh
+            // Dispatch event to trigger intercept panel refresh
+            window.dispatchEvent(new CustomEvent('llmGenerationComplete', {
+                detail: {
+                    sectionId: this.currentSection.id,
+                    section: this.currentSection
+                }
+            }));
+            
             console.log('[ImagePromptsOutputPanel] Generation completed via prompt builder');
             
         } catch (error) {
