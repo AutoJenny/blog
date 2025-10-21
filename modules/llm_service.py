@@ -56,6 +56,14 @@ class LLMService:
             if intercept_context:
                 messages = self._retrieve_raw_messages(intercept_context) or messages
             
+            # STEP 3: Always store raw HTTP request for ALL LLM calls
+            # Create a default context if none provided
+            if not intercept_context:
+                intercept_context = {
+                    'post_id': 0,  # Default post ID for non-contextual calls
+                    'section_id': 0  # Default section ID for non-contextual calls
+                }
+            
             if provider == 'openai':
                 headers = {
                     'Authorization': f'Bearer {api_key}',
@@ -69,8 +77,7 @@ class LLMService:
                 }
                 
                 # Store the exact raw request that will be sent
-                if intercept_context:
-                    self._store_raw_http_request('POST', f"{self.providers[provider]['base_url']}/chat/completions", headers, data, intercept_context)
+                self._store_raw_http_request('POST', f"{self.providers[provider]['base_url']}/chat/completions", headers, data, intercept_context)
                 
                 response = requests.post(
                     f"{self.providers[provider]['base_url']}/chat/completions",
@@ -89,8 +96,7 @@ class LLMService:
                 }
                 
                 # Store the exact raw request that will be sent
-                if intercept_context:
-                    self._store_raw_http_request('POST', f"{self.providers[provider]['base_url']}/api/chat", {'Content-Type': 'application/json'}, data, intercept_context)
+                self._store_raw_http_request('POST', f"{self.providers[provider]['base_url']}/api/chat", {'Content-Type': 'application/json'}, data, intercept_context)
                 
                 response = requests.post(
                     f"{self.providers[provider]['base_url']}/api/chat",
