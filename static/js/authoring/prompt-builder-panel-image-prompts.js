@@ -25,30 +25,12 @@ class PromptBuilderPanel {
         this.setupEventListeners();
         this.setupAccordion();
         this.setupTransparencyControls();
-        this.loadFirstSection();
+        
+        // Don't load first section here - let the event-driven approach handle it
+        // The sections panel will emit a sectionSelected event when it initializes
         console.log('[PromptBuilderPanel] Initialized for post:', this.postId);
     }
     
-    async loadFirstSection() {
-        try {
-            console.log('[PromptBuilderPanel] Loading first section...');
-            const response = await fetch(`/authoring/api/posts/${this.postId}/sections`);
-            if (response.ok) {
-                const data = await response.json();
-                if (data.sections && data.sections.length > 0) {
-                    const firstSection = data.sections[0];
-                    console.log('[PromptBuilderPanel] Selecting first section:', firstSection.id);
-                    this.onSectionSelected(firstSection);
-                } else {
-                    console.log('[PromptBuilderPanel] No sections found');
-                }
-            } else {
-                console.error('[PromptBuilderPanel] Failed to load sections:', response.status);
-            }
-        } catch (error) {
-            console.error('[PromptBuilderPanel] Error loading first section:', error);
-        }
-    }
 
     async loadModelSelection() {
         try {
