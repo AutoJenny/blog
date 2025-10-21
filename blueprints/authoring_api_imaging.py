@@ -640,7 +640,7 @@ def api_generate_image_concepts(post_id, section_id):
             prompt_text = prompt_text.replace('[data:title]', section['section_heading'] or '')
             prompt_text = prompt_text.replace('[data:subtitle]', section['section_description'] or '')
             prompt_text = prompt_text.replace('[data:section_text]', section['polished'] or section['draft'] or '')
-            prompt_text = prompt_text.replace('[data:selected_concept]', compiled_prompt or '')
+            prompt_text = prompt_text.replace('[data:selected_concept]', '')
             topics_text = '\n'.join([f'- {topic}' for topic in topics])
             prompt_text = prompt_text.replace('[data:topics]', topics_text)
             
