@@ -242,7 +242,12 @@ class SectionsPanel {
                         
                         if (section && section.image_concepts) {
                             try {
-                                const conceptsData = JSON.parse(section.image_concepts);
+                                // image_concepts might already be parsed or might be a string
+                                let conceptsData = section.image_concepts;
+                                if (typeof conceptsData === 'string') {
+                                    conceptsData = JSON.parse(conceptsData);
+                                }
+                                
                                 if (conceptsData.concepts && conceptsData.concepts.length > 0) {
                                     const selectedConceptId = section.selected_image_concept || 'CONCEPT-1';
                                     const selectedConcept = conceptsData.concepts.find(c => c.concept_id === selectedConceptId);
