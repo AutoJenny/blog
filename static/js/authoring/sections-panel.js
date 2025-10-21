@@ -134,27 +134,18 @@ class SectionsPanel {
     }
     
     selectSection(sectionId) {
-        console.log('[DEBUG] SectionsPanel.selectSection called with sectionId:', sectionId);
         this.currentSectionId = sectionId;
         const section = this.sections.find(s => s.id === sectionId);
-        console.log('[DEBUG] Found section:', section);
         
         if (section) {
             this.updateSectionSelection();
             
             // Emit event with section data
-            console.log('[DEBUG] Calling onSectionSelect callback with data:', {
-                sectionId: sectionId,
-                section: section,
-                postId: this.postId
-            });
             this.callbacks.onSectionSelect({
                 sectionId: sectionId,
                 section: section,
                 postId: this.postId
             });
-        } else {
-            console.error('[DEBUG] Section not found for ID:', sectionId);
         }
     }
     

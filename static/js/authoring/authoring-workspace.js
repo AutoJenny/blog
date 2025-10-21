@@ -249,9 +249,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const sectionsPanel = new SectionsPanel({
         postId: window.postId,
         onSectionSelect: async (data) => {
-            console.log('[DEBUG] AuthoringWorkspace received onSectionSelect callback:', data);
-            console.log('[DEBUG] Current substage:', window.currentSubstage);
-            
             // Load section into appropriate output panel
             if (window.currentSubstage === 'image-concepts') {
                 if (window.imageConceptsOutputPanel) {

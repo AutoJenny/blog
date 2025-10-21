@@ -144,13 +144,8 @@ class PromptBuilderPanel {
 
         // Listen for section selection events
         window.addEventListener('sectionSelected', (event) => {
-            console.log('[DEBUG] PromptBuilderPanel received sectionSelected event:', event);
-            console.log('[DEBUG] Event detail:', event.detail);
-            console.log('[DEBUG] Section data:', event.detail?.section);
             if (event.detail && event.detail.section) {
                 this.onSectionSelected(event.detail.section);
-            } else {
-                console.error('[DEBUG] No section data in event detail:', event.detail);
             }
         });
 
