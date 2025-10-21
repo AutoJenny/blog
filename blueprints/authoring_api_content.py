@@ -283,10 +283,13 @@ def api_image_prompts_prompt():
                     return jsonify({'error': 'Image Prompts prompt not found'}), 404
                 
                 return jsonify({
-                    'name': prompt_data['name'],
-                    'prompt_text': prompt_data['prompt_text'],
-                    'system_prompt': prompt_data['system_prompt'],
-                    'updated_at': prompt_data['updated_at'].isoformat() if prompt_data['updated_at'] else None
+                    'success': True,
+                    'prompt': {
+                        'name': prompt_data['name'],
+                        'prompt_text': prompt_data['prompt_text'],
+                        'system_prompt': prompt_data['system_prompt'],
+                        'updated_at': prompt_data['updated_at'].isoformat() if prompt_data['updated_at'] else None
+                    }
                 })
                 
     except Exception as e:

@@ -32,11 +32,8 @@
     <div class="workspace-container">
         {% include 'shared/sections_panel.html' %}
         <div class="editor-panel">
-            <!-- Styles Panel (post-wide styles management) -->
-            {% include 'authoring/includes/styles_panel.html' %}
-            
-            <!-- Imaging Model Selection Panel -->
-            {% include 'imaging/includes/model_selection_panel.html' %}
+            <!-- Context Panel -->
+            {% include 'authoring/includes/context_panel.html' %}
             
             <!-- LLM Settings Panel -->
             {% include 'authoring/includes/llm_settings_panel.html' %}
@@ -44,11 +41,14 @@
             <!-- LLM Prompts Panel -->
             {% include 'authoring/includes/llm_prompts_panel.html' %}
             
+            <!-- Imaging Model Selection Panel -->
+            {% include 'imaging/includes/model_selection_panel.html' %}
+            
+            <!-- Styles Panel (post-wide styles management) -->
+            {% include 'authoring/includes/styles_panel.html' %}
+            
             <!-- Prompt Builder Panel -->
             {% include 'authoring/includes/prompt_builder_panel_image_prompts.html' %}
-            
-            <!-- Context Panel -->
-            {% include 'authoring/includes/context_panel.html' %}
             
             <!-- Batch Progress Panel -->
             {% include 'authoring/includes/batch_progress_panel.html' %}
