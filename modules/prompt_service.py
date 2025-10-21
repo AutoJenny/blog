@@ -122,13 +122,23 @@ class PromptService:
                             prompt_data = section_data['image_prompts']
                             # Handle both string and dict formats
                             if isinstance(prompt_data, str):
-                                canonical = parse_legacy_prompt(prompt_data)
-                                base = canonical.to_dict()
+                                # Try to parse as JSON first
+                                try:
+                                    parsed_data = json.loads(prompt_data)
+                                    if isinstance(parsed_data, dict):
+                                        # Extract image_prompt from JSON and put it in subject field
+                                        prompt_text = parsed_data.get('image_prompt', '') or parsed_data.get('base_concept', '')
+                                        base = {'subject': prompt_text}
+                                    else:
+                                        # Not a dict, treat as plain text
+                                        base = {'subject': prompt_data.strip()}
+                                except (json.JSONDecodeError, TypeError):
+                                    # Not valid JSON, treat as plain text
+                                    base = {'subject': prompt_data.strip()}
                             elif isinstance(prompt_data, dict):
                                 # Try best-effort extraction from common keys
                                 prompt_text = prompt_data.get('image_prompt', '') or prompt_data.get('base_concept', '')
-                                canonical = parse_legacy_prompt(prompt_text)
-                                base = canonical.to_dict()
+                                base = {'subject': prompt_text}
                             else:
                                 base = {}
                         else:
@@ -139,14 +149,23 @@ class PromptService:
                     prompt_data = section_row['image_prompts']
                     # Handle both string and dict formats
                     if isinstance(prompt_data, str):
-                        canonical = parse_legacy_prompt(prompt_data)
-                        # Enrich with style if available
-                        base = canonical.to_dict()
+                        # Try to parse as JSON first
+                        try:
+                            parsed_data = json.loads(prompt_data)
+                            if isinstance(parsed_data, dict):
+                                # Extract image_prompt from JSON and put it in subject field
+                                prompt_text = parsed_data.get('image_prompt', '') or parsed_data.get('base_concept', '')
+                                base = {'subject': prompt_text}
+                            else:
+                                # Not a dict, treat as plain text
+                                base = {'subject': prompt_data.strip()}
+                        except (json.JSONDecodeError, TypeError):
+                            # Not valid JSON, treat as plain text
+                            base = {'subject': prompt_data.strip()}
                     elif isinstance(prompt_data, dict):
                         # Try best-effort extraction from common keys
                         prompt_text = prompt_data.get('image_prompt', '') or prompt_data.get('base_concept', '')
-                        canonical = parse_legacy_prompt(prompt_text)
-                        base = canonical.to_dict()
+                        base = {'subject': prompt_text}
                     else:
                         base = {}
 
