@@ -18,6 +18,11 @@ class LLMMessageInterceptPanel {
         this.setupEventListeners();
         this.updateStatus('No message ready', false);
         this.loadAllSectionsLLMData(); // Load LLM data for all sections on init
+        
+        // Auto-load data for current section on page load
+        setTimeout(() => {
+            this.autoLoadCurrentSectionData();
+        }, 1000);
     }
     
     bindElements() {
@@ -94,6 +99,24 @@ class LLMMessageInterceptPanel {
             }
         } catch (error) {
             console.error(`[LLMMessageIntercept] Error loading LLM data for section ${sectionId}:`, error);
+        }
+    }
+    
+    async autoLoadCurrentSectionData() {
+        console.log('[LLMMessageIntercept] Auto-loading current section data');
+        
+        try {
+            // Get the first section from the sections panel (current section)
+            if (window.sectionsPanel && window.sectionsPanel.sections && window.sectionsPanel.sections.length > 0) {
+                const currentSection = window.sectionsPanel.sections[0];
+                console.log('[LLMMessageIntercept] Auto-loading data for section:', currentSection.id);
+                
+                await this.assembleMessageForSection(currentSection);
+            } else {
+                console.log('[LLMMessageIntercept] No sections available for auto-load');
+            }
+        } catch (error) {
+            console.error('[LLMMessageIntercept] Error auto-loading current section data:', error);
         }
     }
     
