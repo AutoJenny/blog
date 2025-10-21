@@ -392,21 +392,16 @@ class PromptBuilderPanel {
             if (response.ok) {
                 const data = await response.json();
                 if (data.success && data.raw_messages) {
-                    // Format the raw messages for display
-                    let completeMessage = '';
-                    data.raw_messages.forEach((message, index) => {
-                        const role = message.role || 'unknown';
-                        const content = message.content || '';
-                        completeMessage += `${role.toUpperCase()} MESSAGE:\n${content}\n\n`;
-                    });
+                    // Display the EXACT raw messages JSON that goes to the LLM
+                    const exactLLMInput = JSON.stringify(data.raw_messages, null, 2);
                     
-                    // Update the display with the exact raw messages
+                    // Update the display with the exact raw messages JSON
                     const llmInputDisplay = document.getElementById('llm-input-display');
                     if (llmInputDisplay) {
-                        llmInputDisplay.value = completeMessage.trim();
+                        llmInputDisplay.value = exactLLMInput;
                     }
                     
-                    console.log('[PromptBuilderPanel] Displayed stored raw messages:', completeMessage.substring(0, 200) + '...');
+                    console.log('[PromptBuilderPanel] Displayed exact LLM input JSON:', exactLLMInput.substring(0, 200) + '...');
                     return;
                 }
             }
