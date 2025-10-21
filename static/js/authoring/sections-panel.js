@@ -184,11 +184,6 @@ class SectionsPanel {
         // Emit batch start event
         this.callbacks.onBatchStart(selectedIds);
         
-        // Emit custom event for specialized panels
-        window.dispatchEvent(new CustomEvent('sections:batch-generate', {
-            detail: { ids: selectedIds }
-        }));
-        
         // Disable the button during generation
         const generateBtn = document.getElementById('batch-generate-btn');
         const originalText = generateBtn.textContent;
@@ -196,139 +191,12 @@ class SectionsPanel {
         generateBtn.textContent = 'Generating...';
         
         try {
-            // Generate content for each selected section
-            for (let i = 0; i < selectedIds.length; i++) {
-                const sectionId = selectedIds[i];
-                const section = this.sections.find(s => s.id === sectionId);
-                const sectionTitle = section ? section.title : `Section ${sectionId}`;
-                
-                // Emit progress event
-                this.callbacks.onBatchProgress({
-                    current: i + 1,
-                    total: selectedIds.length,
-                    sectionId: sectionId,
-                    sectionTitle: sectionTitle,
-                    status: 'generating'
-                });
-                
-                try {
-                    // Determine API endpoint based on current substage
-                    let apiEndpoint;
-                    switch (window.currentSubstage) {
-                        case 'drafting':
-                            apiEndpoint = `/authoring/api/posts/${this.postId}/sections/${sectionId}/generate`;
-                            break;
-                        case 'image-concepts':
-                            apiEndpoint = `/authoring/api/posts/${this.postId}/sections/${sectionId}/generate-image-concepts`;
-                            break;
-                        case 'image-prompts':
-                            apiEndpoint = `/authoring/api/generate-image-prompt-from-builder-v2`;
-                            break;
-                        case 'image-captions':
-                            apiEndpoint = `/authoring/api/posts/${this.postId}/sections/${sectionId}/generate-image-captions`;
-                            break;
-                        default:
-                            apiEndpoint = `/authoring/api/posts/${this.postId}/sections/${sectionId}/generate`;
-                    }
-                    
-                    console.log(`[Sections Panel] Batch generating for ${window.currentSubstage}, using endpoint: ${apiEndpoint}`);
-                    
-                    // Prepare request body based on substage
-                    let requestBody = {};
-                    if (window.currentSubstage === 'image-prompts') {
-                        // For image prompts, we need to get the compiled prompt from the section
-                        // Try to get the selected concept from the section data
-                        let compiledPrompt = `Generate image prompt for section ${sectionId}`;
-                        
-                        if (section && section.image_concepts) {
-                            try {
-                                // image_concepts might already be parsed or might be a string
-                                let conceptsData = section.image_concepts;
-                                if (typeof conceptsData === 'string') {
-                                    conceptsData = JSON.parse(conceptsData);
-                                }
-                                
-                                if (conceptsData.concepts && conceptsData.concepts.length > 0) {
-                                    const selectedConceptId = section.selected_image_concept || 'CONCEPT-1';
-                                    const selectedConcept = conceptsData.concepts.find(c => c.concept_id === selectedConceptId);
-                                    if (selectedConcept) {
-                                        compiledPrompt = selectedConcept.concept_description || compiledPrompt;
-                                    }
-                                }
-                            } catch (e) {
-                                console.warn(`Could not parse image concepts for section ${sectionId}:`, e);
-                            }
-                        }
-                        
-                        requestBody = {
-                            post_id: this.postId,
-                            section_id: sectionId,
-                            compiled_prompt: compiledPrompt,
-                            enable_compression: true,
-                            enable_expansion: false,
-                            llm_provider: 'Ollama',
-                            llm_model: 'llama3.2:latest'
-                        };
-                    }
-                    
-                    // Generate content for this section
-                    const response = await fetch(apiEndpoint, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(requestBody)
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        console.log(`Generated content for section ${sectionId}`);
-                        this.updateSectionStatus(sectionId, 'complete');
-                        this.updateSectionProgress(sectionId, 100);
-                        
-                        // Emit progress event
-                        this.callbacks.onBatchProgress({
-                            current: i + 1,
-                            total: selectedIds.length,
-                            sectionId: sectionId,
-                            sectionTitle: sectionTitle,
-                            status: 'success'
-                        });
-                    } else {
-                        console.error(`Failed to generate content for section ${sectionId}:`, data.error);
-                        this.updateSectionStatus(sectionId, 'error');
-                        
-                        // Emit progress event
-                        this.callbacks.onBatchProgress({
-                            current: i + 1,
-                            total: selectedIds.length,
-                            sectionId: sectionId,
-                            sectionTitle: sectionTitle,
-                            status: 'error',
-                            error: data.error
-                        });
-                    }
-                    
-                    // Add a small delay between requests to avoid overwhelming the server
-                    if (i < selectedIds.length - 1) {
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-                    }
-                    
-      } catch (error) {
-                    console.error(`Error generating content for section ${sectionId}:`, error);
-                    this.updateSectionStatus(sectionId, 'error');
-                    
-                    // Emit progress event
-                    this.callbacks.onBatchProgress({
-                        current: i + 1,
-                        total: selectedIds.length,
-                        sectionId: sectionId,
-                        sectionTitle: sectionTitle,
-                        status: 'error',
-                        error: error.message
-                    });
-                }
+            // For image-prompts substage, use the same logic as individual Generate button
+            if (window.currentSubstage === 'image-prompts') {
+                await this.batchGenerateImagePrompts(selectedIds);
+            } else {
+                // For other substages, use the original batch generation logic
+                await this.batchGenerateOther(selectedIds);
             }
             
             console.log(`Batch generation completed! Successfully generated content for ${selectedIds.length} sections.`);
@@ -345,6 +213,211 @@ class SectionsPanel {
             // Re-enable the button
             generateBtn.disabled = false;
             generateBtn.textContent = originalText;
+        }
+    }
+    
+    async batchGenerateImagePrompts(selectedIds) {
+        // Use the same logic as the individual Generate button for each section
+        for (let i = 0; i < selectedIds.length; i++) {
+            const sectionId = selectedIds[i];
+            const section = this.sections.find(s => s.id === sectionId);
+            const sectionTitle = section ? section.title : `Section ${sectionId}`;
+            
+            // Emit progress event
+            this.callbacks.onBatchProgress({
+                current: i + 1,
+                total: selectedIds.length,
+                sectionId: sectionId,
+                sectionTitle: sectionTitle,
+                status: 'generating'
+            });
+            
+            try {
+                // Get the compiled prompt from the section (same as individual Generate button)
+                let compiledPrompt = `Generate image prompt for section ${sectionId}`;
+                
+                if (section && section.image_concepts) {
+                    try {
+                        // image_concepts might already be parsed or might be a string
+                        let conceptsData = section.image_concepts;
+                        if (typeof conceptsData === 'string') {
+                            conceptsData = JSON.parse(conceptsData);
+                        }
+                        
+                        if (conceptsData.concepts && conceptsData.concepts.length > 0) {
+                            const selectedConceptId = section.selected_image_concept || 'CONCEPT-1';
+                            const selectedConcept = conceptsData.concepts.find(c => c.concept_id === selectedConceptId);
+                            if (selectedConcept) {
+                                compiledPrompt = selectedConcept.concept_description || compiledPrompt;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn(`Could not parse image concepts for section ${sectionId}:`, e);
+                    }
+                }
+                
+                // Use the same API call as individual Generate button
+                const response = await fetch('/authoring/api/generate-image-prompt-from-builder-v2', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        post_id: this.postId,
+                        section_id: sectionId,
+                        compiled_prompt: compiledPrompt,
+                        enable_compression: true,
+                        enable_expansion: false,
+                        llm_provider: 'Ollama',
+                        llm_model: 'llama3.2:latest'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log(`Generated image prompt for section ${sectionId}`);
+                    this.updateSectionStatus(sectionId, 'complete');
+                    this.updateSectionProgress(sectionId, 100);
+                    
+                    // Emit progress event
+                    this.callbacks.onBatchProgress({
+                        current: i + 1,
+                        total: selectedIds.length,
+                        sectionId: sectionId,
+                        sectionTitle: sectionTitle,
+                        status: 'success'
+                    });
+                } else {
+                    console.error(`Failed to generate image prompt for section ${sectionId}:`, data.error);
+                    this.updateSectionStatus(sectionId, 'error');
+                    
+                    // Emit progress event
+                    this.callbacks.onBatchProgress({
+                        current: i + 1,
+                        total: selectedIds.length,
+                        sectionId: sectionId,
+                        sectionTitle: sectionTitle,
+                        status: 'error',
+                        error: data.error
+                    });
+                }
+                
+                // Add a small delay between requests to avoid overwhelming the server
+                if (i < selectedIds.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+            } catch (error) {
+                console.error(`Error generating image prompt for section ${sectionId}:`, error);
+                this.updateSectionStatus(sectionId, 'error');
+                
+                // Emit progress event
+                this.callbacks.onBatchProgress({
+                    current: i + 1,
+                    total: selectedIds.length,
+                    sectionId: sectionId,
+                    sectionTitle: sectionTitle,
+                    status: 'error',
+                    error: error.message
+                });
+            }
+        }
+    }
+    
+    async batchGenerateOther(selectedIds) {
+        // Original batch generation logic for non-image-prompts substages
+        for (let i = 0; i < selectedIds.length; i++) {
+            const sectionId = selectedIds[i];
+            const section = this.sections.find(s => s.id === sectionId);
+            const sectionTitle = section ? section.title : `Section ${sectionId}`;
+            
+            // Emit progress event
+            this.callbacks.onBatchProgress({
+                current: i + 1,
+                total: selectedIds.length,
+                sectionId: sectionId,
+                sectionTitle: sectionTitle,
+                status: 'generating'
+            });
+            
+            try {
+                // Determine API endpoint based on current substage
+                let apiEndpoint;
+                switch (window.currentSubstage) {
+                    case 'drafting':
+                        apiEndpoint = `/authoring/api/posts/${this.postId}/sections/${sectionId}/generate`;
+                        break;
+                    case 'image-concepts':
+                        apiEndpoint = `/authoring/api/posts/${this.postId}/sections/${sectionId}/generate-image-concepts`;
+                        break;
+                    case 'image-captions':
+                        apiEndpoint = `/authoring/api/posts/${this.postId}/sections/${sectionId}/generate-image-captions`;
+                        break;
+                    default:
+                        apiEndpoint = `/authoring/api/posts/${this.postId}/sections/${sectionId}/generate`;
+                }
+                
+                console.log(`[Sections Panel] Batch generating for ${window.currentSubstage}, using endpoint: ${apiEndpoint}`);
+                
+                // Generate content for this section
+                const response = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({})
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log(`Generated content for section ${sectionId}`);
+                    this.updateSectionStatus(sectionId, 'complete');
+                    this.updateSectionProgress(sectionId, 100);
+                    
+                    // Emit progress event
+                    this.callbacks.onBatchProgress({
+                        current: i + 1,
+                        total: selectedIds.length,
+                        sectionId: sectionId,
+                        sectionTitle: sectionTitle,
+                        status: 'success'
+                    });
+                } else {
+                    console.error(`Failed to generate content for section ${sectionId}:`, data.error);
+                    this.updateSectionStatus(sectionId, 'error');
+                    
+                    // Emit progress event
+                    this.callbacks.onBatchProgress({
+                        current: i + 1,
+                        total: selectedIds.length,
+                        sectionId: sectionId,
+                        sectionTitle: sectionTitle,
+                        status: 'error',
+                        error: data.error
+                    });
+                }
+                
+                // Add a small delay between requests to avoid overwhelming the server
+                if (i < selectedIds.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+            } catch (error) {
+                console.error(`Error generating content for section ${sectionId}:`, error);
+                this.updateSectionStatus(sectionId, 'error');
+                
+                // Emit progress event
+                this.callbacks.onBatchProgress({
+                    current: i + 1,
+                    total: selectedIds.length,
+                    sectionId: sectionId,
+                    sectionTitle: sectionTitle,
+                    status: 'error',
+                    error: error.message
+                });
+            }
         }
     }
     
