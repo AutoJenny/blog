@@ -25,6 +25,7 @@ class PromptBuilderPanel {
         this.setupEventListeners();
         this.setupAccordion();
         this.setupTransparencyControls();
+        this.loadAllSectionsLLMData(); // Load LLM data for all sections on init
         
         // Don't load first section here - let the event-driven approach handle it
         // The sections panel will emit a sectionSelected event when it initializes
@@ -387,13 +388,9 @@ class PromptBuilderPanel {
         console.log('[PromptBuilderPanel] prepareLLMInputDisplay called');
         
         try {
-            // Get the stored raw messages from the database
-            const response = await fetch(`/authoring/api/posts/${this.postId}/sections/${config.sectionId}/intercepted-message`);
-            if (response.ok) {
-                const data = await response.json();
-            if (data.success && data.raw_http_request) {
-                // Display the EXACT raw HTTP request that goes to the LLM
-                const exactLLMInput = data.raw_http_request;
+            // Use pre-loaded LLM data if available
+            if (this.sectionsLLMData && this.sectionsLLMData[config.sectionId]) {
+                const exactLLMInput = this.sectionsLLMData[config.sectionId];
                 
                 // Update the display with the exact raw HTTP request
                 const llmInputDisplay = document.getElementById('llm-input-display');
@@ -401,9 +398,27 @@ class PromptBuilderPanel {
                     llmInputDisplay.value = exactLLMInput;
                 }
                 
-                console.log('[PromptBuilderPanel] Displayed exact raw HTTP request:', exactLLMInput.substring(0, 200) + '...');
+                console.log('[PromptBuilderPanel] Displayed pre-loaded raw HTTP request:', exactLLMInput.substring(0, 200) + '...');
                 return;
             }
+            
+            // Fallback: if no pre-loaded data, fetch it
+            const response = await fetch(`/authoring/api/posts/${this.postId}/sections/${config.sectionId}/intercepted-message`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.raw_http_request) {
+                    // Display the EXACT raw HTTP request that goes to the LLM
+                    const exactLLMInput = data.raw_http_request;
+                    
+                    // Update the display with the exact raw HTTP request
+                    const llmInputDisplay = document.getElementById('llm-input-display');
+                    if (llmInputDisplay) {
+                        llmInputDisplay.value = exactLLMInput;
+                    }
+                    
+                    console.log('[PromptBuilderPanel] Displayed exact raw HTTP request:', exactLLMInput.substring(0, 200) + '...');
+                    return;
+                }
             }
             
             // Fallback: if no stored messages, show placeholder
@@ -437,6 +452,48 @@ class PromptBuilderPanel {
             return styleLines.join('\n');
         } else {
             return 'No explicit style details found in user message';
+        }
+    }
+    
+    async loadAllSectionsLLMData() {
+        console.log('[PromptBuilderPanel] Loading LLM data for all sections');
+        
+        try {
+            // Get all sections from the sections panel
+            if (window.sectionsPanel && window.sectionsPanel.sections) {
+                const sections = window.sectionsPanel.sections;
+                console.log(`[PromptBuilderPanel] Found ${sections.length} sections to load LLM data for`);
+                
+                // Load LLM data for each section
+                for (const section of sections) {
+                    await this.loadSectionLLMData(section.id);
+                }
+            } else {
+                console.log('[PromptBuilderPanel] Sections panel not available yet, will retry');
+                // Retry after a short delay
+                setTimeout(() => this.loadAllSectionsLLMData(), 1000);
+            }
+        } catch (error) {
+            console.error('[PromptBuilderPanel] Error loading all sections LLM data:', error);
+        }
+    }
+    
+    async loadSectionLLMData(sectionId) {
+        try {
+            const response = await fetch(`/authoring/api/posts/${this.postId}/sections/${sectionId}/intercepted-message`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.raw_http_request) {
+                    // Store the LLM data for this section
+                    if (!this.sectionsLLMData) {
+                        this.sectionsLLMData = {};
+                    }
+                    this.sectionsLLMData[sectionId] = data.raw_http_request;
+                    console.log(`[PromptBuilderPanel] Loaded LLM data for section ${sectionId}`);
+                }
+            }
+        } catch (error) {
+            console.error(`[PromptBuilderPanel] Error loading LLM data for section ${sectionId}:`, error);
         }
     }
     

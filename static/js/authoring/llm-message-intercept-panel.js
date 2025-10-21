@@ -17,6 +17,7 @@ class LLMMessageInterceptPanel {
         this.bindElements();
         this.setupEventListeners();
         this.updateStatus('No message ready', false);
+        this.loadAllSectionsLLMData(); // Load LLM data for all sections on init
     }
     
     bindElements() {
@@ -54,11 +55,64 @@ class LLMMessageInterceptPanel {
         });
     }
     
+    async loadAllSectionsLLMData() {
+        console.log('[LLMMessageIntercept] Loading LLM data for all sections');
+        
+        try {
+            // Get all sections from the sections panel
+            if (window.sectionsPanel && window.sectionsPanel.sections) {
+                const sections = window.sectionsPanel.sections;
+                console.log(`[LLMMessageIntercept] Found ${sections.length} sections to load LLM data for`);
+                
+                // Load LLM data for each section
+                for (const section of sections) {
+                    await this.loadSectionLLMData(section.id);
+                }
+            } else {
+                console.log('[LLMMessageIntercept] Sections panel not available yet, will retry');
+                // Retry after a short delay
+                setTimeout(() => this.loadAllSectionsLLMData(), 1000);
+            }
+        } catch (error) {
+            console.error('[LLMMessageIntercept] Error loading all sections LLM data:', error);
+        }
+    }
+    
+    async loadSectionLLMData(sectionId) {
+        try {
+            const response = await fetch(`/authoring/api/posts/${window.postId}/sections/${sectionId}/intercepted-message`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.raw_http_request) {
+                    // Store the LLM data for this section
+                    if (!this.sectionsLLMData) {
+                        this.sectionsLLMData = {};
+                    }
+                    this.sectionsLLMData[sectionId] = data.raw_http_request;
+                    console.log(`[LLMMessageIntercept] Loaded LLM data for section ${sectionId}`);
+                }
+            }
+        } catch (error) {
+            console.error(`[LLMMessageIntercept] Error loading LLM data for section ${sectionId}:`, error);
+        }
+    }
+    
     async assembleMessageForSection(section) {
         console.log('[LLMMessageIntercept] Loading intercepted message for section:', section.id);
         
         try {
-            // Load the actual intercepted message from the database
+            // Use pre-loaded LLM data if available
+            if (this.sectionsLLMData && this.sectionsLLMData[section.id]) {
+                const exactLLMInput = this.sectionsLLMData[section.id];
+                this.currentMessage = exactLLMInput;
+                this.isReady = true;
+                this.updateMessage(exactLLMInput, `Raw HTTP Request (pre-loaded)`, true);
+                
+                console.log('[LLMMessageIntercept] Displayed pre-loaded raw HTTP request');
+                return;
+            }
+            
+            // Fallback: Load the actual intercepted message from the database
             const response = await fetch(`/authoring/api/posts/${window.postId}/sections/${section.id}/intercepted-message`);
             
             if (!response.ok) {
