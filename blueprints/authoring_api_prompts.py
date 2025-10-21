@@ -86,6 +86,7 @@ def handle_exact_request(data):
         
         if result and result.get('success'):
             response_content = result.get('response', '')
+            logger.info(f"[DEBUG] LLM response: {response_content[:200]}...")
             
             # Try to extract JSON from response
             try:
@@ -97,7 +98,8 @@ def handle_exact_request(data):
                     image_prompt = response_json.get('image_prompt', response_content)
                 else:
                     image_prompt = response_content
-            except:
+            except Exception as e:
+                logger.error(f"[DEBUG] JSON parsing error: {e}")
                 image_prompt = response_content
             
             return jsonify({
@@ -111,6 +113,7 @@ def handle_exact_request(data):
                 'final_length': len(image_prompt)
             })
         else:
+            logger.error(f"[DEBUG] LLM request failed: {result}")
             return jsonify({'error': 'LLM request failed'}), 500
             
     except Exception as e:
