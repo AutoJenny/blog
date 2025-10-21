@@ -85,6 +85,11 @@ class PromptBuilderPanel {
     }
 
     updateModelDisplay() {
+        if (!this.modelSelection) {
+            console.log('[PromptBuilderPanel] Model selection not yet loaded, skipping display update');
+            return;
+        }
+        
         const config = this.modelConfig[this.modelSelection] || this.modelConfig['sdxl-lora'];
         
         // Update model selection display

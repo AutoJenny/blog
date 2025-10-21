@@ -1062,3 +1062,55 @@ def api_generate_image_prompt_from_builder():
     except Exception as e:
         logger.error(f"Error generating image prompt: {e}")
         return jsonify({'error': str(e)}), 500
+
+
+@bp.route('/api/ui/preferences', methods=['GET', 'POST'])
+def api_ui_preferences():
+    """Get or save UI preferences for accordion states"""
+    try:
+        if request.method == 'GET':
+            # Get preferences from database
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT preference_key, preference_value FROM ui_user_preferences 
+                    WHERE user_id = 1 AND category = 'image_prompts'
+                """)
+                rows = cursor.fetchall()
+                
+                preferences = {}
+                for row in rows:
+                    try:
+                        preferences[row['preference_key']] = json.loads(row['preference_value'])
+                    except (json.JSONDecodeError, TypeError):
+                        preferences[row['preference_key']] = row['preference_value']
+                
+                return jsonify({
+                    'success': True,
+                    'preferences': preferences
+                })
+        
+        elif request.method == 'POST':
+            data = request.get_json()
+            preferences = data.get('preferences', {})
+            
+            # Save preferences to database
+            with db_manager.get_cursor() as cursor:
+                for key, value in preferences.items():
+                    cursor.execute("""
+                        INSERT INTO ui_user_preferences (user_id, preference_key, preference_value, preference_type, category)
+                        VALUES (1, %s, %s, 'json', 'image_prompts')
+                        ON CONFLICT (user_id, preference_key) 
+                        DO UPDATE SET preference_value = %s, updated_at = CURRENT_TIMESTAMP
+                    """, (key, json.dumps(value), json.dumps(value)))
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Preferences saved successfully'
+                })
+                
+    except Exception as e:
+        logger.error(f"Error handling UI preferences: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
