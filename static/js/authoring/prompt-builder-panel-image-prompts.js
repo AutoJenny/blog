@@ -403,63 +403,107 @@ class PromptBuilderPanel {
     async updateLLMInputDisplay(compiledPrompt, config) {
         console.log('[PromptBuilderPanel] updateLLMInputDisplay called with:', { compiledPrompt: compiledPrompt?.substring(0, 50), config: config?.style });
         
+        // Clear the display first
+        this.clearLLMInputDisplay();
+        
+        // Show loading state
+        const systemPromptDisplay = document.getElementById('system-prompt-display');
+        const userPromptDisplay = document.getElementById('user-prompt-display');
+        const styleDetailsDisplay = document.getElementById('style-details-display');
+        
+        if (systemPromptDisplay) {
+            systemPromptDisplay.value = 'Loading actual LLM messages...';
+            systemPromptDisplay.style.border = '2px solid orange';
+            systemPromptDisplay.style.backgroundColor = '#FFE4B5';
+        }
+        
+        if (userPromptDisplay) {
+            userPromptDisplay.value = 'Loading actual LLM messages...';
+            userPromptDisplay.style.border = '2px solid orange';
+            userPromptDisplay.style.backgroundColor = '#FFE4B5';
+        }
+        
+        if (styleDetailsDisplay) {
+            styleDetailsDisplay.value = 'Loading actual style details...';
+            styleDetailsDisplay.style.border = '2px solid orange';
+            styleDetailsDisplay.style.backgroundColor = '#FFE4B5';
+        }
+        
+        // Generate a prompt to get the actual LLM messages
         try {
-            // Fetch the actual system prompt and user prompt from the database
-            const response = await fetch(`/authoring/api/posts/${this.postId}/sections/${this.currentSection.id}/llm-prompt-details`);
-            console.log('[PromptBuilderPanel] API response status:', response.status);
+            const response = await fetch('/authoring/api/generate-image-prompt-from-builder-v2', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    post_id: this.postId,
+                    section_id: this.currentSection.id,
+                    compiled_prompt: compiledPrompt,
+                    enable_compression: true,
+                    enable_expansion: false,
+                    llm_provider: 'Ollama',
+                    llm_model: 'llama3.2:latest'
+                })
+            });
             
             if (response.ok) {
                 const data = await response.json();
-                console.log('[PromptBuilderPanel] API data received:', { 
-                    success: data.success, 
-                    systemLength: data.system_prompt?.length,
-                    userLength: data.user_prompt?.length 
-                });
+                console.log('[PromptBuilderPanel] Got actual LLM messages:', data.actual_llm_messages);
                 
-                        // Update system prompt display
-                        const systemPromptDisplay = document.getElementById('system-prompt-display');
-                        console.log('[PromptBuilderPanel] System prompt element found:', !!systemPromptDisplay);
-                        if (systemPromptDisplay) {
-                            systemPromptDisplay.value = data.system_prompt || 'No system prompt found';
-                            console.log('[PromptBuilderPanel] System prompt updated');
-                            // Add visual indicator
-                            systemPromptDisplay.style.border = '2px solid green';
-                            systemPromptDisplay.style.backgroundColor = '#90EE90';
-                            // Add visible text indicator
-                            systemPromptDisplay.placeholder = '✅ System prompt loaded successfully!';
-                        }
-                        
-                        // Update user prompt display
-                        const userPromptDisplay = document.getElementById('user-prompt-display');
-                        console.log('[PromptBuilderPanel] User prompt element found:', !!userPromptDisplay);
-                        if (userPromptDisplay) {
-                            userPromptDisplay.value = data.user_prompt || compiledPrompt;
-                            console.log('[PromptBuilderPanel] User prompt updated');
-                            // Add visual indicator
-                            userPromptDisplay.style.border = '2px solid blue';
-                            userPromptDisplay.style.backgroundColor = '#ADD8E6';
-                            userPromptDisplay.placeholder = '✅ User prompt loaded successfully!';
-                        }
-                        
-                        // Update style details display
-                        const styleDetailsDisplay = document.getElementById('style-details-display');
-                        console.log('[PromptBuilderPanel] Style details element found:', !!styleDetailsDisplay);
-                        if (styleDetailsDisplay) {
-                            styleDetailsDisplay.value = data.style_details || config.style;
-                            console.log('[PromptBuilderPanel] Style details updated');
-                            // Add visual indicator
-                            styleDetailsDisplay.style.border = '2px solid orange';
-                            styleDetailsDisplay.style.backgroundColor = '#FFE4B5';
-                            styleDetailsDisplay.placeholder = '✅ Style details loaded successfully!';
-                        }
+                if (data.actual_llm_messages && Array.isArray(data.actual_llm_messages)) {
+                    // Extract system and user messages
+                    const systemMessage = data.actual_llm_messages.find(m => m.role === 'system');
+                    const userMessage = data.actual_llm_messages.find(m => m.role === 'user');
+                    
+                    if (systemPromptDisplay) {
+                        systemPromptDisplay.value = systemMessage ? systemMessage.content : 'No system message found';
+                        systemPromptDisplay.style.border = '2px solid green';
+                        systemPromptDisplay.style.backgroundColor = '#90EE90';
+                        systemPromptDisplay.placeholder = '✅ Actual system message from LLM call';
+                    }
+                    
+                    if (userPromptDisplay) {
+                        userPromptDisplay.value = userMessage ? userMessage.content : 'No user message found';
+                        userPromptDisplay.style.border = '2px solid green';
+                        userPromptDisplay.style.backgroundColor = '#90EE90';
+                        userPromptDisplay.placeholder = '✅ Actual user message from LLM call';
+                    }
+                    
+                    if (styleDetailsDisplay) {
+                        // Extract style details from the user message
+                        const styleDetails = this.extractStyleDetails(userMessage ? userMessage.content : '');
+                        styleDetailsDisplay.value = styleDetails;
+                        styleDetailsDisplay.style.border = '2px solid green';
+                        styleDetailsDisplay.style.backgroundColor = '#90EE90';
+                        styleDetailsDisplay.placeholder = '✅ Actual style details from LLM call';
+                    }
+                } else {
+                    this.updateLLMInputDisplayFallback(compiledPrompt, config);
+                }
             } else {
-                console.log('[PromptBuilderPanel] API response not OK, using fallback');
-                // Fallback: show what we have
+                console.error('[PromptBuilderPanel] Failed to get LLM messages:', response.status);
                 this.updateLLMInputDisplayFallback(compiledPrompt, config);
             }
         } catch (error) {
-            console.error('[PromptBuilderPanel] Error fetching LLM prompt details:', error);
+            console.error('[PromptBuilderPanel] Error getting LLM messages:', error);
             this.updateLLMInputDisplayFallback(compiledPrompt, config);
+        }
+    }
+    
+    extractStyleDetails(userMessage) {
+        // Extract style-related content from the user message
+        // This is a simple extraction - could be enhanced
+        const styleKeywords = ['watercolor', 'ink', 'brushstrokes', 'pastel', 'margins', 'palette'];
+        const lines = userMessage.split('\n');
+        const styleLines = lines.filter(line => 
+            styleKeywords.some(keyword => line.toLowerCase().includes(keyword))
+        );
+        
+        if (styleLines.length > 0) {
+            return styleLines.join('\n');
+        } else {
+            return 'No explicit style details found in user message';
         }
     }
     

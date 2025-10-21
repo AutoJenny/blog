@@ -256,7 +256,8 @@ def api_generate_image_prompt_from_builder():
                 'final_length': len(generated_prompt),
                 'character_limit': imaging_limit,
                 'compression_used': compression_used,
-                'expansion_used': expansion_used
+                'expansion_used': expansion_used,
+                'actual_llm_messages': messages  # NEW: Return the actual messages sent to LLM
             })
             
     except Exception as e:
