@@ -108,37 +108,34 @@ def create_app(config_name=None):
     # Register new authoring imaging blueprint
     from blueprints.authoring_api_imaging import bp as authoring_imaging_bp
     app.register_blueprint(authoring_imaging_bp, url_prefix='/authoring')
-    
+
     # Register new authoring content blueprint
     from blueprints.authoring_api_content import bp as authoring_content_bp
     app.register_blueprint(authoring_content_bp, url_prefix='/authoring')
-    
+
+    # Register new micro-modules for authoring
+    from blueprints.authoring_api_styles import bp as authoring_styles_bp
+    app.register_blueprint(authoring_styles_bp, url_prefix='/authoring')
+
+    from blueprints.authoring_api_concepts import bp as authoring_concepts_bp
+    app.register_blueprint(authoring_concepts_bp, url_prefix='/authoring')
+
+    from blueprints.authoring_api_prompts import bp as authoring_prompts_bp
+    app.register_blueprint(authoring_prompts_bp, url_prefix='/authoring')
+
     from blueprints.header import bp as header_bp
     app.register_blueprint(header_bp)
-    
+
     from blueprints.ui_state import ui_state_bp
     app.register_blueprint(ui_state_bp)
-    
+
     from blueprints.clan_api import bp as clan_api_bp
     app.register_blueprint(clan_api_bp, url_prefix='/clan-api')
-    
+
     # Additional blueprints will be added in Phase 2
     from blueprints.database import bp as database_bp
     app.register_blueprint(database_bp)
-    # from blueprints.settings import bp as settings_bp
-    
-    # app.register_blueprint(core_bp, url_prefix='/core')
-    # app.register_blueprint(launchpad_bp, url_prefix='/launchpad')
-    # app.register_blueprint(llm_actions_bp, url_prefix='/llm_actions')
-    # app.register_blueprint(post_sections_bp, url_prefix='/post_sections')
-    # app.register_blueprint(post_info_bp, url_prefix='/post_info')
-    # app.register_blueprint(images_bp, url_prefix='/images')
-    # app.register_blueprint(clan_api_bp, url_prefix='/clan_api')
-    # app.register_blueprint(database_bp, url_prefix='/db')
-    # app.register_blueprint(settings_bp, url_prefix='/settings')
-    
-    # Homepage route is now handled by the core blueprint
-    
+
     # Health check endpoint
     @app.route('/health')
     def health():
@@ -147,7 +144,7 @@ def create_app(config_name=None):
             "service": "unified_app",
             "timestamp": datetime.now().isoformat()
         })
-        
+            
     # Database test endpoint
     @app.route('/db/test')
     def db_test():
@@ -160,7 +157,7 @@ def create_app(config_name=None):
             return jsonify({
                 "status": "success",
                 "message": "Database connection successful",
-                "test_result": result
+                "test_result": result['test']
             })
         except Exception as e:
             return jsonify({
