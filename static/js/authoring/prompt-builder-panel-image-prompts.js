@@ -416,29 +416,42 @@ class PromptBuilderPanel {
                     userLength: data.user_prompt?.length 
                 });
                 
-                // Update system prompt display
-                const systemPromptDisplay = document.getElementById('system-prompt-display');
-                console.log('[PromptBuilderPanel] System prompt element found:', !!systemPromptDisplay);
-                if (systemPromptDisplay) {
-                    systemPromptDisplay.value = data.system_prompt || 'No system prompt found';
-                    console.log('[PromptBuilderPanel] System prompt updated');
-                }
-                
-                // Update user prompt display
-                const userPromptDisplay = document.getElementById('user-prompt-display');
-                console.log('[PromptBuilderPanel] User prompt element found:', !!userPromptDisplay);
-                if (userPromptDisplay) {
-                    userPromptDisplay.value = data.user_prompt || compiledPrompt;
-                    console.log('[PromptBuilderPanel] User prompt updated');
-                }
-                
-                // Update style details display
-                const styleDetailsDisplay = document.getElementById('style-details-display');
-                console.log('[PromptBuilderPanel] Style details element found:', !!styleDetailsDisplay);
-                if (styleDetailsDisplay) {
-                    styleDetailsDisplay.value = data.style_details || config.style;
-                    console.log('[PromptBuilderPanel] Style details updated');
-                }
+                        // Update system prompt display
+                        const systemPromptDisplay = document.getElementById('system-prompt-display');
+                        console.log('[PromptBuilderPanel] System prompt element found:', !!systemPromptDisplay);
+                        if (systemPromptDisplay) {
+                            systemPromptDisplay.value = data.system_prompt || 'No system prompt found';
+                            console.log('[PromptBuilderPanel] System prompt updated');
+                            // Add visual indicator
+                            systemPromptDisplay.style.border = '2px solid green';
+                            systemPromptDisplay.style.backgroundColor = '#90EE90';
+                            // Add visible text indicator
+                            systemPromptDisplay.placeholder = '✅ System prompt loaded successfully!';
+                        }
+                        
+                        // Update user prompt display
+                        const userPromptDisplay = document.getElementById('user-prompt-display');
+                        console.log('[PromptBuilderPanel] User prompt element found:', !!userPromptDisplay);
+                        if (userPromptDisplay) {
+                            userPromptDisplay.value = data.user_prompt || compiledPrompt;
+                            console.log('[PromptBuilderPanel] User prompt updated');
+                            // Add visual indicator
+                            userPromptDisplay.style.border = '2px solid blue';
+                            userPromptDisplay.style.backgroundColor = '#ADD8E6';
+                            userPromptDisplay.placeholder = '✅ User prompt loaded successfully!';
+                        }
+                        
+                        // Update style details display
+                        const styleDetailsDisplay = document.getElementById('style-details-display');
+                        console.log('[PromptBuilderPanel] Style details element found:', !!styleDetailsDisplay);
+                        if (styleDetailsDisplay) {
+                            styleDetailsDisplay.value = data.style_details || config.style;
+                            console.log('[PromptBuilderPanel] Style details updated');
+                            // Add visual indicator
+                            styleDetailsDisplay.style.border = '2px solid orange';
+                            styleDetailsDisplay.style.backgroundColor = '#FFE4B5';
+                            styleDetailsDisplay.placeholder = '✅ Style details loaded successfully!';
+                        }
             } else {
                 console.log('[PromptBuilderPanel] API response not OK, using fallback');
                 // Fallback: show what we have
