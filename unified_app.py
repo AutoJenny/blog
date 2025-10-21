@@ -105,6 +105,10 @@ def create_app(config_name=None):
     from blueprints.authoring import bp as authoring_bp
     app.register_blueprint(authoring_bp)
     
+    # Register new authoring imaging blueprint
+    from blueprints.authoring_api_imaging import bp as authoring_imaging_bp
+    app.register_blueprint(authoring_imaging_bp, url_prefix='/authoring')
+    
     from blueprints.header import bp as header_bp
     app.register_blueprint(header_bp)
     
