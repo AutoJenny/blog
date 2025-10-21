@@ -362,11 +362,77 @@ class PromptBuilderPanel {
             const config = this.modelConfig[this.modelSelection] || this.modelConfig['sdxl-lora'];
             const compiledPrompt = this.buildCompiledPrompt(this.selectedConceptContent, config);
             textarea.value = compiledPrompt;
+            
+            // NEW: Update LLM input display
+            this.updateLLMInputDisplay(compiledPrompt, config);
         } else {
             textarea.value = '';
+            this.clearLLMInputDisplay();
         }
         
         this.updateCharacterCount();
+    }
+    
+    async updateLLMInputDisplay(compiledPrompt, config) {
+        try {
+            // Fetch the actual system prompt and user prompt from the database
+            const response = await fetch(`/authoring/api/posts/${this.postId}/sections/${this.currentSection.id}/llm-prompt-details`);
+            if (response.ok) {
+                const data = await response.json();
+                
+                // Update system prompt display
+                const systemPromptDisplay = document.getElementById('system-prompt-display');
+                if (systemPromptDisplay) {
+                    systemPromptDisplay.value = data.system_prompt || 'No system prompt found';
+                }
+                
+                // Update user prompt display
+                const userPromptDisplay = document.getElementById('user-prompt-display');
+                if (userPromptDisplay) {
+                    userPromptDisplay.value = data.user_prompt || compiledPrompt;
+                }
+                
+                // Update style details display
+                const styleDetailsDisplay = document.getElementById('style-details-display');
+                if (styleDetailsDisplay) {
+                    styleDetailsDisplay.value = data.style_details || config.style;
+                }
+            } else {
+                // Fallback: show what we have
+                this.updateLLMInputDisplayFallback(compiledPrompt, config);
+            }
+        } catch (error) {
+            console.error('[PromptBuilderPanel] Error fetching LLM prompt details:', error);
+            this.updateLLMInputDisplayFallback(compiledPrompt, config);
+        }
+    }
+    
+    updateLLMInputDisplayFallback(compiledPrompt, config) {
+        // Fallback when we can't fetch from database
+        const systemPromptDisplay = document.getElementById('system-prompt-display');
+        if (systemPromptDisplay) {
+            systemPromptDisplay.value = 'System prompt not available - check database connection';
+        }
+        
+        const userPromptDisplay = document.getElementById('user-prompt-display');
+        if (userPromptDisplay) {
+            userPromptDisplay.value = compiledPrompt;
+        }
+        
+        const styleDetailsDisplay = document.getElementById('style-details-display');
+        if (styleDetailsDisplay) {
+            styleDetailsDisplay.value = config.style;
+        }
+    }
+    
+    clearLLMInputDisplay() {
+        const systemPromptDisplay = document.getElementById('system-prompt-display');
+        const userPromptDisplay = document.getElementById('user-prompt-display');
+        const styleDetailsDisplay = document.getElementById('style-details-display');
+        
+        if (systemPromptDisplay) systemPromptDisplay.value = '';
+        if (userPromptDisplay) userPromptDisplay.value = '';
+        if (styleDetailsDisplay) styleDetailsDisplay.value = '';
     }
 
     buildCompiledPrompt(conceptContent, config) {
@@ -476,7 +542,7 @@ class PromptBuilderPanel {
             const enableCompression = document.getElementById('enable-compression')?.checked ?? true;
             const enableExpansion = document.getElementById('enable-expansion')?.checked ?? false;
 
-            const response = await fetch('/authoring/api/generate-image-prompt-from-builder', {
+            const response = await fetch('/authoring/api/generate-image-prompt-from-builder-v2', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

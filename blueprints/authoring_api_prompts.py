@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 bp = Blueprint('authoring_prompts', __name__, url_prefix='/authoring')
 
 
-@bp.route('/api/generate-image-prompt-from-builder', methods=['POST'])
+@bp.route('/api/generate-image-prompt-from-builder-v2', methods=['POST'])
 def api_generate_image_prompt_from_builder():
     """Generate image prompt using the compiled prompt from Prompt Builder"""
     try:
@@ -47,7 +47,7 @@ def api_generate_image_prompt_from_builder():
         # Get post data for context
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
-                SELECT idea_seed, expanded_idea, title FROM post WHERE id = %s
+                SELECT title, subtitle, summary FROM post WHERE id = %s
             """, (post_id,))
             post_data = cursor.fetchone()
             
@@ -112,13 +112,15 @@ def api_generate_image_prompt_from_builder():
             system_prompt = prompt_data['system_prompt']
             
             logger.info(f"[DEBUG] System prompt length: {len(system_prompt) if system_prompt else 0}")
+            logger.info(f"[DEBUG] System prompt preview: {system_prompt[:100] if system_prompt else 'None'}")
+            logger.info(f"[DEBUG] *** SYSTEM PROMPT DEBUG ***")
             
             # Replace placeholders with actual data
-            prompt_text = prompt_text.replace('[data:idea_seed]', post_data['idea_seed'] or '')
-            prompt_text = prompt_text.replace('[data:expanded_idea]', post_data['expanded_idea'] or '')
-            prompt_text = prompt_text.replace('[data:title]', section['section_heading'] or '')
-            prompt_text = prompt_text.replace('[data:subtitle]', section['section_description'] or '')
-            prompt_text = prompt_text.replace('[data:section_text]', section['polished'] or section['draft'] or '')
+            prompt_text = prompt_text.replace('[data:idea_seed]', post_data['title'] or '')
+            prompt_text = prompt_text.replace('[data:expanded_idea]', post_data['subtitle'] or '')
+            prompt_text = prompt_text.replace('[data:title]', section['title'] or '')
+            prompt_text = prompt_text.replace('[data:subtitle]', section['subtitle'] or '')
+            prompt_text = prompt_text.replace('[data:section_text]', section.get('polished') or section.get('draft') or '')
             prompt_text = prompt_text.replace('[data:selected_concept]', compiled_prompt or '')
             topics_text = '\n'.join([f'- {topic}' for topic in topics])
             prompt_text = prompt_text.replace('[data:topics]', topics_text)
@@ -127,10 +129,14 @@ def api_generate_image_prompt_from_builder():
             messages = []
             if system_prompt:
                 messages.append({'role': 'system', 'content': system_prompt})
+                logger.info(f"[DEBUG] Added system message: {len(system_prompt)} chars")
+            else:
+                logger.info(f"[DEBUG] No system prompt to add")
             messages.append({'role': 'user', 'content': prompt_text})
             
             logger.info(f"[DEBUG] Messages prepared: {len(messages)} messages")
             logger.info(f"[DEBUG] System message included: {any(m['role'] == 'system' for m in messages)}")
+            logger.info(f"[DEBUG] First message role: {messages[0]['role'] if messages else 'None'}")
             
             # Execute LLM request with retry logic for valid JSON
             max_retries = 3
@@ -255,6 +261,132 @@ def api_generate_image_prompt_from_builder():
             
     except Exception as e:
         logger.error(f"Error generating image prompt: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@bp.route('/api/posts/<int:post_id>/sections/<section_id>/llm-prompt-details', methods=['GET'])
+def api_get_llm_prompt_details(post_id, section_id):
+    """Get the actual system prompt and user prompt that will be sent to the LLM"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get post data for context
+            cursor.execute("""
+                SELECT title, subtitle, summary FROM post WHERE id = %s
+            """, (post_id,))
+            post_data = cursor.fetchone()
+            
+            if not post_data:
+                return jsonify({'error': 'Post not found'}), 404
+            
+            # Get section data
+            cursor.execute("""
+                SELECT sections FROM post_development WHERE post_id = %s
+            """, (post_id,))
+            dev_row = cursor.fetchone()
+            
+            if not dev_row or not dev_row['sections']:
+                return jsonify({'error': 'Section data not found'}), 404
+            
+            # Parse sections data
+            sections_data = dev_row['sections']
+            if isinstance(sections_data, str):
+                sections_data = json.loads(sections_data)
+            
+            if isinstance(sections_data, dict) and 'sections' in sections_data:
+                sections_list = sections_data['sections']
+                section = None
+                for s in sections_list:
+                    if str(s.get('id')) == str(section_id):
+                        section = s
+                        break
+                
+                if not section:
+                    return jsonify({'error': 'Section not found'}), 404
+            else:
+                return jsonify({'error': 'Invalid sections data'}), 500
+            
+            # Get topics from topic_allocation
+            topics = []
+            try:
+                if 'topic_allocation' in sections_data:
+                    allocation = sections_data['topic_allocation']
+                    if isinstance(allocation, dict) and 'sections' in allocation:
+                        for s in allocation['sections']:
+                            if str(s.get('id')) == str(section_id):
+                                topics = allocation.get('topics', [])
+                                break
+            except Exception as e:
+                logger.error(f"Error parsing topic_allocation: {e}")
+            
+            # Get the image prompts prompt template
+            cursor.execute("""
+                SELECT prompt_text, system_prompt
+                FROM llm_prompt 
+                WHERE name = 'Image Prompts Generation'
+                ORDER BY updated_at DESC 
+                LIMIT 1
+            """)
+            
+            prompt_data = cursor.fetchone()
+            if not prompt_data:
+                return jsonify({'error': 'Image Prompts prompt not found'}), 404
+            
+            # Build the user prompt with actual data
+            prompt_text = prompt_data['prompt_text']
+            system_prompt = prompt_data['system_prompt']
+            
+            # Replace placeholders with actual data
+            prompt_text = prompt_text.replace('[data:idea_seed]', post_data['title'] or '')
+            prompt_text = prompt_text.replace('[data:expanded_idea]', post_data['subtitle'] or '')
+            prompt_text = prompt_text.replace('[data:title]', section['title'] or '')
+            prompt_text = prompt_text.replace('[data:subtitle]', section['subtitle'] or '')
+            prompt_text = prompt_text.replace('[data:section_text]', section.get('polished') or section.get('draft') or '')
+            
+            # Get the selected concept for [data:selected_concept]
+            selected_concept = "No concept selected"
+            if section.get('image_concepts'):
+                try:
+                    concepts_data = json.loads(section['image_concepts'])
+                    if isinstance(concepts_data, dict) and 'concepts' in concepts_data:
+                        concepts = concepts_data['concepts']
+                        selected_concept_id = section.get('selected_image_concept', 'CONCEPT-1')
+                        for concept in concepts:
+                            if concept.get('concept_id') == selected_concept_id:
+                                selected_concept = concept.get('concept_description', 'No description')
+                                break
+                except (json.JSONDecodeError, TypeError):
+                    pass
+            
+            prompt_text = prompt_text.replace('[data:selected_concept]', selected_concept)
+            topics_text = '\n'.join([f'- {topic}' for topic in topics])
+            prompt_text = prompt_text.replace('[data:topics]', topics_text)
+            
+            # Get active style details
+            style_details = "No style information available"
+            cursor.execute("SELECT extra_settings FROM post WHERE id = %s", (post_id,))
+            post_row = cursor.fetchone()
+            if post_row and post_row.get('extra_settings'):
+                imaging = post_row['extra_settings'].get('imaging', {})
+                styles = imaging.get('styles', [])
+                active_index = imaging.get('activeIndex', 0)
+                
+                if styles and 0 <= active_index < len(styles):
+                    active_style = styles[active_index]
+                    style_json = active_style.get('style_json', {})
+                    if style_json:
+                        style_details = json.dumps(style_json, indent=2)
+            
+            return jsonify({
+                'success': True,
+                'system_prompt': system_prompt,
+                'user_prompt': prompt_text,
+                'style_details': style_details,
+                'selected_concept': selected_concept,
+                'topics': topics
+            })
+            
+    except Exception as e:
+        logger.error(f"Error getting LLM prompt details: {e}")
         return jsonify({'error': str(e)}), 500
 
 

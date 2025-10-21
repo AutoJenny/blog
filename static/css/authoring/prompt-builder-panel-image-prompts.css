@@ -314,6 +314,48 @@
     }
 }
 
+/* NEW: LLM Input Display Styling */
+.llm-input-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.system-message-section,
+.user-message-section {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 0.75rem;
+}
+
+.system-message-section h6,
+.user-message-section h6 {
+    margin: 0 0 0.5rem 0;
+    color: #f1f5f9;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.system-message-section h6 {
+    color: #fbbf24; /* Amber for system prompt */
+}
+
+.user-message-section h6 {
+    color: #60a5fa; /* Blue for user prompt */
+}
+
+#system-prompt-display,
+#user-prompt-display,
+#style-details-display {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #e2e8f0;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
 /* NEW: Transparency Controls Styling */
 .transparency-controls {
     margin: 1rem 0;
