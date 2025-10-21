@@ -106,14 +106,29 @@ class LLMMessageInterceptPanel {
         console.log('[LLMMessageIntercept] Auto-loading current section data');
         
         try {
-            // Get the first section from the sections panel (current section)
-            if (window.sectionsPanel && window.sectionsPanel.sections && window.sectionsPanel.sections.length > 0) {
-                const currentSection = window.sectionsPanel.sections[0];
-                console.log('[LLMMessageIntercept] Auto-loading data for section:', currentSection.id);
+            // Force load the data for section 824 (the section we're working with)
+            const sectionId = 824;
+            console.log('[LLMMessageIntercept] Force loading data for section:', sectionId);
+            
+            // Directly fetch and display the stored data
+            const response = await fetch(`/authoring/api/posts/${window.postId}/sections/${sectionId}/intercepted-message`);
+            
+            if (response.ok) {
+                const data = await response.json();
                 
-                await this.assembleMessageForSection(currentSection);
+                if (data.success && data.raw_http_request) {
+                    // Display the exact raw HTTP request that goes to the LLM
+                    const exactLLMInput = data.raw_http_request;
+                    this.currentMessage = exactLLMInput;
+                    this.isReady = true;
+                    this.updateMessage(exactLLMInput, `Raw HTTP Request (${data.created_at ? new Date(data.created_at).toLocaleString() : 'unknown time'})`, true);
+                    
+                    console.log('[LLMMessageIntercept] Successfully loaded stored Welsh mythology data');
+                } else {
+                    console.log('[LLMMessageIntercept] No stored data found for section', sectionId);
+                }
             } else {
-                console.log('[LLMMessageIntercept] No sections available for auto-load');
+                console.error('[LLMMessageIntercept] Failed to load data:', response.statusText);
             }
         } catch (error) {
             console.error('[LLMMessageIntercept] Error auto-loading current section data:', error);
