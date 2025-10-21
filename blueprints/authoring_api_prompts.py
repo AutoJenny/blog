@@ -377,10 +377,10 @@ def api_generate_image_prompt_from_builder():
             if 'sdxl' in llm_model.lower():
                 imaging_limit = 400
             
-            # Apply compression if enabled and needed
+            # Apply compression if enabled and needed (only for SDXL models)
             compression_used = False
-            if enable_compression and len(generated_prompt) > imaging_limit:
-                # Simple compression - truncate to model's character limit
+            if enable_compression and 'sdxl' in llm_model.lower() and len(generated_prompt) > imaging_limit:
+                # Simple compression - truncate to model's character limit (SDXL only)
                 generated_prompt = generated_prompt[:imaging_limit].rsplit(' ', 1)[0] + '.'
                 compression_used = True
                 
