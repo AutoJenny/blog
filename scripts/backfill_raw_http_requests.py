@@ -10,15 +10,50 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config.database import db_manager
 import json
 
+def extract_messages_from_intercepted(intercepted_message):
+    """Extract messages array from intercepted_message format"""
+    try:
+        messages = []
+        lines = intercepted_message.split('\n')
+        
+        current_message = None
+        current_content = []
+        
+        for line in lines:
+            if line.startswith('[') and '] ROLE:' in line:
+                # Save previous message if exists
+                if current_message:
+                    current_message['content'] = '\n'.join(current_content).strip()
+                    messages.append(current_message)
+                
+                # Start new message
+                role = line.split('] ROLE:')[1].strip().lower()
+                current_message = {'role': role, 'content': ''}
+                current_content = []
+            elif line.strip() and current_message and not line.startswith('['):
+                # Add content line
+                current_content.append(line)
+        
+        # Save last message
+        if current_message:
+            current_message['content'] = '\n'.join(current_content).strip()
+            messages.append(current_message)
+        
+        return messages if messages else None
+        
+    except Exception as e:
+        print(f"Error extracting messages: {e}")
+        return None
+
 def backfill_raw_http_requests():
     """Backfill raw_http_request field for existing records that have raw_messages"""
     
     with db_manager.get_cursor() as cursor:
-        # Get all records that have raw_messages but no raw_http_request
+        # Get all records that have intercepted_message but no raw_http_request
         cursor.execute("""
             SELECT id, post_id, section_id, raw_messages, intercepted_message
             FROM llm_message_intercepts 
-            WHERE raw_messages IS NOT NULL 
+            WHERE intercepted_message IS NOT NULL 
             AND raw_http_request IS NULL
             ORDER BY created_at DESC
         """)
@@ -42,6 +77,21 @@ def backfill_raw_http_requests():
                 if 'MODEL:' in intercepted_message:
                     model_line = [line for line in intercepted_message.split('\n') if 'MODEL:' in line][0]
                     model = model_line.split('MODEL:')[1].strip()
+                
+                # If raw_messages is null, try to extract messages from intercepted_message
+                if not raw_messages:
+                    messages = extract_messages_from_intercepted(intercepted_message)
+                    if messages:
+                        # Update the raw_messages field first
+                        cursor.execute("""
+                            UPDATE llm_message_intercepts
+                            SET raw_messages = %s
+                            WHERE id = %s
+                        """, (json.dumps(messages), record['id']))
+                        raw_messages = messages
+                    else:
+                        print(f"Skipping record {record['id']} - could not extract messages from intercepted_message")
+                        continue
                 
                 # Build the raw HTTP request
                 if provider == 'ollama':
