@@ -146,6 +146,15 @@ class SectionsPanel {
                 section: section,
                 postId: this.postId
             });
+            
+            // Emit custom event for other panels to listen to
+            window.dispatchEvent(new CustomEvent('sectionSelected', {
+                detail: {
+                    sectionId: sectionId,
+                    section: section,
+                    postId: this.postId
+                }
+            }));
         }
     }
     
@@ -273,7 +282,14 @@ class SectionsPanel {
                     })
                 });
                 
+                console.log(`[Batch Generate] Response status: ${response.status} for section ${sectionId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
+                console.log(`[Batch Generate] Response data for section ${sectionId}:`, data);
                 
                 if (data.success) {
                     console.log(`Generated image prompt for section ${sectionId}`);
