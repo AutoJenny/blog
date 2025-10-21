@@ -119,38 +119,115 @@ Backward compatibility rules:
 
 ## API Endpoints
 
-The page typically uses shared authoring APIs for LLM assistance and persistence.
+The page uses specialized APIs for LLM-assisted prompt generation and persistence.
 
-- Fetch sections: `GET /authoring/api/posts/<post_id>/sections`
-- Save prompt JSON: `POST /authoring/api/posts/<post_id>/sections/<section_id>/save-image-prompt` (proposed if not present)
-- Validate prompt: client-side checks; optional `POST /authoring/api/validate-prompt` for server-side enforcement
-- Style guidelines reference: sourced from `image_format.extra_settings->>'style_guidelines'`
+### Core Endpoints
+- **Fetch sections**: `GET /authoring/api/posts/<post_id>/sections`
+- **Generate image prompt**: `POST /authoring/api/generate-image-prompt-from-builder-v2`
+  - Uses carefully developed LLM-specific prompts from database
+  - Applies model-aware character limit substitutions
+  - Stores exact raw HTTP requests sent to LLM
+  - Parameters: `post_id`, `section_id`, `compiled_prompt`, `enable_compression`, `enable_expansion`, `llm_provider`, `llm_model`
+- **Get intercepted LLM messages**: `GET /authoring/api/posts/<post_id>/sections/<section_id>/intercepted-message`
+  - Returns exact raw HTTP requests, complete API requests, and raw messages
+  - Used by Complete LLM Input field to show verbatim data sent to LLM
+- **Save prompt JSON**: `POST /authoring/api/posts/<post_id>/sections/<section_id>/save-image-prompt`
+- **Get LLM prompt details**: `GET /authoring/api/posts/<post_id>/sections/<section_id>/llm-prompt-details`
+
+### LLM Service Integration
+- **LLM Service**: `modules/llm_service.py` - Centralized service for all LLM interactions
+- **Intercept Context**: All LLM calls require valid `post_id` and `section_id` for proper data storage
+- **Raw HTTP Storage**: Complete HTTP requests stored in `llm_message_intercepts.raw_http_request`
+- **Model-Specific Limits**: GPT-Image-1 (2000 chars), SDXL (400 chars)
 
 ## UI Behavior
 
+### Section Selection and Data Loading
 - When a section is highlighted:
-  - Load `selected_image_concept` and existing `image_prompts` JSON.
-  - Show Prompt Builder fields for core idea and styling separately.
-  - Live counters for character limits (authoring-level budgets, not model budgets).
-  - Style Guidelines panel displays rules and examples.
-  - Save operations debounce to persist JSON updates.
+  - Load `selected_image_concept` and existing `image_prompts` JSON
+  - **Complete LLM Input field** automatically refreshes to show latest stored data
+  - Section selection emits `sectionSelected` event for panel communication
+  - Dynamic section ID detection from `window.sectionsPanel.sections` objects
 
-- Batch tools:
-  - Generate draft prompts for all sections from selected concepts.
-  - Provide per-section review and override.
+### Prompt Generation
+- **Individual Generate Button**: 
+  - Uses fresh prompt generation from database templates
+  - Reads compiled prompt from Prompt Builder Panel
+  - Generates detailed prompts (900+ characters for GPT-Image-1)
+  - No compression for GPT-Image-1 models (uses full 2000 character budget)
+- **Generate All Button**:
+  - Iterates individual Generate button logic over all selected sections
+  - Uses same API endpoint and parameters as individual generation
+  - Extracts actual concept descriptions from `section.image_concepts` data
+  - Shows proper success/error status for each section
+
+### Complete LLM Input Field
+- **Purpose**: Shows exact raw HTTP request sent to LLM (verbatim, no reconstruction)
+- **Data Source**: `llm_message_intercepts.raw_http_request` field
+- **Content**: Complete HTTP request including method, URL, headers, and JSON payload
+- **Auto-refresh**: Updates when sections are selected or prompts are generated
+- **No Fallbacks**: Only shows actual stored data, no specimen text or hardcoded content
+
+### Live Validation and Feedback
+- Live counters for character limits (authoring-level budgets, not model budgets)
+- Style Guidelines panel displays rules and examples
+- Save operations debounce to persist JSON updates
+- Real-time status updates for batch generation progress
 
 ## Data Flow
 
-1. Page loads; sections list and guidelines fetched.
-2. User selects a section; page loads its concept and prompt JSON.
-3. Edits to core idea and styling are stored to `post_section.image_prompts` (structured JSON).
-4. Downstream imaging reads this data and performs model-aware rendering (outside authoring).
+### Complete LLM Prompt Generation Flow
+1. **Page Load**: Sections list and LLM prompt templates fetched from database
+2. **Section Selection**: 
+   - User selects section from left panel
+   - `sectionSelected` event emitted
+   - Complete LLM Input field loads latest stored data for that section
+3. **Prompt Generation**:
+   - User clicks Generate button or Generate All
+   - System retrieves `system_prompt_template` and `prompt_text` from `llm_prompt` table
+   - Applies model-aware character limit substitutions
+   - Replaces placeholders with actual concept data from `section.image_concepts`
+   - Creates proper `intercept_context` with `post_id` and `section_id`
+   - Calls `llm_service.execute_llm_request()` with intercept context
+4. **Data Storage**:
+   - LLM service stores exact raw HTTP request in `llm_message_intercepts.raw_http_request`
+   - Stores complete API request, raw messages, and formatted intercepted message
+   - Updates `post_section.image_prompts` with generated prompt
+5. **UI Update**:
+   - Complete LLM Input field refreshes to show newly stored raw HTTP request
+   - Generated prompt displayed in Output panel
+   - Section status updated to "Complete"
+
+### Database Schema Updates
+- **`llm_message_intercepts`**: Stores intercepted LLM communications
+  - `raw_http_request`: Complete HTTP request string (method, URL, headers, body)
+  - `complete_api_request`: Full JSON API request payload
+  - `raw_messages`: JSON array of messages sent to LLM
+  - `intercepted_message`: Formatted display version
+- **`llm_prompt`**: Stores LLM prompt templates
+  - `system_prompt_template`: Clean template without JSON instructions
+  - `system_prompt`: Complete prompt with JSON formatting instructions
+  - `prompt_text`: User prompt template with placeholders
 
 ## Error Handling
 
-- Missing post/section: return 404; guard UI.
-- Invalid JSON shape: normalize on read; reject on write with detailed messages.
-- Concurrent edits: last-write-wins with timestamp checks; consider etags later.
+### System-Level Error Handling
+- **Missing post/section**: Return 404; guard UI with proper error messages
+- **Invalid intercept context**: LLM service requires valid `post_id` and `section_id` - no default fallbacks
+- **Corrupted data**: Clean up malformed section IDs and records with missing context
+- **JSON parsing errors**: Graceful handling of `image_concepts` data (string vs object)
+
+### Frontend Error Handling
+- **Section ID detection**: Dynamic detection from `window.sectionsPanel.sections` objects
+- **API response validation**: Proper HTTP status checking before JSON parsing
+- **Batch generation errors**: Individual section error handling with detailed logging
+- **Data refresh failures**: Fallback mechanisms for Complete LLM Input field loading
+
+### Database Integrity
+- **No specimen text**: System only uses actual concept data from database
+- **No hardcoded content**: All prompts generated from database templates
+- **Consistent data storage**: All LLM calls properly store data with correct section IDs
+- **Automatic operation**: System works for all sections and future posts without manual intervention
 
 ## Interplay with Imaging
 
@@ -164,6 +241,28 @@ The page typically uses shared authoring APIs for LLM assistance and persistence
 - Authoring: Image Captions
 - Imaging: Sections Image Generation (`/imaging/posts/<post_id>/sections/image-generation`)
 - Header: Header Image (`/header/posts/<post_id>/header-image`)
+
+## Recent System Improvements (October 2025)
+
+### Major Fixes Implemented
+1. **Complete LLM Input Field**: Now shows exact raw HTTP requests sent to LLM (verbatim, no reconstruction)
+2. **Compression Logic**: Disabled for GPT-Image-1 models - uses full 2000 character budget
+3. **Generate All Button**: Rewritten to use same logic as individual Generate button
+4. **Section Selection**: Fixed dynamic section ID detection and automatic data refresh
+5. **Data Integrity**: Eliminated specimen text and hardcoded content - uses only actual concept data
+
+### Technical Improvements
+- **LLM Service Consolidation**: All LLM calls go through centralized `modules/llm_service.py`
+- **Intercept Context Enforcement**: Mandatory `post_id` and `section_id` for all LLM calls
+- **Raw HTTP Storage**: Complete HTTP requests stored in `llm_message_intercepts.raw_http_request`
+- **Model-Aware Substitutions**: Character limits automatically adjusted based on target model
+- **Event-Driven Architecture**: Proper `sectionSelected` event emission for panel communication
+
+### Performance Results
+- **Prompt Quality**: GPT-Image-1 prompts now 900+ characters (vs previous ~400)
+- **Data Accuracy**: Complete LLM Input field shows exact data sent to LLM
+- **System Reliability**: Automatic operation for all sections and future posts
+- **Error Reduction**: Proper error handling and status reporting for batch operations
 
 ## Guardrails and Conventions
 
