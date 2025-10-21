@@ -400,10 +400,10 @@ def authoring_ui_preferences(pref_key):
                 value = data.get('value')
                 
                 cursor.execute("""
-                    INSERT INTO ui_user_preferences (pref_key, pref_value, updated_at)
+                    INSERT INTO ui_user_preferences (preference_key, preference_value, updated_at)
                     VALUES (%s, %s, NOW())
-                    ON CONFLICT (pref_key) 
-                    DO UPDATE SET pref_value = %s, updated_at = NOW()
+                    ON CONFLICT (preference_key) 
+                    DO UPDATE SET preference_value = %s, updated_at = NOW()
                 """, (pref_key, value, value))
                 
                 cursor.connection.commit()
@@ -415,14 +415,14 @@ def authoring_ui_preferences(pref_key):
             else:
                 # Get preference
                 cursor.execute("""
-                    SELECT pref_value FROM ui_user_preferences 
-                    WHERE pref_key = %s
+                    SELECT preference_value FROM ui_user_preferences 
+                    WHERE preference_key = %s
                 """, (pref_key,))
                 result = cursor.fetchone()
                 
                 return jsonify({
-                    'pref_key': pref_key,
-                    'pref_value': result['pref_value'] if result else None
+                    'preference_key': pref_key,
+                    'preference_value': result['preference_value'] if result else None
                 })
                 
     except Exception as e:
