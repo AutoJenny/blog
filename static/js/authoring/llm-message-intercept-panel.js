@@ -111,9 +111,9 @@ class LLMMessageInterceptPanel {
             
             // Try to get from sections panel first
             if (window.sectionsPanel && window.sectionsPanel.sections && window.sectionsPanel.sections.length > 0) {
-                // Find the currently selected section
+                // Find the currently selected section from JavaScript objects
                 const selectedSection = window.sectionsPanel.sections.find(section => 
-                    section.classList && section.classList.contains('selected')
+                    section.selected === true
                 );
                 if (selectedSection) {
                     currentSectionId = selectedSection.id;

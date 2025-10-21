@@ -56,13 +56,10 @@ class LLMService:
             if intercept_context:
                 messages = self._retrieve_raw_messages(intercept_context) or messages
             
-            # STEP 3: Always store raw HTTP request for ALL LLM calls
-            # Create a default context if none provided
-            if not intercept_context:
-                intercept_context = {
-                    'post_id': 0,  # Default post ID for non-contextual calls
-                    'section_id': 0  # Default section ID for non-contextual calls
-                }
+            # STEP 3: Validate intercept_context is provided
+            if not intercept_context or not intercept_context.get('post_id') or not intercept_context.get('section_id'):
+                logger.error("intercept_context with valid post_id and section_id is required")
+                return {'error': 'intercept_context required'}
             
             if provider == 'openai':
                 headers = {
