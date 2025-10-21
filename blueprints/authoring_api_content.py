@@ -615,6 +615,7 @@ def api_get_intercepted_message(post_id, section_id):
                 'message': intercepted_data['message'],
                 'raw_messages': intercepted_data['raw_messages'],
                 'complete_api_request': intercepted_data['complete_api_request'],
+                'raw_http_request': intercepted_data['raw_http_request'],
                 'created_at': intercepted_data['created_at'].isoformat() if intercepted_data['created_at'] else None
             })
         else:
@@ -623,6 +624,7 @@ def api_get_intercepted_message(post_id, section_id):
                 'message': None,
                 'raw_messages': None,
                 'complete_api_request': None,
+                'raw_http_request': None,
                 'created_at': None
             })
             

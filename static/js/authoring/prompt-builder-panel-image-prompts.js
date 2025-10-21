@@ -391,29 +391,17 @@ class PromptBuilderPanel {
             const response = await fetch(`/authoring/api/posts/${this.postId}/sections/${config.sectionId}/intercepted-message`);
             if (response.ok) {
                 const data = await response.json();
-            if (data.success && data.complete_api_request) {
-                // Display the EXACT complete API request that goes to the LLM
-                const exactLLMInput = data.complete_api_request;
+            if (data.success && data.raw_http_request) {
+                // Display the EXACT raw HTTP request that goes to the LLM
+                const exactLLMInput = data.raw_http_request;
                 
-                // Update the display with the exact complete API request
+                // Update the display with the exact raw HTTP request
                 const llmInputDisplay = document.getElementById('llm-input-display');
                 if (llmInputDisplay) {
                     llmInputDisplay.value = exactLLMInput;
                 }
                 
-                console.log('[PromptBuilderPanel] Displayed exact complete API request:', exactLLMInput.substring(0, 200) + '...');
-                return;
-            } else if (data.success && data.raw_messages) {
-                // Fallback: Display the raw messages JSON if complete API request not available
-                const exactLLMInput = JSON.stringify(data.raw_messages, null, 2);
-                
-                // Update the display with the raw messages JSON
-                const llmInputDisplay = document.getElementById('llm-input-display');
-                if (llmInputDisplay) {
-                    llmInputDisplay.value = exactLLMInput;
-                }
-                
-                console.log('[PromptBuilderPanel] Displayed raw messages JSON (fallback):', exactLLMInput.substring(0, 200) + '...');
+                console.log('[PromptBuilderPanel] Displayed exact raw HTTP request:', exactLLMInput.substring(0, 200) + '...');
                 return;
             }
             }

@@ -67,6 +67,11 @@ class LLMService:
                     'temperature': 0.7,
                     'max_tokens': 2000
                 }
+                
+                # Store the exact raw request that will be sent
+                if intercept_context:
+                    self._store_raw_http_request('POST', f"{self.providers[provider]['base_url']}/chat/completions", headers, data, intercept_context)
+                
                 response = requests.post(
                     f"{self.providers[provider]['base_url']}/chat/completions",
                     headers=headers,
@@ -82,6 +87,11 @@ class LLMService:
                         'num_predict': 4000
                     }
                 }
+                
+                # Store the exact raw request that will be sent
+                if intercept_context:
+                    self._store_raw_http_request('POST', f"{self.providers[provider]['base_url']}/api/chat", {'Content-Type': 'application/json'}, data, intercept_context)
+                
                 response = requests.post(
                     f"{self.providers[provider]['base_url']}/api/chat",
                     json=data,
@@ -168,7 +178,7 @@ class LLMService:
             
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
-                    SELECT intercepted_message, raw_messages, complete_api_request, created_at
+                    SELECT intercepted_message, raw_messages, complete_api_request, raw_http_request, created_at
                     FROM llm_message_intercepts 
                     WHERE post_id = %s AND section_id = %s
                     ORDER BY created_at DESC
@@ -181,6 +191,7 @@ class LLMService:
                         'message': result['intercepted_message'],
                         'raw_messages': result['raw_messages'],
                         'complete_api_request': result['complete_api_request'],
+                        'raw_http_request': result['raw_http_request'],
                         'created_at': result['created_at']
                     }
                 return None
@@ -323,6 +334,43 @@ class LLMService:
                 
         except Exception as e:
             logger.error(f"Error storing complete API request: {e}")
+    
+    def _store_raw_http_request(self, method, url, headers, data, context):
+        """Store the exact raw HTTP request that gets sent to the LLM."""
+        try:
+            from config.database import db_manager
+            import json
+            
+            post_id = context.get('post_id')
+            section_id = context.get('section_id')
+            
+            # Section ID must be numeric
+            if not isinstance(section_id, int) and not (isinstance(section_id, str) and section_id.isdigit()):
+                logger.error(f"Invalid section_id: {section_id}. Must be numeric.")
+                return
+            
+            section_id = int(section_id)
+            
+            # Build the exact raw HTTP request
+            raw_request = f"{method} {url} HTTP/1.1\n"
+            for header_name, header_value in headers.items():
+                raw_request += f"{header_name}: {header_value}\n"
+            raw_request += "\n"
+            raw_request += json.dumps(data, indent=2)
+            
+            with db_manager.get_cursor() as cursor:
+                # Update the existing row to add raw_http_request column
+                cursor.execute("""
+                    UPDATE llm_message_intercepts
+                    SET raw_http_request = %s
+                    WHERE post_id = %s AND section_id = %s
+                """, (raw_request, post_id, section_id))
+                
+                cursor.connection.commit()
+                logger.info(f"Stored raw HTTP request for post {post_id}, section {section_id}")
+                
+        except Exception as e:
+            logger.error(f"Error storing raw HTTP request: {e}")
 
 
 # Initialize LLM service instance

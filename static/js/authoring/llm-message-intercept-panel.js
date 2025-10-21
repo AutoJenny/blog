@@ -67,25 +67,17 @@ class LLMMessageInterceptPanel {
             
             const data = await response.json();
             
-            if (data.success && data.complete_api_request) {
-                // Display the exact complete API request that goes to the LLM
-                const exactLLMInput = data.complete_api_request;
+            if (data.success && data.raw_http_request) {
+                // Display the exact raw HTTP request that goes to the LLM
+                const exactLLMInput = data.raw_http_request;
                 this.currentMessage = exactLLMInput;
                 this.isReady = true;
-                this.updateMessage(exactLLMInput, `Complete API Request (${data.created_at ? new Date(data.created_at).toLocaleString() : 'unknown time'})`, true);
+                this.updateMessage(exactLLMInput, `Raw HTTP Request (${data.created_at ? new Date(data.created_at).toLocaleString() : 'unknown time'})`, true);
                 
-                console.log('[LLMMessageIntercept] Loaded complete API request');
-            } else if (data.success && data.raw_messages) {
-                // Fallback: Display the raw messages JSON if complete API request not available
-                const exactLLMInput = JSON.stringify(data.raw_messages, null, 2);
-                this.currentMessage = exactLLMInput;
-                this.isReady = true;
-                this.updateMessage(exactLLMInput, `Raw Messages JSON (${data.created_at ? new Date(data.created_at).toLocaleString() : 'unknown time'})`, true);
-                
-                console.log('[LLMMessageIntercept] Loaded raw messages JSON (fallback)');
+                console.log('[LLMMessageIntercept] Loaded raw HTTP request');
             } else {
                 // No intercepted message yet - show placeholder
-                this.updateMessage('', 'No LLM call made yet - complete API request will appear here after generation', false);
+                this.updateMessage('', 'No LLM call made yet - raw HTTP request will appear here after generation', false);
                 console.log('[LLMMessageIntercept] No intercepted message found yet');
             }
             
