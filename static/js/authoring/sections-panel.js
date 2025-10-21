@@ -222,7 +222,7 @@ class SectionsPanel {
                             apiEndpoint = `/authoring/api/posts/${this.postId}/sections/${sectionId}/generate-image-concepts`;
                             break;
                         case 'image-prompts':
-                            apiEndpoint = `/authoring/api/generate-image-prompt-from-builder`;
+                            apiEndpoint = `/authoring/api/generate-image-prompt-from-builder-v2`;
                             break;
                         case 'image-captions':
                             apiEndpoint = `/authoring/api/posts/${this.postId}/sections/${sectionId}/generate-image-captions`;
@@ -233,13 +233,46 @@ class SectionsPanel {
                     
                     console.log(`[Sections Panel] Batch generating for ${window.currentSubstage}, using endpoint: ${apiEndpoint}`);
                     
+                    // Prepare request body based on substage
+                    let requestBody = {};
+                    if (window.currentSubstage === 'image-prompts') {
+                        // For image prompts, we need to get the compiled prompt from the section
+                        // Try to get the selected concept from the section data
+                        let compiledPrompt = `Generate image prompt for section ${sectionId}`;
+                        
+                        if (section && section.image_concepts) {
+                            try {
+                                const conceptsData = JSON.parse(section.image_concepts);
+                                if (conceptsData.concepts && conceptsData.concepts.length > 0) {
+                                    const selectedConceptId = section.selected_image_concept || 'CONCEPT-1';
+                                    const selectedConcept = conceptsData.concepts.find(c => c.concept_id === selectedConceptId);
+                                    if (selectedConcept) {
+                                        compiledPrompt = selectedConcept.concept_description || compiledPrompt;
+                                    }
+                                }
+                            } catch (e) {
+                                console.warn(`Could not parse image concepts for section ${sectionId}:`, e);
+                            }
+                        }
+                        
+                        requestBody = {
+                            post_id: this.postId,
+                            section_id: sectionId,
+                            compiled_prompt: compiledPrompt,
+                            enable_compression: true,
+                            enable_expansion: false,
+                            llm_provider: 'Ollama',
+                            llm_model: 'llama3.2:latest'
+                        };
+                    }
+                    
                     // Generate content for this section
                     const response = await fetch(apiEndpoint, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({})
+                        body: JSON.stringify(requestBody)
                     });
                     
                     const data = await response.json();
