@@ -16,6 +16,40 @@ logger = logging.getLogger(__name__)
 bp = Blueprint('authoring_prompts', __name__, url_prefix='/authoring')
 
 
+def apply_model_aware_substitutions(text, max_chars):
+    """
+    Apply model-aware character limit substitutions to prompt text.
+    Mirrors frontend llm-prompts-panel.js applyModelAwareSubstitutions().
+    """
+    if not text or not max_chars:
+        return text
+    
+    import re
+    
+    t = str(text)
+    
+    # Replace common range caps like "380–400 characters" or "380-400 characters"
+    t = re.sub(r'\b\d{2,4}\s*[–-]\s*\d{2,4}\s*characters?', 
+               f'up to {max_chars} characters', t, flags=re.IGNORECASE)
+    
+    # Replace phrases like "exceeds 400 characters"
+    t = re.sub(r'exceeds\s+\d{2,4}\s*characters?', 
+               f'exceeds {max_chars} characters', t, flags=re.IGNORECASE)
+    
+    # Replace "≤ 400" or "<= 400"
+    t = re.sub(r'(?:≤|<=)\s*\d{2,4}\b', 
+               f'≤ {max_chars}', t, flags=re.IGNORECASE)
+    
+    # Replace solitary "400 characters" with "{max} characters" for typical caps (<= 1000)
+    def replace_char_limit(match):
+        num = int(match.group(1))
+        return f'{max_chars} characters' if num <= 1000 else match.group(0)
+    
+    t = re.sub(r'\b(\d{2,4})\s*characters\b', replace_char_limit, t, flags=re.IGNORECASE)
+    
+    return t
+
+
 @bp.route('/api/generate-image-prompt-from-builder-v2', methods=['POST'])
 def api_generate_image_prompt_from_builder():
     """Generate image prompt using the compiled prompt from Prompt Builder"""
@@ -55,6 +89,35 @@ def api_generate_image_prompt_from_builder():
             if not post_data:
                 return jsonify({'error': 'Post not found'}), 404
             
+            # Get imaging model selection and character limit
+            cursor.execute("""
+                SELECT imaging_model_selection
+                FROM post_development
+                WHERE post_id = %s
+            """, (post_id,))
+            
+            imaging_model_row = cursor.fetchone()
+            imaging_model_key = imaging_model_row['imaging_model_selection'] if imaging_model_row else 'sdxl-lora'
+            
+            # Get model specs for character limit
+            cursor.execute("""
+                SELECT api_params
+                FROM llm_model
+                WHERE name = %s
+            """, (imaging_model_key,))
+            
+            model_spec_row = cursor.fetchone()
+            max_chars = None
+            if model_spec_row and model_spec_row['api_params']:
+                api_params = model_spec_row['api_params']
+                if isinstance(api_params, dict):
+                    max_chars = api_params.get('max_prompt_chars')
+                elif isinstance(api_params, str):
+                    api_params_dict = json.loads(api_params)
+                    max_chars = api_params_dict.get('max_prompt_chars')
+            
+            logger.info(f"[DEBUG] Imaging model: {imaging_model_key}, max_chars: {max_chars}")
+            
             # Get section data
             cursor.execute("""
                 SELECT id, section_order, section_heading, section_description, 
@@ -88,6 +151,12 @@ def api_generate_image_prompt_from_builder():
             # Build the prompt with actual data
             prompt_text = prompt_data['prompt_text']
             system_prompt = prompt_data['system_prompt']
+            
+            # Apply model-aware substitutions if we have character limit
+            if max_chars:
+                prompt_text = apply_model_aware_substitutions(prompt_text, max_chars)
+                system_prompt = apply_model_aware_substitutions(system_prompt, max_chars)
+                logger.info(f"[DEBUG] Applied model-aware substitutions for {imaging_model_key} (max: {max_chars} chars)")
             
             logger.info(f"[DEBUG] System prompt length: {len(system_prompt) if system_prompt else 0}")
             logger.info(f"[DEBUG] System prompt preview: {system_prompt[:100] if system_prompt else 'None'}")
@@ -249,45 +318,49 @@ def api_get_llm_prompt_details(post_id, section_id):
             if not post_data:
                 return jsonify({'error': 'Post not found'}), 404
             
-            # Get section data
+            # Get imaging model selection and character limit
             cursor.execute("""
-                SELECT sections FROM post_development WHERE post_id = %s
+                SELECT imaging_model_selection
+                FROM post_development
+                WHERE post_id = %s
             """, (post_id,))
-            dev_row = cursor.fetchone()
             
-            if not dev_row or not dev_row['sections']:
-                return jsonify({'error': 'Section data not found'}), 404
+            imaging_model_row = cursor.fetchone()
+            imaging_model_key = imaging_model_row['imaging_model_selection'] if imaging_model_row else 'sdxl-lora'
             
-            # Parse sections data
-            sections_data = dev_row['sections']
-            if isinstance(sections_data, str):
-                sections_data = json.loads(sections_data)
+            # Get model specs for character limit
+            cursor.execute("""
+                SELECT api_params
+                FROM llm_model
+                WHERE name = %s
+            """, (imaging_model_key,))
             
-            if isinstance(sections_data, dict) and 'sections' in sections_data:
-                sections_list = sections_data['sections']
-                section = None
-                for s in sections_list:
-                    if str(s.get('id')) == str(section_id):
-                        section = s
-                        break
-                
-                if not section:
-                    return jsonify({'error': 'Section not found'}), 404
-            else:
-                return jsonify({'error': 'Invalid sections data'}), 500
+            model_spec_row = cursor.fetchone()
+            max_chars = None
+            if model_spec_row and model_spec_row['api_params']:
+                api_params = model_spec_row['api_params']
+                if isinstance(api_params, dict):
+                    max_chars = api_params.get('max_prompt_chars')
+                elif isinstance(api_params, str):
+                    api_params_dict = json.loads(api_params)
+                    max_chars = api_params_dict.get('max_prompt_chars')
             
-            # Get topics from topic_allocation
+            # Get section data from post_section table
+            cursor.execute("""
+                SELECT id, section_order, section_heading, section_description, 
+                       status, draft, polished, ideas_to_include, facts_to_include,
+                       highlighting, image_concepts, image_prompts, image_captions,
+                       image_alt_text, selected_image_concept
+                FROM post_section
+                WHERE post_id = %s AND id = %s
+            """, (post_id, section_id))
+            section = cursor.fetchone()
+            
+            if not section:
+                return jsonify({'error': 'Section not found'}), 404
+            
+            # Set topics to empty for now (topic allocation system removed)
             topics = []
-            try:
-                if 'topic_allocation' in sections_data:
-                    allocation = sections_data['topic_allocation']
-                    if isinstance(allocation, dict) and 'sections' in allocation:
-                        for s in allocation['sections']:
-                            if str(s.get('id')) == str(section_id):
-                                topics = allocation.get('topics', [])
-                                break
-            except Exception as e:
-                logger.error(f"Error parsing topic_allocation: {e}")
             
             # Get the user-configured image prompts prompt template
             cursor.execute("""
@@ -305,6 +378,12 @@ def api_get_llm_prompt_details(post_id, section_id):
             # Build the user prompt with actual data
             prompt_text = prompt_data['prompt_text']
             system_prompt = prompt_data['system_prompt']
+            
+            # Apply model-aware substitutions if we have character limit
+            if max_chars:
+                prompt_text = apply_model_aware_substitutions(prompt_text, max_chars)
+                system_prompt = apply_model_aware_substitutions(system_prompt, max_chars)
+                logger.info(f"[DEBUG] Applied model-aware substitutions for {imaging_model_key} (max: {max_chars} chars)")
             
             # Replace placeholders with actual data
             prompt_text = prompt_text.replace('[data:idea_seed]', post_data['title'] or '')
