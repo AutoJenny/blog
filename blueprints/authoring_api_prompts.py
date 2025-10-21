@@ -132,6 +132,29 @@ def api_generate_image_prompt_from_builder():
             if not section:
                 return jsonify({'error': 'Section not found'}), 404
             
+            # Get active image style
+            cursor.execute("""
+                SELECT extra_settings
+                FROM post
+                WHERE id = %s
+            """, (post_id,))
+            post_row = cursor.fetchone()
+            
+            active_style = None
+            if post_row and post_row['extra_settings']:
+                extra_settings = post_row['extra_settings']
+                if isinstance(extra_settings, str):
+                    extra_settings = json.loads(extra_settings)
+                
+                imaging = extra_settings.get('imaging', {})
+                styles = imaging.get('styles', [])
+                active_index = imaging.get('activeIndex', 0)
+                
+                if styles and 0 <= active_index < len(styles):
+                    active_style = styles[active_index]
+            
+            logger.info(f"[DEBUG] Active style: {active_style['name'] if active_style else 'None'}")
+            
             # Set topics to empty for now (topic allocation system removed)
             topics = []
             
@@ -171,6 +194,40 @@ def api_generate_image_prompt_from_builder():
             prompt_text = prompt_text.replace('[data:selected_concept]', compiled_prompt or '')
             topics_text = '\n'.join([f'- {topic}' for topic in topics])
             prompt_text = prompt_text.replace('[data:topics]', topics_text)
+            
+            # Add style information to prompt
+            style_text = ""
+            if active_style:
+                style_name = active_style.get('name', '')
+                style_json = active_style.get('style_json', {})
+                
+                # Format style information
+                style_parts = []
+                if style_name:
+                    style_parts.append(f"Style: {style_name}")
+                
+                if style_json:
+                    # Add key style elements
+                    if style_json.get('medium'):
+                        style_parts.append(f"Medium: {style_json['medium']}")
+                    if style_json.get('technique'):
+                        style_parts.append(f"Technique: {style_json['technique']}")
+                    if style_json.get('palette'):
+                        palette = ', '.join(style_json['palette'])
+                        style_parts.append(f"Color Palette: {palette}")
+                    if style_json.get('constraints'):
+                        constraints = ', '.join(style_json['constraints'])
+                        style_parts.append(f"Constraints: {constraints}")
+                    if style_json.get('negatives'):
+                        negatives = ', '.join(style_json['negatives'])
+                        style_parts.append(f"Avoid: {negatives}")
+                
+                style_text = '\n'.join(style_parts)
+                logger.info(f"[DEBUG] Style text: {style_text}")
+            
+            # Append style information to prompt if available
+            if style_text:
+                prompt_text += f"\n\nStyle Guidelines:\n{style_text}"
             
             # Prepare messages for LLM
             messages = []
@@ -359,6 +416,29 @@ def api_get_llm_prompt_details(post_id, section_id):
             if not section:
                 return jsonify({'error': 'Section not found'}), 404
             
+            # Get active image style
+            cursor.execute("""
+                SELECT extra_settings
+                FROM post
+                WHERE id = %s
+            """, (post_id,))
+            post_row = cursor.fetchone()
+            
+            active_style = None
+            if post_row and post_row['extra_settings']:
+                extra_settings = post_row['extra_settings']
+                if isinstance(extra_settings, str):
+                    extra_settings = json.loads(extra_settings)
+                
+                imaging = extra_settings.get('imaging', {})
+                styles = imaging.get('styles', [])
+                active_index = imaging.get('activeIndex', 0)
+                
+                if styles and 0 <= active_index < len(styles):
+                    active_style = styles[active_index]
+            
+            logger.info(f"[DEBUG] Active style: {active_style['name'] if active_style else 'None'}")
+            
             # Set topics to empty for now (topic allocation system removed)
             topics = []
             
@@ -410,6 +490,40 @@ def api_get_llm_prompt_details(post_id, section_id):
             prompt_text = prompt_text.replace('[data:selected_concept]', selected_concept)
             topics_text = '\n'.join([f'- {topic}' for topic in topics])
             prompt_text = prompt_text.replace('[data:topics]', topics_text)
+            
+            # Add style information to prompt
+            style_text = ""
+            if active_style:
+                style_name = active_style.get('name', '')
+                style_json = active_style.get('style_json', {})
+                
+                # Format style information
+                style_parts = []
+                if style_name:
+                    style_parts.append(f"Style: {style_name}")
+                
+                if style_json:
+                    # Add key style elements
+                    if style_json.get('medium'):
+                        style_parts.append(f"Medium: {style_json['medium']}")
+                    if style_json.get('technique'):
+                        style_parts.append(f"Technique: {style_json['technique']}")
+                    if style_json.get('palette'):
+                        palette = ', '.join(style_json['palette'])
+                        style_parts.append(f"Color Palette: {palette}")
+                    if style_json.get('constraints'):
+                        constraints = ', '.join(style_json['constraints'])
+                        style_parts.append(f"Constraints: {constraints}")
+                    if style_json.get('negatives'):
+                        negatives = ', '.join(style_json['negatives'])
+                        style_parts.append(f"Avoid: {negatives}")
+                
+                style_text = '\n'.join(style_parts)
+                logger.info(f"[DEBUG] Style text: {style_text}")
+            
+            # Append style information to prompt if available
+            if style_text:
+                prompt_text += f"\n\nStyle Guidelines:\n{style_text}"
             
             # Get active style details
             style_details = "No style information available"
