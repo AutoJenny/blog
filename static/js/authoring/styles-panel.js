@@ -39,10 +39,11 @@ class StylesPanel {
 
     onStylesLoaded(data) {
         console.log('[Styles Panel] Event received:', data);
-        const styles = (data.styles || []).map(s => ({ 
+        const activeIndex = data.activeIndex || 0;
+        const styles = (data.styles || []).map((s, idx) => ({ 
             name: s.name, 
             style_json: s.style_json, 
-            is_active: s.is_active 
+            is_active: idx === activeIndex 
         }));
         
         this.renderStyles(styles);
@@ -90,10 +91,18 @@ class StylesPanel {
         row.appendChild(radio);
         row.appendChild(label);
         
-        row.addEventListener('click', () => {
+        row.addEventListener('click', async () => {
             console.log('[Styles Panel] Style clicked:', style.name);
             radio.checked = true;
             this.updateUIForSelectedStyle(style);
+            
+            // Auto-activate the selected style
+            try {
+                await window.AuthoringStyles.activateStyle(idx);
+                console.log('[Styles Panel] Style activated:', style.name);
+            } catch (e) {
+                console.error('[Styles Panel] Error auto-activating style:', e);
+            }
         });
         
         return row;
