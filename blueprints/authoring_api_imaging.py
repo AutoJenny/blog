@@ -613,22 +613,26 @@ def api_generate_image_concepts(post_id, section_id):
                 except Exception as e:
                     logger.error(f"Error parsing topic_allocation: {e}")
             
-            # Get the image concepts prompt
+            # Get the image prompts prompt
             cursor.execute("""
                 SELECT prompt_text, system_prompt
                 FROM llm_prompt 
-                WHERE name = 'Image Concepts Generation'
+                WHERE name = 'Image Prompts Generation'
                 ORDER BY updated_at DESC 
                 LIMIT 1
             """)
             
             prompt_data = cursor.fetchone()
             if not prompt_data:
-                return jsonify({'error': 'Image Concepts prompt not found'}), 404
+                return jsonify({'error': 'Image Prompts prompt not found'}), 404
             
             # Build the prompt with actual data
             prompt_text = prompt_data['prompt_text']
             system_prompt = prompt_data['system_prompt']
+            
+            logger.info(f"[DEBUG] System prompt length: {len(system_prompt) if system_prompt else 0}")
+            logger.info(f"[DEBUG] System prompt preview: {system_prompt[:100] if system_prompt else 'None'}")
+            logger.info(f"[DEBUG] *** SYSTEM PROMPT DEBUG ***")
             
             # Replace placeholders with actual data
             prompt_text = prompt_text.replace('[data:idea_seed]', post_data['idea_seed'] or '')
@@ -636,6 +640,7 @@ def api_generate_image_concepts(post_id, section_id):
             prompt_text = prompt_text.replace('[data:title]', section['section_heading'] or '')
             prompt_text = prompt_text.replace('[data:subtitle]', section['section_description'] or '')
             prompt_text = prompt_text.replace('[data:section_text]', section['polished'] or section['draft'] or '')
+            prompt_text = prompt_text.replace('[data:selected_concept]', compiled_prompt or '')
             topics_text = '\n'.join([f'- {topic}' for topic in topics])
             prompt_text = prompt_text.replace('[data:topics]', topics_text)
             
@@ -644,6 +649,9 @@ def api_generate_image_concepts(post_id, section_id):
             if system_prompt:
                 messages.append({'role': 'system', 'content': system_prompt})
             messages.append({'role': 'user', 'content': prompt_text})
+            
+            logger.info(f"[DEBUG] Messages prepared: {len(messages)} messages")
+            logger.info(f"[DEBUG] System message included: {any(m['role'] == 'system' for m in messages)}")
             
             # Execute LLM request with retry logic for valid JSON
             max_retries = 3

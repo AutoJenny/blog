@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug LLM Input Display</title>
+</head>
+<body>
+    <h1>Debug LLM Input Display</h1>
+    
+    <div id="selected-concept-display">
+        <div class="concept-text">
+            <div class="concept-description">A misty, moonlit lake edge with a wooden chest emitting soft blue glow, surrounded by twisted tree roots and lush greenery. A majestic dragon silhouette in the background gazing at the chest.</div>
+            <div class="concept-mood">Mood: Enchanted longing</div>
+            <div class="concept-elements">Key Elements: Dragon scale pattern on the chest, misty lake atmosphere</div>
+        </div>
+    </div>
+    
+    <div class="prompt-builder-panel" id="prompt-builder-panel">
+        <div class="panel-content" id="prompt-builder-accordion-content" style="display: block;">
+            <div class="form-group">
+                <label for="compiled-prompt-textarea">Compiled Prompt Preview</label>
+                <textarea id="compiled-prompt-textarea" rows="4" readonly></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="llm-input-display">Complete LLM Input (System + User Messages)</label>
+                <div id="llm-input-display" class="llm-input-container">
+                    <div class="system-message-section">
+                        <h6>System Prompt:</h6>
+                        <textarea id="system-prompt-display" rows="6" readonly placeholder="System prompt will appear here..."></textarea>
+                    </div>
+                    <div class="user-message-section">
+                        <h6>User Prompt:</h6>
+                        <textarea id="user-prompt-display" rows="4" readonly placeholder="User prompt will appear here..."></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="style-details-display">Style Details (Expanded)</label>
+                <textarea id="style-details-display" rows="6" readonly placeholder="Detailed style information will appear here..."></textarea>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Mock the PromptBuilderPanel class for testing
+        class MockPromptBuilderPanel {
+            constructor() {
+                this.postId = 69;
+                this.currentSection = { id: 1 };
+                this.modelSelection = 'sdxl-lora';
+                this.modelConfig = {
+                    'sdxl-lora': {
+                        limit: 400,
+                        style: 'Watercolor'
+                    }
+                };
+                this.selectedConceptContent = {
+                    description: 'A misty, moonlit lake edge with a wooden chest emitting soft blue glow, surrounded by twisted tree roots and lush greenery. A majestic dragon silhouette in the background gazing at the chest.',
+                    mood: 'Enchanted longing',
+                    elements: 'Dragon scale pattern on the chest, misty lake atmosphere'
+                };
+                
+                this.init();
+            }
+            
+            init() {
+                console.log('[MockPromptBuilderPanel] Initializing...');
+                this.updateCompiledPromptPreview();
+            }
+            
+            updateCompiledPromptPreview() {
+                console.log('[MockPromptBuilderPanel] updateCompiledPromptPreview called');
+                const textarea = document.getElementById('compiled-prompt-textarea');
+                if (!textarea || !this.currentSection) {
+                    console.log('[MockPromptBuilderPanel] Missing textarea or currentSection:', { textarea: !!textarea, currentSection: !!this.currentSection });
+                    return;
+                }
+
+                if (this.selectedConceptContent) {
+                    const config = this.modelConfig[this.modelSelection] || this.modelConfig['sdxl-lora'];
+                    const compiledPrompt = this.buildCompiledPrompt(this.selectedConceptContent, config);
+                    textarea.value = compiledPrompt;
+                    
+                    // NEW: Update LLM input display
+                    console.log('[MockPromptBuilderPanel] Calling updateLLMInputDisplay');
+                    this.updateLLMInputDisplay(compiledPrompt, config);
+                } else {
+                    textarea.value = '';
+                    this.clearLLMInputDisplay();
+                }
+            }
+            
+            buildCompiledPrompt(conceptContent, config) {
+                const basePrompt = `Create an image showing: ${conceptContent.description}`;
+                const moodPrompt = `Mood: ${conceptContent.mood}`;
+                const elementsPrompt = `Key Elements: ${conceptContent.elements}`;
+                const stylePrompt = `Style: ${config.style}`;
+                
+                return `${basePrompt}. ${moodPrompt}. ${elementsPrompt}. ${stylePrompt}`;
+            }
+            
+            async updateLLMInputDisplay(compiledPrompt, config) {
+                console.log('[MockPromptBuilderPanel] updateLLMInputDisplay called with:', { compiledPrompt: compiledPrompt?.substring(0, 50), config: config?.style });
+                
+                try {
+                    // Fetch the actual system prompt and user prompt from the database
+                    const response = await fetch(`/authoring/api/posts/${this.postId}/sections/${this.currentSection.id}/llm-prompt-details`);
+                    console.log('[MockPromptBuilderPanel] API response status:', response.status);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log('[MockPromptBuilderPanel] API data received:', { 
+                            success: data.success, 
+                            systemLength: data.system_prompt?.length,
+                            userLength: data.user_prompt?.length 
+                        });
+                        
+                        // Update system prompt display
+                        const systemPromptDisplay = document.getElementById('system-prompt-display');
+                        console.log('[MockPromptBuilderPanel] System prompt element found:', !!systemPromptDisplay);
+                        if (systemPromptDisplay) {
+                            systemPromptDisplay.value = data.system_prompt || 'No system prompt found';
+                            console.log('[MockPromptBuilderPanel] System prompt updated');
+                        }
+                        
+                        // Update user prompt display
+                        const userPromptDisplay = document.getElementById('user-prompt-display');
+                        console.log('[MockPromptBuilderPanel] User prompt element found:', !!userPromptDisplay);
+                        if (userPromptDisplay) {
+                            userPromptDisplay.value = data.user_prompt || compiledPrompt;
+                            console.log('[MockPromptBuilderPanel] User prompt updated');
+                        }
+                        
+                        // Update style details display
+                        const styleDetailsDisplay = document.getElementById('style-details-display');
+                        console.log('[MockPromptBuilderPanel] Style details element found:', !!styleDetailsDisplay);
+                        if (styleDetailsDisplay) {
+                            styleDetailsDisplay.value = data.style_details || config.style;
+                            console.log('[MockPromptBuilderPanel] Style details updated');
+                        }
+                    } else {
+                        console.log('[MockPromptBuilderPanel] API response not OK, using fallback');
+                        this.updateLLMInputDisplayFallback(compiledPrompt, config);
+                    }
+                } catch (error) {
+                    console.error('[MockPromptBuilderPanel] Error fetching LLM prompt details:', error);
+                    this.updateLLMInputDisplayFallback(compiledPrompt, config);
+                }
+            }
+            
+            updateLLMInputDisplayFallback(compiledPrompt, config) {
+                console.log('[MockPromptBuilderPanel] Using fallback display');
+                const systemPromptDisplay = document.getElementById('system-prompt-display');
+                if (systemPromptDisplay) {
+                    systemPromptDisplay.value = 'System prompt not available - check database connection';
+                }
+                
+                const userPromptDisplay = document.getElementById('user-prompt-display');
+                if (userPromptDisplay) {
+                    userPromptDisplay.value = compiledPrompt;
+                }
+                
+                const styleDetailsDisplay = document.getElementById('style-details-display');
+                if (styleDetailsDisplay) {
+                    styleDetailsDisplay.value = config.style;
+                }
+            }
+            
+            clearLLMInputDisplay() {
+                const systemPromptDisplay = document.getElementById('system-prompt-display');
+                const userPromptDisplay = document.getElementById('user-prompt-display');
+                const styleDetailsDisplay = document.getElementById('style-details-display');
+                
+                if (systemPromptDisplay) systemPromptDisplay.value = '';
+                if (userPromptDisplay) userPromptDisplay.value = '';
+                if (styleDetailsDisplay) styleDetailsDisplay.value = '';
+            }
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('[Debug] Page loaded, initializing MockPromptBuilderPanel');
+            new MockPromptBuilderPanel();
+        });
+    </script>
+</body>
+</html>

@@ -50,26 +50,11 @@
                     </div>
                 </div>
                 
-                <!-- NEW: Complete LLM Input Display -->
-                <div class="form-group">
-                    <label for="llm-input-display">Complete LLM Input (System + User Messages)</label>
-                    <div id="llm-input-display" class="llm-input-container">
-                        <div class="system-message-section">
-                            <h6>System Prompt:</h6>
-                            <textarea id="system-prompt-display" rows="6" readonly placeholder="System prompt will appear here..."></textarea>
-                        </div>
-                        <div class="user-message-section">
-                            <h6>User Prompt:</h6>
-                            <textarea id="user-prompt-display" rows="4" readonly placeholder="User prompt will appear here..."></textarea>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Style Details Expansion -->
-                <div class="form-group">
-                    <label for="style-details-display">Style Details (Expanded)</label>
-                    <textarea id="style-details-display" rows="6" readonly placeholder="Detailed style information will appear here..."></textarea>
-                </div>
+        <!-- Complete LLM Input Display -->
+        <div class="form-group">
+            <label for="llm-input-display">Complete LLM Input (What the LLM Actually Receives)</label>
+            <textarea id="llm-input-display" rows="10" readonly placeholder="The complete message sent to the LLM will appear here..."></textarea>
+        </div>
                 
                 <!-- NEW: Transparency Controls -->
                 <div class="transparency-controls">
