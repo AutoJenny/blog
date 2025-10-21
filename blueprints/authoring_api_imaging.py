@@ -613,18 +613,18 @@ def api_generate_image_concepts(post_id, section_id):
                 except Exception as e:
                     logger.error(f"Error parsing topic_allocation: {e}")
             
-            # Get the image prompts prompt
+            # Get the image concepts prompt
             cursor.execute("""
                 SELECT prompt_text, system_prompt
                 FROM llm_prompt 
-                WHERE name = 'Image Prompts Generation'
+                WHERE name = 'Image Concepts Generation'
                 ORDER BY updated_at DESC 
                 LIMIT 1
             """)
             
             prompt_data = cursor.fetchone()
             if not prompt_data:
-                return jsonify({'error': 'Image Prompts prompt not found'}), 404
+                return jsonify({'error': 'Image Concepts prompt not found'}), 404
             
             # Build the prompt with actual data
             prompt_text = prompt_data['prompt_text']
