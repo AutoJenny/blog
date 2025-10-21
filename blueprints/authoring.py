@@ -624,6 +624,27 @@ def api_render_prompt_preview():
     except Exception as e:
         logger.error(f"Error rendering prompt preview: {e}")
         return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/sections/<section_id>/preview-rendered-prompt', methods=['POST'])
+def api_preview_rendered_prompt(post_id, section_id):
+    """Preview how prompt will be rendered for selected imaging model"""
+    try:
+        from modules.prompt_service import prompt_service
+        data = request.get_json() or {}
+        model_key = data.get('model_key', 'gpt-image-1')
+        
+        rendered, metadata = prompt_service.render_prompt_for_model(
+            post_id, section_id, model_key, use_override=False
+        )
+        
+        return jsonify({
+            'success': True,
+            'rendered_prompt': rendered,
+            'metadata': metadata
+        })
+    except Exception as e:
+        logger.error(f"Error previewing rendered prompt: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 @bp.route('/test-sections')
 def test_sections():
     """Test page for sections loading"""

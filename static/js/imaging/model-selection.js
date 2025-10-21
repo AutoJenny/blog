@@ -424,6 +424,41 @@ class ModelSelectionPanel {
     }
 }
 
+// Diagnostic button handler
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('run-pipeline-diagnostic')?.addEventListener('click', async () => {
+        const postId = window.postId;
+        const sectionId = window.currentSectionId || 1;
+        const modelKey = document.getElementById('image-model-select').value;
+        
+        const resultsDiv = document.getElementById('diagnostic-results');
+        resultsDiv.style.display = 'block';
+        resultsDiv.innerHTML = '<p style="color: #60a5fa;">Running diagnostics...</p>';
+        
+        try {
+            const response = await fetch(`/imaging/api/diagnostic/posts/${postId}/sections/${sectionId}/prompt-pipeline?model_key=${modelKey}`);
+            const results = await response.json();
+            
+            let html = `<div style="background: #1e293b; padding: 0.75rem; border-radius: 4px; font-size: 0.875rem; max-height: 400px; overflow-y: auto;">`;
+            html += `<h6 style="color: ${results.overall_status === 'passed' ? '#10b981' : '#ef4444'};">Overall: ${results.overall_status.toUpperCase()}</h6>`;
+            
+            for (const [stageName, stageData] of Object.entries(results.stages)) {
+                const status = stageData.success ? '✅' : '❌';
+                html += `<div style="margin-top: 0.5rem;"><strong>${status} ${stageName}</strong>`;
+                if (stageData.error) {
+                    html += `<div style="color: #ef4444; margin-left: 1.5rem;">${stageData.error}</div>`;
+                }
+                html += `</div>`;
+            }
+            
+            html += `</div>`;
+            resultsDiv.innerHTML = html;
+        } catch (error) {
+            resultsDiv.innerHTML = `<p style="color: #ef4444;">Error running diagnostics: ${error.message}</p>`;
+        }
+    });
+});
+
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     window.modelSelectionPanel = new ModelSelectionPanel();

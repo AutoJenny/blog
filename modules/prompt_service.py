@@ -8,7 +8,7 @@ import json
 import logging
 from typing import Dict, List, Optional, Any, Tuple
 from config.database import db_manager
-from modules.prompt_renderers import CanonicalPrompt, render_prompt_for_model, parse_legacy_prompt
+from modules.prompt_renderers import CanonicalPrompt, render_prompt_for_model, parse_legacy_prompt, PromptRendererFactory
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class PromptService:
             logger.error(f"Error loading model specs: {e}")
             self.model_specs_cache = {}
     
-    def get_canonical_prompt(self, post_id: int, section_id: int) -> CanonicalPrompt:
+    def get_canonical_prompt(self, post_id: int, section_id: int) -> Tuple[CanonicalPrompt, dict]:
         """Get canonical prompt for a section, handling legacy formats and merging active post-wide style"""
         try:
             with db_manager.get_cursor() as cursor:
@@ -75,8 +75,66 @@ class PromptService:
                 style_json = (active_style or {}).get('style_json') if isinstance(active_style, dict) else None
 
                 if not section_row or not section_row['image_prompts']:
-                    # If no per-section prompt, still return canonical with style applied if present
-                    base = {}
+                    # Try post_development.sections as fallback
+                    cursor.execute("""
+                        SELECT sections FROM post_development 
+                        WHERE post_id = %s
+                    """, (post_id,))
+                    dev_row = cursor.fetchone()
+                    
+                    if dev_row and dev_row['sections']:
+                        sections_data = dev_row['sections']
+                        # Parse JSON if it's a string
+                        if isinstance(sections_data, str):
+                            try:
+                                sections_data = json.loads(sections_data)
+                            except json.JSONDecodeError:
+                                sections_data = []
+                        
+                        if isinstance(sections_data, list):
+                            # Find the section by ID
+                            section_data = None
+                            for section in sections_data:
+                                if isinstance(section, dict):
+                                    # Handle both numeric IDs and string IDs
+                                    section_id_from_data = section.get('id', '')
+                                    if (str(section_id_from_data) == str(section_id) or 
+                                        (section_id.startswith('section_') and str(section_id_from_data) == section_id.replace('section_', ''))):
+                                        section_data = section
+                                        break
+                        elif isinstance(sections_data, dict) and 'sections' in sections_data:
+                            # Handle case where sections_data is {'sections': [...]}
+                            sections_list = sections_data['sections']
+                            section_data = None
+                            for section in sections_list:
+                                if isinstance(section, dict):
+                                    # Handle both numeric IDs and string IDs
+                                    section_id_from_data = section.get('id', '')
+                                    if (str(section_id_from_data) == str(section_id) or 
+                                        (section_id.startswith('section_') and str(section_id_from_data) == section_id.replace('section_', ''))):
+                                        section_data = section
+                                        break
+                        else:
+                            section_data = None
+                        
+                        # Process the found section
+                        if section_data and section_data.get('image_prompts'):
+                            prompt_data = section_data['image_prompts']
+                            # Handle both string and dict formats
+                            if isinstance(prompt_data, str):
+                                canonical = parse_legacy_prompt(prompt_data)
+                                base = canonical.to_dict()
+                            elif isinstance(prompt_data, dict):
+                                # Try best-effort extraction from common keys
+                                prompt_text = prompt_data.get('image_prompt', '') or prompt_data.get('base_concept', '')
+                                canonical = parse_legacy_prompt(prompt_text)
+                                base = canonical.to_dict()
+                            else:
+                                base = {}
+                        else:
+                            base = {}
+                    else:
+                        base = {}
                 else:
                     prompt_data = section_row['image_prompts']
                     # Handle both string and dict formats
@@ -113,11 +171,11 @@ class PromptService:
                     if negatives and not base.get('negatives'):
                         base['negatives'] = negatives
 
-                return CanonicalPrompt(base)
+                return CanonicalPrompt(base), style_json or {}
                 
         except Exception as e:
             logger.error(f"Error getting canonical prompt for section {section_id}: {e}")
-            return CanonicalPrompt({})
+            return CanonicalPrompt({}), {}
     
     def get_prompt_override(self, post_id: int, section_id: int, model_key: str) -> Optional[str]:
         """Get model-specific prompt override if it exists"""
@@ -280,16 +338,18 @@ class PromptService:
                         'max_chars': constraints.get('max_prompt_chars', 1000)
                     }
             
-            # Get canonical prompt
-            canonical = self.get_canonical_prompt(post_id, section_id)
+            # Get canonical prompt and style_json
+            canonical, style_json = self.get_canonical_prompt(post_id, section_id)
             
-            # Render for model
-            rendered_prompt = render_prompt_for_model(canonical, model_key, constraints)
+            # Create renderer with style context
+            renderer = PromptRendererFactory.create_renderer(model_key, constraints)
+            rendered_prompt = renderer.render(canonical, style_json)
             
             return rendered_prompt, {
                 'source': 'rendered',
                 'model_key': model_key,
                 'canonical': canonical.to_dict(),
+                'style_json': style_json,
                 'char_count': len(rendered_prompt),
                 'max_chars': constraints.get('max_prompt_chars', 1000),
                 'truncated': len(rendered_prompt) >= constraints.get('max_prompt_chars', 1000)

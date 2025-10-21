@@ -651,13 +651,13 @@ def imaging_generate_image(post_id, section_id):
 def imaging_generate_image_flexible(post_id, section_id):
     """Generate image accepting string section IDs (e.g., section_1). Maps to post_section by section_order."""
     try:
+        import time
+        from modules.prompt_service import prompt_service
+        
         data = request.get_json() or {}
         model_name = data.get('model_name', 'dall-e-3')
         parameters = data.get('parameters', {})
-        image_prompt = data.get('image_prompt', '')
-
-        if not image_prompt:
-            return jsonify({'success': False, 'error': 'No image prompt provided'})
+        use_renderer = data.get('use_renderer', True)  # Feature flag
 
         # Resolve section_id: if numeric, use directly; if like section_1, map to section_order = 1
         resolved_section_id = None
@@ -684,6 +684,28 @@ def imaging_generate_image_flexible(post_id, section_id):
         if resolved_section_id is None:
             return jsonify({'success': False, 'error': f'Unable to resolve section id: {section_id}'}), 400
 
+        # Get rendered prompt using the new system
+        if use_renderer:
+            rendered_prompt, debug_info = prompt_service.render_prompt_for_model(
+                post_id, resolved_section_id, model_name, use_override=True
+            )
+            
+            if not rendered_prompt:
+                return jsonify({'success': False, 'error': 'No prompt available for this section'})
+            
+            image_prompt = rendered_prompt
+        else:
+            # Fallback to original prompt from request
+            image_prompt = data.get('image_prompt', '')
+            debug_info = {'source': 'fallback', 'model_key': model_name}
+        
+        # Validate that we have a prompt
+        if not image_prompt:
+            return jsonify({'success': False, 'error': 'No image prompt provided'})
+
+        # Start timing
+        start_time = time.time()
+
         # Route to appropriate image generation function based on model
         if model_name == 'gpt-image-1':
             result = imaging_generate_gpt_image_1(image_prompt, post_id, resolved_section_id, parameters)
@@ -695,20 +717,243 @@ def imaging_generate_image_flexible(post_id, section_id):
             return jsonify({'success': False, 'error': f'Unsupported model: {model_name}'})
 
         if result['success']:
+            # Calculate generation time
+            generation_time_ms = int((time.time() - start_time) * 1000)
+            
+            # Log generation event
+            prompt_service.log_generation_event(
+                post_id=post_id,
+                section_id=resolved_section_id,
+                model_key=model_name,
+                params=parameters,
+                prompt_text=image_prompt,
+                rendered_prompt=image_prompt,
+                result_path=result['image_path'],
+                success=True,
+                generation_time_ms=generation_time_ms
+            )
+            
             return jsonify(
                 {
                     'success': True,
                     'image_path': result['image_path'],
                     'resolved_section_id': resolved_section_id,
                     'message': 'Image generated successfully',
+                    'debug_info': debug_info,
+                    'generation_time_ms': generation_time_ms
                 }
             )
         else:
+            # Log failed generation
+            prompt_service.log_generation_event(
+                post_id=post_id,
+                section_id=resolved_section_id,
+                model_key=model_name,
+                params=parameters,
+                prompt_text=image_prompt,
+                rendered_prompt=image_prompt,
+                result_path='',
+                success=False,
+                error_message=result['error']
+            )
+            
             return jsonify({'success': False, 'error': result['error']})
 
     except Exception as e:
         logger.error(f"Error generating image (flex): {str(e)}")
         return jsonify({'success': False, 'error': str(e)})
+
+@bp.route('/api/diagnostic/posts/<int:post_id>/sections/<section_id>/prompt-pipeline', methods=['GET'])
+def diagnostic_prompt_pipeline(post_id, section_id):
+    """Comprehensive diagnostic for prompt rendering pipeline"""
+    import traceback
+    from modules.prompt_service import prompt_service
+    from modules.prompt_renderers import PromptRendererFactory
+    
+    results = {
+        'post_id': post_id,
+        'section_id': section_id,
+        'stages': {},
+        'overall_status': 'pending'
+    }
+    
+    try:
+        # Stage 1: Database Retrieval
+        with db_manager.get_cursor() as cursor:
+            # Check post exists
+            cursor.execute("SELECT id, title, extra_settings FROM post WHERE id = %s", (post_id,))
+            post_row = cursor.fetchone()
+            
+            results['stages']['database'] = {
+                'post_exists': bool(post_row),
+                'post_title': post_row['title'] if post_row else None,
+                'extra_settings_exists': bool(post_row and post_row['extra_settings']),
+                'imaging_settings_exists': bool(post_row and post_row.get('extra_settings', {}).get('imaging')),
+                'styles_array_exists': False,
+                'active_style_exists': False,
+                'active_style_json': None
+            }
+            
+            if post_row and post_row.get('extra_settings'):
+                imaging = post_row['extra_settings'].get('imaging', {})
+                styles = imaging.get('styles', [])
+                active_index = imaging.get('activeIndex', 0)
+                
+                results['stages']['database']['styles_array_exists'] = bool(styles)
+                results['stages']['database']['styles_count'] = len(styles) if isinstance(styles, list) else 0
+                results['stages']['database']['active_index'] = active_index
+                
+                if styles and 0 <= active_index < len(styles):
+                    active_style = styles[active_index]
+                    results['stages']['database']['active_style_exists'] = True
+                    results['stages']['database']['active_style_name'] = active_style.get('name')
+                    results['stages']['database']['active_style_json'] = active_style.get('style_json')
+            
+            # Check section data
+            cursor.execute("""
+                SELECT sections FROM post_development WHERE post_id = %s
+            """, (post_id,))
+            dev_row = cursor.fetchone()
+            
+            results['stages']['database']['post_development_exists'] = bool(dev_row)
+            
+            if dev_row and dev_row['sections']:
+                import json
+                sections_data = dev_row['sections']
+                if isinstance(sections_data, str):
+                    sections_data = json.loads(sections_data)
+                
+                if isinstance(sections_data, dict) and 'sections' in sections_data:
+                    sections_list = sections_data['sections']
+                    results['stages']['database']['sections_count'] = len(sections_list)
+                    
+                    # Find target section
+                    for section in sections_list:
+                        if str(section.get('id')) == str(section_id):
+                            results['stages']['database']['section_found'] = True
+                            results['stages']['database']['section_has_image_prompts'] = bool(section.get('image_prompts'))
+                            if section.get('image_prompts'):
+                                prompt_data = section['image_prompts']
+                                if isinstance(prompt_data, dict):
+                                    results['stages']['database']['image_prompt_length'] = len(prompt_data.get('image_prompt', ''))
+                                    results['stages']['database']['image_prompt_preview'] = prompt_data.get('image_prompt', '')[:100]
+                            break
+        
+        # Stage 2: Canonical Prompt Creation
+        try:
+            canonical, style_json = prompt_service.get_canonical_prompt(post_id, section_id)
+            results['stages']['canonical_prompt'] = {
+                'success': True,
+                'canonical_subject_length': len(canonical.subject),
+                'canonical_subject_preview': canonical.subject[:100] if canonical.subject else None,
+                'canonical_style': canonical.style,
+                'canonical_constraints': canonical.constraints,
+                'canonical_negatives': canonical.negatives,
+                'style_json_received': bool(style_json),
+                'style_json_keys': list(style_json.keys()) if isinstance(style_json, dict) else None
+            }
+        except Exception as e:
+            results['stages']['canonical_prompt'] = {
+                'success': False,
+                'error': str(e),
+                'error_type': type(e).__name__
+            }
+            results['overall_status'] = 'failed'
+            return jsonify(results)
+        
+        # Stage 3: Renderer Selection
+        model_key = request.args.get('model_key', 'gpt-image-1')
+        try:
+            constraints = {'max_prompt_chars': 2000 if model_key == 'gpt-image-1' else 400}
+            renderer = PromptRendererFactory.create_renderer(model_key, constraints)
+            results['stages']['renderer'] = {
+                'success': True,
+                'renderer_class': type(renderer).__name__,
+                'model_key': model_key,
+                'constraints': constraints
+            }
+        except Exception as e:
+            results['stages']['renderer'] = {
+                'success': False,
+                'error': str(e)
+            }
+            results['overall_status'] = 'failed'
+            return jsonify(results)
+        
+        # Stage 4: Style Integration (call internal method)
+        try:
+            style_description = renderer._integrate_style_details(canonical, style_json)
+            results['stages']['style_integration'] = {
+                'success': True,
+                'style_description': style_description,
+                'style_description_length': len(style_description) if style_description else 0,
+                'contains_watercolor': 'watercolor' in (style_description or '').lower(),
+                'contains_pastel': 'pastel' in (style_description or '').lower()
+            }
+        except Exception as e:
+            results['stages']['style_integration'] = {
+                'success': False,
+                'error': str(e)
+            }
+        
+        # Stage 5: Full Rendering
+        try:
+            rendered_prompt = renderer.render(canonical, style_json)
+            results['stages']['rendering'] = {
+                'success': True,
+                'prompt_length': len(rendered_prompt),
+                'prompt_preview_first_200': rendered_prompt[:200],
+                'prompt_preview_last_200': rendered_prompt[-200:],
+                'contains_watercolor': 'watercolor' in rendered_prompt.lower(),
+                'contains_pastel': 'pastel' in rendered_prompt.lower(),
+                'contains_white_margins': 'white margin' in rendered_prompt.lower(),
+                'contains_visible_brushstrokes': 'visible brushstroke' in rendered_prompt.lower(),
+                'contains_pen_and_ink': 'pen and ink' in rendered_prompt.lower(),
+                'contains_avoiding_dark': 'avoiding dark' in rendered_prompt.lower(),
+                'contains_avoiding_saturated': 'avoiding saturated' in rendered_prompt.lower(),
+                'contains_avoiding_digital': 'avoiding digital' in rendered_prompt.lower()
+            }
+        except Exception as e:
+            results['stages']['rendering'] = {
+                'success': False,
+                'error': str(e)
+            }
+            results['overall_status'] = 'failed'
+            return jsonify(results)
+        
+        # Stage 6: API Integration Test
+        try:
+            # Test the actual API path
+            rendered_via_service, metadata = prompt_service.render_prompt_for_model(
+                post_id, section_id, model_key, use_override=True
+            )
+            results['stages']['api_integration'] = {
+                'success': True,
+                'service_prompt_length': len(rendered_via_service),
+                'matches_direct_render': rendered_via_service == rendered_prompt,
+                'metadata': metadata
+            }
+        except Exception as e:
+            results['stages']['api_integration'] = {
+                'success': False,
+                'error': str(e)
+            }
+        
+        # Overall assessment
+        all_stages_passed = all(
+            stage.get('success', False) 
+            for stage in results['stages'].values() 
+            if 'success' in stage
+        )
+        results['overall_status'] = 'passed' if all_stages_passed else 'failed'
+        
+        return jsonify(results)
+        
+    except Exception as e:
+        results['overall_status'] = 'error'
+        results['error'] = str(e)
+        results['error_trace'] = traceback.format_exc()
+        return jsonify(results), 500
 
 @bp.route('/api/model-selection', methods=['GET', 'POST'])
 def imaging_model_selection():

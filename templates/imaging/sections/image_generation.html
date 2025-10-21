@@ -63,6 +63,15 @@
             <!-- Model Selection Panel -->
             <div class="model-selection-container">
                 {% include 'imaging/includes/model_selection_panel.html' %}
+                
+                <!-- Diagnostic Tools -->
+                <div class="diagnostic-tools" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #374151;">
+                    <h5 style="color: #9ca3af; font-size: 0.875rem; margin-bottom: 0.5rem;">Diagnostic Tools</h5>
+                    <button id="run-pipeline-diagnostic" class="btn btn-secondary" style="font-size: 0.875rem;">
+                        🔍 Test Prompt Pipeline
+                    </button>
+                    <div id="diagnostic-results" style="margin-top: 0.5rem; display: none;"></div>
+                </div>
             </div>
             
             <!-- LLM Prompts Panel (authoring include) -->
