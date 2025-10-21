@@ -403,6 +403,18 @@ class PromptBuilderPanel {
                 
                 console.log('[PromptBuilderPanel] Displayed exact complete API request:', exactLLMInput.substring(0, 200) + '...');
                 return;
+            } else if (data.success && data.raw_messages) {
+                // Fallback: Display the raw messages JSON if complete API request not available
+                const exactLLMInput = JSON.stringify(data.raw_messages, null, 2);
+                
+                // Update the display with the raw messages JSON
+                const llmInputDisplay = document.getElementById('llm-input-display');
+                if (llmInputDisplay) {
+                    llmInputDisplay.value = exactLLMInput;
+                }
+                
+                console.log('[PromptBuilderPanel] Displayed raw messages JSON (fallback):', exactLLMInput.substring(0, 200) + '...');
+                return;
             }
             }
             
