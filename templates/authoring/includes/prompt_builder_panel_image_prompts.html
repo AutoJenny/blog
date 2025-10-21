@@ -49,11 +49,53 @@
                         <span id="character-status" class="success">Ready</span>
                     </div>
                 </div>
+                
+                <!-- NEW: Transparency Controls -->
+                <div class="transparency-controls">
+                    <h6>Pipeline Controls:</h6>
+                    <div class="control-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="enable-compression" checked>
+                            <span class="checkmark"></span>
+                            Enable Compression (when over limit)
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="enable-expansion">
+                            <span class="checkmark"></span>
+                            Enable Expansion (when under budget)
+                        </label>
+                    </div>
+                    <div class="control-warnings">
+                        <div id="compression-warning" class="warning-message" style="display: none;">
+                            ⚠️ Compression will reduce prompt length by removing less important details
+                        </div>
+                        <div id="expansion-warning" class="warning-message" style="display: none;">
+                            ⚠️ Expansion will add more detail but may introduce conflicting styles
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="prompt-actions">
                     <button class="btn-secondary" id="edit-compiled-prompt-btn" disabled>Edit</button>
                     <button class="btn-primary" id="regenerate-compiled-prompt-btn" disabled>Regenerate</button>
                     <button class="btn-info" id="preview-prompt-btn" disabled>Preview</button>
                 </div>
+            </div>
+        </div>
+
+        <!-- NEW: Pipeline Transparency Display -->
+        <div class="pipeline-transparency-section" id="pipeline-transparency-section" style="display: none;">
+            <h5>Pipeline Transparency:</h5>
+            <div class="pipeline-summary">
+                <div class="summary-stats">
+                    <span id="pipeline-steps-count">0 steps</span>
+                    <span id="pipeline-final-length">0 chars</span>
+                    <span id="pipeline-compression-used" class="status-badge">No compression</span>
+                    <span id="pipeline-expansion-used" class="status-badge">No expansion</span>
+                </div>
+            </div>
+            <div class="pipeline-steps" id="pipeline-steps-container">
+                <!-- Pipeline steps will be populated here -->
             </div>
         </div>
 

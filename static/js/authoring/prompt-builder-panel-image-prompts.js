@@ -24,6 +24,7 @@ class PromptBuilderPanel {
         this.loadActiveStyle();
         this.setupEventListeners();
         this.setupAccordion();
+        this.setupTransparencyControls();
         console.log('[PromptBuilderPanel] Initialized for post:', this.postId);
     }
 
@@ -238,6 +239,33 @@ class PromptBuilderPanel {
         }
     }
 
+    setupTransparencyControls() {
+        const compressionCheckbox = document.getElementById('enable-compression');
+        const expansionCheckbox = document.getElementById('enable-expansion');
+        const compressionWarning = document.getElementById('compression-warning');
+        const expansionWarning = document.getElementById('expansion-warning');
+
+        if (compressionCheckbox) {
+            compressionCheckbox.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    compressionWarning.style.display = 'block';
+                } else {
+                    compressionWarning.style.display = 'none';
+                }
+            });
+        }
+
+        if (expansionCheckbox) {
+            expansionCheckbox.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    expansionWarning.style.display = 'block';
+                } else {
+                    expansionWarning.style.display = 'none';
+                }
+            });
+        }
+    }
+
     onSectionSelected(section) {
         console.log('[DEBUG] PromptBuilderPanel received section:', section);
         this.currentSection = section;
@@ -439,6 +467,10 @@ class PromptBuilderPanel {
             const config = this.modelConfig[this.modelSelection] || this.modelConfig['sdxl-lora'];
             const compiledPrompt = this.buildCompiledPrompt(this.selectedConceptContent, config);
             
+            // Get transparency control values
+            const enableCompression = document.getElementById('enable-compression')?.checked ?? true;
+            const enableExpansion = document.getElementById('enable-expansion')?.checked ?? false;
+
             const response = await fetch('/authoring/api/generate-image-prompt-from-builder', {
                 method: 'POST',
                 headers: {
@@ -452,13 +484,18 @@ class PromptBuilderPanel {
                     imaging_model: this.modelSelection,
                     character_limit: config.limit,
                     compiled_prompt: compiledPrompt,
-                    style_guidelines: config.style
+                    style_guidelines: config.style,
+                    enable_compression: enableCompression,
+                    enable_expansion: enableExpansion
                 })
             });
 
             if (response.ok) {
                 const data = await response.json();
                 console.log('[PromptBuilderPanel] Prompt generated successfully:', data);
+                
+                // NEW: Display pipeline transparency information
+                this.displayPipelineTransparency(data);
                 
                 // Emit event for output panel
                 window.dispatchEvent(new CustomEvent('promptGenerated', {
@@ -564,6 +601,116 @@ class PromptBuilderPanel {
         } catch (error) {
             console.error('[PromptBuilderPanel] Error generating preview:', error);
         }
+    }
+
+    displayPipelineTransparency(data) {
+        const transparencySection = document.getElementById('pipeline-transparency-section');
+        if (!transparencySection) return;
+
+        // Show the transparency section
+        transparencySection.style.display = 'block';
+
+        // Update summary stats
+        const stepsCount = document.getElementById('pipeline-steps-count');
+        const finalLength = document.getElementById('pipeline-final-length');
+        const compressionUsed = document.getElementById('pipeline-compression-used');
+        const expansionUsed = document.getElementById('pipeline-expansion-used');
+
+        if (stepsCount) {
+            const stepCount = data.pipeline_steps ? data.pipeline_steps.length : 0;
+            stepsCount.textContent = `${stepCount} step${stepCount !== 1 ? 's' : ''}`;
+        }
+
+        if (finalLength) {
+            finalLength.textContent = `${data.final_length || 0} chars`;
+        }
+
+        if (compressionUsed) {
+            if (data.compression_used) {
+                compressionUsed.textContent = 'Compression used';
+                compressionUsed.className = 'status-badge compression-used';
+            } else {
+                compressionUsed.textContent = 'No compression';
+                compressionUsed.className = 'status-badge';
+            }
+        }
+
+        if (expansionUsed) {
+            if (data.expansion_used) {
+                expansionUsed.textContent = 'Expansion used';
+                expansionUsed.className = 'status-badge expansion-used';
+            } else {
+                expansionUsed.textContent = 'No expansion';
+                expansionUsed.className = 'status-badge';
+            }
+        }
+
+        // Display pipeline steps
+        const stepsContainer = document.getElementById('pipeline-steps-container');
+        if (stepsContainer && data.pipeline_steps) {
+            stepsContainer.innerHTML = '';
+            
+            data.pipeline_steps.forEach((step, index) => {
+                const stepElement = this.createPipelineStepElement(step, index);
+                stepsContainer.appendChild(stepElement);
+            });
+        }
+    }
+
+    createPipelineStepElement(step, index) {
+        const stepDiv = document.createElement('div');
+        stepDiv.className = 'pipeline-step';
+
+        const stepTitle = this.getStepTitle(step.step);
+        const stepMeta = this.getStepMeta(step);
+
+        stepDiv.innerHTML = `
+            <div class="pipeline-step-header">
+                <div class="pipeline-step-title">${stepTitle}</div>
+                <div class="pipeline-step-meta">${stepMeta}</div>
+            </div>
+            <div class="pipeline-step-content">
+                <div class="pipeline-step-input">
+                    <div class="pipeline-step-label">Input:</div>
+                    <div>${this.truncateText(step.input, 200)}</div>
+                </div>
+                <div class="pipeline-step-output">
+                    <div class="pipeline-step-label">Output:</div>
+                    <div>${this.truncateText(step.output, 200)}</div>
+                </div>
+                ${step.llm_call ? `
+                    <div class="pipeline-step-llm-call">
+                        <div class="pipeline-step-label">LLM Call:</div>
+                        <div><strong>Provider:</strong> ${step.llm_call.provider || 'Unknown'}</div>
+                        <div><strong>Model:</strong> ${step.llm_call.model || 'Unknown'}</div>
+                        ${step.llm_call.system_prompt ? `<div><strong>System Prompt:</strong> ${this.truncateText(step.llm_call.system_prompt, 100)}</div>` : ''}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+
+        return stepDiv;
+    }
+
+    getStepTitle(stepType) {
+        const titles = {
+            'initial_generation': 'Initial Generation',
+            'compression': 'Compression',
+            'expansion': 'Expansion'
+        };
+        return titles[stepType] || stepType;
+    }
+
+    getStepMeta(step) {
+        const inputLength = step.input ? step.input.length : 0;
+        const outputLength = step.output ? step.output.length : 0;
+        return `${inputLength} → ${outputLength} chars`;
+    }
+
+    truncateText(text, maxLength) {
+        if (!text) return '';
+        if (text.length <= maxLength) return text;
+        return text.substring(0, maxLength) + '...';
     }
 }
 
