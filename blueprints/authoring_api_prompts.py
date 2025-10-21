@@ -372,11 +372,16 @@ def api_generate_image_prompt_from_builder():
                 'llm_call': {'provider': llm_provider, 'model': llm_model, 'messages': messages, 'system_prompt': system_prompt}
             })
             
+            # Get model-specific character limit first
+            imaging_limit = 2000  # Default for GPT-Image-1
+            if 'sdxl' in llm_model.lower():
+                imaging_limit = 400
+            
             # Apply compression if enabled and needed
             compression_used = False
-            if enable_compression and len(generated_prompt) > 400:
-                # Simple compression - truncate to 400 chars
-                generated_prompt = generated_prompt[:400].rsplit(' ', 1)[0] + '.'
+            if enable_compression and len(generated_prompt) > imaging_limit:
+                # Simple compression - truncate to model's character limit
+                generated_prompt = generated_prompt[:imaging_limit].rsplit(' ', 1)[0] + '.'
                 compression_used = True
                 
                 pipeline_steps.append({
@@ -402,10 +407,7 @@ def api_generate_image_prompt_from_builder():
                         'llm_call': None
                     })
             
-            # Get model-specific character limit
-            imaging_limit = 2000  # Default for GPT-Image-1
-            if 'sdxl' in llm_model.lower():
-                imaging_limit = 400
+            # imaging_limit already calculated above
             
             # Save to database
             try:
