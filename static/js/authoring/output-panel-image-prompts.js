@@ -195,7 +195,6 @@ class ImagePromptsOutputPanel {
     async generateImagePrompt() {
         console.log('[DEBUG] generateImagePrompt called');
         console.log('[DEBUG] this.currentSection:', this.currentSection);
-        console.log('[DEBUG] window.promptBuilderPanel:', window.promptBuilderPanel);
         
         if (!this.currentSection) {
             console.warn('[ImagePromptsOutputPanel] No section selected');
@@ -216,28 +215,60 @@ class ImagePromptsOutputPanel {
         }
 
         try {
-            // Use the prompt builder's generation method to get the proper LLM call
-            if (!window.promptBuilderPanel) {
-                throw new Error('Prompt builder panel not available');
+            // Get the exact raw HTTP request from the Complete LLM Input field
+            const llmMessageDisplay = document.getElementById('llm-message-display');
+            if (!llmMessageDisplay || !llmMessageDisplay.value.trim()) {
+                throw new Error('No LLM message available. Please ensure a concept is selected and the Complete LLM Input field is populated.');
             }
             
-            // Check if we have the required data
-            if (!window.promptBuilderPanel.currentSection || !window.promptBuilderPanel.selectedConceptContent) {
-                throw new Error('Please select a section and concept first');
+            const rawHttpRequest = llmMessageDisplay.value.trim();
+            console.log('[ImagePromptsOutputPanel] Using raw HTTP request from Complete LLM Input field');
+            
+            // Parse the raw HTTP request to extract the JSON payload
+            const jsonMatch = rawHttpRequest.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) {
+                throw new Error('Could not parse JSON from raw HTTP request');
             }
             
-            // Use the prompt builder's generation method
-            await window.promptBuilderPanel.generatePrompt();
+            const requestPayload = JSON.parse(jsonMatch[0]);
+            console.log('[ImagePromptsOutputPanel] Parsed request payload:', requestPayload);
             
-            // Dispatch event to trigger intercept panel refresh
-            window.dispatchEvent(new CustomEvent('llmGenerationComplete', {
-                detail: {
-                    sectionId: this.currentSection.id,
-                    section: this.currentSection
+            // Send the exact stored messages to the LLM
+            const response = await fetch('/authoring/api/generate-image-prompt-from-builder-v2', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    post_id: window.postId,
+                    section_id: this.currentSection.id,
+                    exact_messages: requestPayload.messages,
+                    exact_model: requestPayload.model,
+                    exact_options: requestPayload.options,
+                    use_exact_request: true
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.success && result.image_prompt) {
+                // Display the generated prompt
+                const textarea = document.getElementById('generated-prompt-textarea');
+                if (textarea) {
+                    textarea.value = result.image_prompt;
                 }
-            }));
-            
-            console.log('[ImagePromptsOutputPanel] Generation completed via prompt builder');
+                
+                // Update metadata
+                this.updatePromptMetadata(result);
+                
+                console.log('[ImagePromptsOutputPanel] Generation completed using exact stored messages');
+            } else {
+                throw new Error(result.error || 'Unknown error occurred');
+            }
             
         } catch (error) {
             console.error('[ImagePromptsOutputPanel] Error generating prompt:', error);

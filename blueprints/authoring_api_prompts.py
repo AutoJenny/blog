@@ -50,11 +50,85 @@ def apply_model_aware_substitutions(text, max_chars):
     return t
 
 
+def handle_exact_request(data):
+    """Handle request using exact stored messages from Complete LLM Input field"""
+    try:
+        post_id = data.get('post_id')
+        section_id = data.get('section_id')
+        exact_messages = data.get('exact_messages')
+        exact_model = data.get('exact_model')
+        exact_options = data.get('exact_options')
+        
+        if not post_id or not section_id:
+            return jsonify({'error': 'Missing post_id or section_id'}), 400
+            
+        if not exact_messages:
+            return jsonify({'error': 'Missing exact_messages'}), 400
+        
+        logger.info(f"[DEBUG] Using exact stored messages for post_id={post_id}, section_id={section_id}")
+        
+        # Create intercept context
+        intercept_context = {
+            'post_id': post_id,
+            'section_id': section_id
+        }
+        
+        # Determine provider from model
+        provider = 'ollama' if 'llama' in exact_model.lower() else 'openai'
+        
+        # Execute LLM request with exact stored messages
+        result = llm_service.execute_llm_request(
+            provider=provider,
+            model=exact_model,
+            messages=exact_messages,
+            intercept_context=intercept_context
+        )
+        
+        if result and result.get('success'):
+            response_content = result.get('response', '')
+            
+            # Try to extract JSON from response
+            try:
+                import re
+                json_match = re.search(r'\{[^}]*"image_prompt"[^}]*\}', response_content)
+                if json_match:
+                    import json
+                    response_json = json.loads(json_match.group())
+                    image_prompt = response_json.get('image_prompt', response_content)
+                else:
+                    image_prompt = response_content
+            except:
+                image_prompt = response_content
+            
+            return jsonify({
+                'success': True,
+                'image_prompt': image_prompt,
+                'message': 'Image prompt generated using exact stored messages',
+                'actual_llm_messages': exact_messages,
+                'character_limit': 2000,
+                'compression_used': False,
+                'expansion_used': False,
+                'final_length': len(image_prompt)
+            })
+        else:
+            return jsonify({'error': 'LLM request failed'}), 500
+            
+    except Exception as e:
+        logger.error(f"Error handling exact request: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
 @bp.route('/api/generate-image-prompt-from-builder-v2', methods=['POST'])
 def api_generate_image_prompt_from_builder():
     """Generate image prompt using the compiled prompt from Prompt Builder"""
     try:
         data = request.get_json()
+        
+        # Check if we're using exact stored messages
+        use_exact_request = data.get('use_exact_request', False)
+        if use_exact_request:
+            return handle_exact_request(data)
+        
         compiled_prompt = data.get('compiled_prompt')
         post_id = data.get('post_id')
         section_id = data.get('section_id')
