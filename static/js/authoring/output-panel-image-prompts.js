@@ -262,9 +262,6 @@ class ImagePromptsOutputPanel {
                     textarea.value = result.image_prompt;
                 }
                 
-                // Update metadata
-                this.updatePromptMetadata(result);
-                
                 console.log('[ImagePromptsOutputPanel] Generation completed using exact stored messages');
             } else {
                 throw new Error(result.error || 'Unknown error occurred');
