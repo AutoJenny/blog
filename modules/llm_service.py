@@ -49,6 +49,8 @@ class LLMService:
                 self._store_intercepted_message(intercepted_message, intercept_context)
                 # Store the raw messages array as JSON for retrieval
                 self._store_raw_messages(messages, intercept_context)
+                # Store the complete API request data
+                self._store_complete_api_request(provider, model, messages, api_key, intercept_context)
             
             # STEP 2: Retrieve the stored messages to ensure we send exactly what was stored
             if intercept_context:
@@ -166,7 +168,7 @@ class LLMService:
             
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
-                    SELECT intercepted_message, raw_messages, created_at
+                    SELECT intercepted_message, raw_messages, complete_api_request, created_at
                     FROM llm_message_intercepts 
                     WHERE post_id = %s AND section_id = %s
                     ORDER BY created_at DESC
@@ -178,6 +180,7 @@ class LLMService:
                     return {
                         'message': result['intercepted_message'],
                         'raw_messages': result['raw_messages'],
+                        'complete_api_request': result['complete_api_request'],
                         'created_at': result['created_at']
                     }
                 return None
@@ -253,6 +256,73 @@ class LLMService:
         except Exception as e:
             logger.error(f"Error retrieving raw messages: {e}")
             return None
+    
+    def _store_complete_api_request(self, provider, model, messages, api_key, context):
+        """Store the complete API request data that gets sent to the LLM."""
+        try:
+            from config.database import db_manager
+            import json
+            
+            post_id = context.get('post_id')
+            section_id = context.get('section_id')
+            
+            # Section ID must be numeric
+            if not isinstance(section_id, int) and not (isinstance(section_id, str) and section_id.isdigit()):
+                logger.error(f"Invalid section_id: {section_id}. Must be numeric.")
+                return
+            
+            section_id = int(section_id)
+            
+            # Build the complete API request data
+            if provider == 'openai':
+                api_request = {
+                    "url": f"{self.providers[provider]['base_url']}/chat/completions",
+                    "headers": {
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json"
+                    },
+                    "data": {
+                        "model": model,
+                        "messages": messages,
+                        "temperature": 0.7,
+                        "max_tokens": 2000
+                    }
+                }
+            elif provider == 'ollama':
+                api_request = {
+                    "url": f"{self.providers[provider]['base_url']}/api/chat",
+                    "headers": {
+                        "Content-Type": "application/json"
+                    },
+                    "data": {
+                        "model": model,
+                        "messages": messages,
+                        "stream": False,
+                        "options": {
+                            "num_predict": 4000
+                        }
+                    }
+                }
+            else:
+                logger.error(f"Unknown provider: {provider}")
+                return
+            
+            # Serialize to JSON
+            api_request_json = json.dumps(api_request, indent=2)
+            
+            with db_manager.get_cursor() as cursor:
+                # Update the existing row to add complete_api_request column
+                cursor.execute("""
+                    UPDATE llm_message_intercepts
+                    SET complete_api_request = %s
+                    WHERE post_id = %s AND section_id = %s
+                """, (api_request_json, post_id, section_id))
+                
+                cursor.connection.commit()
+                logger.info(f"Stored complete API request for post {post_id}, section {section_id}")
+                
+        except Exception as e:
+            logger.error(f"Error storing complete API request: {e}")
 
 
 # Initialize LLM service instance

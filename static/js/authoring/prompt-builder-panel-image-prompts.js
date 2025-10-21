@@ -391,19 +391,19 @@ class PromptBuilderPanel {
             const response = await fetch(`/authoring/api/posts/${this.postId}/sections/${config.sectionId}/intercepted-message`);
             if (response.ok) {
                 const data = await response.json();
-                if (data.success && data.raw_messages) {
-                    // Display the EXACT raw messages JSON that goes to the LLM
-                    const exactLLMInput = JSON.stringify(data.raw_messages, null, 2);
-                    
-                    // Update the display with the exact raw messages JSON
-                    const llmInputDisplay = document.getElementById('llm-input-display');
-                    if (llmInputDisplay) {
-                        llmInputDisplay.value = exactLLMInput;
-                    }
-                    
-                    console.log('[PromptBuilderPanel] Displayed exact LLM input JSON:', exactLLMInput.substring(0, 200) + '...');
-                    return;
+            if (data.success && data.complete_api_request) {
+                // Display the EXACT complete API request that goes to the LLM
+                const exactLLMInput = data.complete_api_request;
+                
+                // Update the display with the exact complete API request
+                const llmInputDisplay = document.getElementById('llm-input-display');
+                if (llmInputDisplay) {
+                    llmInputDisplay.value = exactLLMInput;
                 }
+                
+                console.log('[PromptBuilderPanel] Displayed exact complete API request:', exactLLMInput.substring(0, 200) + '...');
+                return;
+            }
             }
             
             // Fallback: if no stored messages, show placeholder

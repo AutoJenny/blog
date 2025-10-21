@@ -67,17 +67,17 @@ class LLMMessageInterceptPanel {
             
             const data = await response.json();
             
-            if (data.success && data.raw_messages) {
-                // Display the exact raw messages JSON that goes to the LLM
-                const exactLLMInput = JSON.stringify(data.raw_messages, null, 2);
+            if (data.success && data.complete_api_request) {
+                // Display the exact complete API request that goes to the LLM
+                const exactLLMInput = data.complete_api_request;
                 this.currentMessage = exactLLMInput;
                 this.isReady = true;
-                this.updateMessage(exactLLMInput, `Exact LLM JSON (${data.created_at ? new Date(data.created_at).toLocaleString() : 'unknown time'})`, true);
+                this.updateMessage(exactLLMInput, `Complete API Request (${data.created_at ? new Date(data.created_at).toLocaleString() : 'unknown time'})`, true);
                 
-                console.log('[LLMMessageIntercept] Loaded exact LLM input JSON');
+                console.log('[LLMMessageIntercept] Loaded complete API request');
             } else {
                 // No intercepted message yet - show placeholder
-                this.updateMessage('', 'No LLM call made yet - exact JSON will appear here after generation', false);
+                this.updateMessage('', 'No LLM call made yet - complete API request will appear here after generation', false);
                 console.log('[LLMMessageIntercept] No intercepted message found yet');
             }
             
