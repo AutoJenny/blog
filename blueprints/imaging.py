@@ -21,7 +21,7 @@ def imaging_generate_dalle_image(image_prompt, post_id, section_id, parameters):
         
         # Extract parameters
         size = parameters.get('size', '1792x1024')
-        quality = parameters.get('quality', 'standard')
+        quality = parameters.get('quality', 'high')
         style = parameters.get('style', 'natural')
         
         # Call DALL-E API
@@ -92,7 +92,7 @@ def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters):
         
         # Extract parameters
         size = parameters.get('size', '1024x1024')
-        quality = parameters.get('quality', 'standard')
+        quality = parameters.get('quality', 'high')
         n = parameters.get('n', 1)
         seed = parameters.get('seed')
         background = parameters.get('background')
@@ -547,34 +547,43 @@ def imaging_save_llm_config():
 
 @bp.route('/api/image-generation/posts/<int:post_id>/sections/<int:section_id>/generate-image', methods=['POST'])
 def imaging_generate_image(post_id, section_id):
-    """Generate image for a specific section - imaging standalone version with model-aware rendering"""
+    """Generate image for a specific section - simplified version using only full image prompt"""
     try:
         import time
-        from modules.prompt_service import prompt_service
         
         data = request.get_json()
-        model_name = data.get('model_name', 'dall-e-3')
+        model_name = data.get('model_name', 'gpt-image-1')
         parameters = data.get('parameters', {})
-        use_renderer = data.get('use_renderer', True)  # Feature flag
         
-        # Get rendered prompt using the new system
-        if use_renderer:
-            rendered_prompt, debug_info = prompt_service.render_prompt_for_model(
-                post_id, section_id, model_name, use_override=True
-            )
+        # Get the raw image prompt directly from the database
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT image_prompts FROM post_section 
+                WHERE id = %s AND post_id = %s
+            """, (section_id, post_id))
+            section_row = cursor.fetchone()
             
-            if not rendered_prompt:
-                return jsonify({'success': False, 'error': 'No prompt available for this section'})
+            if not section_row or not section_row['image_prompts']:
+                return jsonify({'success': False, 'error': 'No image prompt found for this section'})
             
-            image_prompt = rendered_prompt
-        else:
-            # Fallback to original prompt from request
-            image_prompt = data.get('image_prompt', '')
-            debug_info = {'source': 'fallback', 'model_key': model_name}
-        
-        # Validate that we have a prompt
-        if not image_prompt:
-            return jsonify({'success': False, 'error': 'No image prompt provided'})
+            # Extract the image prompt from JSON
+            prompt_data = section_row['image_prompts']
+            if isinstance(prompt_data, str):
+                try:
+                    parsed_data = json.loads(prompt_data)
+                    if isinstance(parsed_data, dict):
+                        image_prompt = parsed_data.get('image_prompt', '')
+                    else:
+                        image_prompt = prompt_data.strip()
+                except (json.JSONDecodeError, TypeError):
+                    image_prompt = prompt_data.strip()
+            elif isinstance(prompt_data, dict):
+                image_prompt = prompt_data.get('image_prompt', '')
+            else:
+                image_prompt = str(prompt_data)
+            
+            if not image_prompt:
+                return jsonify({'success': False, 'error': 'No image prompt content found'})
         
         # Verify section exists
         with db_manager.get_cursor() as cursor:
@@ -605,18 +614,6 @@ def imaging_generate_image(post_id, section_id):
             generation_time_ms = int((time.time() - start_time) * 1000)
             
             if result['success']:
-                # Log generation event
-                prompt_service.log_generation_event(
-                    post_id=post_id,
-                    section_id=section_id,
-                    model_key=model_name,
-                    params=parameters,
-                    prompt_text=image_prompt,
-                    rendered_prompt=image_prompt,
-                    result_path=result['image_path'],
-                    success=True,
-                    generation_time_ms=generation_time_ms
-                )
                 
                 return jsonify({
                     'success': True,
@@ -626,19 +623,6 @@ def imaging_generate_image(post_id, section_id):
                     'generation_time_ms': generation_time_ms
                 })
             else:
-                # Log failed generation event
-                prompt_service.log_generation_event(
-                    post_id=post_id,
-                    section_id=section_id,
-                    model_key=model_name,
-                    params=parameters,
-                    prompt_text=image_prompt,
-                    rendered_prompt=image_prompt,
-                    result_path='',
-                    success=False,
-                    error_message=result['error'],
-                    generation_time_ms=generation_time_ms
-                )
                 
                 return jsonify({'success': False, 'error': result['error']})
                 
@@ -1162,26 +1146,6 @@ def imaging_prompt_override(post_id, section_id, model_key):
         logger.error(f"Error with prompt override: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@bp.route('/api/render-prompt/posts/<int:post_id>/sections/<int:section_id>/<model_key>', methods=['GET'])
-def imaging_render_prompt(post_id, section_id, model_key):
-    """Render prompt for specific model with debug info"""
-    try:
-        from modules.prompt_service import prompt_service
-        
-        # Get rendered prompt with debug info
-        rendered_prompt, debug_info = prompt_service.render_prompt_for_model(
-            post_id, section_id, model_key, use_override=True
-        )
-        
-        return jsonify({
-            'success': True,
-            'rendered_prompt': rendered_prompt,
-            'debug_info': debug_info
-        })
-        
-    except Exception as e:
-        logger.error(f"Error rendering prompt: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
 
 @bp.route('/api/debug-prompt/posts/<int:post_id>/sections/<int:section_id>', methods=['GET'])
 def imaging_debug_prompt(post_id, section_id):

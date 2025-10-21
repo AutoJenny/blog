@@ -82,13 +82,8 @@ class PromptRenderer:
         raise NotImplementedError
     
     def _enforce_length_limit(self, prompt: str) -> str:
-        """Enforce character limit for the model"""
-        if len(prompt) <= self.max_chars:
-            return prompt
-        
-        # Truncate and add ellipsis
-        truncated = prompt[:self.max_chars - 3]
-        return truncated + "..."
+        """Return prompt as-is without length limits"""
+        return prompt
     
     def _extract_keywords(self, text: str) -> List[str]:
         """Extract keywords from text"""
@@ -104,25 +99,8 @@ class SDXLRenderer(PromptRenderer):
         self.compression_rules = self._load_compression_rules()
     
     def render(self, canonical: CanonicalPrompt, style_json: dict = None) -> str:
-        """Render canonical prompt for SDXL with progressive compression"""
-        # Level 1: Full prompt with all style details
-        full_prompt = self._build_full_prompt(canonical, style_json)
-        
-        if len(full_prompt) <= 400:
-            return full_prompt
-        
-        # Level 2: Remove least important elements (margins)
-        compressed = self._compress_level_2(full_prompt, canonical, style_json)
-        if len(compressed) <= 400:
-            return compressed
-        
-        # Level 3: Apply abbreviations
-        compressed = self._compress_level_3(compressed)
-        if len(compressed) <= 400:
-            return compressed
-        
-        # Level 4: Core concept only
-        return self._compress_level_4(canonical, style_json)
+        """Render canonical prompt for SDXL - return full prompt without truncation"""
+        return self._build_full_prompt(canonical, style_json)
     
     def _load_compression_rules(self) -> dict:
         """Load compression rules from database"""

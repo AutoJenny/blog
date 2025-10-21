@@ -39,7 +39,7 @@ class ImageGenerationService:
             
             # Use parameters or defaults
             size = parameters.get('image-dimensions', '1792x1024')
-            quality = parameters.get('quality', 'standard')
+            quality = parameters.get('quality', 'high')
             style = parameters.get('style-setting', 'natural')
             
             data = {

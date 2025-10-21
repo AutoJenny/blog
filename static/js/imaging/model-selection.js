@@ -2,7 +2,7 @@
 
 class ModelSelectionPanel {
     constructor() {
-        this.currentModel = 'sdxl-lora';
+        this.currentModel = 'gpt-image-1';
         this.parameters = {};
         this.modelSpecs = {};
         this.init();
