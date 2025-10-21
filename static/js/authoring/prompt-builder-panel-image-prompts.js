@@ -389,9 +389,8 @@ class PromptBuilderPanel {
             const compiledPrompt = this.buildCompiledPrompt(this.selectedConceptContent, config);
             textarea.value = compiledPrompt;
             
-            // NEW: Update LLM input display
-            console.log('[PromptBuilderPanel] Calling updateLLMInputDisplay');
-            this.updateLLMInputDisplay(compiledPrompt, config);
+            // Prepare and display the actual LLM message that will be sent
+            this.prepareLLMInputDisplay(compiledPrompt, config);
         } else {
             textarea.value = '';
             this.clearLLMInputDisplay();
@@ -400,54 +399,47 @@ class PromptBuilderPanel {
         this.updateCharacterCount();
     }
     
-    async updateLLMInputDisplay(compiledPrompt, config) {
-        console.log('[PromptBuilderPanel] updateLLMInputDisplay called');
+    async prepareLLMInputDisplay(compiledPrompt, config) {
+        console.log('[PromptBuilderPanel] prepareLLMInputDisplay called');
         
-        // Generate a prompt to get the actual final message sent to LLM
         try {
-            const response = await fetch('/authoring/api/generate-image-prompt-from-builder-v2', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    post_id: this.postId,
-                    section_id: this.currentSection.id,
-                    compiled_prompt: compiledPrompt,
-                    enable_compression: true,
-                    enable_expansion: false,
-                    llm_provider: 'Ollama',
-                    llm_model: 'llama3.2:latest'
-                })
-            });
-            
+            // Get the system and user prompts from the database
+            const response = await fetch('/authoring/api/llm/prompts/image-prompts');
             if (response.ok) {
                 const data = await response.json();
-                console.log('[PromptBuilderPanel] Got actual LLM messages:', data.actual_llm_messages);
-                
-                if (data.actual_llm_messages && Array.isArray(data.actual_llm_messages)) {
-                    // Combine system + user messages into the final message sent to LLM
-                    const systemMessage = data.actual_llm_messages.find(m => m.role === 'system');
-                    const userMessage = data.actual_llm_messages.find(m => m.role === 'user');
+                if (data.success && data.prompt) {
+                    const systemPrompt = data.prompt.system_prompt || '';
+                    const userPromptTemplate = data.prompt.prompt_text || '';
                     
-                    let finalMessage = '';
-                    if (systemMessage) {
-                        finalMessage += `SYSTEM: ${systemMessage.content}\n\n`;
-                    }
-                    if (userMessage) {
-                        finalMessage += `USER: ${userMessage.content}`;
-                    }
+                    // Prepare the actual user message with placeholder substitution
+                    const userMessage = this.prepareUserMessage(userPromptTemplate, compiledPrompt);
                     
-                    // Update the single field with the complete message
+                    // Build the complete LLM message that will be sent
+                    let completeMessage = '';
+                    if (systemPrompt) {
+                        completeMessage += `SYSTEM MESSAGE:\n${systemPrompt}\n\n`;
+                    }
+                    completeMessage += `USER MESSAGE:\n${userMessage}`;
+                    
+                    // Update the display
                     const llmInputDisplay = document.getElementById('llm-input-display');
                     if (llmInputDisplay) {
-                        llmInputDisplay.value = finalMessage;
+                        llmInputDisplay.value = completeMessage;
                     }
+                    
+                    console.log('[PromptBuilderPanel] Prepared LLM message:', completeMessage.substring(0, 200) + '...');
                 }
             }
         } catch (error) {
-            console.error('[PromptBuilderPanel] Error getting LLM messages:', error);
+            console.error('[PromptBuilderPanel] Error preparing LLM message:', error);
+            this.clearLLMInputDisplay();
         }
+    }
+    
+    prepareUserMessage(userPromptTemplate, compiledPrompt) {
+        // Replace the [data:selected_concept] placeholder with the compiled prompt
+        // This matches the server-side substitution logic
+        return userPromptTemplate.replace('[data:selected_concept]', compiledPrompt);
     }
     
     extractStyleDetails(userMessage) {
@@ -466,32 +458,12 @@ class PromptBuilderPanel {
         }
     }
     
-    updateLLMInputDisplayFallback(compiledPrompt, config) {
-        // Fallback when we can't fetch from database
-        const systemPromptDisplay = document.getElementById('system-prompt-display');
-        if (systemPromptDisplay) {
-            systemPromptDisplay.value = 'System prompt not available - check database connection';
-        }
-        
-        const userPromptDisplay = document.getElementById('user-prompt-display');
-        if (userPromptDisplay) {
-            userPromptDisplay.value = compiledPrompt;
-        }
-        
-        const styleDetailsDisplay = document.getElementById('style-details-display');
-        if (styleDetailsDisplay) {
-            styleDetailsDisplay.value = config.style;
-        }
-    }
     
     clearLLMInputDisplay() {
-        const systemPromptDisplay = document.getElementById('system-prompt-display');
-        const userPromptDisplay = document.getElementById('user-prompt-display');
-        const styleDetailsDisplay = document.getElementById('style-details-display');
-        
-        if (systemPromptDisplay) systemPromptDisplay.value = '';
-        if (userPromptDisplay) userPromptDisplay.value = '';
-        if (styleDetailsDisplay) styleDetailsDisplay.value = '';
+        const llmInputDisplay = document.getElementById('llm-input-display');
+        if (llmInputDisplay) {
+            llmInputDisplay.value = '';
+        }
     }
 
     buildCompiledPrompt(conceptContent, config) {
