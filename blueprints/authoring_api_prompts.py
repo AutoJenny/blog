@@ -84,9 +84,12 @@ def handle_exact_request(data):
             intercept_context=intercept_context
         )
         
-        if result and result.get('success'):
-            response_content = result.get('response', '')
-            logger.info(f"[DEBUG] LLM response: {response_content[:200]}...")
+        logger.info(f"[DEBUG] LLM result: {result}")
+        
+        if result:
+            # The result contains the response content directly
+            response_content = result.get('content', '') or result.get('response', '')
+            logger.info(f"[DEBUG] LLM response content: {response_content[:200]}...")
             
             # Try to extract JSON from response
             try:
