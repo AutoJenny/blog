@@ -253,14 +253,19 @@ def api_image_prompts_prompt():
             if request.method == 'PUT':
                 # Update the prompt
                 data = request.get_json()
-                system_prompt = data.get('system_prompt', '')
+                system_prompt_template = data.get('system_prompt', '')
                 prompt_text = data.get('prompt_text', '')
+                
+                # Create complete system prompt by adding JSON format instruction
+                system_prompt_complete = system_prompt_template
+                if system_prompt_template and not system_prompt_template.endswith('JSON object'):
+                    system_prompt_complete += '\n\nIMPORTANT: Respond ONLY with a JSON object in this exact format: {"image_prompt": "..."}. No commentary or meta text.'
                 
                 cursor.execute("""
                     UPDATE llm_prompt 
-                    SET system_prompt = %s, prompt_text = %s
+                    SET system_prompt_template = %s, system_prompt = %s, prompt_text = %s
                     WHERE name = 'Image Prompts Generation'
-                """, (system_prompt, prompt_text))
+                """, (system_prompt_template, system_prompt_complete, prompt_text))
                 
                 cursor.connection.commit()
                 
@@ -271,7 +276,7 @@ def api_image_prompts_prompt():
             else:
                 # Get the prompt
                 cursor.execute("""
-                    SELECT name, prompt_text, system_prompt, updated_at
+                    SELECT name, prompt_text, system_prompt, system_prompt_template, updated_at
                     FROM llm_prompt 
                     WHERE name = 'Image Prompts Generation'
                     ORDER BY updated_at DESC 
@@ -282,12 +287,15 @@ def api_image_prompts_prompt():
                 if not prompt_data:
                     return jsonify({'error': 'Image Prompts prompt not found'}), 404
                 
+                # Use template version for LLM Prompts Panel display
+                system_prompt_for_display = prompt_data['system_prompt_template'] or prompt_data['system_prompt']
+                
                 return jsonify({
                     'success': True,
                     'prompt': {
                         'name': prompt_data['name'],
                         'prompt_text': prompt_data['prompt_text'],
-                        'system_prompt': prompt_data['system_prompt'],
+                        'system_prompt': system_prompt_for_display,
                         'updated_at': prompt_data['updated_at'].isoformat() if prompt_data['updated_at'] else None
                     }
                 })
