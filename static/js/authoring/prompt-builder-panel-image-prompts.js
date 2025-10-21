@@ -25,7 +25,29 @@ class PromptBuilderPanel {
         this.setupEventListeners();
         this.setupAccordion();
         this.setupTransparencyControls();
+        this.loadFirstSection();
         console.log('[PromptBuilderPanel] Initialized for post:', this.postId);
+    }
+    
+    async loadFirstSection() {
+        try {
+            console.log('[PromptBuilderPanel] Loading first section...');
+            const response = await fetch(`/authoring/api/posts/${this.postId}/sections`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.sections && data.sections.length > 0) {
+                    const firstSection = data.sections[0];
+                    console.log('[PromptBuilderPanel] Selecting first section:', firstSection.id);
+                    this.onSectionSelected(firstSection);
+                } else {
+                    console.log('[PromptBuilderPanel] No sections found');
+                }
+            } else {
+                console.error('[PromptBuilderPanel] Failed to load sections:', response.status);
+            }
+        } catch (error) {
+            console.error('[PromptBuilderPanel] Error loading first section:', error);
+        }
     }
 
     async loadModelSelection() {
@@ -355,8 +377,12 @@ class PromptBuilderPanel {
     }
 
     updateCompiledPromptPreview() {
+        console.log('[PromptBuilderPanel] updateCompiledPromptPreview called');
         const textarea = document.getElementById('compiled-prompt-textarea');
-        if (!textarea || !this.currentSection) return;
+        if (!textarea || !this.currentSection) {
+            console.log('[PromptBuilderPanel] Missing textarea or currentSection:', { textarea: !!textarea, currentSection: !!this.currentSection });
+            return;
+        }
 
         if (this.selectedConceptContent) {
             const config = this.modelConfig[this.modelSelection] || this.modelConfig['sdxl-lora'];
@@ -364,6 +390,7 @@ class PromptBuilderPanel {
             textarea.value = compiledPrompt;
             
             // NEW: Update LLM input display
+            console.log('[PromptBuilderPanel] Calling updateLLMInputDisplay');
             this.updateLLMInputDisplay(compiledPrompt, config);
         } else {
             textarea.value = '';
@@ -374,30 +401,46 @@ class PromptBuilderPanel {
     }
     
     async updateLLMInputDisplay(compiledPrompt, config) {
+        console.log('[PromptBuilderPanel] updateLLMInputDisplay called with:', { compiledPrompt: compiledPrompt?.substring(0, 50), config: config?.style });
+        
         try {
             // Fetch the actual system prompt and user prompt from the database
             const response = await fetch(`/authoring/api/posts/${this.postId}/sections/${this.currentSection.id}/llm-prompt-details`);
+            console.log('[PromptBuilderPanel] API response status:', response.status);
+            
             if (response.ok) {
                 const data = await response.json();
+                console.log('[PromptBuilderPanel] API data received:', { 
+                    success: data.success, 
+                    systemLength: data.system_prompt?.length,
+                    userLength: data.user_prompt?.length 
+                });
                 
                 // Update system prompt display
                 const systemPromptDisplay = document.getElementById('system-prompt-display');
+                console.log('[PromptBuilderPanel] System prompt element found:', !!systemPromptDisplay);
                 if (systemPromptDisplay) {
                     systemPromptDisplay.value = data.system_prompt || 'No system prompt found';
+                    console.log('[PromptBuilderPanel] System prompt updated');
                 }
                 
                 // Update user prompt display
                 const userPromptDisplay = document.getElementById('user-prompt-display');
+                console.log('[PromptBuilderPanel] User prompt element found:', !!userPromptDisplay);
                 if (userPromptDisplay) {
                     userPromptDisplay.value = data.user_prompt || compiledPrompt;
+                    console.log('[PromptBuilderPanel] User prompt updated');
                 }
                 
                 // Update style details display
                 const styleDetailsDisplay = document.getElementById('style-details-display');
+                console.log('[PromptBuilderPanel] Style details element found:', !!styleDetailsDisplay);
                 if (styleDetailsDisplay) {
                     styleDetailsDisplay.value = data.style_details || config.style;
+                    console.log('[PromptBuilderPanel] Style details updated');
                 }
             } else {
+                console.log('[PromptBuilderPanel] API response not OK, using fallback');
                 // Fallback: show what we have
                 this.updateLLMInputDisplayFallback(compiledPrompt, config);
             }
