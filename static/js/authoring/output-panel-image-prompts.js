@@ -216,66 +216,21 @@ class ImagePromptsOutputPanel {
         }
 
         try {
-            // Get concept content from prompt builder panel if available
-            let conceptContent = null;
-            if (window.promptBuilderPanel && window.promptBuilderPanel.selectedConceptContent) {
-                conceptContent = window.promptBuilderPanel.selectedConceptContent;
-                console.log('[DEBUG] Found concept content:', conceptContent);
-            } else {
-                console.log('[DEBUG] No concept content found. promptBuilderPanel:', window.promptBuilderPanel);
-                if (window.promptBuilderPanel) {
-                    console.log('[DEBUG] selectedConceptContent:', window.promptBuilderPanel.selectedConceptContent);
-                }
+            // Use the prompt builder's generation method to get the proper LLM call
+            if (!window.promptBuilderPanel) {
+                throw new Error('Prompt builder panel not available');
             }
-
-            if (!conceptContent) {
-                throw new Error('No concept content available. Please select a concept in the Image Prompt Builder panel.');
-            }
-
-            const config = window.promptBuilderPanel?.modelConfig?.[window.promptBuilderPanel?.modelSelection] || 
-                          { limit: 400, style: 'inkwash and watercolour' };
             
-            const compiledPrompt = window.promptBuilderPanel?.buildCompiledPrompt(conceptContent, config) || 
-                                  `Create an image showing: ${conceptContent.description}`;
-            
-            const response = await fetch('/authoring/api/generate-image-prompt-from-builder', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    post_id: this.postId,
-                    section_id: this.currentSection.id,
-                    selected_concept: this.currentSection.selected_image_concept,
-                    concept_content: conceptContent,
-                    imaging_model: window.promptBuilderPanel?.modelSelection || 'sdxl-lora',
-                    character_limit: config.limit,
-                    compiled_prompt: compiledPrompt,
-                    style_guidelines: config.style
-                })
-            });
-
-            console.log('[ImagePromptsOutputPanel] API request sent with:', {
-                compiled_prompt: compiledPrompt,
-                concept_content: conceptContent,
-                section_id: this.currentSection.id
-            });
-
-            if (!response.ok) {
-                throw new Error(`Generation failed: ${response.statusText}`);
+            // Check if we have the required data
+            if (!window.promptBuilderPanel.currentSection || !window.promptBuilderPanel.selectedConceptContent) {
+                throw new Error('Please select a section and concept first');
             }
-
-            const data = await response.json();
-            console.log('[ImagePromptsOutputPanel] Generation response:', data);
             
-            if (data.image_prompt) {
-                this.currentPrompt = data.image_prompt;
-                this.currentMetadata = data;
-                this.displayPrompt(data.image_prompt, data);
-                this.updateButtonStates();
-            } else {
-                throw new Error('No prompt generated');
-            }
+            // Use the prompt builder's generation method
+            await window.promptBuilderPanel.generatePrompt();
+            
+            // The prompt builder will handle the LLM call and trigger the intercept panel refresh
+            console.log('[ImagePromptsOutputPanel] Generation completed via prompt builder');
             
         } catch (error) {
             console.error('[ImagePromptsOutputPanel] Error generating prompt:', error);

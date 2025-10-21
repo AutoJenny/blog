@@ -541,3 +541,87 @@ def api_save_style_guidelines():
     except Exception as e:
         logger.error(f"Error saving style guidelines: {e}")
         return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/generate-image-prompt-from-stored-message', methods=['POST'])
+def api_generate_image_prompt_from_stored_message():
+    """Generate image prompt using stored message from intercept panel"""
+    try:
+        data = request.get_json()
+        post_id = data.get('post_id')
+        section_id = data.get('section_id')
+        stored_message = data.get('stored_message')
+        
+        if not all([post_id, section_id, stored_message]):
+            return jsonify({'error': 'Missing required parameters'}), 400
+        
+        if not llm_service:
+            return jsonify({'error': 'LLM service not available'}), 500
+        
+        # Parse the stored message to extract system and user messages
+        messages = []
+        
+        if 'SYSTEM MESSAGE:' in stored_message and 'USER MESSAGE:' in stored_message:
+            parts = stored_message.split('USER MESSAGE:')
+            if len(parts) == 2:
+                system_part = parts[0].replace('SYSTEM MESSAGE:', '').strip()
+                user_part = parts[1].strip()
+                
+                if system_part:
+                    messages.append({'role': 'system', 'content': system_part})
+                messages.append({'role': 'user', 'content': user_part})
+        else:
+            # Fallback: treat entire message as user message
+            messages.append({'role': 'user', 'content': stored_message})
+        
+        # Execute LLM request with intercept context
+        intercept_context = {
+            'post_id': post_id,
+            'section_id': section_id
+        }
+        result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages, intercept_context=intercept_context)
+        
+        if 'error' in result:
+            return jsonify({'error': f'LLM generation failed: {result["error"]}'}), 500
+        
+        # Parse the response
+        try:
+            response_data = json.loads(result['content'])
+            if 'image_prompt' in response_data:
+                return jsonify({
+                    'success': True,
+                    'image_prompt': response_data['image_prompt']
+                })
+            else:
+                return jsonify({'error': 'Invalid response format from LLM'}), 500
+        except json.JSONDecodeError:
+            return jsonify({'error': 'LLM returned invalid JSON'}), 500
+            
+    except Exception as e:
+        logger.error(f"Error generating image prompt from stored message: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/sections/<section_id>/intercepted-message', methods=['GET'])
+def api_get_intercepted_message(post_id, section_id):
+    """Get the most recent intercepted LLM message for a post/section"""
+    try:
+        if not llm_service:
+            return jsonify({'error': 'LLM service not available'}), 500
+        
+        intercepted_data = llm_service.get_intercepted_message(post_id, section_id)
+        
+        if intercepted_data:
+            return jsonify({
+                'success': True,
+                'message': intercepted_data['message'],
+                'created_at': intercepted_data['created_at'].isoformat() if intercepted_data['created_at'] else None
+            })
+        else:
+            return jsonify({
+                'success': True,
+                'message': None,
+                'created_at': None
+            })
+            
+    except Exception as e:
+        logger.error(f"Error getting intercepted message: {e}")
+        return jsonify({'error': str(e)}), 500

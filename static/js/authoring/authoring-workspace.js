@@ -236,6 +236,18 @@ function restoreAccordionStates() {
             icon.classList.add('fa-chevron-down');
         }
     }
+    
+    // Restore LLM Message accordion state
+    const llmMessageState = localStorage.getItem('llm-message-accordion-state');
+    if (llmMessageState === 'open') {
+        const content = document.getElementById('llm-message-accordion-content');
+        const icon = document.getElementById('llm-message-accordion-icon');
+        if (content && icon) {
+            content.style.display = 'block';
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    }
 }
 
 // Initialize when DOM is ready

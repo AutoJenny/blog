@@ -1,0 +1,151 @@
+<!-- LLM Message Intercept Panel -->
+<style>
+.llm-message-intercept-panel {
+    background: #1e293b;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    padding: 1rem;
+}
+
+.llm-message-intercept-panel .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+}
+
+.llm-message-intercept-panel .panel-header h4 {
+    margin: 0;
+    color: #e2e8f0;
+}
+
+.llm-message-intercept-panel .panel-header .header-actions {
+    color: #94a3b8;
+}
+
+.llm-message-intercept-panel .panel-content {
+    margin-top: 1rem;
+}
+
+.llm-message-intercept-panel .form-group {
+    margin-bottom: 1rem;
+}
+
+.llm-message-intercept-panel .form-group label {
+    color: #e2e8f0;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.llm-message-intercept-panel .form-control {
+    background: #0f172a;
+    border: 1px solid #334155;
+    color: #e2e8f0;
+    border-radius: 4px;
+    padding: 0.75rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.llm-message-intercept-panel .form-text {
+    color: #94a3b8;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.llm-message-intercept-panel .message-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+}
+
+.llm-message-intercept-panel .status-indicator {
+    color: #fbbf24;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.llm-message-intercept-panel .status-indicator.ready {
+    color: #10b981;
+}
+
+.llm-message-intercept-panel .status-indicator.not-ready {
+    color: #f59e0b;
+}
+
+.llm-message-intercept-panel .character-count {
+    color: #94a3b8;
+    font-size: 0.75rem;
+}
+</style>
+
+<div class="llm-message-intercept-panel" id="llm-message-intercept-panel">
+    <div class="panel-header" onclick="toggleLLMMessageAccordion()">
+        <h4><span class="panel-name-green">Complete LLM Input (What the LLM Actually Receives):</span></h4>
+        <div class="header-actions">
+            <i class="fas fa-chevron-up" id="llm-message-accordion-icon"></i>
+        </div>
+    </div>
+    
+    <div class="panel-content" id="llm-message-accordion-content" style="display: none;">
+        <div class="form-group">
+            <label for="llm-message-display">Ready-to-Send Message:</label>
+            <textarea 
+                id="llm-message-display" 
+                class="form-control" 
+                rows="15" 
+                readonly
+                placeholder="Message will be assembled here when a concept is selected..."
+            ></textarea>
+            <div class="form-text">
+                This shows the exact message that will be sent to the LLM. 
+                All LLM calls use only this stored message.
+            </div>
+        </div>
+        
+        <div class="message-status">
+            <span id="message-status-indicator" class="status-indicator">No message ready</span>
+            <span id="message-character-count" class="character-count">0 characters</span>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleLLMMessageAccordion() {
+    const content = document.getElementById('llm-message-accordion-content');
+    const icon = document.getElementById('llm-message-accordion-icon');
+    
+    if (content.style.display === 'none' || content.style.display === '') {
+        content.style.display = 'block';
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+        localStorage.setItem('llm-message-accordion-state', 'open');
+    } else {
+        content.style.display = 'none';
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+        localStorage.setItem('llm-message-accordion-state', 'closed');
+    }
+}
+
+// Restore accordion state on page load
+function restoreLLMMessageAccordionState() {
+    const savedState = localStorage.getItem('llm-message-accordion-state');
+    if (savedState === 'open') {
+        const content = document.getElementById('llm-message-accordion-content');
+        const icon = document.getElementById('llm-message-accordion-icon');
+        if (content && icon) {
+            content.style.display = 'block';
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    }
+}
+
+// Restore state when DOM is ready
+document.addEventListener('DOMContentLoaded', restoreLLMMessageAccordionState);
+</script>

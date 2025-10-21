@@ -21,6 +21,7 @@
 </script>
 <script src="{{ url_for('static', filename='js/authoring/styles-manager.js') }}"></script>
 <script src="{{ url_for('static', filename='js/authoring/prompt-preview.js') }}"></script>
+<script src="{{ url_for('static', filename='js/authoring/llm-message-intercept-panel.js') }}"></script>
 {% endblock %}
 
 {% block title %}Image Prompts - Section Authoring{% endblock %}
@@ -49,6 +50,9 @@
             
             <!-- Prompt Builder Panel -->
             {% include 'authoring/includes/prompt_builder_panel_image_prompts.html' %}
+            
+            <!-- LLM Message Intercept Panel -->
+            {% include 'authoring/includes/llm_message_intercept_panel.html' %}
             
             <!-- Batch Progress Panel -->
             {% include 'authoring/includes/batch_progress_panel.html' %}

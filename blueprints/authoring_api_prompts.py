@@ -143,7 +143,12 @@ def api_generate_image_prompt_from_builder():
             generated_prompt = None
             
             for attempt in range(max_retries):
-                result = llm_service.execute_llm_request(llm_provider.lower(), llm_model, messages)
+                # Add intercept context for message capture
+                intercept_context = {
+                    'post_id': post_id,
+                    'section_id': section_id
+                }
+                result = llm_service.execute_llm_request(llm_provider.lower(), llm_model, messages, intercept_context=intercept_context)
                 
                 if 'error' in result:
                     if attempt == max_retries - 1:  # Last attempt

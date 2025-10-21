@@ -658,7 +658,12 @@ def api_generate_image_concepts(post_id, section_id):
             image_concepts = None
             
             for attempt in range(max_retries):
-                result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+                # Add intercept context for message capture
+                intercept_context = {
+                    'post_id': post_id,
+                    'section_id': section_id
+                }
+                result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages, intercept_context=intercept_context)
                 
                 if 'error' in result:
                     if attempt == max_retries - 1:  # Last attempt
@@ -836,7 +841,12 @@ def api_generate_image_prompt_from_builder():
         
         # Step 1: Initial generation
         messages = [{'role': 'user', 'content': compiled_prompt}]
-        result = llm_service.execute_llm_request(llm_provider.lower(), llm_model, messages)
+        # Add intercept context for message capture
+        intercept_context = {
+            'post_id': post_id,
+            'section_id': section_id
+        }
+        result = llm_service.execute_llm_request(llm_provider.lower(), llm_model, messages, intercept_context=intercept_context)
         
         if 'error' in result:
             return jsonify({'error': f'LLM generation failed: {result["error"]}'}), 500
@@ -886,7 +896,7 @@ def api_generate_image_prompt_from_builder():
                 { 'role': 'system', 'content': compact_system },
                 { 'role': 'user', 'content': generated_prompt }
             ]
-            compact = llm_service.execute_llm_request(llm_provider.lower(), llm_model, compact_messages)
+            compact = llm_service.execute_llm_request(llm_provider.lower(), llm_model, compact_messages, intercept_context=intercept_context)
             
             if 'content' in compact:
                 compact_text = compact['content'].strip()
@@ -942,7 +952,7 @@ def api_generate_image_prompt_from_builder():
                 { 'role': 'system', 'content': expand_system },
                 { 'role': 'user', 'content': generated_prompt }
             ]
-            expand = llm_service.execute_llm_request(llm_provider.lower(), llm_model, expand_messages)
+            expand = llm_service.execute_llm_request(llm_provider.lower(), llm_model, expand_messages, intercept_context=intercept_context)
             
             if 'content' in expand:
                 expand_text = expand['content'].strip()
