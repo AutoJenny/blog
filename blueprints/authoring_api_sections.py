@@ -4,13 +4,16 @@ Authoring API Sections Module
 Micro-file for authoring section-related API endpoints
 """
 
-from flask import request, jsonify
+from flask import Blueprint, request, jsonify
 from config.database import db_manager
 import logging
 import json
 
 logger = logging.getLogger(__name__)
 
+bp = Blueprint('authoring_sections', __name__, url_prefix='/authoring')
+
+@bp.route('/api/posts/<int:post_id>/sections', methods=['GET'])
 def api_get_sections(post_id):
     """Get all sections for a post - checks both post_section and post_development tables"""
     try:

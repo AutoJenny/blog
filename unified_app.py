@@ -123,6 +123,9 @@ def create_app(config_name=None):
     from blueprints.authoring_api_prompts import bp as authoring_prompts_bp
     app.register_blueprint(authoring_prompts_bp, url_prefix='/authoring')
 
+    from blueprints.authoring_api_sections import bp as authoring_sections_bp
+    app.register_blueprint(authoring_sections_bp, url_prefix='/authoring')
+
     from blueprints.header import bp as header_bp
     app.register_blueprint(header_bp)
 
