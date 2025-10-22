@@ -139,6 +139,10 @@ def api_generate_image_prompt_from_builder():
         post_id = data.get('post_id')
         section_id = data.get('section_id')
         
+        # Get concept data from frontend
+        concept_content = data.get('concept_content')
+        selected_concept = data.get('selected_concept')
+        
         # Get user preferences for compression/expansion
         enable_compression = data.get('enable_compression', True)
         enable_expansion = data.get('enable_expansion', False)
@@ -271,7 +275,24 @@ def api_generate_image_prompt_from_builder():
             prompt_text = prompt_text.replace('[data:title]', section['section_heading'] or '')
             prompt_text = prompt_text.replace('[data:subtitle]', section['section_description'] or '')
             prompt_text = prompt_text.replace('[data:section_text]', section.get('polished') or section.get('draft') or '')
-            prompt_text = prompt_text.replace('[data:selected_concept]', compiled_prompt or '')
+            
+            # Use actual concept data instead of compiled_prompt
+            if concept_content and isinstance(concept_content, dict):
+                # Build concept text from the structured data
+                concept_parts = []
+                if concept_content.get('description'):
+                    concept_parts.append(concept_content['description'])
+                if concept_content.get('mood'):
+                    concept_parts.append(f"Mood: {concept_content['mood']}")
+                if concept_content.get('elements'):
+                    concept_parts.append(f"Key Elements: {concept_content['elements']}")
+                concept_text = '\n'.join(concept_parts)
+            elif selected_concept:
+                concept_text = selected_concept
+            else:
+                concept_text = compiled_prompt or ''
+            
+            prompt_text = prompt_text.replace('[data:selected_concept]', concept_text)
             topics_text = '\n'.join([f'- {topic}' for topic in topics])
             prompt_text = prompt_text.replace('[data:topics]', topics_text)
             
