@@ -590,8 +590,51 @@ def api_generate_title_summary(post_id):
             logger.error(f"Failed to parse LLM response as JSON: {e}")
             return jsonify({'error': f'Failed to parse LLM response: {str(e)}'}), 500
         
-        # Generate summary (placeholder for now)
-        summary = "Generated summary placeholder"
+        # Generate summary using the same logic as api_generate_summary
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT 
+                    sp.system_prompt,
+                    tp.prompt_text as task_prompt
+                FROM workflow_step_prompt wsp
+                LEFT JOIN llm_prompt sp ON sp.id = wsp.system_prompt_id
+                LEFT JOIN llm_prompt tp ON tp.id = wsp.task_prompt_id
+                WHERE wsp.step_id = 62
+            """)
+            
+            result = cursor.fetchone()
+            
+            if not result:
+                return jsonify({'error': 'No prompts found for summary generation'}), 404
+            
+            system_prompt = result.get('system_prompt', '')
+            task_prompt = result.get('task_prompt', '')
+        
+        # Prepare content for summary generation
+        summary_content = f"Selected Idea: {idea_seed}\n\nExpanded Idea: {expanded_idea}\n\nSection Content:\n{section_content}"
+        
+        # Format the prompt with the content
+        formatted_prompt = task_prompt.format(content=summary_content)
+        
+        # Prepare messages for LLM
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": formatted_prompt}
+        ]
+        
+        # Execute LLM request for summary
+        logger.info(f"Calling LLM for summary generation")
+        llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+        
+        if 'error' in llm_response:
+            logger.error(f"LLM generation failed: {llm_response['error']}")
+            return jsonify({'error': f'LLM generation failed: {llm_response["error"]}'}), 500
+        
+        summary = llm_response.get('content', '').strip()
+        
+        if not summary:
+            logger.error("Empty summary response from LLM")
+            return jsonify({'error': 'Empty summary response from LLM'}), 500
         
         # Generate slug from the selected title
         slug = slugify(title_options[0] if title_options else "default-title")

@@ -186,7 +186,8 @@ The page uses specialized APIs for LLM-assisted prompt generation and persistenc
    - User clicks Generate button or Generate All
    - System retrieves `system_prompt_template` and `prompt_text` from `llm_prompt` table
    - Applies model-aware character limit substitutions
-   - Replaces placeholders with actual concept data from `section.image_concepts`
+   - **Automatic Concept Extraction**: System extracts actual concept data from `post_section.image_concepts` JSON field using `selected_image_concept` ID
+   - Replaces placeholders with actual concept data (description, mood, key_visual_elements)
    - Creates proper `intercept_context` with `post_id` and `section_id`
    - Calls `llm_service.execute_llm_request()` with intercept context
 4. **Data Storage**:
@@ -197,6 +198,17 @@ The page uses specialized APIs for LLM-assisted prompt generation and persistenc
    - Complete LLM Input field refreshes to show newly stored raw HTTP request
    - Generated prompt displayed in Output panel
    - Section status updated to "Complete"
+
+### Automatic Concept Data Extraction Flow
+1. **Database Query**: System retrieves `image_concepts` JSON field from `post_section` table
+2. **JSON Parsing**: Parses the JSON structure containing `concepts` array and `selected_image_concept` ID
+3. **ID Matching**: Iterates through concepts array to find matching `concept_id`
+4. **Data Assembly**: Builds concept text from:
+   - `concept_description` (primary content)
+   - `concept_mood` (formatted as "Mood: ...")
+   - `key_visual_elements` (formatted as "Key Elements: ...")
+5. **Fallback Handling**: If database extraction fails, falls back to frontend-provided data
+6. **Placeholder Replacement**: Uses extracted concept text in LLM prompt template
 
 ### Database Schema Updates
 - **`llm_message_intercepts`**: Stores intercepted LLM communications
@@ -235,6 +247,14 @@ The page uses specialized APIs for LLM-assisted prompt generation and persistenc
 - Compatible with all supported models: SDXL LoRA, DALL-E 3, GPT-Image-1, and DALL-E 2.
 - No direct calls to generation APIs here; the UI should not expose imaging controls.
 
+### Recent Imaging Simplifications (October 2025)
+- **Removed Rendered Prompt Preview Panel**: Eliminated confusing preview that showed truncated/nonsense prompts
+- **Removed All Truncation**: Full prompts now sent to all models without character limits
+- **Direct Database Access**: Imaging now directly extracts `image_prompt` from `post_section.image_prompts` JSON
+- **Model Selection Fix**: Default model changed from DALL-E to gpt-image-1
+- **Quality Parameter Fix**: Corrected quality='high' for GPT-Image-1 compatibility
+- **Eliminated Prompt Service**: Removed unnecessary prompt rendering layer for simpler data flow
+
 ## Related Pages
 
 - Authoring: Image Concepts (`/authoring/posts/<post_id>/sections/image_concepts`)
@@ -244,12 +264,16 @@ The page uses specialized APIs for LLM-assisted prompt generation and persistenc
 
 ## Recent System Improvements (October 2025)
 
-### Major Fixes Implemented
+### Major Fixes Implemented (October 22, 2025)
 1. **Complete LLM Input Field**: Now shows exact raw HTTP requests sent to LLM (verbatim, no reconstruction)
 2. **Compression Logic**: Disabled for GPT-Image-1 models - uses full 2000 character budget
 3. **Generate All Button**: Rewritten to use same logic as individual Generate button
 4. **Section Selection**: Fixed dynamic section ID detection and automatic data refresh
 5. **Data Integrity**: Eliminated specimen text and hardcoded content - uses only actual concept data
+6. **Automatic Concept Extraction**: Backend now automatically extracts selected concept data from database
+7. **Simplified Image Generation**: Removed truncation and Rendered Prompt Preview panel
+8. **Model Selection Fix**: Default changed from DALL-E to gpt-image-1
+9. **Quality Parameter Fix**: Corrected quality='high' for GPT-Image-1 compatibility
 
 ### Technical Improvements
 - **LLM Service Consolidation**: All LLM calls go through centralized `modules/llm_service.py`
@@ -257,12 +281,42 @@ The page uses specialized APIs for LLM-assisted prompt generation and persistenc
 - **Raw HTTP Storage**: Complete HTTP requests stored in `llm_message_intercepts.raw_http_request`
 - **Model-Aware Substitutions**: Character limits automatically adjusted based on target model
 - **Event-Driven Architecture**: Proper `sectionSelected` event emission for panel communication
+- **Database-Driven Concept Extraction**: Automatic parsing of `image_concepts` JSON field
+- **ID-Based Concept Matching**: Uses `selected_image_concept` to find correct concept data
+- **Eliminated Fallback Text**: System only uses actual concept data, no specimen text
+
+### Automatic Concept Data Extraction
+The system now automatically extracts concept data from the database without requiring frontend changes:
+
+```python
+# Automatic extraction from post_section.image_concepts JSON
+if section['image_concepts']:
+    image_concepts_data = json.loads(section['image_concepts'])
+    selected_concept_id = section.get('selected_image_concept')
+    
+    # Find matching concept by ID
+    for concept in image_concepts_data.get('concepts', []):
+        if concept.get('concept_id') == selected_concept_id:
+            # Build concept text from database fields
+            concept_parts = []
+            if concept.get('concept_description'):
+                concept_parts.append(concept['concept_description'])
+            if concept.get('concept_mood'):
+                concept_parts.append(f"Mood: {concept['concept_mood']}")
+            if concept.get('key_visual_elements'):
+                concept_parts.append(f"Key Elements: {concept['key_visual_elements']}")
+            concept_text = '\n'.join(concept_parts)
+            break
+```
 
 ### Performance Results
 - **Prompt Quality**: GPT-Image-1 prompts now 900+ characters (vs previous ~400)
 - **Data Accuracy**: Complete LLM Input field shows exact data sent to LLM
 - **System Reliability**: Automatic operation for all sections and future posts
 - **Error Reduction**: Proper error handling and status reporting for batch operations
+- **Concept Accuracy**: All sections now use actual selected concept data instead of fallback text
+- **Imaging Simplification**: Removed unnecessary truncation and preview panels
+- **Model Compatibility**: Fixed quality parameters for GPT-Image-1 model
 
 ## Guardrails and Conventions
 
