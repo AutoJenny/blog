@@ -276,21 +276,50 @@ def api_generate_image_prompt_from_builder():
             prompt_text = prompt_text.replace('[data:subtitle]', section['section_description'] or '')
             prompt_text = prompt_text.replace('[data:section_text]', section.get('polished') or section.get('draft') or '')
             
-            # Use actual concept data instead of compiled_prompt
-            if concept_content and isinstance(concept_content, dict):
-                # Build concept text from the structured data
-                concept_parts = []
-                if concept_content.get('description'):
-                    concept_parts.append(concept_content['description'])
-                if concept_content.get('mood'):
-                    concept_parts.append(f"Mood: {concept_content['mood']}")
-                if concept_content.get('elements'):
-                    concept_parts.append(f"Key Elements: {concept_content['elements']}")
-                concept_text = '\n'.join(concept_parts)
-            elif selected_concept:
-                concept_text = selected_concept
-            else:
-                concept_text = compiled_prompt or ''
+            # Automatically extract concept data from database
+            concept_text = ''
+            
+            # First try to get concept from image_concepts JSON data
+            if section['image_concepts']:
+                try:
+                    image_concepts_data = json.loads(section['image_concepts']) if isinstance(section['image_concepts'], str) else section['image_concepts']
+                    
+                    # Look for the selected concept by ID
+                    selected_concept_id = section.get('selected_image_concept')
+                    if selected_concept_id and isinstance(image_concepts_data, dict):
+                        concepts = image_concepts_data.get('concepts', [])
+                        for concept in concepts:
+                            if concept.get('concept_id') == selected_concept_id:
+                                # Build concept text from the selected concept
+                                concept_parts = []
+                                if concept.get('concept_description'):
+                                    concept_parts.append(concept['concept_description'])
+                                if concept.get('concept_mood'):
+                                    concept_parts.append(f"Mood: {concept['concept_mood']}")
+                                if concept.get('key_visual_elements'):
+                                    concept_parts.append(f"Key Elements: {concept['key_visual_elements']}")
+                                concept_text = '\n'.join(concept_parts)
+                                break
+                except (json.JSONDecodeError, TypeError, KeyError) as e:
+                    logger.warning(f"Error parsing image_concepts for section {section_id}: {e}")
+            
+            # Fallback to frontend data if database extraction failed
+            if not concept_text:
+                if concept_content and isinstance(concept_content, dict):
+                    # Build concept text from the structured data
+                    concept_parts = []
+                    if concept_content.get('description'):
+                        concept_parts.append(concept_content['description'])
+                    if concept_content.get('mood'):
+                        concept_parts.append(f"Mood: {concept_content['mood']}")
+                    if concept_content.get('elements'):
+                        concept_parts.append(f"Key Elements: {concept_content['elements']}")
+                    concept_text = '\n'.join(concept_parts)
+                elif selected_concept:
+                    concept_text = selected_concept
+                else:
+                    concept_text = compiled_prompt or ''
+            
             
             prompt_text = prompt_text.replace('[data:selected_concept]', concept_text)
             topics_text = '\n'.join([f'- {topic}' for topic in topics])
