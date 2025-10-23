@@ -243,40 +243,9 @@ function hasImage(sectionId) {
 
 // Model selection with database persistence
 function setupModelSelection() {
-    const dropdown = document.getElementById('image-model-select');
-    if (!dropdown) {
-        console.error('[Imaging Core] Model selection dropdown not found');
-        return;
-    }
-
-    console.log('[Imaging Core] Setting up model selection');
-
-    // Load saved model selection
-    loadModelSelection().then(config => {
-        console.log('[Imaging Core] Loaded model config:', config);
-        if (config.model) {
-            dropdown.value = config.model;
-            console.log('[Imaging Core] Model config loaded:', config.model, config.parameters);
-            // Emit model-changed event; panel module will update its own title
-            document.dispatchEvent(new CustomEvent('imaging:model-changed', { detail: { model: config.model } }));
-            console.log('[Imaging Core] Set dropdown to:', config.model);
-            console.log('[Imaging Core] Dropdown value after setting:', dropdown.value);
-            
-            // Check if something is changing it
-            setTimeout(() => {
-                console.log('[Imaging Core] Dropdown value after 1 second:', dropdown.value);
-            }, 1000);
-        }
-    });
-
-    // Save on change
-    dropdown.addEventListener('change', function() {
-        const model = this.value;
-        console.log('[Imaging Core] Model changed to:', model);
-        // Emit model-changed event; panel module will update its own title
-        document.dispatchEvent(new CustomEvent('imaging:model-changed', { detail: { model } }));
-        saveModelSelection({ model, parameters: getCurrentParameters() });
-    });
+    // Model selection is now handled by model-selection.js
+    // This function is kept for compatibility but does nothing
+    console.log('[Imaging Core] Model selection handled by model-selection.js');
 }
 
 async function loadModelSelection() {

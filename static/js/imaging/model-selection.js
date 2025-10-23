@@ -234,27 +234,8 @@ class ModelSelectionPanel {
                 generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
             }
             
-            // Call the imaging API to generate image with new renderer system
-            const endpoint = `/imaging/api/image-generation/posts/${window.postId}/sections/${window.currentSectionId}/generate-image`;
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    model_name: this.currentModel,
-                    parameters: this.parameters,
-                    use_renderer: true  // Use new renderer system
-                })
-            });
-            
-            // Check if response is HTML (404 error page)
-            const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('text/html')) {
-                throw new Error('Image generation API not implemented yet. Please check backend implementation.');
-            }
-            
-            const data = await response.json();
+            // Call the imaging API to generate image with retry logic
+            const data = await this.generateImageWithRetry();
             
             if (data.success) {
                 console.log('[Model Selection] Image generated successfully');
@@ -275,13 +256,47 @@ class ModelSelectionPanel {
                 const maxChars = data.debug_info?.max_chars || 0;
                 
                 alert(`Image generated successfully!\n\nRenderer: ${source}\nPrompt length: ${charCount}/${maxChars} chars\nGeneration time: ${data.generation_time_ms}ms`);
+                
+                // Emit event to update sections panel status
+                const imageGeneratedEvent = new CustomEvent('imageGenerated', {
+                    detail: {
+                        sectionId: window.currentSectionId,
+                        success: true,
+                        imagePath: data.image_path,
+                        generationTime: data.generation_time_ms
+                    }
+                });
+                document.dispatchEvent(imageGeneratedEvent);
             } else {
                 throw new Error(data.error || 'Failed to generate image');
             }
             
         } catch (error) {
             console.error('[Model Selection] Error generating image:', error);
-            alert('Error generating image: ' + error.message);
+            
+            // Provide more helpful error messages
+            let errorMessage = 'Error generating image: ';
+            if (error.message.includes('timeout')) {
+                errorMessage += 'The image generation is taking longer than expected. This might be due to high demand on the image generation service. Please try again in a moment.';
+            } else if (error.message.includes('rate limit')) {
+                errorMessage += 'Too many requests. Please wait a moment before trying again.';
+            } else if (error.message.includes('network')) {
+                errorMessage += 'Network connection issue. Please check your internet connection and try again.';
+            } else {
+                errorMessage += error.message;
+            }
+            
+            alert(errorMessage);
+            
+            // Emit event to update sections panel status for error
+            const imageGeneratedEvent = new CustomEvent('imageGenerated', {
+                detail: {
+                    sectionId: window.currentSectionId,
+                    success: false,
+                    error: error.message
+                }
+            });
+            document.dispatchEvent(imageGeneratedEvent);
         } finally {
             // Re-enable button
             const generateBtn = document.getElementById('generate-image-btn');
@@ -290,6 +305,117 @@ class ModelSelectionPanel {
                 generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Image';
             }
         }
+    }
+    
+    async generateImageWithRetry(maxRetries = 3) {
+        const endpoint = `/imaging/api/image-generation/posts/${window.postId}/sections/${window.currentSectionId}/generate-image`;
+        const requestBody = {
+            model_name: this.currentModel,
+            parameters: this.parameters,
+            use_renderer: true
+        };
+        
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                console.log(`[Model Selection] Attempt ${attempt}/${maxRetries} - Generating image...`);
+                
+                // Update button text to show retry attempt
+                const generateBtn = document.getElementById('generate-image-btn');
+                if (generateBtn && attempt > 1) {
+                    generateBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Retrying... (${attempt}/${maxRetries})`;
+                }
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                // Check if response is HTML (404 error page)
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('text/html')) {
+                    throw new Error('Image generation API not implemented yet. Please check backend implementation.');
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log(`[Model Selection] Image generated successfully on attempt ${attempt}`);
+                    return data;
+                } else {
+                    // Check if this is a retryable error
+                    const errorMsg = data.error || 'Failed to generate image';
+                    if (this.isRetryableError(errorMsg)) {
+                        console.log(`[Model Selection] Retryable error on attempt ${attempt}: ${errorMsg}`);
+                        if (attempt < maxRetries) {
+                            const delay = this.getRetryDelay(attempt);
+                            console.log(`[Model Selection] Waiting ${delay}ms before retry...`);
+                            await this.sleep(delay);
+                            continue;
+                        }
+                    }
+                    throw new Error(errorMsg);
+                }
+                
+            } catch (error) {
+                console.log(`[Model Selection] Attempt ${attempt} failed:`, error.message);
+                
+                // Check if this is a retryable error
+                if (this.isRetryableError(error.message) && attempt < maxRetries) {
+                    const delay = this.getRetryDelay(attempt);
+                    console.log(`[Model Selection] Retryable error, waiting ${delay}ms before retry...`);
+                    await this.sleep(delay);
+                    continue;
+                }
+                
+                // If this is the last attempt or non-retryable error, throw it
+                throw error;
+            }
+        }
+        
+        throw new Error('Max retries exceeded');
+    }
+    
+    isRetryableError(errorMessage) {
+        const retryablePatterns = [
+            'timeout',
+            'rate limit',
+            'busy',
+            'service unavailable',
+            'temporary',
+            'try again',
+            'network',
+            'connection',
+            'server error',
+            'internal server error',
+            '502',
+            '503',
+            '504',
+            '429', // Too Many Requests
+            '500', // Internal Server Error
+            'openai', // OpenAI-specific errors
+            'api.openai.com',
+            'read timed out',
+            'connection pool',
+            'ssl',
+            'certificate',
+            'dns',
+            'name resolution'
+        ];
+        
+        const lowerError = errorMessage.toLowerCase();
+        return retryablePatterns.some(pattern => lowerError.includes(pattern));
+    }
+    
+    getRetryDelay(attempt) {
+        // Exponential backoff: 2s, 4s, 8s
+        return Math.min(2000 * Math.pow(2, attempt - 1), 10000);
+    }
+    
+    sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
     
     getCurrentPrompt() {
@@ -323,14 +449,13 @@ class ModelSelectionPanel {
 
     async loadSavedConfiguration() {
         try {
-            console.log('[Model Selection] Loading saved configuration from database');
             const pid = window.postId || '';
             const url = pid ? `/imaging/api/model-selection?post_id=${encodeURIComponent(pid)}` : '/imaging/api/model-selection';
             const response = await fetch(url);
             const data = await response.json();
             
             if (data.success) {
-                this.currentModel = data.model || 'sdxl-lora';
+                this.currentModel = data.model || 'gpt-image-1';
                 this.parameters = data.parameters || {};
                 
                 // Update UI
@@ -471,10 +596,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Restore accordion state
-    const savedState = localStorage.getItem('imaging-model-accordion-state');
+    const savedState = localStorage.getItem('model-selection-accordion-state');
     if (savedState === 'open') {
-        const content = document.getElementById('model-accordion-content');
-        const icon = document.getElementById('model-accordion-icon');
+        const content = document.getElementById('model-selection-accordion-content');
+        const icon = document.getElementById('model-selection-accordion-icon');
         if (content && icon) {
             content.style.display = 'block';
             icon.className = 'fas fa-chevron-up';
@@ -484,17 +609,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Accordion functionality
 function toggleModelSelectionAccordion() {
-    const content = document.getElementById('model-accordion-content');
-    const icon = document.getElementById('model-accordion-icon');
+    const content = document.getElementById('model-selection-accordion-content');
+    const icon = document.getElementById('model-selection-accordion-icon');
     
     if (content.style.display === 'none') {
         content.style.display = 'block';
         icon.className = 'fas fa-chevron-up';
-        localStorage.setItem('imaging-model-accordion-state', 'open');
+        localStorage.setItem('model-selection-accordion-state', 'open');
     } else {
         content.style.display = 'none';
         icon.className = 'fas fa-chevron-down';
-        localStorage.setItem('imaging-model-accordion-state', 'closed');
+        localStorage.setItem('model-selection-accordion-state', 'closed');
     }
 }
 

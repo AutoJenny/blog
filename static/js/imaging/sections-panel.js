@@ -139,6 +139,18 @@ class ImagingSectionsPanel {
         if (batchGenerateBtn) {
             batchGenerateBtn.addEventListener('click', () => this.batchGenerateSelected());
         }
+
+        // Listen for image generation events
+        document.addEventListener('imageGenerated', (event) => {
+            const { sectionId, success } = event.detail;
+            if (sectionId) {
+                if (success) {
+                    this.updateSectionStatus(sectionId, 'complete');
+                } else {
+                    this.updateSectionStatus(sectionId, 'error');
+                }
+            }
+        });
     }
 
     toggleSelectAll() {
@@ -251,10 +263,19 @@ class ImagingSectionsPanel {
                     });
                 } else {
                     // On image-generation page, call image generation API
+                    // Get current model and parameters from model selection panel
+                    let model_name = 'gpt-image-1';
+                    let parameters = {};
+                    
+                    if (window.modelSelectionPanel) {
+                        model_name = window.modelSelectionPanel.currentModel || 'gpt-image-1';
+                        parameters = window.modelSelectionPanel.parameters || {};
+                    }
+                    
                     const payload = {
                         image_prompt,
-                        model_name: window.ImagingUtils?.getState('selectedModel') || 'sdxl-lora',
-                        parameters: {}
+                        model_name,
+                        parameters
                     };
                     resp = await fetch(`/imaging/api/image-generation/posts/${this.postId}/sections/${sectionId}/generate-image`, {
                         method: 'POST',
@@ -289,6 +310,27 @@ class ImagingSectionsPanel {
         } finally {
             if (btn) { btn.disabled = false; btn.textContent = original; }
         }
+    }
+
+    updateSectionStatus(sectionId, newStatus) {
+        // Update the section data
+        const section = this.sections.find(s => s.id == sectionId);
+        if (section) {
+            section.status = newStatus;
+        }
+
+        // Update the UI
+        const sectionElement = document.querySelector(`[data-section-id="${sectionId}"]`);
+        if (sectionElement) {
+            sectionElement.dataset.status = newStatus;
+            const statusElement = sectionElement.querySelector('.section-status');
+            if (statusElement) {
+                statusElement.className = `section-status ${newStatus}`;
+                statusElement.textContent = newStatus.replace(/^./, c => c.toUpperCase());
+            }
+        }
+
+        console.log(`[Imaging Sections Panel] Updated section ${sectionId} status to: ${newStatus}`);
     }
 }
 

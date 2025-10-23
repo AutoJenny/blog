@@ -5,19 +5,16 @@
     <div class="panel-header" onclick="toggleModelSelectionAccordion()">
         <h4 id="model-title"><span class="panel-name-green">Modal Selection:</span> Loading...</h4>
         <div class="header-actions">
-            <i class="fas fa-chevron-up" id="model-accordion-icon"></i>
+            <i class="fas fa-chevron-up" id="model-selection-accordion-icon"></i>
         </div>
     </div>
     
-    <div class="panel-content" id="model-accordion-content">
+    <div class="panel-content" id="model-selection-accordion-content">
         <!-- Model Selection -->
         <div class="image-model-selection" id="image-model-selection">
             <label for="image-model-select">Image Generation Model:</label>
             <select id="image-model-select" name="image_model">
-                <option value="sdxl-lora">SDXL LoRA (Local)</option>
-                <option value="dall-e-3">DALL-E 3 (OpenAI)</option>
-                <option value="gpt-image-1" selected>GPT-Image-1 (OpenAI)</option>
-                <option value="dall-e-2">DALL-E 2 (OpenAI)</option>
+                <!-- Options will be populated dynamically by imaging-core.js -->
             </select>
         </div>
 
@@ -118,25 +115,17 @@
                 <div class="param-row">
                     <label for="gpt-image-size">Size:</label>
                     <select id="gpt-image-size" name="size">
-                        <option value="1792x1024" selected>1792x1024 (Landscape)</option>
-                        <option value="1024x1792">1024x1792 (Portrait)</option>
-                        <option value="1024x1024">1024x1024 (Square)</option>
-                        <option value="512x512">512x512 (Small)</option>
-                        <option value="256x256">256x256 (Thumbnail)</option>
+                        <option value="1024x1024" selected>1024x1024 (Square)</option>
+                        <option value="1024x1536">1024x1536 (Portrait)</option>
+                        <option value="1536x1024">1536x1024 (Landscape)</option>
+                        <option value="auto">Auto (Model decides)</option>
                     </select>
                 </div>
                 <div class="param-row">
                     <label for="gpt-image-quality">Quality:</label>
                     <select id="gpt-image-quality" name="quality">
+                        <option value="high" selected>High</option>
                         <option value="standard">Standard</option>
-                        <option value="hd">HD</option>
-                    </select>
-                </div>
-                <div class="param-row">
-                    <label for="gpt-image-style">Style:</label>
-                    <select id="gpt-image-style" name="style">
-                        <option value="natural">Natural (Photorealistic)</option>
-                        <option value="vivid">Vivid (Artistic)</option>
                     </select>
                 </div>
                 <div class="param-row">

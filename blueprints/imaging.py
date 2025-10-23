@@ -39,8 +39,11 @@ def imaging_generate_dalle_image(image_prompt, post_id, section_id, parameters):
             'style': style
         }
         
+        # Log the request data for debugging
+        logger.info(f"DALL-E API request data: {data}")
+        
         response = requests.post('https://api.openai.com/v1/images/generations', 
-                               headers=headers, json=data, timeout=60)
+                               headers=headers, json=data, timeout=120)
         
         if response.status_code != 200:
             return {'success': False, 'error': f'DALL-E API error: {response.status_code} - {response.text}'}
@@ -90,11 +93,20 @@ def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters):
         if not api_key:
             return {'success': False, 'error': 'OPENAI_API_KEY not found in environment'}
         
-        # Extract parameters
+        # Extract parameters with proper type coercion
         size = parameters.get('size', '1024x1024')
         quality = parameters.get('quality', 'high')
-        n = parameters.get('n', 1)
-        seed = parameters.get('seed')
+        # Coerce n to int; API requires integer
+        try:
+            n = int(parameters.get('n', 1))
+        except (ValueError, TypeError):
+            n = 1
+        # Optional parameters
+        seed_raw = parameters.get('seed')
+        try:
+            seed = int(seed_raw) if seed_raw is not None and str(seed_raw).strip() != '' else None
+        except (ValueError, TypeError):
+            seed = None
         background = parameters.get('background')
         
         # Build API request
@@ -117,11 +129,15 @@ def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters):
         if background:
             data['background'] = background
         
+        # Log the request data for debugging
+        logger.info(f"GPT-Image-1 API request data: {data}")
+        
         # Call OpenAI API
         response = requests.post('https://api.openai.com/v1/images/generations', 
-                               headers=headers, json=data, timeout=60)
+                               headers=headers, json=data, timeout=120)
         
         if response.status_code != 200:
+            logger.error(f"GPT-Image-1 API error response: {response.text}")
             return {'success': False, 'error': f'GPT-Image-1 API error: {response.status_code} - {response.text}'}
         
         result = response.json()
@@ -597,6 +613,9 @@ def imaging_generate_image(post_id, section_id):
             if not section:
                 return jsonify({'success': False, 'error': 'Section not found'})
             
+            # Provide minimal debug info context
+            debug_info = {'source': 'database', 'model_key': model_name}
+
             # Start timing
             start_time = time.time()
             
@@ -950,7 +969,7 @@ def imaging_model_selection():
                 if post_id:
                     cursor.execute(
                         """
-                        SELECT imaging_model_selection 
+                        SELECT imaging_model_selection, imaging_model_parameters 
                         FROM post_development 
                         WHERE post_id = %s
                         """,
@@ -958,7 +977,13 @@ def imaging_model_selection():
                     )
                     row = cursor.fetchone()
                     if row and row.get('imaging_model_selection'):
-                        return jsonify({'success': True, 'model': row['imaging_model_selection'], 'parameters': {}})
+                        parameters = {}
+                        if row.get('imaging_model_parameters'):
+                            try:
+                                parameters = json.loads(row['imaging_model_parameters'])
+                            except (json.JSONDecodeError, TypeError):
+                                parameters = {}
+                        return jsonify({'success': True, 'model': row['imaging_model_selection'], 'parameters': parameters})
 
                 # Fallback to global preference
                 cursor.execute(
@@ -985,23 +1010,24 @@ def imaging_model_selection():
             with db_manager.get_cursor() as cursor:
                 if post_id:
                     # Update per-post selection
+                    parameters_json = json.dumps(parameters) if parameters else None
                     cursor.execute(
                         """
                         UPDATE post_development
-                        SET imaging_model_selection = %s, updated_at = NOW()
+                        SET imaging_model_selection = %s, imaging_model_parameters = %s, updated_at = NOW()
                         WHERE post_id = %s
                         """,
-                        (model, post_id)
+                        (model, parameters_json, post_id)
                     )
                     # If no row updated, attempt insert minimal row (best-effort)
                     if cursor.rowcount == 0:
                         try:
                             cursor.execute(
                                 """
-                                INSERT INTO post_development (post_id, imaging_model_selection, created_at, updated_at)
-                                VALUES (%s, %s, NOW(), NOW())
+                                INSERT INTO post_development (post_id, imaging_model_selection, imaging_model_parameters, created_at, updated_at)
+                                VALUES (%s, %s, %s, NOW(), NOW())
                                 """,
-                                (post_id, model)
+                                (post_id, model, parameters_json)
                             )
                         except Exception as _ignore:
                             logger.warning(f"Could not insert post_development for post_id={post_id}: {_ignore}")
