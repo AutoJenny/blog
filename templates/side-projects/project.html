@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Back to Side Projects Link -->
+    <div class="mb-6">
+        <a href="/side-projects/" class="text-dark-accent hover:text-white transition">
+            <i class="fa-solid fa-arrow-left"></i> Back to Side Projects
+        </a>
+    </div>
+    
+    <div class="text-center">
+        <h1 class="text-4xl font-bold text-white mb-4">{{ project_name.title() }}</h1>
+        <p class="text-xl text-dark-accent mb-8">This project is currently under construction.</p>
+        
+        <div class="bg-gray-800 rounded-lg p-6 max-w-2xl mx-auto">
+            <h2 class="text-2xl font-bold text-white mb-4">Planned Features:</h2>
+            <ul class="list-disc list-inside text-left text-gray-300 space-y-2">
+                <li>Detailed project overview</li>
+                <li>Interactive demos</li>
+                <li>Technical documentation</li>
+                <li>Progress updates</li>
+            </ul>
+        </div>
+        
+        <div class="mt-8">
+            <a href="/side-projects/" class="btn-launchpad">
+                <i class="fa-solid fa-arrow-left"></i> Back to Side Projects
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

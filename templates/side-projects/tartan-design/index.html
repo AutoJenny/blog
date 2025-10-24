@@ -1,0 +1,417 @@
+{% extends "base.html" %}
+
+{% block title %}Tartan Design Descriptions - Side Projects{% endblock %}
+
+{% block content %}
+<style>
+    .initially-hidden {
+        display: none !important;
+    }
+</style>
+
+<div class="container mx-auto px-4 py-8">
+    <!-- Back to Side Projects Link -->
+    <div class="mb-6">
+        <a href="/side-projects/" class="text-dark-accent hover:text-white transition">
+            <i class="fa-solid fa-arrow-left"></i> Back to Side Projects
+        </a>
+    </div>
+    
+    <!-- Simple Header -->
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-white mb-4">Tartan Design Descriptions</h1>
+        <p class="text-xl text-dark-accent">AI-powered pattern analysis and design generation</p>
+    </div>
+
+    <!-- Database Viewer Accordion (tartan_designs_clan) -->
+    <div class="bg-gray-800 rounded-lg p-6 mb-8">
+        <h2 class="text-2xl font-bold text-white mb-4">
+            <i class="fa-solid fa-database text-blue-400"></i> Database: tartan_designs_clan
+        </h2>
+        
+        {% if tartan_data %}
+            <!-- Table Headers -->
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-gray-300 mb-2">Table Headers:</h3>
+                <div class="flex flex-wrap gap-2">
+                    {% for header in headers %}
+                        <span class="bg-blue-600 text-white px-3 py-1 rounded text-sm font-mono">{{ header }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Accordion Header (First Two Rows) -->
+            <div class="accordion-header bg-gray-700 rounded-lg p-4 cursor-pointer hover:bg-gray-600 transition-colors" onclick="toggleDatabaseAccordion()">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-white">Database Records Preview</h3>
+                    <div class="flex items-center gap-4">
+                        <span class="text-sm text-gray-400">{{ total_count }} total records</span>
+                        <i class="fa-solid fa-chevron-down text-gray-400 transition-transform" id="database-chevron"></i>
+                    </div>
+                </div>
+                
+                <!-- Preview of first two rows -->
+                <div class="mt-4 space-y-2" id="preview-rows">
+                    {% for record in tartan_data[:2] %}
+                        <div class="bg-gray-600 rounded p-3 text-sm">
+                            <div class="flex items-center gap-4 flex-wrap">
+                                <span class="text-blue-300 font-mono">ID: {{ record.id }}</span>
+                                {% if record.name %}
+                                    <span class="text-white font-medium">{{ record.name }}</span>
+                                {% endif %}
+                                {% if record.type %}
+                                    <span class="text-green-300">{{ record.type }}</span>
+                                {% endif %}
+                                {% if record.nationality %}
+                                    <span class="text-yellow-300">{{ record.nationality }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Accordion Content (Full Table) -->
+            <div class="accordion-content bg-gray-900 rounded-lg mt-4 overflow-hidden" id="database-content" style="display: none;">
+                <!-- Filter Controls -->
+                <div class="p-4 bg-gray-800 border-b border-gray-700">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Filter by Name:</label>
+                            <input type="text" id="clan-name-filter" placeholder="Search names..." 
+                                   class="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Filter by Description:</label>
+                            <input type="text" id="clan-description-filter" placeholder="Search descriptions..." 
+                                   class="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none">
+                        </div>
+                    </div>
+                    <div class="mt-3 flex gap-2">
+                        <button onclick="clearClanFilters()" class="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-500 transition">
+                            Clear Filters
+                        </button>
+                        <span id="clan-filter-count" class="text-sm text-gray-400"></span>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-700">
+                            <tr>
+                                {% for header in headers %}
+                                    <th class="px-4 py-3 text-left text-gray-300 font-semibold text-sm">{{ header }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody id="clan-table-body">
+                            {% for record in tartan_data %}
+                                <tr class="border-b border-gray-700 hover:bg-gray-800 clan-row {% if loop.index > 50 %}initially-hidden{% endif %}" 
+                                    data-name="{{ record.name or '' }}" 
+                                    data-description="{{ record.description or '' }}">
+                                    {% for header in headers %}
+                                        <td class="px-4 py-3 text-gray-300 text-sm">
+                                            {% if record[header] is none %}
+                                                <span class="text-gray-500 italic">null</span>
+                                            {% elif record[header] is boolean %}
+                                                {% if record[header] %}
+                                                    <span class="text-green-400">✓</span>
+                                                {% else %}
+                                                    <span class="text-red-400">✗</span>
+                                                {% endif %}
+                                            {% else %}
+                                                {{ record[header] }}
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="p-4 bg-gray-800 text-sm text-gray-400">
+                    Showing first 50 of {{ total_count }} total records. Use filters to search all records.
+                </div>
+            </div>
+        {% else %}
+            <div class="text-center py-8">
+                <i class="fa-solid fa-exclamation-triangle text-yellow-400 text-3xl mb-4"></i>
+                <p class="text-gray-400">No data available or database connection error</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Tartan Register Database Viewer Accordion -->
+    <div class="bg-gray-800 rounded-lg p-6 mb-8">
+        <h2 class="text-2xl font-bold text-white mb-4">
+            <i class="fa-solid fa-book text-green-400"></i> Database: tartan_designs_register
+        </h2>
+        
+        {% if register_data %}
+            <!-- Table Headers -->
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-gray-300 mb-2">Table Headers:</h3>
+                <div class="flex flex-wrap gap-2">
+                    {% for header in register_headers %}
+                        <span class="bg-green-600 text-white px-3 py-1 rounded text-sm font-mono">{{ header }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Accordion Header (First Two Rows) -->
+            <div class="accordion-header bg-gray-700 rounded-lg p-4 cursor-pointer hover:bg-gray-600 transition-colors" onclick="toggleRegisterAccordion()">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-white">Tartan Register Records Preview</h3>
+                    <div class="flex items-center gap-4">
+                        <span class="text-sm text-gray-400">{{ register_total_count }} total records</span>
+                        <i class="fa-solid fa-chevron-down text-gray-400 transition-transform" id="register-chevron"></i>
+                    </div>
+                </div>
+                
+                <!-- Preview of first two rows -->
+                <div class="mt-4 space-y-2" id="register-preview-rows">
+                    {% for record in register_data[:2] %}
+                        <div class="bg-gray-600 rounded p-3 text-sm">
+                            <div class="flex items-center gap-4 flex-wrap">
+                                <span class="text-green-300 font-mono">ID: {{ record.id }}</span>
+                                {% if record.tartan_name %}
+                                    <span class="text-white font-medium">{{ record.tartan_name }}</span>
+                                {% endif %}
+                                {% if record.designer %}
+                                    <span class="text-blue-300">Designer: {{ record.designer }}</span>
+                                {% endif %}
+                                {% if record.category %}
+                                    <span class="text-yellow-300">{{ record.category }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Accordion Content (Full Table) -->
+            <div class="accordion-content bg-gray-900 rounded-lg mt-4 overflow-hidden" id="register-content" style="display: none;">
+                <!-- Filter Controls -->
+                <div class="p-4 bg-gray-800 border-b border-gray-700">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Filter by Tartan Name:</label>
+                            <input type="text" id="register-name-filter" placeholder="Search tartan names..." 
+                                   class="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-green-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Filter by Registration Notes:</label>
+                            <input type="text" id="register-notes-filter" placeholder="Search registration notes..." 
+                                   class="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-green-500 focus:outline-none">
+                        </div>
+                    </div>
+                    <div class="mt-3 flex gap-2">
+                        <button onclick="clearRegisterFilters()" class="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-500 transition">
+                            Clear Filters
+                        </button>
+                        <span id="register-filter-count" class="text-sm text-gray-400"></span>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-700">
+                            <tr>
+                                {% for header in register_headers %}
+                                    <th class="px-4 py-3 text-left text-gray-300 font-semibold text-sm">{{ header }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody id="register-table-body">
+                            {% for record in register_data %}
+                                <tr class="border-b border-gray-700 hover:bg-gray-800 register-row {% if loop.index > 50 %}initially-hidden{% endif %}" 
+                                    data-name="{{ record.tartan_name or '' }}" 
+                                    data-notes="{{ record.registration_notes or '' }}">
+                                    {% for header in register_headers %}
+                                        <td class="px-4 py-3 text-gray-300 text-sm">
+                                            {% if record[header] is none %}
+                                                <span class="text-gray-500 italic">null</span>
+                                            {% elif record[header] is boolean %}
+                                                {% if record[header] %}
+                                                    <span class="text-green-400">✓</span>
+                                                {% else %}
+                                                    <span class="text-red-400">✗</span>
+                                                {% endif %}
+                                            {% else %}
+                                                {{ record[header] }}
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="p-4 bg-gray-800 text-sm text-gray-400">
+                    Showing first 50 of {{ register_total_count }} total records. Use filters to search all records.
+                </div>
+            </div>
+        {% else %}
+            <div class="text-center py-8">
+                <i class="fa-solid fa-database text-gray-400 text-3xl mb-4"></i>
+                <p class="text-gray-400">No data available - table is empty</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function toggleDatabaseAccordion() {
+        const content = document.getElementById('database-content');
+        const chevron = document.getElementById('database-chevron');
+        
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            chevron.style.transform = 'rotate(180deg)';
+        } else {
+            content.style.display = 'none';
+            chevron.style.transform = 'rotate(0deg)';
+        }
+    }
+    
+    function toggleRegisterAccordion() {
+        const content = document.getElementById('register-content');
+        const chevron = document.getElementById('register-chevron');
+        
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            chevron.style.transform = 'rotate(180deg)';
+        } else {
+            content.style.display = 'none';
+            chevron.style.transform = 'rotate(0deg)';
+        }
+    }
+
+    // Clan table filtering functions
+    function filterClanTable() {
+        const nameFilter = document.getElementById('clan-name-filter').value.toLowerCase();
+        const descriptionFilter = document.getElementById('clan-description-filter').value.toLowerCase();
+        const rows = document.querySelectorAll('.clan-row');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const name = (row.dataset.name || '').toLowerCase();
+            const description = (row.dataset.description || '').toLowerCase();
+            
+            const nameMatch = name.includes(nameFilter);
+            const descriptionMatch = description.includes(descriptionFilter);
+            
+            if (nameMatch && descriptionMatch) {
+                row.style.display = '';
+                row.classList.remove('initially-hidden');
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        document.getElementById('clan-filter-count').textContent = 
+            `Showing ${visibleCount} of ${rows.length} records`;
+    }
+
+    function clearClanFilters() {
+        document.getElementById('clan-name-filter').value = '';
+        document.getElementById('clan-description-filter').value = '';
+        
+        // Show first 50 records, hide the rest
+        const rows = document.querySelectorAll('.clan-row');
+        rows.forEach((row, index) => {
+            if (index < 50) {
+                row.style.display = '';
+                row.classList.remove('initially-hidden');
+            } else {
+                row.style.display = 'none';
+                row.classList.add('initially-hidden');
+            }
+        });
+        
+        document.getElementById('clan-filter-count').textContent = 
+            `Showing 50 of ${rows.length} records`;
+    }
+
+    // Register table filtering functions
+    function filterRegisterTable() {
+        const nameFilter = document.getElementById('register-name-filter').value.toLowerCase();
+        const notesFilter = document.getElementById('register-notes-filter').value.toLowerCase();
+        const rows = document.querySelectorAll('.register-row');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const name = (row.dataset.name || '').toLowerCase();
+            const notes = (row.dataset.notes || '').toLowerCase();
+            
+            const nameMatch = name.includes(nameFilter);
+            const notesMatch = notes.includes(notesFilter);
+            
+            if (nameMatch && notesMatch) {
+                row.style.display = '';
+                row.classList.remove('initially-hidden');
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        document.getElementById('register-filter-count').textContent = 
+            `Showing ${visibleCount} of ${rows.length} records`;
+    }
+
+    function clearRegisterFilters() {
+        document.getElementById('register-name-filter').value = '';
+        document.getElementById('register-notes-filter').value = '';
+        
+        // Show first 50 records, hide the rest
+        const rows = document.querySelectorAll('.register-row');
+        rows.forEach((row, index) => {
+            if (index < 50) {
+                row.style.display = '';
+                row.classList.remove('initially-hidden');
+            } else {
+                row.style.display = 'none';
+                row.classList.add('initially-hidden');
+            }
+        });
+        
+        document.getElementById('register-filter-count').textContent = 
+            `Showing 50 of ${rows.length} records`;
+    }
+
+    // Initialize event listeners when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Clan table filter event listeners
+        const clanNameFilter = document.getElementById('clan-name-filter');
+        const clanDescriptionFilter = document.getElementById('clan-description-filter');
+        
+        if (clanNameFilter) {
+            clanNameFilter.addEventListener('input', filterClanTable);
+        }
+        if (clanDescriptionFilter) {
+            clanDescriptionFilter.addEventListener('input', filterClanTable);
+        }
+
+        // Register table filter event listeners
+        const registerNameFilter = document.getElementById('register-name-filter');
+        const registerNotesFilter = document.getElementById('register-notes-filter');
+        
+        if (registerNameFilter) {
+            registerNameFilter.addEventListener('input', filterRegisterTable);
+        }
+        if (registerNotesFilter) {
+            registerNotesFilter.addEventListener('input', filterRegisterTable);
+        }
+
+        // Initialize filter counts
+        clearClanFilters();
+        clearRegisterFilters();
+    });
+</script>
+{% endblock %}
