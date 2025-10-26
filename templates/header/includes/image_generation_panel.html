@@ -5,25 +5,16 @@
     <div class="panel-header" onclick="toggleImageGenerationAccordion()">
         <h4><span class="panel-name-green">Header Image Generation:</span> <span id="image-generation-status">Ready to generate</span></h4>
         <div class="header-actions">
-            <button class="btn-primary" id="compile-prompt-btn">Compile Prompt</button>
-            <button class="btn-primary" id="generate-header-btn" disabled>Generate</button>
+            <button class="btn-primary" id="compile-prompt-btn">Generate Prompt</button>
+            <button class="btn-primary" id="generate-header-btn" disabled>Generate Image</button>
             <i class="fas fa-chevron-down" id="image-generation-accordion-icon"></i>
         </div>
     </div>
     <div class="panel-content" id="image-generation-content">
-        <!-- Model Selection -->
-        <div class="model-selection">
-            <label for="model-select">Image Model:</label>
-            <select id="model-select">
-                <option value="dall-e-3">DALL-E 3</option>
-                <option value="sdxl">SDXL</option>
-            </select>
-        </div>
-        
-        <!-- Compiled Prompt Display -->
+        <!-- Compiled Prompt Display (LLM will fill this) -->
         <div class="compiled-prompt">
-            <label for="compiled-prompt-textarea">Compiled Prompt:</label>
-            <textarea id="compiled-prompt-textarea" placeholder="Click 'Compile Prompt' to generate a prompt from all section image prompts..."></textarea>
+            <label for="compiled-prompt-textarea">Compiled Prompt (from Ollama):</label>
+            <textarea id="compiled-prompt-textarea" rows="8" placeholder="Generated prompt will appear here..." readonly></textarea>
         </div>
         
         <!-- Source Prompts Summary -->

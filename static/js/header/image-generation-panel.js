@@ -17,7 +17,6 @@ class HeaderImageGenerationPanel {
     initializeElements() {
         this.compileBtn = document.getElementById('compile-prompt-btn');
         this.generateBtn = document.getElementById('generate-header-btn');
-        this.modelSelect = document.getElementById('model-select');
         this.promptTextarea = document.getElementById('compiled-prompt-textarea');
         this.statusSpan = document.getElementById('image-generation-status');
         this.progressDiv = document.getElementById('generation-progress');
@@ -41,39 +40,62 @@ class HeaderImageGenerationPanel {
     
     async compileHeaderPrompt() {
         try {
-            this.updateStatus('Compiling prompts...');
+            this.updateStatus('Generating prompt with Ollama...');
             this.compileBtn.disabled = true;
             
-            // Get selected model
-            const selectedModel = this.modelSelect ? this.modelSelect.value : 'dall-e-3';
+            // Get the compiled prompt from Step 3 in the Prompt Builder Panel
+            const compiledResult = document.getElementById('compiled-result');
+            if (!compiledResult || !compiledResult.textContent) {
+                this.updateStatus('No compiled prompt found in Step 3');
+                alert('Please ensure the compiled prompt is displayed in Step 3 above.');
+                return;
+            }
             
-            const response = await fetch(`/header/api/posts/${this.postId}/compile-header-prompt`, {
+            const fullPrompt = compiledResult.textContent;
+            
+            // Get the system prompt and task prompt
+            const response = await fetch(`/header/api/posts/${this.postId}/prompt-assembly-data`);
+            const data = await response.json();
+            
+            if (!data.success || !data.task_prompt) {
+                throw new Error('Could not load task prompt');
+            }
+            
+            // Combine system prompt and task prompt for the LLM
+            const systemMessage = data.system_prompt + '\n\n' + data.task_prompt;
+            
+            // Send to Ollama LLM via header endpoint
+            const ollamaResponse = await fetch('/header/api/execute-llm', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    model: selectedModel
+                    provider: 'ollama',
+                    model: 'llama3.2:latest',
+                    messages: [
+                        { role: 'system', content: systemMessage },
+                        { role: 'user', content: fullPrompt }
+                    ],
+                    post_id: this.postId  // Include post_id so we can save the prompt to database
                 })
             });
             
-            const data = await response.json();
+            const ollamaData = await ollamaResponse.json();
             
-            if (data.success) {
-                this.compiledPrompt = data.compiled_prompt;
+            if (ollamaData.content) {
+                this.compiledPrompt = ollamaData.content.trim();
                 this.promptTextarea.value = this.compiledPrompt;
                 this.updateGenerateButtonState();
-                this.updateStatus(`Compiled from ${data.source_sections} sections`);
-                
-                // Load source prompts for display
-                await this.loadSourcePrompts();
+                this.updateStatus('Prompt generated successfully');
             } else {
-                this.updateStatus('Compilation failed');
-                console.error('Compilation error:', data.error);
+                this.updateStatus('LLM generation failed');
+                console.error('Ollama error:', ollamaData);
             }
         } catch (error) {
-            this.updateStatus('Compilation failed');
-            console.error('Error compiling header prompt:', error);
+            this.updateStatus('Generation failed');
+            console.error('Error generating prompt:', error);
+            alert(`Error: ${error.message}`);
         } finally {
             this.compileBtn.disabled = false;
         }
@@ -111,18 +133,17 @@ class HeaderImageGenerationPanel {
             this.progressDiv.style.display = 'block';
             this.updateStatus('Generating image...');
             
-            const modelName = this.modelSelect.value;
             const imagePrompt = this.promptTextarea.value.trim();
             
             if (!imagePrompt) {
                 throw new Error('No prompt provided');
             }
             
+            // Use gpt-image-1 by default for header images
+            const modelName = 'gpt-image-1';
             const parameters = {
-                quality: 50,
-                watermark: true,
-                text_overlay: true,
-                overlay_text: 'AI-generated header image'
+                size: '1536x1024',  // Landscape format supported by GPT-Image-1
+                quality: 'high'
             };
             
             const response = await fetch(`/header/api/posts/${this.postId}/generate-header-image`, {
@@ -133,7 +154,8 @@ class HeaderImageGenerationPanel {
                 body: JSON.stringify({
                     image_prompt: imagePrompt,
                     model_name: modelName,
-                    parameters: parameters
+                    parameters: parameters,
+                    use_renderer: false  // Use the exact prompt from the textarea, don't regenerate
                 })
             });
             

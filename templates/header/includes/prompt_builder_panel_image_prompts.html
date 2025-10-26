@@ -17,48 +17,21 @@
                 </div>
             </div>
 
-        <!-- Model Configuration -->
-        <div class="model-configuration-section">
-            <h5>Model Configuration:</h5>
-            <div class="model-info">
-                <div class="model-selection">
-                    <label>Selected Model:</label>
-                    <span id="current-model-display">Loading...</span>
-                </div>
-                <div class="character-limit">
-                    <label>Character Limit:</label>
-                    <span id="character-limit-display">Loading...</span>
-                </div>
-                <div class="style-guidelines">
-                    <label>Style Guidelines:</label>
-                    <span id="style-guidelines-display">Loading...</span>
-                </div>
-            </div>
-        </div>
-
         <!-- Prompt Assembly -->
         <div class="prompt-assembly-section">
             <h5 class="section-title-green">Prompt Assembly:</h5>
             
-            <!-- Step 1: Input Data -->
+            <!-- Step 1: System Instructions -->
             <div class="assembly-step">
-                <h6>Step 1: Section Image Prompts</h6>
-                <div class="section-prompts-container" id="section-prompts-container">
-                    <div class="loading-placeholder">Loading section prompts...</div>
-                </div>
-            </div>
-            
-            <!-- Step 2: System Instructions -->
-            <div class="assembly-step">
-                <h6>Step 2: System Instructions</h6>
+                <h6>Step 1: System Instructions</h6>
                 <div class="system-prompt-display" id="system-prompt-display">
                     <div class="loading-placeholder">Loading system prompt...</div>
                 </div>
             </div>
             
-            <!-- Step 3: Task Template -->
+            <!-- Step 2: Task Template -->
             <div class="assembly-step">
-                <h6>Step 3: Task Template</h6>
+                <h6>Step 2: Task Template</h6>
                 <div class="task-template-display" id="task-template-display">
                     <div class="loading-placeholder">Loading task template...</div>
                 </div>
@@ -80,29 +53,11 @@
                 </div>
             </div>
             
-            <!-- Step 4: Compiled Prompt -->
+            <!-- Step 3: Compiled Prompt -->
             <div class="assembly-step">
-                <h6>Step 4: Compiled Prompt</h6>
-                <div id="simple-blank-field">
-                </div>
-            </div>
-        </div>
-
-        <!-- Prompt Construction -->
-        <div class="prompt-construction-section">
-            <h5>Prompt Construction:</h5>
-            <div class="prompt-builder">
-                <div class="form-group">
-                    <label for="compiled-prompt-textarea">Compiled Prompt Preview</label>
-                    <textarea id="compiled-prompt-textarea" rows="4" placeholder="Compiled prompt will appear here..." readonly></textarea>
-                    <div class="character-count-display">
-                        <span id="character-count">0 / 400 chars</span>
-                        <span id="character-status" class="success">Ready</span>
-                    </div>
-                </div>
-                <div class="prompt-actions">
-                    <button class="btn-secondary" id="edit-compiled-prompt-btn" disabled>Edit</button>
-                    <button class="btn-primary" id="regenerate-compiled-prompt-btn" disabled>Regenerate</button>
+                <h6>Step 3: Compiled Prompt</h6>
+                <div id="compiled-result" class="compiled-result">
+                    <!-- Compiled prompt will appear here -->
                 </div>
             </div>
         </div>

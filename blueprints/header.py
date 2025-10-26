@@ -1,6 +1,7 @@
 # Header Blueprint - Blog post header and metadata generation
 from flask import Blueprint, render_template, jsonify, request
 from config.database import db_manager
+from blueprints.imaging import imaging_generate_dalle_image, imaging_generate_gpt_image_1, imaging_generate_sdxl_image
 import logging
 import json
 import re
@@ -1304,36 +1305,42 @@ def api_get_prompt_assembly_data(post_id):
             if not prompt_result:
                 return jsonify({'error': 'Header prompt compilation prompts not found'}), 404
             
-            # Get section image prompts from post_development.sections
+            # Get section image prompts from post_section table (correct source)
             cursor.execute("""
-                SELECT sections FROM post_development 
-                WHERE post_id = %s AND sections IS NOT NULL
+                SELECT 
+                    section_order,
+                    section_heading,
+                    image_prompts
+                FROM post_section 
+                WHERE post_id = %s 
+                AND image_prompts IS NOT NULL
+                ORDER BY section_order
             """, (post_id,))
-            sections_result = cursor.fetchone()
+            sections_result = cursor.fetchall()
             
             sections_with_prompts = []
-            if sections_result and sections_result['sections']:
-                try:
-                    sections_data = json.loads(sections_result['sections'])
-                    if isinstance(sections_data, dict) and 'sections' in sections_data:
-                        sections_list = sections_data['sections']
-                    elif isinstance(sections_data, list):
-                        sections_list = sections_data
-                    else:
-                        sections_list = []
+            if sections_result:
+                for section in sections_result:
+                    # Handle both string and dict formats for image_prompts
+                    prompt_data = section['image_prompts']
+                    image_prompt = ''
                     
-                    # Extract image prompts from sections
-                    for section in sections_list:
-                        if section.get('image_prompts') and isinstance(section['image_prompts'], dict):
-                            image_prompt = section['image_prompts'].get('image_prompt', '')
-                            if image_prompt:
-                                sections_with_prompts.append({
-                                    'section_order': section.get('index', 0),
-                                    'section_title': section.get('title', f'Section {section.get("index", 0)}'),
-                                    'image_prompt': image_prompt
-                                })
-                except (json.JSONDecodeError, TypeError) as e:
-                    logger.warning(f"Failed to parse sections data: {e}")
+                    if isinstance(prompt_data, str):
+                        try:
+                            prompt_dict = json.loads(prompt_data)
+                            if isinstance(prompt_dict, dict):
+                                image_prompt = prompt_dict.get('image_prompt', '')
+                        except (json.JSONDecodeError, TypeError):
+                            image_prompt = prompt_data.strip()
+                    elif isinstance(prompt_data, dict):
+                        image_prompt = prompt_data.get('image_prompt', '')
+                    
+                    if image_prompt:
+                        sections_with_prompts.append({
+                            'section_order': section['section_order'],
+                            'section_title': section['section_heading'],
+                            'image_prompt': image_prompt
+                        })
             
             return jsonify({
                 'success': True,
@@ -1424,6 +1431,8 @@ def api_generate_header_image(post_id):
         # Generate raw image
         if model_name == 'dall-e-3':
             result = imaging_generate_dalle_image(image_prompt, post_id, 'header', parameters)
+        elif model_name == 'gpt-image-1':
+            result = imaging_generate_gpt_image_1(image_prompt, post_id, 'header', parameters)
         else:
             # For SDXL, use a special section_id for headers (use post_id as section_id)
             result = imaging_generate_sdxl_image(image_prompt, post_id, post_id, parameters)
@@ -1447,12 +1456,9 @@ def api_generate_header_image(post_id):
             )
             return jsonify({'error': result.get('error', 'Image generation failed')}), 500
         
-        # Apply watermarking/optimization
-        watermark_result = optimize_image_with_watermark(post_id, 'header', parameters)
-        
-        if not watermark_result.get('success'):
-            logger.warning(f"Watermarking failed: {watermark_result.get('error')}")
-            # Continue without watermarking
+        # Skip watermarking/optimization - that's a separate stage
+        # watermark_result = optimize_image_with_watermark(post_id, 'header', parameters)
+        watermark_result = {'success': True, 'optimized_path': result.get('image_path')}
         
         # Create or update image table record
         with db_manager.get_cursor() as cursor:
@@ -1463,7 +1469,15 @@ def api_generate_header_image(post_id):
             
             existing_image_id = cursor.fetchone()
             
+            # Get the new optimized path
+            new_path = watermark_result.get('optimized_path', result.get('image_path'))
+            
             if existing_image_id and existing_image_id['header_image_id']:
+                # Delete any other image records with the same path to avoid conflict
+                cursor.execute("""
+                    DELETE FROM image WHERE path = %s AND id != %s
+                """, (new_path, existing_image_id['header_image_id']))
+                
                 # Update existing image record
                 cursor.execute("""
                     UPDATE image 
@@ -1474,7 +1488,7 @@ def api_generate_header_image(post_id):
                 """, (
                     'header.jpg',
                     'original_header.png', 
-                    watermark_result.get('optimized_path', result.get('image_path')),
+                    new_path,
                     image_prompt,
                     'Header image for blog post',
                     'Generated header image',
@@ -1806,3 +1820,77 @@ def api_test_field(post_id):
             'success': False,
             'content': f'Error: {str(e)}'
         }), 500
+
+@bp.route('/api/execute-llm', methods=['POST'])
+def api_execute_llm():
+    """Execute LLM request for header prompt generation."""
+    try:
+        data = request.get_json()
+        
+        provider = data.get('provider', 'ollama')
+        model = data.get('model', 'llama3.2:latest')
+        messages = data.get('messages', [])
+        
+        if not messages:
+            return jsonify({'error': 'No messages provided'}), 400
+        
+        # Use the LLM service to execute the request
+        result = llm_service.execute_llm_request(provider, model, messages)
+        
+        # ALWAYS save the generated prompt to the database if we have content
+        if result.get('content') and data.get('post_id'):
+            post_id = data.get('post_id')
+            new_prompt = result['content'].strip()
+            
+            try:
+                with db_manager.get_connection() as conn:
+                    cursor = conn.cursor()
+                    
+                    # Check if header image record exists
+                    cursor.execute("""
+                        SELECT header_image_id FROM post WHERE id = %s
+                    """, (post_id,))
+                    
+                    existing_image = cursor.fetchone()
+                    
+                    if existing_image and existing_image['header_image_id']:
+                        # UPDATE existing image record - THIS OVERWRITES THE OLD PROMPT
+                        cursor.execute("""
+                            UPDATE image 
+                            SET image_prompt = %s, updated_at = CURRENT_TIMESTAMP
+                            WHERE id = %s
+                        """, (new_prompt, existing_image['header_image_id']))
+                        logger.info(f"UPDATED header prompt for post {post_id} in image {existing_image['header_image_id']}")
+                    else:
+                        # Create new image record with just the prompt
+                        cursor.execute("""
+                            INSERT INTO image (filename, original_filename, path, image_prompt, alt_text, caption)
+                            VALUES (%s, %s, %s, %s, %s, %s)
+                            RETURNING id
+                        """, (
+                            'header.jpg',
+                            'placeholder.png',
+                            '/static/content/posts/' + str(post_id) + '/header/header.jpg',
+                            new_prompt,
+                            'Header image prompt',
+                            'Generated header image prompt'
+                        ))
+                        image_id = cursor.fetchone()['id']
+                        
+                        # Link to post
+                        cursor.execute("""
+                            UPDATE post SET header_image_id = %s WHERE id = %s
+                        """, (image_id, post_id))
+                        logger.info(f"CREATED new header prompt for post {post_id}")
+                    
+                    conn.commit()
+            except Exception as e:
+                logger.error(f"Error saving header prompt to database: {e}")
+                import traceback
+                logger.error(traceback.format_exc())
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Error executing LLM request: {e}")
+        return jsonify({'error': str(e)}), 500

@@ -8,14 +8,15 @@ console.log('[HeaderPromptBuilderPanel] Script loaded');
 class HeaderPromptBuilderPanel {
     constructor(postId) {
         this.postId = postId;
-        this.currentModel = 'sdxl-lora'; // Default
+        this.currentModel = 'gpt-image-1'; // Default
         this.modelConfig = {
             'sdxl-lora': { limit: 400, style: 'inkwash and watercolour' },
             'dall-e-3': { limit: 4000, style: 'photorealistic' },
             'dall-e-2': { limit: 1000, style: 'artistic' },
-            'gpt-image': { limit: 2000, style: 'detailed descriptive' }
+            'gpt-image-1': { limit: 4000, style: 'pen and ink watercolor' }
         };
         this.isEditMode = false;
+        this.loadedSections = []; // Store loaded section data
         
         this.init();
     }
@@ -23,7 +24,6 @@ class HeaderPromptBuilderPanel {
     init() {
         this.setupEventListeners();
         this.setupAccordion();
-        this.updateModelDisplay();
         this.loadAllImageConcepts();
         this.loadPromptAssemblyData();
         console.log('[HeaderPromptBuilderPanel] Initialized for post:', this.postId);
@@ -34,7 +34,6 @@ class HeaderPromptBuilderPanel {
         document.addEventListener('modelSelectionChanged', (event) => {
             console.log('[HeaderPromptBuilderPanel] Model selection changed:', event.detail);
             this.currentModel = event.detail.model;
-            this.updateModelDisplay();
         });
 
         // Edit compiled prompt button
@@ -325,24 +324,28 @@ class HeaderPromptBuilderPanel {
             const data = await response.json();
             console.log('[HeaderPromptBuilderPanel] Prompt assembly data loaded:', data);
             
+            // Store sections for later use
+            this.loadedSections = data.sections || [];
+            
             // Update Step 1: Section Prompts
             console.log('[HeaderPromptBuilderPanel] Updating section prompts display...');
-            this.updateSectionPromptsDisplay(data.sections || []);
+            this.updateSectionPromptsDisplay(this.loadedSections);
             
             // Update Step 2: System Instructions
             console.log('[HeaderPromptBuilderPanel] Updating system prompt display...');
             this.updateSystemPromptDisplay(data.system_prompt || '');
             
-            // Update Step 3: Task Template
+            // Update Step 3: Task Template (this also triggers Step 4 update)
             console.log('[HeaderPromptBuilderPanel] Updating task template display...');
-            this.updateTaskTemplateDisplay(data.task_prompt || '');
+            // Store task prompt to use after textareas are created
+            const taskPrompt = data.task_prompt || '';
+            this.updateTaskTemplateDisplay(taskPrompt);
             
-            // Update Step 4: Compiled Result
-            console.log('[HeaderPromptBuilderPanel] Updating compiled result...');
-            const compiledResult = document.getElementById('compiled-result');
-            if (compiledResult) {
-                compiledResult.innerHTML = '<div class="success-message">Prompt assembly data loaded successfully!</div>';
-            }
+            // Update Step 4: Compiled Result - Force update after a brief delay to ensure textareas exist
+            setTimeout(() => {
+                console.log('[HeaderPromptBuilderPanel] Updating compiled result with actual data...');
+                this.updateCompiledResultDisplay(taskPrompt);
+            }, 100);
             
             // Enable preview button
             const previewBtn = document.getElementById('preview-assembly-btn');
@@ -421,20 +424,41 @@ class HeaderPromptBuilderPanel {
 
     updateCompiledResultDisplay(taskPrompt) {
         const compiledResult = document.getElementById('compiled-result');
-        if (!compiledResult) return;
+        if (!compiledResult) {
+            console.log('[HeaderPromptBuilderPanel] compiled-result element not found');
+            return;
+        }
         
         // Get actual data to replace placeholders
-        const sectionPrompts = this.getSectionPromptsFromAssembly();
+        // First try to get from textareas (if Step 1 exists)
+        let sectionPrompts = this.getSectionPromptsFromAssembly();
+        console.log('[HeaderPromptBuilderPanel] Section prompts from textareas:', sectionPrompts.length);
+        
+        // If no textareas, use loaded data directly
+        if (sectionPrompts.length === 0 && this.loadedSections && this.loadedSections.length > 0) {
+            console.log('[HeaderPromptBuilderPanel] Using loaded sections data:', this.loadedSections.length);
+            sectionPrompts = this.loadedSections.map(section => ({
+                order: section.section_order,
+                prompt: section.image_prompt
+            }));
+        }
+        
         const modelSelect = document.getElementById('assembly-model-select');
-        const selectedModel = modelSelect ? modelSelect.value : 'dall-e-3';
+        const selectedModel = modelSelect ? modelSelect.value : 'gpt-image-1';
         
         // Replace placeholders with actual data
         let compiledPrompt = taskPrompt || 'Task template not found';
         
         // Replace {section_prompts} with actual section prompts
         if (sectionPrompts.length > 0) {
-            const promptsText = sectionPrompts.map(prompt => prompt.trim()).join(' ');
+            // Format: "Section 1: prompt text\n\nSection 2: prompt text\n\n..."
+            const promptsText = sectionPrompts.map(section => 
+                `Section ${section.order}: ${section.prompt}`
+            ).join('\n\n');
+            console.log('[HeaderPromptBuilderPanel] Replacing {section_prompts} with', sectionPrompts.length, 'sections');
             compiledPrompt = compiledPrompt.replace(/\{section_prompts\}/g, promptsText);
+        } else {
+            console.log('[HeaderPromptBuilderPanel] WARNING: No section prompts available');
         }
         
         // Replace {model} with selected model
@@ -444,7 +468,9 @@ class HeaderPromptBuilderPanel {
         const requirements = this.getCurrentRequirements();
         compiledPrompt = compiledPrompt.replace(/\{style_guidelines\}/g, requirements);
         
-        compiledResult.innerHTML = `<div class="compiled-content">${compiledPrompt}</div>`;
+        console.log('[HeaderPromptBuilderPanel] Final compiled prompt length:', compiledPrompt.length);
+        // Use textContent to preserve newlines and formatting
+        compiledResult.textContent = compiledPrompt;
     }
 
     getCurrentRequirements() {
