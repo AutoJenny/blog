@@ -69,36 +69,21 @@ class HeaderPromptBuilderPanel {
     }
 
     setupAccordion() {
-        const header = document.querySelector('#prompt-builder-panel .panel-header');
         const content = document.getElementById('prompt-builder-accordion-content');
         const icon = document.getElementById('prompt-builder-accordion-icon');
 
-        if (header && content && icon) {
-            // Restore accordion state from DB
-            this.restoreAccordionState();
-            
-            header.addEventListener('click', () => {
-                this.toggleAccordion();
-            });
-        }
-    }
-
-    async restoreAccordionState() {
-        // Use the global accordion manager for consistency
-        if (window.headerAccordionManager) {
-            await window.headerAccordionManager.initializeAccordion(
-                'prompt-builder',
-                'prompt-builder-accordion-content',
-                'prompt-builder-accordion-icon'
-            );
-        }
-    }
-
-    async toggleAccordion() {
-        // Use the global accordion manager for consistency
-        const functionName = 'togglePromptBuilderAccordion';
-        if (window[functionName]) {
-            await window[functionName]();
+        if (content && icon) {
+            // Wait for HeaderAccordionManager to be available
+            if (window.headerAccordionManager) {
+                window.headerAccordionManager.initializeAccordion(
+                    'prompt-builder',
+                    'prompt-builder-accordion-content',
+                    'prompt-builder-accordion-icon'
+                );
+            } else {
+                // Retry after a short delay if manager isn't ready
+                setTimeout(() => this.setupAccordion(), 100);
+            }
         }
     }
 
@@ -602,12 +587,18 @@ class HeaderPromptBuilderPanel {
     }
 }
 
-// Global accordion function
-function togglePromptBuilderAccordion() {
+// Global accordion function fallback
+window.togglePromptBuilderAccordion = function() {
+    console.log('[HeaderPromptBuilderPanel] togglePromptBuilderAccordion called');
+    // This function will be replaced by HeaderAccordionManager when it initializes
     if (window.headerPromptBuilderPanel) {
-        window.headerPromptBuilderPanel.toggleAccordion();
+        // Try to call the accordion manager's function if it exists
+        const managerFunc = window['togglePromptBuilderAccordion'];
+        if (managerFunc && typeof managerFunc === 'function') {
+            managerFunc();
+        }
     }
-}
+};
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {

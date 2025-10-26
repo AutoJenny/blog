@@ -35,7 +35,11 @@
                 <h3 class="text-lg font-semibold text-gray-300 mb-2">Table Headers:</h3>
                 <div class="flex flex-wrap gap-2">
                     {% for header in headers %}
-                        <span class="bg-blue-600 text-white px-3 py-1 rounded text-sm font-mono">{{ header }}</span>
+                        {% if header in ['base_name', 'suffix'] %}
+                            <span class="bg-green-600 text-white px-3 py-1 rounded text-sm font-mono font-bold">{{ header }} ✨</span>
+                        {% else %}
+                            <span class="bg-blue-600 text-white px-3 py-1 rounded text-sm font-mono">{{ header }}</span>
+                        {% endif %}
                     {% endfor %}
                 </div>
             </div>
@@ -75,11 +79,21 @@
             <div class="accordion-content bg-gray-900 rounded-lg mt-4 overflow-hidden" id="database-content" style="display: none;">
                 <!-- Filter Controls -->
                 <div class="p-4 bg-gray-800 border-b border-gray-700">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-300 mb-2">Filter by Name:</label>
                             <input type="text" id="clan-name-filter" placeholder="Search names..." 
                                    class="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Filter by Base Name:</label>
+                            <input type="text" id="clan-base-name-filter" placeholder="Search base names..." 
+                                   class="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-green-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Filter by Suffix:</label>
+                            <input type="number" id="clan-suffix-filter" placeholder="Suffix number..." 
+                                   class="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-green-500 focus:outline-none">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-300 mb-2">Filter by Description:</label>
@@ -108,6 +122,8 @@
                             {% for record in tartan_data %}
                                 <tr class="border-b border-gray-700 hover:bg-gray-800 clan-row {% if loop.index > 50 %}initially-hidden{% endif %}" 
                                     data-name="{{ record.name or '' }}" 
+                                    data-base-name="{{ record.base_name or '' }}"
+                                    data-suffix="{{ record.suffix or '' }}"
                                     data-description="{{ record.description or '' }}">
                                     {% for header in headers %}
                                         <td class="px-4 py-3 text-gray-300 text-sm">
@@ -154,7 +170,11 @@
                 <h3 class="text-lg font-semibold text-gray-300 mb-2">Table Headers:</h3>
                 <div class="flex flex-wrap gap-2">
                     {% for header in register_headers %}
-                        <span class="bg-green-600 text-white px-3 py-1 rounded text-sm font-mono">{{ header }}</span>
+                        {% if header in ['base_name', 'suffix'] %}
+                            <span class="bg-green-600 text-white px-3 py-1 rounded text-sm font-mono font-bold">{{ header }} ✨</span>
+                        {% else %}
+                            <span class="bg-purple-600 text-white px-3 py-1 rounded text-sm font-mono">{{ header }}</span>
+                        {% endif %}
                     {% endfor %}
                 </div>
             </div>
@@ -294,18 +314,24 @@
     // Clan table filtering functions
     function filterClanTable() {
         const nameFilter = document.getElementById('clan-name-filter').value.toLowerCase();
+        const baseNameFilter = document.getElementById('clan-base-name-filter').value.toLowerCase();
+        const suffixFilter = document.getElementById('clan-suffix-filter').value;
         const descriptionFilter = document.getElementById('clan-description-filter').value.toLowerCase();
         const rows = document.querySelectorAll('.clan-row');
         let visibleCount = 0;
 
         rows.forEach(row => {
             const name = (row.dataset.name || '').toLowerCase();
+            const baseName = (row.dataset.baseName || '').toLowerCase();
+            const suffix = row.dataset.suffix || '';
             const description = (row.dataset.description || '').toLowerCase();
             
             const nameMatch = name.includes(nameFilter);
+            const baseNameMatch = baseName.includes(baseNameFilter);
+            const suffixMatch = suffixFilter === '' || suffix === suffixFilter;
             const descriptionMatch = description.includes(descriptionFilter);
             
-            if (nameMatch && descriptionMatch) {
+            if (nameMatch && baseNameMatch && suffixMatch && descriptionMatch) {
                 row.style.display = '';
                 row.classList.remove('initially-hidden');
                 visibleCount++;
@@ -320,6 +346,8 @@
 
     function clearClanFilters() {
         document.getElementById('clan-name-filter').value = '';
+        document.getElementById('clan-base-name-filter').value = '';
+        document.getElementById('clan-suffix-filter').value = '';
         document.getElementById('clan-description-filter').value = '';
         
         // Show first 50 records, hide the rest
@@ -389,10 +417,18 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Clan table filter event listeners
         const clanNameFilter = document.getElementById('clan-name-filter');
+        const clanBaseNameFilter = document.getElementById('clan-base-name-filter');
+        const clanSuffixFilter = document.getElementById('clan-suffix-filter');
         const clanDescriptionFilter = document.getElementById('clan-description-filter');
         
         if (clanNameFilter) {
             clanNameFilter.addEventListener('input', filterClanTable);
+        }
+        if (clanBaseNameFilter) {
+            clanBaseNameFilter.addEventListener('input', filterClanTable);
+        }
+        if (clanSuffixFilter) {
+            clanSuffixFilter.addEventListener('input', filterClanTable);
         }
         if (clanDescriptionFilter) {
             clanDescriptionFilter.addEventListener('input', filterClanTable);

@@ -33,7 +33,7 @@ class HeaderAccordionManager {
   /**
    * Load accordion state from database
    * @param {string} accordionId - Unique identifier for the accordion
-   * @returns {Promise<boolean>} - Whether the accordion should be open (default: true)
+   * @returns {Promise<boolean>} - Whether the accordion should be open (default: false - closed)
    */
   async loadAccordionState(accordionId) {
     try {
@@ -42,7 +42,7 @@ class HeaderAccordionManager {
       const response = await fetch(`${this.baseUrl}/${encodeURIComponent(key)}`);
       if (!response.ok) {
         console.error(`[AccordionManager] Failed to load state for ${accordionId}:`, response.statusText);
-        return true; // Default to open
+        return false; // Default to closed
       }
       
       const data = await response.json();
@@ -50,10 +50,10 @@ class HeaderAccordionManager {
         return data.value === 'open';
       }
       
-      return true; // Default to open if no saved state
+      return false; // Default to closed if no saved state
     } catch (error) {
       console.error(`[AccordionManager] Error loading accordion state for ${accordionId}:`, error);
-      return true; // Default to open on error
+      return false; // Default to closed on error
     }
   }
 

@@ -34,6 +34,10 @@
     padding: 1rem;
 }
 
+.panel-content.collapsed {
+    display: none;
+}
+
 .image-model-selection {
     margin-bottom: 1rem;
 }

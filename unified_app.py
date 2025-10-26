@@ -135,6 +135,10 @@ def create_app(config_name=None):
     from blueprints.clan_api import bp as clan_api_bp
     app.register_blueprint(clan_api_bp, url_prefix='/clan-api')
 
+    # Register side projects blueprint
+    from blueprints.side_projects import bp as side_projects_bp
+    app.register_blueprint(side_projects_bp)
+
     # Additional blueprints will be added in Phase 2
     from blueprints.database import bp as database_bp
     app.register_blueprint(database_bp)

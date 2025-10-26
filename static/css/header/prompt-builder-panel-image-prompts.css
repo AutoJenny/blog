@@ -37,6 +37,10 @@
     padding: 20px;
 }
 
+.panel-content.collapsed {
+    display: none;
+}
+
 /* Input Prompts Section */
 .input-prompts-section {
     margin-bottom: 20px;

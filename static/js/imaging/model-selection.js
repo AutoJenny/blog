@@ -595,20 +595,37 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Restore accordion state
-    const savedState = localStorage.getItem('model-selection-accordion-state');
-    if (savedState === 'open') {
-        const content = document.getElementById('model-selection-accordion-content');
-        const icon = document.getElementById('model-selection-accordion-icon');
-        if (content && icon) {
-            content.style.display = 'block';
-            icon.className = 'fas fa-chevron-up';
+    // Restore accordion state - use HeaderAccordionManager if in header context
+    if (window.currentStage === 'header' && window.headerAccordionManager) {
+        // Use HeaderAccordionManager for header context
+        window.headerAccordionManager.initializeAccordion(
+            'model-selection',
+            'model-selection-accordion-content',
+            'model-selection-accordion-icon'
+        );
+    } else {
+        // Use localStorage for imaging context
+        const savedState = localStorage.getItem('model-selection-accordion-state');
+        if (savedState === 'open') {
+            const content = document.getElementById('model-selection-accordion-content');
+            const icon = document.getElementById('model-selection-accordion-icon');
+            if (content && icon) {
+                content.style.display = 'block';
+                icon.className = 'fas fa-chevron-up';
+            }
         }
     }
 });
 
 // Accordion functionality
 function toggleModelSelectionAccordion() {
+    // If HeaderAccordionManager is handling this, let it do its work
+    if (window.currentStage === 'header' && window.headerAccordionManager) {
+        // The HeaderAccordionManager will handle this via the global function it creates
+        return;
+    }
+    
+    // Fallback to localStorage for imaging context
     const content = document.getElementById('model-selection-accordion-content');
     const icon = document.getElementById('model-selection-accordion-icon');
     
