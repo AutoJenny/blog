@@ -56,10 +56,10 @@ class LLMService:
             if intercept_context:
                 messages = self._retrieve_raw_messages(intercept_context) or messages
             
-            # STEP 3: Validate intercept_context is provided
-            if not intercept_context or not intercept_context.get('post_id') or not intercept_context.get('section_id'):
-                logger.error("intercept_context with valid post_id and section_id is required")
-                return {'error': 'intercept_context required'}
+            # STEP 3: Validate intercept_context is provided (post_id required, section_id optional)
+            if not intercept_context or not intercept_context.get('post_id'):
+                logger.error("intercept_context with valid post_id is required")
+                return {'error': 'intercept_context with post_id required'}
             
             if provider == 'openai':
                 headers = {
@@ -142,12 +142,12 @@ class LLMService:
             post_id = context.get('post_id')
             section_id = context.get('section_id')
             
-            # Section ID must be numeric - no string ID handling
-            if not isinstance(section_id, int) and not (isinstance(section_id, str) and section_id.isdigit()):
-                logger.error(f"Invalid section_id: {section_id}. Must be numeric.")
-                return
-            
-            section_id = int(section_id)
+            # Section ID is optional (None for post-level operations), but if provided must be numeric
+            if section_id is not None:
+                if not isinstance(section_id, int) and not (isinstance(section_id, str) and section_id.isdigit()):
+                    logger.error(f"Invalid section_id: {section_id}. Must be numeric or None.")
+                    return
+                section_id = int(section_id)
             
             with db_manager.get_cursor() as cursor:
                 # Store in a new table for intercepted messages
@@ -172,12 +172,12 @@ class LLMService:
         try:
             from config.database import db_manager
             
-            # Section ID must be numeric - no string ID handling
-            if not isinstance(section_id, int) and not (isinstance(section_id, str) and section_id.isdigit()):
-                logger.error(f"Invalid section_id: {section_id}. Must be numeric.")
-                return None
-            
-            section_id = int(section_id)
+            # Section ID is optional (None for post-level operations), but if provided must be numeric
+            if section_id is not None:
+                if not isinstance(section_id, int) and not (isinstance(section_id, str) and section_id.isdigit()):
+                    logger.error(f"Invalid section_id: {section_id}. Must be numeric or None.")
+                    return None
+                section_id = int(section_id)
             
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
@@ -212,12 +212,12 @@ class LLMService:
             post_id = context.get('post_id')
             section_id = context.get('section_id')
             
-            # Section ID must be numeric
-            if not isinstance(section_id, int) and not (isinstance(section_id, str) and section_id.isdigit()):
-                logger.error(f"Invalid section_id: {section_id}. Must be numeric.")
-                return
-            
-            section_id = int(section_id)
+            # Section ID is optional (None for post-level operations), but if provided must be numeric
+            if section_id is not None:
+                if not isinstance(section_id, int) and not (isinstance(section_id, str) and section_id.isdigit()):
+                    logger.error(f"Invalid section_id: {section_id}. Must be numeric or None.")
+                    return
+                section_id = int(section_id)
             
             # Serialize messages to JSON
             messages_json = json.dumps(messages)
@@ -245,12 +245,12 @@ class LLMService:
             post_id = context.get('post_id')
             section_id = context.get('section_id')
             
-            # Section ID must be numeric
-            if not isinstance(section_id, int) and not (isinstance(section_id, str) and section_id.isdigit()):
-                logger.error(f"Invalid section_id: {section_id}. Must be numeric.")
-                return None
-            
-            section_id = int(section_id)
+            # Section ID is optional (None for post-level operations), but if provided must be numeric
+            if section_id is not None:
+                if not isinstance(section_id, int) and not (isinstance(section_id, str) and section_id.isdigit()):
+                    logger.error(f"Invalid section_id: {section_id}. Must be numeric or None.")
+                    return None
+                section_id = int(section_id)
             
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
@@ -280,12 +280,12 @@ class LLMService:
             post_id = context.get('post_id')
             section_id = context.get('section_id')
             
-            # Section ID must be numeric
-            if not isinstance(section_id, int) and not (isinstance(section_id, str) and section_id.isdigit()):
-                logger.error(f"Invalid section_id: {section_id}. Must be numeric.")
-                return
-            
-            section_id = int(section_id)
+            # Section ID is optional (None for post-level operations), but if provided must be numeric
+            if section_id is not None:
+                if not isinstance(section_id, int) and not (isinstance(section_id, str) and section_id.isdigit()):
+                    logger.error(f"Invalid section_id: {section_id}. Must be numeric or None.")
+                    return
+                section_id = int(section_id)
             
             # Build the complete API request data
             if provider == 'openai':
@@ -347,12 +347,12 @@ class LLMService:
             post_id = context.get('post_id')
             section_id = context.get('section_id')
             
-            # Section ID must be numeric
-            if not isinstance(section_id, int) and not (isinstance(section_id, str) and section_id.isdigit()):
-                logger.error(f"Invalid section_id: {section_id}. Must be numeric.")
-                return
-            
-            section_id = int(section_id)
+            # Section ID is optional (None for post-level operations), but if provided must be numeric
+            if section_id is not None:
+                if not isinstance(section_id, int) and not (isinstance(section_id, str) and section_id.isdigit()):
+                    logger.error(f"Invalid section_id: {section_id}. Must be numeric or None.")
+                    return
+                section_id = int(section_id)
             
             # Build the exact raw HTTP request
             raw_request = f"{method} {url} HTTP/1.1\n"
