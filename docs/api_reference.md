@@ -351,6 +351,88 @@ All API responses are in JSON format with the following structure:
   - `product_id` (integer): Product ID
 - **Response:** Array of image objects
 
+## Header API
+
+### Generate SEO Meta Data
+- **POST** `/header/api/posts/{post_id}/generate-seo-meta`
+- **Description:** Generate SEO metadata (meta title, description, tags) for a blog post using LLM
+- **Parameters:**
+  - `post_id` (integer): Post ID
+- **Response:**
+```json
+{
+  "success": true,
+  "meta_title": "Short compelling title",
+  "meta_description": "Brief engaging description",
+  "meta_tags": "tag1, tag2, tag3",
+  "meta_image": "https://clan.com/path/to/image.jpg",
+  "meta_type": "article",
+  "meta_site_name": "Clan.com Blog"
+}
+```
+
+### Get Meta Data
+- **GET** `/header/api/posts/{post_id}/get-meta-data`
+- **Description:** Retrieve existing SEO metadata for a post
+- **Parameters:**
+  - `post_id` (integer): Post ID
+- **Response:** Meta data object
+
+### Generate Image Details
+- **POST** `/header/api/posts/{post_id}/generate-image-details`
+- **Description:** Generate caption and alt text for header image using LLM
+- **Parameters:**
+  - `post_id` (integer): Post ID
+- **Response:**
+```json
+{
+  "success": true,
+  "caption": "Short image caption",
+  "alt_text": "Descriptive alt text"
+}
+```
+
+### Execute LLM Request
+- **POST** `/header/api/execute-llm`
+- **Description:** Execute a generic LLM request with message interception
+- **Request Body:**
+```json
+{
+  "provider": "ollama",
+  "model": "llama3.2:latest",
+  "messages": [{"role": "user", "content": "..."}],
+  "post_id": 69
+}
+```
+- **Response:** LLM response content
+
+### Generate Header Image
+- **POST** `/header/api/posts/{post_id}/generate-header-image`
+- **Description:** Generate a header image using specified model and prompt
+- **Request Body:**
+```json
+{
+  "model_name": "gpt-image-1",
+  "image_prompt": "A landscape depicting...",
+  "parameters": {
+    "size": "1536x1024",
+    "quality": "high"
+  }
+}
+```
+- **Response:** Generated image details
+
+### Optimize Header Image
+- **POST** `/header/api/posts/{post_id}/optimize-header-image`
+- **Description:** Optimize and watermark the header image
+- **Response:**
+```json
+{
+  "success": true,
+  "optimized_path": "/path/to/optimized/image.jpg"
+}
+```
+
 ## Error Handling
 
 ### Common Error Responses
