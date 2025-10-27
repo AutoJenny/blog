@@ -858,7 +858,9 @@ Return in JSON format:
             )
             
             if llm_response.get('success'):
-                content = llm_response['content']
+                content = llm_response.get('content', '')
+                
+                logger.info(f"LLM response content: {content}")
                 
                 # Parse JSON response
                 import re
@@ -872,11 +874,13 @@ Return in JSON format:
                     meta_description = seo_data.get('meta_description', '')
                     meta_tags = seo_data.get('meta_tags', '')
                 else:
+                    logger.error(f"Failed to parse JSON from LLM response: {content}")
                     # Fallback if JSON parsing fails
                     meta_title = ""
                     meta_description = ""
                     meta_tags = ""
             else:
+                logger.error(f"LLM call failed: {llm_response}")
                 return jsonify({'error': 'Failed to generate SEO metadata'}), 500
             
             # Get header image path for OG image
