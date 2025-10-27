@@ -151,14 +151,11 @@ class LLMService:
             
             with db_manager.get_cursor() as cursor:
                 # Store in a new table for intercepted messages
+                # Using a simple INSERT and letting partial unique indexes handle conflicts
                 cursor.execute("""
                     INSERT INTO llm_message_intercepts 
                     (post_id, section_id, intercepted_message, created_at)
                     VALUES (%s, %s, %s, NOW())
-                    ON CONFLICT (post_id, section_id) 
-                    DO UPDATE SET 
-                        intercepted_message = EXCLUDED.intercepted_message,
-                        created_at = EXCLUDED.created_at
                 """, (post_id, section_id, intercepted_message))
                 
                 cursor.connection.commit()
