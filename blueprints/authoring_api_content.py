@@ -91,56 +91,16 @@ def api_generate_section_draft(post_id, section_id):
             if not post:
                 return jsonify({'error': 'Post not found'}), 404
             
-            # Get detailed section data from post_development (includes topics, themes, etc.)
+            # Get post_development data
             cursor.execute("""
-                SELECT topic_allocation, sections, section_structure FROM post_development WHERE post_id = %s
+                SELECT idea_seed, sections, section_structure FROM post_development WHERE post_id = %s
             """, (post_id,))
             dev_data = cursor.fetchone()
             
-            # Parse section details from post_development if available
-            section_details = None
-            section_structure_section = None
+            if not dev_data:
+                return jsonify({'error': 'Post development data not found'}), 404
             
-            # First, get from 'sections' JSON (for topics)
-            if dev_data and dev_data.get('sections'):
-                import json
-                try:
-                    sections_data = dev_data['sections']
-                    
-                    # Handle if it's a dict with 'sections' key
-                    if isinstance(sections_data, dict) and 'sections' in sections_data:
-                        sections_list = sections_data['sections']
-                    # Handle if it's already a list
-                    elif isinstance(sections_data, list):
-                        sections_list = sections_data
-                    # Handle if it's a JSON string
-                    elif isinstance(sections_data, str):
-                        sections_list = json.loads(sections_data).get('sections', [])
-                    else:
-                        sections_list = []
-                    
-                    # Find matching section by order
-                    if isinstance(sections_list, list) and len(sections_list) > 0:
-                        section_details = next((s for s in sections_list if s.get('order') == section['section_order']), None)
-                except Exception as e:
-                    logger.error(f"Error parsing sections: {e}")
-                    import traceback
-                    logger.error(traceback.format_exc())
-            
-            # Also get from 'section_structure' JSON (for descriptions)
-            if dev_data and dev_data.get('section_structure'):
-                import json
-                try:
-                    structure_data = dev_data['section_structure']
-                    if isinstance(structure_data, dict) and 'sections' in structure_data:
-                        structure_list = structure_data['sections']
-                        # Find by matching section order
-                        if isinstance(structure_list, list):
-                            section_structure_section = next((s for s in structure_list if s.get('id') == f"S{str(section['section_order']).zfill(2)}"), None)
-                except Exception as e:
-                    logger.error(f"Error parsing section_structure: {e}")
-            
-            # Get LLM prompt template
+            # Get Section Drafting prompt template
             cursor.execute("""
                 SELECT prompt_text, system_prompt
                 FROM llm_prompt 
@@ -153,99 +113,56 @@ def api_generate_section_draft(post_id, section_id):
             if not prompt_data:
                 return jsonify({'error': 'Section Drafting prompt not found'}), 404
             
+            import json
+            import re
+            
             # Build the prompt
             prompt_text = prompt_data['prompt_text']
             system_prompt = prompt_data['system_prompt']
             
-            # Replace placeholders - handle both [FIELD] and [data:field] formats
-            # Get post idea/theme for [SELECTED_IDEA]
-            cursor.execute("SELECT idea_seed, expanded_idea FROM post_development WHERE post_id = %s", (post_id,))
-            dev_data_idea = cursor.fetchone()
-            selected_idea = dev_data_idea['expanded_idea'] or dev_data_idea['idea_seed'] or post['title'] if dev_data_idea else post['title']
+            # Extract data from dev_data JSON fields
+            sections_list = json.loads(dev_data['sections']) if isinstance(dev_data['sections'], str) else dev_data['sections']
+            structure_data = json.loads(dev_data['section_structure']) if isinstance(dev_data['section_structure'], str) else dev_data['section_structure']
             
-            # Get section-specific topics from section_details (post_development.sections)
-            section_topics_text = ''
-            section_name = section['section_heading'] or ''
+            # Find current section in sections list (by order)
+            sections = sections_list.get('sections', []) if isinstance(sections_list, dict) else sections_list
+            current_section_data = next((s for s in sections if s.get('order') == section['section_order']), None)
             
-            if section_details and section_details.get('topics'):
-                section_topics_text = '\n- '.join(section_details['topics'])
-                section_name = section_details.get('title', section['section_heading']) or ''
+            # Find current section in structure (by id)
+            structure_sections = structure_data.get('sections', []) if isinstance(structure_data, dict) else []
+            section_id_str = f"S{str(section['section_order']).zfill(2)}"
+            current_structure_data = next((s for s in structure_sections if s.get('id') == section_id_str), None)
             
-            # Fallback to ideas_to_include if no topics
-            if not section_topics_text and section['ideas_to_include']:
-                section_topics_text = section['ideas_to_include']
-            
-            # Use detailed description from section_structure if available
-            section_subtitle = section['section_description'] or ''
-            if section_structure_section and section_structure_section.get('description'):
-                section_subtitle = section_structure_section['description']
-                logger.info(f"Using detailed description from section_structure: {len(section_subtitle)} chars")
+            # Extract values
+            selected_idea = dev_data['idea_seed'] or ''
+            section_title = current_section_data.get('title', '') if current_section_data else ''
+            section_description = current_structure_data.get('description', '') if current_structure_data else ''
+            topics = current_section_data.get('topics', []) if current_section_data else []
+            topics_text = '\n- '.join(topics) if topics else ''
             
             # Get avoid headings (all other sections)
-            avoid_headings = ''
-            try:
-                cursor.execute("""
-                    SELECT section_heading, section_description
-                    FROM post_section
-                    WHERE post_id = %s AND section_order != %s
-                    ORDER BY section_order
-                """, (post_id, section['section_order']))
-                other_sections = cursor.fetchall()
-                
-                if other_sections:
-                    avoid_headings = '\n'.join([
-                        f"{s['section_heading']}: {s['section_description']}"
-                        for s in other_sections
-                        if s['section_heading'] or s['section_description']
-                    ])
-            except Exception as e:
-                logger.warning(f"Could not fetch avoid headings: {e}")
+            cursor.execute("""
+                SELECT section_heading, section_description
+                FROM post_section
+                WHERE post_id = %s AND section_order != %s
+                ORDER BY section_order
+            """, (post_id, section['section_order']))
+            other_sections = cursor.fetchall()
+            avoid_headings = '\n'.join([
+                f"{s['section_heading']}: {s['section_description']}"
+                for s in other_sections
+                if s['section_heading'] or s['section_description']
+            ])
             
-            # Replace placeholders - handle both formats
-            # Match any variation with brackets
-            import re
-            
-            # Replace new format placeholders
+            # Replace placeholders
             prompt_text = re.sub(r'\[Selected Idea\]', selected_idea, prompt_text)
-            prompt_text = re.sub(r'\[Title\]', section_name, prompt_text)
-            prompt_text = re.sub(r'\[Subtitle\]', section_subtitle, prompt_text)
-            prompt_text = re.sub(r'\[Description\]', section_subtitle, prompt_text)
-            prompt_text = re.sub(r'\[Topics\]', section_topics_text, prompt_text)
+            prompt_text = re.sub(r'\[Title\]', section_title, prompt_text)
+            prompt_text = re.sub(r'\[Subtitle\]', section_description, prompt_text)
+            prompt_text = re.sub(r'\[Description\]', section_description, prompt_text)
+            prompt_text = re.sub(r'\[Topics\]', topics_text, prompt_text)
             prompt_text = re.sub(r'\[Avoid Headings\]', avoid_headings, prompt_text)
             
-            # Also handle old format for backwards compatibility
-            prompt_text = prompt_text.replace('[SELECTED_IDEA]', selected_idea)
-            prompt_text = prompt_text.replace('[SECTION_TITLE]', section_name)
-            prompt_text = prompt_text.replace('[SECTION_SUBTITLE]', section_subtitle)
-            prompt_text = prompt_text.replace('[SECTION_GROUP]', section_name)
-            prompt_text = prompt_text.replace('[GROUP_SUMMARY]', section_subtitle)
-            prompt_text = prompt_text.replace('[SECTION_TOPICS]', section_topics_text)
-            prompt_text = prompt_text.replace('[AVOID_SECTIONS_DETAILED]', avoid_headings)
-            
-            # Also handle old [data:*] format for backwards compatibility
-            prompt_text = prompt_text.replace('[data:post_title]', post['title'] or '')
-            prompt_text = prompt_text.replace('[data:section_heading]', section['section_heading'] or '')
-            prompt_text = prompt_text.replace('[data:section_description]', section['section_description'] or '')
-            prompt_text = prompt_text.replace('[data:ideas_to_include]', section['ideas_to_include'] or '')
-            prompt_text = prompt_text.replace('[data:facts_to_include]', section['facts_to_include'] or '')
-            prompt_text = prompt_text.replace('[data:highlighting]', section['highlighting'] or '')
-            
-            # Log for debugging
-            logger.info(f"Replaced placeholders - Selected Idea: {selected_idea[:50]}...")
-            logger.info(f"Section Name: {section_name}, Topics: {len(section_topics_text)} chars")
-            
-            # Check if placeholders are still unreplaced
-            if re.search(r'\[Selected Idea\]', prompt_text):
-                logger.warning("Placeholder [Selected Idea] not replaced!")
-            if re.search(r'\[Title\]', prompt_text):
-                logger.warning("Placeholder [Title] not replaced!")
-            if re.search(r'\[Topics\]', prompt_text):
-                logger.warning("Placeholder [Topics] not replaced!")
-            if re.search(r'\[Avoid Headings\]', prompt_text):
-                logger.warning("Placeholder [Avoid Headings] not replaced!")
-            
-            # Log final prompt text for debugging
-            logger.info(f"Final prompt text (first 500 chars): {prompt_text[:500]}")
+            logger.info(f"Generated for: {section_title}, {len(topics)} topics, description length: {len(section_description)}")
             
             # Prepare messages for LLM
             messages = []
