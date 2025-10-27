@@ -46,6 +46,11 @@
             </a>
         </div>
         <div class="main-stages-right">
+            <a href="{{ url_for('header.header_preview', post_id=post_id) }}" 
+               class="stage-btn preview-btn" data-stage="preview" target="_blank">
+                <i class="fas fa-eye"></i>
+                Preview
+            </a>
             <a href="{{ url_for('planning.planning_old_interface', post_id=post_id) }}" 
                class="stage-btn old-interface" data-stage="old-interface">
                 <i class="fas fa-history"></i>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ post.title or 'Untitled Post' }} | Preview</title>
+    
+    <!-- Clan.com blog-matching CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/clan_blog.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <!-- Site Header -->
+    <div class="site-header">
+        <img src="{{ url_for('static', filename='site/header.jpg') }}" alt="Site Header">
+    </div>
+    
+    <!-- Edit Button - Top Right -->
+    <div class="edit-button-container">
+        <a href="http://localhost:5000/header/posts/{{ post.id }}/header-image" class="edit-button">
+            <i class="fas fa-edit"></i> Edit Post
+        </a>
+    </div>
+    
+    <div class="preview-container">
+        <!-- Back Link -->
+        <a href="{{ url_for('header.header_header_image', post_id=post.id) }}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Header Image
+        </a>
+        
+        <header class="preview-header">
+            <h1>{{ post.title or 'Untitled Post' }}</h1>
+            
+            {% if post.subtitle %}
+            <div class="blog-post__subtitle">{{ post.subtitle }}</div>
+            {% endif %}
+            
+            {% if header_image %}
+                <div class="header-image">
+                    <img src="{{ header_image.path }}" 
+                         alt="{{ header_image.alt_text }}" 
+                         class="header-image__img"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="image-error" style="display: none;">
+                        <small><strong>Header image not found:</strong> {{ header_image.path }}</small>
+                    </div>
+                    {% if header_image.caption %}
+                        <div class="image-caption">{{ header_image.caption }}</div>
+                    {% endif %}
+                </div>
+            {% endif %}
+            
+            <div class="post-meta">
+                <span class="post-meta__author">
+                    By Clan.com
+                </span>
+                <span class="post-meta__separator"> | </span>
+                <span class="post-meta__date">
+                    {{ post.created_at.strftime('%B %d, %Y') if post.created_at else 'Unknown date' }}
+                </span>
+                <span class="post-meta__separator"> | </span>
+                <span class="post-meta__status">
+                    {{ post.status or 'Draft' }}
+                </span>
+            </div>
+        </header>
+        
+        {% if sections %}
+        <div class="blog-sections">
+            {% for section in sections %}
+            <section class="blog-section" id="section-{{ section.id }}">
+                <h2>{{ section.section_heading or 'Untitled Section' }}</h2>
+                {% if section.section_subtitle %}
+                    <h3 class="section-subtitle">{{ section.section_subtitle }}</h3>
+                {% endif %}
+                
+                <div class="section-text">
+                    {% if section.content %}
+                        {{ section.content|safe }}
+                    {% else %}
+                        <em>No content available for this section.</em>
+                    {% endif %}
+                    
+                    {% if section.image %}
+                        {% if section.image.path %}
+                            <figure class="section-image">
+                                <a title="{{ section.image.alt_text or 'Section image' }}" 
+                                   href="{{ section.image.path }}" 
+                                   rel="lightbox[mpblog_{{ post.id }}]" 
+                                   target="_blank">
+                                    <img alt="{{ section.image.alt_text }}" 
+                                         src="{{ section.image.path }}"
+                                         onerror="this.style.display='none'; this.closest('figure').querySelector('.image-error').style.display='block';">
+                                </a>
+                                <div class="image-error" style="display: none;">
+                                    <small><strong>Image not found:</strong> {{ section.image.path }}</small>
+                                </div>
+                                {% if section.image.caption %}
+                                    <figcaption>{{ section.image.caption }}</figcaption>
+                                {% endif %}
+                            </figure>
+                        {% else %}
+                            <div class="image-placeholder">
+                                <i class="fas fa-image"></i>
+                                <small>{{ section.image.alt_text or 'No image available' }}</small>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </section>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-content">
+            <i class="fas fa-file-alt"></i>
+            <h3>No content available</h3>
+            <p>This post doesn't have any content yet. Use the workflow to add content and sections.</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Site Footer -->
+    <div class="site-footer">
+        <img src="{{ url_for('static', filename='site/footer.jpg') }}" alt="Site Footer">
+    </div>
+</body>
+</html>

@@ -106,6 +106,83 @@ def header_final_review(post_id):
     """Final Review substage - Review and finalize all header elements before publishing"""
     return render_template('header/final_review.html', post_id=post_id, blueprint_name='header')
 
+@bp.route('/posts/<int:post_id>/preview')
+def header_preview(post_id):
+    """Preview the blog post in its final format (matches clan.com/blog)"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get post data
+            cursor.execute("""
+                SELECT id, title, subtitle, summary, slug, status, 
+                       created_at, updated_at, header_image_id, author_id
+                FROM post
+                WHERE id = %s
+            """, (post_id,))
+            post = cursor.fetchone()
+            
+            if not post:
+                return "Post not found", 404
+            
+            # Get header image if exists
+            header_image = None
+            if post['header_image_id']:
+                cursor.execute("""
+                    SELECT id, filename, path, alt_text, caption
+                    FROM image
+                    WHERE id = %s
+                """, (post['header_image_id'],))
+                header_image = cursor.fetchone()
+                if header_image and header_image['path']:
+                    # Construct full URL
+                    if not header_image['path'].startswith('http'):
+                        header_image['path'] = f"/static{header_image['path']}"
+            
+            # Get sections with images
+            cursor.execute("""
+                SELECT ps.id, ps.section_heading, ps.section_subtitle, 
+                       ps.draft, ps.polished,
+                       i.id as image_id, i.filename, i.path as image_path, 
+                       i.alt_text, i.caption, i.title as image_title
+                FROM post_section ps
+                LEFT JOIN image i ON ps.image_id = i.id
+                WHERE ps.post_id = %s
+                ORDER BY ps.order_index
+            """, (post_id,))
+            sections = cursor.fetchall()
+            
+            # Format sections for template
+            formatted_sections = []
+            for section in sections:
+                formatted_section = {
+                    'id': section['id'],
+                    'section_heading': section['section_heading'],
+                    'section_subtitle': section['section_subtitle'],
+                    'content': section['polished'] or section['draft'] or '',
+                }
+                
+                # Add image if exists
+                if section['image_path']:
+                    formatted_section['image'] = {
+                        'path': section['image_path'] if section['image_path'].startswith('http') else f"/static{section['image_path']}",
+                        'alt_text': section['alt_text'] or '',
+                        'caption': section['caption'] or '',
+                        'title': section['image_title'] or ''
+                    }
+                
+                formatted_sections.append(formatted_section)
+            
+            # Pass data to template
+            return render_template('header/preview.html', 
+                                 post=post, 
+                                 header_image=header_image,
+                                 sections=formatted_sections,
+                                 post_id=post_id,
+                                 blueprint_name='header')
+    
+    except Exception as e:
+        logger.error(f"Error loading preview for post {post_id}: {e}")
+        return f"Error loading preview: {str(e)}", 500
+
 # API endpoints
 @bp.route('/api/prompts/<int:step_id>')
 def api_get_prompts(step_id):
