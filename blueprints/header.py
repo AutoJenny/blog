@@ -843,10 +843,18 @@ Return in JSON format:
   "meta_tags": "tag1, tag2, tag3, tag4, tag5"
 }}"""
             
+            # Call LLM with intercept_context
+            intercept_context = {
+                'post_id': post_id,
+                'step_id': 66,  # SEO meta generation step
+                'context_type': 'seo_meta_generation'
+            }
+            
             llm_response = llm_service.execute_llm_request(
                 provider='ollama',
                 model='llama3.2:latest',
-                messages=[{'role': 'user', 'content': task_prompt}]
+                messages=[{'role': 'user', 'content': task_prompt}],
+                intercept_context=intercept_context
             )
             
             if llm_response.get('success'):
