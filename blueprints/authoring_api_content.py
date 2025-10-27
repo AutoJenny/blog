@@ -201,13 +201,17 @@ def api_generate_section_draft(post_id, section_id):
             except Exception as e:
                 logger.warning(f"Could not fetch avoid headings: {e}")
             
-            # Replace placeholders - new format
-            prompt_text = prompt_text.replace('[Selected Idea]', selected_idea)
-            prompt_text = prompt_text.replace('[Title]', section_name)
-            prompt_text = prompt_text.replace('[Subtitle]', section_subtitle)
-            prompt_text = prompt_text.replace('[Description]', section_subtitle)  # Same as subtitle
-            prompt_text = prompt_text.replace('[Topics]', section_topics_text)
-            prompt_text = prompt_text.replace('[Avoid Headings]', avoid_headings)
+            # Replace placeholders - handle both formats
+            # Match any variation with brackets
+            import re
+            
+            # Replace new format placeholders
+            prompt_text = re.sub(r'\[Selected Idea\]', selected_idea, prompt_text)
+            prompt_text = re.sub(r'\[Title\]', section_name, prompt_text)
+            prompt_text = re.sub(r'\[Subtitle\]', section_subtitle, prompt_text)
+            prompt_text = re.sub(r'\[Description\]', section_subtitle, prompt_text)
+            prompt_text = re.sub(r'\[Topics\]', section_topics_text, prompt_text)
+            prompt_text = re.sub(r'\[Avoid Headings\]', avoid_headings, prompt_text)
             
             # Also handle old format for backwards compatibility
             prompt_text = prompt_text.replace('[SELECTED_IDEA]', selected_idea)
@@ -231,13 +235,13 @@ def api_generate_section_draft(post_id, section_id):
             logger.info(f"Section Name: {section_name}, Topics: {len(section_topics_text)} chars")
             
             # Check if placeholders are still unreplaced
-            if '[Selected Idea]' in prompt_text:
+            if re.search(r'\[Selected Idea\]', prompt_text):
                 logger.warning("Placeholder [Selected Idea] not replaced!")
-            if '[Title]' in prompt_text:
+            if re.search(r'\[Title\]', prompt_text):
                 logger.warning("Placeholder [Title] not replaced!")
-            if '[Topics]' in prompt_text:
+            if re.search(r'\[Topics\]', prompt_text):
                 logger.warning("Placeholder [Topics] not replaced!")
-            if '[Avoid Headings]' in prompt_text:
+            if re.search(r'\[Avoid Headings\]', prompt_text):
                 logger.warning("Placeholder [Avoid Headings] not replaced!")
             
             # Log final prompt text for debugging
