@@ -37,26 +37,15 @@ async function loadSectionContext(sectionId) {
                         document.getElementById('section-topics-display').textContent = 'No topics found';
                     }
                     
-                    // Avoid topics
-                    if (sectionAllocation.avoid_topics) {
-                        const avoidDisplay = document.getElementById('avoid-topics-display');
-                        avoidDisplay.innerHTML = sectionAllocation.avoid_topics.map(topic => 
-                            `<span class="topic-tag">${topic}</span>`
-                        ).join('');
-                    } else {
-                        document.getElementById('avoid-topics-display').textContent = 'No avoid topics defined';
-                    }
                 } else {
                     document.getElementById('section-subtitle-display').textContent = 'No group data found';
                     document.getElementById('section-description-display').textContent = 'No description found';
                     document.getElementById('section-topics-display').textContent = 'No topics found';
-                    document.getElementById('avoid-topics-display').textContent = 'No avoid topics defined';
                 }
             } else {
                 document.getElementById('section-subtitle-display').textContent = 'No planning data found';
                 document.getElementById('section-description-display').textContent = 'No description found';
                 document.getElementById('section-topics-display').textContent = 'No topics found';
-                document.getElementById('avoid-topics-display').textContent = 'No avoid topics defined';
             }
         }
     } catch (error) {
@@ -64,7 +53,6 @@ async function loadSectionContext(sectionId) {
         document.getElementById('section-subtitle-display').textContent = 'Error loading';
         document.getElementById('section-description-display').textContent = 'Error loading';
         document.getElementById('section-topics-display').textContent = 'Error loading';
-        document.getElementById('avoid-topics-display').textContent = 'Error loading';
     }
 }
 

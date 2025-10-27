@@ -109,9 +109,34 @@ class ContextPanel {
                     sectionTopicsDisplay.textContent = topicsText;
                 }
                 
-                const avoidTopicsDisplay = document.getElementById('avoid-topics-display');
-                if (avoidTopicsDisplay) {
-                    avoidTopicsDisplay.textContent = section.avoid_topics || '-';
+                // Load avoid headings (all other sections' titles and subtitles)
+                const avoidHeadingsDisplay = document.getElementById('avoid-headings-display');
+                if (avoidHeadingsDisplay) {
+                    try {
+                        const allSectionsResponse = await fetch(`/authoring/api/posts/${this.postId}/sections`);
+                        const allSectionsData = await allSectionsResponse.json();
+                        
+                        if (allSectionsData.success && allSectionsData.sections) {
+                            const otherSections = allSectionsData.sections.filter(s => s.id != sectionId);
+                            
+                            if (otherSections.length > 0) {
+                                const headingsList = otherSections.map(s => {
+                                    const title = s.section_heading || s.title || '';
+                                    const subtitle = s.section_description || s.description || '';
+                                    return title + (subtitle ? ': ' + subtitle : '');
+                                }).filter(h => h).join('\n');
+                                
+                                avoidHeadingsDisplay.textContent = headingsList || 'No other sections';
+                            } else {
+                                avoidHeadingsDisplay.textContent = 'No other sections';
+                            }
+                        } else {
+                            avoidHeadingsDisplay.textContent = '-';
+                        }
+                    } catch (err) {
+                        console.error('Error loading avoid headings:', err);
+                        avoidHeadingsDisplay.textContent = '-';
+                    }
                 }
                 
                 // Add section content display for LLM prompt data
@@ -162,7 +187,7 @@ class ContextPanel {
             'section-subtitle-display',
             'section-description-display',
             'section-topics-display',
-            'avoid-topics-display'
+            'avoid-headings-display'
         ];
         
         elements.forEach(id => {
