@@ -1,0 +1,27 @@
+<!-- Image Optimization Panel -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/image-optimization-panel.css') }}?v=9999&t=1737036000">
+
+<div class="image-optimization-panel" id="image-optimization-panel">
+    <div class="panel-header" onclick="toggleImageOptimizationAccordion()">
+        <h4><span class="panel-name-green">Optimization:</span> <span id="image-optimization-status">Watermark and compress</span></h4>
+        <div class="header-actions" onclick="event.stopPropagation()">
+            <button class="btn-primary" id="optimize-image-btn">Optimize and Watermark</button>
+            <i class="fas fa-chevron-down" id="image-optimization-accordion-icon"></i>
+        </div>
+    </div>
+    <div class="panel-content" id="image-optimization-content">
+        <div class="images-display">
+            <div class="image-display-section">
+                <h5>Raw Image</h5>
+                <img id="raw-image-preview" src="" alt="Raw header image" style="display: none; max-width: 100%; margin-top: 1rem;">
+            </div>
+            <div class="image-display-section" id="optimized-image-section" style="display: none;">
+                <h5>Optimized Image</h5>
+                <img id="optimized-image-preview" src="" alt="Optimized header image" style="max-width: 100%; margin-top: 1rem;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/header/image-optimization-panel.js') }}?v=9999&t=1737036000"></script>
+

@@ -1721,6 +1721,35 @@ def api_save_image_details(post_id):
         logger.error(f"Error saving image details for post {post_id}: {e}")
         return jsonify({'error': str(e)}), 500
 
+@bp.route('/api/posts/<int:post_id>/optimize-header-image', methods=['POST'])
+def api_optimize_header_image(post_id):
+    """Optimize header image with watermark"""
+    try:
+        # Import the optimization function
+        from blueprints.imaging import optimize_image_with_watermark
+        
+        # Get parameters from request (optional)
+        params = request.get_json() or {}
+        
+        # Optimize the header image
+        result = optimize_image_with_watermark(post_id, 'header', params)
+        
+        if result['success']:
+            return jsonify({
+                'success': True,
+                'optimized_path': result['optimized_path'],
+                'message': 'Image optimized successfully'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': result.get('error', 'Optimization failed')
+            }), 500
+            
+    except Exception as e:
+        logger.error(f"Error optimizing header image for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @bp.route('/api/ui/preferences/<key>', methods=['GET', 'POST'])
 def api_ui_preferences(key):
     """Handle UI preferences for header stage"""

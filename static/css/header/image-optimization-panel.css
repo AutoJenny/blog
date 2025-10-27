@@ -1,0 +1,72 @@
+/* Image Optimization Panel Styles */
+
+.image-optimization-panel {
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.image-optimization-panel .panel-header {
+    padding: 1rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #222;
+}
+
+.image-optimization-panel .panel-header h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.image-optimization-panel .panel-content {
+    padding: 1rem;
+    max-height: 1000px;
+    transition: max-height 0.3s ease;
+    overflow: hidden;
+}
+
+.image-optimization-panel .panel-content.collapsed {
+    max-height: 0;
+    padding: 0 1rem;
+}
+
+.image-optimization-panel .images-display {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.image-optimization-panel .image-display-section h5 {
+    color: #10b981;
+    margin-bottom: 0.5rem;
+}
+
+.image-optimization-panel .images-display img {
+    border: 2px solid #333;
+    border-radius: 4px;
+}
+
+.image-optimization-panel .btn-primary {
+    background-color: #10b981;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.image-optimization-panel .btn-primary:hover:not(:disabled) {
+    background-color: #0d9664;
+}
+
+.image-optimization-panel .btn-primary:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+}
+
