@@ -108,7 +108,21 @@ def api_generate_section_draft(post_id, section_id):
             prompt_text = prompt_data['prompt_text']
             system_prompt = prompt_data['system_prompt']
             
-            # Replace placeholders
+            # Replace placeholders - handle both [FIELD] and [data:field] formats
+            # Get post idea/theme for [SELECTED_IDEA]
+            cursor.execute("SELECT idea_seed, expanded_idea FROM post_development WHERE post_id = %s", (post_id,))
+            dev_data = cursor.fetchone()
+            selected_idea = dev_data['expanded_idea'] or dev_data['idea_seed'] or post['title'] if dev_data else post['title']
+            
+            prompt_text = prompt_text.replace('[SELECTED_IDEA]', selected_idea)
+            prompt_text = prompt_text.replace('[SECTION_TITLE]', section['section_heading'] or '')
+            prompt_text = prompt_text.replace('[SECTION_SUBTITLE]', section['section_description'] or '')
+            prompt_text = prompt_text.replace('[SECTION_GROUP]', '')  # Not in schema
+            prompt_text = prompt_text.replace('[GROUP_SUMMARY]', section['section_description'] or '')
+            prompt_text = prompt_text.replace('[SECTION_TOPICS]', section['ideas_to_include'] or '')
+            prompt_text = prompt_text.replace('[AVOID_SECTIONS_DETAILED]', '')  # Could build this from other sections
+            
+            # Also handle old [data:*] format for backwards compatibility
             prompt_text = prompt_text.replace('[data:post_title]', post['title'] or '')
             prompt_text = prompt_text.replace('[data:section_heading]', section['section_heading'] or '')
             prompt_text = prompt_text.replace('[data:section_description]', section['section_description'] or '')
