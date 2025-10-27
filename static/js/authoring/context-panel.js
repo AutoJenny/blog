@@ -89,14 +89,10 @@ class ContextPanel {
                     sectionSubtitleDisplay.textContent = section.description || section.section_description || '-';
                 }
                 
-                const sectionGroupDisplay = document.getElementById('section-group-display');
-                if (sectionGroupDisplay) {
-                    sectionGroupDisplay.textContent = section.section_heading || section.title || '-';
-                }
-                
-                const sectionGroupSummaryDisplay = document.getElementById('section-group-summary-display');
-                if (sectionGroupSummaryDisplay) {
-                    sectionGroupSummaryDisplay.textContent = section.section_description || section.description || '-';
+                const sectionDescriptionDisplay = document.getElementById('section-description-display');
+                if (sectionDescriptionDisplay) {
+                    // Use detailed description from section_structure if available
+                    sectionDescriptionDisplay.textContent = section.detailed_description || section.description || section.section_description || '-';
                 }
                 
                 const sectionTopicsDisplay = document.getElementById('section-topics-display');
@@ -164,8 +160,7 @@ class ContextPanel {
             'expanded-idea-display', 
             'section-title-display',
             'section-subtitle-display',
-            'section-group-display',
-            'section-group-summary-display',
+            'section-description-display',
             'section-topics-display',
             'avoid-topics-display'
         ];

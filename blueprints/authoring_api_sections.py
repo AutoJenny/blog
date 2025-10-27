@@ -83,6 +83,30 @@ def api_get_section(post_id, section_id):
             section = cursor.fetchone()
             
             if section:
+                # Get detailed description from section_structure
+                detailed_description = None
+                try:
+                    cursor.execute("""
+                        SELECT section_structure 
+                        FROM post_development 
+                        WHERE post_id = %s
+                    """, (post_id,))
+                    dev_data = cursor.fetchone()
+                    
+                    if dev_data and dev_data.get('section_structure'):
+                        structure_data = dev_data['section_structure']
+                        if isinstance(structure_data, dict) and 'sections' in structure_data:
+                            structure_list = structure_data['sections']
+                            if isinstance(structure_list, list):
+                                section_structure_section = next(
+                                    (s for s in structure_list if s.get('id') == f"S{str(section['section_order']).zfill(2)}"), 
+                                    None
+                                )
+                                if section_structure_section:
+                                    detailed_description = section_structure_section.get('description')
+                except Exception as e:
+                    logger.warning(f"Could not fetch detailed description: {e}")
+                
                 # Convert to frontend-compatible format
                 formatted_section = {
                     'id': section['id'],  # Always numeric ID from database
@@ -91,6 +115,7 @@ def api_get_section(post_id, section_id):
                     'section_description': section['section_description'],
                     'title': section['section_heading'],  # Frontend-compatible field
                     'description': section['section_description'],  # Frontend-compatible field
+                    'detailed_description': detailed_description,  # From section_structure
                     'order': section['section_order'],  # Frontend-compatible field
                     'status': section['status'],
                     'draft': section['draft'],

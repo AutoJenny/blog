@@ -24,11 +24,8 @@ async function loadSectionContext(sectionId) {
                     // Subtitle (section description)
                     document.getElementById('section-subtitle-display').textContent = sectionAllocation.section_theme || '-';
                     
-                    // Group (section title/theme)
-                    document.getElementById('section-group-display').textContent = sectionAllocation.section_theme || '-';
-                    
-                    // Group Summary
-                    document.getElementById('section-group-summary-display').textContent = sectionAllocation.allocation_reason || '-';
+                    // Description (from section_structure)
+                    // This will be loaded separately from the API
                     
                     // Topics
                     if (sectionAllocation.topics) {
@@ -51,15 +48,13 @@ async function loadSectionContext(sectionId) {
                     }
                 } else {
                     document.getElementById('section-subtitle-display').textContent = 'No group data found';
-                    document.getElementById('section-group-display').textContent = 'No group data found';
-                    document.getElementById('section-group-summary-display').textContent = 'No group data found';
+                    document.getElementById('section-description-display').textContent = 'No description found';
                     document.getElementById('section-topics-display').textContent = 'No topics found';
                     document.getElementById('avoid-topics-display').textContent = 'No avoid topics defined';
                 }
             } else {
                 document.getElementById('section-subtitle-display').textContent = 'No planning data found';
-                document.getElementById('section-group-display').textContent = 'No planning data found';
-                document.getElementById('section-group-summary-display').textContent = 'No planning data found';
+                document.getElementById('section-description-display').textContent = 'No description found';
                 document.getElementById('section-topics-display').textContent = 'No topics found';
                 document.getElementById('avoid-topics-display').textContent = 'No avoid topics defined';
             }
@@ -67,8 +62,7 @@ async function loadSectionContext(sectionId) {
     } catch (error) {
         console.error('Error loading section context:', error);
         document.getElementById('section-subtitle-display').textContent = 'Error loading';
-        document.getElementById('section-group-display').textContent = 'Error loading';
-        document.getElementById('section-group-summary-display').textContent = 'Error loading';
+        document.getElementById('section-description-display').textContent = 'Error loading';
         document.getElementById('section-topics-display').textContent = 'Error loading';
         document.getElementById('avoid-topics-display').textContent = 'Error loading';
     }
