@@ -785,35 +785,156 @@ def api_get_titles(post_id):
 def api_generate_seo_meta(post_id):
     """Generate meta title, description, tags"""
     try:
-        data = request.get_json()
+        from modules.llm_service import llm_service
         
-        # Get post data for context
+        # Get post title and summary from post table
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
-                SELECT title, summary, idea_seed
-                FROM post_development 
-                WHERE post_id = %s
+                SELECT title, summary
+                FROM post 
+                WHERE id = %s
             """, (post_id,))
             
             post_data = cursor.fetchone()
             if not post_data:
                 return jsonify({'error': 'Post not found'}), 404
             
-            # TODO: Implement LLM generation for SEO meta
-            # For now, return empty data that will be populated by actual generation
-            meta_title = ""
-            meta_description = ""
-            meta_tags = ""
+            # Get section titles from planning/concept/titling
+            cursor.execute("""
+                SELECT section_heading, section_subtitle
+                FROM post_section 
+                WHERE post_id = %s 
+                ORDER BY section_order
+            """, (post_id,))
+            
+            sections = cursor.fetchall()
+            
+            # Build context for LLM
+            post_title = post_data['title'] or ''
+            post_summary = post_data['summary'] or ''
+            
+            section_titles = []
+            for section in sections:
+                title = section['section_heading'] or ''
+                subtitle = section['section_subtitle'] or ''
+                section_titles.append(f"{title}{f' - {subtitle}' if subtitle else ''}")
+            
+            sections_text = "\n".join(section_titles)
+            
+            # Call LLM to generate SEO metadata
+            task_prompt = f"""Generate SEO metadata for this blog post:
+
+Post Title: {post_title}
+
+Summary: {post_summary}
+
+Section Structure:
+{sections_text}
+
+Generate:
+1. A compelling HTML meta title (max 60 characters)
+2. A concise HTML meta description (max 160 characters)
+3. Relevant meta tags (comma-separated, 5-8 tags)
+
+Return in JSON format:
+{{
+  "meta_title": "Short compelling title",
+  "meta_description": "Brief engaging description",
+  "meta_tags": "tag1, tag2, tag3, tag4, tag5"
+}}"""
+            
+            llm_response = llm_service.execute_llm_request(
+                provider='ollama',
+                model='llama3.2:latest',
+                messages=[{'role': 'user', 'content': task_prompt}]
+            )
+            
+            if llm_response.get('success'):
+                content = llm_response['content']
+                
+                # Parse JSON response
+                import re
+                json_match = re.search(r'\{[\s\S]*\}', content)
+                if json_match:
+                    json_text = json_match.group(0)
+                    import json
+                    seo_data = json.loads(json_text)
+                    
+                    meta_title = seo_data.get('meta_title', '')
+                    meta_description = seo_data.get('meta_description', '')
+                    meta_tags = seo_data.get('meta_tags', '')
+                else:
+                    # Fallback if JSON parsing fails
+                    meta_title = ""
+                    meta_description = ""
+                    meta_tags = ""
+            else:
+                return jsonify({'error': 'Failed to generate SEO metadata'}), 500
+            
+            # Get header image path for OG image
+            cursor.execute("""
+                SELECT i.path 
+                FROM post p
+                JOIN image i ON p.header_image_id = i.id
+                WHERE p.id = %s
+            """, (post_id,))
+            
+            image_result = cursor.fetchone()
+            meta_image = f"https://clan.com{i['path']}" if image_result and image_result['path'] else "https://clan.com/images/default-scottish-heritage.jpg"
+            
+            # Save to database
+            cursor.execute("""
+                UPDATE post 
+                SET meta_title = %s,
+                    meta_description = %s,
+                    meta_tags = %s,
+                    meta_image = %s,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+            """, (meta_title, meta_description, meta_tags, meta_image, post_id))
             
             return jsonify({
                 'success': True,
                 'meta_title': meta_title,
                 'meta_description': meta_description,
-                'meta_tags': meta_tags
+                'meta_tags': meta_tags,
+                'meta_image': meta_image,
+                'meta_type': 'article',
+                'meta_site_name': 'Clan.com Blog'
             })
             
     except Exception as e:
         logger.error(f"Error generating SEO meta: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/get-meta-data', methods=['GET'])
+def api_get_meta_data(post_id):
+    """Get current meta data for post"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT meta_title, meta_description, meta_tags, 
+                       meta_image, meta_type, meta_site_name
+                FROM post 
+                WHERE id = %s
+            """, (post_id,))
+            
+            result = cursor.fetchone()
+            if not result:
+                return jsonify({'error': 'Post not found'}), 404
+            
+            return jsonify({
+                'success': True,
+                'meta_title': result['meta_title'] or '',
+                'meta_description': result['meta_description'] or '',
+                'meta_tags': result['meta_tags'] or '',
+                'meta_image': result['meta_image'] or '',
+                'meta_type': result['meta_type'] or 'article',
+                'meta_site_name': result['meta_site_name'] or 'Clan.com Blog'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error getting meta data: {e}")
         return jsonify({'error': str(e)}), 500
 
 @bp.route('/api/posts/<int:post_id>/calculate-word-count', methods=['GET'])
