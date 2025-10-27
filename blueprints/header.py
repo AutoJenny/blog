@@ -1053,6 +1053,53 @@ def api_get_meta_data(post_id):
         logger.error(f"Error getting meta data: {e}")
         return jsonify({'error': str(e)}), 500
 
+@bp.route('/api/posts/<int:post_id>/save-author', methods=['POST'])
+def api_save_author(post_id):
+    """Save author name to post"""
+    try:
+        data = request.get_json()
+        author_name = data.get('author_name', '')
+        
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                UPDATE post 
+                SET author_name = %s, updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+            """, (author_name, post_id))
+            
+            return jsonify({'success': True})
+            
+    except Exception as e:
+        logger.error(f"Error saving author for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/get-title-summary', methods=['GET'])
+def api_get_title_summary(post_id):
+    """Get post title, subtitle, summary, and author"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT title, subtitle, summary, author_name
+                FROM post 
+                WHERE id = %s
+            """, (post_id,))
+            
+            result = cursor.fetchone()
+            
+            if result:
+                return jsonify({
+                    'title': result.get('title', '') or '',
+                    'subtitle': result.get('subtitle', '') or '',
+                    'summary': result.get('summary', '') or '',
+                    'author_name': result.get('author_name', '') or ''
+                })
+            else:
+                return jsonify({'error': 'Post not found'}), 404
+                
+    except Exception as e:
+        logger.error(f"Error getting title-summary for post {post_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @bp.route('/api/posts/<int:post_id>/calculate-word-count', methods=['GET'])
 def api_calculate_word_count(post_id):
     """Calculate total word count from all sections + header + summary"""

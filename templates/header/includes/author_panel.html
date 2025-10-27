@@ -1,0 +1,25 @@
+<!-- Author Selection Panel -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/author-panel.css') }}?v=9999&t=1737036000">
+
+<div class="accordion-panel" id="author-panel">
+    <div class="panel-header" onclick="toggleAuthorAccordion()">
+        <h4><span class="panel-name-blue">Author:</span> <span id="author-status">Not Set</span></h4>
+        <div class="header-actions" onclick="event.stopPropagation()">
+            <button class="btn-secondary" id="save-author-btn">Save</button>
+            <i class="fas fa-chevron-down" id="author-accordion-icon"></i>
+        </div>
+    </div>
+    <div class="panel-content" id="author-content">
+        <div class="form-group">
+            <label for="author-select">Select Author:</label>
+            <select id="author-select" class="form-control">
+                <option value="">-- Select Author --</option>
+                <option value="Caitrin Stewart" selected>Caitrin Stewart</option>
+                <option value="Dr Nick Fiddes">Dr Nick Fiddes</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/header/author-panel.js') }}?v=9999&t=1737036000"></script>
+

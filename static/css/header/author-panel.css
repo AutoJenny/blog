@@ -1,0 +1,51 @@
+/* Author Panel Styling */
+#author-panel .panel-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+#author-panel .panel-content {
+    background: #2d3748;
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: none;
+}
+
+#author-panel .panel-content.active {
+    display: block;
+}
+
+#author-panel .form-group {
+    margin-bottom: 1rem;
+}
+
+#author-panel label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #e2e8f0;
+    font-weight: 500;
+}
+
+#author-panel select {
+    width: 100%;
+    padding: 0.75rem;
+    background: #1a202c;
+    border: 1px solid #4a5568;
+    border-radius: 6px;
+    color: #e2e8f0;
+    font-size: 1rem;
+}
+
+#author-panel select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
