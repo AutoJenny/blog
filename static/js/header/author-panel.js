@@ -8,19 +8,17 @@ class AuthorPanel {
     
     initializeElements() {
         this.authorSelect = document.getElementById('author-select');
-        this.saveBtn = document.getElementById('save-author-btn');
         this.statusSpan = document.getElementById('author-status');
         this.accordionContent = document.getElementById('author-content');
         this.accordionIcon = document.getElementById('author-accordion-icon');
     }
     
     setupEventListeners() {
-        if (this.saveBtn) {
-            this.saveBtn.addEventListener('click', () => this.saveAuthor());
-        }
-        
         if (this.authorSelect) {
-            this.authorSelect.addEventListener('change', () => this.updateStatus());
+            this.authorSelect.addEventListener('change', () => {
+                this.updateStatus();
+                this.saveAuthor(); // Auto-save on change
+            });
         }
     }
     
@@ -32,11 +30,18 @@ class AuthorPanel {
             .then(data => {
                 if (data.author_name) {
                     this.authorSelect.value = data.author_name;
-                    this.updateStatus();
+                } else {
+                    // Default to Caitrin Stewart if no author set
+                    this.authorSelect.value = 'Caitrin Stewart';
+                    this.saveAuthor(); // Auto-save the default
                 }
+                this.updateStatus();
             })
             .catch(error => {
                 console.error('Error loading current author:', error);
+                // Default to Caitrin Stewart on error
+                this.authorSelect.value = 'Caitrin Stewart';
+                this.updateStatus();
             });
     }
     
@@ -54,15 +59,15 @@ class AuthorPanel {
     saveAuthor() {
         const authorName = this.authorSelect.value;
         if (!authorName) {
-            alert('Please select an author');
-            return;
+            return; // Don't save if no author selected
         }
         
         if (!this.postId) return;
         
         // Show saving state
-        this.saveBtn.disabled = true;
-        this.saveBtn.textContent = 'Saving...';
+        const oldStatus = this.statusSpan.textContent;
+        this.statusSpan.textContent = 'Saving...';
+        this.statusSpan.style.color = '#fbbf24';
         
         fetch(`/header/api/posts/${this.postId}/save-author`, {
             method: 'POST',
@@ -74,23 +79,21 @@ class AuthorPanel {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                this.saveBtn.textContent = 'Saved!';
-                this.updateStatus();
+                this.statusSpan.textContent = 'Saved!';
+                this.statusSpan.style.color = '#4ade80';
                 setTimeout(() => {
-                    this.saveBtn.textContent = 'Save';
-                    this.saveBtn.disabled = false;
-                }, 2000);
+                    this.updateStatus();
+                }, 1500);
             } else {
-                alert('Error saving author: ' + (data.error || 'Unknown error'));
-                this.saveBtn.disabled = false;
-                this.saveBtn.textContent = 'Save';
+                console.error('Error saving author:', data.error);
+                this.statusSpan.textContent = oldStatus;
+                this.statusSpan.style.color = '#ef4444';
             }
         })
         .catch(error => {
             console.error('Error saving author:', error);
-            alert('Error saving author: ' + error.message);
-            this.saveBtn.disabled = false;
-            this.saveBtn.textContent = 'Save';
+            this.statusSpan.textContent = oldStatus;
+            this.statusSpan.style.color = '#ef4444';
         });
     }
 }
