@@ -244,7 +244,7 @@ class OutputPanel {
             // Update content editor with generated content
             let generatedContent = '';
             if (substage === 'drafting') {
-                generatedContent = data.content || data.draft || '';
+                generatedContent = data.draft || data.content || '';
             } else if (substage === 'image-captions') {
                 generatedContent = data.image_captions || data.captions || '';
             }
