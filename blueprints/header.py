@@ -114,7 +114,7 @@ def header_preview(post_id):
             # Get post data
             cursor.execute("""
                 SELECT id, title, subtitle, summary, slug, status, 
-                       created_at, updated_at, header_image_id, author_id
+                       created_at, updated_at, header_image_id, author_id, author_name
                 FROM post
                 WHERE id = %s
             """, (post_id,))
