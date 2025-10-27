@@ -150,8 +150,15 @@ class LLMService:
                 section_id = int(section_id)
             
             with db_manager.get_cursor() as cursor:
+                # Delete existing record if section_id is None (post-level operation)
+                # to avoid unique constraint violation
+                if section_id is None:
+                    cursor.execute("""
+                        DELETE FROM llm_message_intercepts 
+                        WHERE post_id = %s AND section_id IS NULL
+                    """, (post_id,))
+                
                 # Store in a new table for intercepted messages
-                # Using a simple INSERT and letting partial unique indexes handle conflicts
                 cursor.execute("""
                     INSERT INTO llm_message_intercepts 
                     (post_id, section_id, intercepted_message, created_at)

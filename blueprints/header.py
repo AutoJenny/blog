@@ -864,17 +864,31 @@ Return in JSON format:
                 
                 # Parse JSON response
                 import re
-                json_match = re.search(r'\{[\s\S]*\}', content)
+                import json
+                
+                # Try to extract JSON from code blocks first
+                json_match = re.search(r'```(?:json)?\s*(\{[\s\S]*?\})\s*```', content)
+                if not json_match:
+                    # Fallback: try to find JSON without code blocks
+                    json_match = re.search(r'\{[\s\S]*\}', content)
+                
                 if json_match:
-                    json_text = json_match.group(0)
-                    import json
-                    seo_data = json.loads(json_text)
-                    
-                    meta_title = seo_data.get('meta_title', '')
-                    meta_description = seo_data.get('meta_description', '')
-                    meta_tags = seo_data.get('meta_tags', '')
+                    json_text = json_match.group(1) if json_match.lastindex else json_match.group(0)
+                    # Clean up the JSON text
+                    json_text = json_text.strip()
+                    try:
+                        seo_data = json.loads(json_text)
+                        
+                        meta_title = seo_data.get('meta_title', '')
+                        meta_description = seo_data.get('meta_description', '')
+                        meta_tags = seo_data.get('meta_tags', '')
+                    except json.JSONDecodeError as e:
+                        logger.error(f"JSON decode error: {e}, text: {repr(json_text)}")
+                        meta_title = ""
+                        meta_description = ""
+                        meta_tags = ""
                 else:
-                    logger.error(f"Failed to parse JSON from LLM response: {content}")
+                    logger.error(f"Failed to find JSON in LLM response: {content}")
                     # Fallback if JSON parsing fails
                     meta_title = ""
                     meta_description = ""
