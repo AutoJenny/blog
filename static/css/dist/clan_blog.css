@@ -186,6 +186,134 @@ body {
     font-style: italic;
     margin-bottom: 2rem;
 }
+.header-image {
+    margin: 2rem 0;
+    text-align: center;
+}
+.header-image__img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    display: block;
+}
+.section-image {
+    margin: 2rem 0;
+    text-align: center;
+}
+.section-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+.image-error {
+    color: #d32f2f;
+    background: #ffebee;
+    padding: 10px;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+.image-placeholder {
+    background: #f5f5f5;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    margin: 20px 0;
+    color: #666;
+}
+.image-placeholder i {
+    font-size: 48px;
+    margin-bottom: 10px;
+    display: block;
+}
+.blog-sections {
+    margin: 3rem 0;
+}
+.blog-section {
+    margin: 2.5rem 0;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid #eee;
+}
+.blog-section:last-child {
+    border-bottom: none;
+}
+.blog-section h2 {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #222;
+    margin: 0 0 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    font-family: 'Lato', Arial, sans-serif;
+}
+.blog-section h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #b80000;
+    margin: 0.5rem 0 1rem;
+    font-family: 'Lato', Arial, sans-serif;
+}
+.section-subtitle {
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: #666;
+    font-style: italic;
+    margin-bottom: 1.5rem;
+}
+.section-text {
+    font-size: 1.08rem;
+    line-height: 1.7;
+    color: #222;
+    font-family: 'Open Sans', Arial, sans-serif;
+}
+.blog-post__subtitle {
+    font-size: 1.25rem;
+    font-weight: 400;
+    color: #666;
+    margin: 0.5rem 0 1.5rem;
+    font-style: italic;
+}
+.post-meta__author, .post-meta__date, .post-meta__status, .post-meta__reading-time {
+    color: #888;
+}
+.no-content {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #999;
+}
+.no-content i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    display: block;
+    color: #ddd;
+}
+.no-content h3 {
+    font-size: 1.5rem;
+    margin: 1rem 0;
+    color: #666;
+}
+.no-content p {
+    font-size: 1rem;
+    color: #999;
+}
+back-link {
+    display: inline-block;
+    margin-bottom: 2rem;
+    color: #b80000;
+    text-decoration: none;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    transition: color 0.2s;
+}
+back-link:hover {
+    text-decoration: underline;
+    color: #900;
+}
 blockquote {
     border-left: 4px solid #b80000;
     margin: 2rem 0;
