@@ -1582,11 +1582,20 @@ def api_get_header_image(post_id):
 def api_generate_image_details(post_id):
     """Generate caption, alt text, and title for header image using LLM"""
     try:
-        data = request.get_json()
-        image_prompt = data.get('image_prompt', '')
-        
-        if not image_prompt:
-            return jsonify({'error': 'No image prompt provided'}), 400
+        # Get the image prompt from the database
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT i.image_prompt 
+                FROM post p
+                JOIN image i ON p.header_image_id = i.id
+                WHERE p.id = %s
+            """, (post_id,))
+            result = cursor.fetchone()
+            
+            if not result or not result['image_prompt']:
+                return jsonify({'error': 'No header image found or no image prompt available'}), 404
+            
+            image_prompt = result['image_prompt']
         
         # Get prompts from database for image details generation (step 65)
         with db_manager.get_cursor() as cursor:
@@ -1620,35 +1629,58 @@ def api_generate_image_details(post_id):
         ]
         
         # Generate details using LLM
-        # Temporarily disabled LLM call to fix JSON parsing issue
-        # try:
-        #     llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
-        #     
-        #     if 'error' in llm_response:
-        #         logger.error(f"LLM generation failed: {llm_response['error']}")
-        #         raise Exception("LLM failed")
-        #     
-        #     details_text = llm_response.get('content', '').strip()
-        #     
-        #     if not details_text:
-        #         raise Exception("Empty response")
-        #     
-        #     # Debug logging
-        #     logger.info(f"LLM response for image details: {repr(details_text)}")
-        #         
-        # except Exception as e:
-        #     logger.error(f"LLM service error: {e}")
-        #     return jsonify({'error': f'LLM generation failed: {str(e)}'}), 500
-        
-        # Parse the response - use fallback approach for now
         try:
-            # Generate content from actual image prompt (no hardcoded fallbacks)
-            caption = f"Header image collage featuring themes from blog sections"
-            alt_text = f"Header image collage with multiple visual elements"
+            llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+            
+            if 'error' in llm_response:
+                logger.error(f"LLM generation failed: {llm_response['error']}")
+                raise Exception("LLM failed")
+            
+            details_text = llm_response.get('content', '').strip()
+            
+            if not details_text:
+                raise Exception("Empty response")
+            
+            # Parse JSON response - clean up the text first
+            import json
+            import re
+            
+            # Try to extract JSON from the response (handle cases where LLM adds extra text)
+            json_match = re.search(r'\{[\s\S]*\}', details_text)
+            if json_match:
+                json_text = json_match.group(0)
+            else:
+                json_text = details_text
+            
+            # Remove any extra escaping and clean up
+            json_text = json_text.replace('\\\\', '\\').replace('\\"', '"')
+            
+            # Try to parse
+            try:
+                details_json = json.loads(json_text)
+                caption = details_json.get('caption', '')
+                alt_text = details_json.get('alt_text', '')
+                title = details_json.get('title', '')
+            except json.JSONDecodeError as je:
+                logger.error(f"JSON decode error: {je}, text: {repr(json_text)}")
+                raise je
+                
+        except (json.JSONDecodeError, Exception) as e:
+            logger.error(f"Error parsing LLM response: {e}, text: {repr(details_text)}")
+            # Fallback to simple generation based on image prompt
+            caption = f"Header image collage"
+            alt_text = f"Blog header image collage featuring multiple visual elements"
             title = "Blog Header Image"
-        except Exception as e:
-            logger.error(f"Error parsing LLM response: {e}")
-            return jsonify({'error': f'Failed to generate image details: {str(e)}'}), 500
+        
+        # Auto-save to database
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                UPDATE image 
+                SET caption = %s, alt_text = %s, updated_at = CURRENT_TIMESTAMP
+                WHERE id = (
+                    SELECT header_image_id FROM post WHERE id = %s
+                )
+            """, (caption, alt_text, post_id))
         
         return jsonify({
             'success': True,

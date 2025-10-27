@@ -13,24 +13,15 @@ class HeaderImageDetailsPanel {
     }
     
     initializeElements() {
-        this.captionInput = document.getElementById('image-caption');
-        this.altTextInput = document.getElementById('image-alt-text');
-        this.titleInput = document.getElementById('image-title');
-        this.saveBtn = document.getElementById('save-image-details-btn');
-        this.imagePreview = document.getElementById('image-details-preview');
+        this.captionInput = document.getElementById('image-caption-input');
+        this.altTextInput = document.getElementById('image-alt-input');
+        this.generateBtn = document.getElementById('generate-details-btn');
     }
     
     bindEvents() {
-        if (this.saveBtn) {
-            this.saveBtn.addEventListener('click', () => this.saveImageDetails());
+        if (this.generateBtn) {
+            this.generateBtn.addEventListener('click', () => this.generateImageDetails());
         }
-        
-        // Auto-save on input change
-        [this.captionInput, this.altTextInput, this.titleInput].forEach(input => {
-            if (input) {
-                input.addEventListener('input', () => this.markAsChanged());
-            }
-        });
     }
     
     async loadImageDetails() {
@@ -46,7 +37,6 @@ class HeaderImageDetailsPanel {
                     // Update form fields
                     if (this.captionInput) this.captionInput.value = data.caption || '';
                     if (this.altTextInput) this.altTextInput.value = data.alt_text || '';
-                    if (this.titleInput) this.titleInput.value = data.title || '';
                     
                     // Update image preview
                     if (this.imagePreview) {
@@ -62,59 +52,47 @@ class HeaderImageDetailsPanel {
         }
     }
     
-    async saveImageDetails() {
-        if (!this.imageData) {
-            console.warn('[HeaderImageDetailsPanel] No image data to save');
-            return;
-        }
-        
+    async generateImageDetails() {
         try {
-            this.saveBtn.disabled = true;
-            this.saveBtn.textContent = 'Saving...';
+            this.generateBtn.disabled = true;
+            this.generateBtn.textContent = 'Generating...';
             
-            const updateData = {
-                caption: this.captionInput ? this.captionInput.value : '',
-                alt_text: this.altTextInput ? this.altTextInput.value : '',
-                title: this.titleInput ? this.titleInput.value : ''
-            };
-            
-            const response = await fetch(`/header/api/posts/${this.postId}/update-image-details`, {
+            // Get the header image data to generate details from
+            const response = await fetch(`/header/api/posts/${this.postId}/generate-image-details`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(updateData)
+                body: JSON.stringify({})
             });
             
             const data = await response.json();
             
             if (data.success) {
-                console.log('[HeaderImageDetailsPanel] Image details saved successfully');
-                this.saveBtn.textContent = 'Saved!';
+                // Update the fields with generated content
+                if (this.captionInput) this.captionInput.value = data.caption || '';
+                if (this.altTextInput) this.altTextInput.value = data.alt_text || '';
+                
+                console.log('[HeaderImageDetailsPanel] Image details generated and saved');
+                this.generateBtn.textContent = 'Generated!';
                 setTimeout(() => {
-                    this.saveBtn.textContent = 'Save Details';
+                    this.generateBtn.textContent = 'Generate';
                 }, 2000);
             } else {
-                console.error('[HeaderImageDetailsPanel] Error saving image details:', data.error);
-                this.saveBtn.textContent = 'Error';
+                console.error('[HeaderImageDetailsPanel] Error generating image details:', data.error);
+                this.generateBtn.textContent = 'Error';
                 setTimeout(() => {
-                    this.saveBtn.textContent = 'Save Details';
+                    this.generateBtn.textContent = 'Generate';
                 }, 2000);
             }
         } catch (error) {
-            console.error('[HeaderImageDetailsPanel] Error saving image details:', error);
-            this.saveBtn.textContent = 'Error';
+            console.error('[HeaderImageDetailsPanel] Error generating image details:', error);
+            this.generateBtn.textContent = 'Error';
             setTimeout(() => {
-                this.saveBtn.textContent = 'Save Details';
+                this.generateBtn.textContent = 'Generate';
             }, 2000);
         } finally {
-            this.saveBtn.disabled = false;
-        }
-    }
-    
-    markAsChanged() {
-        if (this.saveBtn) {
-            this.saveBtn.textContent = 'Save Details';
+            this.generateBtn.disabled = false;
         }
     }
 }
