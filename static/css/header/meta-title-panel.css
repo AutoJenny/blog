@@ -1,0 +1,74 @@
+/* HTML Meta Tags Panel Styles */
+
+.meta-title-panel {
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.meta-title-panel .panel-header {
+    padding: 1rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #222;
+}
+
+.meta-title-panel .panel-header h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.meta-title-panel .panel-content {
+    padding: 1rem;
+    max-height: 1000px;
+    transition: max-height 0.3s ease;
+    overflow: hidden;
+}
+
+.meta-title-panel .panel-content.collapsed {
+    max-height: 0;
+    padding: 0 1rem;
+}
+
+.meta-title-panel .meta-field {
+    margin-bottom: 1rem;
+}
+
+.meta-title-panel .meta-field:last-child {
+    margin-bottom: 0;
+}
+
+.meta-title-panel .meta-field label {
+    display: block;
+    color: #10b981;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.meta-title-panel .meta-field input,
+.meta-title-panel .meta-field textarea {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #222;
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.meta-title-panel .meta-field input:focus,
+.meta-title-panel .meta-field textarea:focus {
+    outline: none;
+    border-color: #10b981;
+}
+
+.meta-title-panel .meta-field textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+

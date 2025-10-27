@@ -2,6 +2,33 @@
 
 {% block title %}Header - SEO & Meta{% endblock %}
 
+{% block head %}
+<style>
+.generate-all-section {
+    margin-bottom: 2rem;
+}
+
+.generate-all-section .btn-primary.btn-large {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.1rem;
+    background-color: #10b981;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.generate-all-section .btn-primary.btn-large:hover {
+    background-color: #0d9664;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <script>
     window.currentStage = 'header';
@@ -28,14 +55,18 @@ document.addEventListener('DOMContentLoaded', function() {
         
         <!-- Right Panel: Content -->
         <div class="editor-panel">
-            <!-- Meta Title Panel -->
+            <!-- Generate All Button -->
+            <div class="generate-all-section">
+                <button class="btn-primary btn-large" id="generate-all-meta-btn">
+                    <i class="fas fa-magic"></i> Generate Meta Data
+                </button>
+            </div>
+            
+            <!-- HTML Meta Tags Panel (Title, Description, Tags) -->
             {% include 'header/includes/meta_title_panel.html' %}
             
-            <!-- Meta Description Panel -->
-            {% include 'header/includes/meta_description_panel.html' %}
-            
-            <!-- Meta Tags Panel -->
-            {% include 'header/includes/meta_tags_panel.html' %}
+            <!-- Open Graph Meta Panel (Image, Type, Site Name) -->
+            {% include 'header/includes/og_meta_panel.html' %}
             
             <!-- SEO Analysis Panel -->
             {% include 'header/includes/seo_analysis_panel.html' %}

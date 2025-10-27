@@ -1,0 +1,36 @@
+<!-- Open Graph Meta Panel -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/og-meta-panel.css') }}?v=9999&t=1737036000">
+
+<div class="og-meta-panel" id="og-meta-panel">
+    <div class="panel-header" onclick="toggleOgMetaAccordion()">
+        <h4><span class="panel-name-green">Open Graph Meta:</span> <span id="og-meta-status">Image, Type, Site Name</span></h4>
+        <div class="header-actions">
+            <i class="fas fa-chevron-down" id="og-meta-accordion-icon"></i>
+        </div>
+    </div>
+    <div class="panel-content" id="og-meta-content">
+        <!-- Meta Image -->
+        <div class="meta-field">
+            <label for="meta-image-input">OG Image URL:</label>
+            <input type="text" id="meta-image-input" placeholder="Full URL to image for social sharing..." />
+        </div>
+        
+        <!-- Meta Type -->
+        <div class="meta-field">
+            <label for="meta-type-input">OG Type:</label>
+            <select id="meta-type-input">
+                <option value="article">Article</option>
+                <option value="website">Website</option>
+            </select>
+        </div>
+        
+        <!-- Meta Site Name -->
+        <div class="meta-field">
+            <label for="meta-site-name-input">OG Site Name:</label>
+            <input type="text" id="meta-site-name-input" placeholder="Site name for social sharing..." />
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/header/og-meta-panel.js') }}?v=9999&t=1737036000"></script>
+

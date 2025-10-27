@@ -1,0 +1,33 @@
+<!-- HTML Meta Tags Panel -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/meta-title-panel.css') }}?v=9999&t=1737036000">
+
+<div class="meta-title-panel" id="meta-title-panel">
+    <div class="panel-header" onclick="toggleMetaTitleAccordion()">
+        <h4><span class="panel-name-green">HTML Meta:</span> <span id="meta-title-status">Title, Description, Tags</span></h4>
+        <div class="header-actions">
+            <i class="fas fa-chevron-down" id="meta-title-accordion-icon"></i>
+        </div>
+    </div>
+    <div class="panel-content" id="meta-title-content">
+        <!-- Meta Title -->
+        <div class="meta-field">
+            <label for="meta-title-input">Meta Title:</label>
+            <input type="text" id="meta-title-input" placeholder="HTML meta title..." />
+        </div>
+        
+        <!-- Meta Description -->
+        <div class="meta-field">
+            <label for="meta-description-input">Meta Description:</label>
+            <textarea id="meta-description-input" rows="4" placeholder="HTML meta description..."></textarea>
+        </div>
+        
+        <!-- Meta Tags -->
+        <div class="meta-field">
+            <label for="meta-tags-input">Meta Tags:</label>
+            <input type="text" id="meta-tags-input" placeholder="Comma-separated tags..." />
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/header/meta-title-panel.js') }}?v=9999&t=1737036000"></script>
+
