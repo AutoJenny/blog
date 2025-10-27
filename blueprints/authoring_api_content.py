@@ -69,11 +69,11 @@ def api_generate_section_draft(post_id, section_id):
     try:
         data = request.get_json()
         
-        # Get section data
+            # Get section data
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 SELECT section_heading, section_description, ideas_to_include, 
-                       facts_to_include, highlighting
+                       facts_to_include, highlighting, section_order
                 FROM post_section 
                 WHERE post_id = %s AND id = %s
             """, (post_id, section_id))
@@ -90,6 +90,24 @@ def api_generate_section_draft(post_id, section_id):
             
             if not post:
                 return jsonify({'error': 'Post not found'}), 404
+            
+            # Get detailed section data from post_development (includes topics, themes, etc.)
+            cursor.execute("""
+                SELECT topic_allocation, sections FROM post_development WHERE post_id = %s
+            """, (post_id,))
+            dev_data = cursor.fetchone()
+            
+            # Parse section details from post_development if available
+            section_details = None
+            if dev_data and dev_data.get('sections'):
+                import json
+                try:
+                    sections_data = json.loads(dev_data['sections']) if isinstance(dev_data['sections'], str) else dev_data['sections']
+                    # Find matching section by order
+                    if isinstance(sections_data, list):
+                        section_details = next((s for s in sections_data if s.get('order') == section['section_order']), None)
+                except:
+                    pass
             
             # Get LLM prompt template
             cursor.execute("""
@@ -111,15 +129,27 @@ def api_generate_section_draft(post_id, section_id):
             # Replace placeholders - handle both [FIELD] and [data:field] formats
             # Get post idea/theme for [SELECTED_IDEA]
             cursor.execute("SELECT idea_seed, expanded_idea FROM post_development WHERE post_id = %s", (post_id,))
-            dev_data = cursor.fetchone()
-            selected_idea = dev_data['expanded_idea'] or dev_data['idea_seed'] or post['title'] if dev_data else post['title']
+            dev_data_idea = cursor.fetchone()
+            selected_idea = dev_data_idea['expanded_idea'] or dev_data_idea['idea_seed'] or post['title'] if dev_data_idea else post['title']
+            
+            # Get section-specific topics from section_details (post_development.sections)
+            section_topics_text = ''
+            section_name = section['section_heading'] or ''
+            
+            if section_details and section_details.get('topics'):
+                section_topics_text = '\n- '.join(section_details['topics'])
+                section_name = section_details.get('title', section['section_heading']) or ''
+            
+            # Fallback to ideas_to_include if no topics
+            if not section_topics_text and section['ideas_to_include']:
+                section_topics_text = section['ideas_to_include']
             
             prompt_text = prompt_text.replace('[SELECTED_IDEA]', selected_idea)
-            prompt_text = prompt_text.replace('[SECTION_TITLE]', section['section_heading'] or '')
+            prompt_text = prompt_text.replace('[SECTION_TITLE]', section_name)
             prompt_text = prompt_text.replace('[SECTION_SUBTITLE]', section['section_description'] or '')
-            prompt_text = prompt_text.replace('[SECTION_GROUP]', '')  # Not in schema
+            prompt_text = prompt_text.replace('[SECTION_GROUP]', section_name)  # Use section name
             prompt_text = prompt_text.replace('[GROUP_SUMMARY]', section['section_description'] or '')
-            prompt_text = prompt_text.replace('[SECTION_TOPICS]', section['ideas_to_include'] or '')
+            prompt_text = prompt_text.replace('[SECTION_TOPICS]', section_topics_text)
             prompt_text = prompt_text.replace('[AVOID_SECTIONS_DETAILED]', '')  # Could build this from other sections
             
             # Also handle old [data:*] format for backwards compatibility
