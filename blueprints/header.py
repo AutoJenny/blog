@@ -857,45 +857,45 @@ Return in JSON format:
                 intercept_context=intercept_context
             )
             
-            if llm_response.get('success'):
-                content = llm_response.get('content', '')
-                
-                logger.info(f"LLM response content: {content}")
-                
-                # Parse JSON response
-                import re
-                import json
-                
-                # Try to extract JSON from code blocks first
-                json_match = re.search(r'```(?:json)?\s*(\{[\s\S]*?\})\s*```', content)
-                if not json_match:
-                    # Fallback: try to find JSON without code blocks
-                    json_match = re.search(r'\{[\s\S]*\}', content)
-                
-                if json_match:
-                    json_text = json_match.group(1) if json_match.lastindex else json_match.group(0)
-                    # Clean up the JSON text
-                    json_text = json_text.strip()
-                    try:
-                        seo_data = json.loads(json_text)
-                        
-                        meta_title = seo_data.get('meta_title', '')
-                        meta_description = seo_data.get('meta_description', '')
-                        meta_tags = seo_data.get('meta_tags', '')
-                    except json.JSONDecodeError as e:
-                        logger.error(f"JSON decode error: {e}, text: {repr(json_text)}")
-                        meta_title = ""
-                        meta_description = ""
-                        meta_tags = ""
-                else:
-                    logger.error(f"Failed to find JSON in LLM response: {content}")
-                    # Fallback if JSON parsing fails
+            if 'error' in llm_response:
+                logger.error(f"LLM call failed: {llm_response}")
+                return jsonify({'error': 'Failed to generate SEO metadata'}), 500
+            
+            content = llm_response.get('content', '')
+            
+            logger.info(f"LLM response content: {content}")
+            
+            # Parse JSON response
+            import re
+            import json
+            
+            # Try to extract JSON from code blocks first
+            json_match = re.search(r'```(?:json)?\s*(\{[\s\S]*?\})\s*```', content)
+            if not json_match:
+                # Fallback: try to find JSON without code blocks
+                json_match = re.search(r'\{[\s\S]*\}', content)
+            
+            if json_match:
+                json_text = json_match.group(1) if json_match.lastindex else json_match.group(0)
+                # Clean up the JSON text
+                json_text = json_text.strip()
+                try:
+                    seo_data = json.loads(json_text)
+                    
+                    meta_title = seo_data.get('meta_title', '')
+                    meta_description = seo_data.get('meta_description', '')
+                    meta_tags = seo_data.get('meta_tags', '')
+                except json.JSONDecodeError as e:
+                    logger.error(f"JSON decode error: {e}, text: {repr(json_text)}")
                     meta_title = ""
                     meta_description = ""
                     meta_tags = ""
             else:
-                logger.error(f"LLM call failed: {llm_response}")
-                return jsonify({'error': 'Failed to generate SEO metadata'}), 500
+                logger.error(f"Failed to find JSON in LLM response: {content}")
+                # Fallback if JSON parsing fails
+                meta_title = ""
+                meta_description = ""
+                meta_tags = ""
             
             # Get header image path for OG image
             cursor.execute("""
@@ -906,7 +906,7 @@ Return in JSON format:
             """, (post_id,))
             
             image_result = cursor.fetchone()
-            meta_image = f"https://clan.com{i['path']}" if image_result and image_result['path'] else "https://clan.com/images/default-scottish-heritage.jpg"
+            meta_image = f"https://clan.com{image_result['path']}" if image_result and image_result['path'] else "https://clan.com/images/default-scottish-heritage.jpg"
             
             # Save to database
             cursor.execute("""
