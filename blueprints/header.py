@@ -133,9 +133,10 @@ def header_preview(post_id):
                 """, (post['header_image_id'],))
                 header_image = cursor.fetchone()
                 if header_image and header_image['path']:
-                    # Construct full URL
-                    if not header_image['path'].startswith('http'):
-                        header_image['path'] = f"/static{header_image['path']}"
+                    # Use optimized image path instead of raw
+                    # Replace /static/content/posts/X/header/raw/header.png with optimized version
+                    optimized_path = header_image['path'].replace('/raw/', '/optimized/').replace('.png', '.jpg')
+                    header_image['path'] = optimized_path
             
             # Get sections with images via post_images linking table
             cursor.execute("""
@@ -163,8 +164,20 @@ def header_preview(post_id):
                 
                 # Add image if exists
                 if section['image_path']:
+                    # Use optimized image path, and handle double /static prefix
+                    image_path = section['image_path']
+                    if not image_path.startswith('http'):
+                        # Remove double /static if present
+                        if image_path.startswith('/static/'):
+                            image_path = image_path  # Already has /static
+                        else:
+                            image_path = f"/static{image_path}"  # Add /static
+                        
+                        # Replace raw with optimized
+                        image_path = image_path.replace('/raw/', '/optimized/').replace('.png', '.jpg')
+                    
                     formatted_section['image'] = {
-                        'path': section['image_path'] if section['image_path'].startswith('http') else f"/static{section['image_path']}",
+                        'path': image_path,
                         'alt_text': section['alt_text'] or '',
                         'caption': section['caption'] or ''
                     }
