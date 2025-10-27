@@ -97,7 +97,9 @@ class OutputPanel {
         }
         
         if (this.contentEditor) {
-            this.contentEditor.value = sectionData.content || '';
+            // Use polished if available, otherwise use draft, otherwise empty
+            const content = sectionData.polished || sectionData.draft || sectionData.content || '';
+            this.contentEditor.value = content;
             this.contentEditor.disabled = false;
             this.updateWordCount();
         }
