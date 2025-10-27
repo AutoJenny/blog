@@ -13,7 +13,6 @@ class ImageOptimizationPanel {
     }
     
     initializeElements() {
-        this.rawImagePreview = document.getElementById('raw-image-preview');
         this.optimizedImagePreview = document.getElementById('optimized-image-preview');
         this.optimizedImageSection = document.getElementById('optimized-image-section');
         this.optimizeBtn = document.getElementById('optimize-image-btn');
@@ -34,10 +33,6 @@ class ImageOptimizationPanel {
                 const data = await response.json();
                 
                 if (data.success && data.file_path) {
-                    // Show the raw image
-                    this.rawImagePreview.src = data.file_path;
-                    this.rawImagePreview.style.display = 'block';
-                    
                     // Check if optimized image exists
                     const optimizedPath = data.file_path.replace('/raw/', '/optimized/').replace('.png', '.jpg');
                     this.loadOptimizedImage(optimizedPath);
