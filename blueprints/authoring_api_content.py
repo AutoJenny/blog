@@ -122,8 +122,21 @@ def api_generate_section_draft(post_id, section_id):
                 messages.append({'role': 'system', 'content': system_prompt})
             messages.append({'role': 'user', 'content': prompt_text})
             
+            # Prepare intercept context for LLM message tracking
+            intercept_context = {
+                'post_id': post_id,
+                'section_id': section_id,
+                'step_id': 62,  # Section drafting step
+                'context_type': 'section_draft_generation'
+            }
+            
             # Execute LLM request
-            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+            result = llm_service.execute_llm_request(
+                'ollama', 
+                'llama3.2:latest', 
+                messages,
+                intercept_context=intercept_context
+            )
             
             if 'error' in result:
                 return jsonify({'error': f'LLM generation failed: {result["error"]}'}), 500
@@ -133,7 +146,7 @@ def api_generate_section_draft(post_id, section_id):
             # Save the generated content
             cursor.execute("""
                 UPDATE post_section 
-                SET draft = %s, status = 'draft', updated_at = NOW()
+                SET draft = %s, status = 'draft'
                 WHERE post_id = %s AND id = %s
             """, (generated_content, post_id, section_id))
             
