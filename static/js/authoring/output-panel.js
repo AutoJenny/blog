@@ -163,7 +163,8 @@ class OutputPanel {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    content: content,
+                    draft: content,
+                    polished: '',  // Leave polished empty if only saving draft
                     status: 'draft'
                 })
             });
