@@ -175,20 +175,48 @@ def api_generate_section_draft(post_id, section_id):
             if not section_topics_text and section['ideas_to_include']:
                 section_topics_text = section['ideas_to_include']
             
-            prompt_text = prompt_text.replace('[SELECTED_IDEA]', selected_idea)
-            prompt_text = prompt_text.replace('[SECTION_TITLE]', section_name)
-            
             # Use detailed description from section_structure if available
             section_subtitle = section['section_description'] or ''
             if section_structure_section and section_structure_section.get('description'):
                 section_subtitle = section_structure_section['description']
                 logger.info(f"Using detailed description from section_structure: {len(section_subtitle)} chars")
             
+            # Get avoid headings (all other sections)
+            avoid_headings = ''
+            try:
+                cursor.execute("""
+                    SELECT section_heading, section_description
+                    FROM post_section
+                    WHERE post_id = %s AND section_order != %s
+                    ORDER BY section_order
+                """, (post_id, section['section_order']))
+                other_sections = cursor.fetchall()
+                
+                if other_sections:
+                    avoid_headings = '\n'.join([
+                        f"{s['section_heading']}: {s['section_description']}"
+                        for s in other_sections
+                        if s['section_heading'] or s['section_description']
+                    ])
+            except Exception as e:
+                logger.warning(f"Could not fetch avoid headings: {e}")
+            
+            # Replace placeholders - new format
+            prompt_text = prompt_text.replace('[Selected Idea]', selected_idea)
+            prompt_text = prompt_text.replace('[Title]', section_name)
+            prompt_text = prompt_text.replace('[Subtitle]', section_subtitle)
+            prompt_text = prompt_text.replace('[Description]', section_subtitle)  # Same as subtitle
+            prompt_text = prompt_text.replace('[Topics]', section_topics_text)
+            prompt_text = prompt_text.replace('[Avoid Headings]', avoid_headings)
+            
+            # Also handle old format for backwards compatibility
+            prompt_text = prompt_text.replace('[SELECTED_IDEA]', selected_idea)
+            prompt_text = prompt_text.replace('[SECTION_TITLE]', section_name)
             prompt_text = prompt_text.replace('[SECTION_SUBTITLE]', section_subtitle)
-            prompt_text = prompt_text.replace('[SECTION_GROUP]', section_name)  # Use section name
-            prompt_text = prompt_text.replace('[GROUP_SUMMARY]', section_subtitle)  # Use detailed description
+            prompt_text = prompt_text.replace('[SECTION_GROUP]', section_name)
+            prompt_text = prompt_text.replace('[GROUP_SUMMARY]', section_subtitle)
             prompt_text = prompt_text.replace('[SECTION_TOPICS]', section_topics_text)
-            prompt_text = prompt_text.replace('[AVOID_SECTIONS_DETAILED]', '')  # Could build this from other sections
+            prompt_text = prompt_text.replace('[AVOID_SECTIONS_DETAILED]', avoid_headings)
             
             # Also handle old [data:*] format for backwards compatibility
             prompt_text = prompt_text.replace('[data:post_title]', post['title'] or '')
@@ -203,12 +231,14 @@ def api_generate_section_draft(post_id, section_id):
             logger.info(f"Section Name: {section_name}, Topics: {len(section_topics_text)} chars")
             
             # Check if placeholders are still unreplaced
-            if '[SELECTED_IDEA]' in prompt_text:
-                logger.warning("Placeholder [SELECTED_IDEA] not replaced!")
-            if '[SECTION_TITLE]' in prompt_text:
-                logger.warning("Placeholder [SECTION_TITLE] not replaced!")
-            if '[SECTION_TOPICS]' in prompt_text:
-                logger.warning("Placeholder [SECTION_TOPICS] not replaced!")
+            if '[Selected Idea]' in prompt_text:
+                logger.warning("Placeholder [Selected Idea] not replaced!")
+            if '[Title]' in prompt_text:
+                logger.warning("Placeholder [Title] not replaced!")
+            if '[Topics]' in prompt_text:
+                logger.warning("Placeholder [Topics] not replaced!")
+            if '[Avoid Headings]' in prompt_text:
+                logger.warning("Placeholder [Avoid Headings] not replaced!")
             
             # Log final prompt text for debugging
             logger.info(f"Final prompt text (first 500 chars): {prompt_text[:500]}")
