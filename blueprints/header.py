@@ -801,7 +801,7 @@ def api_generate_seo_meta(post_id):
             
             # Get section titles from planning/concept/titling
             cursor.execute("""
-                SELECT section_heading, section_subtitle
+                SELECT section_heading
                 FROM post_section 
                 WHERE post_id = %s 
                 ORDER BY section_order
@@ -816,8 +816,8 @@ def api_generate_seo_meta(post_id):
             section_titles = []
             for section in sections:
                 title = section['section_heading'] or ''
-                subtitle = section['section_subtitle'] or ''
-                section_titles.append(f"{title}{f' - {subtitle}' if subtitle else ''}")
+                if title:
+                    section_titles.append(title)
             
             sections_text = "\n".join(section_titles)
             
