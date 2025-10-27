@@ -69,7 +69,7 @@ def api_generate_section_draft(post_id, section_id):
     try:
         data = request.get_json()
         
-            # Get section data
+        # Get section data
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 SELECT section_heading, section_description, ideas_to_include, 
@@ -93,21 +93,52 @@ def api_generate_section_draft(post_id, section_id):
             
             # Get detailed section data from post_development (includes topics, themes, etc.)
             cursor.execute("""
-                SELECT topic_allocation, sections FROM post_development WHERE post_id = %s
+                SELECT topic_allocation, sections, section_structure FROM post_development WHERE post_id = %s
             """, (post_id,))
             dev_data = cursor.fetchone()
             
             # Parse section details from post_development if available
             section_details = None
+            section_structure_section = None
+            
+            # First, get from 'sections' JSON (for topics)
             if dev_data and dev_data.get('sections'):
                 import json
                 try:
-                    sections_data = json.loads(dev_data['sections']) if isinstance(dev_data['sections'], str) else dev_data['sections']
+                    sections_data = dev_data['sections']
+                    
+                    # Handle if it's a dict with 'sections' key
+                    if isinstance(sections_data, dict) and 'sections' in sections_data:
+                        sections_list = sections_data['sections']
+                    # Handle if it's already a list
+                    elif isinstance(sections_data, list):
+                        sections_list = sections_data
+                    # Handle if it's a JSON string
+                    elif isinstance(sections_data, str):
+                        sections_list = json.loads(sections_data).get('sections', [])
+                    else:
+                        sections_list = []
+                    
                     # Find matching section by order
-                    if isinstance(sections_data, list):
-                        section_details = next((s for s in sections_data if s.get('order') == section['section_order']), None)
-                except:
-                    pass
+                    if isinstance(sections_list, list) and len(sections_list) > 0:
+                        section_details = next((s for s in sections_list if s.get('order') == section['section_order']), None)
+                except Exception as e:
+                    logger.error(f"Error parsing sections: {e}")
+                    import traceback
+                    logger.error(traceback.format_exc())
+            
+            # Also get from 'section_structure' JSON (for descriptions)
+            if dev_data and dev_data.get('section_structure'):
+                import json
+                try:
+                    structure_data = dev_data['section_structure']
+                    if isinstance(structure_data, dict) and 'sections' in structure_data:
+                        structure_list = structure_data['sections']
+                        # Find by matching section order
+                        if isinstance(structure_list, list):
+                            section_structure_section = next((s for s in structure_list if s.get('id') == f"S{str(section['section_order']).zfill(2)}"), None)
+                except Exception as e:
+                    logger.error(f"Error parsing section_structure: {e}")
             
             # Get LLM prompt template
             cursor.execute("""
@@ -146,9 +177,16 @@ def api_generate_section_draft(post_id, section_id):
             
             prompt_text = prompt_text.replace('[SELECTED_IDEA]', selected_idea)
             prompt_text = prompt_text.replace('[SECTION_TITLE]', section_name)
-            prompt_text = prompt_text.replace('[SECTION_SUBTITLE]', section['section_description'] or '')
+            
+            # Use detailed description from section_structure if available
+            section_subtitle = section['section_description'] or ''
+            if section_structure_section and section_structure_section.get('description'):
+                section_subtitle = section_structure_section['description']
+                logger.info(f"Using detailed description from section_structure: {len(section_subtitle)} chars")
+            
+            prompt_text = prompt_text.replace('[SECTION_SUBTITLE]', section_subtitle)
             prompt_text = prompt_text.replace('[SECTION_GROUP]', section_name)  # Use section name
-            prompt_text = prompt_text.replace('[GROUP_SUMMARY]', section['section_description'] or '')
+            prompt_text = prompt_text.replace('[GROUP_SUMMARY]', section_subtitle)  # Use detailed description
             prompt_text = prompt_text.replace('[SECTION_TOPICS]', section_topics_text)
             prompt_text = prompt_text.replace('[AVOID_SECTIONS_DETAILED]', '')  # Could build this from other sections
             
@@ -159,6 +197,21 @@ def api_generate_section_draft(post_id, section_id):
             prompt_text = prompt_text.replace('[data:ideas_to_include]', section['ideas_to_include'] or '')
             prompt_text = prompt_text.replace('[data:facts_to_include]', section['facts_to_include'] or '')
             prompt_text = prompt_text.replace('[data:highlighting]', section['highlighting'] or '')
+            
+            # Log for debugging
+            logger.info(f"Replaced placeholders - Selected Idea: {selected_idea[:50]}...")
+            logger.info(f"Section Name: {section_name}, Topics: {len(section_topics_text)} chars")
+            
+            # Check if placeholders are still unreplaced
+            if '[SELECTED_IDEA]' in prompt_text:
+                logger.warning("Placeholder [SELECTED_IDEA] not replaced!")
+            if '[SECTION_TITLE]' in prompt_text:
+                logger.warning("Placeholder [SECTION_TITLE] not replaced!")
+            if '[SECTION_TOPICS]' in prompt_text:
+                logger.warning("Placeholder [SECTION_TOPICS] not replaced!")
+            
+            # Log final prompt text for debugging
+            logger.info(f"Final prompt text (first 500 chars): {prompt_text[:500]}")
             
             # Prepare messages for LLM
             messages = []
