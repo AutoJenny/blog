@@ -139,15 +139,15 @@ def header_preview(post_id):
             
             # Get sections with images via post_images linking table
             cursor.execute("""
-                SELECT ps.id, ps.section_heading, ps.section_subtitle, 
+                SELECT ps.id, ps.section_heading, ps.section_description, 
                        ps.draft, ps.polished,
                        i.id as image_id, i.filename, i.path as image_path, 
-                       i.alt_text, i.caption, i.title as image_title
+                       i.alt_text, i.caption
                 FROM post_section ps
                 LEFT JOIN post_images pi ON ps.id = pi.section_id AND pi.image_type = 'section_optimized'
                 LEFT JOIN image i ON pi.image_id = i.id
                 WHERE ps.post_id = %s
-                ORDER BY ps.order_index
+                ORDER BY ps.section_order
             """, (post_id,))
             sections = cursor.fetchall()
             
@@ -157,7 +157,7 @@ def header_preview(post_id):
                 formatted_section = {
                     'id': section['id'],
                     'section_heading': section['section_heading'],
-                    'section_subtitle': section['section_subtitle'],
+                    'section_description': section['section_description'],
                     'content': section['polished'] or section['draft'] or '',
                 }
                 
@@ -166,8 +166,7 @@ def header_preview(post_id):
                     formatted_section['image'] = {
                         'path': section['image_path'] if section['image_path'].startswith('http') else f"/static{section['image_path']}",
                         'alt_text': section['alt_text'] or '',
-                        'caption': section['caption'] or '',
-                        'title': section['image_title'] or ''
+                        'caption': section['caption'] or ''
                     }
                 
                 formatted_sections.append(formatted_section)

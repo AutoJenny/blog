@@ -70,8 +70,8 @@
             {% for section in sections %}
             <section class="blog-section" id="section-{{ section.id }}">
                 <h2>{{ section.section_heading or 'Untitled Section' }}</h2>
-                {% if section.section_subtitle %}
-                    <h3 class="section-subtitle">{{ section.section_subtitle }}</h3>
+                {% if section.section_description %}
+                    <h3 class="section-subtitle">{{ section.section_description }}</h3>
                 {% endif %}
                 
                 <div class="section-text">
