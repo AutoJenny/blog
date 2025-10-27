@@ -137,14 +137,15 @@ def header_preview(post_id):
                     if not header_image['path'].startswith('http'):
                         header_image['path'] = f"/static{header_image['path']}"
             
-            # Get sections with images
+            # Get sections with images via post_images linking table
             cursor.execute("""
                 SELECT ps.id, ps.section_heading, ps.section_subtitle, 
                        ps.draft, ps.polished,
                        i.id as image_id, i.filename, i.path as image_path, 
                        i.alt_text, i.caption, i.title as image_title
                 FROM post_section ps
-                LEFT JOIN image i ON ps.image_id = i.id
+                LEFT JOIN post_images pi ON ps.id = pi.section_id AND pi.image_type = 'section_optimized'
+                LEFT JOIN image i ON pi.image_id = i.id
                 WHERE ps.post_id = %s
                 ORDER BY ps.order_index
             """, (post_id,))
