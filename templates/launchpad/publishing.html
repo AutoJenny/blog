@@ -458,7 +458,44 @@
         // Publishing functions
         async function publishPost(postId) {
             console.log('Publishing post:', postId);
-            showToast('Publishing post to Clan.com...', 'info');
+            
+            // Step 1: Validate data before publishing
+            showToast('Validating post data...', 'info');
+            try {
+                const validationResponse = await fetch(`/launchpad/api/validate-publish/${postId}`);
+                const validation = await validationResponse.json();
+                
+                if (!validation.valid) {
+                    // Build informative error message
+                    let errorMessage = 'Validation failed:\n\n';
+                    validation.issues.forEach(issue => {
+                        if (issue.type === 'missing_field') {
+                            errorMessage += `Missing required field: ${issue.field}\n`;
+                        } else if (issue.type === 'raw_image_path' || issue.type === 'png_in_optimized') {
+                            errorMessage += `Image path issue: ${issue.field} uses ${issue.path}\n`;
+                        } else if (issue.type === 'raw_section_image') {
+                            errorMessage += `Section "${issue.section_heading}" uses raw image: ${issue.path}\n`;
+                        } else if (issue.type === 'cross_promotion_missing') {
+                            errorMessage += 'Cross-promotion configured but not attached\n';
+                        } else {
+                            errorMessage += `${issue.type}: ${issue.message || JSON.stringify(issue)}\n`;
+                        }
+                    });
+                    
+                    alert(errorMessage);
+                    showToast('Validation failed. Check console for details.', 'error');
+                    return;
+                }
+                
+                // Validation passed - proceed with publishing
+                showToast('Validation passed. Publishing post to Clan.com...', 'info');
+                
+            } catch (error) {
+                console.error('Validation error:', error);
+                alert(`Validation check failed: ${error.message}\n\nProceed with publishing anyway?`);
+                // Continue with publishing even if validation fails
+            }
+            
             updatePostStatus(postId, 'publishing');
             
             try {
