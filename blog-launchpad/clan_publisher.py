@@ -1087,8 +1087,14 @@ class ClanPublisher:
             # Load the template from the FileSystemLoader
             template = env.get_template('clan_post_raw.html')
             
+            # Fix author_name if it's the literal string "author_name" (database column name)
+            post_for_template = post.copy()
+            if not post_for_template.get('author_name') or post_for_template.get('author_name') == 'author_name':
+                post_for_template['author_name'] = 'Caitrin Stewart'
+                logger.info(f"Fixed author_name: was '{post.get('author_name')}', now 'Caitrin Stewart'")
+            
             # Render using the same data used for preview to ensure exact match
-            html_content = template.render(post=post, sections=sections)
+            html_content = template.render(post=post_for_template, sections=sections)
             
             # Translate local image/file paths to uploaded clan.com URLs
             if uploaded_images:
