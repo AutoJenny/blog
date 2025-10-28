@@ -4,7 +4,7 @@
 from flask import Blueprint, render_template, jsonify
 
 # Create a separate blueprint for core routes
-bp = Blueprint('core', __name__, url_prefix='/launchpad')
+bp = Blueprint('core', __name__)
 
 @bp.route('/')
 def index():
