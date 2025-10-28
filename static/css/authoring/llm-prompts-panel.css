@@ -33,6 +33,13 @@
     font-size: 0.9rem;
 }
 
+.field-source {
+    color: #64748b;
+    font-size: 0.7rem;
+    font-weight: 400;
+    font-style: italic;
+}
+
 .prompt-content {
     color: #e2e8f0;
     background: #1e293b;

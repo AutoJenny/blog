@@ -363,6 +363,21 @@ async function regenerateCurrentSectionPrompt() {
             return;
         }
 
+        // UI feedback: disable button and show spinner
+        const regenBtn = document.getElementById('regenerate-prompt-btn');
+        const prevLabel = regenBtn ? regenBtn.innerHTML : '';
+        if (regenBtn) {
+            regenBtn.disabled = true;
+            regenBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Regenerating...';
+        }
+
+        // Ensure current model selection is persisted for this post (so backend uses correct cap)
+        try {
+            if (window.modelSelectionPanel && typeof window.modelSelectionPanel.saveConfiguration === 'function') {
+                await window.modelSelectionPanel.saveConfiguration();
+            }
+        } catch (_) { /* non-fatal */ }
+
         // Use currently displayed prompt text as a seed and request a variation
         const existingText = document.querySelector('.prompt-text')?.textContent?.trim() || '';
         const compiledPrompt = [
@@ -404,9 +419,25 @@ async function regenerateCurrentSectionPrompt() {
         // Reload prompt from DB for this section to reflect the new value (bypass cache)
         await displayPromptForSection(sectionId, { forceReload: true });
 
+        // Toast feedback
+        try {
+            const note = document.createElement('div');
+            note.style.cssText = 'position:fixed;top:16px;right:16px;background:#10b981;color:#fff;padding:10px 14px;border-radius:6px;z-index:10000;font-size:.9rem;box-shadow:0 4px 10px rgba(0,0,0,.2)';
+            note.textContent = 'Prompt regenerated successfully';
+            document.body.appendChild(note);
+            setTimeout(() => { if (note.parentNode) note.parentNode.removeChild(note); }, 2000);
+        } catch (_) { /* ignore */ }
+
     } catch (err) {
         console.error('[Generated Prompts] Regenerate failed:', err);
         alert('Failed to regenerate: ' + (err?.message || err));
+    } finally {
+        // Restore button state
+        const regenBtn = document.getElementById('regenerate-prompt-btn');
+        if (regenBtn) {
+            regenBtn.disabled = false;
+            regenBtn.innerHTML = prevLabel || 'Regenerate';
+        }
     }
 }
 </script>
