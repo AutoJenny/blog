@@ -932,12 +932,12 @@ class ClanPublisher:
             else:
                 logger.warning("❌ No header image found")
             
-            # Sections already have image paths from the endpoint
+            # Sections already have image paths structured in section['image']['path'] from endpoint
             for i, section in enumerate(sections_list):
-                image_path = section.get('image_path')
-                logger.info(f"Section {i+1} ({section.get('section_heading', 'No title')}): image_path = {image_path}")
-                if image_path:
-                    section['image'] = {'path': image_path}
+                has_image = section.get('image') and section['image'].get('path') and not section['image'].get('placeholder')
+                logger.info(f"Section {i+1} ({section.get('section_heading', 'No title')}): has_image = {has_image}")
+                if has_image:
+                    logger.info(f"  Image path: {section['image']['path']}")
                 
             # Step 1: Process and upload images (header + section images)
             logger.info("Step 1: Processing and uploading images...")
