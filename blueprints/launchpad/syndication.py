@@ -12,4 +12,3 @@ bp = Blueprint("syndication", __name__)
 logger = logging.getLogger(__name__)
 
 # TODO: Extract all syndication routes from launchpad_old.py
-# This is a placeholder module
