@@ -2352,32 +2352,42 @@ def find_header_image(post_id):
     Returns the image path or None if no image found.
     """
     import urllib.parse
+    import os
     
-    # Path to the blog-images static directory
-    blog_images_static = "/Users/nickfiddes/Code/projects/blog/blog-images/static"
+    # Get project root (this file is in blog-launchpad/, go up one level)
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(current_dir)  # Go up from blog-launchpad/ to project root
+    
+    # Try blog-images/static first (legacy location)
+    blog_images_static = os.path.join(project_root, 'blog-images', 'static')
+    # Also try project static/ (unified app location)
+    project_static = os.path.join(project_root, 'static')
+    
     image_extensions = ('.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp')
 
-    # 1. Look for images in the header's optimized directory first
-    header_optimized_path = os.path.join(blog_images_static, "content", "posts", str(post_id), "header", "optimized")
-    if os.path.exists(header_optimized_path):
-        image_files = [f for f in os.listdir(header_optimized_path)
-                      if f.lower().endswith(image_extensions) and not f.startswith('.')]
-        if image_files:
-            image_filename = image_files[0]
-            # URL-encode the filename to handle spaces and special characters
-            encoded_filename = urllib.parse.quote(image_filename)
-            return f"/static/content/posts/{post_id}/header/optimized/{encoded_filename}"
+    # 1. Look for images in the header's optimized directory first (try both locations)
+    for static_dir in [project_static, blog_images_static]:
+        header_optimized_path = os.path.join(static_dir, "content", "posts", str(post_id), "header", "optimized")
+        if os.path.exists(header_optimized_path):
+            image_files = [f for f in os.listdir(header_optimized_path)
+                          if f.lower().endswith(image_extensions) and not f.startswith('.')]
+            if image_files:
+                image_filename = image_files[0]
+                # URL-encode the filename to handle spaces and special characters
+                encoded_filename = urllib.parse.quote(image_filename)
+                return f"/static/content/posts/{post_id}/header/optimized/{encoded_filename}"
 
-    # 2. Fall back to raw directory if optimized is empty
-    header_raw_path = os.path.join(blog_images_static, "content", "posts", str(post_id), "header", "raw")
-    if os.path.exists(header_raw_path):
-        image_files = [f for f in os.listdir(header_raw_path)
-                      if f.lower().endswith(image_extensions) and not f.startswith('.')]
-        if image_files:
-            image_filename = image_files[0]
-            # URL-encode the filename to handle spaces and special characters
-            encoded_filename = urllib.parse.quote(image_filename)
-            return f"/static/content/posts/{post_id}/header/raw/{encoded_filename}"
+    # 2. Fall back to raw directory if optimized is empty (try both locations)
+    for static_dir in [project_static, blog_images_static]:
+        header_raw_path = os.path.join(static_dir, "content", "posts", str(post_id), "header", "raw")
+        if os.path.exists(header_raw_path):
+            image_files = [f for f in os.listdir(header_raw_path)
+                          if f.lower().endswith(image_extensions) and not f.startswith('.')]
+            if image_files:
+                image_filename = image_files[0]
+                # URL-encode the filename to handle spaces and special characters
+                encoded_filename = urllib.parse.quote(image_filename)
+                return f"/static/content/posts/{post_id}/header/raw/{encoded_filename}"
 
     return None
 
