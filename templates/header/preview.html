@@ -56,7 +56,7 @@
                 </span>
                 <span class="post-meta__separator"> | </span>
                 <span class="post-meta__date">
-                    {{ post.created_at.strftime('%B %d, %Y') if post.created_at else 'Unknown date' }}
+                    {{ post.updated_at.strftime('%B %d, %Y') if post.updated_at else 'Unknown date' }}
                 </span>
                 <span class="post-meta__separator"> | </span>
                 <span class="post-meta__status">
