@@ -946,6 +946,43 @@ class ClanPublisher:
                 logger.info(f"✅ Image processing completed. Uploaded {len(uploaded_images)} images.")
                 logger.info(f"uploaded_images dictionary: {uploaded_images}")
                 
+                # Fallback: If no images were uploaded/mapped, force-upload header and section images
+                if not uploaded_images or len(uploaded_images) == 0:
+                    logger.warning("⚠️ uploaded_images is empty. Forcing image uploads for header and sections...")
+                    # Attempt header image upload
+                    header_image_path = full_post_data.get('header_image', {}).get('path')
+                    if header_image_path:
+                        try:
+                            fs_path = path_resolver.convert_web_path_to_filesystem(header_image_path)
+                            if os.path.exists(fs_path):
+                                filename = f"header_{full_post_data['id']}_{int(time.time())}.jpg"
+                                uploaded_url = self.upload_image(fs_path, filename)
+                                if uploaded_url:
+                                    uploaded_images[header_image_path] = uploaded_url
+                                    logger.info(f"✅ Forced header image upload: {header_image_path} -> {uploaded_url}")
+                            else:
+                                logger.warning(f"⚠️ Forced upload skipped: header fs_path not found: {fs_path}")
+                        except Exception as e:
+                            logger.error(f"❌ Forced upload error (header): {e}")
+                    # Attempt each section image upload
+                    for i, section in enumerate(sections_list):
+                        try:
+                            section_img = section.get('image') or {}
+                            section_path = section_img.get('path')
+                            if section_path and not section_img.get('placeholder'):
+                                fs_path = path_resolver.convert_web_path_to_filesystem(section_path)
+                                if os.path.exists(fs_path):
+                                    filename = f"section_{full_post_data['id']}_{i+1}_{int(time.time())}.jpg"
+                                    uploaded_url = self.upload_image(fs_path, filename)
+                                    if uploaded_url:
+                                        uploaded_images[section_path] = uploaded_url
+                                        logger.info(f"✅ Forced section image upload: {section_path} -> {uploaded_url}")
+                                else:
+                                    logger.warning(f"⚠️ Forced upload skipped: section fs_path not found: {fs_path}")
+                        except Exception as e:
+                            logger.error(f"❌ Forced upload error (section {i+1}): {e}")
+                    logger.info(f"After forced uploads, uploaded_images: {uploaded_images}")
+
                 # Fix: Ensure header image is included in uploaded_images for HTML replacement
                 header_image_path = full_post_data.get('header_image', {}).get('path')
                 if header_image_path and header_image_path not in uploaded_images:
