@@ -978,11 +978,11 @@ class ClanPublisher:
                                         project_root = os.path.dirname(os.path.dirname(__file__))
                                         fs_path = os.path.join(project_root, section_path.lstrip('/'))
                                     if os.path.exists(fs_path):
-                                    filename = f"section_{full_post_data['id']}_{i+1}_{int(time.time())}.jpg"
-                                    uploaded_url = self.upload_image(fs_path, filename)
-                                    if uploaded_url:
-                                        uploaded_images[section_path] = uploaded_url
-                                        logger.info(f"✅ Forced section image upload: {section_path} -> {uploaded_url}")
+                                        filename = f"section_{full_post_data['id']}_{i+1}_{int(time.time())}.jpg"
+                                        uploaded_url = self.upload_image(fs_path, filename)
+                                        if uploaded_url:
+                                            uploaded_images[section_path] = uploaded_url
+                                            logger.info(f"✅ Forced section image upload: {section_path} -> {uploaded_url}")
                                 else:
                                     logger.warning(f"⚠️ Forced upload skipped: section fs_path not found: {fs_path}")
                         except Exception as e:
