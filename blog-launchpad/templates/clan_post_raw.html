@@ -1,27 +1,31 @@
 <div class="mp-content std fix-me">
     <header class="blog-post__header">
+        {% if post.header_image and post.header_image.path and not post.exclude_header_image %}
+        <figure class="header-image">
+            <img src="{{ post.header_image.path }}" 
+                 alt="{{ post.header_image.alt_text or 'Header image' }}"
+                 title="{{ post.header_image.caption or post.header_image.title or 'Header image' }}">
+            {% if post.header_image.caption %}
+            <figcaption>{{ post.header_image.caption }}</figcaption>
+            {% endif %}
+        </figure>
+        {% endif %}
         {% if post.subtitle %}
         <p class="blog-post__subtitle">{{ post.subtitle }}</p>
         {% endif %}
         
         <div class="post-meta">
-            <span class="post-meta__date">Published on <time datetime="{{ post.created_at.strftime('%Y-%m-%d') if post.created_at else 'Unknown date' }}">{{ post.created_at.strftime('%B %d, %Y') if post.created_at else 'Unknown date' }}</time></span>
+            <span class="post-meta__date">Published on <time datetime="{{ post.updated_at.strftime('%Y-%m-%d') if post.updated_at else 'Unknown date' }}">{{ post.updated_at.strftime('%B %d, %Y') if post.updated_at else 'Unknown date' }}</time></span>
             <span class="post-meta__separator"> | </span>
-            <span class="post-meta__author">By Caitrin Stewart</span>
+            <span class="post-meta__author">By {{ post.author_name or 'Caitrin Stewart' }}</span>
         </div>
         
-        {% if post.summary %}
-        <div class="blog-post__summary">
-            <p>{{ post.summary }}</p>
-        </div>
-        {% endif %}
     </header>
     
     {% if sections %}
     <div class="blog-sections">
     {% for section in sections %}
     <section class="blog-section" id="section-{{ loop.index }}">
-        <h2>{{ section.section_heading or 'Untitled Section' }}</h2>
         <div class="section-text">
             {% if section.polished %}
                 {{ section.polished|strip_html_doc|safe }}
