@@ -967,11 +967,17 @@ class ClanPublisher:
                     # Attempt each section image upload
                     for i, section in enumerate(sections_list):
                         try:
-                            section_img = section.get('image') or {}
-                            section_path = section_img.get('path')
-                            if section_path and not section_img.get('placeholder'):
-                                fs_path = path_resolver.convert_web_path_to_filesystem(section_path)
-                                if os.path.exists(fs_path):
+                                section_img = section.get('image') or {}
+                                section_path = section_img.get('path')
+                                if section_path and not section_img.get('placeholder'):
+                                    # Try path_resolver first, then fallback to direct path in project root
+                                    fs_path = path_resolver.convert_web_path_to_filesystem(section_path)
+                                    if not os.path.exists(fs_path):
+                                        # Fallback: try direct path in project root static/ directory
+                                        import os
+                                        project_root = os.path.dirname(os.path.dirname(__file__))
+                                        fs_path = os.path.join(project_root, section_path.lstrip('/'))
+                                    if os.path.exists(fs_path):
                                     filename = f"section_{full_post_data['id']}_{i+1}_{int(time.time())}.jpg"
                                     uploaded_url = self.upload_image(fs_path, filename)
                                     if uploaded_url:
