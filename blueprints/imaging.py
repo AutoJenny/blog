@@ -1291,6 +1291,41 @@ def imaging_optimize_image(post_id, section_id):
         result = optimize_image_with_watermark(post_id, resolved_section_id, params)
         
         if result['success']:
+            # Save optimized image to image table and create post_images link
+            with db_manager.get_cursor() as cursor:
+                # Get optimized image path
+                optimized_path = result['optimized_path'].lstrip('/')  # Remove leading /
+                
+                # Insert or update image record
+                cursor.execute("""
+                    INSERT INTO image (filename, path, alt_text, caption)
+                    VALUES (%s, %s, %s, %s)
+                    ON CONFLICT (path) DO UPDATE 
+                    SET filename = EXCLUDED.filename, alt_text = EXCLUDED.alt_text, caption = EXCLUDED.caption
+                    RETURNING id
+                """, (
+                    f"{section_id}_optimized.jpg",
+                    f"/{optimized_path}",
+                    f"Optimized image for {section.get('section_heading', 'section')}",
+                    "AI-generated image"
+                ))
+                image_record = cursor.fetchone()
+                image_id = image_record['id']
+                
+                # Delete any existing post_images link for this section's optimized image
+                cursor.execute("""
+                    DELETE FROM post_images 
+                    WHERE section_id = %s AND image_type = 'section_optimized'
+                """, (resolved_section_id,))
+                
+                # Create post_images link
+                cursor.execute("""
+                    INSERT INTO post_images (section_id, image_id, image_type)
+                    VALUES (%s, %s, 'section_optimized')
+                """, (resolved_section_id, image_id))
+                
+                db_manager.connection.commit()
+            
             return jsonify({
                 'success': True,
                 'optimized_path': result['optimized_path'],
