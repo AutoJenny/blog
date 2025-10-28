@@ -1742,21 +1742,27 @@ def get_post_with_development(post_id):
         return post_dict
 
 def get_post_sections_with_images(post_id):
-    """Fetch sections with complete image metadata."""
+    """Fetch sections with complete image metadata from post_images linking table (matches preview data)."""
     with db_manager.get_cursor() as cursor:
-        # Get all sections for the post
+        # Get all sections with images via post_images linking table (same as preview route)
         cursor.execute("""
             SELECT 
-                id, post_id, section_order, 
-                section_heading,
-                section_description, ideas_to_include, facts_to_include,
-                draft, polished, highlighting, image_concepts,
-                image_prompts,
-                image_alt_text, image_captions, status,
-                image_title, image_width, image_height
-            FROM post_section 
-            WHERE post_id = %s 
-            ORDER BY section_order
+                ps.id, ps.post_id, ps.section_order, 
+                ps.section_heading,
+                ps.section_description, ps.ideas_to_include, ps.facts_to_include,
+                ps.draft, ps.polished, ps.highlighting, ps.image_concepts,
+                ps.image_prompts,
+                ps.image_alt_text, ps.image_captions, ps.status,
+                i.id AS image_id,
+                i.filename,
+                i.path AS image_path,
+                i.alt_text AS image_alt_text,
+                i.caption AS image_caption
+            FROM post_section ps
+            LEFT JOIN post_images pi ON ps.id = pi.section_id AND pi.image_type = 'section_optimized'
+            LEFT JOIN image i ON pi.image_id = i.id
+            WHERE ps.post_id = %s
+            ORDER BY ps.section_order
         """, (post_id,))
         
         raw_sections = cursor.fetchall()
@@ -1765,21 +1771,34 @@ def get_post_sections_with_images(post_id):
         for section in raw_sections:
             section_dict = dict(section)
             
-            # Add image data if available
-            if section_dict.get('image_title'):
-                # Find the actual image file path
-                section_image_path = find_section_image(post_id, section['id'])
-                
+            # Add image data if available (from post_images link or fallback to filesystem)
+            image_path = section_dict.get('image_path')
+            
+            if image_path:
+                # Image exists in post_images linking table
                 section_dict['image'] = {
-                    'path': section_image_path,
-                    'title': section_dict['image_title'],
-                    'width': section_dict.get('image_width'),
-                    'height': section_dict.get('image_height'),
+                    'path': image_path,
                     'caption': section_dict.get('image_captions'),
+                    'alt_text': section_dict.get('image_alt_text'),
                     'placeholder': False
                 }
             else:
-                section_dict['image'] = None
+                # Fallback: check filesystem for conventional optimized path
+                try:
+                    import os
+                    candidate = f"/static/content/posts/{post_id}/sections/{section_dict['id']}/optimized/{section_dict['id']}.jpg"
+                    filesystem_path = candidate.lstrip('/')
+                    if os.path.exists(filesystem_path):
+                        section_dict['image'] = {
+                            'path': candidate,
+                            'caption': section_dict.get('image_captions', ''),
+                            'alt_text': section_dict.get('image_alt_text', ''),
+                            'placeholder': False
+                        }
+                    else:
+                        section_dict['image'] = None
+                except Exception:
+                    section_dict['image'] = None
             
             sections.append(section_dict)
         
