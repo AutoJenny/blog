@@ -922,15 +922,21 @@ class ClanPublisher:
             # Step 0: Finding image paths from file system
             logger.info("Step 0: Finding image paths from file system...")
             
-            # Set header image path
-            header_image_path = post.get('header_image', {}).get('path') if post.get('header_image') else None
-            logger.info(f"find_header_image returned: {header_image_path}")
-            
-            if header_image_path:
-                full_post_data['header_image'] = {'path': header_image_path}
-                logger.info(f"✅ Set full_post_data['header_image'] = {{'path': '{header_image_path}'}}")
+            # Preserve header image from post data if it exists, otherwise look it up
+            if not full_post_data.get('header_image') or not full_post_data['header_image'].get('path'):
+                header_image_path = post.get('header_image', {}).get('path') if post.get('header_image') else None
+                logger.info(f"Looking up header image from post data: {header_image_path}")
+                
+                if header_image_path:
+                    # Preserve existing header_image structure if it exists
+                    if not full_post_data.get('header_image'):
+                        full_post_data['header_image'] = {}
+                    full_post_data['header_image']['path'] = header_image_path
+                    logger.info(f"✅ Set full_post_data['header_image']['path'] = '{header_image_path}'")
+                else:
+                    logger.warning("❌ No header image found in post data")
             else:
-                logger.warning("❌ No header image found")
+                logger.info(f"✅ Preserving existing header image: {full_post_data['header_image'].get('path')}")
             
             # Sections already have image paths structured in section['image']['path'] from endpoint
             for i, section in enumerate(sections_list):
