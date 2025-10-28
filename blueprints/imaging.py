@@ -1304,7 +1304,7 @@ def imaging_optimize_image(post_id, section_id):
                     SET filename = EXCLUDED.filename, alt_text = EXCLUDED.alt_text, caption = EXCLUDED.caption
                     RETURNING id
                 """, (
-                    f"{section_id}_optimized.jpg",
+                    f"{resolved_section_id}_optimized.jpg",
                     f"/{optimized_path}",
                     f"Optimized image for {section.get('section_heading', 'section')}",
                     "AI-generated image"
@@ -1323,8 +1323,6 @@ def imaging_optimize_image(post_id, section_id):
                     INSERT INTO post_images (section_id, image_id, image_type)
                     VALUES (%s, %s, 'section_optimized')
                 """, (resolved_section_id, image_id))
-                
-                db_manager.connection.commit()
             
             return jsonify({
                 'success': True,
