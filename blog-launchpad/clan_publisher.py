@@ -1139,16 +1139,35 @@ class ClanPublisher:
             # Render using the same data used for preview to ensure exact match
             html_content = template.render(post=post_for_template, sections=sections)
             
+            # Merge uploaded_images with DB mappings from section_image_mappings
+            merged_uploaded_images = uploaded_images.copy() if uploaded_images else {}
+            try:
+                from config.database import db_manager
+                with db_manager.get_cursor() as cursor:
+                    cursor.execute("""
+                        SELECT local_image_path, clan_uploaded_url 
+                        FROM section_image_mappings 
+                        WHERE post_id = %s AND local_image_path IS NOT NULL
+                    """, (post.get('id'),))
+                    db_mappings = cursor.fetchall()
+                    for row in db_mappings:
+                        if row.get('local_image_path') and row.get('clan_uploaded_url'):
+                            merged_uploaded_images[row['local_image_path']] = row['clan_uploaded_url']
+                            logger.info(f"Merged DB mapping: {row['local_image_path']} -> {row['clan_uploaded_url']}")
+            except Exception as e:
+                logger.warning(f"Could not load DB image mappings: {e}")
+            
+            logger.info(f'Final merged_uploaded_images: {merged_uploaded_images}')
+            logger.info(f'uploaded_images keys: {list(merged_uploaded_images.keys()) if merged_uploaded_images else "None"}')
+            
             # Translate local image/file paths to uploaded clan.com URLs
-            logger.info(f'Received uploaded_images: {uploaded_images}')
-            logger.info(f'uploaded_images keys: {list(uploaded_images.keys()) if uploaded_images else "None"}')
-            if uploaded_images:
+            if merged_uploaded_images:
                 logger.info('Translating image paths to clan.com URLs...')
                 logger.info(f'Uploaded images mapping: {uploaded_images}')
                 
                 # Create a comprehensive path mapping
                 path_mapping = {}
-                for local_path, clan_url in uploaded_images.items():
+                for local_path, clan_url in merged_uploaded_images.items():
                     # Add the exact path as found in uploaded_images
                     path_mapping[local_path] = clan_url
                     
@@ -1158,22 +1177,44 @@ class ClanPublisher:
                         path_mapping[local_path] = clan_url
                         
                         # Add the path without /static/ prefix (in case HTML uses relative paths)
-                        if local_path.startswith('/static/'):
-                            relative_path = local_path[7:]  # Remove '/static/' prefix
-                            path_mapping[relative_path] = clan_url
-                            logger.info(f"Added relative path mapping: {relative_path} -> {clan_url}")
+                        relative_path = local_path[7:]  # Remove '/static/' prefix
+                        path_mapping[relative_path] = clan_url
+                        logger.info(f"Added relative path mapping: {relative_path} -> {clan_url}")
                 
                 logger.info(f'Final path mapping: {path_mapping}')
                 
                 # Replace all paths in the HTML content
+                replacements_made = 0
                 for local_path, clan_url in path_mapping.items():
                     # Replace src attributes
-                    html_content = html_content.replace(f'src="{local_path}"', f'src="{clan_url}"')
+                    if f'src="{local_path}"' in html_content:
+                        html_content = html_content.replace(f'src="{local_path}"', f'src="{clan_url}"')
+                        replacements_made += 1
+                        logger.info(f"Replaced src: {local_path} -> {clan_url}")
                     # Replace href attributes  
-                    html_content = html_content.replace(f'href="{local_path}"', f'href="{clan_url}"')
-                    # Replace any other occurrences
-                    html_content = html_content.replace(local_path, clan_url)
-                    logger.info(f"Replaced {local_path} -> {clan_url}")
+                    if f'href="{local_path}"' in html_content:
+                        html_content = html_content.replace(f'href="{local_path}"', f'href="{clan_url}"')
+                        replacements_made += 1
+                        logger.info(f"Replaced href: {local_path} -> {clan_url}")
+                    # Replace any other occurrences (but count them)
+                    if local_path in html_content and local_path not in clan_url:
+                        before_count = html_content.count(local_path)
+                        html_content = html_content.replace(local_path, clan_url)
+                        after_count = html_content.count(local_path)
+                        if after_count < before_count:
+                            replacements_made += (before_count - after_count)
+                            logger.info(f"Replaced {before_count - after_count} occurrences: {local_path} -> {clan_url}")
+                
+                # Diagnostic: Check if any /static/ paths remain
+                import re
+                remaining_static = re.findall(r'/static/content/posts/\d+/sections/\d+/optimized/\d+\.jpg', html_content)
+                if remaining_static:
+                    logger.warning(f"⚠️ After replacement, {len(remaining_static)} /static/ paths remain in HTML:")
+                    for path in set(remaining_static):
+                        logger.warning(f"  Remaining path: {path}")
+                    logger.warning(f"  Available mapping keys: {list(path_mapping.keys())}")
+                else:
+                    logger.info(f"✅ All image paths replaced successfully. Made {replacements_made} replacements.")
             
             # Remove localhost refs that may linger
             import re

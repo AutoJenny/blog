@@ -75,13 +75,36 @@ class PathResolver:
         return f"{self.service_url}/static/content/posts/{post_id}/sections/{section_id}/{image_type}"
     
     def convert_web_path_to_filesystem(self, web_path):
-        """Convert a web path to a file system path"""
+        """Convert a web path to a file system path with fallback to project static/"""
         if web_path.startswith('/static/'):
-            return os.path.join(self.images_static, web_path[8:])  # Remove '/static/' prefix
+            # Try blog-images/static/ first (existing behavior)
+            fs_path = os.path.join(self.images_static, web_path[8:])  # Remove '/static/' prefix
+            
+            # If that doesn't exist, try project root static/ (fallback for unified app)
+            if not os.path.exists(fs_path):
+                alt_path = os.path.join(self.project_root, web_path[1:])  # Remove leading '/'
+                if os.path.exists(alt_path):
+                    logger.info(f"Path fallback: {web_path} -> {fs_path} (not found) -> {alt_path} (found)")
+                    return alt_path
+                else:
+                    logger.warning(f"Neither path exists: {fs_path} or {alt_path}")
+            
+            return fs_path
         elif web_path.startswith(self.service_url):
             # Convert service URL to file system path
             relative_path = web_path.replace(f"{self.service_url}/static/", "")
-            return os.path.join(self.images_static, relative_path)
+            fs_path = os.path.join(self.images_static, relative_path)
+            
+            # Fallback to project root if not found
+            if not os.path.exists(fs_path):
+                alt_path = os.path.join(self.project_root, 'static', relative_path)
+                if os.path.exists(alt_path):
+                    logger.info(f"URL fallback: {web_path} -> {fs_path} (not found) -> {alt_path} (found)")
+                    return alt_path
+                else:
+                    logger.warning(f"Neither path exists: {fs_path} or {alt_path}")
+            
+            return fs_path
         else:
             # Assume it's already a file system path
             return web_path
