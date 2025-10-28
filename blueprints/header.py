@@ -2044,10 +2044,48 @@ def api_optimize_header_image(post_id):
         result = optimize_image_with_watermark(post_id, 'header', params)
         
         if result['success']:
+            # Save optimized image to image table and create post_images link
+            with db_manager.get_cursor() as cursor:
+                # Get optimized image path
+                optimized_path = result['optimized_path'].lstrip('/')  # Remove leading /
+                
+                # Insert or update image record
+                cursor.execute("""
+                    INSERT INTO image (filename, path, alt_text, caption)
+                    VALUES (%s, %s, %s, %s)
+                    ON CONFLICT (path) DO UPDATE 
+                    SET filename = EXCLUDED.filename, alt_text = EXCLUDED.alt_text, caption = EXCLUDED.caption
+                    RETURNING id
+                """, (
+                    'header.jpg',
+                    f"/{optimized_path}",
+                    'Header image',
+                    'AI-generated header'
+                ))
+                image_record = cursor.fetchone()
+                image_id = image_record['id']
+                
+                # Delete any existing post_images link for header_optimized
+                cursor.execute("""
+                    DELETE FROM post_images 
+                    WHERE section_id IS NULL AND image_type = 'header_optimized'
+                """)
+                
+                # Create post_images link for header_optimized
+                cursor.execute("""
+                    INSERT INTO post_images (section_id, image_id, image_type)
+                    VALUES (NULL, %s, 'header_optimized')
+                """, (image_id,))
+                
+                # Update post.header_image_id to point to optimized version
+                cursor.execute("""
+                    UPDATE post SET header_image_id = %s WHERE id = %s
+                """, (image_id, post_id))
+            
             return jsonify({
                 'success': True,
                 'optimized_path': result['optimized_path'],
-                'message': 'Image optimized successfully'
+                'message': 'Image optimized successfully and database records created'
             })
         else:
             return jsonify({

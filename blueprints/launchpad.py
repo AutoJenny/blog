@@ -1727,17 +1727,44 @@ def get_post_with_development(post_id):
         
         post_dict = dict(post)
         
-        # Add dynamically discovered image path
-        header_image_path = find_header_image(post_id)
-        if header_image_path:
-            post_dict['header_image'] = {
-                'path': header_image_path,
-                'id': post_dict.get('header_image_id'),
-                'caption': post_dict.get('header_image_caption'),
-                'title': post_dict.get('header_image_title'),
-                'width': post_dict.get('header_image_width'),
-                'height': post_dict.get('header_image_height')
-            }
+        # Try to get optimized header via post_images link first
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT i.path, i.alt_text, i.caption, i.filename
+                FROM post_images pi
+                JOIN image i ON pi.image_id = i.id
+                WHERE pi.section_id IS NULL 
+                  AND pi.image_type = 'header_optimized'
+                  AND pi.image_id = (
+                      SELECT id FROM image WHERE id = %s
+                  )
+                LIMIT 1
+            """, (post_dict.get('header_image_id'),))
+            header_img = cursor.fetchone()
+            
+            if header_img and header_img['path']:
+                # Use optimized header from post_images
+                post_dict['header_image'] = {
+                    'path': header_img['path'],
+                    'id': post_dict.get('header_image_id'),
+                    'caption': header_img['caption'] or post_dict.get('header_image_caption'),
+                    'title': header_img['filename'] or post_dict.get('header_image_title'),
+                    'alt_text': header_img['alt_text'],
+                    'width': post_dict.get('header_image_width'),
+                    'height': post_dict.get('header_image_height')
+                }
+            else:
+                # Fallback to find_header_image() for legacy posts
+                header_image_path = find_header_image(post_id)
+                if header_image_path:
+                    post_dict['header_image'] = {
+                        'path': header_image_path,
+                        'id': post_dict.get('header_image_id'),
+                        'caption': post_dict.get('header_image_caption'),
+                        'title': post_dict.get('header_image_title'),
+                        'width': post_dict.get('header_image_width'),
+                        'height': post_dict.get('header_image_height')
+                    }
         
         return post_dict
 
