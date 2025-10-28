@@ -1735,8 +1735,9 @@ def get_post_with_development(post_id):
                 JOIN image i ON pi.image_id = i.id
                 WHERE pi.section_id IS NULL 
                   AND pi.image_type = 'header_optimized'
+                  AND pi.post_id = %s
                 LIMIT 1
-            """)
+            """, (post_id,))
             header_img = cursor.fetchone()
             
             if header_img and header_img['path']:

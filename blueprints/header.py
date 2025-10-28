@@ -2068,14 +2068,14 @@ def api_optimize_header_image(post_id):
                 # Delete any existing post_images link for header_optimized
                 cursor.execute("""
                     DELETE FROM post_images 
-                    WHERE section_id IS NULL AND image_type = 'header_optimized'
-                """)
+                    WHERE post_id = %s AND section_id IS NULL AND image_type = 'header_optimized'
+                """, (post_id,))
                 
                 # Create post_images link for header_optimized
                 cursor.execute("""
-                    INSERT INTO post_images (section_id, image_id, image_type)
-                    VALUES (NULL, %s, 'header_optimized')
-                """, (image_id,))
+                    INSERT INTO post_images (post_id, section_id, image_id, image_type)
+                    VALUES (%s, NULL, %s, 'header_optimized')
+                """, (post_id, image_id))
                 
                 # Update post.header_image_id to point to optimized version
                 cursor.execute("""
