@@ -1014,7 +1014,14 @@ Return in JSON format:
             """, (post_id,))
             
             image_result = cursor.fetchone()
-            meta_image = f"https://clan.com{image_result['path']}" if image_result and image_result['path'] else "https://clan.com/images/default-scottish-heritage.jpg"
+            raw_path = image_result['path'] if image_result and image_result['path'] else None
+            
+            if raw_path:
+                # Convert to optimized path: replace /raw/ with /optimized/ and .png with .jpg
+                optimized_path = raw_path.replace('/raw/', '/optimized/').replace('.png', '.jpg')
+                meta_image = f"https://clan.com{optimized_path}"
+            else:
+                meta_image = "https://clan.com/images/default-scottish-heritage.jpg"
             
             # Save to database
             cursor.execute("""
