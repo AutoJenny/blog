@@ -1142,6 +1142,34 @@ class ClanPublisher:
                 post_for_template['author_name'] = 'Caitrin Stewart'
                 logger.info(f"Fixed author_name: was '{post.get('author_name')}', now 'Caitrin Stewart'")
             
+            # Ensure header_image is set for template
+            if not post_for_template.get('header_image') or not post_for_template['header_image'].get('path'):
+                logger.warning("⚠️ No header_image in post data, attempting to load from database")
+                try:
+                    from config.database import db_manager
+                    with db_manager.get_cursor() as cursor:
+                        cursor.execute('SELECT header_image_id FROM post WHERE id = %s', (post.get('id'),))
+                        row = cursor.fetchone()
+                        if row and row.get('header_image_id'):
+                            # Load header image data from database
+                            cursor.execute("""
+                                SELECT id, filename, path, alt_text, caption
+                                FROM image WHERE id = %s
+                            """, (row['header_image_id'],))
+                            img_row = cursor.fetchone()
+                            if img_row and img_row.get('path'):
+                                # Use optimized path
+                                optimized_path = img_row['path'].replace('/raw/', '/optimized/').replace('.png', '.jpg')
+                                post_for_template['header_image'] = {
+                                    'path': optimized_path,
+                                    'alt_text': img_row.get('alt_text'),
+                                    'title': img_row.get('filename'),
+                                    'caption': img_row.get('caption')
+                                }
+                                logger.info(f"✅ Loaded header_image from database: {optimized_path}")
+                except Exception as e:
+                    logger.error(f"Failed to load header_image from database: {e}")
+            
             # Render using the same data used for preview to ensure exact match
             html_content = template.render(post=post_for_template, sections=sections)
             
