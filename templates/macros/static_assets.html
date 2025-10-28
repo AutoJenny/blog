@@ -63,7 +63,8 @@
                 <script src="{{ url_for('static', filename='js/authoring/image-concepts-output-panel.js') }}"></script>
             {% else %}
                 <script src="{{ url_for('static', filename='js/authoring/llm-settings-section-drafting.js') }}"></script>
-                <script src="{{ url_for('static', filename='js/authoring/llm-prompts-section-drafting.js') }}"></script>
+                {# Removed legacy prompts editing script to prevent conflicts with LLMPromptsPanel #}
+                {# <script src="{{ url_for('static', filename='js/authoring/llm-prompts-section-drafting.js') }}"></script> #}
             {% endif %}
         {% elif blueprint_name == 'imaging' %}
             <script src="{{ url_for('static', filename='js/imaging/imaging-core.js') }}"></script>
