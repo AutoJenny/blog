@@ -410,6 +410,7 @@ class ClanPublisher:
     def process_images(self, post, sections):
         """Upload all images and update paths in the post content"""
         import time
+        from config.paths import path_resolver
         uploaded_images = {}
         
         logger.info(f"=== PROCESS_IMAGES DEBUG START ===")
@@ -423,8 +424,6 @@ class ClanPublisher:
             logger.info(f"✅ Found header image: {header_path}")
             
             # Check if file exists - convert web path to file system path
-            from config.paths import path_resolver
-            
             fs_path = path_resolver.convert_web_path_to_filesystem(header_path)
             if os.path.exists(fs_path):
                 logger.info(f"✅ Header image file exists at: {fs_path}")
@@ -544,9 +543,9 @@ class ClanPublisher:
                         file_size = None
                         dimensions = None
                         
-                        # Convert web path to file system path for file info
-                        from config.paths import path_resolver
-                        fs_path = path_resolver.convert_web_path_to_filesystem(local_path)
+                        # Convert web path to file system path for file info (using global import)
+                        from config.paths import path_resolver as _pr
+                        fs_path = _pr.convert_web_path_to_filesystem(local_path)
                         if os.path.exists(fs_path):
                             file_size = os.path.getsize(fs_path)
                             # Try to get dimensions using PIL
@@ -891,6 +890,7 @@ class ClanPublisher:
             
             # Step 0: Get full post data from database to determine if this is an update
             from config.database import db_manager
+            from config.paths import path_resolver
             with db_manager.get_cursor() as cursor:
                 cursor.execute('SELECT * FROM post WHERE id = %s', (post['id'],))
                 post_row = cursor.fetchone()
@@ -953,7 +953,6 @@ class ClanPublisher:
                     # We need to upload it separately and add to uploaded_images
                     logger.info(f"Header image not in uploaded_images, uploading separately: {header_image_path}")
                     try:
-                        from config.paths import path_resolver
                         fs_path = path_resolver.convert_web_path_to_filesystem(header_image_path)
                         if os.path.exists(fs_path):
                             filename = f"header_{full_post_data['id']}_{int(time.time())}.jpg"
