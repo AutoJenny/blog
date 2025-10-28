@@ -1134,6 +1134,8 @@ class ClanPublisher:
             html_content = template.render(post=post_for_template, sections=sections)
             
             # Translate local image/file paths to uploaded clan.com URLs
+            logger.info(f'Received uploaded_images: {uploaded_images}')
+            logger.info(f'uploaded_images keys: {list(uploaded_images.keys()) if uploaded_images else "None"}')
             if uploaded_images:
                 logger.info('Translating image paths to clan.com URLs...')
                 logger.info(f'Uploaded images mapping: {uploaded_images}')
