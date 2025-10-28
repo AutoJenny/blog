@@ -169,10 +169,71 @@ class OneClickBlogController {
         }
     }
 
-    startProduction() {
+    async startProduction() {
         console.log('[One-Click Blog Controller] Starting production...');
-        this.showNotification('Production started!', 'success');
-        // This would trigger the automation pipeline
+        
+        // Get the post ID from Next Up panel
+        const postId = this.nextUpPanel?.currentPostId;
+        if (!postId) {
+            this.showNotification('No post available to start production', 'error');
+            return;
+        }
+        
+        try {
+            // Update button state to show progress
+            const productionBtn = document.querySelector('.production-btn');
+            if (productionBtn) {
+                productionBtn.classList.add('loading');
+                const btnText = productionBtn.querySelector('.btn-text');
+                const btnIcon = productionBtn.querySelector('i');
+                if (btnText) btnText.textContent = 'Loading...';
+                if (btnIcon) btnIcon.className = 'fas fa-spinner fa-spin';
+            }
+            
+            // Load pipeline data for this post
+            console.log('[One-Click Blog Controller] Loading pipeline data for post:', postId);
+            if (this.pipelineManager) {
+                await this.pipelineManager.loadPipelineData(postId);
+            }
+            
+            // Scroll to pipeline section
+            const pipelineSection = document.querySelector('.pipeline-tracker');
+            if (pipelineSection) {
+                pipelineSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                // Highlight the section briefly
+                pipelineSection.style.transition = 'box-shadow 0.3s';
+                pipelineSection.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.5)';
+                setTimeout(() => {
+                    pipelineSection.style.boxShadow = '';
+                }, 2000);
+            }
+            
+            // Update button to "View Progress" state
+            if (productionBtn) {
+                productionBtn.classList.remove('loading');
+                productionBtn.classList.add('progress');
+                const btnText = productionBtn.querySelector('.btn-text');
+                const btnIcon = productionBtn.querySelector('i');
+                if (btnText) btnText.textContent = 'View Progress';
+                if (btnIcon) btnIcon.className = 'fas fa-eye';
+            }
+            
+            this.showNotification('Production started! View pipeline progress below.', 'success');
+        } catch (error) {
+            console.error('[One-Click Blog Controller] Error starting production:', error);
+            this.showNotification('Error starting production: ' + error.message, 'error');
+            
+            // Reset button state
+            const productionBtn = document.querySelector('.production-btn');
+            if (productionBtn) {
+                productionBtn.classList.remove('loading');
+                const btnText = productionBtn.querySelector('.btn-text');
+                const btnIcon = productionBtn.querySelector('i');
+                if (btnText) btnText.textContent = 'Start Production';
+                if (btnIcon) btnIcon.className = 'fas fa-rocket';
+            }
+        }
     }
 
     viewProgress() {
