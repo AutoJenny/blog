@@ -2211,6 +2211,86 @@ def clan_post_html(post_id):
         logger.error(f"Error in clan_post_html for post {post_id}: {e}")
         return f"Error: {str(e)}", 500
 
+@bp.route('/api/validate-publish/<int:post_id>')
+def validate_publish_data(post_id):
+    """Validate publish data consistency and completeness."""
+    try:
+        # Get post and sections
+        post = get_post_with_development(post_id)
+        if not post:
+            return jsonify({'error': 'Post not found', 'valid': False}), 404
+        
+        sections = get_post_sections_with_images(post_id)
+        
+        # Check for required data
+        issues = []
+        
+        # Check required fields
+        required_fields = ['title', 'meta_title', 'meta_description', 'meta_tags']
+        for field in required_fields:
+            if not post.get(field):
+                issues.append({
+                    'type': 'missing_field',
+                    'field': field
+                })
+        
+        # Check meta_image points to optimized path
+        meta_image = post.get('meta_image', '')
+        if meta_image and '/raw/' in meta_image:
+            issues.append({
+                'type': 'raw_image_path',
+                'field': 'meta_image',
+                'path': meta_image
+            })
+        elif meta_image and '.png' in meta_image and '/optimized/' in meta_image:
+            issues.append({
+                'type': 'png_in_optimized',
+                'field': 'meta_image',
+                'path': meta_image
+            })
+        
+        # Check for sections with content
+        if not sections or len(sections) == 0:
+            issues.append({
+                'type': 'no_sections',
+                'message': 'Post has no sections'
+            })
+        
+        # Check images use optimized paths
+        for section in sections:
+            img = section.get('image')
+            if img and img.get('path'):
+                path = img['path']
+                if '/raw/' in path or path.endswith('.png'):
+                    issues.append({
+                        'type': 'raw_section_image',
+                        'section_id': section['id'],
+                        'section_heading': section.get('section_heading'),
+                        'path': path
+                    })
+        
+        # Check cross-promotion if configured
+        if post.get('cross_promotion_category_id') and not post.get('cross_promotion'):
+            issues.append({
+                'type': 'cross_promotion_missing',
+                'message': 'Cross-promotion ID exists but data not attached'
+            })
+        
+        valid = len(issues) == 0
+        
+        return jsonify({
+            'valid': valid,
+            'issues': issues,
+            'section_count': len(sections),
+            'has_all_meta_fields': all(post.get(f) for f in required_fields),
+            'meta_image_is_optimized': meta_image and '/optimized/' in meta_image and meta_image.endswith('.jpg'),
+            'message': 'Ready to publish' if valid else f'Found {len(issues)} issues that need attention'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error validating publish data for post {post_id}: {e}")
+        return jsonify({'error': str(e), 'valid': False}), 500
+
 @bp.route('/one-click-blog')
 def one_click_blog():
     """One-Click Blog automation page."""
