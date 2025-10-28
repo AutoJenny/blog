@@ -1058,8 +1058,8 @@ class ClanPublisher:
         try:
             import os
             
-            # Get the clan_post_raw.html template content
-            template_path = os.path.join(os.path.dirname(__file__), '..', 'templates', 'launchpad', 'clan_post_raw.html')
+            # Get the clan_post_raw.html template content (use the same path Flask renders)
+            template_path = os.path.join(os.path.dirname(__file__), '..', 'templates', 'clan_post_raw.html')
             with open(template_path, 'r', encoding='utf-8') as f:
                 template_content = f.read()
             
@@ -1083,11 +1083,8 @@ class ClanPublisher:
             
             template = env.from_string(template_content)
             
-            # For Clan.com API, exclude header image from HTML content since it's handled by thumbnails
-            post_for_template = post.copy()
-            post_for_template['exclude_header_image'] = True
-            
-            html_content = template.render(post=post_for_template, sections=sections)
+            # Render using the same data used for preview to ensure exact match
+            html_content = template.render(post=post, sections=sections)
             
             # Translate local image/file paths to uploaded clan.com URLs
             if uploaded_images:
