@@ -16,23 +16,18 @@
         {% endif %}
         
         <div class="post-meta">
-            <span class="post-meta__date">Published on <time datetime="{{ post.created_at.strftime('%Y-%m-%d') if post.created_at else 'Unknown date' }}">{{ post.created_at.strftime('%B %d, %Y') if post.created_at else 'Unknown date' }}</time></span>
+            <span class="post-meta__date">Published on <time datetime="{{ post.updated_at.strftime('%Y-%m-%d') if post.updated_at else 'Unknown date' }}">{{ post.updated_at.strftime('%B %d, %Y') if post.updated_at else 'Unknown date' }}</time></span>
             <span class="post-meta__separator"> | </span>
             <span class="post-meta__author">By {{ post.author_name or 'Caitrin Stewart' }}</span>
         </div>
         
-        {% if post.summary %}
-        <div class="blog-post__summary">
-            <p>{{ post.summary }}</p>
-        </div>
-        {% endif %}
+        {# Summary is shown in preview header page, not in uploaded HTML #}
     </header>
     
     {% if sections %}
     <div class="blog-sections">
     {% for section in sections %}
     <section class="blog-section" id="section-{{ loop.index }}">
-        <h2>{{ section.section_heading or 'Untitled Section' }}</h2>
         <div class="section-text">
             {% if section.polished %}
                 {{ section.polished|strip_html_doc|safe }}
