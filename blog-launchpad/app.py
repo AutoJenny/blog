@@ -2304,7 +2304,7 @@ def get_post_with_development(post_id):
         # Get post data, alias post.id as post_id
         cur.execute("""
             SELECT p.id AS post_id, p.title, p.subtitle, p.created_at, p.updated_at, p.status, p.slug, p.summary, p.title_choices,
-                   p.clan_post_id, p.clan_uploaded_url,
+                   p.clan_post_id, p.clan_uploaded_url, p.author_id, p.author_name,
                    pd.idea_seed, pd.intro_blurb, pd.main_title,
                    p.cross_promotion_category_id, p.cross_promotion_category_title,
                    p.cross_promotion_product_id, p.cross_promotion_product_title,
