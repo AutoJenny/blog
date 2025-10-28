@@ -2050,6 +2050,11 @@ def api_optimize_header_image(post_id):
                 optimized_path = result['optimized_path'].lstrip('/')  # Remove leading /
                 
                 # Insert or update image record
+                # Get the caption from the post's header_image_caption field
+                cursor.execute("SELECT header_image_caption FROM post WHERE id = %s", (post_id,))
+                post_row = cursor.fetchone()
+                caption = post_row['header_image_caption'] if post_row else None
+                
                 cursor.execute("""
                     INSERT INTO image (filename, path, alt_text, caption)
                     VALUES (%s, %s, %s, %s)
@@ -2060,7 +2065,7 @@ def api_optimize_header_image(post_id):
                     'header.jpg',
                     f"/{optimized_path}",
                     'Header image',
-                    'AI-generated header'
+                    caption
                 ))
                 image_record = cursor.fetchone()
                 image_id = image_record['id']

@@ -1142,6 +1142,9 @@ class ClanPublisher:
                 post_for_template['author_name'] = 'Caitrin Stewart'
                 logger.info(f"Fixed author_name: was '{post.get('author_name')}', now 'Caitrin Stewart'")
             
+            # Exclude header image from HTML content (Clan.com adds it as featured image automatically)
+            post_for_template['exclude_header_image'] = True
+            
             # Ensure header_image is set for template
             if not post_for_template.get('header_image') or not post_for_template['header_image'].get('path'):
                 logger.warning("⚠️ No header_image in post data, attempting to load from database")
