@@ -174,17 +174,17 @@ body {
 }
 .section-content img, .preview-content img {
     display: block;
-    margin: 2.5rem auto 1rem auto;
+    margin: 1.5rem auto 0.75rem auto;
     max-width: 100%;
     border-radius: 6px;
     box-shadow: 0 2px 12px rgba(0,0,0,0.08);
 }
 .image-caption {
     text-align: center;
-    font-size: 0.98rem;
+    font-size: 0.95rem;
     color: #888;
     font-style: italic;
-    margin-bottom: 2rem;
+    margin-bottom: 1.25rem;
 }
 .header-image {
     margin: 2rem 0;
@@ -198,7 +198,7 @@ body {
     display: block;
 }
 .section-image {
-    margin: 2rem 0;
+    margin: 1.25rem 0;
     text-align: center;
 }
 .section-image img {
@@ -209,6 +209,12 @@ body {
     display: block;
     margin-left: auto;
     margin-right: auto;
+}
+.section-image figcaption {
+    font-size: 0.9rem;
+    color: #666;
+    font-style: italic;
+    margin-top: 0.5rem;
 }
 .image-error {
     color: #d32f2f;
@@ -235,8 +241,8 @@ body {
     margin: 3rem 0;
 }
 .blog-section {
-    margin: 2.5rem 0;
-    padding: 1.5rem 0;
+    margin: 1.75rem 0;
+    padding: 1rem 0;
     border-bottom: 1px solid #eee;
 }
 .blog-section:last-child {

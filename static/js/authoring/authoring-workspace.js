@@ -322,21 +322,30 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Initialize LLM Prompts Panel with callbacks
-    const llmPromptsPanel = new LLMPromptsPanel({
-        postId: window.postId,
-        onPromptChange: (prompt) => {
-            console.log('[Drafting] LLM Prompt changed:', prompt);
-            // Prompt changes can trigger other panel updates
-        },
-        onPromptLoad: (prompt) => {
-            console.log('[Drafting] Prompt loaded:', prompt);
-            // Prompt loaded successfully
-        },
-        onPromptSave: (promptData) => {
-            console.log('[Drafting] Prompt saved:', promptData);
-            // Prompt saved successfully
+    let llmPromptsPanel = null;
+    try {
+        if (typeof LLMPromptsPanel !== 'undefined') {
+            llmPromptsPanel = new LLMPromptsPanel({
+                postId: window.postId,
+                onPromptChange: (prompt) => {
+                    console.log('[Drafting] LLM Prompt changed:', prompt);
+                    // Prompt changes can trigger other panel updates
+                },
+                onPromptLoad: (prompt) => {
+                    console.log('[Drafting] Prompt loaded:', prompt);
+                    // Prompt loaded successfully
+                },
+                onPromptSave: (promptData) => {
+                    console.log('[Drafting] Prompt saved:', promptData);
+                    // Prompt saved successfully
+                }
+            });
+        } else {
+            console.warn('[Authoring Workspace] LLMPromptsPanel not available');
         }
-    });
+    } catch (error) {
+        console.error('[Authoring Workspace] Error initializing LLM Prompts Panel:', error);
+    }
     
     // Initialize Context Panel with callbacks
     const contextPanel = new ContextPanel({

@@ -140,12 +140,21 @@ def header_preview(post_id):
             
             # Get sections with images via post_images linking table
             cursor.execute("""
-                SELECT ps.id, ps.section_heading, ps.section_description, 
-                       ps.draft, ps.polished,
-                       i.id as image_id, i.filename, i.path as image_path, 
-                       i.alt_text, i.caption
+                SELECT ps.id,
+                       ps.section_heading,
+                       ps.section_description,
+                       ps.draft,
+                       ps.polished,
+                       ps.image_captions AS section_image_captions,
+                       ps.image_alt_text AS section_image_alt,
+                       i.id AS image_id,
+                       i.filename,
+                       i.path AS image_path,
+                       i.alt_text,
+                       i.caption
                 FROM post_section ps
-                LEFT JOIN post_images pi ON ps.id = pi.section_id AND pi.image_type = 'section_optimized'
+                LEFT JOIN post_images pi
+                  ON ps.id = pi.section_id AND pi.image_type = 'section_optimized'
                 LEFT JOIN image i ON pi.image_id = i.id
                 WHERE ps.post_id = %s
                 ORDER BY ps.section_order
@@ -162,24 +171,33 @@ def header_preview(post_id):
                     'content': section['polished'] or section['draft'] or '',
                 }
                 
-                # Add image if exists
+                # Add image if exists (from DB link) or fallback to filesystem optimized path
+                image_path = None
                 if section['image_path']:
-                    # Use optimized image path, and handle double /static prefix
                     image_path = section['image_path']
                     if not image_path.startswith('http'):
-                        # Remove double /static if present
-                        if image_path.startswith('/static/'):
-                            image_path = image_path  # Already has /static
-                        else:
-                            image_path = f"/static{image_path}"  # Add /static
-                        
-                        # Replace raw with optimized
+                        if not image_path.startswith('/static'):
+                            image_path = f"/static{image_path}"
                         image_path = image_path.replace('/raw/', '/optimized/').replace('.png', '.jpg')
-                    
+                else:
+                    # Fallback: check conventional optimized path on disk
+                    try:
+                        import os
+                        candidate = f"/static/content/posts/{post_id}/sections/{section['id']}/optimized/{section['id']}.jpg"
+                        filesystem_path = candidate.lstrip('/')
+                        if os.path.exists(filesystem_path):
+                            image_path = candidate
+                    except Exception:
+                        pass
+
+                if image_path:
+                    # Prefer section-level caption/alt if available, else use image table values
+                    caption_text = section.get('section_image_captions') or section.get('caption') or ''
+                    alt_text = section.get('section_image_alt') or section.get('alt_text') or ''
                     formatted_section['image'] = {
                         'path': image_path,
-                        'alt_text': section['alt_text'] or '',
-                        'caption': section['caption'] or ''
+                        'alt_text': alt_text,
+                        'caption': caption_text
                     }
                 
                 formatted_sections.append(formatted_section)
