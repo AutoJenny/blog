@@ -1714,7 +1714,8 @@ def get_post_with_development(post_id):
                    p.cross_promotion_category_id, p.cross_promotion_category_title,
                    p.cross_promotion_product_id, p.cross_promotion_product_title,
                    p.cross_promotion_category_position, p.cross_promotion_product_position,
-                   p.cross_promotion_category_widget_html, p.cross_promotion_product_widget_html
+                   p.cross_promotion_category_widget_html, p.cross_promotion_product_widget_html,
+                   p.meta_title, p.meta_description, p.meta_tags, p.meta_image, p.meta_type, p.meta_site_name
             FROM post p
             LEFT JOIN post_development pd ON pd.post_id = p.id
             WHERE p.id = %s
@@ -2036,11 +2037,7 @@ def clan_api_data(post_id):
         if header_image_path:
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
-                    SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
-                           cross_promotion_category_id, cross_promotion_category_title,
-                           cross_promotion_product_id, cross_promotion_product_title,
-                           cross_promotion_category_position, cross_promotion_product_position,
-                           cross_promotion_category_widget_html, cross_promotion_product_widget_html
+                    SELECT header_image_caption, header_image_title, header_image_width, header_image_height
                     FROM post WHERE id = %s
                 """, (post_id,))
                 header_data = cursor.fetchone()
@@ -2054,17 +2051,29 @@ def clan_api_data(post_id):
                         'width': header_data['header_image_width'],
                         'height': header_data['header_image_height']
                     }
-                    
-                    post['cross_promotion'] = {
-                        'category_id': header_data['cross_promotion_category_id'],
-                        'category_title': header_data['cross_promotion_category_title'],
-                        'product_id': header_data['cross_promotion_product_id'],
-                        'product_title': header_data['cross_promotion_product_title'],
-                        'category_position': header_data.get('cross_promotion_category_position'),
-                        'product_position': header_data.get('cross_promotion_product_position'),
-                        'category_widget_html': header_data.get('cross_promotion_category_widget_html'),
-                        'product_widget_html': header_data.get('cross_promotion_product_widget_html')
-                    }
+        
+        # Fetch cross-promotion data for all posts (not just those with header images)
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT cross_promotion_category_id, cross_promotion_category_title,
+                       cross_promotion_product_id, cross_promotion_product_title,
+                       cross_promotion_category_position, cross_promotion_product_position,
+                       cross_promotion_category_widget_html, cross_promotion_product_widget_html
+                FROM post WHERE id = %s
+            """, (post_id,))
+            cross_promo_data = cursor.fetchone()
+            
+            if cross_promo_data:
+                post['cross_promotion'] = {
+                    'category_id': cross_promo_data['cross_promotion_category_id'],
+                    'category_title': cross_promo_data['cross_promotion_category_title'],
+                    'product_id': cross_promo_data['cross_promotion_product_id'],
+                    'product_title': cross_promo_data['cross_promotion_product_title'],
+                    'category_position': cross_promo_data.get('cross_promotion_category_position'),
+                    'product_position': cross_promo_data.get('cross_promotion_product_position'),
+                    'category_widget_html': cross_promo_data.get('cross_promotion_category_widget_html'),
+                    'product_widget_html': cross_promo_data.get('cross_promotion_product_widget_html')
+                }
         
         # Import publishing class to get the actual API data
         import sys

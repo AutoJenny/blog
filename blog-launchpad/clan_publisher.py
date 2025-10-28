@@ -223,6 +223,11 @@ class ClanPublisher:
         meta_tags = str(meta_tags) if meta_tags else 'scottish,heritage,culture,blog'
         meta_description = str(meta_description)
         
+        # Get OG-specific meta fields
+        meta_image = post.get('meta_image', 'https://clan.com/images/default-scottish-heritage.jpg')
+        meta_type = post.get('meta_type', 'article')
+        meta_site_name = post.get('meta_site_name', 'Clan.com Blog')
+        
         # Build the API data structure
         api_data = {
             'title': post.get('title'),
@@ -234,7 +239,10 @@ class ClanPublisher:
             'post_thumbnail': post_thumbnail,
             'meta_title': meta_title,
             'meta_tags': meta_tags,
-            'meta_description': meta_description
+            'meta_description': meta_description,
+            'meta_image': meta_image,
+            'meta_type': meta_type,
+            'meta_site_name': meta_site_name
         }
         
         return api_data
@@ -663,11 +671,24 @@ class ClanPublisher:
             meta_tags = str(meta_tags) if meta_tags else 'scottish,heritage,culture,blog'
             meta_description = str(meta_description)
             
+            # Get OG-specific meta fields
+            meta_image = post.get('meta_image', 'https://clan.com/images/default-scottish-heritage.jpg')
+            meta_type = post.get('meta_type', 'article')
+            meta_site_name = post.get('meta_site_name', 'Clan.com Blog')
+            
+            # Ensure OG fields are strings
+            meta_image = str(meta_image)
+            meta_type = str(meta_type)
+            meta_site_name = str(meta_site_name)
+            
             # Log the meta data being sent for debugging
             logger.info(f"Meta data for post {post.get('id')}:")
             logger.info(f"   meta_title: {repr(meta_title)}")
             logger.info(f"   meta_tags: {repr(meta_tags)}")
             logger.info(f"   meta_description: {repr(meta_description)}")
+            logger.info(f"   meta_image: {repr(meta_image)}")
+            logger.info(f"   meta_type: {repr(meta_type)}")
+            logger.info(f"   meta_site_name: {repr(meta_site_name)}")
             
             # Check for problematic characters
             logger.info(f"Meta title length: {len(meta_title)}")
@@ -697,7 +718,10 @@ class ClanPublisher:
                 'post_thumbnail': post_thumbnail,  # required - path from /media (now uses real uploaded image)
                 'meta_title': meta_title,  # use new meta_title field
                 'meta_tags': meta_tags,  # use new meta_tags field
-                'meta_description': meta_description  # use new meta_description field
+                'meta_description': meta_description,  # use new meta_description field
+                'meta_image': meta_image,  # OG image URL
+                'meta_type': meta_type,  # OG type (default: article)
+                'meta_site_name': meta_site_name  # OG site name (default: Clan.com Blog)
             })
             
             # Validate required fields
