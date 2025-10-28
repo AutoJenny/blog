@@ -1056,15 +1056,19 @@ class ClanPublisher:
         This shows the ACTUAL HTML that gets uploaded, not placeholder widgets.
         """
         try:
+            from jinja2 import Environment, FileSystemLoader
             import os
             
-            # Get the clan_post_raw.html template content (use the same path Flask renders)
-            template_path = os.path.join(os.path.dirname(__file__), '..', 'templates', 'clan_post_raw.html')
-            with open(template_path, 'r', encoding='utf-8') as f:
-                template_content = f.read()
+            # Get the template directory - find templates/launchpad/ relative to this file
+            # clan_publisher.py is in blog-launchpad/, go up one level to root, then to templates/launchpad/
+            current_dir = os.path.dirname(__file__)
+            templates_dir = os.path.join(current_dir, '..', 'templates', 'launchpad')
+            templates_abs = os.path.abspath(templates_dir)
             
-            # Create Jinja2 environment with the strip_html_doc filter
-            from jinja2 import Environment, BaseLoader
+            # Create Jinja2 environment with FileSystemLoader so it can find the template
+            env = Environment(loader=FileSystemLoader(templates_abs))
+            env.trim_blocks = True
+            env.lstrip_blocks = True
             
             def strip_html_doc(content):
                 """Strip HTML document tags and return just the content"""
@@ -1078,10 +1082,10 @@ class ClanPublisher:
                 content = re.sub(r'<body[^>]*>.*?</body>', '', content, flags=re.DOTALL)
                 return content.strip()
             
-            env = Environment(loader=BaseLoader())
             env.filters['strip_html_doc'] = strip_html_doc
             
-            template = env.from_string(template_content)
+            # Load the template from the FileSystemLoader
+            template = env.get_template('clan_post_raw.html')
             
             # Render using the same data used for preview to ensure exact match
             html_content = template.render(post=post, sections=sections)
