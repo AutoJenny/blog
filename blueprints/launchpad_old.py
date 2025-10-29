@@ -383,7 +383,15 @@ def syndication_platform_channel(platform_name, channel_type):
 
 @bp.route('/api/posts')
 def get_posts():
-    """Get all posts for the launchpad."""
+    """
+    Get all posts for the launchpad.
+    
+    TODO: DEPRECATED - Use blueprints.posts.api_posts() instead.
+    Note: This endpoint returns an array directly `[...]` while the new consolidated
+    endpoint returns `{"posts": [...]}`. Update callers accordingly.
+    The new consolidated endpoint is at /api/posts (blueprints/posts.py).
+    This endpoint will be removed in a future refactor.
+    """
     try:
         with db_manager.get_cursor() as cursor:
             cursor.execute("""

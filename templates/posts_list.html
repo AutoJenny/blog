@@ -2,174 +2,119 @@
 
 {% block title %}Blog Posts{% endblock %}
 
-{% block styles %}
+{% block head %}
 <style>
-    .posts-table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        background: #181c2a;
-        border-radius: 0.75rem;
-        overflow: hidden;
-        box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25);
+    table.posts-table {
+        width: 100% !important;
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
     }
 
-    .posts-table th,
-    .posts-table td {
-        padding: 1rem 1.25rem;
-        text-align: left;
+    table.posts-table thead th {
+        background: #1b2138 !important;
+        color: #a5b4fc !important;
+        padding: 18px 28px !important;
+        text-align: left !important;
+        border: 1px solid #2d3246 !important;
+        font-size: 13px !important;
+        font-weight: 800 !important;
     }
 
-    .posts-table th {
-        background: #23273a;
-        color: #a5b4fc;
-        font-weight: 700;
-        border-bottom: 2px solid #31364a;
+    table.posts-table tbody td {
+        background: #151a2e !important;
+        color: #e6e8ef !important;
+        padding: 16px 28px !important;
+        border: 1px solid #2d3246 !important;
+        vertical-align: middle !important;
+        line-height: 1.6 !important;
     }
 
-    .posts-table tr {
-        transition: background 0.2s;
-        cursor: pointer;
+    table.posts-table tbody tr:hover td {
+        background: #181f36 !important;
     }
 
-    .posts-table tr:nth-child(even) {
-        background: #20243a;
-    }
-
-    .posts-table tr:nth-child(odd) {
-        background: #181c2a;
-    }
-
-    .posts-table tr:hover {
-        background: #23273a;
-    }
-
-    .posts-table td {
-        color: #e0e0e0;
-        border-bottom: 1px solid #23273a;
-        vertical-align: middle;
-    }
-
-    .posts-table td.actions {
-        text-align: right;
-        white-space: nowrap;
-    }
-
-    .icon-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 2.25rem;
-        height: 2.25rem;
-        border-radius: 0.5rem;
-        background: none;
-        color: #a5b4fc;
-        border: 1px solid transparent;
-        transition: background 0.15s, color 0.15s, border 0.15s;
-        margin-left: 0.25rem;
-        margin-right: 0.25rem;
-        font-size: 1.2rem;
-    }
-
-    .icon-btn:hover {
-        background: #23273a;
-        color: #6366f1;
-        border: 1px solid #6366f1;
-    }
-
-    .status {
-        display: inline-block;
-        padding: 0.25em 0.75em;
-        border-radius: 0.5em;
-        font-size: 0.95em;
-        font-weight: 600;
-        background: #23273a;
-        color: #a5b4fc;
-        border: 1px solid #31364a;
-    }
-    
-    .status.status-published {
-        background: #065f46;
-        color: #6ee7b7;
-        border-color: #10b981;
-    }
-    
-    .status.status-error {
-        background: #7f1d1d;
-        color: #fca5a5;
-        border-color: #ef4444;
-    }
-    
-    .status.status-publishing {
-        background: #92400e;
-        color: #fcd34d;
-        border-color: #f59e0b;
-    }
+    .actions { text-align: right !important; white-space: nowrap !important; }
+    .btn-primary { background:#4e6bff; color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:700; text-decoration:none; }
+    .icon-btn { display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:8px; background:transparent; color:#a5b4fc; border:1px solid #2b3350; }
+    .icon-btn:hover { background:#1b2138; color:#7b8dff; }
+    .status { display:inline-block; padding:6px 10px; border-radius:999px; font-weight:700; font-size:12px; background:#23273a; color:#a5b4fc; border:1px solid #31364a; }
+    .status-published { background:#0b3b2e; color:#6ee7b7; border-color:#10b981; }
+    .status-error { background:#3b0b0b; color:#fca5a5; border-color:#ef4444; }
+    .status-publishing { background:#3e2609; color:#fcd34d; border-color:#f59e0b; }
 </style>
-{% endblock %}
+{% endblock head %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto py-10">
-    <h1 class="text-3xl font-bold text-white mb-8 flex items-center gap-3">
-        <i class="fa-solid fa-list"></i> Posts
-    </h1>
-    <div class="mb-4 flex items-center gap-4">
-        <label class="flex items-center gap-2 text-dark-accent text-lg font-medium">
-            <input type="checkbox" id="showDeleted" {% if show_deleted %}checked{% endif %}>
-            Show Deleted
-        </label>
-    </div>
-    <div class="overflow-x-auto rounded-xl shadow-lg">
-        <table class="posts-table">
+<div class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-2xl font-bold text-white mb-6">
+            <i class="fa-solid fa-list"></i> Posts
+        </h1>
+
+        <div class="mb-6">
+            <label class="text-gray-400">
+                <input type="checkbox" id="showDeleted" {% if show_deleted %}checked{% endif %}>
+                Show Deleted Posts
+            </label>
+        </div>
+
+        <table class="posts-table" id="postsTable">
             <thead>
                 <tr>
-                    <th style="width: 80px;">ID</th>
-                    <th>Title</th>
-                    <th>Status</th>
-                    <th>Created</th>
-                    <th>Updated</th>
-                    <th class="text-right">Actions</th>
+                    <th data-key="id" data-type="number" class="sortable">ID</th>
+                    <th data-key="title" data-type="string" class="sortable">Title</th>
+                    <th data-key="status" data-type="string" class="sortable">Status</th>
+                    <th data-key="week" data-type="number" class="sortable">Week</th>
+                    <th data-key="created" data-type="number" class="sortable">Created</th>
+                    <th data-key="updated" data-type="number" class="sortable">Last Updated</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                {% for post in posts %}
-                <tr class="clickable-row"
-                    onclick="window.location.href='/posts/{{ post.id }}'">
-                    <td style="color: #9ca3af; font-size: 0.9em; font-weight: 500;">{{ post.id }}</td>
-                    <td>{{ post.title }}</td>
-                    <td>
-                        {% if post.display_status == 'published' %}
-                            <span class="status status-published">
-                                <i class="fas fa-check-circle"></i> Published
-                            </span>
-                        {% elif post.display_status == 'error' %}
-                            <span class="status status-error">
-                                <i class="fas fa-exclamation-triangle"></i> Error
-                            </span>
-                        {% elif post.display_status == 'publishing' %}
-                            <span class="status status-publishing">
-                                <i class="fas fa-spinner fa-spin"></i> Publishing
-                            </span>
-                        {% else %}
-                            <span class="status">{{ post.display_status }}</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ post.created_ago }}</td>
-                    <td>{{ post.updated_ago }}</td>
-                    <td class="actions">
-                        <a href="/workflow/posts/{{ post.id }}/planning/idea"
-                            class="btn btn-primary">Edit in Workflow</a>
-                        <a href="/posts/{{ post.id }}" class="icon-btn preview-btn"
-                            title="Preview" onclick="event.stopPropagation();">
-                            <i class="fa-solid fa-eye"></i>
-                        </a>
-                        <button class="icon-btn delete-btn" title="Delete" data-post-id="{{ post.id }}"
-                            onclick="event.stopPropagation();">
-                            <i class="fa-solid fa-xmark" style="color:#ef4444;"></i>
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
+                {% if posts %}
+                    {% for post in posts %}
+                    <tr onclick="window.location.href='/posts/{{ post.id }}'"
+                        data-id="{{ post.id }}"
+                        data-title="{{ post.title|e }}"
+                        data-status="{{ post.display_status }}"
+                        data-week="{{ post.week_sort or 0 }}"
+                        data-created="{{ post.created_ts }}"
+                        data-updated="{{ post.updated_ts }}">
+                        <td style="color:#9ca3af; font-weight:600;">{{ post.id }}</td>
+                        <td style="font-weight:700;">{{ post.title }}</td>
+                        <td>
+                            {% if post.display_status == 'published' %}
+                                <span class="status status-published">Published</span>
+                            {% elif post.display_status == 'error' %}
+                                <span class="status status-error">Error</span>
+                            {% elif post.display_status == 'publishing' %}
+                                <span class="status status-publishing">Publishing</span>
+                            {% else %}
+                                <span class="status">{{ post.display_status }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="color:#9ca3af;">
+                            {% if post.week_label %}
+                                <div style="font-weight:700; color:#e6e8ef;">{{ post.week_label }}</div>
+                                <div style="font-size:12px; color:#9ca3af;">{{ post.week_dates }}</div>
+                            {% else %}
+                                <span style="font-size:12px; color:#64748b;">—</span>
+                            {% endif %}
+                        </td>
+                        <td style="color:#9ca3af;">{{ post.created_ago }}</td>
+                        <td style="color:#9ca3af;">{{ post.updated_ago }}</td>
+                        <td class="actions">
+                            <a href="/workflow/posts/{{ post.id }}/planning/idea" class="btn-primary" onclick="event.stopPropagation();">Edit in Workflow</a>
+                            <a href="/posts/{{ post.id }}" class="icon-btn" title="Preview" onclick="event.stopPropagation();"><i class="fa-solid fa-eye"></i></a>
+                            <button class="icon-btn delete-btn" title="Delete" data-post-id="{{ post.id }}" onclick="event.stopPropagation();"><i class="fa-solid fa-xmark" style="color:#ef4444;"></i></button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" style="color:#9ca3af; text-align:center; padding:28px 0;">No posts found</td>
+                    </tr>
+                {% endif %}
             </tbody>
         </table>
     </div>
@@ -179,56 +124,81 @@
 {% block scripts %}
 {{ super() }}
 <script>
+    const showDeleted = document.getElementById('showDeleted');
+    if (showDeleted) {
+        showDeleted.addEventListener('change', function () {
+            const url = new URL(window.location.href);
+            if (this.checked) {
+                url.searchParams.set('show_deleted', '1');
+            } else {
+                url.searchParams.delete('show_deleted');
+            }
+            window.location.href = url.toString();
+        });
+    }
+
+    // Soft-delete button handler
     document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
+        btn.addEventListener('click', async () => {
             if (!confirm('Are you sure you want to delete this post?')) return;
             const postId = btn.dataset.postId;
             await updatePostStatus(postId, 'deleted');
         });
     });
 
-    document.querySelectorAll('.restore-btn').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            const postId = btn.dataset.postId;
-            await togglePostDeleted(postId, false);
-        });
-    });
-
-    document.getElementById('showDeleted').addEventListener('change', function () {
-        const checked = this.checked;
-        const url = new URL(window.location.href);
-        if (checked) {
-            url.searchParams.set('show_deleted', '1');
-        } else {
-            url.searchParams.delete('show_deleted');
-        }
-        window.location.href = url.toString();
-    });
-
     async function updatePostStatus(postId, status) {
-        const resp = await fetch(`/api/workflow/posts/${postId}/fields/status`, {
+        const resp = await fetch(`/api/posts/${postId}/fields/status`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ value: status })
         });
-        if (resp.ok) {
-            location.reload();
-        }
+        if (resp.ok) location.reload();
     }
 
-    async function togglePostDeleted(postId, isDeleted) {
-        const resp = await fetch(`/api/workflow/posts/${postId}/fields/status`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ value: isDeleted ? 'deleted' : 'draft' })
+    // Simple client-side sorting
+    (function(){
+        const table = document.getElementById('postsTable');
+        if (!table) return;
+        const tbody = table.querySelector('tbody');
+        const headers = table.querySelectorAll('thead th.sortable');
+        let currentKey = null;
+        let currentDir = 'asc';
+
+        headers.forEach(h => {
+            h.style.cursor = 'pointer';
+            h.addEventListener('click', () => {
+                const key = h.getAttribute('data-key');
+                if (currentKey === key) {
+                    currentDir = currentDir === 'asc' ? 'desc' : 'asc';
+                } else {
+                    currentKey = key;
+                    currentDir = 'asc';
+                }
+
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                const dirMult = currentDir === 'asc' ? 1 : -1;
+                rows.sort((a, b) => {
+                    const av = getVal(a, key);
+                    const bv = getVal(b, key);
+                    if (av < bv) return -1 * dirMult;
+                    if (av > bv) return 1 * dirMult;
+                    return 0;
+                });
+                rows.forEach(r => tbody.appendChild(r));
+            });
         });
-        if (resp.ok) {
-            location.reload();
+
+        function getVal(row, key){
+            switch(key){
+                case 'id': return parseInt(row.getAttribute('data-id')) || 0;
+                case 'title': return (row.getAttribute('data-title') || '').toLowerCase();
+                case 'status': return (row.getAttribute('data-status') || '').toLowerCase();
+                case 'week': return parseInt(row.getAttribute('data-week')) || 0;
+                case 'created': return parseInt(row.getAttribute('data-created')) || 0;
+                case 'updated': return parseInt(row.getAttribute('data-updated')) || 0;
+                default: return 0;
+            }
         }
-    }
+    })();
 </script>
 {% endblock %}

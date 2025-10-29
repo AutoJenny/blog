@@ -167,7 +167,13 @@ def resume_post(post_id):
 
 @bp.route('/delete-post/<int:post_id>', methods=['DELETE'])
 def delete_post(post_id):
-    """Delete a post"""
+    """
+    Delete a post.
+    
+    TODO: FUTURE CONSOLIDATION - Consider migrating to blueprints.posts.api_update_post_status()
+    This endpoint is currently unused. The consolidated posts management is in blueprints/posts.py
+    which provides /api/posts/<id>/fields/status for status updates.
+    """
     try:
         with db_manager.get_cursor() as cursor:
             cursor.execute("""

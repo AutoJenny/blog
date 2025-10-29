@@ -322,7 +322,14 @@ def health():
 
 @bp.route('/api/posts')
 def api_posts():
-    """API endpoint to get all posts."""
+    """
+    API endpoint to get all posts.
+    
+    TODO: DEPRECATED - Use blueprints.posts.api_posts() instead.
+    This endpoint is maintained for backward compatibility but should be replaced.
+    The new consolidated endpoint is at /api/posts (blueprints/posts.py).
+    This endpoint will be removed in a future refactor.
+    """
     try:
         with db_manager.get_cursor() as cursor:
             cursor.execute("""

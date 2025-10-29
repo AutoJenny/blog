@@ -43,6 +43,10 @@ def create_app(config_name=None):
     from blueprints.core import bp as core_bp
     app.register_blueprint(core_bp)
     
+    # Register posts management blueprint (consolidated post listing and status management)
+    from blueprints.posts import bp as posts_bp
+    app.register_blueprint(posts_bp)
+    
     # Register modular launchpad blueprints
     from blueprints.launchpad import bp as launchpad_bp
     app.register_blueprint(launchpad_bp, url_prefix='/launchpad')

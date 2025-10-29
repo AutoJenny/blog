@@ -123,7 +123,14 @@ def syndication_platform_channel(platform_name, channel_type):
 
 @bp.route('/api/posts')
 def get_posts():
-    """Get all posts for the launchpad."""
+    """
+    Get all posts for the launchpad.
+    
+    TODO: DEPRECATED/UNUSED - This module (launchpad_core.py) appears to be unused.
+    The launchpad blueprint currently imports from launchpad_old.py.
+    Use blueprints.posts.api_posts() instead for new code.
+    This file can likely be removed in a future cleanup.
+    """
     try:
         with db_manager.get_cursor() as cursor:
             cursor.execute("""

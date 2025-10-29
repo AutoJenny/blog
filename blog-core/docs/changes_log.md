@@ -1,5 +1,30 @@
 # Changes Log
 
+## 2025-10-29 - Posts Listing Redesign, Scheduling Columns, and Sorting
+
+### Problem
+The `/posts` page had cramped cell spacing and inconsistent site margins. It also lacked scheduling context (calendar week and dates) and last-updated info. Columns were not sortable.
+
+### Solution
+- Rewrote the `/posts` table with consistent BlogForge container margins and explicit cell padding.
+- Added columns for ISO week number with Mon–Sun date range (from `calendar_schedule`) and a Last Updated column.
+- Implemented client-side sortable column headers (ascending/descending toggle) for ID, Title, Status, Week, Created, and Last Updated.
+- Ensured styles override global table defaults using targeted selectors with `!important` only where necessary.
+
+### Technical Details
+- Backend: Updated `blueprints/posts.py` query to LEFT JOIN most recent `calendar_schedule` per post (by `scheduled_date` then `updated_at`) and compute:
+  - `week_label` (e.g., `W41`), `week_dates` (Mon–Sun), and sort key `week_sort`.
+  - `created_ts` and `updated_ts` for reliable client-side sorting.
+- Frontend: Updated `templates/posts_list.html` to display new columns and attach `data-*` attributes for sorting. Added simple JS sorter bound to header clicks.
+
+### Files Modified
+- `blueprints/posts.py`
+- `templates/posts_list.html`
+
+### Status
+✅ Completed and verified via HTTP. Styling and sorting work as expected.
+
+---
 ## 2025-01-22 - Post Info Substage Layout Implementation
 
 ### Problem
