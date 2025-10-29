@@ -55,3 +55,4 @@ if __name__ == "__main__":
     output_dir.mkdir(parents=True, exist_ok=True)
     output_filepath = output_dir / "tartan_designs_clan_full.csv"
     export_full_clan_table_to_csv(output_filepath)
+

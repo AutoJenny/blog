@@ -29,3 +29,4 @@ print('FIXED MARKDOWN JSON PARSING RESULT:')
 print(f'Found descriptions: {len(descriptions)}')
 for tartan_id, desc in descriptions.items():
     print(f'ID {tartan_id}: {desc[:200]}...')
+

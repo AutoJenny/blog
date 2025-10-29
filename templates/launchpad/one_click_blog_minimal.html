@@ -45,11 +45,11 @@
                                 Calendar
                             </div>
                         </td>
-                        <td class="substage-cell">Calendar View</td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="calendar" data-substage="calendar-view">Calendar View</a></td>
                         <td class="run-cell" style="text-align:right;"></td>
                     </tr>
                     <tr>
-                        <td class="substage-cell">Week Ideas</td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="calendar" data-substage="week-ideas">Week Ideas</a></td>
                         <td class="run-cell" style="text-align:right;"><button id="run-week-ideas" class="run-btn ready">Run</button></td>
                     </tr>
 
@@ -61,23 +61,23 @@
                                 Planning
                             </div>
                         </td>
-                        <td class="substage-cell">Idea Generation</td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="idea-generation">Idea Generation</a></td>
                         <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
-                        <td class="substage-cell">Topic Brainstorming</td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="topic-brainstorming">Topic Brainstorming</a></td>
                         <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
-                        <td class="substage-cell">Section Structure Design</td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="section-structure-design">Section Structure Design</a></td>
                         <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
-                        <td class="substage-cell">Section Ideas</td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="section-ideas">Section Ideas</a></td>
                         <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
-                        <td class="substage-cell">Section Titling</td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="section-titling">Section Titling</a></td>
                         <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
 
@@ -89,19 +89,19 @@
                                 Authoring
                             </div>
                         </td>
-                        <td class="substage-cell">Drafting</td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="authoring" data-substage="drafting">Drafting</a></td>
                         <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
-                        <td class="substage-cell">Image Concepts</td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="authoring" data-substage="image-concepts">Image Concepts</a></td>
                         <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
-                        <td class="substage-cell">Image Prompts</td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="authoring" data-substage="image-prompts">Image Prompts</a></td>
                         <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
-                        <td class="substage-cell">Image Captions</td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="authoring" data-substage="image-captions">Image Captions</a></td>
                         <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
 
@@ -113,11 +113,11 @@
                                 Imaging
                             </div>
                         </td>
-                        <td class="substage-cell">Image Generation</td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="imaging" data-substage="image-generation">Image Generation</a></td>
                         <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
-                        <td class="substage-cell">Optimise</td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="imaging" data-substage="optimise">Optimise</a></td>
                         <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
 
@@ -226,6 +226,8 @@
             color: #a8afc2;
             font-size: 14px;
         }
+        .pipeline-table .substage-cell a { color: #a8afc2; text-decoration: none; }
+        .pipeline-table .substage-cell a:hover { color: #e6e8ef; text-decoration: underline; }
 
         .pipeline-table .substage-cell:before {
             content: "→ ";
@@ -309,5 +311,54 @@
             runWeekIdeas();
         });
     }
+    // Substage links navigation based on selected post
+    function getSelectedPostId(){
+        const sel = document.getElementById('pipeline-post-selector');
+        return sel && sel.value ? sel.value : '';
+    }
+    function routeFor(stage, substage, postId){
+        const routes = {
+            calendar: {
+                'calendar-view': p => `/planning/posts/${p}/calendar/view`,
+                'week-ideas': () => `/planning/calendar/ideas/week/${getCurrentISOWeek()}`
+            },
+            planning: {
+                'idea-generation': p => `/planning/posts/${p}/calendar/ideas`,
+                'topic-brainstorming': p => `/planning/posts/${p}/concept/brainstorm`,
+                'section-structure-design': p => `/planning/posts/${p}/concept/section-structure`,
+                'section-ideas': p => `/planning/posts/${p}/concept/topic-allocation`,
+                'section-titling': p => `/planning/posts/${p}/concept/titling`
+            },
+            authoring: {
+                'drafting': p => `/authoring/posts/${p}/sections/author-first-drafts`,
+                'image-concepts': p => `/authoring/posts/${p}/sections/image-concepts`,
+                'image-prompts': p => `/authoring/posts/${p}/sections/image-prompts`,
+                'image-captions': p => `/authoring/posts/${p}/sections/image-captions`
+            },
+            imaging: {
+                'image-generation': p => `/imaging/posts/${p}/sections`,
+                'optimise': p => `/imaging/posts/${p}/optimize`
+            }
+        };
+        const fn = routes[stage] && routes[stage][substage];
+        if (!fn) return null;
+        return fn(postId);
+    }
+    document.querySelectorAll('.substage-link').forEach(a => {
+        a.addEventListener('click', function(e){
+            e.preventDefault();
+            const stage = this.getAttribute('data-stage');
+            const substage = this.getAttribute('data-substage');
+            const requiresPost = !(stage === 'calendar' && substage === 'week-ideas');
+            const postId = getSelectedPostId();
+            if (requiresPost && !postId){
+                alert('Please select a post in the "Viewing Pipeline For" dropdown first.');
+                return;
+            }
+            const url = routeFor(stage, substage, postId);
+            if (!url){ alert('Unknown destination for this substage'); return; }
+            window.location.href = url;
+        });
+    });
 })();
 </script>
