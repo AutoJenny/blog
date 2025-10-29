@@ -106,7 +106,7 @@
                             </div>
                         </td>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="authoring" data-substage="drafting">Drafting</a></td>
-                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-drafting" class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="authoring" data-substage="image-concepts">Image Concepts</a></td>
@@ -670,6 +670,61 @@
         });
     }
     
+    // Run Drafting: open drafting page in new window, trigger Generate All, close when complete
+    function runDrafting(){
+        const btn = document.getElementById('run-drafting');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        
+        const postId = getSelectedPostId();
+        if (!postId){
+            alert('Please select a post in the "Viewing Pipeline For" dropdown first.');
+            return;
+        }
+        
+        btn.disabled = true;
+        btn.textContent = 'Running…';
+        btn.classList.remove('dead','complete');
+        btn.classList.add('ready');
+        
+        // Open drafting page in new window
+        const draftingWindow = window.open(`/posts/${postId}/sections/drafting?auto_run=true`, '_blank', 'width=1400,height=900');
+        
+        // Listen for completion message from drafting page
+        window.addEventListener('message', function handleMessage(event) {
+            if (event.data === 'drafting_complete') {
+                draftingWindow.close();
+                window.removeEventListener('message', handleMessage);
+                
+                btn.textContent = 'Done';
+                btn.classList.remove('dead','ready');
+                btn.classList.add('complete');
+                btn.disabled = false;
+                setTimeout(() => { btn.textContent = originalText; }, 1500);
+            }
+        });
+        
+        // Fallback: if window closes without message, assume complete
+        const checkClosed = setInterval(() => {
+            if (draftingWindow.closed) {
+                clearInterval(checkClosed);
+                btn.textContent = 'Done';
+                btn.classList.remove('dead','ready');
+                btn.classList.add('complete');
+                btn.disabled = false;
+                setTimeout(() => { btn.textContent = originalText; }, 1500);
+            }
+        }, 1000);
+    }
+    const runDraftingBtn = document.getElementById('run-drafting');
+    if (runDraftingBtn){
+        runDraftingBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            runDrafting();
+        });
+    }
+    
     // Substage links navigation based on selected post
     function getSelectedPostId(){
         const sel = document.getElementById('pipeline-post-selector');
@@ -860,6 +915,34 @@
                 } else {
                     sectionIdeasBtn.classList.remove('ready', 'complete');
                     sectionIdeasBtn.classList.add('dead');
+                }
+            }
+            
+            // Update Drafting Run button state based on sections availability
+            const draftingBtn = document.getElementById('run-drafting');
+            if (draftingBtn) {
+                // Check if sections exist (either in post_section table or post_development.sections)
+                let hasSections = false;
+                if (data.sections && data.sections.length > 0) {
+                    hasSections = true;
+                } else if (post.sections) {
+                    try {
+                        const sectionsData = typeof post.sections === 'string' ? JSON.parse(post.sections) : post.sections;
+                        if (Array.isArray(sectionsData)) {
+                            hasSections = sectionsData.length > 0;
+                        } else if (sectionsData.sections && Array.isArray(sectionsData.sections)) {
+                            hasSections = sectionsData.sections.length > 0;
+                        }
+                    } catch (e) {
+                        // sections is not valid JSON
+                    }
+                }
+                if (hasSections) {
+                    draftingBtn.classList.remove('dead', 'complete');
+                    draftingBtn.classList.add('ready');
+                } else {
+                    draftingBtn.classList.remove('ready', 'complete');
+                    draftingBtn.classList.add('dead');
                 }
             }
             

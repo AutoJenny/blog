@@ -25,6 +25,42 @@ document.addEventListener('DOMContentLoaded', function() {
     if (authoringContent && processTab) {
         processTab.appendChild(authoringContent);
     }
+    
+    // Check if auto_run parameter is present and trigger Generate All
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('auto_run') === 'true') {
+        // Wait for sections panel to initialize, then click Generate All
+        setTimeout(async () => {
+            const batchGenerateBtn = document.getElementById('batch-generate-btn');
+            if (batchGenerateBtn && !batchGenerateBtn.disabled) {
+                // Remove the parameter from URL
+                window.history.replaceState({}, '', window.location.pathname);
+                
+                // Click the Generate All button
+                batchGenerateBtn.click();
+                
+                // Listen for batch completion via custom event or button state change
+                const checkCompletion = setInterval(() => {
+                    // Check if button is re-enabled and text is back to "Generate All"
+                    if (!batchGenerateBtn.disabled && batchGenerateBtn.textContent.includes('Generate All')) {
+                        clearInterval(checkCompletion);
+                        // Notify parent window if opened from launchpad
+                        if (window.opener) {
+                            window.opener.postMessage('drafting_complete', '*');
+                        }
+                    }
+                }, 1000);
+                
+                // Timeout after 5 minutes max
+                setTimeout(() => {
+                    clearInterval(checkCompletion);
+                    if (window.opener) {
+                        window.opener.postMessage('drafting_complete', '*');
+                    }
+                }, 300000);
+            }
+        }, 2000);
+    }
 });
 </script>
 
@@ -57,6 +93,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- Authoring Workspace Styles and Scripts -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/authoring/authoring-workspace.css') }}">
-<script src="{{ url_for('static', filename='js/llm-config.js') }}"></script>
+<!-- llm-config.js is already loaded via static_assets macro for authoring blueprint -->
 <script src="{{ url_for('static', filename='js/authoring/authoring-workspace.js') }}"></script>
 {% endblock %}

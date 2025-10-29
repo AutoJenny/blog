@@ -79,6 +79,40 @@ def api_generate_section_draft(post_id, section_id):
             """, (post_id, section_id))
             section = cursor.fetchone()
             
+            # If not found in post_section, check post_development.sections
+            if not section:
+                cursor.execute("""
+                    SELECT sections FROM post_development WHERE post_id = %s
+                """, (post_id,))
+                result = cursor.fetchone()
+                
+                if result and result.get('sections'):
+                    import json
+                    try:
+                        sections_data = json.loads(result['sections'])
+                        if isinstance(sections_data, dict) and 'sections' in sections_data:
+                            sections_list = sections_data['sections']
+                        elif isinstance(sections_data, list):
+                            sections_list = sections_data
+                        else:
+                            sections_list = []
+                        
+                        # Find the section matching the requested ID
+                        section_data = next((s for s in sections_list if str(s.get('id', '')) == str(section_id)), None)
+                        
+                        if section_data:
+                            # Convert JSON section to post_section-like format
+                            section = {
+                                'section_heading': section_data.get('title', f'Section {section_id}'),
+                                'section_description': section_data.get('subtitle', ''),
+                                'ideas_to_include': None,
+                                'facts_to_include': None,
+                                'highlighting': None,
+                                'section_order': section_data.get('order', section_data.get('index', int(section_id)))
+                            }
+                    except (json.JSONDecodeError, TypeError, KeyError) as e:
+                        logger.warning(f"Failed to parse sections from post_development: {e}")
+
             if not section:
                 return jsonify({'error': 'Section not found'}), 404
             
@@ -124,9 +158,10 @@ def api_generate_section_draft(post_id, section_id):
             sections_list = json.loads(dev_data['sections']) if isinstance(dev_data['sections'], str) else dev_data['sections']
             structure_data = json.loads(dev_data['section_structure']) if isinstance(dev_data['section_structure'], str) else dev_data['section_structure']
             
-            # Find current section in sections list (by order)
+            # Find current section in sections list (by order or id)
             sections = sections_list.get('sections', []) if isinstance(sections_list, dict) else sections_list
-            current_section_data = next((s for s in sections if s.get('order') == section['section_order']), None)
+            section_order = section.get('section_order', int(section_id))
+            current_section_data = next((s for s in sections if str(s.get('id', '')) == str(section_id) or s.get('order') == section_order or s.get('index') == section_order), None)
             
             # Find current section in structure (by id)
             structure_sections = structure_data.get('sections', []) if isinstance(structure_data, dict) else []
@@ -191,12 +226,39 @@ def api_generate_section_draft(post_id, section_id):
             
             generated_content = result['content'].strip()
             
-            # Save the generated content
+            # Save the generated content - try UPDATE first, then INSERT if needed
             cursor.execute("""
                 UPDATE post_section 
                 SET draft = %s, status = 'draft'
                 WHERE post_id = %s AND id = %s
             """, (generated_content, post_id, section_id))
+            
+            # If no row was updated, create one (section might be from post_development.sections)
+            if cursor.rowcount == 0:
+                # Get section_order from the section data we retrieved
+                section_order = section.get('section_order', int(section_id))
+                try:
+                    cursor.execute("""
+                        INSERT INTO post_section (post_id, id, section_order, section_heading, section_description, draft, status)
+                        VALUES (%s, %s, %s, %s, %s, %s, 'draft')
+                    """, (
+                        post_id, 
+                        int(section_id), 
+                        section_order,
+                        section.get('section_heading', f'Section {section_id}'),
+                        section.get('section_description', ''),
+                        generated_content
+                    ))
+                except Exception as insert_error:
+                    # If insert fails (e.g., duplicate key), try update instead
+                    if 'duplicate' in str(insert_error).lower() or 'unique' in str(insert_error).lower():
+                        cursor.execute("""
+                            UPDATE post_section 
+                            SET draft = %s, status = 'draft'
+                            WHERE post_id = %s AND id = %s
+                        """, (generated_content, post_id, int(section_id)))
+                    else:
+                        raise
             
             cursor.connection.commit()
             

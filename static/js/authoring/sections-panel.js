@@ -392,6 +392,26 @@ class SectionsPanel {
                     this.updateSectionStatus(sectionId, 'complete');
                     this.updateSectionProgress(sectionId, 100);
                     
+                    // Reload section data to get the generated content and update output panel
+                    try {
+                        const sectionResponse = await fetch(`/authoring/api/posts/${this.postId}/sections/${sectionId}`);
+                        const sectionData = await sectionResponse.json();
+                        if (sectionData.success && sectionData.section) {
+                            // Update the section in our local array
+                            const sectionIndex = this.sections.findIndex(s => s.id === sectionId);
+                            if (sectionIndex !== -1) {
+                                this.sections[sectionIndex] = { ...this.sections[sectionIndex], ...sectionData.section };
+                            }
+                            
+                            // If OutputPanel exists globally, load the section to update content editor
+                            if (typeof window.outputPanel !== 'undefined' && window.outputPanel) {
+                                window.outputPanel.loadSection(sectionId, sectionData.section);
+                            }
+                        }
+                    } catch (loadError) {
+                        console.warn(`Could not reload section ${sectionId} after generation:`, loadError);
+                    }
+                    
                     // Emit progress event
                     this.callbacks.onBatchProgress({
                         current: i + 1,

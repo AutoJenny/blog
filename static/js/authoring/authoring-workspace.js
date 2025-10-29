@@ -400,6 +400,9 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('[Drafting] Section loaded:', sectionId, sectionData.title);
         }
     });
+    
+    // Make outputPanel globally accessible for batch generation
+    window.outputPanel = outputPanel;
     }
     
     console.log('All panels initialized successfully');
