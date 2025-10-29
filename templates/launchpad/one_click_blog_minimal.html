@@ -78,7 +78,7 @@
                             </div>
                         </td>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="idea-generation">Idea Generation</a></td>
-                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-idea-generation" class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="topic-brainstorming">Topic Brainstorming</a></td>
@@ -327,6 +327,70 @@
             runWeekIdeas();
         });
     }
+    
+    // Run Idea Generation: generate expanded idea for selected post
+    async function runIdeaGeneration(){
+        const btn = document.getElementById('run-idea-generation');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        
+        const postId = getSelectedPostId();
+        if (!postId){
+            alert('Please select a post in the "Viewing Pipeline For" dropdown first.');
+            return;
+        }
+        
+        try {
+            btn.disabled = true;
+            btn.textContent = 'Running…';
+            btn.classList.remove('dead','complete');
+            btn.classList.add('ready');
+            
+            // Get idea_seed from post
+            const postResp = await fetch(`/planning/api/posts/${postId}`);
+            const postData = await postResp.json();
+            if (!postResp.ok || !postData.success || !postData.post){
+                throw new Error('Failed to load post data');
+            }
+            const ideaSeed = postData.post.idea_seed;
+            if (!ideaSeed){
+                throw new Error('No idea seed set. Go to Calendar → Week Ideas to pick one first.');
+            }
+            
+            // Generate expanded idea
+            const generateResp = await fetch(`/planning/api/posts/${postId}/expanded-idea`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idea_seed: ideaSeed })
+            });
+            const generateData = await generateResp.json();
+            if (!generateResp.ok || !generateData.success){
+                throw new Error(generateData.error || 'Failed to generate expanded idea');
+            }
+            
+            // Mark as complete
+            btn.textContent = 'Done';
+            btn.classList.remove('dead','ready');
+            btn.classList.add('complete');
+        } catch (err){
+            console.error('Idea Generation run failed:', err);
+            alert('Idea Generation run failed: ' + err.message);
+            btn.classList.remove('complete');
+            btn.classList.add('dead');
+        } finally {
+            btn.disabled = false;
+            setTimeout(() => { btn.textContent = originalText; }, 1500);
+        }
+    }
+    const runIdeaBtn = document.getElementById('run-idea-generation');
+    if (runIdeaBtn){
+        runIdeaBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            runIdeaGeneration();
+        });
+    }
+    
     // Substage links navigation based on selected post
     function getSelectedPostId(){
         const sel = document.getElementById('pipeline-post-selector');
@@ -336,7 +400,10 @@
         const routes = {
             calendar: {
                 'calendar-view': p => `/planning/posts/${p}/calendar/view`,
-                'week-ideas': () => `/planning/calendar/ideas/week/${getCurrentISOWeek()}`
+                'week-ideas': (p) => {
+                    const week = getCurrentISOWeek();
+                    return (p && p.toString().trim()) ? `/planning/calendar/ideas/week/${week}?post_id=${p}` : `/planning/calendar/ideas/week/${week}`;
+                }
             },
             planning: {
                 'idea-generation': p => `/planning/posts/${p}/calendar/ideas`,
@@ -394,10 +461,19 @@
                 return;
             }
             // Already sorted by updated_at DESC in backend; pick first
+            // Check for saved post ID in localStorage, otherwise use most recent
+            const savedPostId = localStorage.getItem('blogForgeSelectedPostId');
+            const defaultPostId = savedPostId && posts.find(p => p.id.toString() === savedPostId) ? savedPostId : posts[0].id;
+            
             select.innerHTML = posts.map(p => `<option value="${p.id}">#${p.id} — ${escapeHtml(p.title || 'Untitled')}</option>`).join('');
-            select.value = posts[0].id;
-            updateSelectedPostSummary(posts[0].id);
-            select.addEventListener('change', () => updateSelectedPostSummary(select.value));
+            select.value = defaultPostId;
+            localStorage.setItem('blogForgeSelectedPostId', defaultPostId.toString());
+            updateSelectedPostSummary(defaultPostId);
+            select.addEventListener('change', () => {
+                const postId = select.value;
+                localStorage.setItem('blogForgeSelectedPostId', postId);
+                updateSelectedPostSummary(postId);
+            });
         } catch (e){
             console.error('Failed to load posts:', e);
         }
@@ -440,6 +516,16 @@
                 subtitleEl.textContent = `Week W${schedule.week_number} — ${fmtDate(start)} – ${fmtDate(end)}`;
             } else {
                 subtitleEl.textContent = 'No week scheduled';
+            }
+            
+            // Update Idea Generation Run button state based on idea_seed availability
+            const ideaGenBtn = document.getElementById('run-idea-generation');
+            if (ideaGenBtn && post.idea_seed && post.idea_seed.trim()) {
+                ideaGenBtn.classList.remove('dead', 'complete');
+                ideaGenBtn.classList.add('ready');
+            } else if (ideaGenBtn) {
+                ideaGenBtn.classList.remove('ready', 'complete');
+                ideaGenBtn.classList.add('dead');
             }
         } catch (e){
             console.error('Failed to load post details:', e);

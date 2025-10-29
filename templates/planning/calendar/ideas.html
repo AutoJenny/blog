@@ -10,46 +10,18 @@
 {% block content %}
 <div class="container">
     <!-- Include condensed header -->
+    {% set page_title = 'Planning' %}
+    {% set mode = mode|default('post-based') %}
     {% include 'shared/blog_pipeline_header.html' %}
     
     {% block process_content %}
     <div class="ideas-main">
-        
-        <div class="ideas-content">
-            <div class="idea-generator">
-                <div class="available-ideas">
-                    <div class="available-ideas-header">
-                        <h4>Available Ideas for Post {{ post_id }} (Week {{ week_number }})</h4>
-                        <button class="btn btn-secondary" onclick="openNewIdeaDialog()">
-                            <i class="fas fa-plus"></i> New Idea
-                        </button>
-                    </div>
-                    <div id="available-ideas-list" class="ideas-list">
-                        <!-- Available ideas will appear here -->
-                    </div>
-                </div>
-                
-                <div class="selected-idea">
-                    <h4>Selected Idea</h4>
-                    <div id="selected-idea-display" class="selected-idea-content">
-                        <!-- Selected idea will appear here -->
-                    </div>
-                    <div class="selected-idea-actions">
-                        <button class="btn btn-success" onclick="confirmSelection()" id="confirm-btn" disabled>
-                            <i class="fas fa-check"></i> Confirm & Generate
-                        </button>
-                    </div>
-                </div>
+        <div class="ideas-results">
+            <h3>Expanded Idea</h3>
+            <div id="current-idea-seed" class="idea-seed-display">
+                <!-- Current idea seed will appear here -->
             </div>
-            
-            <div class="ideas-results">
-                <h3>Expanded Idea</h3>
-                <div id="current-idea-seed" class="idea-seed-display">
-                    <!-- Current idea seed will appear here -->
-                </div>
-                
-                {% include 'includes/llm_module.html' %}
-            </div>
+            {% include 'includes/llm_module.html' %}
         </div>
     </div>
     {% endblock %}
@@ -374,39 +346,93 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set current stage for navigation
     window.currentStage = 'concept';
     window.currentSubstage = 'ideas';
-    window.postId = {{ post_id }};
+    
+    // Post ID persistence: restore from localStorage if post_id is 0 or missing
+    const urlPostId = {{ post_id }};
+    const savedPostId = localStorage.getItem('blogForgeSelectedPostId');
+    
+    if (urlPostId && urlPostId > 0) {
+        // Valid post_id from URL: save it and use it
+        window.postId = urlPostId;
+        localStorage.setItem('blogForgeSelectedPostId', urlPostId.toString());
+    } else if (savedPostId && parseInt(savedPostId) > 0) {
+        // No valid URL post_id, but we have a saved one: restore it and redirect
+        window.postId = parseInt(savedPostId);
+        const newUrl = `/planning/posts/${window.postId}/calendar/ideas`;
+        if (window.location.pathname !== newUrl) {
+            window.location.href = newUrl;
+            return; // Exit early, page will reload
+        }
+    } else {
+        // No post_id available: use 0
+        window.postId = urlPostId || 0;
+    }
+    
     window.weekNumber = {{ week_number }};
     
     // Initialize LLM module (expanded idea generation)
     llmModule = initializeLLMModule('ideas', window.postId);
     
-    // Load ideas and current selection
-    loadIdeasForWeek();
+    // Override generateContent to include idea_seed from page
+    if (llmModule && llmModule.generateContent) {
+        const originalGenerateContent = llmModule.generateContent.bind(llmModule);
+        llmModule.generateContent = async function() {
+            // Get idea_seed from page
+            const ideaSeedElement = document.getElementById('current-idea-seed');
+            const ideaSeedText = ideaSeedElement?.querySelector('.idea-seed-content');
+            const ideaSeed = ideaSeedText?.textContent?.trim() || '';
+            
+            if (!ideaSeed) {
+                alert('Please ensure an idea seed is set. Go to Calendar → Week Ideas to pick one.');
+                return;
+            }
+            
+            // Call original generateContent but override the API call
+            const generateBtn = document.getElementById('generate-btn');
+            const resultsDisplay = document.getElementById('llm-results-display');
+            
+            if (!generateBtn || !resultsDisplay) return;
+            
+            // Show loading state
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            resultsDisplay.innerHTML = '<div class="loading">Generating expanded idea with AI...</div>';
+            
+            try {
+                const response = await fetch(`/planning/api/posts/${window.postId}/expanded-idea`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        idea_seed: ideaSeed
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayExpandedIdea(data.expanded_idea);
+                } else {
+                    displayExpandedIdeaError(data.error);
+                }
+            } catch (error) {
+                console.error('Error generating expanded idea:', error);
+                displayExpandedIdeaError('Failed to generate expanded idea');
+            } finally {
+                // Reset button state
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate';
+            }
+        };
+    }
+    
+    // Load current seed then any existing expanded idea
     loadCurrentIdeaSeed();
     loadExpandedIdea();
 });
 
-let availableIdeas = [];
-let selectedIdea = null;
-
-async function loadIdeasForWeek() {
-    try {
-        const response = await fetch(`/planning/api/calendar/ideas/week/${window.weekNumber}`);
-        const data = await response.json();
-        
-        if (data.success) {
-            availableIdeas = data.ideas;
-            displayAvailableIdeas();
-            autoSelectIdea();
-        } else {
-            console.error('Error loading ideas:', data.error);
-            displayNoIdeas();
-        }
-    } catch (error) {
-        console.error('Error loading ideas:', error);
-        displayNoIdeas();
-    }
-}
+// Idea selection is handled in the Calendar stage; no week-ideas loading here
 
 async function loadCurrentIdeaSeed() {
     try {
@@ -428,77 +454,13 @@ async function loadCurrentIdeaSeed() {
     }
 }
 
-function displayAvailableIdeas() {
-    const ideasList = document.getElementById('available-ideas-list');
-    ideasList.innerHTML = '';
-    
-    if (availableIdeas.length === 0) {
-        ideasList.innerHTML = '<div class="no-ideas">No ideas available for this week</div>';
-        return;
-    }
-    
-    availableIdeas.forEach((idea, index) => {
-        const ideaItem = document.createElement('div');
-        ideaItem.className = 'idea-item';
-        ideaItem.innerHTML = `
-            <div class="idea-header">
-                <div class="idea-title">${idea.idea_title}</div>
-                <div class="idea-priority priority-${idea.priority}">${idea.priority}</div>
-            </div>
-            <div class="idea-description">${idea.idea_description || 'No description available'}</div>
-            <div class="idea-meta">
-                <span class="idea-context">${idea.seasonal_context || 'No context'}</span>
-                <span class="idea-type">${idea.content_type || 'No type'}</span>
-            </div>
-            <div class="idea-actions">
-                <button class="btn btn-primary" onclick="selectIdea(${index})">
-                    <i class="fas fa-check"></i> Select
-                </button>
-            </div>
-        `;
-        ideasList.appendChild(ideaItem);
-    });
-}
+// Removed available ideas UI
 
-function autoSelectIdea() {
-    // Auto-select mandatory idea if available, otherwise random
-    const mandatoryIdeas = availableIdeas.filter(idea => idea.priority === 'mandatory');
-    const randomIdeas = availableIdeas.filter(idea => idea.priority === 'random');
-    
-    if (mandatoryIdeas.length > 0) {
-        selectIdea(availableIdeas.indexOf(mandatoryIdeas[0]));
-    } else if (randomIdeas.length > 0) {
-        const randomIndex = Math.floor(Math.random() * randomIdeas.length);
-        selectIdea(availableIdeas.indexOf(randomIdeas[randomIndex]));
-    }
-}
+// Removed auto-select
 
-function selectIdea(index) {
-    selectedIdea = availableIdeas[index];
-    displaySelectedIdea();
-    document.getElementById('confirm-btn').disabled = false;
-}
+// Removed selectIdea
 
-function displaySelectedIdea() {
-    const selectedDisplay = document.getElementById('selected-idea-display');
-    
-    if (!selectedIdea) {
-        selectedDisplay.innerHTML = '<div class="no-selection">No idea selected</div>';
-        return;
-    }
-    
-    selectedDisplay.innerHTML = `
-        <div class="selected-idea-header">
-            <div class="selected-idea-title">${selectedIdea.idea_title}</div>
-            <div class="selected-idea-priority priority-${selectedIdea.priority}">${selectedIdea.priority}</div>
-        </div>
-        <div class="selected-idea-description">${selectedIdea.idea_description || 'No description available'}</div>
-        <div class="selected-idea-meta">
-            <span class="selected-idea-context">${selectedIdea.seasonal_context || 'No context'}</span>
-            <span class="selected-idea-type">${selectedIdea.content_type || 'No type'}</span>
-        </div>
-    `;
-}
+// Removed selected idea display
 
 function displayCurrentIdeaSeed(ideaSeed) {
     const currentSeedDisplay = document.getElementById('current-idea-seed');
@@ -513,137 +475,11 @@ function displayCurrentIdeaSeed(ideaSeed) {
     `;
 }
 
-async function confirmSelection() {
-    if (!selectedIdea) {
-        alert('Please select an idea first');
-        return;
-    }
-    
-    try {
-        const ideaSeedText = `${selectedIdea.idea_title}: ${selectedIdea.idea_description || 'No description available'}`;
-        
-        // Check if this topic has already been used this year
-        const checkResponse = await fetch(`/planning/api/posts/check-topic`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                topic: selectedIdea.idea_title,
-                year: new Date().getFullYear()
-            })
-        });
-        
-        const checkData = await checkResponse.json();
-        let postId;
-        
-        if (checkData.success && checkData.existing_post_id) {
-            // Topic already exists - reuse existing post ID
-            postId = checkData.existing_post_id;
-            console.log(`Reusing existing post ID ${postId} for topic: ${selectedIdea.idea_title}`);
-        } else {
-            // New topic - generate new post ID
-            const newPostResponse = await fetch(`/planning/api/posts/create-new`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    topic: selectedIdea.idea_title,
-                    week_number: window.weekNumber
-                })
-            });
-            
-            const newPostData = await newPostResponse.json();
-            if (newPostData.success) {
-                postId = newPostData.post_id;
-                console.log(`Created new post ID ${postId} for topic: ${selectedIdea.idea_title}`);
-            } else {
-                throw new Error('Failed to create new post');
-            }
-        }
-        
-            // Now set the idea seed for the determined post ID
-            const response = await fetch(`/planning/api/posts/${postId}/idea-seed`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                idea_seed: ideaSeedText
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            displayCurrentIdeaSeed(data.idea_seed);
-            
-            // If we created a new post, generate expanded idea first, then redirect
-            if (postId !== window.postId) {
-                console.log(`New post ${postId} created, generating expanded idea before redirect`);
-                
-                // Generate expanded idea for the new post
-                try {
-                    const expandedResponse = await fetch(`/planning/api/posts/${postId}/expanded-idea`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            idea_seed: ideaSeedText
-                        })
-                    });
-                    
-                    const expandedData = await expandedResponse.json();
-                    if (expandedData.success) {
-                        console.log(`Expanded idea generated for post ${postId}`);
-                    } else {
-                        console.warn(`Failed to generate expanded idea: ${expandedData.error}`);
-                    }
-                } catch (error) {
-                    console.error('Error generating expanded idea:', error);
-                }
-                
-                // Now redirect to the new post's brainstorm page
-                setTimeout(() => {
-                    window.location.href = `/planning/posts/${postId}/concept/brainstorm`;
-                }, 2000); // Give time to see the success message
-                return;
-            }
-            
-            // For existing posts, generate expanded idea after confirming selection
-            setTimeout(() => {
-                generateExpandedIdea();
-            }, 500); // Small delay to ensure UI updates
-        } else {
-            alert('Error updating idea seed: ' + data.error);
-        }
-    } catch (error) {
-        console.error('Error confirming selection:', error);
-        alert('Error updating idea seed: ' + error.message);
-    }
-}
+// Removed confirmSelection flow; selection happens in Calendar stage
 
-function openNewIdeaDialog() {
-    const customIdea = prompt('Enter your custom idea:');
-    if (customIdea && customIdea.trim()) {
-        selectedIdea = {
-            idea_title: 'Custom Idea',
-            idea_description: customIdea.trim(),
-            seasonal_context: 'Custom',
-            content_type: 'Custom',
-            priority: 'custom'
-        };
-        displaySelectedIdea();
-        document.getElementById('confirm-btn').disabled = false;
-    }
-}
+// Removed new idea dialog
 
-function displayNoIdeas() {
-    const ideasList = document.getElementById('available-ideas-list');
-    ideasList.innerHTML = '<div class="no-ideas">No ideas available for this week</div>';
-}
+// Removed displayNoIdeas
 
 function escapeHtml(text) {
     const div = document.createElement('div');
@@ -684,65 +520,7 @@ function displayExpandedIdeaError(error) {
     resultsDisplay.innerHTML = `<div class="error">Error loading expanded idea: ${error}</div>`;
 }
 
-async function generateExpandedIdea() {
-    // Get the current idea seed
-    const ideaSeedElement = document.getElementById('current-idea-seed');
-    const ideaSeedText = ideaSeedElement.querySelector('.idea-seed-content');
-    
-    if (!ideaSeedText || !ideaSeedText.textContent.trim()) {
-        alert('Please select and confirm an idea seed first before generating an expanded idea.');
-        return;
-    }
-    
-    const ideaSeed = ideaSeedText.textContent.trim();
-    
-    // Use the shared LLM module to generate content
-    if (llmModule) {
-        // Override the generateContent method to use the idea seed
-        const originalGenerateContent = llmModule.generateContent.bind(llmModule);
-        llmModule.generateContent = async function() {
-            const generateBtn = document.getElementById('generate-btn');
-            const resultsDisplay = document.getElementById('llm-results-display');
-            
-            if (!generateBtn || !resultsDisplay) return;
-            
-            // Show loading state
-            generateBtn.disabled = true;
-            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
-            resultsDisplay.innerHTML = '<div class="loading">Generating expanded idea with AI...</div>';
-            
-            try {
-                const response = await fetch(`/planning/api/posts/${window.postId}/expanded-idea`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        idea_seed: ideaSeed
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    displayExpandedIdea(data.expanded_idea);
-                } else {
-                    displayExpandedIdeaError(data.error);
-                }
-            } catch (error) {
-                console.error('Error generating expanded idea:', error);
-                displayExpandedIdeaError('Failed to generate expanded idea');
-            } finally {
-                // Reset button state
-                generateBtn.disabled = false;
-                generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate';
-            }
-        };
-        
-        // Call the modified generateContent method
-        await llmModule.generateContent();
-    }
-}
+// generateExpandedIdea function removed - functionality moved to LLM module's generate button
 </script>
 <!-- Include LLM Module Scripts -->
 <script src="{{ url_for('static', filename='js/llm-utils.js') }}"></script>

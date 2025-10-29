@@ -19,9 +19,9 @@ def planning_post_overview(post_id):
                           post_id=post_id, blueprint_name='planning')
 
 def planning_concept(post_id):
-    """Concept development page - redirects to brainstorm"""
+    """Concept development page - redirects to Idea Generation (first planning substage)"""
     from flask import redirect, url_for
-    return redirect(url_for('planning.planning_concept_brainstorm', post_id=post_id))
+    return redirect(url_for('planning.planning_calendar_ideas', post_id=post_id))
 
 def planning_calendar(post_id):
     """Calendar page"""

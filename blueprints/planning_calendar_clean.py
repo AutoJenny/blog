@@ -4,7 +4,7 @@ Planning Calendar Module - Clean Version
 Contains the original calendar function with correct template reference
 """
 
-from flask import render_template
+from flask import render_template, request
 from config.database import db_manager
 import logging
 from datetime import datetime
@@ -67,6 +67,9 @@ def planning_calendar_ideas(post_id):
 def planning_calendar_ideas_week(week_number):
     """Week-based idea generation - creates new posts as needed"""
     try:
+        # Get optional post_id from query parameter for context (from one-click blog selection)
+        post_id = request.args.get('post_id', type=int, default=0)
+        
         year = datetime.now().year
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
@@ -87,12 +90,15 @@ def planning_calendar_ideas_week(week_number):
                               week_number=week_number,
                               year=year,
                               ideas=ideas,
+                              post_id=post_id,
                               blueprint_name='planning')
     except Exception as e:
         logger.error(f"Error in planning_calendar_ideas_week: {e}")
+        post_id = request.args.get('post_id', type=int, default=0)
         year = datetime.now().year
         return render_template('planning/calendar/ideas_week.html', 
                               week_number=week_number,
                               year=year,
                               ideas=[],
+                              post_id=post_id,
                               blueprint_name='planning')
