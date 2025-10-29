@@ -2194,7 +2194,12 @@ def validate_publish_data(post_id):
 
 @bp.route('/one-click-blog')
 def one_click_blog():
-    """One-Click Blog automation page."""
+    """New minimal One-Click Blog page (blank sheet) with link to legacy."""
+    return render_template('launchpad/one_click_blog_minimal.html')
+
+@bp.route('/one-click-blog/legacy')
+def one_click_blog_legacy():
+    """Legacy One-Click Blog automation page (original full UI)."""
     return render_template('launchpad/one_click_blog.html')
 
 @bp.route('/health')
