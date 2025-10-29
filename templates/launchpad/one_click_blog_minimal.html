@@ -94,7 +94,7 @@
                     </tr>
                     <tr>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="section-titling">Section Titling</a></td>
-                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-section-titling" class="run-btn dead">Run</button></td>
                     </tr>
 
                     <!-- Authoring Stage -->
@@ -615,6 +615,61 @@
         });
     }
     
+    // Run Section Titling: open titling page in new window, trigger script, close when complete
+    function runSectionTitling(){
+        const btn = document.getElementById('run-section-titling');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        
+        const postId = getSelectedPostId();
+        if (!postId){
+            alert('Please select a post in the "Viewing Pipeline For" dropdown first.');
+            return;
+        }
+        
+        btn.disabled = true;
+        btn.textContent = 'Running…';
+        btn.classList.remove('dead','complete');
+        btn.classList.add('ready');
+        
+        // Open titling page in new window
+        const titlingWindow = window.open(`/planning/posts/${postId}/concept/titling?auto_run=true`, '_blank', 'width=1400,height=900');
+        
+        // Listen for completion message from titling page
+        window.addEventListener('message', function handleMessage(event) {
+            if (event.data === 'titling_complete') {
+                titlingWindow.close();
+                window.removeEventListener('message', handleMessage);
+                
+                btn.textContent = 'Done';
+                btn.classList.remove('dead','ready');
+                btn.classList.add('complete');
+                btn.disabled = false;
+                setTimeout(() => { btn.textContent = originalText; }, 1500);
+            }
+        });
+        
+        // Fallback: if window closes without message, assume complete
+        const checkClosed = setInterval(() => {
+            if (titlingWindow.closed) {
+                clearInterval(checkClosed);
+                btn.textContent = 'Done';
+                btn.classList.remove('dead','ready');
+                btn.classList.add('complete');
+                btn.disabled = false;
+                setTimeout(() => { btn.textContent = originalText; }, 1500);
+            }
+        }, 1000);
+    }
+    const runSectionTitlingBtn = document.getElementById('run-section-titling');
+    if (runSectionTitlingBtn){
+        runSectionTitlingBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            runSectionTitling();
+        });
+    }
+    
     // Substage links navigation based on selected post
     function getSelectedPostId(){
         const sel = document.getElementById('pipeline-post-selector');
@@ -805,6 +860,48 @@
                 } else {
                     sectionIdeasBtn.classList.remove('ready', 'complete');
                     sectionIdeasBtn.classList.add('dead');
+                }
+            }
+            
+            // Update Section Titling Run button state based on topic_allocation availability
+            // Check asynchronously since topic_allocation is not in the post data directly
+            const titlingBtn = document.getElementById('run-section-titling');
+            if (titlingBtn) {
+                // Check prerequisites: expanded_idea exists and section_structure exists (heuristic for section ideas being done)
+                const hasExpandedIdea = post.expanded_idea && post.expanded_idea.trim();
+                let hasStructure = false;
+                if (post.section_structure) {
+                    try {
+                        const structData = typeof post.section_structure === 'string' 
+                            ? JSON.parse(post.section_structure) 
+                            : post.section_structure;
+                        const sections = Array.isArray(structData) ? structData : (structData.sections || []);
+                        hasStructure = sections.length > 0;
+                    } catch (e) {
+                        // section_structure is not valid JSON
+                    }
+                }
+                
+                // If prerequisites exist, fetch topic_allocation to confirm
+                if (hasExpandedIdea && hasStructure) {
+                    fetch(`/planning/api/sections/allocate-topics/${postId}`)
+                        .then(resp => resp.json())
+                        .then(data => {
+                            if (data.success && data.allocations && data.allocations.allocations && Array.isArray(data.allocations.allocations) && data.allocations.allocations.length > 0) {
+                                titlingBtn.classList.remove('dead', 'complete');
+                                titlingBtn.classList.add('ready');
+                            } else {
+                                titlingBtn.classList.remove('ready', 'complete');
+                                titlingBtn.classList.add('dead');
+                            }
+                        })
+                        .catch(() => {
+                            titlingBtn.classList.remove('ready', 'complete');
+                            titlingBtn.classList.add('dead');
+                        });
+                } else {
+                    titlingBtn.classList.remove('ready', 'complete');
+                    titlingBtn.classList.add('dead');
                 }
             }
         } catch (e){

@@ -316,6 +316,8 @@ def api_save_sections(post_id):
         data = request.get_json()
         sections_data = data.get('sections', [])
         
+        logger.info(f"Saving sections for post {post_id}: received {len(sections_data) if isinstance(sections_data, list) else 'non-list'} sections")
+        
         # Handle different data formats
         if isinstance(sections_data, list):
             # Direct array format from titling page
@@ -339,17 +341,29 @@ def api_save_sections(post_id):
                 'error': 'No sections data provided'
             }), 400
         
-        # Sanitize before saving
+        logger.info(f"Processing {len(sections)} sections for saving")
+        
+        # Sanitize before saving - ensure we always save as {'sections': [...]} format
         try:
             if isinstance(sections_data, list):
                 # For titling page format, create a proper structure for sanitization
                 sanitized_data = {'sections': sections_data}
                 sanitized_data = sanitize_sections_text(sanitized_data)
-                sections_data = sanitized_data
+                # Ensure we still have the sections array
+                if isinstance(sanitized_data, dict) and 'sections' in sanitized_data:
+                    sections_data = sanitized_data
+                else:
+                    # If sanitization changed format, restore it
+                    sections_data = {'sections': sections}
             else:
                 sections_data = sanitize_sections_text(sections_data)
         except Exception as _e:
             logger.warning(f"Sanitization failed, proceeding without changes: {_e}")
+            # Ensure proper format even if sanitization fails
+            if isinstance(sections_data, list):
+                sections_data = {'sections': sections_data}
+
+        logger.info(f"Final sections_data structure: type={type(sections_data)}, sections_count={len(sections_data.get('sections', [])) if isinstance(sections_data, dict) else len(sections_data) if isinstance(sections_data, list) else 0}")
 
         # Convert to JSON strings for database storage
         sections_json = json.dumps(sections_data)

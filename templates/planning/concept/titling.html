@@ -310,6 +310,9 @@ let generatedGroups = [];
 let generatedSections = [];
 let llmModule = null;
 
+// Make globally accessible
+window.generatedGroups = generatedGroups;
+
 // Utility function to escape HTML
 function escapeHtml(text) {
     const div = document.createElement('div');
@@ -322,6 +325,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set current stage for navigation
     window.currentStage = 'concept';
     window.currentSubstage = 'titling';
+    
     window.postId = {{ post_id }};
     
     // Initialize LLM module
@@ -335,6 +339,23 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize titling functionality
     initializeTitling();
+    
+    // Check if auto_run parameter is present and trigger startTitling
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('auto_run') === 'true') {
+        // Wait for topic allocation to load, then trigger
+        setTimeout(async () => {
+            if (typeof window.startTitling === 'function' && generatedGroups && generatedGroups.length > 0) {
+                try {
+                    await window.startTitling();
+                    // Remove the parameter from URL
+                    window.history.replaceState({}, '', window.location.pathname);
+                } catch (error) {
+                    console.error('Auto-run titling failed:', error);
+                }
+            }
+        }, 500);
+    }
 });
 async function loadExistingSections() {
     try {
@@ -346,7 +367,7 @@ async function loadExistingSections() {
                 sections: data.sections.map(section => ({
                     id: section.id || section.index,
                     title: section.title || section.section_heading,
-                    subtitle: section.original || section.section_description,
+                    subtitle: section.original || section.section_description || section.subtitle || '',
                     order: section.order || section.section_order || section.index,
                     topics: [] // Topics will be loaded from topic allocation
                 }))
@@ -372,6 +393,7 @@ async function loadTopicAllocation() {
             
             if (allocations && allocations.length > 0) {
                 generatedGroups = allocations; // Reuse the variable for compatibility
+                window.generatedGroups = generatedGroups; // Make globally accessible
                 displayTopicAllocation(allocations);
                 console.log('Loaded topic allocation for titling:', allocations.length);
                 console.log('generatedGroups set to:', generatedGroups.length, 'sections');
@@ -524,6 +546,10 @@ async function startTitling() {
                 // Automatically save sections to database
                 console.log('About to save sections to database...');
                 await saveSectionsToDatabase(generatedSections);
+                // Notify parent window if opened from launchpad
+                if (window.opener && new URLSearchParams(window.location.search).get('auto_run') === 'true') {
+                    window.opener.postMessage('titling_complete', '*');
+                }
                 break;
             } else if (data.error && data.error.includes('LLM returned input data')) {
                 console.warn(`Attempt ${attempts} failed: LLM returned input data. Retrying...`);
@@ -565,6 +591,9 @@ async function startTitling() {
         });
     }
 }
+
+// Make startTitling globally accessible
+window.startTitling = startTitling;
 
 async function getExpandedIdea() {
     try {
@@ -632,6 +661,11 @@ function displaySections(sectionsData) {
 async function saveSectionsToDatabase(sectionsData) {
     try {
         console.log('Saving sections data:', sectionsData);
+        console.log('Number of sections to save:', Array.isArray(sectionsData) ? sectionsData.length : 'NOT AN ARRAY');
+        if (Array.isArray(sectionsData) && sectionsData.length > 0) {
+            console.log('First section:', sectionsData[0]);
+            console.log('Last section:', sectionsData[sectionsData.length - 1]);
+        }
         const response = await fetch('/planning/api/sections/save', {
             method: 'POST',
             headers: {
