@@ -64,11 +64,11 @@ def api_get_sections(post_id):
                                 'ideas_to_include': None,
                                 'facts_to_include': None,
                                 'highlighting': None,
-                                'image_concepts': None,
-                                'image_prompts': None,
-                                'image_captions': None,
+                                'image_concepts': section.get('image_concepts'),  # Get from JSON, not None
+                                'image_prompts': section.get('image_prompts'),
+                                'image_captions': section.get('image_captions'),
                                 'image_alt_text': None,
-                                'selected_image_concept': None,
+                                'selected_image_concept': section.get('selected_image_concept'),
                                 'topics': section.get('topics', [])
                             })
                         sections = formatted_sections
@@ -85,6 +85,36 @@ def api_get_sections(post_id):
                     formatted_sections.append(section)
                 else:
                     # From post_section table - format it
+                    # But also check post_development.sections for image fields that might not be in post_section
+                    section_id_from_db = section['id']
+                    image_concepts_from_json = None
+                    selected_concept_from_json = None
+                    
+                    # Try to get image_concepts from post_development.sections if not in post_section
+                    if not section.get('image_concepts'):
+                        cursor.execute("""
+                            SELECT sections FROM post_development WHERE post_id = %s
+                        """, (post_id,))
+                        dev_result = cursor.fetchone()
+                        if dev_result and dev_result.get('sections'):
+                            try:
+                                dev_sections_data = json.loads(dev_result['sections'])
+                                if isinstance(dev_sections_data, dict) and 'sections' in dev_sections_data:
+                                    dev_sections_list = dev_sections_data['sections']
+                                elif isinstance(dev_sections_data, list):
+                                    dev_sections_list = dev_sections_data
+                                else:
+                                    dev_sections_list = []
+                                
+                                # Find matching section
+                                for dev_section in dev_sections_list:
+                                    if str(dev_section.get('id', '')) == str(section_id_from_db):
+                                        image_concepts_from_json = dev_section.get('image_concepts')
+                                        selected_concept_from_json = dev_section.get('selected_image_concept')
+                                        break
+                            except (json.JSONDecodeError, TypeError):
+                                pass
+                    
                     formatted_sections.append({
                         'id': section['id'],
                         'section_order': section['section_order'],
@@ -99,11 +129,11 @@ def api_get_sections(post_id):
                         'ideas_to_include': section.get('ideas_to_include'),
                         'facts_to_include': section.get('facts_to_include'),
                         'highlighting': section.get('highlighting'),
-                        'image_concepts': section.get('image_concepts'),
+                        'image_concepts': section.get('image_concepts') or image_concepts_from_json,  # Use JSON if not in DB
                         'image_prompts': section.get('image_prompts'),
                         'image_captions': section.get('image_captions'),
                         'image_alt_text': section.get('image_alt_text'),
-                        'selected_image_concept': section.get('selected_image_concept'),
+                        'selected_image_concept': section.get('selected_image_concept') or selected_concept_from_json,
                         'topics': []
                     })
             
@@ -188,6 +218,35 @@ def api_get_section(post_id, section_id):
                 # Convert to frontend-compatible format
                 if section:
                     # From post_section table
+                    # But also check post_development.sections for image fields that might be saved there
+                    image_concepts_from_json = section.get('image_concepts')
+                    selected_concept_from_json = section.get('selected_image_concept')
+                    
+                    # If image_concepts is NULL in post_section, check post_development.sections
+                    if not image_concepts_from_json:
+                        cursor.execute("""
+                            SELECT sections FROM post_development WHERE post_id = %s
+                        """, (post_id,))
+                        dev_result = cursor.fetchone()
+                        if dev_result and dev_result.get('sections'):
+                            try:
+                                dev_sections_data = json.loads(dev_result['sections'])
+                                if isinstance(dev_sections_data, dict) and 'sections' in dev_sections_data:
+                                    dev_sections_list = dev_sections_data['sections']
+                                elif isinstance(dev_sections_data, list):
+                                    dev_sections_list = dev_sections_data
+                                else:
+                                    dev_sections_list = []
+                                
+                                # Find matching section
+                                for dev_section in dev_sections_list:
+                                    if str(dev_section.get('id', '')) == str(section['id']):
+                                        image_concepts_from_json = dev_section.get('image_concepts')
+                                        selected_concept_from_json = dev_section.get('selected_image_concept') or selected_concept_from_json
+                                        break
+                            except (json.JSONDecodeError, TypeError):
+                                pass
+                    
                     formatted_section = {
                         'id': section['id'],
                         'section_order': section['section_order'],
@@ -203,11 +262,11 @@ def api_get_section(post_id, section_id):
                         'ideas_to_include': section['ideas_to_include'],
                         'facts_to_include': section['facts_to_include'],
                         'highlighting': section['highlighting'],
-                        'image_concepts': section['image_concepts'],
+                        'image_concepts': image_concepts_from_json,  # Use from JSON if not in DB
                         'image_prompts': section['image_prompts'],
                         'image_captions': section['image_captions'],
                         'image_alt_text': section['image_alt_text'],
-                        'selected_image_concept': section['selected_image_concept'],
+                        'selected_image_concept': selected_concept_from_json,
                         'topics': []
                     }
                 else:

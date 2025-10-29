@@ -403,8 +403,32 @@ class SectionsPanel {
                                 this.sections[sectionIndex] = { ...this.sections[sectionIndex], ...sectionData.section };
                             }
                             
-                            // If OutputPanel exists globally, load the section to update content editor
-                            if (typeof window.outputPanel !== 'undefined' && window.outputPanel) {
+                            // Update output panel based on current substage
+                            if (window.currentSubstage === 'image-concepts' && typeof window.imageConceptsOutputPanel !== 'undefined' && window.imageConceptsOutputPanel) {
+                                // For image-concepts, use show() method with proper section data structure
+                                const section = sectionData.section;
+                                // Map section data to expected format
+                                const formattedSection = {
+                                    id: section.id || sectionId,
+                                    title: section.section_heading || section.title || `Section ${sectionId}`,
+                                    subtitle: section.section_description || section.subtitle || '',
+                                    order: section.section_order || section.order || sectionId,
+                                    topics: section.topics || [],
+                                    image_concepts: section.image_concepts || '',
+                                    selected_image_concept: section.selected_image_concept || ''
+                                };
+                                
+                                // Update display if:
+                                // 1. No section is currently displayed, OR
+                                // 2. This is the currently displayed section, OR
+                                // 3. This is the first section being generated
+                                if (!window.imageConceptsOutputPanel.current || 
+                                    window.imageConceptsOutputPanel.current.id === formattedSection.id ||
+                                    (i === 0 && !window.imageConceptsOutputPanel.current)) {
+                                    window.imageConceptsOutputPanel.show(formattedSection);
+                                }
+                            } else if (typeof window.outputPanel !== 'undefined' && window.outputPanel) {
+                                // For other substages (e.g., drafting), use loadSection()
                                 window.outputPanel.loadSection(sectionId, sectionData.section);
                             }
                         }

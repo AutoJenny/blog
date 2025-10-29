@@ -290,9 +290,21 @@ class ImageConceptsOutputPanel {
     const editor = document.getElementById('content-editor');
 
     if (!conceptsData || conceptsData.trim() === '') {
-      console.log('[DEBUG] No concepts data, hiding displays');
-      conceptsDisplay.style.display = 'none';
-      fallbackEditor.style.display = 'none';
+      console.log('[DEBUG] No concepts data, showing placeholder');
+      // Clear any existing concepts
+      if (conceptsContainer) {
+        conceptsContainer.innerHTML = '<p style="color: #94a3b8; font-style: italic; padding: 1rem;">No image concepts generated yet. Click the "Generate" button to create concepts for this section.</p>';
+      }
+      // Show the concepts display with placeholder message
+      if (conceptsDisplay) {
+        conceptsDisplay.style.display = 'block';
+      }
+      if (fallbackEditor) {
+        fallbackEditor.style.display = 'none';
+      }
+      if (editor) {
+        editor.value = '';
+      }
       return;
     }
 
@@ -328,18 +340,23 @@ class ImageConceptsOutputPanel {
     console.log('[DEBUG] renderConceptCards called with:', conceptsData);
     const container = document.getElementById('concepts-container');
     console.log('[DEBUG] Container element:', container);
+    if (!container) {
+      console.error('[DEBUG] concepts-container element not found!');
+      return;
+    }
     container.innerHTML = '';
 
-    const selectedConceptId = this.current.selected_image_concept;
+    const selectedConceptId = this.current?.selected_image_concept;
+    const sectionId = this.current?.id;
     const defaultConceptId = conceptsData.concepts[0]?.concept_id; // First concept as default
-    console.log('[DEBUG] Selected concept ID:', selectedConceptId, 'Default concept ID:', defaultConceptId);
+    console.log('[DEBUG] Selected concept ID:', selectedConceptId, 'Default concept ID:', defaultConceptId, 'Section ID:', sectionId);
 
     conceptsData.concepts.forEach((concept, index) => {
       console.log(`[DEBUG] Processing concept ${index}:`, concept.concept_id);
       const card = document.createElement('div');
       card.className = 'concept-card';
       card.dataset.conceptId = concept.concept_id;
-      card.dataset.sectionId = this.current.id; // Associate with current section
+      card.dataset.sectionId = sectionId || this.current?.id || 'unknown'; // Associate with current section
       
       // Determine if this concept should be selected
       const isSelected = selectedConceptId === concept.concept_id || 
@@ -349,10 +366,11 @@ class ImageConceptsOutputPanel {
         card.classList.add('selected');
       }
       
+      const currentSectionId = sectionId || this.current?.id || 'unknown';
       card.innerHTML = `
         <div class="concept-header">
           <span class="concept-id">${concept.concept_id}</span>
-          <button class="btn-concept btn-select ${isSelected ? 'selected' : ''}" onclick="selectConcept('${concept.concept_id}', '${this.current.id}')">
+          <button class="btn-concept btn-select ${isSelected ? 'selected' : ''}" onclick="selectConcept('${concept.concept_id}', '${currentSectionId}')">
             ${isSelected ? 'Selected' : 'Select'}
           </button>
         </div>
@@ -361,7 +379,7 @@ class ImageConceptsOutputPanel {
         <div class="concept-mood">Mood: ${concept.concept_mood}</div>
         <div class="concept-elements">Key Elements: ${concept.key_visual_elements}</div>
         <div class="concept-actions">
-          <button class="btn-concept btn-edit" onclick="editConcept('${concept.concept_id}', '${this.current.id}')">Edit</button>
+          <button class="btn-concept btn-edit" onclick="editConcept('${concept.concept_id}', '${currentSectionId}')">Edit</button>
         </div>
       `;
       
@@ -369,9 +387,11 @@ class ImageConceptsOutputPanel {
     });
 
     // Auto-select default concept if no selection exists
-    if (!selectedConceptId && defaultConceptId) {
+    if (!selectedConceptId && defaultConceptId && sectionId) {
       setTimeout(() => {
-        window.selectConcept(defaultConceptId, this.current.id);
+        if (window.selectConcept) {
+          window.selectConcept(defaultConceptId, sectionId);
+        }
       }, 500);
     }
   }
@@ -431,41 +451,77 @@ class ImageConceptsOutputPanel {
 
   async generateImageConcepts(sectionId = null) {
     const id = sectionId || (this.current?.id);
-    if (!id) return;
+    if (!id) {
+      console.warn('[DEBUG] No section ID provided for generateImageConcepts');
+      return;
+    }
     console.log('[DEBUG] generateImageConcepts called for section:', id);
-    const editor = document.getElementById('content-editor');
-    editor.value = 'Generating image concepts…';
-    editor.disabled = true;
+    
+    // Disable buttons during generation
+    const generateBtn = document.getElementById('generate-concepts-btn');
+    const regenerateBtn = document.getElementById('regenerate-btn');
+    if (generateBtn) generateBtn.disabled = true;
+    if (regenerateBtn) regenerateBtn.disabled = true;
+    
+    // Show loading state in concepts display
+    const conceptsContainer = document.getElementById('concepts-container');
+    const conceptsDisplay = document.getElementById('image-concepts-display');
+    if (conceptsContainer && conceptsDisplay) {
+      conceptsContainer.innerHTML = '<p style="color: #94a3b8; padding: 1rem;">Generating concepts...</p>';
+      conceptsDisplay.style.display = 'block';
+    }
 
     try {
       console.log('[DEBUG] Making API call to generate concepts for section:', id);
       const res = await postJSON(`/authoring/api/posts/${this.postId}/sections/${id}/generate-image-concepts`, {});
       console.log('[DEBUG] API response received:', res);
+      console.log('[DEBUG] Response success:', res.success);
+      console.log('[DEBUG] Response image_concepts type:', typeof res.image_concepts);
+      console.log('[DEBUG] Response image_concepts length:', res.image_concepts?.length);
       
       if (res.success && res.image_concepts) {
-        // Update the textarea
-        editor.value = res.image_concepts;
-        
-        // Update the visual concept cards
-        this.displayImageConcepts(res.image_concepts);
-        
-        // Update the current section data if this is the currently displayed section
+        // Update the current section data
         if (this.current && this.current.id === id) {
           this.current.image_concepts = res.image_concepts;
+        } else if (!this.current) {
+          // If no current section, set it to ensure display works
+          const section = this.getSectionData(id);
+          if (section) {
+            section.image_concepts = res.image_concepts;
+            this.current = section;
+          }
         }
+        
+        // Update the visual concept cards (this should replace the loading message)
+        console.log('[DEBUG] Calling displayImageConcepts with:', res.image_concepts.substring(0, 100) + '...');
+        this.displayImageConcepts(res.image_concepts);
         
         console.log('[DEBUG] Image concepts generated and displayed successfully');
       } else {
-        editor.value = res.error || '(no concepts generated)';
-        console.error('[DEBUG] API returned error:', res.error);
+        console.error('[DEBUG] API returned error or no concepts:', res.error || res);
+        if (conceptsContainer) {
+          conceptsContainer.innerHTML = '<p style="color: #ef4444; padding: 1rem;">Error: ' + (res.error || 'No concepts generated') + '</p>';
+        }
       }
     } catch (err) {
       console.error('[DEBUG] Error generating image concepts:', err);
-      editor.value = 'Error generating image concepts';
+      if (conceptsContainer) {
+        conceptsContainer.innerHTML = '<p style="color: #ef4444; padding: 1rem;">Error generating image concepts: ' + err.message + '</p>';
+      }
     } finally {
-      editor.disabled = false;
+      // Re-enable buttons
+      if (generateBtn) generateBtn.disabled = false;
+      if (regenerateBtn) regenerateBtn.disabled = false;
       this.updateWordCount();
     }
+  }
+  
+  getSectionData(sectionId) {
+    // Try to get section data from sections panel or make API call
+    if (window.sectionsPanel && window.sectionsPanel.sections) {
+      return window.sectionsPanel.sections.find(s => s.id == sectionId);
+    }
+    return null;
   }
 
   async regenerate(sectionId = null) {

@@ -110,7 +110,7 @@
                     </tr>
                     <tr>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="authoring" data-substage="image-concepts">Image Concepts</a></td>
-                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-image-concepts" class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="authoring" data-substage="image-prompts">Image Prompts</a></td>
@@ -725,6 +725,61 @@
         });
     }
     
+    // Run Image Concepts: open image_concepts page in new window, trigger Generate All, close when complete
+    function runImageConcepts(){
+        const btn = document.getElementById('run-image-concepts');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        
+        const postId = getSelectedPostId();
+        if (!postId){
+            alert('Please select a post in the "Viewing Pipeline For" dropdown first.');
+            return;
+        }
+        
+        btn.disabled = true;
+        btn.textContent = 'Running…';
+        btn.classList.remove('dead','complete');
+        btn.classList.add('ready');
+        
+        // Open image_concepts page in new window
+        const conceptsWindow = window.open(`/authoring/posts/${postId}/sections/image_concepts?auto_run=true`, '_blank', 'width=1400,height=900');
+        
+        // Listen for completion message from image_concepts page
+        window.addEventListener('message', function handleMessage(event) {
+            if (event.data === 'image_concepts_complete') {
+                conceptsWindow.close();
+                window.removeEventListener('message', handleMessage);
+                
+                btn.textContent = 'Done';
+                btn.classList.remove('dead','ready');
+                btn.classList.add('complete');
+                btn.disabled = false;
+                setTimeout(() => { btn.textContent = originalText; }, 1500);
+            }
+        });
+        
+        // Fallback: if window closes without message, assume complete
+        const checkClosed = setInterval(() => {
+            if (conceptsWindow.closed) {
+                clearInterval(checkClosed);
+                btn.textContent = 'Done';
+                btn.classList.remove('dead','ready');
+                btn.classList.add('complete');
+                btn.disabled = false;
+                setTimeout(() => { btn.textContent = originalText; }, 1500);
+            }
+        }, 1000);
+    }
+    const runImageConceptsBtn = document.getElementById('run-image-concepts');
+    if (runImageConceptsBtn){
+        runImageConceptsBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            runImageConcepts();
+        });
+    }
+    
     // Substage links navigation based on selected post
     function getSelectedPostId(){
         const sel = document.getElementById('pipeline-post-selector');
@@ -943,6 +998,37 @@
                 } else {
                     draftingBtn.classList.remove('ready', 'complete');
                     draftingBtn.classList.add('dead');
+                }
+            }
+            
+            // Update Image Concepts Run button state based on sections and draft availability
+            const imageConceptsBtn = document.getElementById('run-image-concepts');
+            if (imageConceptsBtn) {
+                // Check if sections exist and have drafts
+                let hasSectionsWithDrafts = false;
+                if (data.sections && data.sections.length > 0) {
+                    // Check if at least one section has a draft
+                    hasSectionsWithDrafts = data.sections.some(s => s.draft && s.draft.trim());
+                } else if (post.sections) {
+                    try {
+                        const sectionsData = typeof post.sections === 'string' ? JSON.parse(post.sections) : post.sections;
+                        const sectionsList = Array.isArray(sectionsData) ? sectionsData : (sectionsData.sections || []);
+                        if (sectionsList.length > 0) {
+                            // Check sections in post_section for drafts
+                            if (data.sections) {
+                                hasSectionsWithDrafts = data.sections.some(s => s.draft && s.draft.trim());
+                            }
+                        }
+                    } catch (e) {
+                        // sections is not valid JSON
+                    }
+                }
+                if (hasSectionsWithDrafts) {
+                    imageConceptsBtn.classList.remove('dead', 'complete');
+                    imageConceptsBtn.classList.add('ready');
+                } else {
+                    imageConceptsBtn.classList.remove('ready', 'complete');
+                    imageConceptsBtn.classList.add('dead');
                 }
             }
             
