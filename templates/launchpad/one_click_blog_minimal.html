@@ -82,15 +82,15 @@
                     </tr>
                     <tr>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="topic-brainstorming">Topic Brainstorming</a></td>
-                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-topic-brainstorming" class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="section-structure-design">Section Structure Design</a></td>
-                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-section-structure" class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="section-ideas">Section Ideas</a></td>
-                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-section-ideas" class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="section-titling">Section Titling</a></td>
@@ -391,6 +391,230 @@
         });
     }
     
+    // Run Topic Brainstorming: generate topics for selected post
+    async function runTopicBrainstorming(){
+        const btn = document.getElementById('run-topic-brainstorming');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        
+        const postId = getSelectedPostId();
+        if (!postId){
+            alert('Please select a post in the "Viewing Pipeline For" dropdown first.');
+            return;
+        }
+        
+        try {
+            btn.disabled = true;
+            btn.textContent = 'Running…';
+            btn.classList.remove('dead','complete');
+            btn.classList.add('ready');
+            
+            // Get expanded_idea from post
+            const postResp = await fetch(`/planning/api/posts/${postId}`);
+            const postData = await postResp.json();
+            if (!postResp.ok || !postData.success || !postData.post){
+                throw new Error('Failed to load post data');
+            }
+            const expandedIdea = postData.post.expanded_idea;
+            if (!expandedIdea || !expandedIdea.trim()){
+                throw new Error('No expanded idea found. Go to Planning → Idea Generation to generate one first.');
+            }
+            
+            // Generate brainstorm topics (default to comprehensive type)
+            const brainstormResp = await fetch('/planning/api/brainstorm/topics', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    expanded_idea: expandedIdea,
+                    brainstorm_type: 'comprehensive',
+                    post_id: parseInt(postId)
+                })
+            });
+            const brainstormData = await brainstormResp.json();
+            if (!brainstormResp.ok || !brainstormData.success){
+                throw new Error(brainstormData.error || 'Failed to generate brainstorm topics');
+            }
+            
+            // Save topics to database
+            if (brainstormData.topics && brainstormData.topics.length > 0){
+                const saveResp = await fetch(`/planning/api/posts/${postId}/idea-scope`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topics: brainstormData.topics })
+                });
+                const saveData = await saveResp.json();
+                if (!saveData.success){
+                    console.warn('Topics generated but failed to save:', saveData.error);
+                }
+            }
+            
+            // Mark as complete
+            btn.textContent = 'Done';
+            btn.classList.remove('dead','ready');
+            btn.classList.add('complete');
+        } catch (err){
+            console.error('Topic Brainstorming run failed:', err);
+            alert('Topic Brainstorming run failed: ' + err.message);
+            btn.classList.remove('complete');
+            btn.classList.add('dead');
+        } finally {
+            btn.disabled = false;
+            setTimeout(() => { btn.textContent = originalText; }, 1500);
+        }
+    }
+    const runBrainstormBtn = document.getElementById('run-topic-brainstorming');
+    if (runBrainstormBtn){
+        runBrainstormBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            runTopicBrainstorming();
+        });
+    }
+    
+    // Run Section Structure Design: design section structure for selected post
+    async function runSectionStructure(){
+        const btn = document.getElementById('run-section-structure');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        
+        const postId = getSelectedPostId();
+        if (!postId){
+            alert('Please select a post in the "Viewing Pipeline For" dropdown first.');
+            return;
+        }
+        
+        try {
+            btn.disabled = true;
+            btn.textContent = 'Running…';
+            btn.classList.remove('dead','complete');
+            btn.classList.add('ready');
+            
+            // Get post data to check prerequisites
+            const postResp = await fetch(`/planning/api/posts/${postId}`);
+            const postData = await postResp.json();
+            if (!postResp.ok || !postData.success || !postData.post){
+                throw new Error('Failed to load post data');
+            }
+            
+            // Check that topics exist (from brainstorming)
+            const ideaScope = postData.post.idea_scope;
+            let hasTopics = false;
+            if (ideaScope) {
+                try {
+                    const scopeData = JSON.parse(ideaScope);
+                    const topics = scopeData.generated_topics || [];
+                    hasTopics = topics.length > 0;
+                } catch (e) {
+                    // idea_scope is not valid JSON or doesn't have topics
+                }
+            }
+            if (!hasTopics){
+                throw new Error('No topics found. Go to Planning → Topic Brainstorming to generate topics first.');
+            }
+            
+            // Design section structure (API will fetch topics and expanded_idea automatically)
+            const designResp = await fetch('/planning/api/sections/design-structure', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    post_id: parseInt(postId)
+                })
+            });
+            const designData = await designResp.json();
+            if (!designResp.ok || !designData.success){
+                throw new Error(designData.error || 'Failed to design section structure');
+            }
+            
+            // Mark as complete
+            btn.textContent = 'Done';
+            btn.classList.remove('dead','ready');
+            btn.classList.add('complete');
+        } catch (err){
+            console.error('Section Structure Design run failed:', err);
+            alert('Section Structure Design run failed: ' + err.message);
+            btn.classList.remove('complete');
+            btn.classList.add('dead');
+        } finally {
+            btn.disabled = false;
+            setTimeout(() => { btn.textContent = originalText; }, 1500);
+        }
+    }
+    const runStructureBtn = document.getElementById('run-section-structure');
+    if (runStructureBtn){
+        runStructureBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            runSectionStructure();
+        });
+    }
+    
+    // Run Section Ideas (Topic Allocation): generate section-specific topics for selected post
+    async function runSectionIdeas(){
+        const btn = document.getElementById('run-section-ideas');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        
+        const postId = getSelectedPostId();
+        if (!postId){
+            alert('Please select a post in the "Viewing Pipeline For" dropdown first.');
+            return;
+        }
+        
+        try {
+            btn.disabled = true;
+            btn.textContent = 'Running…';
+            btn.classList.remove('dead','complete');
+            btn.classList.add('ready');
+            
+            // Get post data to check prerequisites
+            const postResp = await fetch(`/planning/api/posts/${postId}`);
+            const postData = await postResp.json();
+            if (!postResp.ok || !postData.success || !postData.post){
+                throw new Error('Failed to load post data');
+            }
+            
+            // Check that section_structure exists
+            const sectionStructure = postData.post.section_structure;
+            if (!sectionStructure){
+                throw new Error('No section structure found. Go to Planning → Section Structure Design to create one first.');
+            }
+            
+            // Generate section-specific topics
+            const generateResp = await fetch('/planning/api/sections/generate-section-specific-topics', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    post_id: parseInt(postId)
+                })
+            });
+            const generateData = await generateResp.json();
+            if (!generateResp.ok || !generateData.success){
+                throw new Error(generateData.error || 'Failed to generate section-specific topics');
+            }
+            
+            // Mark as complete
+            btn.textContent = 'Done';
+            btn.classList.remove('dead','ready');
+            btn.classList.add('complete');
+        } catch (err){
+            console.error('Section Ideas run failed:', err);
+            alert('Section Ideas run failed: ' + err.message);
+            btn.classList.remove('complete');
+            btn.classList.add('dead');
+        } finally {
+            btn.disabled = false;
+            setTimeout(() => { btn.textContent = originalText; }, 1500);
+        }
+    }
+    const runSectionIdeasBtn = document.getElementById('run-section-ideas');
+    if (runSectionIdeasBtn){
+        runSectionIdeasBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            runSectionIdeas();
+        });
+    }
+    
     // Substage links navigation based on selected post
     function getSelectedPostId(){
         const sel = document.getElementById('pipeline-post-selector');
@@ -526,6 +750,62 @@
             } else if (ideaGenBtn) {
                 ideaGenBtn.classList.remove('ready', 'complete');
                 ideaGenBtn.classList.add('dead');
+            }
+            
+            // Update Topic Brainstorming Run button state based on expanded_idea availability
+            const brainstormBtn = document.getElementById('run-topic-brainstorming');
+            if (brainstormBtn && post.expanded_idea && post.expanded_idea.trim()) {
+                brainstormBtn.classList.remove('dead', 'complete');
+                brainstormBtn.classList.add('ready');
+            } else if (brainstormBtn) {
+                brainstormBtn.classList.remove('ready', 'complete');
+                brainstormBtn.classList.add('dead');
+            }
+            
+            // Update Section Structure Design Run button state based on topics availability
+            const structureBtn = document.getElementById('run-section-structure');
+            if (structureBtn) {
+                let hasTopics = false;
+                if (post.idea_scope) {
+                    try {
+                        const scopeData = JSON.parse(post.idea_scope);
+                        const topics = scopeData.generated_topics || [];
+                        hasTopics = topics.length > 0;
+                    } catch (e) {
+                        // idea_scope is not valid JSON or doesn't have topics
+                    }
+                }
+                if (hasTopics) {
+                    structureBtn.classList.remove('dead', 'complete');
+                    structureBtn.classList.add('ready');
+                } else {
+                    structureBtn.classList.remove('ready', 'complete');
+                    structureBtn.classList.add('dead');
+                }
+            }
+            
+            // Update Section Ideas (Topic Allocation) Run button state based on section_structure availability
+            const sectionIdeasBtn = document.getElementById('run-section-ideas');
+            if (sectionIdeasBtn) {
+                let hasStructure = false;
+                if (post.section_structure) {
+                    try {
+                        const structData = typeof post.section_structure === 'string' 
+                            ? JSON.parse(post.section_structure) 
+                            : post.section_structure;
+                        const sections = Array.isArray(structData) ? structData : (structData.sections || []);
+                        hasStructure = sections.length > 0;
+                    } catch (e) {
+                        // section_structure is not valid JSON
+                    }
+                }
+                if (hasStructure) {
+                    sectionIdeasBtn.classList.remove('dead', 'complete');
+                    sectionIdeasBtn.classList.add('ready');
+                } else {
+                    sectionIdeasBtn.classList.remove('ready', 'complete');
+                    sectionIdeasBtn.classList.add('dead');
+                }
             }
         } catch (e){
             console.error('Failed to load post details:', e);

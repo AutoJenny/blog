@@ -35,29 +35,104 @@ def save_topic_allocation(post_id, allocation_data, raw_response=None):
         logger.error(f"Error saving topic allocation: {e}")
 
 def build_section_specific_prompt(post_title, section_title, section_description, all_sections, expanded_idea=None):
-    """Build a section-specific brainstorming prompt"""
-    # Create context about other sections to avoid overlap
-    other_sections_context = ""
-    for i, section in enumerate(all_sections):
-        if section.get('title') != section_title:
-            other_sections_context += f"- {section.get('title', f'Section {i+1}')}: {section.get('description', '')}\n"
+    """Build a section-specific brainstorming prompt using positive and negative data"""
     
-    prompt = f"""Generate exactly 6 diverse, specific topics for the section "{section_title}" in a blog post titled "{post_title}".
+    # Extract boundaries and exclusions for current section if available
+    current_boundaries = ""
+    current_exclusions = ""
+    current_section_index = None
+    for idx, section in enumerate(all_sections):
+        # Match by title or theme, handling both formats
+        section_match_title = section.get('title') or section.get('theme', '')
+        if section_match_title == section_title:
+            current_section_index = idx
+            if section.get('boundaries'):
+                boundaries = section.get('boundaries')
+                if isinstance(boundaries, list):
+                    current_boundaries = "\n".join([f"- {b}" for b in boundaries if b])
+                elif boundaries:
+                    current_boundaries = f"- {boundaries}"
+            if section.get('exclusions'):
+                exclusions = section.get('exclusions')
+                if isinstance(exclusions, list):
+                    current_exclusions = "\n".join([f"- {e}" for e in exclusions if e])
+                elif exclusions:
+                    current_exclusions = f"- {exclusions}"
+            break
+    
+    # Build explicit exclusion list from OTHER sections (negative data)
+    # This should exclude the current section and include all others
+    exclusion_list = []
+    exclusion_count = 0
+    for i, section in enumerate(all_sections):
+        other_title = section.get('title') or section.get('theme', f'Section {i+1}')
+        other_desc = section.get('description', '')
+        # Use index comparison as primary check, with title as fallback
+        if current_section_index is not None:
+            is_current_section = (i == current_section_index)
+        else:
+            is_current_section = (other_title == section_title)
+        
+        if not is_current_section:
+            exclusion_count += 1
+            exclusion_list.append(f"{exclusion_count}. \"{other_title}\" - {other_desc}")
+    
+    exclusion_text = "\n".join(exclusion_list) if exclusion_list else "No other sections defined."
+    
+    prompt = f"""You are generating topics for EXACTLY ONE section in the blog post "{post_title}".
 
-SECTION DETAILS:
+═══════════════════════════════════════════════════════════════
+TARGET SECTION (GENERATE TOPICS FOR THIS - ONLY THIS):
+═══════════════════════════════════════════════════════════════
 Title: {section_title}
 Description: {section_description}
+{f"- Boundaries: {current_boundaries}" if current_boundaries else ""}
+{f"- Exclusions: {current_exclusions}" if current_exclusions else ""}
 
-CONTEXT:
-This is part of a comprehensive blog post with the following other sections:
-{other_sections_context}
+═══════════════════════════════════════════════════════════════
+FORBIDDEN SECTIONS (DO NOT GENERATE TOPICS FOR THESE):
+═══════════════════════════════════════════════════════════════
+{exclusion_text}
 
-REQUIREMENTS:
-- Generate exactly 6 topics
-- Each topic must fit perfectly within this section's theme
-- Avoid overlap with other sections listed above
-- Make topics specific and actionable
-- Focus on Welsh mythology and folklore themes
+CRITICAL EXCLUSION RULES - READ CAREFULLY:
+
+TIME-BASED EXCLUSIONS:
+- If the target section is about MODERN/CONTEMPORARY themes (e.g., "Contemporary Applications", "Modern Impact", "Enduring Legacy", "Current Relevance"), you MUST NOT generate topics about:
+  * Historical origins, ancient roots, traditional foundations, early developments, classical practices
+  * Mythological beginnings, pre-modern traditions, archaic customs
+  * Topics that belong in sections about "Ancient Foundations", "Historical Origins", "Traditional Roots"
+- If the target section is about ANCIENT/HISTORICAL themes (e.g., "Ancient Foundations", "Historical Origins", "Traditional Roots"), you MUST NOT generate topics about:
+  * Modern applications, contemporary practices, current relevance, future implications
+  * Modern-day impact, 21st-century adaptations, recent developments
+  * Topics that belong in sections about "Contemporary Applications", "Modern Impact", "Enduring Legacy"
+
+THEMATIC EXCLUSIONS:
+- Read each forbidden section's description carefully
+- If your topic mentions themes, concepts, or content described in ANY forbidden section, REJECT it immediately
+- Each topic must be thematically IMPOSSIBLE to place in any forbidden section above
+- If you cannot determine whether a topic fits ONLY the target section, REJECT it
+- Before finalizing EACH of the 6 topics, ask yourself: "Could this topic fit in ANY forbidden section based on its description?" If the answer is YES or UNCERTAIN, REJECT it and generate a different topic
+
+EXAMPLES OF WRONG TOPICS TO GENERATE (Generic Patterns):
+- If target section is about modern/contemporary themes and a forbidden section is about ancient/historical themes, DO NOT generate any topic about: historical origins, ancient roots, traditional foundations, early developments
+- If target section is about ancient/historical themes and a forbidden section is about modern/contemporary themes, DO NOT generate any topic about: modern applications, contemporary practices, current relevance, recent developments
+- ANY topic that relates to themes, concepts, or time periods described in ANY forbidden section is FORBIDDEN, regardless of how interesting or relevant it seems
+
+STRICT REQUIREMENTS:
+1. Generate exactly 6 topics
+2. Each topic MUST fit EXCLUSIVELY and ONLY within "{section_title}" 
+3. DO NOT generate any topic that could logically belong in ANY forbidden section listed above
+4. DO NOT generate topics about themes, eras, or concepts described in forbidden sections
+5. If a topic's theme overlaps with ANY forbidden section description, you MUST REJECT that topic
+6. Each topic must be specific, actionable, and thematically aligned ONLY with "{section_title}"
+7. Topics must align with the blog post "{post_title}" overall theme but stay within "{section_title}" boundaries
+
+VALIDATION CHECKLIST - Before including any topic, verify:
+□ This topic fits ONLY "{section_title}" based on its description
+□ This topic does NOT fit any forbidden section above
+□ This topic's themes do NOT overlap with themes from forbidden sections
+□ This topic cannot be placed in any other section
+□ If this topic were shown to someone reading the forbidden sections, they would NOT think it belongs there
 
 OUTPUT FORMAT:
 Return a JSON object with this exact structure:
@@ -72,12 +147,13 @@ Return a JSON object with this exact structure:
   ]
 }}
 
-Generate topics that are specific to {section_title} and Welsh mythology/folklore themes."""
+REMEMBER: Generate topics that are EXCLUSIVELY specific to "{section_title}" and CANNOT belong in any forbidden section listed above."""
 
+    # Include full expanded_idea context if available (no truncation)
     if expanded_idea:
-        prompt += f"\n\nEXPANDED IDEA CONTEXT:\n{expanded_idea[:500]}..."
+        prompt += f"\n\n═══════════════════════════════════════════════════════════════\nEXPANDED IDEA CONTEXT:\n═══════════════════════════════════════════════════════════════\n{expanded_idea}"
     
-    return prompt
+    return prompt, exclusion_count
 
 def build_allocation_data(all_allocations, section_structure):
     """Build structured allocation data for frontend display"""
@@ -153,18 +229,34 @@ def api_generate_section_specific_topics():
             section_description = section.get('description', 'No description available')
             
             logger.info(f"Generating topics for {section_id}: {section_title}")
+            logger.info(f"Total sections: {len(sections_data)}, Current section index: {i+1}")
             
             # Build section-specific brainstorming prompt
-            section_prompt = build_section_specific_prompt(
+            section_prompt, exclusion_count = build_section_specific_prompt(
                 title, section_title, section_description, sections_data, expanded_idea
             )
             
+            logger.info(f"Section {section_id}: Building prompt with 1 positive section, {exclusion_count} negative sections (exclusions)")
+            logger.info(f"Section {section_id} TARGET: \"{section_title}\" - {section_description[:100]}...")
+            
+            # Log which sections are being excluded
+            excluded_sections = []
+            for idx, sec in enumerate(sections_data):
+                if idx != i:
+                    excluded_title = sec.get('title') or sec.get('theme', f'Section {idx+1}')
+                    excluded_sections.append(excluded_title)
+            logger.info(f"Section {section_id} EXCLUDING ({exclusion_count} sections): {', '.join(excluded_sections)}")
+            
+            # Log prompt summary for debugging
+            logger.debug(f"Section {section_id} prompt preview (first 500 chars): {section_prompt[:500]}...")
+            
             brainstorming_messages = [
-                {'role': 'system', 'content': 'You are a creative content strategist specializing in generating focused, thematic blog topics. Generate exactly 6 diverse, specific topics that fit perfectly within the target section while avoiding overlap with other sections.'},
+                {'role': 'system', 'content': 'You are a strict content strategist for section-specific topic generation. Your task is to generate exactly 6 topics that fit EXCLUSIVELY within ONE specified section based on its title and description. You will be given ONE target section and MULTIPLE forbidden sections. Topics that could belong to ANY forbidden section MUST be rejected. Each topic must be thematically aligned ONLY with the target section and cannot overlap with themes from ANY other section. If a topic relates to historical origins but the target section is about modern impact, REJECT it. If a topic relates to modern applications but the target section is about ancient foundations, REJECT it.'},
                 {'role': 'user', 'content': section_prompt}
             ]
             
-            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', brainstorming_messages, max_tokens=3000)
+            # Increased token budget for better context understanding and response quality
+            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', brainstorming_messages, max_tokens=6000)
             
             if 'error' in result:
                 logger.error(f"LLM error for section {section_id}: {result['error']}")
