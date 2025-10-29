@@ -137,7 +137,8 @@ def posts_list():
                 'updated_ts': updated_ts,
                 'week_label': week_label,
                 'week_dates': week_dates_small,
-                'week_sort': week_sort_key
+                'week_sort': week_sort_key,
+                'week_number': int(sched_week) if sched_week else None
             })
         
         return render_template('posts_list.html', 
