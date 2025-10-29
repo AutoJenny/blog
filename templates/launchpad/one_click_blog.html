@@ -11,6 +11,19 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/launchpad/one-click-blog.css') }}">
+    <style>
+        /* Lightweight styles for per-row Run button */
+        .calendar-substages .substage,
+        .substages .substage { display:flex; align-items:center; justify-content:space-between; }
+        .run-btn { 
+            padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; 
+            border: 1px solid #334155; transition: all .15s ease; cursor: pointer;
+        }
+        .run-btn.dead { background:#111827; color:#9ca3af; border-color:#374151; }
+        .run-btn.ready { background:#ffffff; color:#111827; border-color:#d1d5db; }
+        .run-btn.complete { background:#10b981; color:#ffffff; border-color:#059669; }
+        .run-btn:hover { transform: translateY(-1px); }
+    </style>
 </head>
 <body>
     {% include 'shared/header.html' %}
@@ -46,14 +59,22 @@
                 <div class="calendar-content" id="calendar-content" style="display: none;">
                     <div class="calendar-substages">
                         <div class="substage complete">
-                            <i class="fas fa-check-circle"></i>
-                            <span>Calendar View</span>
-                            <span class="completed-at">Completed 2 hours ago</span>
+                            <div class="substage-left">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Calendar View</span>
+                                <span class="completed-at">Completed 2 hours ago</span>
+                            </div>
+                            <!-- No Run button for the first row (Calendar View) -->
                         </div>
                         <div class="substage complete">
-                            <i class="fas fa-check-circle"></i>
-                            <span>Idea Generation</span>
-                            <span class="completed-at">Completed 2 hours ago</span>
+                            <div class="substage-left">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Idea Generation</span>
+                                <span class="completed-at">Completed 2 hours ago</span>
+                            </div>
+                            <div class="substage-right">
+                                <button class="run-btn dead" title="Run substage">Run</button>
+                            </div>
                         </div>
                     </div>
                 </div>
