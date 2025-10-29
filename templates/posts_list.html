@@ -104,7 +104,7 @@
                         <td style="color:#9ca3af;">{{ post.created_ago }}</td>
                         <td style="color:#9ca3af;">{{ post.updated_ago }}</td>
                         <td class="actions">
-                            <a href="{% if post.week_number %}/planning/calendar/ideas/week/{{ post.week_number }}{% else %}/planning/calendar/ideas{% endif %}"
+                            <a href="/planning/posts/{{ post.id }}/calendar/ideas"
                                class="btn-primary" onclick="event.stopPropagation();">Edit in Workflow</a>
                             <a href="/posts/{{ post.id }}" class="icon-btn" title="Preview" onclick="event.stopPropagation();"><i class="fa-solid fa-eye"></i></a>
                             <button class="icon-btn delete-btn" title="Delete" data-post-id="{{ post.id }}" onclick="event.stopPropagation();"><i class="fa-solid fa-xmark" style="color:#ef4444;"></i></button>
