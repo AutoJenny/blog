@@ -9,6 +9,11 @@
 
 {% block content %}
 <div class="container">
+    <!-- Pipeline Navbar/Header to match Calendar View -->
+    {% set post_id = post_id|default(0) %}
+    {% set page_title = 'Calendar' %}
+    {% include 'shared/blog_pipeline_header.html' %}
+
     <!-- Week-based header -->
     <div class="week-header">
         <div class="week-info">
@@ -51,7 +56,7 @@
                     </div>
                     <div class="selected-idea-actions">
                         <button class="btn btn-success" onclick="confirmSelection()" id="confirm-btn" disabled>
-                            <i class="fas fa-check"></i> Create Post & Continue
+                            <i class="fas fa-check"></i> Create Post
                         </button>
                     </div>
                 </div>
@@ -477,11 +482,13 @@
 </style>
 
 <script>
-// Week-based mode variables
+// Week-based mode variables and navigation context
 window.weekNumber = {{ week_number }};
 window.year = {{ year }};
 window.mode = 'week-based';
 window.postId = null;
+window.currentStage = 'calendar';
+window.currentSubstage = 'ideas-week';
 
 // Available ideas data
 let availableIdeas = {{ ideas | tojson }};
@@ -609,50 +616,22 @@ async function confirmSelection() {
         const originalText = confirmBtn.innerHTML;
         confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Post...';
         confirmBtn.disabled = true;
-        
-        // Check if topic already exists this year
-        const checkResponse = await fetch('/planning/api/posts/check-topic', {
+        // Single confirm endpoint consolidates logic
+        const confirmResp = await fetch('/planning/api/calendar/confirm-idea', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 topic: selectedIdea.idea_title,
+                week_number: window.weekNumber,
                 year: window.year
             })
         });
-        
-        const checkData = await checkResponse.json();
-        let postId;
-        let action;
-        
-        if (checkData.success && checkData.existing_post_id) {
-            // Topic already exists - reuse existing post
-            postId = checkData.existing_post_id;
-            action = 'reusing existing post';
-            console.log(`Reusing existing post ID ${postId} for topic: ${selectedIdea.idea_title}`);
-        } else {
-            // New topic - create new post
-            const newPostResponse = await fetch('/planning/api/posts/create-new', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    topic: selectedIdea.idea_title,
-                    week_number: window.weekNumber
-                })
-            });
-            
-            const newPostData = await newPostResponse.json();
-            if (newPostData.success) {
-                postId = newPostData.post_id;
-                action = 'created new post';
-                console.log(`Created new post ID ${postId} for topic: ${selectedIdea.idea_title}`);
-            } else {
-                throw new Error('Failed to create new post');
-            }
+        const confirmData = await confirmResp.json();
+        if (!confirmResp.ok || !confirmData.success) {
+            throw new Error(confirmData.error || 'Failed to confirm idea');
         }
+        const postId = confirmData.post_id;
+        const action = 'created or reused post';
         
         // Update status display
         const statusDisplay = document.getElementById('post-creation-status');

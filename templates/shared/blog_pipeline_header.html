@@ -69,8 +69,10 @@
                    class="sub-stage-btn" data-substage="view">
                     Calendar View
                 </a>
-                <a href="{{ url_for('planning.planning_calendar_ideas_week', week_number=39) }}" 
-                   class="sub-stage-btn" data-substage="ideas-week">
+                <a href="#" 
+                   id="week-ideas-link"
+                   class="sub-stage-btn" 
+                   data-substage="ideas-week">
                     Week Ideas
                 </a>
             </div>
@@ -320,14 +322,38 @@ function initializeTabs() {
     }
 }
 
+// Calculate current ISO week number (ISO 8601 standard)
+function getCurrentISOWeek() {
+    const date = new Date();
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7; // Convert Sunday (0) to 7
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum); // Get the Thursday of current week
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1)); // January 1st
+    const weekNum = Math.ceil((((d - yearStart) / 86400000) + 1) / 7); // Calculate week number
+    return weekNum;
+}
+
+// Set Week Ideas link to current week
+function setWeekIdeasLink() {
+    const weekIdeasLink = document.getElementById('week-ideas-link');
+    if (weekIdeasLink) {
+        const currentWeek = getCurrentISOWeek();
+        weekIdeasLink.href = `/planning/calendar/ideas/week/${currentWeek}`;
+    }
+}
+
 // Run on DOM ready
 document.addEventListener('DOMContentLoaded', function() {
     updateNavigationHighlighting();
     initializeTabs();
+    setWeekIdeasLink();
 });
 
 // Also run after a short delay to catch pages that set window.currentStage after DOM ready
-setTimeout(updateNavigationHighlighting, 100);
+setTimeout(function() {
+    updateNavigationHighlighting();
+    setWeekIdeasLink();
+}, 100);
 </script>
 
 <!-- Include shared header functionality -->

@@ -7,6 +7,8 @@ Micro-file for post-specific API endpoints
 from flask import request, jsonify
 from config.database import db_manager
 import logging
+from datetime import datetime
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -74,3 +76,91 @@ def api_posts(post_id):
     except Exception as e:
         logger.error(f"Error fetching post data: {e}")
         return jsonify({'error': str(e)}), 500
+
+
+def confirm_calendar_idea():
+    """Consolidated endpoint to confirm a calendar idea and produce a post.
+
+    Input JSON: { "topic": str, "week_number": int, "year"?: int, "force_new"?: bool }
+    Behavior:
+      1) Check if topic exists this year (reuses unless force_new=True)
+      2) Create post if needed (status=draft)
+      3) Upsert calendar_schedule (post_id, year, week_number)
+      4) Upsert post_development.idea_seed = f"{topic}: {optional description}" (here: topic only)
+    Returns: { success: true, post_id }
+    """
+    try:
+        data = request.get_json(force=True) or {}
+        topic = (data.get('topic') or '').strip()
+        week_number = data.get('week_number')
+        year = data.get('year') or datetime.now().year
+        force_new = bool(data.get('force_new', False))
+        if not topic or not isinstance(week_number, int):
+            return jsonify({ 'error': 'topic and week_number are required' }), 400
+
+        with db_manager.get_cursor() as cursor:
+            post_id = None
+            if not force_new:
+                # Check existing topic (same year)
+                cursor.execute("""
+                    SELECT p.id
+                    FROM post p
+                    LEFT JOIN post_development pd ON pd.post_id = p.id
+                    WHERE (p.title = %s OR pd.idea_seed ILIKE %s)
+                    ORDER BY p.updated_at DESC
+                    LIMIT 1
+                """, (topic, f"%{topic}%"))
+                row = cursor.fetchone()
+                if row:
+                    post_id = row['id']
+
+            # Create post if needed
+            if not post_id:
+                # Generate slug from topic
+                base = re.sub(r"[^a-z0-9\-]+", '-', (topic or '').lower().strip().replace(' ', '-'))
+                base = re.sub(r"-+", '-', base).strip('-') or 'post'
+                slug = base
+                # Ensure slug uniqueness (best-effort: append suffix if clash)
+                suffix = 1
+                while True:
+                    cursor.execute("SELECT 1 FROM post WHERE slug = %s LIMIT 1", (slug,))
+                    if not cursor.fetchone():
+                        break
+                    suffix += 1
+                    slug = f"{base}-{suffix}"
+                cursor.execute("""
+                    INSERT INTO post (title, slug, status, created_at, updated_at)
+                    VALUES (%s, %s, 'draft', NOW(), NOW())
+                    RETURNING id
+                """, (topic, slug))
+                post_id = cursor.fetchone()['id']
+
+            # Upsert calendar_schedule (latest wins)
+            cursor.execute("""
+                INSERT INTO calendar_schedule (post_id, year, week_number, scheduled_date, created_at, updated_at)
+                VALUES (%s, %s, %s, NULL, NOW(), NOW())
+                ON CONFLICT (id) DO NOTHING
+            """, (post_id, year, week_number))
+
+            # Ensure only one schedule row per post/year/week: cleanup duplicates if schema allows multiples
+            cursor.execute("""
+                DELETE FROM calendar_schedule cs
+                USING calendar_schedule cs2
+                WHERE cs.id > cs2.id
+                  AND cs.post_id = cs2.post_id
+                  AND cs.year = cs2.year
+                  AND cs.week_number = cs2.week_number
+            """)
+
+            # Upsert post_development.idea_seed
+            cursor.execute("""
+                INSERT INTO post_development (post_id, idea_seed, updated_at)
+                VALUES (%s, %s, NOW())
+                ON CONFLICT (post_id)
+                DO UPDATE SET idea_seed = EXCLUDED.idea_seed, updated_at = NOW()
+            """, (post_id, topic))
+
+        return jsonify({ 'success': True, 'post_id': post_id })
+    except Exception as e:
+        logger.error(f"Error in confirm_calendar_idea: {e}")
+        return jsonify({ 'error': str(e) }), 500

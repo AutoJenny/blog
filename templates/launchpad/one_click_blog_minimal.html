@@ -33,6 +33,7 @@
                     <tr>
                         <th class="stage-header">Stage</th>
                         <th class="substage-header">Substage</th>
+                        <th class="run-header" style="width: 120px; text-align:right;">Run</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -45,9 +46,11 @@
                             </div>
                         </td>
                         <td class="substage-cell">Calendar View</td>
+                        <td class="run-cell" style="text-align:right;"></td>
                     </tr>
                     <tr>
                         <td class="substage-cell">Week Ideas</td>
+                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
 
                     <!-- Planning Stage -->
@@ -59,18 +62,23 @@
                             </div>
                         </td>
                         <td class="substage-cell">Idea Generation</td>
+                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
                         <td class="substage-cell">Topic Brainstorming</td>
+                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
                         <td class="substage-cell">Section Structure Design</td>
+                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
                         <td class="substage-cell">Section Ideas</td>
+                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
                         <td class="substage-cell">Section Titling</td>
+                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
 
                     <!-- Authoring Stage -->
@@ -82,15 +90,19 @@
                             </div>
                         </td>
                         <td class="substage-cell">Drafting</td>
+                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
                         <td class="substage-cell">Image Concepts</td>
+                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
                         <td class="substage-cell">Image Prompts</td>
+                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
                         <td class="substage-cell">Image Captions</td>
+                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
 
                     <!-- Imaging Stage -->
@@ -102,9 +114,11 @@
                             </div>
                         </td>
                         <td class="substage-cell">Image Generation</td>
+                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
                         <td class="substage-cell">Optimise</td>
+                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
 
                     <!-- Header Stage -->
@@ -116,18 +130,23 @@
                             </div>
                         </td>
                         <td class="substage-cell">Title & Summary</td>
+                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
                         <td class="substage-cell">Header Image</td>
+                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
                         <td class="substage-cell">SEO & Meta</td>
+                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
                         <td class="substage-cell">Publishing Details</td>
+                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
                         <td class="substage-cell">Final Review</td>
+                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
                     </tr>
                 </tbody>
             </table>
@@ -213,6 +232,10 @@
             color: #4e6bff;
             margin-right: 4px;
         }
+        .run-btn { padding:8px 14px; border-radius:8px; font-weight:700; font-size:0.85rem; border:1px solid #334155; }
+        .run-btn.dead { background:#111827; color:#9ca3af; border-color:#374151; }
+        .run-btn.ready { background:#ffffff; color:#111827; border-color:#d1d5db; }
+        .run-btn.complete { background:#10b981; color:#ffffff; border-color:#059669; }
     </style>
 
 </body>

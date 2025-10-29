@@ -43,7 +43,7 @@
             </div>
             
             <div class="ideas-results">
-                <h3>Current Idea Seed</h3>
+                <h3>Expanded Idea</h3>
                 <div id="current-idea-seed" class="idea-seed-display">
                     <!-- Current idea seed will appear here -->
                 </div>
@@ -377,7 +377,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.postId = {{ post_id }};
     window.weekNumber = {{ week_number }};
     
-    // Initialize LLM module
+    // Initialize LLM module (expanded idea generation)
     llmModule = initializeLLMModule('ideas', window.postId);
     
     // Load ideas and current selection
@@ -410,8 +410,19 @@ async function loadIdeasForWeek() {
 
 async function loadCurrentIdeaSeed() {
     try {
-        // For now, show a message that we're working with week-based ideas
-        displayCurrentIdeaSeed('Working with ideas for current week - no specific post selected yet');
+        // Fetch post data to ensure idea_seed exists; if missing, instruct user to pick an idea first
+        const resp = await fetch(`/planning/api/posts/${window.postId}`);
+        const data = await resp.json();
+        if (!data.success || !data.post) {
+            displayCurrentIdeaSeed('Unable to load post data');
+            return;
+        }
+        const seed = data.post.idea_seed || null;
+        if (!seed) {
+            displayCurrentIdeaSeed('No idea set. Go to Calendar → Week Ideas to pick one.');
+            return;
+        }
+        displayCurrentIdeaSeed(seed);
     } catch (error) {
         console.error('Error loading current idea seed:', error);
     }
@@ -552,8 +563,8 @@ async function confirmSelection() {
             }
         }
         
-        // Now set the idea seed for the determined post ID
-        const response = await fetch(`/planning/api/posts/${postId}/idea-seed`, {
+            // Now set the idea seed for the determined post ID
+            const response = await fetch(`/planning/api/posts/${postId}/idea-seed`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
