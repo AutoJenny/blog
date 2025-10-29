@@ -50,7 +50,7 @@
                     </tr>
                     <tr>
                         <td class="substage-cell">Week Ideas</td>
-                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-week-ideas" class="run-btn ready">Run</button></td>
                     </tr>
 
                     <!-- Planning Stage -->
@@ -240,3 +240,74 @@
 
 </body>
 </html>
+<script>
+// Run Week Ideas creation without navigation: auto-pick an idea and call confirm endpoint
+(function(){
+    function getCurrentISOWeek(){
+        const date = new Date();
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    }
+    async function runWeekIdeas(){
+        const btn = document.getElementById('run-week-ideas');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        try {
+            btn.disabled = true;
+            btn.textContent = 'Running…';
+            btn.classList.remove('dead','complete');
+            btn.classList.add('ready');
+
+            const week = getCurrentISOWeek();
+            const year = new Date().getFullYear();
+            // Fetch ideas for current week
+            const ideasResp = await fetch(`/planning/api/calendar/ideas/week/${week}`);
+            const ideasData = await ideasResp.json();
+            let topic = null;
+            if (ideasData && ideasData.success && Array.isArray(ideasData.ideas) && ideasData.ideas.length){
+                const mandatory = ideasData.ideas.find(i => i.priority === 'mandatory');
+                topic = (mandatory || ideasData.ideas[0]).idea_title;
+            } else {
+                // Fallback: prompt user for a topic if no ideas available
+                topic = window.prompt('Enter a topic for this week (no ideas available):');
+                if (!topic) throw new Error('No topic provided');
+            }
+
+            // Confirm/create post without leaving the page
+            const confirmResp = await fetch('/planning/api/calendar/confirm-idea', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ topic, week_number: week, year })
+            });
+            const confirmData = await confirmResp.json();
+            if (!confirmResp.ok || !confirmData.success){
+                throw new Error(confirmData.error || 'Failed to create/reuse post');
+            }
+
+            // Mark as complete
+            btn.textContent = 'Done';
+            btn.classList.remove('dead','ready');
+            btn.classList.add('complete');
+        } catch (err){
+            console.error('Week Ideas run failed:', err);
+            alert('Week Ideas run failed: ' + err.message);
+            btn.classList.remove('complete');
+            btn.classList.add('dead');
+        } finally {
+            btn.disabled = false;
+            setTimeout(() => { btn.textContent = originalText; }, 1500);
+        }
+    }
+    const btn = document.getElementById('run-week-ideas');
+    if (btn){
+        btn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            runWeekIdeas();
+        });
+    }
+})();
+</script>

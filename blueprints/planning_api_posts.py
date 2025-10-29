@@ -160,6 +160,13 @@ def confirm_calendar_idea():
                 DO UPDATE SET idea_seed = EXCLUDED.idea_seed, updated_at = NOW()
             """, (post_id, topic))
 
+            # Bump post.updated_at so it reflects this action in listings
+            cursor.execute("""
+                UPDATE post
+                SET updated_at = NOW()
+                WHERE id = %s
+            """, (post_id,))
+
         return jsonify({ 'success': True, 'post_id': post_id })
     except Exception as e:
         logger.error(f"Error in confirm_calendar_idea: {e}")
