@@ -15,9 +15,17 @@
     {% include 'shared/header.html' %}
 
     <div class="container">
-        <div class="header">
-            <h1><i class="fas fa-magic"></i> One-Click Blog</h1>
-            <p>Automated End-to-End Blog Post Creation</p>
+        <div class="header" style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
+            <div>
+                <h1><i class="fas fa-magic"></i> One-Click Blog</h1>
+                <p>Automated End-to-End Blog Post Creation</p>
+            </div>
+            <div>
+                <a href="/newsletter" class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-4 py-2 rounded-lg" style="text-decoration:none;">
+                    <i class="fa-solid fa-envelope"></i>
+                    Newsletter
+                </a>
+            </div>
         </div>
 
         <!-- Post Selector (uses most recently updated by default) -->
@@ -44,12 +52,23 @@
 
         <!-- Pipeline Stages Table -->
         <div class="pipeline-table-container mt-8">
+            <div style="display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-bottom:10px;">
+                <div id="author-select-wrap" style="display:flex; align-items:center; gap:8px;">
+                    <label for="author-select" style="color:#a8afc2; font-size:13px;">Author:</label>
+                    <select id="author-select" style="background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:6px; padding:6px 10px; min-width:200px;"></select>
+                </div>
+                <button id="start-all" class="run-btn complete" style="padding:10px 18px; font-size:0.95rem;">
+                    <i class="fas fa-play" style="margin-right:6px;"></i>
+                    Start
+                </button>
+            </div>
             <table class="pipeline-table">
                 <thead>
                     <tr>
                         <th class="stage-header">Stage</th>
                         <th class="substage-header">Substage</th>
                         <th class="run-header" style="width: 120px; text-align:right;">Run</th>
+                        <th class="run-header" style="width: 140px; text-align:right; padding-right:20px;">Mode</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -63,10 +82,17 @@
                         </td>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="calendar" data-substage="calendar-view">Calendar View</a></td>
                         <td class="run-cell" style="text-align:right;"></td>
+                        <td class="run-cell" style="text-align:right;"></td>
                     </tr>
                     <tr>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="calendar" data-substage="week-ideas">Week Ideas</a></td>
                         <td class="run-cell" style="text-align:right;"><button id="run-week-ideas" class="run-btn ready">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="week-ideas">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
                     </tr>
 
                     <!-- Planning Stage -->
@@ -79,22 +105,52 @@
                         </td>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="idea-generation">Idea Generation</a></td>
                         <td class="run-cell" style="text-align:right;"><button id="run-idea-generation" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="idea-generation">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
                     </tr>
                     <tr>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="topic-brainstorming">Topic Brainstorming</a></td>
                         <td class="run-cell" style="text-align:right;"><button id="run-topic-brainstorming" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="topic-brainstorming">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
                     </tr>
                     <tr>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="section-structure-design">Section Structure Design</a></td>
                         <td class="run-cell" style="text-align:right;"><button id="run-section-structure" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="section-structure-design">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
                     </tr>
                     <tr>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="section-ideas">Section Ideas</a></td>
                         <td class="run-cell" style="text-align:right;"><button id="run-section-ideas" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="section-ideas">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
                     </tr>
                     <tr>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="section-titling">Section Titling</a></td>
                         <td class="run-cell" style="text-align:right;"><button id="run-section-titling" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="section-titling">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
                     </tr>
 
                     <!-- Authoring Stage -->
@@ -107,18 +163,42 @@
                         </td>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="authoring" data-substage="drafting">Drafting</a></td>
                         <td class="run-cell" style="text-align:right;"><button id="run-drafting" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="drafting">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
                     </tr>
                     <tr>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="authoring" data-substage="image-concepts">Image Concepts</a></td>
                         <td class="run-cell" style="text-align:right;"><button id="run-image-concepts" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="image-concepts">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
                     </tr>
                     <tr>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="authoring" data-substage="image-prompts">Image Prompts</a></td>
                         <td class="run-cell" style="text-align:right;"><button id="run-image-prompts" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="image-prompts">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
                     </tr>
                     <tr>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="authoring" data-substage="image-captions">Image Captions</a></td>
                         <td class="run-cell" style="text-align:right;"><button id="run-image-captions" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="image-captions">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
                     </tr>
 
                     <!-- Imaging Stage -->
@@ -131,10 +211,22 @@
                         </td>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="imaging" data-substage="image-generation">Image Generation</a></td>
                         <td class="run-cell" style="text-align:right;"><button id="run-image-generation" class="run-btn ready">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="image-generation">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
                     </tr>
                     <tr>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="imaging" data-substage="optimise">Optimise</a></td>
                         <td class="run-cell" style="text-align:right;"><button id="run-image-optimise" class="run-btn ready">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="optimise">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
                     </tr>
 
                     <!-- Header Stage -->
@@ -145,28 +237,64 @@
                                 Header
                             </div>
                         </td>
-                        <td class="substage-cell">Title & Summary</td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="header" data-substage="title-summary">Title & Summary</a></td>
                         <td class="run-cell" style="text-align:right;"><button id="run-header-title-summary" class="run-btn ready">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="header-title-summary">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
                     </tr>
                     <tr>
-                        <td class="substage-cell">Header Image — Prompt</td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="header" data-substage="header-image-prompt">Header Image — Prompt</a></td>
                         <td class="run-cell" style="text-align:right;"><button id="run-header-image-prompt" class="run-btn ready" title="Generate header image prompt">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="header-image-prompt">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
                     </tr>
                     <tr>
-                        <td class="substage-cell">Header Image — Captions/Alt</td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="header" data-substage="header-image-details">Header Image — Captions/Alt</a></td>
                         <td class="run-cell" style="text-align:right;"><button id="run-header-image-details" class="run-btn ready" title="Generate caption and alt text">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="header-image-details">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
                     </tr>
                     <tr>
-                        <td class="substage-cell">Header Image — Image</td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="header" data-substage="header-image-generate">Header Image — Image</a></td>
                         <td class="run-cell" style="text-align:right;"><button id="run-header-image-generate" class="run-btn ready" title="Generate header image">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="header-image-generate">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
                     </tr>
                     <tr>
-                        <td class="substage-cell">Header Image — Optimise</td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="header" data-substage="header-image-optimise">Header Image — Optimise</a></td>
                         <td class="run-cell" style="text-align:right;"><button id="run-header-image-optimize" class="run-btn ready" title="Optimize & Watermark header image">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="header-image-optimise">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
                     </tr>
                     <tr>
-                        <td class="substage-cell">SEO & Meta</td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="header" data-substage="seo-meta">SEO & Meta</a></td>
                         <td class="run-cell" style="text-align:right;"><button id="run-header-seo-meta" class="run-btn ready">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="header-seo-meta">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
                     </tr>
                     
                     <!-- Final Review Stage (separate) -->
@@ -177,8 +305,14 @@
                                 Final Review
                             </div>
                         </td>
-                        <td class="substage-cell">Preview</td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="header" data-substage="final-review">Preview</a></td>
                         <td class="run-cell" style="text-align:right;"><button id="run-final-review" class="run-btn ready">Preview</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="final-review">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -266,15 +400,187 @@
             color: #4e6bff;
             margin-right: 4px;
         }
-        .run-btn { padding:8px 14px; border-radius:8px; font-weight:700; font-size:0.85rem; border:1px solid #334155; }
-        .run-btn.dead { background:#111827; color:#9ca3af; border-color:#374151; }
-        .run-btn.ready { background:#ffffff; color:#111827; border-color:#d1d5db; }
+        .run-btn { padding:8px 14px; border-radius:8px; font-weight:800; font-size:0.85rem; border:1px solid #334155; }
+        .pipeline-table .run-cell button.run-btn { font-weight:800; }
+        .run-btn.dead { background:#111827; color:#e5e7eb; border-color:#374151; }
+        .run-btn.ready { background:#1f2937; color:#e5e7eb; border-color:#374151; }
         .run-btn.complete { background:#10b981; color:#ffffff; border-color:#059669; }
+        /* Force consistent text color for all Run buttons within table */
+        .pipeline-table .run-cell .run-btn { color:#e5e7eb !important; }
+
+        /* Mode column and selects */
+        .pipeline-table .run-header { padding-right: 20px; }
+        .pipeline-table td.run-cell { padding-right: 18px; }
+        .pipeline-table td.run-cell:last-child { padding-right: 20px; padding-left: 18px; }
+        select.mode-select {
+            background: #0f172a;
+            color: #e2e8f0;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 6px 10px;
+            min-width: 110px;
+        }
+        select.mode-select:focus { outline: none; box-shadow: 0 0 0 2px rgba(59,130,246,0.35); }
     </style>
 
 </body>
 </html>
 <script>
+// Orchestrator overlay (moved below run handlers to avoid ReferenceError)
+(function(){
+    const overlay = document.createElement('div');
+    overlay.id = 'orchestrator-overlay';
+    overlay.style.cssText = 'position:fixed;right:16px;bottom:16px;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:10px;padding:12px 14px;z-index:9999;min-width:300px;display:none;';
+    overlay.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+            <strong>Run All</strong>
+            <div>
+                <button id="orch-pause" class="run-btn dead" style="padding:4px 8px;">Pause</button>
+                <button id="orch-continue" class="run-btn ready" style="padding:4px 8px;display:none;">Continue</button>
+                <button id="orch-close" class="run-btn dead" style="padding:4px 8px;">Close</button>
+            </div>
+        </div>
+        <div id="orch-status" style="margin-top:8px;font-size:12px;color:#a8afc2;">Preparing…</div>
+        <div id="orch-steps" style="margin-top:8px;max-height:180px;overflow:auto;font-size:12px;"></div>
+    `;
+    document.body.appendChild(overlay);
+    // Defer pipeline wiring until after run handlers are defined later in the file
+    return;
+
+    function openOverlay(){ overlay.style.display='block'; }
+    function closeOverlay(){ overlay.style.display='none'; }
+    function setStatus(text){ const el=document.getElementById('orch-status'); if (el) el.textContent=text; }
+    function appendStep(text){ const el=document.getElementById('orch-steps'); if (el){ const d=document.createElement('div'); d.textContent=text; el.appendChild(d);} }
+
+    const modeKey = (id)=>`blogForgeMode_${id}`;
+    function getMode(id){
+        const sel = document.querySelector(`select.mode-select[data-substage="${id}"]`);
+        const saved = localStorage.getItem(modeKey(id));
+        const value = (saved || (sel ? sel.value : 'auto')) || 'auto';
+        if (sel) sel.value = value;
+        return value;
+    }
+    document.querySelectorAll('select.mode-select').forEach(sel => {
+        const id = sel.getAttribute('data-substage');
+        const saved = localStorage.getItem(modeKey(id));
+        if (saved) sel.value = saved;
+        sel.addEventListener('change', ()=> localStorage.setItem(modeKey(id), sel.value));
+    });
+
+    // Map completion events
+    const events = {
+        'image_generation_complete': 'image_generation_complete',
+        'image_optimise_complete': 'image_optimise_complete',
+        'header_title_summary_complete': 'header_title_summary_complete',
+        'header_image_prompt_complete': 'header_image_prompt_complete',
+        'header_image_details_complete': 'header_image_details_complete',
+        'header_image_generated': 'header_image_generated',
+        'header_image_optimized': 'header_image_optimized',
+        'header_seo_meta_complete': 'header_seo_meta_complete'
+    };
+
+    // Pipeline definition (order can be adjusted)
+    const pipeline = [
+        { id:'week-ideas', label:'Calendar — Week Ideas', run: runWeekIdeas },
+        { id:'idea-generation', label:'Planning — Idea Generation', run: runIdeaGeneration },
+        { id:'topic-brainstorming', label:'Planning — Topic Brainstorming', run: runTopicBrainstorming },
+        { id:'section-structure-design', label:'Planning — Section Structure', run: runSectionStructure },
+        { id:'section-ideas', label:'Planning — Section Ideas', run: runSectionIdeas },
+        { id:'section-titling', label:'Planning — Section Titling', run: runSectionTitling },
+        { id:'drafting', label:'Authoring — Drafting', run: runDrafting },
+        { id:'image-concepts', label:'Authoring — Image Concepts', run: runImageConcepts },
+        { id:'image-prompts', label:'Authoring — Image Prompts', run: runImagePrompts },
+        { id:'image-captions', label:'Authoring — Image Captions', run: runImageCaptions },
+        { id:'image-generation', label:'Imaging — Image Generation', run: runImageGeneration, completeEvent: events.image_generation_complete },
+        { id:'optimise', label:'Imaging — Optimise', run: runImageOptimise, completeEvent: events.image_optimise_complete },
+        { id:'header-title-summary', label:'Header — Title & Summary', run: ()=>{ const p=getSelectedPostId(); return p ? ensureAuthorSaved(p).then(()=>runHeaderTitleSummary()) : runHeaderTitleSummary(); }, completeEvent: events.header_title_summary_complete },
+        { id:'header-image-prompt', label:'Header Image — Prompt', run: runHeaderImagePrompt, completeEvent: events.header_image_prompt_complete },
+        { id:'header-image-details', label:'Header Image — Captions/Alt', run: runHeaderImageDetails, completeEvent: events.header_image_details_complete },
+        { id:'header-image-generate', label:'Header Image — Image', run: runHeaderImageGenerate, completeEvent: events.header_image_generated },
+        { id:'header-image-optimise', label:'Header Image — Optimise', run: runHeaderImageOptimize, completeEvent: events.header_image_optimized },
+        { id:'header-seo-meta', label:'Header — SEO & Meta', run: runHeaderSeoMeta, completeEvent: events.header_seo_meta_complete },
+        { id:'final-review', label:'Final Review — Preview', run: runFinalReview }
+    ];
+
+    function waitForEvent(eventName, timeoutMs=120000){
+        return new Promise((resolve, reject)=>{
+            let timer = setTimeout(()=>{ window.removeEventListener('message', onMsg); reject(new Error('Timeout waiting for '+eventName)); }, timeoutMs);
+            function onMsg(ev){ if (ev.data === eventName){ clearTimeout(timer); window.removeEventListener('message', onMsg); resolve(); } }
+            window.addEventListener('message', onMsg);
+        });
+    }
+
+    let paused = false;
+    function setPaused(v){ paused = v; document.getElementById('orch-continue').style.display = v ? '' : 'none'; }
+
+    let pendingManualResolve = null;
+
+    async function runAll(){
+        const startBtn = document.getElementById('start-all');
+        const runAllBtn = document.getElementById('run-all');
+        if (startBtn){ startBtn.disabled = true; startBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Running…'; }
+        if (runAllBtn){ runAllBtn.disabled = true; runAllBtn.textContent = 'Running…'; }
+        openOverlay(); setStatus('Starting…'); appendStep('Initializing pipeline');
+        for (const step of pipeline){
+            const mode = getMode(step.id);
+            appendStep(`→ ${step.label} (${mode})`);
+            setStatus(step.label);
+            if (mode === 'manual'){
+                // For manual mode, just open the destination page like the run function would, but do not proceed automatically.
+                try { step.run(); } catch(_){}
+                setPaused(true);
+                await new Promise((resolve)=>{
+                    const cont = document.getElementById('orch-continue');
+                    const handler = ()=>{ cont.removeEventListener('click', handler); setPaused(false); if (startBtn){ startBtn.disabled = true; startBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Running…'; } resolve(); };
+                    cont.addEventListener('click', handler);
+                    pendingManualResolve = ()=>{ handler(); pendingManualResolve = null; };
+                    if (startBtn){ startBtn.disabled = false; startBtn.innerHTML = '<i class="fas fa-play" style="margin-right:6px;"></i>Resume'; }
+                });
+                appendStep(`✓ ${step.label} (manual)`);
+                continue;
+            }
+            try{
+                // Auto: invoke runner
+                const maybeWin = step.run && step.run();
+                if (step.completeEvent){
+                    await waitForEvent(step.completeEvent, step.id === 'image-generation' ? 300000 : 180000);
+                } else {
+                    // Fallback: short delay for non-event steps
+                    await new Promise(r=>setTimeout(r, 1500));
+                }
+                appendStep(`✓ ${step.label}`);
+            }catch(e){
+                appendStep(`✗ ${step.label} — ${e.message}`);
+                const retry = confirm(`${step.label} failed: ${e.message}. Retry?`);
+                if (retry){
+                    // One retry
+                    try{
+                        step.run && step.run();
+                        if (step.completeEvent){ await waitForEvent(step.completeEvent, 180000); }
+                        appendStep(`✓ ${step.label} (retry)`);
+                    }catch(e2){ appendStep(`✗ ${step.label} — ${e2.message}`); break; }
+                } else {
+                    const skip = confirm('Skip this step and continue?');
+                    if (!skip) break;
+                }
+            }
+            // Pause support
+            while (paused){ await new Promise(r=>setTimeout(r, 300)); }
+        }
+        setStatus('Pipeline complete');
+        if (startBtn){ startBtn.disabled = false; startBtn.innerHTML = '<i class="fas fa-play" style="margin-right:6px;"></i>Start'; }
+        if (runAllBtn){ runAllBtn.disabled = false; runAllBtn.textContent = 'Run All'; }
+    }
+
+    const runAllBtn = document.getElementById('run-all');
+    if (runAllBtn){ runAllBtn.addEventListener('click', (e)=>{ e.preventDefault(); runAll(); }); }
+    const startBtn = document.getElementById('start-all');
+    if (startBtn){ startBtn.addEventListener('click', (e)=>{ e.preventDefault(); if (pendingManualResolve){ pendingManualResolve(); } else { runAll(); } }); }
+    const pauseBtn = document.getElementById('orch-pause');
+    if (pauseBtn){ pauseBtn.addEventListener('click', ()=> setPaused(!paused)); }
+    const closeBtn = document.getElementById('orch-close');
+    if (closeBtn){ closeBtn.addEventListener('click', ()=> closeOverlay()); }
+})();
 // Run Week Ideas creation without navigation: auto-pick an idea and call confirm endpoint
 (function(){
     function getCurrentISOWeek(){
@@ -936,6 +1242,15 @@
             imaging: {
                 'image-generation': p => `/imaging/posts/${p}/sections/image-generation`,
                 'optimise': p => `/imaging/posts/${p}/sections/optimise`
+                },
+                header: {
+                    'title-summary': p => `/header/posts/${p}/title-summary`,
+                    'header-image-prompt': p => `/header/posts/${p}/header-image`,
+                    'header-image-details': p => `/header/posts/${p}/header-image`,
+                    'header-image-generate': p => `/header/posts/${p}/header-image`,
+                    'header-image-optimise': p => `/header/posts/${p}/header-image`,
+                    'seo-meta': p => `/header/posts/${p}/seo-meta`,
+                    'final-review': p => `/header/posts/${p}/preview`
             }
         };
         const fn = routes[stage] && routes[stage][substage];
@@ -959,7 +1274,7 @@
         });
     });
 
-    // Load posts for selector from consolidated API and default to most recently updated
+    // Load posts for selector; default to saved or current week's scheduled post
     async function loadPosts(){
         try {
             const resp = await fetch('/api/posts');
@@ -975,23 +1290,55 @@
                 if (subtitleEl) subtitleEl.textContent = '';
                 return;
             }
-            // Already sorted by updated_at DESC in backend; pick first
-            // Check for saved post ID in localStorage, otherwise use most recent
-            const savedPostId = localStorage.getItem('blogForgeSelectedPostId');
-            const defaultPostId = savedPostId && posts.find(p => p.id.toString() === savedPostId) ? savedPostId : posts[0].id;
-            
+            // Populate selector immediately
             select.innerHTML = posts.map(p => `<option value="${p.id}">#${p.id} — ${escapeHtml(p.title || 'Untitled')}</option>`).join('');
-            select.value = defaultPostId;
-            localStorage.setItem('blogForgeSelectedPostId', defaultPostId.toString());
-            updateSelectedPostSummary(defaultPostId);
+            // Determine default quickly (saved or first), then refine asynchronously to current week
+            const savedPostId = localStorage.getItem('blogForgeSelectedPostId');
+            const quickDefaultId = (savedPostId && posts.find(p => p.id.toString() === savedPostId)) ? savedPostId : posts[0].id;
+            select.value = quickDefaultId;
+            localStorage.setItem('blogForgeSelectedPostId', quickDefaultId.toString());
+            updateSelectedPostSummary(quickDefaultId);
+            loadAuthorsForPost(quickDefaultId);
+            // Try refine to current week's post in background
+            (async ()=>{
+                const currentWeekId = await findCurrentWeekPostId(posts);
+                if (currentWeekId && currentWeekId.toString() !== quickDefaultId.toString() && !localStorage.getItem('blogForgeSelectedPostIdManual')){
+                    select.value = currentWeekId;
+                    localStorage.setItem('blogForgeSelectedPostId', currentWeekId.toString());
+                    updateSelectedPostSummary(currentWeekId);
+                    loadAuthorsForPost(currentWeekId);
+                }
+            })();
+            
             select.addEventListener('change', () => {
                 const postId = select.value;
                 localStorage.setItem('blogForgeSelectedPostId', postId);
+                localStorage.setItem('blogForgeSelectedPostIdManual', '1');
                 updateSelectedPostSummary(postId);
+                loadAuthorsForPost(postId);
             });
+            
         } catch (e){
             console.error('Failed to load posts:', e);
         }
+    }
+
+    async function findCurrentWeekPostId(posts){
+        try{
+            const year = new Date().getFullYear();
+            const week = getCurrentISOWeek();
+            const check = posts.slice(0, 15);
+            for (const p of check){
+                const r = await fetch(`/planning/api/posts/${p.id}`);
+                if (!r.ok) continue;
+                const d = await r.json();
+                const sched = d && d.schedule;
+                if (sched && Number(sched.year) === Number(year) && Number(sched.week_number) === Number(week)){
+                    return p.id;
+                }
+            }
+            return null;
+        } catch(e){ return null; }
     }
 
     // Run Image Generation: open imaging page, auto-run batch generation, close when complete
@@ -1467,5 +1814,192 @@
 
     // Initial load
     loadPosts();
+
+    // Author selector logic
+    async function loadAuthorsForPost(postId){
+        try {
+            const sel = document.getElementById('author-select');
+            if (!sel) return;
+            // Pre-fill a sensible default to avoid empty UI
+            if (!sel.options.length){
+                sel.innerHTML = '<option value="Caitrin Stewart">Caitrin Stewart</option>';
+            }
+            const [authorsResp, tsResp] = await Promise.all([
+                fetch(`/header/api/posts/${postId}/authors`),
+                fetch(`/header/api/posts/${postId}/get-title-summary`)
+            ]);
+            const authorsData = authorsResp.ok ? await authorsResp.json() : { success:false, authors:[] };
+            const tsData = tsResp.ok ? await tsResp.json() : {};
+            const authors = (authorsData && authorsData.success && Array.isArray(authorsData.authors)) ? authorsData.authors : [];
+            const currentAuthor = (tsData && tsData.author_name) ? tsData.author_name : '';
+            const savedKey = `selectedAuthorName_${postId}`;
+            let selected = localStorage.getItem(savedKey) || currentAuthor || 'Caitrin Stewart';
+            if (authors.length){
+                const options = authors.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
+                sel.innerHTML = options;
+            }
+            if (![...sel.options].some(o => o.value === selected)){
+                const opt = document.createElement('option');
+                opt.value = selected; opt.textContent = selected; sel.appendChild(opt);
+            }
+            sel.value = selected;
+            sel.onchange = ()=>{ localStorage.setItem(savedKey, sel.value); };
+        } catch(e){ console.warn('Failed to load authors:', e); }
+    }
+
+    async function ensureAuthorSaved(postId){
+        try{
+            const sel = document.getElementById('author-select');
+            if (!sel) return;
+            const desired = sel.value || 'Caitrin Stewart';
+            const tsResp = await fetch(`/header/api/posts/${postId}/get-title-summary`);
+            const tsData = await tsResp.json();
+            const currentAuthor = (tsData && tsData.author_name) ? tsData.author_name : '';
+            if (currentAuthor !== desired){
+                await fetch(`/header/api/posts/${postId}/save-author`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ author_name: desired })
+                });
+            }
+        } catch(e){ console.warn('Failed to ensure author saved:', e); }
+    }
+    // Re-attach orchestrator after all run handlers are defined so references exist
+    (function(){
+        const overlay = document.getElementById('orchestrator-overlay') || (function(){
+            const ov = document.createElement('div');
+            ov.id = 'orchestrator-overlay';
+            ov.style.cssText = 'position:fixed;right:16px;bottom:16px;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:10px;padding:12px 14px;z-index:9999;min-width:300px;display:none;';
+            ov.innerHTML = '\n                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">\n                    <strong>Run All</strong>\n                    <div>\n                        <button id="orch-pause" class="run-btn dead" style="padding:4px 8px;">Pause</button>\n                        <button id="orch-continue" class="run-btn ready" style="padding:4px 8px;display:none;">Continue</button>\n                        <button id="orch-close" class="run-btn dead" style="padding:4px 8px;">Close</button>\n                    </div>\n                </div>\n                <div id="orch-status" style="margin-top:8px;font-size:12px;color:#a8afc2;">Preparing…</div>\n                <div id="orch-steps" style="margin-top:8px;max-height:180px;overflow:auto;font-size:12px;"></div>\n            ';
+            document.body.appendChild(ov);
+            return ov;
+        })();
+
+        function openOverlay(){ overlay.style.display='block'; }
+        function closeOverlay(){ overlay.style.display='none'; }
+        function setStatus(text){ const el=document.getElementById('orch-status'); if (el) el.textContent=text; }
+        function appendStep(text){ const el=document.getElementById('orch-steps'); if (el){ const d=document.createElement('div'); d.textContent=text; el.appendChild(d);} }
+
+        const modeKey = (id)=>`blogForgeMode_${id}`;
+        function getMode(id){
+            const sel = document.querySelector(`select.mode-select[data-substage="${id}"]`);
+            const saved = localStorage.getItem(modeKey(id));
+            const value = (saved || (sel ? sel.value : 'auto')) || 'auto';
+            if (sel) sel.value = value;
+            return value;
+        }
+        document.querySelectorAll('select.mode-select').forEach(sel => {
+            const id = sel.getAttribute('data-substage');
+            const saved = localStorage.getItem(modeKey(id));
+            if (saved) sel.value = saved;
+            sel.addEventListener('change', ()=> localStorage.setItem(modeKey(id), sel.value));
+        });
+
+        const events = {
+            'image_generation_complete': 'image_generation_complete',
+            'image_optimise_complete': 'image_optimise_complete',
+            'header_title_summary_complete': 'header_title_summary_complete',
+            'header_image_prompt_complete': 'header_image_prompt_complete',
+            'header_image_details_complete': 'header_image_details_complete',
+            'header_image_generated': 'header_image_generated',
+            'header_image_optimized': 'header_image_optimized',
+            'header_seo_meta_complete': 'header_seo_meta_complete'
+        };
+
+        const pipeline = [
+            { id:'week-ideas', label:'Calendar — Week Ideas', run: runWeekIdeas },
+            { id:'idea-generation', label:'Planning — Idea Generation', run: runIdeaGeneration },
+            { id:'topic-brainstorming', label:'Planning — Topic Brainstorming', run: runTopicBrainstorming },
+            { id:'section-structure-design', label:'Planning — Section Structure', run: runSectionStructure },
+            { id:'section-ideas', label:'Planning — Section Ideas', run: runSectionIdeas },
+            { id:'section-titling', label:'Planning — Section Titling', run: runSectionTitling },
+            { id:'drafting', label:'Authoring — Drafting', run: runDrafting },
+            { id:'image-concepts', label:'Authoring — Image Concepts', run: runImageConcepts },
+            { id:'image-prompts', label:'Authoring — Image Prompts', run: runImagePrompts },
+            { id:'image-captions', label:'Authoring — Image Captions', run: runImageCaptions },
+            { id:'image-generation', label:'Imaging — Image Generation', run: runImageGeneration, completeEvent: events.image_generation_complete },
+            { id:'optimise', label:'Imaging — Optimise', run: runImageOptimise, completeEvent: events.image_optimise_complete },
+            { id:'header-title-summary', label:'Header — Title & Summary', run: ()=>{ const p=getSelectedPostId(); return p ? ensureAuthorSaved(p).then(()=>runHeaderTitleSummary()) : runHeaderTitleSummary(); }, completeEvent: events.header_title_summary_complete },
+            { id:'header-image-prompt', label:'Header Image — Prompt', run: runHeaderImagePrompt, completeEvent: events.header_image_prompt_complete },
+            { id:'header-image-details', label:'Header Image — Captions/Alt', run: runHeaderImageDetails, completeEvent: events.header_image_details_complete },
+            { id:'header-image-generate', label:'Header Image — Image', run: runHeaderImageGenerate, completeEvent: events.header_image_generated },
+            { id:'header-image-optimise', label:'Header Image — Optimise', run: runHeaderImageOptimize, completeEvent: events.header_image_optimized },
+            { id:'header-seo-meta', label:'Header — SEO & Meta', run: runHeaderSeoMeta, completeEvent: events.header_seo_meta_complete },
+            { id:'final-review', label:'Final Review — Preview', run: runFinalReview }
+        ];
+
+        function waitForEvent(eventName, timeoutMs=120000){
+            return new Promise((resolve, reject)=>{
+                let timer = setTimeout(()=>{ window.removeEventListener('message', onMsg); reject(new Error('Timeout waiting for '+eventName)); }, timeoutMs);
+                function onMsg(ev){ if (ev.data === eventName){ clearTimeout(timer); window.removeEventListener('message', onMsg); resolve(); } }
+                window.addEventListener('message', onMsg);
+            });
+        }
+
+        let paused = false;
+        function setPaused(v){ paused = v; const c=document.getElementById('orch-continue'); if (c) c.style.display = v ? '' : 'none'; }
+
+        let pendingManualResolve = null;
+
+        async function runAll(){
+            const startBtn = document.getElementById('start-all');
+            const runAllBtn = document.getElementById('run-all');
+            if (startBtn){ startBtn.disabled = true; startBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Running…'; }
+            if (runAllBtn){ runAllBtn.disabled = true; runAllBtn.textContent = 'Running…'; }
+            openOverlay(); setStatus('Starting…'); appendStep('Initializing pipeline');
+            for (const step of pipeline){
+                const mode = getMode(step.id);
+                appendStep(`→ ${step.label} (${mode})`);
+                setStatus(step.label);
+                if (mode === 'manual'){
+                    try { step.run(); } catch(_){ }
+                    setPaused(true);
+                    await new Promise((resolve)=>{
+                        const cont = document.getElementById('orch-continue');
+                        const handler = ()=>{ cont.removeEventListener('click', handler); setPaused(false); if (startBtn){ startBtn.disabled = true; startBtn.innerHTML = '<i class=\"fas fa-spinner fa-spin\" style=\"margin-right:6px;\"></i>Running…'; } resolve(); };
+                        cont.addEventListener('click', handler);
+                        pendingManualResolve = ()=>{ handler(); pendingManualResolve = null; };
+                        if (startBtn){ startBtn.disabled = false; startBtn.innerHTML = '<i class="fas fa-play" style="margin-right:6px;"></i>Resume'; }
+                    });
+                    appendStep(`✓ ${step.label} (manual)`);
+                    continue;
+                }
+                try{
+                    step.run && step.run();
+                    if (step.completeEvent){
+                        await waitForEvent(step.completeEvent, step.id === 'image-generation' ? 300000 : 180000);
+                    } else {
+                        await new Promise(r=>setTimeout(r, 1500));
+                    }
+                    appendStep(`✓ ${step.label}`);
+                }catch(e){
+                    appendStep(`✗ ${step.label} — ${e.message}`);
+                    const retry = confirm(`${step.label} failed: ${e.message}. Retry?`);
+                    if (retry){
+                        try{
+                            step.run && step.run();
+                            if (step.completeEvent){ await waitForEvent(step.completeEvent, 180000); }
+                            appendStep(`✓ ${step.label} (retry)`);
+                        }catch(e2){ appendStep(`✗ ${step.label} — ${e2.message}`); break; }
+                    } else {
+                        const skip = confirm('Skip this step and continue?');
+                        if (!skip) break;
+                    }
+                }
+                while (paused){ await new Promise(r=>setTimeout(r, 300)); }
+            }
+            setStatus('Pipeline complete');
+            if (startBtn){ startBtn.disabled = false; startBtn.innerHTML = '<i class="fas fa-play" style="margin-right:6px;"></i>Start'; }
+            if (runAllBtn){ runAllBtn.disabled = false; runAllBtn.textContent = 'Run All'; }
+        }
+
+        const runAllBtn = document.getElementById('run-all');
+        if (runAllBtn){ runAllBtn.addEventListener('click', (e)=>{ e.preventDefault(); runAll(); }); }
+        const startBtn = document.getElementById('start-all');
+        if (startBtn){ startBtn.addEventListener('click', (e)=>{ e.preventDefault(); if (pendingManualResolve){ pendingManualResolve(); } else { runAll(); } }); }
+        const pauseBtn = document.getElementById('orch-pause');
+        if (pauseBtn){ pauseBtn.addEventListener('click', ()=> setPaused(!paused)); }
+        const closeBtn = document.getElementById('orch-close');
+        if (closeBtn){ closeBtn.addEventListener('click', ()=> closeOverlay()); }
+    })();
 })();
 </script>
