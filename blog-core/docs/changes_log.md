@@ -1,5 +1,36 @@
 # Changes Log
 
+## 2025-10-30 - Imaging Stage Stabilization and Launchpad Integration
+
+### Problem
+- Optimise page showed raw images as fallback instead of only optimized outputs.
+- LLM Prompts panel initialized on pages where it wasn’t needed, causing errors when `llm-config.js` wasn’t loaded.
+- Header optimization panel was mistakenly included in the sections imaging page, triggering wrong endpoints.
+- Launchpad “Optimise” run hung because the optimise window didn’t signal completion and sometimes auto-ran before sections were selected.
+- Image concepts were saved only in `post_development.sections` JSON, not in `post_section` table.
+
+### Solution
+- Enforced “optimized only” response for optimise output: endpoint now returns only optimized images, no raw fallback.
+- Guarded LLM Prompts panel initialization on optimise page and added `llm-config.js` to image-generation page.
+- Removed header optimization panel from image-generation template.
+- Optimise page now selects all sections by default and can auto-run “Optimize Selected”; it posts completion back to the opener.
+- Launchpad “Optimise” run opens the correct optimise page with `auto=1&auto_run=selected`.
+- Image concepts generation now saves primarily to `post_section.image_concepts` (and updates JSON as secondary); selection persists to table.
+- Prompt generation and “LLM prompt details” extract the selected concept from the correct source with JSON fallback.
+
+### Files Modified (high-level)
+- `blueprints/imaging.py` (section image endpoint)
+- `templates/imaging/sections/image_generation.html`, `templates/imaging/sections/optimise.html`
+- `static/js/authoring/llm-prompts-panel.js`
+- `static/js/header/image-optimization-panel.js`
+- `static/js/imaging/optimization-panel.js`, `static/js/imaging/output-panel-optimize.js`
+- `templates/launchpad/one_click_blog_minimal.html`
+- `blueprints/authoring_api_imaging.py`, `blueprints/authoring_api_concepts.py`, `blueprints/authoring_api_prompts.py`
+
+### Status
+✅ Completed; verified via UI with launchpad auto-run and optimise stage flow.
+
+---
 ## 2025-10-29 - Posts Listing Redesign, Scheduling Columns, and Sorting
 
 ### Problem
