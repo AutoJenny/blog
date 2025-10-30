@@ -32,6 +32,22 @@ def api_list_post_styles(post_id):
             styles = imaging.get('styles', [])
             active_index = imaging.get('activeIndex', 0)
             
+            # If no styles found for the post, return a permanent system default (do NOT persist per-post)
+            if not styles:
+                styles = [{
+                    'name': 'Watercolour and Pen & Ink',
+                    'style_json': {
+                        'medium': 'watercolour and pen and ink',
+                        'technique': 'brushstrokes fading out by ending towards the edges of the image',
+                        'palette': ['ochres', 'siennas', 'umbers', 'celestial blues', 'golds'],
+                        'composition': 'rule-of-thirds with negative space',
+                        'lighting': 'soft, ethereal, golden hour',
+                        'constraints': ['no text', 'no watermark in frame', 'edges fade to white'],
+                        'negatives': ['hyperrealism', 'sharp edges', 'solid borders']
+                    }
+                }]
+                active_index = 0
+            
             return jsonify({
                 'success': True,
                 'styles': styles,

@@ -146,11 +146,16 @@
                             </div>
                         </td>
                         <td class="substage-cell">Title & Summary</td>
-                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-header-title-summary" class="run-btn ready">Run</button></td>
                     </tr>
                     <tr>
                         <td class="substage-cell">Header Image</td>
-                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right; display:flex; gap:8px; justify-content:flex-end;">
+                            <button id="run-header-image-prompt" class="run-btn ready" title="Generate header image prompt">Prompt</button>
+                            <button id="run-header-image-details" class="run-btn ready" title="Generate caption and alt text">Captions/Alt</button>
+                            <button id="run-header-image-generate" class="run-btn ready" title="Generate header image">Image</button>
+                            <button id="run-header-image-optimize" class="run-btn ready" title="Optimize & Watermark header image">Optimise</button>
+                        </td>
                     </tr>
                     <tr>
                         <td class="substage-cell">SEO & Meta</td>
@@ -998,6 +1003,107 @@
     }
     const runImageGenerationBtn = document.getElementById('run-image-generation');
     if (runImageGenerationBtn){ runImageGenerationBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runImageGeneration(); }); }
+
+    // Run Header Title & Summary: open header page and click Generate All (page handles all logic)
+    function runHeaderTitleSummary(){
+        const btn = document.getElementById('run-header-title-summary');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        const postId = getSelectedPostId();
+        if (!postId){ alert('Please select a post in the "Viewing Pipeline For" dropdown first.'); return; }
+        btn.disabled = true; btn.textContent = 'Running…'; btn.classList.remove('dead','complete'); btn.classList.add('ready');
+        const win = window.open(`/header/posts/${postId}/title-summary`, '_blank', 'width=1400,height=900');
+        const start = Date.now();
+        const maxWait = 20000; // 20s total
+        let clicked = false;
+        const interval = setInterval(()=>{
+            try {
+                if (!win || win.closed) { clearInterval(interval); return; }
+                if (!clicked && win.document && win.document.readyState === 'complete') {
+                    const b = win.document.getElementById('uber-generate-btn');
+                    if (b && !b.disabled) { b.click(); clicked = true; }
+                }
+            } catch(_) { /* cross-origin until ready; retry */ }
+            if (Date.now() - start > maxWait) { clearInterval(interval); }
+        }, 400);
+        // Listen for completion from header page
+        function handleHeaderDone(ev){
+            if (ev.data === 'header_title_summary_complete'){
+                window.removeEventListener('message', handleHeaderDone);
+                try { win && win.close(); } catch(_){}
+                btn.textContent = 'Done'; btn.classList.remove('dead','ready'); btn.classList.add('complete'); btn.disabled = false; setTimeout(()=>btn.textContent=originalText,1500);
+            }
+        }
+        window.addEventListener('message', handleHeaderDone);
+        // Also fall back to window close
+        const poll = setInterval(()=>{ if (win && win.closed){ clearInterval(poll); btn.textContent='Done'; btn.classList.remove('dead','ready'); btn.classList.add('complete'); btn.disabled=false; setTimeout(()=>btn.textContent=originalText,1500);} }, 1000);
+    }
+    const runHeaderTitleSummaryBtn = document.getElementById('run-header-title-summary');
+    if (runHeaderTitleSummaryBtn){ runHeaderTitleSummaryBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runHeaderTitleSummary(); }); }
+
+    // Header Image helpers
+    function openHeaderImageAndClick(buttonId, completionMessage){
+        const postId = getSelectedPostId();
+        if (!postId){ alert('Please select a post in the "Viewing Pipeline For" dropdown first.'); return; }
+        const win = window.open(`/header/posts/${postId}/header-image`, '_blank', 'width=1400,height=900');
+        const start = Date.now();
+        const maxWait = 20000;
+        let clicked = false;
+        const interval = setInterval(()=>{
+            try {
+                if (!win || win.closed){ clearInterval(interval); return; }
+                if (!clicked && win.document && win.document.readyState === 'complete'){
+                    const b = win.document.getElementById(buttonId);
+                    if (b && !b.disabled){ b.click(); clicked = true; }
+                }
+            } catch(_) {}
+            if (Date.now() - start > maxWait){ clearInterval(interval); }
+        }, 400);
+        function handleDone(ev){
+            if (ev.data === completionMessage){
+                window.removeEventListener('message', handleDone);
+                try { win && win.close(); } catch(_){}
+            }
+        }
+        window.addEventListener('message', handleDone);
+        return win;
+    }
+
+    function runHeaderImagePrompt(){
+        const btn = document.getElementById('run-header-image-prompt');
+        if (!btn) return; const original=btn.textContent; btn.disabled=true; btn.textContent='Running…';
+        const win = openHeaderImageAndClick('compile-prompt-btn','header_image_prompt_complete');
+        const poll = setInterval(()=>{ if (win && win.closed){ clearInterval(poll); btn.textContent='Done'; btn.classList.add('complete'); btn.disabled=false; setTimeout(()=>btn.textContent=original,1500);} }, 1000);
+    }
+    const runHeaderImagePromptBtn = document.getElementById('run-header-image-prompt');
+    if (runHeaderImagePromptBtn){ runHeaderImagePromptBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runHeaderImagePrompt(); }); }
+
+    function runHeaderImageDetails(){
+        const btn = document.getElementById('run-header-image-details');
+        if (!btn) return; const original=btn.textContent; btn.disabled=true; btn.textContent='Running…';
+        const win = openHeaderImageAndClick('generate-details-btn','header_image_details_complete');
+        const poll = setInterval(()=>{ if (win && win.closed){ clearInterval(poll); btn.textContent='Done'; btn.classList.add('complete'); btn.disabled=false; setTimeout(()=>btn.textContent=original,1500);} }, 1000);
+    }
+    const runHeaderImageDetailsBtn = document.getElementById('run-header-image-details');
+    if (runHeaderImageDetailsBtn){ runHeaderImageDetailsBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runHeaderImageDetails(); }); }
+
+    function runHeaderImageGenerate(){
+        const btn = document.getElementById('run-header-image-generate');
+        if (!btn) return; const original=btn.textContent; btn.disabled=true; btn.textContent='Running…';
+        const win = openHeaderImageAndClick('generate-header-btn','header_image_generated');
+        const poll = setInterval(()=>{ if (win && win.closed){ clearInterval(poll); btn.textContent='Done'; btn.classList.add('complete'); btn.disabled=false; setTimeout(()=>btn.textContent=original,1500);} }, 1000);
+    }
+    const runHeaderImageGenerateBtn = document.getElementById('run-header-image-generate');
+    if (runHeaderImageGenerateBtn){ runHeaderImageGenerateBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runHeaderImageGenerate(); }); }
+
+    function runHeaderImageOptimize(){
+        const btn = document.getElementById('run-header-image-optimize');
+        if (!btn) return; const original=btn.textContent; btn.disabled=true; btn.textContent='Running…';
+        const win = openHeaderImageAndClick('optimize-image-btn','header_image_optimized');
+        const poll = setInterval(()=>{ if (win && win.closed){ clearInterval(poll); btn.textContent='Done'; btn.classList.add('complete'); btn.disabled=false; setTimeout(()=>btn.textContent=original,1500);} }, 1000);
+    }
+    const runHeaderImageOptimizeBtn = document.getElementById('run-header-image-optimize');
+    if (runHeaderImageOptimizeBtn){ runHeaderImageOptimizeBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runHeaderImageOptimize(); }); }
 
     // Run Optimise: open imaging page, auto-run batch optimize, close when complete
     function runImageOptimise(){

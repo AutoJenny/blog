@@ -58,19 +58,28 @@
   </div>
   </div>
 <script>
-// Auto-run support: if auto_run=selected, click Optimize Selected after sections load
+// Auto-run support: if auto_run=selected, ensure sections are selected then click Optimize Selected
 document.addEventListener('DOMContentLoaded', function() {
   try {
     const params = new URLSearchParams(window.location.search);
     const autoRun = params.get('auto_run');
     if (autoRun === 'selected') {
-      // Wait for sections to render and selection to apply, then run
-      setTimeout(function(){
+      const start = Date.now();
+      const maxWaitMs = 10000;
+      const interval = setInterval(function(){
         const btn = document.getElementById('optimize-selected-btn');
-        if (btn && !btn.disabled) {
+        const checkboxes = Array.from(document.querySelectorAll('.section-checkbox'));
+        const anyChecked = checkboxes.some(cb => cb.checked);
+        if (btn && !btn.disabled && checkboxes.length > 0) {
+          // If nothing is checked yet, select all (defensive)
+          if (!anyChecked) {
+            checkboxes.forEach(cb => { cb.checked = true; });
+          }
           btn.click();
+          clearInterval(interval);
         }
-      }, 1200);
+        if (Date.now() - start > maxWaitMs) clearInterval(interval);
+      }, 300);
     }
   } catch(_) {}
 });

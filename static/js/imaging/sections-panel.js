@@ -115,6 +115,9 @@ class ImagingSectionsPanel {
 
             container.appendChild(div);
         });
+
+        // Ensure generate button state reflects current UI after render
+        this.updateGenerateButtonState();
     }
 
     selectSection(sectionId) {
@@ -138,6 +141,22 @@ class ImagingSectionsPanel {
         const batchGenerateBtn = document.getElementById('batch-generate-btn');
         if (batchGenerateBtn) {
             batchGenerateBtn.addEventListener('click', () => this.batchGenerateSelected());
+        }
+
+        // Defensive: container-level change listener to catch any checkbox changes
+        const container = document.getElementById('sections-list');
+        if (container) {
+            container.addEventListener('change', (e) => {
+                const target = e.target;
+                if (target && target.classList && target.classList.contains('section-checkbox')) {
+                    const id = target.dataset.sectionId;
+                    if (target.checked) this.selectedSections.add(id);
+                    else this.selectedSections.delete(id);
+                    this.persistSelection();
+                    this.updateSelectAllToggleLabel();
+                    this.updateGenerateButtonState();
+                }
+            });
         }
 
         // Listen for image generation events
@@ -186,7 +205,9 @@ class ImagingSectionsPanel {
     updateGenerateButtonState() {
         const btn = document.getElementById('batch-generate-btn');
         if (!btn) return;
-        const hasAny = this.selectedSections.size > 0;
+        // Prefer actual checkbox state so UI always reflects visible checks
+        const anyChecked = Array.from(document.querySelectorAll('.section-checkbox')).some(cb => cb.checked);
+        const hasAny = anyChecked || this.selectedSections.size > 0;
         btn.disabled = !hasAny;
         btn.title = hasAny ? '' : 'Select one or more sections first';
     }
@@ -233,17 +254,38 @@ class ImagingSectionsPanel {
 
                 this.callbacks.onBatchProgress({ current: i + 1, total: selectedIds.length, sectionId, sectionTitle, status: 'generating' });
 
-                // Obtain prompt from prompt panel or cache
-                const promptEl = document.querySelector('.prompt-text');
-                let image_prompt = promptEl ? promptEl.textContent.trim() : '';
+                // Obtain prompt for this specific section
+                let image_prompt = '';
+                // 1) If prompt panel is showing this section's prompt, use it
+                const panel = document.querySelector(`[data-section-id="${sectionId}"] .prompt-text`);
+                if (panel && panel.textContent.trim()) {
+                    image_prompt = panel.textContent.trim();
+                }
+                // 2) Fallback to cached sectionsData if available
                 if (!image_prompt && window.sectionsData) {
-                    const s = window.sectionsData.find(x => x.id == sectionId);
+                    const s = window.sectionsData.find(x => String(x.id) === String(sectionId));
                     if (s && s.image_prompts) {
                         if (typeof s.image_prompts === 'object') image_prompt = s.image_prompts.image_prompt || '';
                         else {
                             try { image_prompt = (JSON.parse(s.image_prompts).image_prompt) || s.image_prompts; } catch { image_prompt = s.image_prompts; }
                         }
                     }
+                }
+                // 3) Final fallback: fetch sections and extract prompt for this id
+                if (!image_prompt) {
+                    try {
+                        const resp = await fetch(`/imaging/api/posts/${this.postId}/sections`);
+                        const data = await resp.json();
+                        if (data.success && Array.isArray(data.sections)) {
+                            const s = data.sections.find(x => String(x.id) === String(sectionId));
+                            if (s && s.image_prompts) {
+                                if (typeof s.image_prompts === 'object') image_prompt = s.image_prompts.image_prompt || '';
+                                else {
+                                    try { image_prompt = (JSON.parse(s.image_prompts).image_prompt) || s.image_prompts; } catch { image_prompt = s.image_prompts; }
+                                }
+                            }
+                        }
+                    } catch(_) { /* ignore */ }
                 }
 
                 // Use different API based on current substage

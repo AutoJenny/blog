@@ -88,6 +88,8 @@ class HeaderImageGenerationPanel {
                 this.promptTextarea.value = this.compiledPrompt;
                 this.updateGenerateButtonState();
                 this.updateStatus('Prompt generated successfully');
+                // Notify opener (launchpad) that header image prompt is ready
+                try { if (window.opener) window.opener.postMessage('header_image_prompt_complete', '*'); } catch(_) {}
             } else {
                 this.updateStatus('LLM generation failed');
                 console.error('Ollama error:', ollamaData);
@@ -164,6 +166,8 @@ class HeaderImageGenerationPanel {
             if (data.success) {
                 this.imagePreview.src = data.optimized_path;
                 this.updateStatus(`Generated (${data.dimensions.width}x${data.dimensions.height})`);
+                // Notify opener (launchpad) that header image has been generated
+                try { if (window.opener) window.opener.postMessage('header_image_generated', '*'); } catch(_) {}
             } else {
                 this.updateStatus('Generation failed');
                 console.error('Generation error:', data.error);

@@ -103,6 +103,8 @@
       const res = await optimizeBatch(postId, ids, params);
       setStatus('Ready');
       console.log('[Optimization] Selected results:', res);
+      // Notify opener (launchpad) that optimise batch completed
+      try { if (window.opener) window.opener.postMessage('image_optimise_complete', '*'); } catch(_) {}
     });
 
     btnAll?.addEventListener('click', async function(){
@@ -114,6 +116,8 @@
       const res = await optimizeBatch(postId, all, params);
       setStatus('Ready');
       console.log('[Optimization] All results:', res);
+      // Notify opener (launchpad) that optimise batch completed
+      try { if (window.opener) window.opener.postMessage('image_optimise_complete', '*'); } catch(_) {}
     });
   });
 })();

@@ -167,6 +167,8 @@
         textarea.value = event.detail.summary;
         updateWordCount();
         updateSummaryStatus(event.detail.summary);
+        // Persist summary immediately when generated via uber run
+        try { saveSummary(event.detail.summary); } catch(_) {}
       }
     }
   }

@@ -1482,24 +1482,16 @@ def imaging_get_section_image(post_id, section_id):
         if resolved_section_id is None:
             return jsonify({'success': False, 'error': f'Unable to resolve section id: {section_id}'}), 400
 
-        # Check for existing images in order of preference: optimized > raw
+        # Optimise page must not fall back to raw; only return optimized if it exists
         optimized_path = f"static/content/posts/{post_id}/sections/{resolved_section_id}/optimized/{resolved_section_id}.jpg"
-        raw_path = f"static/content/posts/{post_id}/sections/{resolved_section_id}/raw/{resolved_section_id}.png"
-        
         if os.path.exists(optimized_path):
             return jsonify({
                 'success': True,
                 'path': f"/static/content/posts/{post_id}/sections/{resolved_section_id}/optimized/{resolved_section_id}.jpg",
                 'type': 'optimized'
             })
-        elif os.path.exists(raw_path):
-            return jsonify({
-                'success': True,
-                'path': f"/static/content/posts/{post_id}/sections/{resolved_section_id}/raw/{resolved_section_id}.png",
-                'type': 'raw'
-            })
-        else:
-            return jsonify({'success': False, 'message': 'No image found for this section'})
+        # No optimized image available
+        return jsonify({'success': False, 'message': 'No optimized image found for this section'})
 
     except Exception as e:
         logger.error(f"Error getting section image: {str(e)}")

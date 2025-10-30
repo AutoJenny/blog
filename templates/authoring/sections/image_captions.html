@@ -26,6 +26,61 @@
 {% block content %}
 {% include 'shared/blog_pipeline_header.html' %}
 
+<script>
+// Move authoring content to process-tab after page loads
+document.addEventListener('DOMContentLoaded', function() {
+    const authoringContent = document.querySelector('.authoring-workspace');
+    const processTab = document.getElementById('process-tab');
+    if (authoringContent && processTab) {
+        processTab.appendChild(authoringContent);
+    }
+    
+    // Check if auto_run parameter is present and trigger Generate All
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('auto_run') === 'true') {
+        // Wait for sections panel to initialize, then click Generate All
+        setTimeout(async () => {
+            const batchGenerateBtn = document.getElementById('batch-generate-btn');
+            if (batchGenerateBtn && !batchGenerateBtn.disabled) {
+                // Remove the parameter from URL
+                window.history.replaceState({}, '', window.location.pathname);
+                
+                // First, select all sections if there's a select-all button
+                const selectAllBtn = document.getElementById('select-all-sections-btn');
+                if (selectAllBtn) {
+                    selectAllBtn.click();
+                }
+                
+                // Wait a moment for selection to register, then click Generate All
+                setTimeout(() => {
+                    batchGenerateBtn.click();
+                    
+                    // Listen for batch completion via button state change
+                    const checkCompletion = setInterval(() => {
+                        // Check if button is re-enabled and text is back to "Generate All"
+                        if (!batchGenerateBtn.disabled && batchGenerateBtn.textContent.includes('Generate All')) {
+                            clearInterval(checkCompletion);
+                            // Notify parent window if opened from launchpad
+                            if (window.opener) {
+                                window.opener.postMessage('image_captions_complete', '*');
+                            }
+                        }
+                    }, 1000);
+                    
+                    // Timeout after 5 minutes max
+                    setTimeout(() => {
+                        clearInterval(checkCompletion);
+                        if (window.opener) {
+                            window.opener.postMessage('image_captions_complete', '*');
+                        }
+                    }, 300000);
+                }, 500);
+            }
+        }, 2000);
+    }
+});
+</script>
+
 <div class="authoring-workspace">
     <div class="workspace-container">
         {% include 'shared/sections_panel.html' %}

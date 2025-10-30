@@ -1,7 +1,9 @@
 // Header Accordion Manager
 // Provides database-backed accordion state persistence for header panels
 
-class HeaderAccordionManager {
+// Guard against duplicate definition when the script is included more than once
+if (!window.HeaderAccordionManager) {
+window.HeaderAccordionManager = class HeaderAccordionManager {
   constructor() {
     this.baseUrl = '/header/api/ui/preferences';
   }
@@ -110,7 +112,10 @@ class HeaderAccordionManager {
     
     return toggleHandler;
   }
+};
 }
 
-// Create global instance
-window.headerAccordionManager = new HeaderAccordionManager();
+// Create global instance (once)
+if (!window.headerAccordionManager) {
+  window.headerAccordionManager = new window.HeaderAccordionManager();
+}

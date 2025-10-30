@@ -82,6 +82,8 @@ class ImageOptimizationPanel {
                 setTimeout(() => {
                     this.optimizeBtn.textContent = 'Optimize and Watermark';
                 }, 2000);
+                // Notify opener (launchpad) that header image has been optimized
+                try { if (window.opener) window.opener.postMessage('header_image_optimized', '*'); } catch(_) {}
             } else {
                 console.error('[ImageOptimizationPanel] Error optimizing image:', data.error);
                 this.optimizeBtn.textContent = 'Error';

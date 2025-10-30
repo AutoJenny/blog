@@ -78,6 +78,8 @@ class HeaderImageDetailsPanel {
                 setTimeout(() => {
                     this.generateBtn.textContent = 'Generate';
                 }, 2000);
+                // Notify opener (launchpad) that header image details are ready
+                try { if (window.opener) window.opener.postMessage('header_image_details_complete', '*'); } catch(_) {}
             } else {
                 console.error('[HeaderImageDetailsPanel] Error generating image details:', data.error);
                 this.generateBtn.textContent = 'Error';
