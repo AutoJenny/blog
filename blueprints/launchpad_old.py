@@ -2178,11 +2178,61 @@ def validate_publish_data(post_id):
                         'path': path
                     })
         
-        # Check cross-promotion if configured
-        if post.get('cross_promotion_category_id') and not post.get('cross_promotion'):
+        # Attach/auto-select cross-promotion to avoid false negatives during validation
+        try:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT cross_promotion_category_id, cross_promotion_category_title,
+                           cross_promotion_product_id, cross_promotion_product_title,
+                           cross_promotion_category_position, cross_promotion_product_position,
+                           cross_promotion_category_widget_html, cross_promotion_product_widget_html
+                    FROM post WHERE id = %s
+                """, (post_id,))
+                cp = cursor.fetchone() or {}
+                post['cross_promotion'] = {
+                    'category_id': cp.get('cross_promotion_category_id'),
+                    'category_title': cp.get('cross_promotion_category_title'),
+                    'product_id': cp.get('cross_promotion_product_id'),
+                    'product_title': cp.get('cross_promotion_product_title'),
+                    'category_position': cp.get('cross_promotion_category_position'),
+                    'product_position': cp.get('cross_promotion_product_position'),
+                    'category_widget_html': cp.get('cross_promotion_category_widget_html'),
+                    'product_widget_html': cp.get('cross_promotion_product_widget_html')
+                }
+                # Auto-generate widget HTML if IDs present but HTML missing
+                widget_changed = False
+                if post['cross_promotion'].get('category_id') and post['cross_promotion'].get('category_position') and not post['cross_promotion'].get('category_widget_html'):
+                    post['cross_promotion']['category_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_category\" category_id=\"{post['cross_promotion'].get('category_id')}\" title=\"{post['cross_promotion'].get('category_title') or 'Related Department'}\"}}}}"
+                    widget_changed = True
+                if post['cross_promotion'].get('product_id') and post['cross_promotion'].get('product_position') and not post['cross_promotion'].get('product_widget_html'):
+                    post['cross_promotion']['product_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_product\" product_id=\"{post['cross_promotion'].get('product_id')}\" title=\"{post['cross_promotion'].get('product_title') or 'Related Products'}\"}}}}"
+                    widget_changed = True
+                if widget_changed:
+                    with db_manager.get_cursor() as c2:
+                        c2.execute("""
+                            UPDATE post SET 
+                                cross_promotion_category_widget_html = %s,
+                                cross_promotion_product_widget_html = %s,
+                                updated_at = CURRENT_TIMESTAMP
+                            WHERE id = %s
+                        """, (
+                            post['cross_promotion'].get('category_widget_html'),
+                            post['cross_promotion'].get('product_widget_html'),
+                            post_id
+                        ))
+                        c2.connection.commit()
+        except Exception as e:
+            logger.warning(f"Validation cross-promo attach error: {e}")
+
+        # After attempting attach/generation, only flag if configured but no widget HTML available
+        cp = post.get('cross_promotion') or {}
+        if (
+            (post.get('cross_promotion_category_id') or post.get('cross_promotion_product_id'))
+            and not (cp.get('category_widget_html') or cp.get('product_widget_html'))
+        ):
             issues.append({
                 'type': 'cross_promotion_missing',
-                'message': 'Cross-promotion ID exists but data not attached'
+                'message': 'Cross-promotion configured but no widget HTML available'
             })
         
         valid = len(issues) == 0

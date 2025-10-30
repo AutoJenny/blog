@@ -104,8 +104,8 @@ def header_publishing_details(post_id):
 
 @bp.route('/posts/<int:post_id>/final-review')
 def header_final_review(post_id):
-    """Final Review substage - Review and finalize all header elements before publishing"""
-    return render_template('header/final_review.html', post_id=post_id, blueprint_name='header')
+    from flask import redirect, url_for
+    return redirect(url_for('header.header_preview', post_id=post_id))
 
 @bp.route('/posts/<int:post_id>/preview')
 def header_preview(post_id):
@@ -114,7 +114,8 @@ def header_preview(post_id):
         with db_manager.get_cursor() as cursor:
             # Get post data
             cursor.execute("""
-                SELECT id, title, subtitle, summary, slug, status, 
+                SELECT id, title, subtitle, summary, slug, status,
+                       clan_post_id, clan_uploaded_url,
                        created_at, updated_at, header_image_id, author_id, author_name
                 FROM post
                 WHERE id = %s

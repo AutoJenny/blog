@@ -139,7 +139,7 @@
 
                     <!-- Header Stage -->
                     <tr class="stage-row">
-                        <td class="stage-cell" rowspan="5">
+                        <td class="stage-cell" rowspan="6">
                             <div class="stage-name">
                                 <i class="fas fa-heading"></i>
                                 Header
@@ -149,21 +149,36 @@
                         <td class="run-cell" style="text-align:right;"><button id="run-header-title-summary" class="run-btn ready">Run</button></td>
                     </tr>
                     <tr>
-                        <td class="substage-cell">Header Image</td>
-                        <td class="run-cell" style="text-align:right; display:flex; gap:8px; justify-content:flex-end;">
-                            <button id="run-header-image-prompt" class="run-btn ready" title="Generate header image prompt">Prompt</button>
-                            <button id="run-header-image-details" class="run-btn ready" title="Generate caption and alt text">Captions/Alt</button>
-                            <button id="run-header-image-generate" class="run-btn ready" title="Generate header image">Image</button>
-                            <button id="run-header-image-optimize" class="run-btn ready" title="Optimize & Watermark header image">Optimise</button>
-                        </td>
+                        <td class="substage-cell">Header Image — Prompt</td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-header-image-prompt" class="run-btn ready" title="Generate header image prompt">Run</button></td>
+                    </tr>
+                    <tr>
+                        <td class="substage-cell">Header Image — Captions/Alt</td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-header-image-details" class="run-btn ready" title="Generate caption and alt text">Run</button></td>
+                    </tr>
+                    <tr>
+                        <td class="substage-cell">Header Image — Image</td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-header-image-generate" class="run-btn ready" title="Generate header image">Run</button></td>
+                    </tr>
+                    <tr>
+                        <td class="substage-cell">Header Image — Optimise</td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-header-image-optimize" class="run-btn ready" title="Optimize & Watermark header image">Run</button></td>
                     </tr>
                     <tr>
                         <td class="substage-cell">SEO & Meta</td>
                         <td class="run-cell" style="text-align:right;"><button id="run-header-seo-meta" class="run-btn ready">Run</button></td>
                     </tr>
-                    <tr>
-                        <td class="substage-cell">Final Review</td>
-                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
+                    
+                    <!-- Final Review Stage (separate) -->
+                    <tr class="stage-row">
+                        <td class="stage-cell" rowspan="1">
+                            <div class="stage-name">
+                                <i class="fas fa-check-circle"></i>
+                                Final Review
+                            </div>
+                        </td>
+                        <td class="substage-cell">Preview</td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-final-review" class="run-btn ready">Preview</button></td>
                     </tr>
                 </tbody>
             </table>
@@ -1132,6 +1147,20 @@
     }
     const runHeaderSeoMetaBtn = document.getElementById('run-header-seo-meta');
     if (runHeaderSeoMetaBtn){ runHeaderSeoMetaBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runHeaderSeoMeta(); }); }
+
+    // Final Review: open header preview page
+    function runFinalReview(){
+        const btn = document.getElementById('run-final-review');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        const postId = getSelectedPostId();
+        if (!postId){ alert('Please select a post in the "Viewing Pipeline For" dropdown first.'); return; }
+        btn.disabled = true; btn.textContent = 'Opening…';
+        const win = window.open(`/header/posts/${postId}/preview`, '_blank', 'width=1400,height=900');
+        const poll = setInterval(()=>{ if (win && win.closed){ clearInterval(poll); btn.textContent = originalText; btn.disabled = false; } }, 800);
+    }
+    const runFinalReviewBtn = document.getElementById('run-final-review');
+    if (runFinalReviewBtn){ runFinalReviewBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runFinalReview(); }); }
 
     // Run Optimise: open imaging page, auto-run batch optimize, close when complete
     function runImageOptimise(){
