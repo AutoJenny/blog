@@ -216,20 +216,21 @@ def publish_post_to_clan(post_id):
                 logger.error(f"Unknown date type: {type(post['created_at'])}")
                 post['created_at'] = None
         
-        # Add header image if exists
-        header_image_path = find_header_image(post_id)
-        if header_image_path:
-            with db_manager.get_cursor() as cursor:
-                cursor.execute("""
-                    SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
-                           cross_promotion_category_id, cross_promotion_category_title,
-                           cross_promotion_product_id, cross_promotion_product_title,
-                           cross_promotion_category_position, cross_promotion_product_position,
-                           cross_promotion_category_widget_html, cross_promotion_product_widget_html
-                    FROM post WHERE id = %s
-                """, (post_id,))
-                header_data = cursor.fetchone()
-                
+        # Always fetch cross-promotion data (decoupled from header image presence)
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
+                       cross_promotion_category_id, cross_promotion_category_title,
+                       cross_promotion_product_id, cross_promotion_product_title,
+                       cross_promotion_category_position, cross_promotion_product_position,
+                       cross_promotion_category_widget_html, cross_promotion_product_widget_html
+                FROM post WHERE id = %s
+            """, (post_id,))
+            header_data = cursor.fetchone()
+
+            # Add header image if exists (optional)
+            header_image_path = find_header_image(post_id)
+            if header_image_path:
                 post['header_image'] = {
                     'path': header_image_path,
                     'alt_text': f"Header image for {post.get('title', 'this post')}",
@@ -238,17 +239,98 @@ def publish_post_to_clan(post_id):
                     'width': header_data['header_image_width'] if header_data else None,
                     'height': header_data['header_image_height'] if header_data else None
                 }
-                
-                post['cross_promotion'] = {
-                    'category_id': header_data['cross_promotion_category_id'] if header_data else None,
-                    'category_title': header_data['cross_promotion_category_title'] if header_data else None,
-                    'product_id': header_data['cross_promotion_product_id'] if header_data else None,
-                    'product_title': header_data['cross_promotion_product_title'] if header_data else None,
-                    'category_position': header_data.get('cross_promotion_category_position'),
-                    'product_position': header_data.get('cross_promotion_product_position'),
-                    'category_widget_html': header_data.get('cross_promotion_category_widget_html'),
-                    'product_widget_html': header_data.get('cross_promotion_product_widget_html')
-                }
+
+            # Map cross-promotion regardless of header image
+            post['cross_promotion'] = {
+                'category_id': header_data['cross_promotion_category_id'] if header_data else None,
+                'category_title': header_data['cross_promotion_category_title'] if header_data else None,
+                'product_id': header_data['cross_promotion_product_id'] if header_data else None,
+                'product_title': header_data['cross_promotion_product_title'] if header_data else None,
+                'category_position': header_data.get('cross_promotion_category_position') if header_data else None,
+                'product_position': header_data.get('cross_promotion_product_position') if header_data else None,
+                'category_widget_html': header_data.get('cross_promotion_category_widget_html') if header_data else None,
+                'product_widget_html': header_data.get('cross_promotion_product_widget_html') if header_data else None
+            }
+
+            # Auto-select random category/product IDs and default positions if missing
+            try:
+                cp = post['cross_promotion']
+                to_persist = {}
+                # Select a random category if none set
+                if not cp.get('category_id'):
+                    cursor.execute("""
+                        SELECT id, name FROM clan_categories 
+                        ORDER BY RANDOM() LIMIT 1
+                    """)
+                    cat = cursor.fetchone()
+                    if cat:
+                        cp['category_id'] = cat['id']
+                        cp['category_title'] = cat['name'] or 'Related Department'
+                        to_persist['cross_promotion_category_id'] = cp['category_id']
+                        to_persist['cross_promotion_category_title'] = cp['category_title']
+                # Select a random product if none set
+                if not cp.get('product_id'):
+                    cursor.execute("""
+                        SELECT id, name FROM clan_products 
+                        ORDER BY RANDOM() LIMIT 1
+                    """)
+                    prod = cursor.fetchone()
+                    if prod:
+                        cp['product_id'] = prod['id']
+                        cp['product_title'] = prod['name'] or 'Related Products'
+                        to_persist['cross_promotion_product_id'] = cp['product_id']
+                        to_persist['cross_promotion_product_title'] = cp['product_title']
+                # Set default positions if missing
+                if not cp.get('category_position'):
+                    cp['category_position'] = 2
+                    to_persist['cross_promotion_category_position'] = cp['category_position']
+                if not cp.get('product_position'):
+                    cp['product_position'] = 4
+                    to_persist['cross_promotion_product_position'] = cp['product_position']
+                # Persist any newly selected IDs/titles/positions
+                if to_persist:
+                    placeholders = []
+                    values = []
+                    for k, v in to_persist.items():
+                        placeholders.append(f"{k} = %s")
+                        values.append(v)
+                    values.append(post_id)
+                    cursor.execute(f"""
+                        UPDATE post SET 
+                            {', '.join(placeholders)},
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE id = %s
+                    """, tuple(values))
+                    cursor.connection.commit()
+            except Exception as e:
+                logger.warning(f"Could not auto-select random cross-promotion IDs: {e}")
+
+            # Auto-generate missing widget HTML from IDs/positions to ensure widgets are inserted
+            try:
+                cp = post['cross_promotion']
+                needs_update = False
+                if cp.get('category_id') and cp.get('category_position') and not cp.get('category_widget_html'):
+                    cp['category_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_category\" category_id=\"{cp.get('category_id')}\" title=\"{cp.get('category_title') or 'Related Department'}\"}}}}"
+                    needs_update = True
+                if cp.get('product_id') and cp.get('product_position') and not cp.get('product_widget_html'):
+                    cp['product_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_product\" product_id=\"{cp.get('product_id')}\" title=\"{cp.get('product_title') or 'Related Products'}\"}}}}"
+                    needs_update = True
+                if needs_update:
+                    with db_manager.get_cursor() as cursor2:
+                        cursor2.execute("""
+                            UPDATE post SET 
+                                cross_promotion_category_widget_html = %s,
+                                cross_promotion_product_widget_html = %s,
+                                updated_at = CURRENT_TIMESTAMP
+                            WHERE id = %s
+                        """, (
+                            cp.get('category_widget_html'),
+                            cp.get('product_widget_html'),
+                            post_id
+                        ))
+                        cursor2.connection.commit()
+            except Exception as e:
+                logger.warning(f"Could not auto-generate/persist widget HTML: {e}")
         
         # Import publishing class
         import sys

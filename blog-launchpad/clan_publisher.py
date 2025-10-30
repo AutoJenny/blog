@@ -1024,24 +1024,94 @@ class ClanPublisher:
                     'error': f'Image processing failed: {str(e)}'
                 }
             
-            # Step 2: Mapping cross-promotion data
+            # Step 2: Mapping cross-promotion data (with auto-selection when missing)
             logger.info("Step 2: Mapping cross-promotion data...")
-            if full_post_data.get('cross_promotion_category_id') or full_post_data.get('cross_promotion_product_id'):
-                full_post_data['cross_promotion'] = {
-                    'category_id': full_post_data.get('cross_promotion_category_id'),
-                    'category_title': full_post_data.get('cross_promotion_category_title', ''),
-                    'product_id': full_post_data.get('cross_promotion_product_id'),
-                    'product_title': full_post_data.get('cross_promotion_product_title', ''),
-                    'category_position': full_post_data.get('cross_promotion_category_position'),
-                    'product_position': full_post_data.get('cross_promotion_product_position'),
-                    'category_widget_html': full_post_data.get('cross_promotion_category_widget_html'),
-                    'product_widget_html': full_post_data.get('cross_promotion_product_widget_html')
-                }
-                logger.info(f"✅ Mapped cross-promotion data: category_id={full_post_data['cross_promotion']['category_id']}, title='{full_post_data['cross_promotion']['category_title']}'")
-                logger.info(f"✅ Product widget: {full_post_data['cross_promotion']['product_widget_html']}")
-                logger.info(f"✅ Category widget: {full_post_data['cross_promotion']['category_widget_html']}")
-            else:
-                logger.info("No cross-promotion data found")
+            try:
+                cp_changed = False
+                # If missing, auto-select random IDs and default positions
+                if not (full_post_data.get('cross_promotion_category_id') or full_post_data.get('cross_promotion_product_id')):
+                    from config.database import db_manager
+                    with db_manager.get_cursor() as cursor:
+                        # Random category
+                        cursor.execute("SELECT id, name FROM clan_categories ORDER BY RANDOM() LIMIT 1")
+                        cat = cursor.fetchone()
+                        if cat:
+                            full_post_data['cross_promotion_category_id'] = cat['id']
+                            full_post_data['cross_promotion_category_title'] = cat.get('name') or 'Related Department'
+                            full_post_data['cross_promotion_category_position'] = 2
+                            cp_changed = True
+                        # Random product
+                        cursor.execute("SELECT id, name FROM clan_products ORDER BY RANDOM() LIMIT 1")
+                        prod = cursor.fetchone()
+                        if prod:
+                            full_post_data['cross_promotion_product_id'] = prod['id']
+                            full_post_data['cross_promotion_product_title'] = prod.get('name') or 'Related Products'
+                            full_post_data['cross_promotion_product_position'] = 4
+                            cp_changed = True
+                        if cp_changed:
+                            cursor.execute("""
+                                UPDATE post SET 
+                                    cross_promotion_category_id = %s,
+                                    cross_promotion_category_title = %s,
+                                    cross_promotion_product_id = %s,
+                                    cross_promotion_product_title = %s,
+                                    cross_promotion_category_position = %s,
+                                    cross_promotion_product_position = %s,
+                                    updated_at = CURRENT_TIMESTAMP
+                                WHERE id = %s
+                            """, (
+                                full_post_data.get('cross_promotion_category_id'),
+                                full_post_data.get('cross_promotion_category_title'),
+                                full_post_data.get('cross_promotion_product_id'),
+                                full_post_data.get('cross_promotion_product_title'),
+                                full_post_data.get('cross_promotion_category_position'),
+                                full_post_data.get('cross_promotion_product_position'),
+                                full_post_data['id']
+                            ))
+                            cursor.connection.commit()
+                            logger.info("✅ Auto-selected random cross-promotion IDs and persisted to DB")
+                # Build cross_promotion object
+                if full_post_data.get('cross_promotion_category_id') or full_post_data.get('cross_promotion_product_id'):
+                    full_post_data['cross_promotion'] = {
+                        'category_id': full_post_data.get('cross_promotion_category_id'),
+                        'category_title': full_post_data.get('cross_promotion_category_title', ''),
+                        'product_id': full_post_data.get('cross_promotion_product_id'),
+                        'product_title': full_post_data.get('cross_promotion_product_title', ''),
+                        'category_position': full_post_data.get('cross_promotion_category_position'),
+                        'product_position': full_post_data.get('cross_promotion_product_position'),
+                        'category_widget_html': full_post_data.get('cross_promotion_category_widget_html'),
+                        'product_widget_html': full_post_data.get('cross_promotion_product_widget_html')
+                    }
+                    # Auto-generate widget HTML if missing
+                    widget_changed = False
+                    cp = full_post_data['cross_promotion']
+                    if cp.get('category_id') and cp.get('category_position') and not cp.get('category_widget_html'):
+                        cp['category_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_category\" category_id=\"{cp.get('category_id')}\" title=\"{cp.get('category_title') or 'Related Department'}\"}}}}"
+                        widget_changed = True
+                    if cp.get('product_id') and cp.get('product_position') and not cp.get('product_widget_html'):
+                        cp['product_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_product\" product_id=\"{cp.get('product_id')}\" title=\"{cp.get('product_title') or 'Related Products'}\"}}}}"
+                        widget_changed = True
+                    if widget_changed:
+                        from config.database import db_manager as _db
+                        with _db.get_cursor() as c2:
+                            c2.execute("""
+                                UPDATE post SET 
+                                    cross_promotion_category_widget_html = %s,
+                                    cross_promotion_product_widget_html = %s,
+                                    updated_at = CURRENT_TIMESTAMP
+                                WHERE id = %s
+                            """, (
+                                cp.get('category_widget_html'),
+                                cp.get('product_widget_html'),
+                                full_post_data['id']
+                            ))
+                            c2.connection.commit()
+                            logger.info("✅ Auto-generated widget HTML and persisted to DB")
+                    logger.info(f"✅ Mapped cross-promotion: cat_id={cp.get('category_id')}, prod_id={cp.get('product_id')}")
+                else:
+                    logger.info("No cross-promotion data found after auto-selection attempt")
+            except Exception as e:
+                logger.warning(f"Cross-promotion auto-selection/generation error: {e}")
             
             # Step 3: Render HTML content
             logger.info("Step 3: Rendering HTML content...")
