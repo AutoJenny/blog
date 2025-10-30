@@ -236,6 +236,21 @@ def api_generate_image_prompt_from_builder():
                 
                 if styles and 0 <= active_index < len(styles):
                     active_style = styles[active_index]
+
+            # If still no active style, use the permanent system default (do NOT persist)
+            if not active_style:
+                active_style = {
+                    'name': 'Watercolour and Pen & Ink',
+                    'style_json': {
+                        'medium': 'watercolour and pen and ink',
+                        'technique': 'brushstrokes fading out by ending towards the edges of the image',
+                        'palette': ['ochres', 'siennas', 'umbers', 'celestial blues', 'golds'],
+                        'composition': 'rule-of-thirds with negative space',
+                        'lighting': 'soft, ethereal, golden hour',
+                        'constraints': ['no text', 'no watermark in frame', 'edges fade to white'],
+                        'negatives': ['hyperrealism', 'sharp edges', 'solid borders']
+                    }
+                }
             
             logger.info(f"[DEBUG] Active style: {active_style['name'] if active_style else 'None'}")
             
@@ -279,14 +294,54 @@ def api_generate_image_prompt_from_builder():
             # Automatically extract concept data from database
             concept_text = ''
             
-            # First try to get concept from image_concepts JSON data
+            # Get image_concepts - first try post_section, then fallback to post_development.sections
+            image_concepts_data = None
+            selected_concept_id = section.get('selected_image_concept')
+            
             if section['image_concepts']:
+                # Use image_concepts from post_section table
                 try:
                     image_concepts_data = json.loads(section['image_concepts']) if isinstance(section['image_concepts'], str) else section['image_concepts']
-                    
-                    # Look for the selected concept by ID
-                    selected_concept_id = section.get('selected_image_concept')
-                    if selected_concept_id and isinstance(image_concepts_data, dict):
+                except (json.JSONDecodeError, TypeError) as e:
+                    logger.warning(f"Error parsing image_concepts from post_section for section {section_id}: {e}")
+            
+            # Fallback to post_development.sections if not found in post_section
+            if not image_concepts_data:
+                cursor.execute("""
+                    SELECT sections FROM post_development WHERE post_id = %s
+                """, (post_id,))
+                dev_result = cursor.fetchone()
+                if dev_result and dev_result.get('sections'):
+                    try:
+                        dev_sections_data = json.loads(dev_result['sections']) if isinstance(dev_result['sections'], str) else dev_result['sections']
+                        if isinstance(dev_sections_data, dict) and 'sections' in dev_sections_data:
+                            dev_sections_list = dev_sections_data['sections']
+                        elif isinstance(dev_sections_data, list):
+                            dev_sections_list = dev_sections_data
+                        else:
+                            dev_sections_list = []
+                        
+                        # Find matching section in post_development.sections
+                        for dev_section in dev_sections_list:
+                            if str(dev_section.get('id', '')) == str(section_id):
+                                # Get image_concepts and selected_image_concept from post_development
+                                dev_image_concepts = dev_section.get('image_concepts')
+                                if dev_image_concepts:
+                                    try:
+                                        image_concepts_data = json.loads(dev_image_concepts) if isinstance(dev_image_concepts, str) else dev_image_concepts
+                                        # Also update selected_concept_id if not already set
+                                        if not selected_concept_id:
+                                            selected_concept_id = dev_section.get('selected_image_concept')
+                                        break
+                                    except (json.JSONDecodeError, TypeError) as e:
+                                        logger.warning(f"Error parsing image_concepts from post_development for section {section_id}: {e}")
+                    except (json.JSONDecodeError, TypeError, KeyError) as e:
+                        logger.warning(f"Error parsing sections from post_development for section {section_id}: {e}")
+            
+            # Extract concept text from the found image_concepts data
+            if image_concepts_data and selected_concept_id:
+                try:
+                    if isinstance(image_concepts_data, dict):
                         concepts = image_concepts_data.get('concepts', [])
                         for concept in concepts:
                             if concept.get('concept_id') == selected_concept_id:
@@ -299,9 +354,10 @@ def api_generate_image_prompt_from_builder():
                                 if concept.get('key_visual_elements'):
                                     concept_parts.append(f"Key Elements: {concept['key_visual_elements']}")
                                 concept_text = '\n'.join(concept_parts)
+                                logger.info(f"[DEBUG] Extracted concept_text from database: {concept_text[:100]}...")
                                 break
-                except (json.JSONDecodeError, TypeError, KeyError) as e:
-                    logger.warning(f"Error parsing image_concepts for section {section_id}: {e}")
+                except (KeyError, TypeError) as e:
+                    logger.warning(f"Error extracting concept from image_concepts_data for section {section_id}: {e}")
             
             # Fallback to frontend data if database extraction failed
             if not concept_text:
@@ -612,18 +668,58 @@ def api_get_llm_prompt_details(post_id, section_id):
             prompt_text = prompt_text.replace('[data:section_text]', section.get('polished') or section.get('draft') or '')
             
             # Get the selected concept for [data:selected_concept]
+            # First try post_section, then fallback to post_development.sections
             selected_concept = "No concept selected"
+            image_concepts_data = None
+            selected_concept_id = section.get('selected_image_concept', 'CONCEPT-1')
+            
             if section.get('image_concepts'):
                 try:
-                    concepts_data = json.loads(section['image_concepts'])
-                    if isinstance(concepts_data, dict) and 'concepts' in concepts_data:
-                        concepts = concepts_data['concepts']
-                        selected_concept_id = section.get('selected_image_concept', 'CONCEPT-1')
+                    image_concepts_data = json.loads(section['image_concepts']) if isinstance(section['image_concepts'], str) else section['image_concepts']
+                except (json.JSONDecodeError, TypeError):
+                    pass
+            
+            # Fallback to post_development.sections if not found in post_section
+            if not image_concepts_data:
+                cursor.execute("""
+                    SELECT sections FROM post_development WHERE post_id = %s
+                """, (post_id,))
+                dev_result = cursor.fetchone()
+                if dev_result and dev_result.get('sections'):
+                    try:
+                        dev_sections_data = json.loads(dev_result['sections']) if isinstance(dev_result['sections'], str) else dev_result['sections']
+                        if isinstance(dev_sections_data, dict) and 'sections' in dev_sections_data:
+                            dev_sections_list = dev_sections_data['sections']
+                        elif isinstance(dev_sections_data, list):
+                            dev_sections_list = dev_sections_data
+                        else:
+                            dev_sections_list = []
+                        
+                        # Find matching section in post_development.sections
+                        for dev_section in dev_sections_list:
+                            if str(dev_section.get('id', '')) == str(section_id):
+                                dev_image_concepts = dev_section.get('image_concepts')
+                                if dev_image_concepts:
+                                    try:
+                                        image_concepts_data = json.loads(dev_image_concepts) if isinstance(dev_image_concepts, str) else dev_image_concepts
+                                        if not selected_concept_id or selected_concept_id == 'CONCEPT-1':
+                                            selected_concept_id = dev_section.get('selected_image_concept', 'CONCEPT-1')
+                                        break
+                                    except (json.JSONDecodeError, TypeError):
+                                        pass
+                    except (json.JSONDecodeError, TypeError, KeyError):
+                        pass
+            
+            # Extract selected concept description
+            if image_concepts_data:
+                try:
+                    if isinstance(image_concepts_data, dict) and 'concepts' in image_concepts_data:
+                        concepts = image_concepts_data['concepts']
                         for concept in concepts:
                             if concept.get('concept_id') == selected_concept_id:
                                 selected_concept = concept.get('concept_description', 'No description')
                                 break
-                except (json.JSONDecodeError, TypeError):
+                except (KeyError, TypeError):
                     pass
             
             prompt_text = prompt_text.replace('[data:selected_concept]', selected_concept)

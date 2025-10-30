@@ -12,6 +12,7 @@
 
 {% block js_assets %}
 {{ js_assets('imaging') }}
+<script src="{{ url_for('static', filename='js/llm-config.js') }}"></script>
 <script src="{{ url_for('static', filename='js/imaging/imaging-workspace.js') }}"></script>
 <script src="{{ url_for('static', filename='js/imaging/sections-panel.js') }}"></script>
 <script>
@@ -55,6 +56,74 @@
 {% block content %}
 {% include 'shared/blog_pipeline_header.html' %}
 
+<script>
+// Auto-run hooks for 1-click launchpad integration
+document.addEventListener('DOMContentLoaded', function(){
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const autoRun = params.get('auto_run'); // 'generate' | 'optimise'
+        if (!autoRun) return;
+
+        // Remove the parameter from URL to avoid re-trigger on reload
+        window.history.replaceState({}, '', window.location.pathname);
+
+        // Helper: select all sections if available
+        function selectAllSections(){
+            // Support both legacy and current ids
+            const btn1 = document.getElementById('select-all-sections-btn');
+            const btn2 = document.getElementById('select-all-btn');
+            if (btn1) btn1.click();
+            else if (btn2) btn2.click();
+        }
+
+        // Helper: wait for a DOM node by id
+        function waitForEl(id, timeoutMs=8000){
+            return new Promise((resolve, reject) => {
+                const start = Date.now();
+                const timer = setInterval(() => {
+                    const el = document.getElementById(id);
+                    if (el) { clearInterval(timer); resolve(el); }
+                    else if (Date.now() - start > timeoutMs) { clearInterval(timer); reject(new Error('timeout')); }
+                }, 150);
+            });
+        }
+
+        // Batch button (shared across panels)
+        waitForEl('batch-generate-btn', 10000).then((batchBtn) => {
+            // Give sections panel a moment to load
+            setTimeout(() => {
+                selectAllSections();
+
+                if (autoRun === 'generate') {
+                    // Run batch image generation under currentSubstage 'image-generation'
+                    const original = batchBtn.textContent;
+                    batchBtn.click();
+
+                    const check = setInterval(() => {
+                        if (!batchBtn.disabled && batchBtn.textContent === original) {
+                            clearInterval(check);
+                            if (window.opener) window.opener.postMessage('image_generation_complete', '*');
+                        }
+                    }, 1000);
+
+                    setTimeout(() => { clearInterval(check); if (window.opener) window.opener.postMessage('image_generation_complete', '*'); }, 300000);
+                }
+            }, 1200);
+        }).catch(() => {
+            // As a fallback, try single-action buttons if present
+            if (autoRun === 'generate') {
+                const genBtn = document.getElementById('generate-image-btn');
+                if (genBtn) {
+                    // Try selecting first section implicitly via sections panel if any
+                    genBtn.click();
+                    setTimeout(() => { if (window.opener) window.opener.postMessage('image_generation_complete', '*'); }, 15000);
+                }
+            }
+        });
+    } catch (e) { console.warn('[Imaging AutoRun] failed:', e); }
+});
+</script>
+
 <div class="imaging-workspace">
     <div class="workspace-container">
         {% include 'shared/sections_panel.html' %}
@@ -70,13 +139,21 @@
                 {% include 'authoring/includes/llm_prompts_panel.html' %}
             </div>
         <script>
-        // Initialize LLM Prompts panel on Imaging page
+        // Initialize LLM Prompts panel on Imaging page (only if not optimise page)
         document.addEventListener('DOMContentLoaded', function() {
+            // Skip on optimise page
+            if (window.optimisePage || window.currentSubstage === 'optimise') {
+                console.log('[Imaging] Skipping LLM Prompts panel initialization on optimise page');
+                return;
+            }
+            
             try {
                 if (typeof LLMPromptsPanel !== 'undefined') {
                     window.imagingLlmp = new LLMPromptsPanel({ postId: window.postId });
                 }
-            } catch (e) { console.error('[Imaging] Failed to init LLM Prompts panel:', e); }
+            } catch (e) { 
+                console.error('[Imaging] Failed to init LLM Prompts panel:', e); 
+            }
         });
         </script>
 
@@ -91,10 +168,7 @@
             <!-- Output Panel -->
             {% include 'imaging/right/output_panel_image_generation.html' %}
             
-            <!-- Image Optimization Panel (using header version for now) -->
-            <div class="image-optimization-container">
-                {% include 'header/includes/image_optimization_panel.html' %}
-            </div>
+            {# Removed header image optimization panel to avoid calling header endpoints on imaging page #}
         </div>
     </div>
 </div>

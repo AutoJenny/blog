@@ -137,6 +137,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Don't auto-initialize on optimise page (which is for sections, not headers)
+    if (window.optimisePage || window.currentSubstage === 'optimise') {
+        console.log('[ImageOptimizationPanel] Skipping auto-initialization on optimise page');
+        return;
+    }
+    
+    // Only initialize if the panel container exists on the page
+    if (!document.getElementById('image-optimization-panel')) {
+        console.log('[ImageOptimizationPanel] Panel container not found, skipping initialization');
+        return;
+    }
+    
     // Initialize the panel
     console.log('[ImageOptimizationPanel] Initializing panel...');
     window.imageOptimizationPanel = new ImageOptimizationPanel();

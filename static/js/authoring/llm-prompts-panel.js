@@ -8,9 +8,23 @@ class LLMPromptsPanel {
         this.containerId = options.containerId || 'llm-prompts-panel';
         this.postId = options.postId || window.postId;
         
+        // Skip initialization on optimise page (doesn't need LLM panels)
+        if (window.optimisePage || window.currentSubstage === 'optimise') {
+            console.warn('[LLM Prompts Panel] Skipping initialization on optimise page');
+            this.config = null;
+            this.pageType = null;
+            return;
+        }
+        
         // Detect page type and get configuration
         this.pageType = this.detectPageType();
         this.config = this.getPageConfig();
+        
+        // If config is null (e.g., on optimise page), don't proceed
+        if (!this.config) {
+            console.warn('[LLM Prompts Panel] No config available, skipping initialization');
+            return;
+        }
         console.log('[LLM Prompts Panel] Initialized:', {
             pageType: this.pageType,
             promptEndpoint: this.config.promptEndpoint,
@@ -64,12 +78,22 @@ class LLMPromptsPanel {
         // ONLY use LLM_CONFIGS - no fallbacks
         if (typeof LLM_CONFIGS === 'undefined') {
             console.error('[LLM Prompts Panel] LLM_CONFIGS not loaded!');
+            // Don't throw error if on optimise page (which doesn't need LLM panels)
+            if (window.optimisePage || window.currentSubstage === 'optimise') {
+                console.warn('[LLM Prompts Panel] Skipping initialization on optimise page');
+                return null;
+            }
             throw new Error('LLM_CONFIGS not loaded - llm-config.js must be included on page');
         }
         
         if (!LLM_CONFIGS[this.pageType]) {
             console.error('[LLM Prompts Panel] No config for pageType:', this.pageType);
             console.error('[LLM Prompts Panel] Available configs:', Object.keys(LLM_CONFIGS));
+            // Don't throw error if on optimise page
+            if (window.optimisePage || window.currentSubstage === 'optimise') {
+                console.warn('[LLM Prompts Panel] Skipping initialization on optimise page');
+                return null;
+            }
             throw new Error(`No LLM config found for page type: ${this.pageType}`);
         }
         

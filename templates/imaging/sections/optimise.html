@@ -19,6 +19,12 @@
     window.postId = {{ post_id|default(0) }};
     window.imagingStage = true;
     window.imagingSubstage = 'optimise';
+    
+    // Prevent auto-initialization of header image panels on optimise page
+    // Optimise page is for section images, not header images
+    window.optimisePage = true;
+    // Default: select all sections on load so Run Selected processes all
+    window.autoSelectAll = true;
 </script>
 {% endblock %}
 
@@ -51,6 +57,24 @@
     </div>
   </div>
   </div>
+<script>
+// Auto-run support: if auto_run=selected, click Optimize Selected after sections load
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const autoRun = params.get('auto_run');
+    if (autoRun === 'selected') {
+      // Wait for sections to render and selection to apply, then run
+      setTimeout(function(){
+        const btn = document.getElementById('optimize-selected-btn');
+        if (btn && !btn.disabled) {
+          btn.click();
+        }
+      }, 1200);
+    }
+  } catch(_) {}
+});
+</script>
 {% endblock %}
 
 {# Optimise step now uses the same modular panels as image-generation; optimization actions can be wired via panel modules #}

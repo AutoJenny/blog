@@ -114,11 +114,11 @@
                     </tr>
                     <tr>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="authoring" data-substage="image-prompts">Image Prompts</a></td>
-                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-image-prompts" class="run-btn dead">Run</button></td>
                     </tr>
                     <tr>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="authoring" data-substage="image-captions">Image Captions</a></td>
-                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-image-captions" class="run-btn dead">Run</button></td>
                     </tr>
 
                     <!-- Imaging Stage -->
@@ -130,11 +130,11 @@
                             </div>
                         </td>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="imaging" data-substage="image-generation">Image Generation</a></td>
-                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-image-generation" class="run-btn ready">Run</button></td>
                     </tr>
                     <tr>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="imaging" data-substage="optimise">Optimise</a></td>
-                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-image-optimise" class="run-btn ready">Run</button></td>
                     </tr>
 
                     <!-- Header Stage -->
@@ -780,6 +780,116 @@
         });
     }
     
+    // Run Image Prompts: open image_prompts page in new window, trigger Generate All, close when complete
+    function runImagePrompts(){
+        const btn = document.getElementById('run-image-prompts');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        
+        const postId = getSelectedPostId();
+        if (!postId){
+            alert('Please select a post in the "Viewing Pipeline For" dropdown first.');
+            return;
+        }
+        
+        btn.disabled = true;
+        btn.textContent = 'Running…';
+        btn.classList.remove('dead','complete');
+        btn.classList.add('ready');
+        
+        // Open image_prompts page in new window
+        const promptsWindow = window.open(`/authoring/posts/${postId}/sections/image_prompts?auto_run=true`, '_blank', 'width=1400,height=900');
+        
+        // Listen for completion message from image_prompts page
+        window.addEventListener('message', function handleMessage(event) {
+            if (event.data === 'image_prompts_complete') {
+                promptsWindow.close();
+                window.removeEventListener('message', handleMessage);
+                
+                btn.textContent = 'Done';
+                btn.classList.remove('dead','ready');
+                btn.classList.add('complete');
+                btn.disabled = false;
+                setTimeout(() => { btn.textContent = originalText; }, 1500);
+            }
+        });
+        
+        // Fallback: if window closes without message, assume complete
+        const checkClosed = setInterval(() => {
+            if (promptsWindow.closed) {
+                clearInterval(checkClosed);
+                btn.textContent = 'Done';
+                btn.classList.remove('dead','ready');
+                btn.classList.add('complete');
+                btn.disabled = false;
+                setTimeout(() => { btn.textContent = originalText; }, 1500);
+            }
+        }, 1000);
+    }
+    const runImagePromptsBtn = document.getElementById('run-image-prompts');
+    if (runImagePromptsBtn){
+        runImagePromptsBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            runImagePrompts();
+        });
+    }
+    
+    // Run Image Captions: open image_captions page in new window, trigger Generate All, close when complete
+    function runImageCaptions(){
+        const btn = document.getElementById('run-image-captions');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        
+        const postId = getSelectedPostId();
+        if (!postId){
+            alert('Please select a post in the "Viewing Pipeline For" dropdown first.');
+            return;
+        }
+        
+        btn.disabled = true;
+        btn.textContent = 'Running…';
+        btn.classList.remove('dead','complete');
+        btn.classList.add('ready');
+        
+        // Open image_captions page in new window
+        const captionsWindow = window.open(`/authoring/posts/${postId}/sections/image_captions?auto_run=true`, '_blank', 'width=1400,height=900');
+        
+        // Listen for completion message from image_captions page
+        window.addEventListener('message', function handleMessage(event) {
+            if (event.data === 'image_captions_complete') {
+                captionsWindow.close();
+                window.removeEventListener('message', handleMessage);
+                
+                btn.textContent = 'Done';
+                btn.classList.remove('dead','ready');
+                btn.classList.add('complete');
+                btn.disabled = false;
+                setTimeout(() => { btn.textContent = originalText; }, 1500);
+            }
+        });
+        
+        // Fallback: if window closes without message, assume complete
+        const checkClosed = setInterval(() => {
+            if (captionsWindow.closed) {
+                clearInterval(checkClosed);
+                btn.textContent = 'Done';
+                btn.classList.remove('dead','ready');
+                btn.classList.add('complete');
+                btn.disabled = false;
+                setTimeout(() => { btn.textContent = originalText; }, 1500);
+            }
+        }, 1000);
+    }
+    const runImageCaptionsBtn = document.getElementById('run-image-captions');
+    if (runImageCaptionsBtn){
+        runImageCaptionsBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            runImageCaptions();
+        });
+    }
+    
     // Substage links navigation based on selected post
     function getSelectedPostId(){
         const sel = document.getElementById('pipeline-post-selector');
@@ -808,8 +918,8 @@
                 'image-captions': p => `/authoring/posts/${p}/sections/image-captions`
             },
             imaging: {
-                'image-generation': p => `/imaging/posts/${p}/sections`,
-                'optimise': p => `/imaging/posts/${p}/optimize`
+                'image-generation': p => `/imaging/posts/${p}/sections/image-generation`,
+                'optimise': p => `/imaging/posts/${p}/sections/optimise`
             }
         };
         const fn = routes[stage] && routes[stage][substage];
@@ -867,6 +977,48 @@
             console.error('Failed to load posts:', e);
         }
     }
+
+    // Run Image Generation: open imaging page, auto-run batch generation, close when complete
+    function runImageGeneration(){
+        const btn = document.getElementById('run-image-generation');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        const postId = getSelectedPostId();
+        if (!postId){ alert('Please select a post in the "Viewing Pipeline For" dropdown first.'); return; }
+        btn.disabled = true; btn.textContent = 'Running…'; btn.classList.remove('dead','complete'); btn.classList.add('ready');
+        const win = window.open(`/imaging/posts/${postId}/sections/image-generation?auto_run=generate`, '_blank', 'width=1400,height=900');
+        window.addEventListener('message', function handleMsg(ev){
+            if (ev.data === 'image_generation_complete'){
+                try { win.close(); } catch(_){}
+                window.removeEventListener('message', handleMsg);
+                btn.textContent = 'Done'; btn.classList.remove('dead','ready'); btn.classList.add('complete'); btn.disabled = false; setTimeout(()=>btn.textContent=originalText,1500);
+            }
+        });
+        const poll = setInterval(()=>{ if (win.closed){ clearInterval(poll); btn.textContent='Done'; btn.classList.remove('dead','ready'); btn.classList.add('complete'); btn.disabled=false; setTimeout(()=>btn.textContent=originalText,1500);} }, 1000);
+    }
+    const runImageGenerationBtn = document.getElementById('run-image-generation');
+    if (runImageGenerationBtn){ runImageGenerationBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runImageGeneration(); }); }
+
+    // Run Optimise: open imaging page, auto-run batch optimize, close when complete
+    function runImageOptimise(){
+        const btn = document.getElementById('run-image-optimise');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        const postId = getSelectedPostId();
+        if (!postId){ alert('Please select a post in the "Viewing Pipeline For" dropdown first.'); return; }
+        btn.disabled = true; btn.textContent = 'Running…'; btn.classList.remove('dead','complete'); btn.classList.add('ready');
+        const win = window.open(`/imaging/posts/${postId}/sections/optimise?auto=1&auto_run=selected`, '_blank', 'width=1400,height=900');
+        window.addEventListener('message', function handleMsg(ev){
+            if (ev.data === 'image_optimise_complete'){
+                try { win.close(); } catch(_){}
+                window.removeEventListener('message', handleMsg);
+                btn.textContent = 'Done'; btn.classList.remove('dead','ready'); btn.classList.add('complete'); btn.disabled = false; setTimeout(()=>btn.textContent=originalText,1500);
+            }
+        });
+        const poll = setInterval(()=>{ if (win.closed){ clearInterval(poll); btn.textContent='Done'; btn.classList.remove('dead','ready'); btn.classList.add('complete'); btn.disabled=false; setTimeout(()=>btn.textContent=originalText,1500);} }, 1000);
+    }
+    const runImageOptimiseBtn = document.getElementById('run-image-optimise');
+    if (runImageOptimiseBtn){ runImageOptimiseBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runImageOptimise(); }); }
 
     function escapeHtml(str){ const d=document.createElement('div'); d.textContent = (str||''); return d.innerHTML; }
 
@@ -1029,6 +1181,78 @@
                 } else {
                     imageConceptsBtn.classList.remove('ready', 'complete');
                     imageConceptsBtn.classList.add('dead');
+                }
+            }
+            
+            // Update Image Prompts Run button state based on image_concepts availability
+            const imagePromptsBtn = document.getElementById('run-image-prompts');
+            if (imagePromptsBtn) {
+                // Check if sections have image_concepts with selected concepts
+                let hasImageConcepts = false;
+                if (data.sections && data.sections.length > 0) {
+                    // Ready if at least one section has image_concepts
+                    hasImageConcepts = data.sections.some(s => (
+                        s.image_concepts && (typeof s.image_concepts === 'string' ? s.image_concepts.trim() !== '' : true)
+                    ));
+                } else if (post.sections) {
+                    try {
+                        const sectionsData = typeof post.sections === 'string' ? JSON.parse(post.sections) : post.sections;
+                        const sectionsList = Array.isArray(sectionsData) ? sectionsData : (sectionsData.sections || []);
+                        if (sectionsList.length > 0) {
+                            // Check sections in post_section or JSON for image_concepts
+                            hasImageConcepts = sectionsList.some(s => s.image_concepts);
+                        }
+                    } catch (e) {
+                        // sections is not valid JSON
+                    }
+                }
+                // Also consider Image Concepts button readiness as a proxy (loosens coupling and UX friction)
+                const imageConceptsBtnEl = document.getElementById('run-image-concepts');
+                const conceptsStageLooksReady = imageConceptsBtnEl && (imageConceptsBtnEl.classList.contains('ready') || imageConceptsBtnEl.classList.contains('complete'));
+
+                if (hasImageConcepts || conceptsStageLooksReady) {
+                    imagePromptsBtn.classList.remove('dead', 'complete');
+                    imagePromptsBtn.classList.add('ready');
+                } else {
+                    imagePromptsBtn.classList.remove('ready', 'complete');
+                    imagePromptsBtn.classList.add('dead');
+                }
+            }
+            
+            // Update Image Captions Run button state based on image_prompts availability
+            const imageCaptionsBtn = document.getElementById('run-image-captions');
+            if (imageCaptionsBtn) {
+                // Check if sections have image_prompts
+                let hasImagePrompts = false;
+                if (data.sections && data.sections.length > 0) {
+                    // Check if at least one section has image_prompts
+                    hasImagePrompts = data.sections.some(s => {
+                        return s.image_prompts && (typeof s.image_prompts === 'string' ? s.image_prompts.trim() !== '' : true);
+                    });
+                } else if (post.sections) {
+                    try {
+                        const sectionsData = typeof post.sections === 'string' ? JSON.parse(post.sections) : post.sections;
+                        const sectionsList = Array.isArray(sectionsData) ? sectionsData : (sectionsData.sections || []);
+                        if (sectionsList.length > 0) {
+                            // Check sections in post_section or JSON for image_prompts
+                            if (data.sections) {
+                                hasImagePrompts = data.sections.some(s => {
+                                    return s.image_prompts && (typeof s.image_prompts === 'string' ? s.image_prompts.trim() !== '' : true);
+                                });
+                            } else {
+                                hasImagePrompts = sectionsList.some(s => s.image_prompts);
+                            }
+                        }
+                    } catch (e) {
+                        // sections is not valid JSON
+                    }
+                }
+                if (hasImagePrompts) {
+                    imageCaptionsBtn.classList.remove('dead', 'complete');
+                    imageCaptionsBtn.classList.add('ready');
+                } else {
+                    imageCaptionsBtn.classList.remove('ready', 'complete');
+                    imageCaptionsBtn.classList.add('dead');
                 }
             }
             

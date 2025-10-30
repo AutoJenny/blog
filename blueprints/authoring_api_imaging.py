@@ -128,15 +128,31 @@ def api_list_post_styles(post_id):
             imaging = extra_settings.get('imaging', {})
             styles = imaging.get('styles', [])
             active_index = imaging.get('activeIndex', 0)
+            # Fallback to permanent system default if none exist (do NOT persist)
+            if not styles:
+                styles = [{
+                    'name': 'Watercolour and Pen & Ink',
+                    'style_json': {
+                        'medium': 'watercolour and pen and ink',
+                        'technique': 'brushstrokes fading out by ending towards the edges of the image',
+                        'palette': ['ochres', 'siennas', 'umbers', 'celestial blues', 'golds'],
+                        'composition': 'rule-of-thirds with negative space',
+                        'lighting': 'soft, ethereal, golden hour',
+                        'constraints': ['no text', 'no watermark in frame', 'edges fade to white'],
+                        'negatives': ['hyperrealism', 'sharp edges', 'solid borders']
+                    }
+                }]
+                active_index = 0
             
             return jsonify({
+                'success': True,
                 'styles': styles,
                 'activeIndex': active_index,
                 'count': len(styles)
             })
     except Exception as e:
         logger.error(f"Error listing styles: {e}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @bp.route('/api/posts/<int:post_id>/styles/active', methods=['GET'])
 def api_get_active_style(post_id):
@@ -710,7 +726,42 @@ def api_generate_image_concepts(post_id, section_id):
             if not image_concepts:
                 return jsonify({'error': 'Failed to generate valid JSON'}), 500
             
-            # Save to database - update post_development.sections JSON
+            # Parse concepts to get first concept ID for auto-selection
+            selected_concept_id = None
+            try:
+                concepts_data = json.loads(image_concepts)
+                if concepts_data.get('concepts') and len(concepts_data['concepts']) > 0:
+                    selected_concept_id = concepts_data['concepts'][0]['concept_id']
+                    logger.info(f"Auto-selected concept {selected_concept_id} for section {section_id}")
+            except Exception as e:
+                logger.warning(f"Could not parse concepts for auto-selection: {e}")
+            
+            # PRIMARY: Always save to post_section.image_concepts table if section_id is numeric
+            # This is the main database table storage - JSON is secondary
+            section_saved_to_table = False
+            if section_id.isdigit():
+                try:
+                    if selected_concept_id:
+                        cursor.execute("""
+                            UPDATE post_section 
+                            SET image_concepts = %s, selected_image_concept = %s
+                            WHERE post_id = %s AND id = %s
+                        """, (image_concepts, selected_concept_id, post_id, int(section_id)))
+                        logger.info(f"[DEBUG] Saved image_concepts and selected_image_concept to post_section table for section {section_id}")
+                    else:
+                        cursor.execute("""
+                            UPDATE post_section 
+                            SET image_concepts = %s
+                            WHERE post_id = %s AND id = %s
+                        """, (image_concepts, post_id, int(section_id)))
+                        logger.info(f"[DEBUG] Saved image_concepts to post_section table for section {section_id}")
+                    section_saved_to_table = True
+                except Exception as e:
+                    logger.error(f"Error saving to post_section table for section {section_id}: {e}")
+                    return jsonify({'error': f'Failed to save to post_section table (primary storage): {str(e)}'}), 500
+            
+            # SECONDARY: Also update post_development.sections JSON for backwards compatibility
+            # This is maintained as a secondary storage, but post_section table is primary
             cursor.execute("""
                 SELECT sections FROM post_development 
                 WHERE post_id = %s AND sections IS NOT NULL
@@ -727,7 +778,8 @@ def api_generate_image_concepts(post_id, section_id):
                     else:
                         sections_list = []
                     
-                    # Find and update the section
+                    # Find and update the section in JSON
+                    section_found_in_json = False
                     for i, section_data in enumerate(sections_list):
                         section_id_from_data = section_data.get('id', f'section_{i+1}')
                         
@@ -744,60 +796,29 @@ def api_generate_image_concepts(post_id, section_id):
                             section_data['image_concepts'] = image_concepts
                             
                             # Auto-select the first concept if no selection exists
-                            if not section_data.get('selected_image_concept'):
-                                try:
-                                    concepts_data = json.loads(image_concepts)
-                                    if concepts_data.get('concepts') and len(concepts_data['concepts']) > 0:
-                                        first_concept_id = concepts_data['concepts'][0]['concept_id']
-                                        section_data['selected_image_concept'] = first_concept_id
-                                        logger.info(f"Auto-selected concept {first_concept_id} for section {section_id}")
-                                except Exception as e:
-                                    logger.error(f"Error auto-selecting concept for section {section_id}: {e}")
+                            if not section_data.get('selected_image_concept') and selected_concept_id:
+                                section_data['selected_image_concept'] = selected_concept_id
+                            
+                            section_found_in_json = True
                             break
                     
-                    # Update the database
-                    cursor.execute("""
-                        UPDATE post_development 
-                        SET sections = %s
-                        WHERE post_id = %s
-                    """, (json.dumps(sections_data), post_id))
-                    
-                    cursor.connection.commit()
-                except (json.JSONDecodeError, TypeError) as e:
-                    logger.error(f"Error updating sections JSON: {e}")
-                    return jsonify({'error': 'Failed to update section data'}), 500
-            else:
-                # Fallback: try to update post_section if section_id is numeric
-                if section_id.isdigit():
-                    # Auto-select first concept if no selection exists
-                    try:
-                        concepts_data = json.loads(image_concepts)
-                        if concepts_data.get('concepts') and len(concepts_data['concepts']) > 0:
-                            first_concept_id = concepts_data['concepts'][0]['concept_id']
-                            
-                            cursor.execute("""
-                                UPDATE post_section 
-                                SET image_concepts = %s, selected_image_concept = %s
-                                WHERE post_id = %s AND id = %s
-                            """, (image_concepts, first_concept_id, post_id, int(section_id)))
-                            logger.info(f"Auto-selected concept {first_concept_id} for numeric section {section_id}")
-                        else:
-                            cursor.execute("""
-                                UPDATE post_section 
-                                SET image_concepts = %s
-                                WHERE post_id = %s AND id = %s
-                            """, (image_concepts, post_id, int(section_id)))
-                    except Exception as e:
-                        logger.error(f"Error auto-selecting concept for numeric section {section_id}: {e}")
+                    # Update the JSON in database
+                    if section_found_in_json:
                         cursor.execute("""
-                            UPDATE post_section 
-                            SET image_concepts = %s
-                            WHERE post_id = %s AND id = %s
-                        """, (image_concepts, post_id, int(section_id)))
-                    
-                    cursor.connection.commit()
-                else:
-                    return jsonify({'error': 'No section data found to update'}), 404
+                            UPDATE post_development 
+                            SET sections = %s
+                            WHERE post_id = %s
+                        """, (json.dumps(sections_data), post_id))
+                        logger.info(f"[DEBUG] Also updated image_concepts in post_development.sections JSON for section {section_id}")
+                except (json.JSONDecodeError, TypeError) as e:
+                    logger.warning(f"Error updating sections JSON (non-critical): {e}")
+            
+            # Commit all changes
+            cursor.connection.commit()
+            
+            # Verify primary storage succeeded
+            if section_id.isdigit() and not section_saved_to_table:
+                return jsonify({'error': 'Failed to save to post_section table (primary storage)'}), 500
             
             return jsonify({
                 'success': True,
