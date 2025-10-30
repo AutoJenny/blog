@@ -59,6 +59,8 @@ class SEOMetaPage {
                 setTimeout(() => {
                     this.generateBtn.textContent = 'Generate Meta Data';
                 }, 2000);
+                // Notify opener (launchpad) that SEO Meta generation completed
+                try { if (window.opener) window.opener.postMessage('header_seo_meta_complete', '*'); } catch(_) {}
             } else {
                 console.error('[SEO Meta Page] Error generating meta data:', data.error);
                 this.generateBtn.textContent = 'Error';

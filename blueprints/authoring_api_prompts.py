@@ -870,24 +870,51 @@ def api_generate_image_captions(post_id, section_id):
             
             # Get the selected concept details
             selected_concept_text = ''
-            if section.get('selected_image_concept') and section.get('image_concepts'):
+            selected_concept_id = section.get('selected_image_concept')
+
+            # First try post_section.image_concepts
+            if section.get('image_concepts'):
                 try:
-                    # Handle both string and object formats
                     concepts_data = section['image_concepts']
                     if isinstance(concepts_data, str):
                         concepts_data = json.loads(concepts_data)
-                    
-                    if concepts_data.get('concepts'):
-                        selected_concept = next(
-                            (c for c in concepts_data['concepts'] if c['concept_id'] == section['selected_image_concept']), 
-                            None
-                        )
+                    if isinstance(concepts_data, dict) and concepts_data.get('concepts') and selected_concept_id:
+                        selected_concept = next((c for c in concepts_data['concepts'] if c.get('concept_id') == selected_concept_id), None)
                         if selected_concept:
-                            # Exclude the concept_title as it's too metaphorical
-                            selected_concept_text = f"{selected_concept['concept_description']}\nMood: {selected_concept['concept_mood']}\nKey Elements: {selected_concept['key_visual_elements']}"
+                            selected_concept_text = f"{selected_concept.get('concept_description','')}\nMood: {selected_concept.get('concept_mood','')}\nKey Elements: {selected_concept.get('key_visual_elements','')}"
                 except Exception as e:
-                    logger.error(f"Error parsing selected concept: {e}")
-                    selected_concept_text = section.get('selected_image_concept', '')
+                    logger.error(f"Error parsing selected concept from post_section: {e}")
+
+            # Fallback to post_development.sections if not found
+            if not selected_concept_text:
+                try:
+                    cursor.execute("""
+                        SELECT sections FROM post_development WHERE post_id = %s
+                    """, (post_id,))
+                    dev_row = cursor.fetchone()
+                    if dev_row and dev_row.get('sections'):
+                        dev_sections = dev_row['sections']
+                        if isinstance(dev_sections, str):
+                            dev_sections = json.loads(dev_sections)
+                        dev_list = dev_sections['sections'] if isinstance(dev_sections, dict) and 'sections' in dev_sections else (dev_sections if isinstance(dev_sections, list) else [])
+                        for s in dev_list:
+                            if str(s.get('id')) == str(section_id):
+                                # Update selected concept id if absent on post_section
+                                if not selected_concept_id:
+                                    selected_concept_id = s.get('selected_image_concept')
+                                concepts = s.get('image_concepts')
+                                if isinstance(concepts, str):
+                                    try:
+                                        concepts = json.loads(concepts)
+                                    except Exception:
+                                        concepts = None
+                                if isinstance(concepts, dict) and concepts.get('concepts') and selected_concept_id:
+                                    sel = next((c for c in concepts['concepts'] if c.get('concept_id') == selected_concept_id), None)
+                                    if sel:
+                                        selected_concept_text = f"{sel.get('concept_description','')}\nMood: {sel.get('concept_mood','')}\nKey Elements: {sel.get('key_visual_elements','')}"
+                                break
+                except Exception as e:
+                    logger.error(f"Error reading selected concept from post_development: {e}")
             
             # Get the image captions prompt
             cursor.execute("""
@@ -907,10 +934,21 @@ def api_generate_image_captions(post_id, section_id):
             system_prompt = prompt_data['system_prompt']
             
             # Replace placeholders with actual data
-            prompt_text = prompt_text.replace('[data:selected_concept]', selected_concept_text)
+            prompt_text = prompt_text.replace('[data:selected_concept]', selected_concept_text or '')
             prompt_text = prompt_text.replace('[SECTION_TITLE]', section['section_heading'] or '')
             prompt_text = prompt_text.replace('[SECTION_DESCRIPTION]', section['section_description'] or '')
             prompt_text = prompt_text.replace('[SECTION_CONTENT]', section.get('polished') or section.get('draft') or '')
+
+            # Enforce UK British English spelling in captions and alt text with examples
+            uk_english_guidance = (
+                "Use UK British English spelling and style. Examples: honour not honor; colour not color; "
+                "centre not center; organise/organisation not organize/organization; defence not defense; "
+                "jewellery not jewelry; programme (non-computing) not program."
+            )
+            if system_prompt:
+                system_prompt = f"{system_prompt}\n\nCRITICAL: {uk_english_guidance}"
+            else:
+                prompt_text = f"CRITICAL: {uk_english_guidance}\n\n{prompt_text}"
             
             # Prepare messages for LLM
             messages = []

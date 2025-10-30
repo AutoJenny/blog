@@ -98,8 +98,9 @@ def header_seo_meta(post_id):
 
 @bp.route('/posts/<int:post_id>/publishing-details')
 def header_publishing_details(post_id):
-    """Publishing Details substage - Set author, word count, publish date, and status"""
-    return render_template('header/publishing_details.html', post_id=post_id, blueprint_name='header')
+    """Deprecated route: Publishing Details substage removed. Redirect to SEO & Meta."""
+    from flask import redirect, url_for
+    return redirect(url_for('header.header_seo_meta', post_id=post_id))
 
 @bp.route('/posts/<int:post_id>/final-review')
 def header_final_review(post_id):

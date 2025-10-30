@@ -159,11 +159,7 @@
                     </tr>
                     <tr>
                         <td class="substage-cell">SEO & Meta</td>
-                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
-                    </tr>
-                    <tr>
-                        <td class="substage-cell">Publishing Details</td>
-                        <td class="run-cell" style="text-align:right;"><button class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-header-seo-meta" class="run-btn ready">Run</button></td>
                     </tr>
                     <tr>
                         <td class="substage-cell">Final Review</td>
@@ -1104,6 +1100,38 @@
     }
     const runHeaderImageOptimizeBtn = document.getElementById('run-header-image-optimize');
     if (runHeaderImageOptimizeBtn){ runHeaderImageOptimizeBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runHeaderImageOptimize(); }); }
+
+    // SEO & Meta: open page and click Generate Meta Data
+    function runHeaderSeoMeta(){
+        const btn = document.getElementById('run-header-seo-meta');
+        if (!btn) return; const original=btn.textContent; btn.disabled=true; btn.textContent='Running…';
+        const postId = getSelectedPostId();
+        if (!postId){ alert('Please select a post in the "Viewing Pipeline For" dropdown first.'); btn.disabled=false; btn.textContent=original; return; }
+        const win = window.open(`/header/posts/${postId}/seo-meta`, '_blank', 'width=1400,height=900');
+        const start = Date.now();
+        const maxWait = 20000; let clicked=false;
+        const interval = setInterval(()=>{
+            try {
+                if (!win || win.closed){ clearInterval(interval); return; }
+                if (!clicked && win.document && win.document.readyState === 'complete'){
+                    const b = win.document.getElementById('generate-all-meta-btn');
+                    if (b && !b.disabled){ b.click(); clicked=true; }
+                }
+            } catch(_) {}
+            if (Date.now() - start > maxWait){ clearInterval(interval); }
+        }, 400);
+        function handleDone(ev){
+            if (ev.data === 'header_seo_meta_complete'){
+                window.removeEventListener('message', handleDone);
+                try { win && win.close(); } catch(_){}
+                btn.textContent='Done'; btn.classList.add('complete'); btn.disabled=false; setTimeout(()=>btn.textContent=original,1500);
+            }
+        }
+        window.addEventListener('message', handleDone);
+        const poll = setInterval(()=>{ if (win && win.closed){ clearInterval(poll); btn.textContent='Done'; btn.classList.add('complete'); btn.disabled=false; setTimeout(()=>btn.textContent=original,1500);} }, 1000);
+    }
+    const runHeaderSeoMetaBtn = document.getElementById('run-header-seo-meta');
+    if (runHeaderSeoMetaBtn){ runHeaderSeoMetaBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runHeaderSeoMeta(); }); }
 
     // Run Optimise: open imaging page, auto-run batch optimize, close when complete
     function runImageOptimise(){
