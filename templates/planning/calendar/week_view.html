@@ -170,14 +170,22 @@ window.currentSubstage = 'week-view';
     document.addEventListener('DOMContentLoaded', () => {
         const ideaModal = getIdeaModal();
         
-        // Make theme items clickable
+        // Make theme items clickable - use event delegation on document
         document.addEventListener('click', (e) => {
             const themeItem = e.target.closest('.week-themes .item.idea');
-            if (themeItem) {
+            if (themeItem && themeItem.dataset.ideaId) {
                 const ideaId = themeItem.dataset.ideaId;
-                if (ideaId) {
-                    ideaModal.open(parseInt(ideaId));
-                }
+                console.log('Opening idea modal for ID:', ideaId);
+                ideaModal.open(parseInt(ideaId));
+            }
+        });
+        
+        // Also make events clickable (Halloween Spooktacular is an event, not an idea)
+        document.addEventListener('click', (e) => {
+            const eventItem = e.target.closest('.row-cell .item.event');
+            if (eventItem && eventItem.dataset.eventId) {
+                // TODO: Add event modal in future
+                console.log('Event clicked:', eventItem.dataset.eventId);
             }
         });
         

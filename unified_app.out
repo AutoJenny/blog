@@ -7236,3 +7236,13 @@ LINE 6:                        ci.evergreen_notes, ci.sources, ci.cr...
 2025-10-31 11:44:58,594 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
 2025-10-31 11:44:58,600 - werkzeug - WARNING -  * Debugger is active!
 2025-10-31 11:44:58,612 - werkzeug - INFO -  * Debugger PIN: 452-628-635
+2025-10-31 11:45:14,336 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_api_calendar.py', reloading
+2025-10-31 11:45:14,551 - werkzeug - INFO -  * Restarting with stat
+2025-10-31 11:45:15,577 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-10-31 11:45:15,584 - werkzeug - WARNING -  * Debugger is active!
+2025-10-31 11:45:15,597 - werkzeug - INFO -  * Debugger PIN: 452-628-635
+2025-10-31 11:45:18,755 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_api_calendar.py', reloading
+2025-10-31 11:45:18,965 - werkzeug - INFO -  * Restarting with stat
+2025-10-31 11:45:19,969 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-10-31 11:45:19,975 - werkzeug - WARNING -  * Debugger is active!
+2025-10-31 11:45:19,987 - werkzeug - INFO -  * Debugger PIN: 452-628-635
