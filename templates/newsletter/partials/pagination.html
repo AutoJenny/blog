@@ -1,0 +1,24 @@
+{% macro pagination(page, total_pages) -%}
+{% if total_pages > 1 %}
+  <div class="flex items-center justify-between mt-4">
+    <div class="text-dark-text text-sm">Page {{ page }} of {{ total_pages }}</div>
+    <div class="flex items-center gap-2">
+      {% set prev_page = page - 1 %}
+      {% set next_page = page + 1 %}
+      {% if page > 1 %}
+        <a class="text-indigo-400 hover:underline" href="{{ request.path }}?{{ request.query_string.decode('utf-8')|regex_replace('(&|\?)?page=\d+', '') }}{{ '&' if request.query_string else '' }}page={{ prev_page }}">Previous</a>
+      {% else %}
+        <span class="text-dark-text">Previous</span>
+      {% endif %}
+      <span class="text-dark-text">·</span>
+      {% if page < total_pages %}
+        <a class="text-indigo-400 hover:underline" href="{{ request.path }}?{{ request.query_string.decode('utf-8')|regex_replace('(&|\?)?page=\d+', '') }}{{ '&' if request.query_string else '' }}page={{ next_page }}">Next</a>
+      {% else %}
+        <span class="text-dark-text">Next</span>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
+{%- endmacro %}
+
+

@@ -14,6 +14,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'blog-c
 
 from newsletter.db.queries_issue import (
     list_issues,
+    count_issues,
     list_blocks_by_issue,
     set_block_enabled,
     update_block_payload,
@@ -34,12 +35,22 @@ bp = Blueprint('newsletter', __name__)
 def dashboard():
     """Top-level Newsletter dashboard."""
     status_filter = request.args.get('status')
+    q = request.args.get('q')
+    try:
+        page = max(1, int(request.args.get('page', '1')))
+    except Exception:
+        page = 1
+    per_page = 12
+    offset = (page - 1) * per_page
     issues = []
     try:
-        issues = list_issues(limit=25, status=status_filter)
+        total = count_issues(status=status_filter, q=q)
+        issues = list_issues(limit=per_page, offset=offset, status=status_filter, q=q)
     except Exception:
+        total = 0
         issues = []
-    return render_template('newsletter/index.html', page_title='Newsletter', issues=issues, status_filter=status_filter)
+    total_pages = max(1, (total + per_page - 1) // per_page)
+    return render_template('newsletter/index.html', page_title='Newsletter', issues=issues, status_filter=status_filter, q=q, page=page, total_pages=total_pages)
 
 
 @bp.route('/newsletter/issue', methods=['POST'])
