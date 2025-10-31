@@ -4,6 +4,36 @@
 
 {% block content %}
 <section class="max-w-6xl mx-auto px-4 py-10">
+  <div class="mb-6">
+    <div class="bg-dark-bg border border-dark-border rounded-lg p-4 mb-4">
+      <h3 class="text-white font-semibold mb-2">Theme Selection</h3>
+      {% if themes and themes|length > 0 %}
+        <form method="post" action="/newsletter/issue/{{ issue_id }}/theme" class="flex items-center gap-3">
+          <label class="text-dark-text text-sm">Theme:</label>
+          <select name="theme_id" class="bg-[#0f172a] text-white border border-dark-border rounded p-1 appearance-none focus:outline-none focus:ring-1 focus:ring-dark-accent" style="background-color:#0f172a; color:#fff; min-width:300px;">
+            <option value="">None (manual subject/preheader)</option>
+            {% for theme in themes %}
+              <option value="{{ theme.id }}" {% if current_theme and current_theme.id == theme.id %}selected{% endif %}>
+                {{ theme.idea_title }} {% if theme.priority == 'mandatory' %}(mandatory){% endif %}
+              </option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-3 py-1 rounded">Update Theme</button>
+        </form>
+        {% if current_theme %}
+          <div class="mt-2 text-sm text-dark-text">
+            <strong>Current:</strong> {{ current_theme.idea_title }}
+            {% if current_theme.seasonal_context %}
+              <br><strong>Context:</strong> {{ current_theme.seasonal_context }}
+            {% endif %}
+          </div>
+        {% endif %}
+      {% else %}
+        <p class="text-dark-text text-sm">No themes available for this week.</p>
+      {% endif %}
+    </div>
+  </div>
+  
   <div class="flex items-center justify-between mb-4">
     <div>
       <h1 class="text-3xl font-bold text-white">Issue #{{ issue_id }}</h1>

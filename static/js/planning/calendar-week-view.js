@@ -84,11 +84,21 @@ async function loadWeek(year, weekNumber) {
   let syndication = [];
   try {
     const [ideasRes, eventsRes, scheduleRes, syndicationRes] = await Promise.allSettled([ideasPromise, eventsPromise, schedulePromise, syndicationPromise]);
-    if (ideasRes.status === 'fulfilled') ideas = ideasRes.value.ideas || ideasRes.value || [];
-    if (eventsRes.status === 'fulfilled') events = eventsRes.value.events || eventsRes.value || [];
-    if (scheduleRes.status === 'fulfilled') schedule = scheduleRes.value.schedule || scheduleRes.value || [];
+    if (ideasRes.status === 'fulfilled') {
+      const ideasData = ideasRes.value;
+      ideas = Array.isArray(ideasData) ? ideasData : (ideasData?.ideas || []);
+    }
+    if (eventsRes.status === 'fulfilled') {
+      const eventsData = eventsRes.value;
+      events = Array.isArray(eventsData) ? eventsData : (eventsData?.events || []);
+    }
+    if (scheduleRes.status === 'fulfilled') {
+      const scheduleData = scheduleRes.value;
+      schedule = Array.isArray(scheduleData) ? scheduleData : (scheduleData?.schedule || []);
+    }
     if (syndicationRes.status === 'fulfilled') syndication = (syndicationRes.value.schedules || []).filter(s => s && s.is_active !== false);
   } catch (e) {
+    console.error('Error loading week data:', e);
     // Ignore; page still usable
   }
 

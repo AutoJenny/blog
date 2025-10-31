@@ -206,7 +206,7 @@ def api_get_calendar_idea(idea_id):
                          ci.seasonal_context, ci.content_type, ci.priority, ci.tags,
                          ci.is_recurring, ci.can_span_weeks, ci.max_weeks, ci.is_evergreen,
                          ci.evergreen_frequency, ci.last_used_date, ci.usage_count,
-                         ci.evergreen_notes, ci.sources, ci.created_at, ci.updated_at
+                         ci.evergreen_notes, ci.created_at, ci.updated_at
             """, (idea_id,))
             
             idea = cursor.fetchone()

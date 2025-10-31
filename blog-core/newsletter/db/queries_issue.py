@@ -17,7 +17,7 @@ def get_latest_issue() -> Optional[Dict[str, Any]]:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT id, target_week, status, subject, preheader, last_sent_at, created_at, updated_at
+                SELECT id, target_week, status, subject, preheader, last_sent_at, created_at, updated_at, theme_id
                 FROM newsletter_issue
                 ORDER BY created_at DESC
                 LIMIT 1
@@ -27,17 +27,63 @@ def get_latest_issue() -> Optional[Dict[str, Any]]:
             return dict(row) if row else None
 
 
-def create_issue(*, target_week: str, subject: str, preheader: str) -> int:
+def get_issue(issue_id: int) -> Optional[Dict[str, Any]]:
+    """Get a single issue by ID."""
+    with db_manager.get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, target_week, status, subject, preheader, last_sent_at, created_at, updated_at, theme_id
+                FROM newsletter_issue
+                WHERE id = %s
+                """,
+                (issue_id,),
+            )
+            row = cur.fetchone()
+            return dict(row) if row else None
+
+
+def update_issue_theme(*, issue_id: int, theme_id: int | None) -> None:
+    """Update the theme_id for an issue."""
+    with db_manager.get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                UPDATE newsletter_issue
+                SET theme_id = %s, updated_at = NOW()
+                WHERE id = %s
+                """,
+                (theme_id, issue_id),
+            )
+            conn.commit()
+
+
+def update_issue_subject_preheader(*, issue_id: int, subject: str, preheader: str) -> None:
+    """Update subject and preheader for an issue."""
+    with db_manager.get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                UPDATE newsletter_issue
+                SET subject = %s, preheader = %s, updated_at = NOW()
+                WHERE id = %s
+                """,
+                (subject, preheader, issue_id),
+            )
+            conn.commit()
+
+
+def create_issue(*, target_week: str, subject: str, preheader: str, theme_id: int | None = None) -> int:
     """Create a new issue and return its ID."""
     with db_manager.get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO newsletter_issue (target_week, status, subject, preheader)
-                VALUES (%s, 'draft', %s, %s)
+                INSERT INTO newsletter_issue (target_week, status, subject, preheader, theme_id)
+                VALUES (%s, 'draft', %s, %s, %s)
                 RETURNING id
                 """,
-                (target_week, subject, preheader),
+                (target_week, subject, preheader, theme_id),
             )
             row = cur.fetchone()
             if not row:
@@ -77,7 +123,7 @@ def list_issues(*, limit: int = 12, offset: int = 0, status: str | None = None, 
         params.extend([like, like])
     where_sql = (" WHERE " + " AND ".join(where)) if where else ""
     sql = f"""
-        SELECT id, target_week, status, subject, preheader, last_sent_at, created_at, updated_at
+        SELECT id, target_week, status, subject, preheader, last_sent_at, created_at, updated_at, theme_id
         FROM newsletter_issue
         {where_sql}
         ORDER BY created_at DESC
