@@ -6,8 +6,97 @@
 class IdeaModal {
     constructor() {
         this.currentIdeaId = null;
+        this.currentEventId = null;
+        this.currentType = 'idea'; // 'idea' or 'event'
         this.categories = [];
         this.init();
+    }
+
+    switchType(type) {
+        this.currentType = type;
+        const title = document.getElementById('idea-modal-title');
+        title.textContent = type === 'idea' ? 'Manage Idea' : 'Manage Event';
+        
+        // Show/hide fields based on type
+        const weekGroup = document.querySelector('[for="idea-week-number"]')?.closest('.idea-form-group');
+        const seasonalGroup = document.querySelector('[for="idea-seasonal-context"]')?.closest('.idea-form-group');
+        const startDateGroup = document.getElementById('event-start-date-group');
+        const endDateGroup = document.getElementById('event-end-date-group');
+        const yearGroup = document.getElementById('event-year-group');
+        const evergreenSection = Array.from(document.querySelectorAll('.idea-section')).find(s => 
+            s.querySelector('[for="idea-is-evergreen"]')
+        );
+        const sourcesSection = Array.from(document.querySelectorAll('.idea-section')).find(s => 
+            s.querySelector('#idea-add-source')
+        );
+        
+        if (type === 'idea') {
+            // Show idea-specific fields
+            if (weekGroup) weekGroup.style.display = 'block';
+            if (seasonalGroup) seasonalGroup.style.display = 'block';
+            if (evergreenSection) evergreenSection.style.display = 'block';
+            if (sourcesSection) {
+                sourcesSection.style.display = 'block';
+                const addSourceBtn = document.getElementById('idea-add-source');
+                if (addSourceBtn) addSourceBtn.style.display = 'block';
+            }
+            
+            // Hide event-specific fields
+            if (startDateGroup) startDateGroup.style.display = 'none';
+            if (endDateGroup) endDateGroup.style.display = 'none';
+            if (yearGroup) yearGroup.style.display = 'none';
+        } else {
+            // Show event-specific fields
+            if (!startDateGroup) {
+                // Create date fields if they don't exist
+                const weekNumGroup = document.querySelector('[for="idea-week-number"]')?.closest('.idea-form-group');
+                if (weekNumGroup && weekNumGroup.parentNode) {
+                    const newStartDateGroup = document.createElement('div');
+                    newStartDateGroup.className = 'idea-form-group';
+                    newStartDateGroup.id = 'event-start-date-group';
+                    newStartDateGroup.innerHTML = `
+                        <label for="event-start-date" class="idea-label required">Start Date</label>
+                        <input type="date" id="event-start-date" name="start_date" class="idea-input" required />
+                    `;
+                    weekNumGroup.parentNode.insertBefore(newStartDateGroup, weekNumGroup.nextSibling);
+                    
+                    const newEndDateGroup = document.createElement('div');
+                    newEndDateGroup.className = 'idea-form-group';
+                    newEndDateGroup.id = 'event-end-date-group';
+                    newEndDateGroup.innerHTML = `
+                        <label for="event-end-date" class="idea-label required">End Date</label>
+                        <input type="date" id="event-end-date" name="end_date" class="idea-input" required />
+                    `;
+                    newStartDateGroup.parentNode.insertBefore(newEndDateGroup, newStartDateGroup.nextSibling);
+                    
+                    const newYearGroup = document.createElement('div');
+                    newYearGroup.className = 'idea-form-group';
+                    newYearGroup.id = 'event-year-group';
+                    newYearGroup.innerHTML = `
+                        <label for="event-year" class="idea-label required">Year</label>
+                        <input type="number" id="event-year" name="year" class="idea-input" min="2020" max="2100" required />
+                    `;
+                    newEndDateGroup.parentNode.insertBefore(newYearGroup, newEndDateGroup.nextSibling);
+                }
+            } else {
+                if (startDateGroup) startDateGroup.style.display = 'block';
+                if (endDateGroup) endDateGroup.style.display = 'block';
+                if (yearGroup) yearGroup.style.display = 'block';
+            }
+            
+            // Hide idea-specific fields
+            if (weekGroup) weekGroup.style.display = 'none';
+            if (seasonalGroup) seasonalGroup.style.display = 'none';
+            if (evergreenSection) evergreenSection.style.display = 'none';
+            if (sourcesSection) {
+                const addSourceBtn = document.getElementById('idea-add-source');
+                if (addSourceBtn) addSourceBtn.style.display = 'none';
+                const sourcesContainer = document.getElementById('idea-sources-container');
+                if (sourcesContainer && sourcesContainer.querySelector('.idea-source-item')) {
+                    sourcesContainer.innerHTML = '<p class="idea-help-text">Events do not support sources.</p>';
+                }
+            }
+        }
     }
 
     init() {
@@ -26,6 +115,10 @@ class IdeaModal {
 
         // Add source button
         document.getElementById('idea-add-source')?.addEventListener('click', () => this.addSource());
+
+        // Type selector (Idea/Event) toggle
+        document.getElementById('type-idea')?.addEventListener('change', () => this.switchType('idea'));
+        document.getElementById('type-event')?.addEventListener('change', () => this.switchType('event'));
 
         // Evergreen checkbox toggle
         document.getElementById('idea-is-evergreen')?.addEventListener('change', (e) => {
@@ -70,7 +163,7 @@ class IdeaModal {
 
     async open(ideaId = null, eventData = null) {
         this.currentIdeaId = ideaId;
-        this.isEvent = !!eventData;
+        this.currentEventId = eventData?.id || null;
         const modal = document.getElementById('idea-modal');
         const loading = document.getElementById('idea-modal-loading');
         const form = document.getElementById('idea-modal-form');
@@ -81,14 +174,26 @@ class IdeaModal {
 
         if (eventData) {
             // Load event data directly
+            this.currentType = 'event';
+            document.getElementById('type-event').checked = true;
+            document.getElementById('type-idea').checked = false;
             await this.loadEvent(eventData);
         } else if (ideaId) {
             // Load existing idea
+            this.currentType = 'idea';
+            document.getElementById('type-idea').checked = true;
+            document.getElementById('type-event').checked = false;
             await this.loadIdea(ideaId);
         } else {
-            // New idea
+            // New item - default to idea
+            this.currentType = 'idea';
+            document.getElementById('type-idea').checked = true;
+            document.getElementById('type-event').checked = false;
             this.resetForm();
         }
+
+        // Apply type-specific field visibility
+        this.switchType(this.currentType);
 
         loading.style.display = 'none';
         form.style.display = 'block';

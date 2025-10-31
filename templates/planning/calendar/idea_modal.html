@@ -5,10 +5,22 @@
     <div class="idea-modal-container">
         <!-- Modal Header -->
         <div class="idea-modal-header">
-            <h2 class="idea-modal-title" id="idea-modal-title">Manage Idea</h2>
-            <button class="idea-modal-close" id="idea-modal-close" aria-label="Close">
-                <i class="fas fa-times"></i>
-            </button>
+            <div class="idea-modal-header-top">
+                <h2 class="idea-modal-title" id="idea-modal-title">Manage Idea</h2>
+                <button class="idea-modal-close" id="idea-modal-close" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="idea-modal-type-selector">
+                <label class="idea-type-option">
+                    <input type="radio" name="item-type" value="idea" id="type-idea" checked />
+                    <span>Idea</span>
+                </label>
+                <label class="idea-type-option">
+                    <input type="radio" name="item-type" value="event" id="type-event" />
+                    <span>Event</span>
+                </label>
+            </div>
         </div>
 
         <!-- Modal Body -->
