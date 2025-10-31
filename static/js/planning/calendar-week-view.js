@@ -56,33 +56,16 @@ async function loadWeek(year, weekNumber) {
     d.setUTCDate(weekStart.getUTCDate() + i);
     dates.push(d);
     const body = document.getElementById(`day-${i + 1}`);
-    body.innerHTML = '';
+    if (body) body.innerHTML = '';
     // Update day header title to include calendar day number on the right
-    const header = body?.previousElementSibling; // .day-title
+    const dayEl = document.querySelector(`.day[data-day="${i + 1}"]`);
+    const header = dayEl?.querySelector('.day-title');
     if (header) {
       const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
       const label = dayNames[i] || '';
       const dayNum = String(d.getUTCDate());
       header.innerHTML = `${label}<span class="day-num">${dayNum}</span>`;
     }
-    // Create vertical sections: content (events/ideas/schedule) and syndication
-    const contentSection = document.createElement('div');
-    contentSection.className = 'day-section content-section';
-    contentSection.id = `day-${i + 1}-content`;
-    const syndicationSection = document.createElement('div');
-    syndicationSection.className = 'day-section syndication-section';
-    syndicationSection.id = `day-${i + 1}-syndication`;
-    // Optional labels
-    const contentLabel = document.createElement('div');
-    contentLabel.className = 'section-label';
-    contentLabel.textContent = 'Events & Ideas';
-    const syndicationLabel = document.createElement('div');
-    syndicationLabel.className = 'section-label';
-    syndicationLabel.textContent = 'Syndication';
-    contentSection.appendChild(contentLabel);
-    syndicationSection.appendChild(syndicationLabel);
-    body.appendChild(contentSection);
-    body.appendChild(syndicationSection);
   }
   document.getElementById('week-dates').textContent = `${formatDate(dates[0])} – ${formatDate(dates[6])}`;
 
@@ -132,23 +115,30 @@ async function loadWeek(year, weekNumber) {
   const ideasCells = ensureRowCells('ideas-row');
   const syndicationCells = ensureRowCells('syndication-row');
 
-  // Render Themes as week-wide themes: single row spanning the week
+  // Separate ideas into themes (selected/used) and ideas (unselected/available)
+  const normalize = (s) => (s || '').toLowerCase().trim();
+  const selectedSeeds = new Set((schedule || []).map(sc => normalize(sc.post_idea_seed)).filter(Boolean));
+  const selectedTitles = new Set((schedule || []).map(sc => normalize(sc.post_title)).filter(Boolean));
+  const themes = [];
+  const unselectedIdeas = [];
+  ideas.forEach(i => {
+    const ideaTitle = normalize(i.idea_title);
+    const isSelected = selectedSeeds.has(ideaTitle) ||
+      selectedTitles.has(ideaTitle) ||
+      Array.from(selectedTitles).some(st => st.includes(ideaTitle) || ideaTitle.includes(st));
+    if (isSelected) {
+      themes.push({ ...i, _selected: true });
+    } else {
+      unselectedIdeas.push(i);
+    }
+  });
+
+  // Render Themes as week-wide themes: single row spanning the week (only selected ideas)
   const weekThemesContainer = document.getElementById('week-themes');
   if (weekThemesContainer) {
     weekThemesContainer.innerHTML = '';
-    if (showThemes && ideas.length) {
-      // Prefer matching the post's saved idea seed; fallback to post title
-      const normalize = (s) => (s || '').toLowerCase().trim();
-      const selectedSeeds = new Set((schedule || []).map(sc => normalize(sc.post_idea_seed)).filter(Boolean));
-      const selectedTitles = new Set((schedule || []).map(sc => normalize(sc.post_title)).filter(Boolean));
-      const themedIdeas = ideas.map(i => {
-        const ideaTitle = normalize(i.idea_title);
-        const isSelected = selectedSeeds.has(ideaTitle) ||
-          selectedTitles.has(ideaTitle) ||
-          Array.from(selectedTitles).some(st => st.includes(ideaTitle) || ideaTitle.includes(st));
-        return { ...i, _selected: isSelected };
-      });
-      renderItems(weekThemesContainer, themedIdeas, 'idea');
+    if (showThemes && themes.length) {
+      renderItems(weekThemesContainer, themes, 'idea');
     }
   }
 
@@ -161,10 +151,10 @@ async function loadWeek(year, weekNumber) {
     });
   }
 
-  // Render ideas per day into Ideas row (week ideas are not date-specific; place in first column for now)
-  if (showIdeas && ideasCells && ideas.length) {
+  // Render unselected ideas into Ideas row (week ideas are not date-specific; place in first column for now)
+  if (showIdeas && ideasCells && unselectedIdeas.length) {
     const target = document.getElementById('ideas-row-day-1');
-    renderItems(target, ideas, 'idea');
+    renderItems(target, unselectedIdeas, 'idea');
   }
 
   // Syndication schedules are recurring by weekday; render time per selected days

@@ -35,8 +35,6 @@
             <label class="filter-pill filter-syndication active"><input type="checkbox" id="toggle-syndication" checked> Syndication</label>
         </div>
 
-        <div class="week-themes" id="week-themes"></div>
-
         <div class="week-grid">
             <div class="day" data-day="1"><div class="day-title">Mon</div><div class="day-body" id="day-1"></div></div>
             <div class="day" data-day="2"><div class="day-title">Tue</div><div class="day-body" id="day-2"></div></div>
@@ -49,16 +47,20 @@
 
         <!-- Horizontal rows aligned with day columns -->
         <div class="rows-container">
-            <!-- Themes row (spans all columns in one line via existing week-themes) -->
+            <!-- Themes row (spans all columns in one line) -->
+            <div class="row-header">Themes</div>
             <div class="week-themes" id="week-themes"></div>
 
-            <!-- Events row: 7 aligned cells -->
+            <!-- Events row: header + 7 aligned cells -->
+            <div class="row-header">Events</div>
             <div class="row-grid" id="events-row"></div>
 
-            <!-- Ideas row: 7 aligned cells (week ideas placed in first column for now) -->
+            <!-- Ideas row: header + 7 aligned cells -->
+            <div class="row-header">Ideas</div>
             <div class="row-grid" id="ideas-row"></div>
 
-            <!-- Syndication row: 7 aligned cells -->
+            <!-- Syndication row: header + 7 aligned cells -->
+            <div class="row-header">Syndication</div>
             <div class="row-grid" id="syndication-row"></div>
         </div>
 
@@ -111,6 +113,7 @@
 .week-meta { display:flex; gap:1.25rem; color:#cbd5e1; font-weight:600; }
 .week-grid { display:grid; grid-template-columns: repeat(7, 1fr); gap:8px; }
 .rows-container { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+.row-header { grid-column: 1 / -1; font-weight: 600; color: #cbd5e1; padding: 0.5rem 0; font-size: 0.95rem; }
 .row-grid { display:grid; grid-template-columns: repeat(7, 1fr); gap:8px; }
 .row-grid .row-cell { background:#0f172a; border:1px solid #334155; border-radius:8px; min-height: 80px; padding:.5rem; display:flex; flex-direction:column; gap:6px; }
 .day { background:#0f172a; border:1px solid #334155; border-radius:8px; min-height: 160px; display:flex; flex-direction:column; }

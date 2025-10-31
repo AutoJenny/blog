@@ -6472,3 +6472,40 @@ psycopg.ProgrammingError: cannot adapt type 'dict' using placeholder '%s' (forma
 2025-10-31 10:53:33,913 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:53:33] "GET /planning/api/calendar/ideas/week/44 HTTP/1.1" 200 -
 2025-10-31 10:53:33,913 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:53:33] "GET /planning/api/calendar/schedule/2025/44 HTTP/1.1" 200 -
 2025-10-31 10:53:33,914 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:53:33] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 10:55:39,821 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:55:39] "GET /planning/posts/0/calendar/week-view HTTP/1.1" 200 -
+2025-10-31 10:55:39,842 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:55:39] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-10-31 10:55:39,851 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:55:39] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-10-31 10:55:39,851 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:55:39] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-31 10:55:39,854 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:55:39] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-10-31 10:55:39,854 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:55:39] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-31 10:55:39,855 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:55:39] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-10-31 10:55:39,858 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:55:39] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-10-31 10:55:39,860 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:55:39] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-10-31 10:55:39,860 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:55:39] "GET /static/js/planning/calendar-week-view.js HTTP/1.1" 200 -
+2025-10-31 10:55:39,862 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:55:39] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-31 10:55:39,863 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:55:39] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-31 10:55:39,864 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:55:39] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-10-31 10:55:39,866 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:55:39] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-31 10:55:39,885 - config.database - INFO - Database connection established
+2025-10-31 10:55:39,885 - config.database - INFO - Database connection established
+2025-10-31 10:55:39,887 - config.database - INFO - Database connection established
+2025-10-31 10:55:39,888 - config.database - INFO - Database connection established
+2025-10-31 10:55:39,891 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:55:39] "GET /planning/api/calendar/events/2025/44 HTTP/1.1" 200 -
+2025-10-31 10:55:39,892 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:55:39] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 10:55:39,893 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:55:39] "GET /planning/api/calendar/ideas/week/44 HTTP/1.1" 200 -
+2025-10-31 10:55:39,894 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:55:39] "GET /planning/api/calendar/schedule/2025/44 HTTP/1.1" 200 -
+2025-10-31 10:56:49,607 - config.database - INFO - Database connection established
+2025-10-31 10:56:49,620 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:56:49] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-10-31 10:56:53,752 - config.database - INFO - Database connection established
+2025-10-31 10:56:53,765 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:56:53] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-10-31 10:57:44,578 - config.database - INFO - Database connection established
+2025-10-31 10:57:44,595 - config.database - INFO - Database connection established
+2025-10-31 10:57:44,635 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:57:44] "GET /newsletter HTTP/1.1" 200 -
+2025-10-31 10:57:44,791 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:57:44] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-10-31 10:57:44,794 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:57:44] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-31 10:57:44,797 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:57:44] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-31 10:57:44,797 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:57:44] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-10-31 10:57:44,799 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:57:44] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-10-31 10:57:44,801 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:57:44] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-31 10:57:44,803 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:57:44] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-31 10:57:44,804 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:57:44] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
