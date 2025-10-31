@@ -2,7 +2,7 @@
 <div class="border border-dark-border rounded p-4">
   <div class="flex items-center justify-between">
     <div>
-      <div class="text-white font-semibold">{{ loop.index }}. {{ block.type }}</div>
+      <div class="text-white font-semibold">{{ (loop_index if loop_index is defined) or (block.position + 1) }}. {{ block.type }}</div>
       {% if block.description %}
         <div class="text-gray-400 text-xs mt-1">{{ block.description }}</div>
       {% endif %}
