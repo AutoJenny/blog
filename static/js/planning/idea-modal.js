@@ -68,8 +68,9 @@ class IdeaModal {
         }
     }
 
-    async open(ideaId = null) {
+    async open(ideaId = null, eventData = null) {
         this.currentIdeaId = ideaId;
+        this.isEvent = !!eventData;
         const modal = document.getElementById('idea-modal');
         const loading = document.getElementById('idea-modal-loading');
         const form = document.getElementById('idea-modal-form');
@@ -78,7 +79,10 @@ class IdeaModal {
         loading.style.display = 'block';
         form.style.display = 'none';
 
-        if (ideaId) {
+        if (eventData) {
+            // Load event data directly
+            await this.loadEvent(eventData);
+        } else if (ideaId) {
             // Load existing idea
             await this.loadIdea(ideaId);
         } else {
@@ -90,8 +94,127 @@ class IdeaModal {
         form.style.display = 'block';
     }
 
+    async loadEvent(eventData) {
+        try {
+            // Update modal title
+            document.getElementById('idea-modal-title').textContent = 'Manage Event';
+            
+            // Hide week number and seasonal context (events use dates instead)
+            const weekGroup = document.querySelector('[for="idea-week-number"]')?.closest('.idea-form-group');
+            if (weekGroup) weekGroup.style.display = 'none';
+            const seasonalGroup = document.querySelector('[for="idea-seasonal-context"]')?.closest('.idea-form-group');
+            if (seasonalGroup) seasonalGroup.style.display = 'none';
+            
+            // Show date fields (add if not exist)
+            let startDateGroup = document.getElementById('event-start-date-group');
+            let endDateGroup = document.getElementById('event-end-date-group');
+            let yearGroup = document.getElementById('event-year-group');
+            
+            if (!startDateGroup) {
+                const weekNumGroup = document.querySelector('[for="idea-week-number"]')?.closest('.idea-form-group');
+                if (weekNumGroup && weekNumGroup.parentNode) {
+                    startDateGroup = document.createElement('div');
+                    startDateGroup.className = 'idea-form-group';
+                    startDateGroup.id = 'event-start-date-group';
+                    startDateGroup.innerHTML = `
+                        <label for="event-start-date" class="idea-label required">Start Date</label>
+                        <input type="date" id="event-start-date" name="start_date" class="idea-input" required />
+                    `;
+                    weekNumGroup.parentNode.insertBefore(startDateGroup, weekNumGroup.nextSibling);
+                    
+                    endDateGroup = document.createElement('div');
+                    endDateGroup.className = 'idea-form-group';
+                    endDateGroup.id = 'event-end-date-group';
+                    endDateGroup.innerHTML = `
+                        <label for="event-end-date" class="idea-label required">End Date</label>
+                        <input type="date" id="event-end-date" name="end_date" class="idea-input" required />
+                    `;
+                    startDateGroup.parentNode.insertBefore(endDateGroup, startDateGroup.nextSibling);
+                    
+                    yearGroup = document.createElement('div');
+                    yearGroup.className = 'idea-form-group';
+                    yearGroup.id = 'event-year-group';
+                    yearGroup.innerHTML = `
+                        <label for="event-year" class="idea-label required">Year</label>
+                        <input type="number" id="event-year" name="year" class="idea-input" min="2020" max="2100" required />
+                    `;
+                    endDateGroup.parentNode.insertBefore(yearGroup, endDateGroup.nextSibling);
+                }
+            } else {
+                startDateGroup.style.display = 'block';
+                endDateGroup.style.display = 'block';
+                if (yearGroup) yearGroup.style.display = 'block';
+            }
+            
+            // Populate form with ALL event data
+            document.getElementById('idea-id').value = eventData.id || '';
+            document.getElementById('idea-title').value = eventData.event_title || '';
+            document.getElementById('idea-description').value = eventData.event_description || '';
+            document.getElementById('idea-content-type').value = eventData.content_type || '';
+            document.getElementById('idea-priority').value = eventData.priority || 'random';
+            document.getElementById('idea-is-recurring').checked = eventData.is_recurring === true;
+            document.getElementById('idea-can-span-weeks').checked = eventData.can_span_weeks === true;
+            document.getElementById('idea-max-weeks').value = eventData.max_weeks || 1;
+            
+            if (startDateGroup) {
+                const startDate = eventData.start_date ? new Date(eventData.start_date).toISOString().split('T')[0] : '';
+                document.getElementById('event-start-date').value = startDate;
+            }
+            if (endDateGroup) {
+                const endDate = eventData.end_date ? new Date(eventData.end_date).toISOString().split('T')[0] : '';
+                document.getElementById('event-end-date').value = endDate;
+            }
+            if (yearGroup) {
+                document.getElementById('event-year').value = eventData.year || new Date().getFullYear();
+            }
+            
+            // Load categories (events have categories too)
+            this.renderCategories(eventData.categories || []);
+            
+            // Load tags
+            this.renderTags(eventData.tags || []);
+            
+            // Events don't have sources or evergreen fields - hide only evergreen section, keep sources visible but empty
+            const sourcesSection = Array.from(document.querySelectorAll('.idea-section')).find(s => 
+                s.querySelector('#idea-add-source')
+            );
+            if (sourcesSection) {
+                // Clear sources container but keep section visible
+                document.getElementById('idea-sources-container').innerHTML = '<p class="idea-help-text">Events do not support sources.</p>';
+            }
+            
+            const evergreenSection = Array.from(document.querySelectorAll('.idea-section')).find(s => 
+                s.querySelector('[for="idea-is-evergreen"]')
+            );
+            if (evergreenSection) evergreenSection.style.display = 'none';
+            
+        } catch (error) {
+            console.error('Error loading event:', error);
+            alert('Failed to load event: ' + error.message);
+        }
+    }
+
     async loadIdea(ideaId) {
         try {
+            // Reset modal title
+            document.getElementById('idea-modal-title').textContent = 'Manage Idea';
+            
+            // Show all idea-specific fields, hide event-specific fields
+            const weekGroup = document.querySelector('[for="idea-week-number"]')?.closest('.idea-form-group');
+            if (weekGroup) weekGroup.style.display = 'block';
+            const seasonalGroup = document.querySelector('[for="idea-seasonal-context"]')?.closest('.idea-form-group');
+            if (seasonalGroup) seasonalGroup.style.display = 'block';
+            
+            const startDateGroup = document.getElementById('event-start-date-group');
+            const endDateGroup = document.getElementById('event-end-date-group');
+            const yearGroup = document.getElementById('event-year-group');
+            if (startDateGroup) startDateGroup.style.display = 'none';
+            if (endDateGroup) endDateGroup.style.display = 'none';
+            if (yearGroup) yearGroup.style.display = 'none';
+            
+            // Show all sections for ideas
+            Array.from(document.querySelectorAll('.idea-section')).forEach(s => s.style.display = 'block');
+            
             const response = await fetch(`/planning/api/calendar/ideas/${ideaId}`);
             if (!response.ok) throw new Error('Failed to load idea');
 
@@ -125,8 +248,16 @@ class IdeaModal {
             // Load categories
             this.renderCategories(idea.categories || []);
 
-            // Load sources
-            this.renderSources(idea.sources || []);
+            // Load sources (handle both array and JSONB formats)
+            let sources = idea.sources || [];
+            if (typeof sources === 'string') {
+                try {
+                    sources = JSON.parse(sources);
+                } catch (e) {
+                    sources = [];
+                }
+            }
+            this.renderSources(Array.isArray(sources) ? sources : []);
 
             // Load tags
             this.renderTags(idea.tags || []);
@@ -146,6 +277,21 @@ class IdeaModal {
         document.getElementById('idea-evergreen-group').style.display = 'none';
         document.getElementById('idea-evergreen-notes-group').style.display = 'none';
         document.getElementById('idea-max-weeks-group').style.display = 'none';
+        
+        // Reset modal title
+        document.getElementById('idea-modal-title').textContent = 'Manage Idea';
+        
+        // Show/hide fields based on type
+        const weekGroup = document.querySelector('[for="idea-week-number"]')?.closest('.idea-form-group');
+        if (weekGroup) weekGroup.style.display = 'block';
+        
+        const startDateGroup = document.getElementById('event-start-date-group');
+        const endDateGroup = document.getElementById('event-end-date-group');
+        if (startDateGroup) startDateGroup.style.display = 'none';
+        if (endDateGroup) endDateGroup.style.display = 'none';
+        
+        // Show all sections
+        Array.from(document.querySelectorAll('.idea-section')).forEach(s => s.style.display = 'block');
     }
 
     renderCategories(selectedCategories) {

@@ -180,24 +180,15 @@ window.currentSubstage = 'week-view';
             }
         });
         
-        // Make events clickable - for now show event details in a simple alert/modal
+        // Make events clickable - open in modal
         document.addEventListener('click', (e) => {
             const eventItem = e.target.closest('.item.event');
             if (eventItem && eventItem.dataset.eventId) {
                 const eventId = parseInt(eventItem.dataset.eventId);
                 const event = window.currentWeekEvents?.find(ev => ev.id === eventId);
                 if (event) {
-                    // For now, show event details - TODO: create proper event modal
-                    const details = `
-Event: ${event.event_title || 'Untitled'}
-Description: ${event.event_description || 'No description'}
-Date: ${event.start_date || 'N/A'}${event.end_date && event.end_date !== event.start_date ? ' - ' + event.end_date : ''}
-Type: ${event.content_type || 'N/A'}
-Categories: ${event.categories?.map(c => c.name).join(', ') || 'None'}
-                    `.trim();
-                    alert(details);
-                } else {
-                    alert('Event details not available');
+                    console.log('Opening event modal for:', event);
+                    ideaModal.open(null, event);
                 }
             }
         });
