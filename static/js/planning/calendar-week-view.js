@@ -55,10 +55,8 @@ async function loadWeek(year, weekNumber) {
     const d = new Date(weekStart);
     d.setUTCDate(weekStart.getUTCDate() + i);
     dates.push(d);
-    const body = document.getElementById(`day-${i + 1}`);
-    if (body) body.innerHTML = '';
     // Update day header title to include calendar day number on the right
-    const dayEl = document.querySelector(`.day[data-day="${i + 1}"]`);
+    const dayEl = document.querySelector(`.day-header[data-day="${i + 1}"]`);
     const header = dayEl?.querySelector('.day-title');
     if (header) {
       const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
