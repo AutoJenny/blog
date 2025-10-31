@@ -105,6 +105,13 @@
             </form>
         </div>
 
+        <div class="mb-6">
+            <label class="text-gray-400">
+                <input type="checkbox" id="showDeleted" {% if show_deleted %}checked{% endif %}>
+                Show Deleted Issues
+            </label>
+        </div>
+
         <div class="create-form">
             <form method="post" action="/newsletter/issue">
                 <div class="flex flex-wrap items-end gap-3">
@@ -173,6 +180,9 @@
                         <td style="color:#9ca3af;">{{ i.last_sent_at.strftime('%Y-%m-%d') if i.last_sent_at else '—' }}</td>
                         <td class="actions">
                             <a href="/newsletter/issue/{{ i.id }}" class="btn-primary" onclick="event.stopPropagation();">Edit</a>
+                            <button class="icon-btn delete-btn" title="Delete" data-issue-id="{{ i.id }}" onclick="event.stopPropagation();" style="display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:8px; background:transparent; color:#ef4444; border:1px solid #2b3350; margin-left:8px;">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -217,4 +227,35 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    const showDeleted = document.getElementById('showDeleted');
+    if (showDeleted) {
+        showDeleted.addEventListener('change', function () {
+            const url = new URL(window.location.href);
+            if (this.checked) {
+                url.searchParams.set('show_deleted', '1');
+            } else {
+                url.searchParams.delete('show_deleted');
+            }
+            window.location.href = url.toString();
+        });
+    }
+
+    // Delete button handler
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            if (!confirm('Are you sure you want to delete this newsletter issue?')) return;
+            const issueId = btn.dataset.issueId;
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/newsletter/issue/${issueId}/delete`;
+            document.body.appendChild(form);
+            form.submit();
+        });
+    });
+</script>
 {% endblock %}

@@ -15,6 +15,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'blog-c
 from newsletter.db.queries_issue import (
     list_issues,
     count_issues,
+    soft_delete_issue,
     list_blocks_by_issue,
     set_block_enabled,
     update_block_payload,
@@ -36,6 +37,7 @@ def dashboard():
     """Top-level Newsletter dashboard."""
     status_filter = request.args.get('status')
     q = request.args.get('q')
+    show_deleted = request.args.get('show_deleted', '0') == '1'
     try:
         page = max(1, int(request.args.get('page', '1')))
     except Exception:
@@ -44,13 +46,20 @@ def dashboard():
     offset = (page - 1) * per_page
     issues = []
     try:
-        total = count_issues(status=status_filter, q=q)
-        issues = list_issues(limit=per_page, offset=offset, status=status_filter, q=q)
+        total = count_issues(status=status_filter, q=q, show_deleted=show_deleted)
+        issues = list_issues(limit=per_page, offset=offset, status=status_filter, q=q, show_deleted=show_deleted)
     except Exception:
         total = 0
         issues = []
     total_pages = max(1, (total + per_page - 1) // per_page)
-    return render_template('newsletter/index.html', page_title='Newsletter', issues=issues, status_filter=status_filter, q=q, page=page, total_pages=total_pages)
+    return render_template('newsletter/index.html', page_title='Newsletter', issues=issues, status_filter=status_filter, q=q, page=page, total_pages=total_pages, show_deleted=show_deleted)
+
+
+@bp.route('/newsletter/issue/<int:issue_id>/delete', methods=['POST'])
+def delete_issue_route(issue_id: int):
+    """Soft delete an issue."""
+    soft_delete_issue(issue_id=issue_id)
+    return redirect(url_for('newsletter.dashboard'))
 
 
 @bp.route('/newsletter/issue', methods=['POST'])
