@@ -135,21 +135,25 @@ async function loadWeek(year, weekNumber) {
   const ideasCells = ensureRowCells('ideas-row');
   const syndicationCells = ensureRowCells('syndication-row');
 
-  // Separate ideas into themes (selected/used) and ideas (unselected/available)
-  const normalize = (s) => (s || '').toLowerCase().trim();
-  const selectedSeeds = new Set((schedule || []).map(sc => normalize(sc.post_idea_seed)).filter(Boolean));
-  const selectedTitles = new Set((schedule || []).map(sc => normalize(sc.post_title)).filter(Boolean));
+  // Classify items by their proper type using item_classification field
   const themes = [];
-  const unselectedIdeas = [];
+  const regularIdeas = [];
   ideas.forEach(i => {
-    const ideaTitle = normalize(i.idea_title);
-    const isSelected = selectedSeeds.has(ideaTitle) ||
-      selectedTitles.has(ideaTitle) ||
-      Array.from(selectedTitles).some(st => st.includes(ideaTitle) || ideaTitle.includes(st));
-    if (isSelected) {
-      themes.push({ ...i, _selected: true });
+    // Use item_classification field: 'theme' or 'idea' (defaults to 'idea' if not set)
+    const classification = (i.item_classification || 'idea').toLowerCase();
+    if (classification === 'theme') {
+      // Check if theme is selected (appears in schedule)
+      const normalize = (s) => (s || '').toLowerCase().trim();
+      const selectedSeeds = new Set((schedule || []).map(sc => normalize(sc.post_idea_seed)).filter(Boolean));
+      const selectedTitles = new Set((schedule || []).map(sc => normalize(sc.post_title)).filter(Boolean));
+      const ideaTitle = normalize(i.idea_title);
+      const isSelected = selectedSeeds.has(ideaTitle) ||
+        selectedTitles.has(ideaTitle) ||
+        Array.from(selectedTitles).some(st => st.includes(ideaTitle) || ideaTitle.includes(st));
+      themes.push({ ...i, _selected: isSelected });
     } else {
-      unselectedIdeas.push(i);
+      // Regular idea (not a theme)
+      regularIdeas.push(i);
     }
   });
 
@@ -164,14 +168,23 @@ async function loadWeek(year, weekNumber) {
   if (ideasSection) ideasSection.classList.toggle('hidden', !showIdeas);
   if (syndicationSection) syndicationSection.classList.toggle('hidden', !showSyndication);
 
-  // Render Themes as week-wide themes: single row spanning the week (only selected ideas)
+  // Render Themes as week-wide themes: single row spanning the week
   const weekThemesContainer = document.getElementById('week-themes');
   if (weekThemesContainer) {
     weekThemesContainer.innerHTML = '';
-    if (showThemes) {
-      if (themes.length) renderItems(weekThemesContainer, themes, 'idea');
-      if (unselectedIdeas.length) renderItems(weekThemesContainer, unselectedIdeas, 'idea');
+    if (showThemes && themes.length) {
+      renderItems(weekThemesContainer, themes, 'idea');
     }
+  }
+
+  // Render regular ideas per day into Ideas row
+  if (showIdeas && ideasCells && regularIdeas.length) {
+    regularIdeas.forEach((idea) => {
+      // Ideas are assigned to a specific weekday (default to Monday if not set)
+      const dayIdx = idea.weekday || idea.day || 1; // 1..7
+      const target = document.getElementById(`ideas-row-day-${Math.min(Math.max(dayIdx, 1), 7)}`);
+      if (target) renderItems(target, [idea], 'idea');
+    });
   }
 
   // Render events per day into Events row
