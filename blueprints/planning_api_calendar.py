@@ -229,20 +229,20 @@ def api_get_calendar_idea(idea_id):
 
 def _safe_parse_json_request():
     """Parse JSON body without triggering 'Body is disturbed or locked' errors.
-    Tries request.get_json(silent=True) first; falls back to raw data parse.
+    Uses Flask's get_json which handles stream caching internally - safest approach.
     """
+    # Use get_json with silent=True and force=True
+    # force=True ensures we parse JSON even if Content-Type header might be wrong
+    # silent=True returns None on error instead of raising
     try:
-        data = request.get_json(silent=True)
-        if data is not None:
-            return data if isinstance(data, dict) else {}
-    except Exception:
-        pass
-    # Fallback to raw body
-    try:
-        raw = request.get_data(cache=True, as_text=True) or "{}"
-        import json as _json
-        return _json.loads(raw) if raw.strip() else {}
-    except Exception:
+        data = request.get_json(silent=True, force=True)
+        if data is not None and isinstance(data, dict):
+            return data
+        # If we got something but it's not a dict, return empty dict
+        return {}
+    except Exception as e:
+        # If get_json itself fails (rare), log and return empty dict
+        logger.error(f"Error parsing JSON request: {e}", exc_info=True)
         return {}
 
 
