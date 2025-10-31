@@ -176,6 +176,8 @@ async function loadWeek(year, weekNumber) {
 
   // Render events per day into Events row
   if (showEvents && eventsCells) {
+    // Store events globally for click handler access
+    window.currentWeekEvents = events;
     events.forEach((ev) => {
       const dayIdx = ev.weekday || ev.day || 1; // 1..7
       const target = document.getElementById(`events-row-day-${Math.min(Math.max(dayIdx, 1), 7)}`);
