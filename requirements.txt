@@ -8,3 +8,6 @@ psutil==5.9.6
 markdown==3.5.1
 beautifulsoup4==4.12.2
 Pillow==10.0.0
+feedparser==6.0.10
+python-dateutil==2.8.2
+requests==2.31.0

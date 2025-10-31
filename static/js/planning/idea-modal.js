@@ -652,7 +652,7 @@ class IdeaModal {
             });
 
             const url = shouldCreate 
-                ? '/planning/api/calendar/ideas/add'
+                ? '/planning/api/calendar/ideas'
                 : `/planning/api/calendar/ideas/${ideaId}`;
             const method = shouldCreate ? 'POST' : 'PUT';
 
