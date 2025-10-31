@@ -34,6 +34,7 @@ function renderItems(container, items, type) {
     if (type === 'scheduled' && item._syndication) {
       // Syndication display: Channel — Operation — Time
       div.textContent = `${item.channel || 'Facebook'} — ${item.operation || 'Product'} — ${item.time_display || item.time || ''}`.trim();
+      div.classList.add('syndication');
     } else {
       div.textContent = item.title || item.idea_title || item.name || item.summary || item.event_title || 'Untitled';
     }
@@ -171,11 +172,32 @@ async function loadWeek(year, weekNumber) {
   // Filter change handlers
   const attach = (id) => {
     const el = document.getElementById(id);
-    if (el) el.addEventListener('change', () => loadWeek(state.year, state.weekNumber));
+    if (el) el.addEventListener('change', () => {
+      updateFilterVisuals();
+      loadWeek(state.year, state.weekNumber);
+    });
   };
   attach('toggle-ideas');
   attach('toggle-events');
   attach('toggle-syndication');
+
+  function updateFilterVisuals() {
+    const map = [
+      { id: 'toggle-ideas', cls: 'filter-ideas' },
+      { id: 'toggle-events', cls: 'filter-events' },
+      { id: 'toggle-syndication', cls: 'filter-syndication' },
+    ];
+    map.forEach(({ id, cls }) => {
+      const input = document.getElementById(id);
+      const label = input ? input.closest('.' + cls) : null;
+      if (label) {
+        if (input.checked) label.classList.add('active');
+        else label.classList.remove('active');
+      }
+    });
+  }
+
+  updateFilterVisuals();
 
   loadWeek(state.year, state.weekNumber);
 })();
