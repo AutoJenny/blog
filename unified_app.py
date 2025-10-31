@@ -54,6 +54,12 @@ def create_app(config_name=None):
     from blueprints.launchpad_content import bp as launchpad_content_bp
     app.register_blueprint(launchpad_content_bp, url_prefix='/launchpad')
     
+    from blueprints.launchpad_scheduling import bp as launchpad_scheduling_bp
+    app.register_blueprint(launchpad_scheduling_bp, url_prefix='/launchpad')
+    
+    from blueprints.launchpad.blog_post_syndication import bp as blog_post_syndication_bp
+    app.register_blueprint(blog_post_syndication_bp, url_prefix='/launchpad')
+    
     from blueprints.automation_core import bp as automation_bp
     app.register_blueprint(automation_bp)
 

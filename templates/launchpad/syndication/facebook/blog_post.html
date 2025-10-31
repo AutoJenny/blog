@@ -10,6 +10,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/launchpad.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/syndication.css') }}">
+    
+    <!-- Page Data for JavaScript -->
+    <script>
+        window.pageData = {
+            platform: {{ platform | tojson }},
+            channel_type: {{ channel_type | tojson }}
+        };
+    </script>
 </head>
 <body>
     {% include 'shared/header.html' %}
@@ -23,11 +31,11 @@
             <p>Automated Facebook posts featuring blog content and articles</p>
         </div>
         
-        <!-- Post Section Selection Section -->
-        {% include 'launchpad/includes/post_section_selection.html' %}
+        <!-- Blog Post Selection Section -->
+        {% include 'launchpad/includes/blog_post_selection.html' %}
         
         <!-- AI Content Generation Section -->
-        {% include 'launchpad/includes/blog_ai_content_generation.html' %}
+        {% include 'launchpad/includes/ai_content_generation.html' %}
         
         <!-- Posting Control Section -->
         {% include 'launchpad/includes/posting_control.html' %}
@@ -39,16 +47,8 @@
     <!-- State Manager (must be loaded first) -->
     <script src="{{ url_for('static', filename='js/state-manager.js') }}"></script>
     
-    <!-- Post Section Selection JavaScript Modules -->
-    <script src="{{ url_for('static', filename='js/post-section-selection-utils.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/post-section-selection-data.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/post-section-selection-browser.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/post-section-selection-selection.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/post-section-selection-accordions.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/post-section-selection-core.js') }}"></script>
-    
-    <!-- Blog Input Data JavaScript -->
-    <script src="{{ url_for('static', filename='js/blog-input-data-core.js') }}"></script>
+    <!-- Blog Post Selection JavaScript -->
+    <script src="{{ url_for('static', filename='js/blog-post-selection.js') }}"></script>
     
     <!-- AI Content Generation JavaScript Modules -->
     <script src="{{ url_for('static', filename='js/ai-content-generation-core.js') }}"></script>
@@ -62,6 +62,17 @@
     <script src="{{ url_for('static', filename='js/queue-manager.js') }}"></script>
     
     <!-- Posting Control JavaScript -->
+    <script src="{{ url_for('static', filename='js/posting-control-utils.js') }}"></script>
     <script src="{{ url_for('static', filename='js/posting-control.js') }}"></script>
+    
+    <!-- Page-specific initialization -->
+    <script>
+        // Initialize blog post syndication on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.blogPostSelectionManager) {
+                window.blogPostSelectionManager.loadPosts();
+            }
+        });
+    </script>
 </body>
 </html>

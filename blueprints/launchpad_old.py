@@ -685,7 +685,7 @@ def get_schedules():
         
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
-                SELECT id, time, timezone, days, is_active, created_at, updated_at, name
+                SELECT id, name, time, timezone, days, is_active, created_at, updated_at, platform, content_type
                 FROM daily_posts_schedule
                 WHERE platform = %s AND content_type = %s AND is_active = true
                 ORDER BY created_at DESC

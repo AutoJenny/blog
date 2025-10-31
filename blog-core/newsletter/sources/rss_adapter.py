@@ -19,8 +19,16 @@ class RSSAdapter(SourceAdapter):
     
     def fetch(self) -> List[Dict[str, Any]]:
         """Fetch and parse RSS feed."""
+        import logging
+        logger = logging.getLogger(__name__)
+        
         try:
             feed = feedparser.parse(self.feed_url)
+            
+            # Check for feed errors
+            if feed.bozo and feed.bozo_exception:
+                logger.warning(f"RSS feed parse error for {self.feed_url}: {feed.bozo_exception}")
+            
             items = []
             for entry in feed.entries[:20]:  # Limit to recent 20
                 items.append({
@@ -31,8 +39,11 @@ class RSSAdapter(SourceAdapter):
                     'summary': entry.get('summary', ''),
                     'description': entry.get('description', ''),
                 })
+            
+            logger.debug(f"Fetched {len(items)} items from {self.feed_url}")
             return items
-        except Exception:
+        except Exception as e:
+            logger.error(f"Failed to fetch RSS feed {self.feed_url}: {e}", exc_info=True)
             return []
     
     def normalize(self, raw_item: Dict[str, Any]) -> Optional[Dict[str, Any]]:

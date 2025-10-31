@@ -131,10 +131,19 @@ def api_calendar_events(year, week_number):
     """Get events for a specific year and week"""
     try:
         with db_manager.get_cursor() as cursor:
+            # Check if advance_notice column exists
             cursor.execute("""
+                SELECT column_name FROM information_schema.columns 
+                WHERE table_name = 'calendar_events' AND column_name = 'advance_notice'
+            """)
+            has_advance_notice = cursor.fetchone() is not None
+            advance_notice_field = 'ce.advance_notice' if has_advance_notice else 'NULL::integer as advance_notice'
+            
+            cursor.execute(f"""
                 SELECT ce.id, ce.event_title, ce.event_description, ce.start_date, ce.end_date,
-                       ce.is_recurring, ce.priority, ce.tags, ce.content_type,
-                       ce.created_at, ce.updated_at,
+                       ce.is_recurring, ce.priority, ce.tags, ce.content_type, ce.year,
+                       {advance_notice_field}, ce.created_at, ce.updated_at,
+                       EXTRACT(ISODOW FROM ce.start_date)::integer as weekday,
                        COALESCE(
                            json_agg(
                                json_build_object(
@@ -151,8 +160,8 @@ def api_calendar_events(year, week_number):
                 LEFT JOIN calendar_categories cc ON cec.category_id = cc.id
                 WHERE ce.year = %s AND ce.week_number = %s
                 GROUP BY ce.id, ce.event_title, ce.event_description, ce.start_date, ce.end_date,
-                         ce.is_recurring, ce.priority, ce.tags, ce.content_type,
-                         ce.created_at, ce.updated_at
+                         ce.is_recurring, ce.priority, ce.tags, ce.content_type, ce.year,
+                         ce.created_at, ce.updated_at, EXTRACT(ISODOW FROM ce.start_date)""" + (", ce.advance_notice" if has_advance_notice else "") + """
                 ORDER BY ce.start_date, ce.priority
             """, (year, week_number))
             
@@ -702,6 +711,170 @@ def api_calendar_idea_status(idea_id: int):
         return jsonify({'success': True, 'post': {'id': post_id, 'title': title, 'status': status, 'scheduled_date': scheduled_date}})
     except Exception as e:
         logger.error(f"Error getting idea status: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+def api_add_calendar_event():
+    """Create a new calendar event."""
+    try:
+        import json
+        from datetime import datetime
+        data = _safe_parse_json_request() or {}
+        
+        if not data.get('event_title'):
+            return jsonify({'success': False, 'error': 'Missing field: event_title'}), 400
+        if not data.get('start_date'):
+            return jsonify({'success': False, 'error': 'Missing field: start_date'}), 400
+        if not data.get('end_date'):
+            return jsonify({'success': False, 'error': 'Missing field: end_date'}), 400
+        
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cursor:
+                # Check which columns exist
+                cursor.execute("""
+                    SELECT column_name FROM information_schema.columns 
+                    WHERE table_name = 'calendar_events'
+                """)
+                existing_columns = {row['column_name'] for row in cursor.fetchall()}
+                
+                # Calculate week_number from start_date
+                start_date = datetime.strptime(data['start_date'], '%Y-%m-%d').date()
+                week_number = start_date.isocalendar()[1]
+                
+                fields = ['event_title', 'start_date', 'end_date', 'year', 'week_number']
+                values = [
+                    data['event_title'].strip(),
+                    data['start_date'],
+                    data['end_date'],
+                    int(data.get('year', start_date.year)),
+                    week_number
+                ]
+                
+                if data.get('event_description') and 'event_description' in existing_columns:
+                    fields.append('event_description')
+                    values.append(data['event_description'].strip())
+                
+                if 'is_recurring' in existing_columns:
+                    fields.append('is_recurring')
+                    values.append(data.get('is_recurring', False))
+                
+                if data.get('content_type') and 'content_type' in existing_columns:
+                    fields.append('content_type')
+                    values.append(data['content_type'].strip())
+                
+                if 'priority' in existing_columns:
+                    fields.append('priority')
+                    values.append((data.get('priority') or 'random').strip())
+                
+                if data.get('tags') and 'tags' in existing_columns:
+                    fields.append('tags')
+                    values.append(json.dumps(data['tags']))
+                
+                if 'advance_notice' in existing_columns and data.get('advance_notice') is not None:
+                    fields.append('advance_notice')
+                    values.append(int(data['advance_notice']))
+                
+                placeholders = ', '.join(['%s'] * len(values))
+                field_names = ', '.join(fields)
+                
+                cursor.execute(
+                    f"INSERT INTO calendar_events ({field_names}) VALUES ({placeholders}) RETURNING id, event_title, start_date, end_date, year",
+                    values
+                )
+                row = cursor.fetchone()
+                event_id = row['id']
+                
+                # Handle categories
+                if data.get('categories'):
+                    for cat_id in data['categories']:
+                        cursor.execute(
+                            "INSERT INTO calendar_event_categories (event_id, category_id) VALUES (%s, %s) ON CONFLICT DO NOTHING",
+                            (event_id, int(cat_id))
+                        )
+                
+                conn.commit()
+        
+        return jsonify({'success': True, 'event': row})
+    except Exception as e:
+        logger.error(f"Error adding calendar event: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+def api_update_calendar_event(event_id: int):
+    """Update an existing calendar event."""
+    try:
+        import json
+        from datetime import datetime
+        data = _safe_parse_json_request() or {}
+        
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cursor:
+                # Check which columns exist
+                cursor.execute("""
+                    SELECT column_name FROM information_schema.columns 
+                    WHERE table_name = 'calendar_events'
+                """)
+                existing_columns = {row['column_name'] for row in cursor.fetchall()}
+                
+                fields = []
+                values = []
+                
+                updatable_fields = [
+                    'event_title', 'event_description', 'start_date', 'end_date', 'year',
+                    'content_type', 'priority', 'is_recurring', 'advance_notice'
+                ]
+                
+                for col in updatable_fields:
+                    if col in data and col in existing_columns:
+                        fields.append(col)
+                        if col in ('is_recurring',):
+                            values.append(bool(data[col]))
+                        elif col == 'year':
+                            values.append(int(data[col]))
+                        elif col == 'advance_notice':
+                            values.append(int(data[col]) if data[col] else None)
+                        elif col in ('start_date', 'end_date'):
+                            values.append(data[col])
+                        else:
+                            values.append(data[col].strip() if data[col] else None)
+                
+                # Handle tags as JSONB
+                if 'tags' in data and 'tags' in existing_columns:
+                    fields.append('tags')
+                    values.append(json.dumps(data['tags']) if data['tags'] else json.dumps([]))
+                
+                # Update week_number if start_date changed
+                if 'start_date' in data and 'start_date' in [f for f in fields]:
+                    start_date = datetime.strptime(data['start_date'], '%Y-%m-%d').date()
+                    week_number = start_date.isocalendar()[1]
+                    if 'week_number' in existing_columns:
+                        fields.append('week_number')
+                        values.append(week_number)
+                
+                if not fields:
+                    return jsonify({'success': False, 'error': 'No fields provided'}), 400
+                
+                set_clause = ", ".join(f"{c} = %s" for c in fields)
+                values.append(event_id)
+                
+                cursor.execute(f"UPDATE calendar_events SET {set_clause} WHERE id = %s RETURNING id", values)
+                row = cursor.fetchone()
+                
+                if not row:
+                    return jsonify({'success': False, 'error': 'Event not found'}), 404
+                
+                # Update categories
+                if 'categories' in data:
+                    cursor.execute("DELETE FROM calendar_event_categories WHERE event_id = %s", (event_id,))
+                    for cat_id in data['categories']:
+                        cursor.execute(
+                            "INSERT INTO calendar_event_categories (event_id, category_id) VALUES (%s, %s) ON CONFLICT DO NOTHING",
+                            (event_id, int(cat_id))
+                        )
+                
+                conn.commit()
+        
+        return jsonify({'success': True, 'event': {'id': event_id}})
+    except Exception as e:
+        logger.error(f"Error updating calendar event: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 def api_calendar_ideas_for_week(week_number):

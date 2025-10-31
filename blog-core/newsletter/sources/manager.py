@@ -38,10 +38,18 @@ def create_adapter_from_source(source: Dict[str, Any]) -> RSSAdapter | RedditAda
     base_url = source.get('base_url', '')
     
     if source_type == 'rss':
-        # Category from name/type hints (Met Office = weather, BBC = news)
-        category = 'news'
-        if 'weather' in name.lower() or 'met' in name.lower():
+        # Category from name/type hints - be explicit to avoid misclassification
+        name_lower = name.lower()
+        category = 'news'  # default
+        
+        # Weather sources: explicit checks
+        if any(term in name_lower for term in ['weather', 'met office', 'metoffice', 'forecast', 'warnings']):
             category = 'weather'
+        # News sources: explicit checks
+        elif any(term in name_lower for term in ['bbc', 'scotsman', 'news']):
+            category = 'news'
+        # Default to news if unclear
+        
         return RSSAdapter(source_name=name, feed_url=base_url, category=category)
     
     elif source_type == 'reddit':
@@ -69,6 +77,9 @@ def create_adapter_from_source(source: Dict[str, Any]) -> RSSAdapter | RedditAda
 
 def fetch_all_sources() -> List[Dict[str, Any]]:
     """Fetch from all enabled sources and return normalized items."""
+    import logging
+    logger = logging.getLogger(__name__)
+    
     sources = get_enabled_sources()
     all_items = []
     
@@ -77,9 +88,13 @@ def fetch_all_sources() -> List[Dict[str, Any]]:
         if adapter:
             try:
                 items = adapter.fetch_and_normalize()
+                logger.info(f"Fetched {len(items)} items from {source.get('name')}")
                 all_items.extend(items)
-            except Exception:
+            except Exception as e:
+                logger.warning(f"Failed to fetch from {source.get('name')} ({source.get('base_url')}): {e}", exc_info=True)
                 continue  # Skip on error, continue with other sources
+        else:
+            logger.warning(f"Could not create adapter for {source.get('name')} (type: {source.get('type')})")
     
     return all_items
 

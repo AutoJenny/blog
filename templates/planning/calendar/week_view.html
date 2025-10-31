@@ -49,19 +49,34 @@
         <div class="rows-container">
             <!-- Themes row (spans all columns in one line) -->
             <div class="row-section" data-filter="themes">
-                <div class="row-header">Themes</div>
+                <div class="row-header">
+                    <span>Themes</span>
+                    <button class="row-add-btn" onclick="(() => { const w = parseInt(document.getElementById('week-number')?.textContent); getIdeaModal().openNew('theme', w || null); })()" title="Add New Theme">
+                        <i class="fas fa-plus"></i> Add New
+                    </button>
+                </div>
                 <div class="week-themes" id="week-themes"></div>
             </div>
 
             <!-- Events row: header + 7 aligned cells -->
             <div class="row-section" data-filter="events">
-                <div class="row-header">Events</div>
+                <div class="row-header">
+                    <span>Events</span>
+                    <button class="row-add-btn" onclick="getIdeaModal().openNew('event')" title="Add New Event">
+                        <i class="fas fa-plus"></i> Add New
+                    </button>
+                </div>
                 <div class="row-grid" id="events-row"></div>
             </div>
 
             <!-- Ideas row: header + 7 aligned cells -->
             <div class="row-section" data-filter="ideas">
-                <div class="row-header">Ideas</div>
+                <div class="row-header">
+                    <span>Ideas</span>
+                    <button class="row-add-btn" onclick="(() => { const w = parseInt(document.getElementById('week-number')?.textContent); getIdeaModal().openNew('idea', w || null); })()" title="Add New Idea">
+                        <i class="fas fa-plus"></i> Add New
+                    </button>
+                </div>
                 <div class="row-grid" id="ideas-row"></div>
             </div>
 
@@ -127,7 +142,9 @@
 .rows-container { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
 .row-section { display: flex; flex-direction: column; gap: 0.5rem; }
 .row-section.hidden { display: none; }
-.row-header { grid-column: 1 / -1; font-weight: 600; color: #cbd5e1; padding: 0.25rem 0; font-size: 0.8rem; text-align: center; line-height: 1; }
+.row-header { grid-column: 1 / -1; font-weight: 600; color: #cbd5e1; padding: 0.25rem 0; font-size: 0.8rem; display: flex; align-items: center; justify-content: space-between; line-height: 1; }
+.row-add-btn { padding: 0.25rem 0.5rem; background: #1e293b; border: 1px solid #475569; border-radius: 4px; color: #cbd5e1; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.25rem; }
+.row-add-btn:hover { background: #334155; border-color: #60a5fa; color: #e2e8f0; }
 .row-grid { display:grid; grid-template-columns: repeat(7, 1fr); gap:8px; }
 .row-grid .row-cell { background:#0f172a; border:1px solid #334155; border-radius:8px; min-height: 80px; padding:.5rem; display:flex; flex-direction:column; gap:6px; }
 .day { background:#0f172a; border:1px solid #334155; border-radius:8px; min-height: 160px; display:flex; flex-direction:column; }

@@ -1,0 +1,524 @@
+{% extends 'base.html' %}
+
+{% block title %}Newsletter — Source Management{% endblock %}
+
+{% block head %}
+<style>
+    .create-form {
+        background: #151a2e;
+        border: 1px solid #2d3246;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .create-form input, .create-form select, .create-form textarea {
+        background: #0f172a !important;
+        color: #e6e8ef !important;
+        border: 1px solid #2d3246 !important;
+        padding: 10px 14px !important;
+        border-radius: 6px !important;
+    }
+    .btn-primary { 
+        background:#4e6bff; 
+        color:#fff; 
+        border:none; 
+        padding:10px 14px; 
+        border-radius:8px; 
+        font-weight:700; 
+        text-decoration:none; 
+        display:inline-block;
+        cursor: pointer;
+    }
+    .btn-primary:hover { background:#3d5ae5; }
+    .btn-secondary {
+        background: transparent;
+        color: #a5b4fc;
+        border: 1px solid #2d3246;
+        padding: 8px 14px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 13px;
+        text-decoration: none;
+        display: inline-block;
+        cursor: pointer;
+    }
+    .btn-secondary:hover {
+        background: #1b2138;
+        border-color: #3b82f6;
+    }
+    .btn-danger {
+        background: transparent;
+        color: #ef4444;
+        border: 1px solid #2d3246;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 12px;
+        cursor: pointer;
+    }
+    .btn-danger:hover {
+        background: #3b0b0b;
+        border-color: #ef4444;
+    }
+    .section-card {
+        background: #151a2e;
+        border: 1px solid #2d3246;
+        border-radius: 8px;
+        padding: 24px;
+        margin-bottom: 20px;
+    }
+    table.sources-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    table.sources-table thead th {
+        background: #1b2138;
+        color: #a5b4fc;
+        padding: 18px 28px;
+        text-align: left;
+        border: 1px solid #2d3246;
+        font-size: 13px;
+        font-weight: 800;
+    }
+    table.sources-table tbody td {
+        background: #151a2e;
+        color: #e6e8ef;
+        padding: 16px 28px;
+        border: 1px solid #2d3246;
+        vertical-align: middle;
+    }
+    table.sources-table tbody tr:hover td {
+        background: #181f36;
+    }
+    .status-enabled {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 12px;
+        background: #0b3b2e;
+        color: #6ee7b7;
+        border: 1px solid #10b981;
+    }
+    .status-disabled {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 12px;
+        background: #23273a;
+        color: #9ca3af;
+        border: 1px solid #2d3246;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="mb-6 flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-white">
+                    <i class="fa-solid fa-database"></i> Source Aggregation Management
+                </h1>
+                <p class="text-gray-400 mt-1">Manage RSS feeds, Reddit sources, and HTML scrapers for newsletter content.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="/newsletter" class="btn-secondary">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Newsletter
+                </a>
+                <form method="post" action="/newsletter/sources/fetch" style="display:inline;">
+                    <button type="submit" class="btn-primary">
+                        <i class="fa-solid fa-refresh"></i> Fetch Now
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {# Statistics Overview #}
+        <div class="section-card">
+            <h2 class="text-xl font-bold text-white mb-4" style="color: #a5b4fc;">
+                <i class="fa-solid fa-chart-bar"></i> Statistics
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div style="padding: 16px; background: #0f172a; border: 1px solid #2d3246; border-radius: 6px;">
+                    <div style="color: #9ca3af; font-size: 12px; margin-bottom: 4px;">Total Cached Items</div>
+                    <div style="color: #e6e8ef; font-size: 24px; font-weight: 700;">{{ item_stats.total_items or 0 }}</div>
+                </div>
+                <div style="padding: 16px; background: #0f172a; border: 1px solid #2d3246; border-radius: 6px;">
+                    <div style="color: #9ca3af; font-size: 12px; margin-bottom: 4px;">Sources Configured</div>
+                    <div style="color: #e6e8ef; font-size: 24px; font-weight: 700;">{{ sources|length }}</div>
+                </div>
+                <div style="padding: 16px; background: #0f172a; border: 1px solid #2d3246; border-radius: 6px;">
+                    <div style="color: #9ca3af; font-size: 12px; margin-bottom: 4px;">Active Sources</div>
+                    <div style="color: #e6e8ef; font-size: 24px; font-weight: 700;">{{ sources|selectattr('enabled')|list|length }}</div>
+                </div>
+            </div>
+        </div>
+
+        {# Add New Source Form #}
+        <div class="create-form">
+            <h3 class="text-white font-semibold mb-3" style="color: #a5b4fc; font-size: 16px;">
+                <i class="fa-solid fa-plus"></i> Add New Source
+            </h3>
+            <form method="post" action="/newsletter/sources/add">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label style="color: #a5b4fc; font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">Name</label>
+                        <input type="text" name="name" required placeholder="e.g., BBC Scotland" style="width: 100%;" />
+                    </div>
+                    <div>
+                        <label style="color: #a5b4fc; font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">Base URL</label>
+                        <input type="url" name="base_url" required placeholder="https://..." style="width: 100%;" />
+                    </div>
+                    <div>
+                        <label style="color: #a5b4fc; font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">Type</label>
+                        <select name="type" required style="width: 100%;">
+                            <option value="rss">RSS Feed</option>
+                            <option value="reddit">Reddit</option>
+                            <option value="html">HTML Scraper</option>
+                            <option value="event">Event Calendar</option>
+                            <option value="museum">Museum/Gallery</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="color: #a5b4fc; font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">API Key Reference (optional)</label>
+                        <input type="text" name="api_key_ref" placeholder="Reference to env var or config key" style="width: 100%;" />
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 mb-4">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" name="enabled" checked style="width: 18px; height: 18px; border-radius: 4px; background: #0f172a; border: 1px solid #2d3246; accent-color: #4e6bff;">
+                        <span style="color: #a5b4fc; font-size: 13px;">Enable immediately</span>
+                    </label>
+                </div>
+                <button type="submit" class="btn-primary">
+                    <i class="fa-solid fa-save"></i> Add Source
+                </button>
+            </form>
+        </div>
+
+        {# Sources List #}
+        <div class="section-card">
+            <h2 class="text-xl font-bold text-white mb-4" style="color: #a5b4fc;">
+                <i class="fa-solid fa-list"></i> Configured Sources
+            </h2>
+            {% if sources and sources|length > 0 %}
+                <table class="sources-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>URL</th>
+                            <th>Status</th>
+                            <th>Last Fetch</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for source in sources %}
+                        <tr>
+                            <td style="font-weight: 700;">{{ source.name }}</td>
+                            <td style="color: #9ca3af; text-transform: uppercase;">{{ source.type }}</td>
+                            <td style="color: #9ca3af; font-size: 12px; max-width: 300px; overflow: hidden; text-overflow: ellipsis;">
+                                <a href="{{ source.base_url }}" target="_blank" style="color: #7b8dff; text-decoration: none;" onmouseover="this.style.textDecoration='underline';" onmouseout="this.style.textDecoration='none';">
+                                    {{ source.base_url[:60] }}{% if source.base_url|length > 60 %}...{% endif %}
+                                </a>
+                            </td>
+                            <td>
+                                {% if source.enabled %}
+                                    <span class="status-enabled">Enabled</span>
+                                {% else %}
+                                    <span class="status-disabled">Disabled</span>
+                                {% endif %}
+                            </td>
+                            <td style="color: #9ca3af; font-size: 12px;">
+                                {% set cache = cache_status|selectattr('source_name', 'equalto', source.name)|first %}
+                                {% if cache and cache.last_fetched_at %}
+                                    {{ cache.last_fetched_at.strftime('%Y-%m-%d %H:%M') }}
+                                {% else %}
+                                    Never
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <button onclick="editSource({{ source.id }}, {{ source.name|tojson }}, {{ source.base_url|tojson }}, {{ source.type|tojson }}, {{ 'true' if source.enabled else 'false' }}, {{ (source.api_key_ref or '')|tojson }})" class="btn-secondary" style="font-size: 11px; padding: 6px 10px;">
+                                        <i class="fa-solid fa-edit"></i> Edit
+                                    </button>
+                                    <form method="post" action="/newsletter/sources/{{ source.id }}/toggle" style="display:inline;">
+                                        <button type="submit" class="btn-secondary" style="font-size: 11px; padding: 6px 10px;">
+                                            <i class="fa-solid fa-toggle-{% if source.enabled %}on{% else %}off{% endif %}"></i>
+                                            {{ 'Disable' if source.enabled else 'Enable' }}
+                                        </button>
+                                    </form>
+                                    <button onclick="testSource({{ source.id }})" class="btn-secondary" style="font-size: 11px; padding: 6px 10px;">
+                                        <i class="fa-solid fa-flask"></i> Test
+                                    </button>
+                                    <form method="post" action="/newsletter/sources/{{ source.id }}/delete" style="display:inline;" onsubmit="return confirm('Delete this source? This cannot be undone.');">
+                                        <button type="submit" class="btn-danger">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div style="text-align: center; padding: 48px; color: #9ca3af;">
+                    <p style="font-size: 16px; margin-bottom: 12px;">No sources configured yet.</p>
+                    <p style="font-size: 14px;">Add your first source above to start aggregating content.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        {# Recent Cached Items Preview #}
+        <div class="section-card">
+            <h2 class="text-xl font-bold text-white mb-4" style="color: #a5b4fc;">
+                <i class="fa-solid fa-box-archive"></i> Recent Cached Items (Preview)
+            </h2>
+            {% if recent_items and recent_items|length > 0 %}
+                <table class="sources-table">
+                    <thead>
+                        <tr>
+                            <th>Source</th>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Score</th>
+                            <th>Cached</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in recent_items %}
+                        <tr>
+                            <td style="color: #a5b4fc; font-weight: 600;">{{ item.source_name }}</td>
+                            <td style="font-weight: 600;">
+                                {% if item.url %}
+                                    <a href="{{ item.url }}" target="_blank" style="color: #7b8dff; text-decoration: none;" onmouseover="this.style.textDecoration='underline';" onmouseout="this.style.textDecoration='none';">
+                                        {{ item.title[:60] }}{% if item.title|length > 60 %}...{% endif %}
+                                    </a>
+                                {% else %}
+                                    {{ item.title[:60] }}{% if item.title|length > 60 %}...{% endif %}
+                                {% endif %}
+                            </td>
+                            <td style="color: #9ca3af; text-transform: capitalize;">{{ item.category or 'other' }}</td>
+                            <td style="color: #9ca3af;">
+                                <span style="color: #6ee7b7; font-weight: 600;">{{ "%.1f"|format(item.combined_score or 0) }}</span>
+                            </td>
+                            <td style="color: #9ca3af; font-size: 12px;">
+                                {% if item.cached_at %}
+                                    {{ item.cached_at.strftime('%Y-%m-%d') }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="mt-4 text-center">
+                    <a href="/newsletter/sources/items" class="btn-secondary" style="text-decoration: none;">
+                        <i class="fa-solid fa-list"></i> View All Cached Items
+                    </a>
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 48px; color: #9ca3af;">
+                    <p style="font-size: 14px;">No cached items yet. Run "Fetch Now" to populate the cache.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{# Edit Source Modal #}
+<div id="editModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: #151a2e; border: 1px solid #2d3246; border-radius: 8px; padding: 24px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="color: #a5b4fc; font-size: 18px; font-weight: 700;">
+                <i class="fa-solid fa-edit"></i> Edit Source
+            </h3>
+            <button onclick="closeEditModal()" style="background: transparent; color: #9ca3af; border: none; font-size: 24px; cursor: pointer; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.color='#ef4444';" onmouseout="this.style.color='#9ca3af';">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+        <form method="post" id="editSourceForm">
+            <input type="hidden" name="source_id" id="edit_source_id">
+            <div class="grid grid-cols-1 gap-4 mb-4">
+                <div>
+                    <label style="color: #a5b4fc; font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">Name</label>
+                    <input type="text" name="name" id="edit_name" required placeholder="e.g., BBC Scotland" style="width: 100%;" />
+                </div>
+                <div>
+                    <label style="color: #a5b4fc; font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">Base URL</label>
+                    <input type="url" name="base_url" id="edit_base_url" required placeholder="https://..." style="width: 100%;" />
+                </div>
+                <div>
+                    <label style="color: #a5b4fc; font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">Type</label>
+                    <select name="type" id="edit_type" required style="width: 100%;">
+                        <option value="rss">RSS Feed</option>
+                        <option value="reddit">Reddit</option>
+                        <option value="html">HTML Scraper</option>
+                        <option value="event">Event Calendar</option>
+                        <option value="museum">Museum/Gallery</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="color: #a5b4fc; font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">API Key Reference (optional)</label>
+                    <input type="text" name="api_key_ref" id="edit_api_key_ref" placeholder="Reference to env var or config key" style="width: 100%;" />
+                </div>
+                <div>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" name="enabled" id="edit_enabled" style="width: 18px; height: 18px; border-radius: 4px; background: #0f172a; border: 1px solid #2d3246; accent-color: #4e6bff;">
+                        <span style="color: #a5b4fc; font-size: 13px;">Enabled</span>
+                    </label>
+                </div>
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" onclick="closeEditModal()" class="btn-secondary">
+                    Cancel
+                </button>
+                <button type="submit" class="btn-primary">
+                    <i class="fa-solid fa-save"></i> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# Test Source Modal #}
+<div id="testModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: #151a2e; border: 1px solid #2d3246; border-radius: 8px; padding: 24px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="color: #a5b4fc; font-size: 18px; font-weight: 700;">
+                <i class="fa-solid fa-flask"></i> Test Source
+            </h3>
+            <button onclick="closeTestModal()" style="background: transparent; color: #9ca3af; border: none; font-size: 24px; cursor: pointer; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.color='#ef4444';" onmouseout="this.style.color='#9ca3af';">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+        <div id="testResults" style="color: #9ca3af; text-align: center; padding: 40px;">
+            <div id="testLoading" style="display: none;">
+                <i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 12px;"></i>
+                <p>Testing source...</p>
+            </div>
+            <div id="testContent"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+function editSource(id, name, baseUrl, type, enabled, apiKeyRef) {
+    document.getElementById('edit_source_id').value = id;
+    document.getElementById('edit_name').value = name;
+    document.getElementById('edit_base_url').value = baseUrl;
+    document.getElementById('edit_type').value = type;
+    document.getElementById('edit_enabled').checked = enabled;
+    document.getElementById('edit_api_key_ref').value = apiKeyRef || '';
+    document.getElementById('editSourceForm').action = `/newsletter/sources/${id}/edit`;
+    document.getElementById('editModal').style.display = 'flex';
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+}
+
+function testSource(sourceId) {
+    const modal = document.getElementById('testModal');
+    const loading = document.getElementById('testLoading');
+    const content = document.getElementById('testContent');
+    
+    modal.style.display = 'flex';
+    loading.style.display = 'block';
+    content.innerHTML = '';
+    
+    fetch(`/newsletter/sources/${sourceId}/test`)
+        .then(r => {
+            if (!r.ok) {
+                return r.json().then(data => {
+                    throw new Error(data.error || `HTTP ${r.status}: ${r.statusText}`);
+                });
+            }
+            return r.json();
+        })
+        .then(data => {
+            loading.style.display = 'none';
+            if (data.success) {
+                let html = `<div style="color: #6ee7b7; margin-bottom: 16px;">
+                    <strong>✓ Test successful!</strong> Found ${data.items_count || 0} items.
+                </div>`;
+                
+                // Show category breakdown if available
+                if (data.categories && Object.keys(data.categories).length > 0) {
+                    const catList = Object.entries(data.categories)
+                        .map(([cat, count]) => `${cat}: ${count}`)
+                        .join(', ');
+                    html += `<div style="color: #9ca3af; font-size: 12px; margin-bottom: 12px;">
+                        Categories: ${catList}
+                    </div>`;
+                }
+                
+                // Show warning if no items but successful
+                if (data.warning) {
+                    html += `<div style="color: #fcd34d; margin-bottom: 12px; padding: 12px; background: #3e2609; border: 1px solid #f59e0b; border-radius: 6px;">
+                        <strong>⚠ Warning:</strong> ${data.warning}
+                    </div>`;
+                }
+                
+                if (data.items && data.items.length > 0) {
+                    html += '<div style="max-height: 400px; overflow-y: auto; margin-top: 16px;">';
+                    html += '<table class="sources-table" style="font-size: 12px;">';
+                    html += '<thead><tr><th>Title</th><th>Category</th><th>Date</th><th>URL</th></tr></thead><tbody>';
+                    data.items.forEach(item => {
+                        const dateStr = item.published_at ? 
+                            new Date(item.published_at).toLocaleDateString() :
+                            (item.event_date ? new Date(item.event_date).toLocaleDateString() : '—');
+                        html += `<tr>
+                            <td style="font-weight: 600;">${(item.title || '').substring(0, 60)}${(item.title || '').length > 60 ? '...' : ''}</td>
+                            <td style="color: #9ca3af; text-transform: capitalize;">${item.category || 'other'}</td>
+                            <td style="color: #9ca3af; font-size: 11px;">${dateStr}</td>
+                            <td><a href="${item.url || '#'}" target="_blank" style="color: #7b8dff; text-decoration: none;" onmouseover="this.style.textDecoration='underline';" onmouseout="this.style.textDecoration='none';">
+                                <i class="fa-solid fa-external-link"></i>
+                            </a></td>
+                        </tr>`;
+                    });
+                    html += '</tbody></table>';
+                    html += '</div>';
+                } else if (!data.warning) {
+                    html += '<div style="color: #9ca3af; padding: 20px;">No items found from this source.</div>';
+                }
+                
+                content.innerHTML = html;
+            } else {
+                content.innerHTML = `<div style="color: #ef4444; padding: 20px;">
+                    <strong>✗ Test failed</strong><br>
+                    <div style="margin-top: 8px; font-size: 13px;">${data.error || 'Unknown error'}</div>
+                    ${data.detail ? `<div style="margin-top: 8px; font-size: 12px; color: #9ca3af;">${data.detail}</div>` : ''}
+                </div>`;
+            }
+        })
+        .catch(err => {
+            loading.style.display = 'none';
+            content.innerHTML = `<div style="color: #ef4444; padding: 20px;">
+                <strong>✗ Network Error</strong><br>
+                <div style="margin-top: 8px; font-size: 13px;">${err.message}</div>
+                <div style="margin-top: 8px; font-size: 12px; color: #9ca3af;">Check server logs for details.</div>
+            </div>`;
+        });
+}
+
+function closeTestModal() {
+    document.getElementById('testModal').style.display = 'none';
+}
+
+// Close modals on click outside
+document.getElementById('editModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeEditModal();
+});
+document.getElementById('testModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeTestModal();
+});
+</script>
+{% endblock %}
+
