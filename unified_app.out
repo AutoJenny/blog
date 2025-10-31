@@ -8187,3 +8187,107 @@ LINE 4:                     WHERE event_id = $2
 2025-10-31 13:30:29,833 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
 2025-10-31 13:30:29,839 - werkzeug - WARNING -  * Debugger is active!
 2025-10-31 13:30:29,850 - werkzeug - INFO -  * Debugger PIN: 452-628-635
+2025-10-31 13:30:38,236 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/universal_block_service.py', reloading
+2025-10-31 13:30:38,454 - werkzeug - INFO -  * Restarting with stat
+2025-10-31 13:30:39,517 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-10-31 13:30:39,524 - werkzeug - WARNING -  * Debugger is active!
+2025-10-31 13:30:39,537 - werkzeug - INFO -  * Debugger PIN: 452-628-635
+2025-10-31 13:30:39,784 - config.database - INFO - Database connection established
+2025-10-31 13:30:39,792 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:30:39] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-10-31 13:34:39,777 - config.database - INFO - Database connection established
+2025-10-31 13:34:39,795 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:34:39] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-10-31 13:37:59,987 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:37:59] "GET /planning/posts/0/calendar/week-view HTTP/1.1" 200 -
+2025-10-31 13:38:00,018 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:00] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-10-31 13:38:00,019 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:00] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-31 13:38:00,019 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:00] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-10-31 13:38:00,020 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:00] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-10-31 13:38:00,023 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:00] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-31 13:38:00,024 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:00] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-10-31 13:38:00,025 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:00] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-10-31 13:38:00,025 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:00] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-10-31 13:38:00,026 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:00] "[36mGET /static/css/planning/idea-modal.css HTTP/1.1[0m" 304 -
+2025-10-31 13:38:00,027 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:00] "[36mGET /static/js/planning/calendar-week-view.js HTTP/1.1[0m" 304 -
+2025-10-31 13:38:00,028 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:00] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-31 13:38:00,029 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:00] "[36mGET /static/js/planning/idea-modal.js HTTP/1.1[0m" 304 -
+2025-10-31 13:38:00,030 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:00] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-31 13:38:00,031 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:00] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-10-31 13:38:00,032 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:00] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-31 13:38:00,051 - config.database - INFO - Database connection established
+2025-10-31 13:38:00,051 - config.database - INFO - Database connection established
+2025-10-31 13:38:00,051 - config.database - INFO - Database connection established
+2025-10-31 13:38:00,051 - config.database - INFO - Database connection established
+2025-10-31 13:38:00,053 - config.database - INFO - Database connection established
+2025-10-31 13:38:00,055 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:00] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 13:38:00,055 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:00] "GET /planning/api/calendar/categories HTTP/1.1" 200 -
+2025-10-31 13:38:00,056 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:00] "GET /planning/api/calendar/events/2025/44 HTTP/1.1" 200 -
+2025-10-31 13:38:00,058 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:00] "GET /planning/api/calendar/schedule/2025/44 HTTP/1.1" 200 -
+2025-10-31 13:38:00,066 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:00] "GET /planning/api/calendar/ideas/week/44 HTTP/1.1" 200 -
+2025-10-31 13:38:06,535 - config.database - INFO - Database connection established
+2025-10-31 13:38:06,556 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:06] "POST /planning/api/calendar/events/7/convert-to-idea HTTP/1.1" 200 -
+2025-10-31 13:38:06,575 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:06] "GET /planning/posts/0/calendar/week-view HTTP/1.1" 200 -
+2025-10-31 13:38:06,593 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:06] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-10-31 13:38:06,598 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:06] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-31 13:38:06,598 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:06] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-31 13:38:06,598 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:06] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-10-31 13:38:06,600 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:06] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-10-31 13:38:06,601 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:06] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-10-31 13:38:06,601 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:06] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-10-31 13:38:06,606 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:06] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-10-31 13:38:06,608 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:06] "[36mGET /static/js/planning/calendar-week-view.js HTTP/1.1[0m" 304 -
+2025-10-31 13:38:06,609 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:06] "[36mGET /static/css/planning/idea-modal.css HTTP/1.1[0m" 304 -
+2025-10-31 13:38:06,611 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:06] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-31 13:38:06,613 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:06] "[36mGET /static/js/planning/idea-modal.js HTTP/1.1[0m" 304 -
+2025-10-31 13:38:06,614 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:06] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-31 13:38:06,616 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:06] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-31 13:38:06,618 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:06] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-10-31 13:38:06,692 - config.database - INFO - Database connection established
+2025-10-31 13:38:06,692 - config.database - INFO - Database connection established
+2025-10-31 13:38:06,692 - config.database - INFO - Database connection established
+2025-10-31 13:38:06,693 - config.database - INFO - Database connection established
+2025-10-31 13:38:06,693 - config.database - INFO - Database connection established
+2025-10-31 13:38:06,696 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:06] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 13:38:06,696 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:06] "GET /planning/api/calendar/categories HTTP/1.1" 200 -
+2025-10-31 13:38:06,697 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:06] "GET /planning/api/calendar/events/2025/44 HTTP/1.1" 200 -
+2025-10-31 13:38:06,697 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:06] "GET /planning/api/calendar/schedule/2025/44 HTTP/1.1" 200 -
+2025-10-31 13:38:06,705 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:06] "GET /planning/api/calendar/ideas/week/44 HTTP/1.1" 200 -
+2025-10-31 13:38:39,775 - config.database - INFO - Database connection established
+2025-10-31 13:38:39,789 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:38:39] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-10-31 13:41:34,986 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_api_calendar.py', reloading
+2025-10-31 13:41:35,219 - werkzeug - INFO -  * Restarting with stat
+2025-10-31 13:41:36,296 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-10-31 13:41:36,302 - werkzeug - WARNING -  * Debugger is active!
+2025-10-31 13:41:36,313 - werkzeug - INFO -  * Debugger PIN: 452-628-635
+2025-10-31 13:41:43,663 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_api_calendar.py', reloading
+2025-10-31 13:41:43,881 - werkzeug - INFO -  * Restarting with stat
+2025-10-31 13:41:44,896 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-10-31 13:41:44,902 - werkzeug - WARNING -  * Debugger is active!
+2025-10-31 13:41:44,914 - werkzeug - INFO -  * Debugger PIN: 452-628-635
+2025-10-31 13:42:02,746 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_api_calendar.py', reloading
+2025-10-31 13:42:02,974 - werkzeug - INFO -  * Restarting with stat
+2025-10-31 13:42:03,990 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-10-31 13:42:03,997 - werkzeug - WARNING -  * Debugger is active!
+2025-10-31 13:42:04,009 - werkzeug - INFO -  * Debugger PIN: 452-628-635
+2025-10-31 13:42:06,120 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_api_calendar.py', reloading
+2025-10-31 13:42:06,343 - werkzeug - INFO -  * Restarting with stat
+2025-10-31 13:42:07,363 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-10-31 13:42:07,370 - werkzeug - WARNING -  * Debugger is active!
+2025-10-31 13:42:07,383 - werkzeug - INFO -  * Debugger PIN: 452-628-635
+2025-10-31 13:42:11,611 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_api_calendar.py', reloading
+2025-10-31 13:42:11,836 - werkzeug - INFO -  * Restarting with stat
+2025-10-31 13:42:12,796 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-10-31 13:42:12,803 - werkzeug - WARNING -  * Debugger is active!
+2025-10-31 13:42:12,813 - werkzeug - INFO -  * Debugger PIN: 452-628-635
+2025-10-31 13:42:19,112 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_api_calendar.py', reloading
+2025-10-31 13:42:19,345 - werkzeug - INFO -  * Restarting with stat
+Traceback (most recent call last):
+  File "/Users/autojenny/Documents/projects/blog/unified_app.py", line 202, in <module>
+    app = create_app()
+          ^^^^^^^^^^^^
+  File "/Users/autojenny/Documents/projects/blog/unified_app.py", line 85, in create_app
+    from blueprints.planning import bp as planning_bp
+  File "/Users/autojenny/Documents/projects/blog/blueprints/planning.py", line 20, in <module>
+    from blueprints.planning_api_calendar import api_calendar_categories as categories_api_func, api_calendar_weeks as weeks_api_func, api_calendar_ideas as ideas_api_func, api_calendar_events as events_api_func, api_calendar_schedule as schedule_api_func, api_calendar_ideas_for_week as ideas_week_api_func, api_add_calendar_idea as add_idea_api_func, api_update_calendar_idea as update_idea_api_func, api_delete_calendar_idea as delete_idea_api_func, api_calendar_idea_status as idea_status_api_func, api_get_calendar_idea as get_idea_api_func, api_convert_event_to_idea as convert_event_to_idea_api_func
+  File "/Users/autojenny/Documents/projects/blog/blueprints/planning_api_calendar.py", line 240
+    Uses Flask's get_json which handles stream caching internally - safest approach.
+              ^
+SyntaxError: unterminated string literal (detected at line 240)

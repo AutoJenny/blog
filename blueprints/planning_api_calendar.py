@@ -67,12 +67,20 @@ def api_calendar_ideas(week_number):
             has_sources = cursor.fetchone() is not None
             sources_field = 'ci.sources' if has_sources else "'[]'::jsonb as sources"
             
+            # Check if item_classification column exists
+            cursor.execute("""
+                SELECT column_name FROM information_schema.columns 
+                WHERE table_name = 'calendar_ideas' AND column_name = 'item_classification'
+            """)
+            has_classification = cursor.fetchone() is not None
+            classification_field = 'ci.item_classification' if has_classification else "'idea'::varchar as item_classification"
+            
             cursor.execute(f"""
                 SELECT ci.id, ci.week_number, ci.idea_title, ci.idea_description, 
                        ci.seasonal_context, ci.content_type, ci.priority, ci.tags,
                        ci.is_recurring, ci.can_span_weeks, ci.max_weeks, ci.is_evergreen,
                        ci.evergreen_frequency, ci.last_used_date, ci.usage_count,
-                       ci.evergreen_notes, {sources_field}, ci.created_at, ci.updated_at,
+                       ci.evergreen_notes, {sources_field}, {classification_field}, ci.created_at, ci.updated_at,
                        COALESCE(
                            json_agg(
                                json_build_object(
@@ -92,7 +100,7 @@ def api_calendar_ideas(week_number):
                          ci.seasonal_context, ci.content_type, ci.priority, ci.tags,
                          ci.is_recurring, ci.can_span_weeks, ci.max_weeks, ci.is_evergreen,
                          ci.evergreen_frequency, ci.last_used_date, ci.usage_count,
-                         ci.evergreen_notes, ci.created_at, ci.updated_at
+                         ci.evergreen_notes, ci.created_at, ci.updated_at""" + (", ci.item_classification" if has_classification else "")
                 ORDER BY 
                     CASE ci.priority 
                         WHEN 'mandatory' THEN 1 
@@ -349,6 +357,11 @@ def api_convert_event_to_idea(event_id: int):
                     fields.append('max_weeks')
                     values.append(int(data.get('max_weeks', event_row.get('max_weeks', 1))))
                 
+                if 'item_classification' in existing_columns:
+                    fields.append('item_classification')
+                    # When converting event to idea, always set as 'idea' (not 'theme')
+                    values.append('idea')
+                
                 if 'is_evergreen' in existing_columns:
                     fields.append('is_evergreen')
                     values.append(data.get('is_evergreen', False))
@@ -471,6 +484,11 @@ def api_add_calendar_idea():
                     fields.append('max_weeks')
                     values.append(int(data.get('max_weeks', 1)))
                 
+                if 'item_classification' in existing_columns:
+                    fields.append('item_classification')
+                    # Default to 'idea' unless explicitly set to 'theme'
+                    values.append((data.get('item_classification') or 'idea').strip())
+                
                 if 'is_evergreen' in existing_columns:
                     fields.append('is_evergreen')
                     values.append(data.get('is_evergreen', False))
@@ -539,7 +557,7 @@ def api_update_calendar_idea(idea_id: int):
                 updatable_fields = [
                     'idea_title', 'idea_description', 'seasonal_context', 'content_type',
                     'priority', 'week_number', 'is_recurring', 'can_span_weeks', 'max_weeks',
-                    'is_evergreen', 'evergreen_frequency', 'evergreen_notes'
+                    'is_evergreen', 'evergreen_frequency', 'evergreen_notes', 'item_classification'
                 ]
                 
                 for col in updatable_fields:
@@ -551,6 +569,10 @@ def api_update_calendar_idea(idea_id: int):
                             values.append(int(data[col]) if data[col] else 1)
                         elif col == 'week_number':
                             values.append(int(data[col]))
+                        elif col == 'item_classification':
+                            # Ensure it's either 'theme' or 'idea'
+                            val = (data[col] or 'idea').strip().lower()
+                            values.append('theme' if val == 'theme' else 'idea')
                         else:
                             values.append(data[col].strip() if data[col] else None)
                 
