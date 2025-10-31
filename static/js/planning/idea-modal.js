@@ -567,10 +567,19 @@ class IdeaModal {
         const selectedCategories = Array.from(document.querySelectorAll('.idea-category-item input:checked'))
             .map(cb => parseInt(cb.value));
 
+        // Determine if this is an idea or event based on type selector
+        const isEvent = document.getElementById('type-event')?.checked || false;
+        
+        // Get week number - default to current week if not set (for ideas)
+        let week_number = document.getElementById('idea-week-number').value;
+        if (!week_number && !isEvent) {
+            week_number = this.getISOWeekNumber(new Date());
+        }
+
         const formData = {
             idea_title: document.getElementById('idea-title').value,
             idea_description: document.getElementById('idea-description').value,
-            week_number: parseInt(document.getElementById('idea-week-number').value),
+            week_number: week_number ? parseInt(week_number) : null,
             content_type: document.getElementById('idea-content-type').value || null,
             seasonal_context: document.getElementById('idea-seasonal-context').value || null,
             priority: document.getElementById('idea-priority').value,
@@ -585,11 +594,26 @@ class IdeaModal {
             categories: selectedCategories
         };
 
+        // Add event-specific fields if it's an event
+        if (isEvent) {
+            const startDateInput = document.getElementById('event-start-date');
+            const endDateInput = document.getElementById('event-end-date');
+            const yearInput = document.getElementById('event-year');
+            if (startDateInput) formData.start_date = startDateInput.value;
+            if (endDateInput) formData.end_date = endDateInput.value;
+            if (yearInput) formData.year = parseInt(yearInput.value);
+        }
+
         try {
-            const url = ideaId 
-                ? `/planning/api/calendar/ideas/${ideaId}`
-                : '/planning/api/calendar/ideas/add';
-            const method = ideaId ? 'PUT' : 'POST';
+            // If we're converting from event to idea, always create new (ideaId will be event ID)
+            // If ideaId exists and it's actually an idea (not event), update it
+            // Otherwise create new
+            const shouldCreate = !ideaId || (this.currentEventId && ideaId == this.currentEventId);
+            
+            const url = shouldCreate 
+                ? '/planning/api/calendar/ideas/add'
+                : `/planning/api/calendar/ideas/${ideaId}`;
+            const method = shouldCreate ? 'POST' : 'PUT';
 
             const response = await fetch(url, {
                 method,

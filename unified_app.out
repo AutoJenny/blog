@@ -7582,3 +7582,66 @@ LINE 1: ...equency = $11, evergreen_notes = $12, tags = $13, sources = ...
 2025-10-31 12:54:51,086 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
 2025-10-31 12:54:51,093 - werkzeug - WARNING -  * Debugger is active!
 2025-10-31 12:54:51,104 - werkzeug - INFO -  * Debugger PIN: 452-628-635
+2025-10-31 12:55:07,985 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_api_calendar.py', reloading
+2025-10-31 12:55:08,177 - werkzeug - INFO -  * Restarting with stat
+2025-10-31 12:55:09,074 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-10-31 12:55:09,080 - werkzeug - WARNING -  * Debugger is active!
+2025-10-31 12:55:09,091 - werkzeug - INFO -  * Debugger PIN: 452-628-635
+2025-10-31 12:58:39,802 - config.database - INFO - Database connection established
+2025-10-31 12:58:39,817 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 12:58:39] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-10-31 13:02:39,748 - config.database - INFO - Database connection established
+2025-10-31 13:02:39,761 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:02:39] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-10-31 13:03:57,702 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:03:57] "GET /planning/posts/0/calendar/week-view HTTP/1.1" 200 -
+2025-10-31 13:03:57,724 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:03:57] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-10-31 13:03:57,725 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:03:57] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-31 13:03:57,725 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:03:57] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-10-31 13:03:57,725 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:03:57] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-10-31 13:03:57,726 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:03:57] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-10-31 13:03:57,726 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:03:57] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-10-31 13:03:57,728 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:03:57] "GET /static/css/planning/idea-modal.css HTTP/1.1" 200 -
+2025-10-31 13:03:57,728 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:03:57] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-10-31 13:03:57,730 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:03:57] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-31 13:03:57,730 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:03:57] "GET /static/js/planning/calendar-week-view.js HTTP/1.1" 200 -
+2025-10-31 13:03:57,731 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:03:57] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-31 13:03:57,732 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:03:57] "GET /static/js/planning/idea-modal.js HTTP/1.1" 200 -
+2025-10-31 13:03:57,732 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:03:57] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-31 13:03:57,733 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:03:57] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-10-31 13:03:57,734 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:03:57] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-31 13:03:57,752 - config.database - INFO - Database connection established
+2025-10-31 13:03:57,754 - config.database - INFO - Database connection established
+2025-10-31 13:03:57,754 - config.database - INFO - Database connection established
+2025-10-31 13:03:57,754 - config.database - INFO - Database connection established
+2025-10-31 13:03:57,756 - config.database - INFO - Database connection established
+2025-10-31 13:03:57,757 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:03:57] "GET /planning/api/calendar/events/2025/44 HTTP/1.1" 200 -
+2025-10-31 13:03:57,758 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:03:57] "GET /planning/api/calendar/categories HTTP/1.1" 200 -
+2025-10-31 13:03:57,758 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:03:57] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 13:03:57,761 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:03:57] "GET /planning/api/calendar/schedule/2025/44 HTTP/1.1" 200 -
+2025-10-31 13:03:57,766 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:03:57] "GET /planning/api/calendar/ideas/week/44 HTTP/1.1" 200 -
+2025-10-31 13:04:09,534 - config.database - INFO - Database connection established
+2025-10-31 13:04:09,544 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:04:09] "[33mPUT /planning/api/calendar/ideas/7 HTTP/1.1[0m" 404 -
+2025-10-31 13:05:13,224 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:05:13] "GET /planning/posts/0/calendar/week-view HTTP/1.1" 200 -
+2025-10-31 13:05:13,248 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:05:13] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-10-31 13:05:13,255 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:05:13] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-10-31 13:05:13,255 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:05:13] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-31 13:05:13,256 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:05:13] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-31 13:05:13,256 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:05:13] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-10-31 13:05:13,257 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:05:13] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-10-31 13:05:13,259 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:05:13] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-10-31 13:05:13,260 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:05:13] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-10-31 13:05:13,263 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:05:13] "[36mGET /static/css/planning/idea-modal.css HTTP/1.1[0m" 304 -
+2025-10-31 13:05:13,266 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:05:13] "[36mGET /static/js/planning/calendar-week-view.js HTTP/1.1[0m" 304 -
+2025-10-31 13:05:13,268 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:05:13] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-31 13:05:13,269 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:05:13] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-31 13:05:13,271 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:05:13] "[36mGET /static/js/planning/idea-modal.js HTTP/1.1[0m" 304 -
+2025-10-31 13:05:13,271 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:05:13] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-31 13:05:13,272 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:05:13] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-10-31 13:05:13,291 - config.database - INFO - Database connection established
+2025-10-31 13:05:13,291 - config.database - INFO - Database connection established
+2025-10-31 13:05:13,292 - config.database - INFO - Database connection established
+2025-10-31 13:05:13,292 - config.database - INFO - Database connection established
+2025-10-31 13:05:13,294 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:05:13] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 13:05:13,294 - config.database - INFO - Database connection established
+2025-10-31 13:05:13,296 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:05:13] "GET /planning/api/calendar/categories HTTP/1.1" 200 -
+2025-10-31 13:05:13,297 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:05:13] "GET /planning/api/calendar/events/2025/44 HTTP/1.1" 200 -
+2025-10-31 13:05:13,298 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:05:13] "GET /planning/api/calendar/schedule/2025/44 HTTP/1.1" 200 -
+2025-10-31 13:05:13,306 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 13:05:13] "GET /planning/api/calendar/ideas/week/44 HTTP/1.1" 200 -
