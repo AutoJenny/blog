@@ -4643,3 +4643,72 @@ psycopg.ProgrammingError: cannot adapt type 'dict' using placeholder '%s' (forma
 2025-10-31 09:42:38,726 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:42:38] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
 2025-10-31 09:42:38,726 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:42:38] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
 2025-10-31 09:42:38,726 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:42:38] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-31 09:42:52,601 - config.database - INFO - Database connection established
+2025-10-31 09:42:52,635 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:42:52] "GET /posts HTTP/1.1" 200 -
+2025-10-31 09:42:52,686 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:42:52] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-10-31 09:42:52,689 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:42:52] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-10-31 09:42:52,690 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:42:52] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-31 09:42:52,690 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:42:52] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-10-31 09:42:52,691 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:42:52] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-31 09:42:52,694 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:42:52] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-31 09:42:52,695 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:42:52] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-31 09:42:52,696 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:42:52] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-31 09:43:01,103 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/newsletter.py', reloading
+2025-10-31 09:43:01,324 - werkzeug - INFO -  * Restarting with stat
+2025-10-31 09:43:02,341 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-10-31 09:43:02,348 - werkzeug - WARNING -  * Debugger is active!
+2025-10-31 09:43:02,361 - werkzeug - INFO -  * Debugger PIN: 452-628-635
+2025-10-31 09:43:09,648 - config.database - INFO - Database connection established
+2025-10-31 09:43:09,663 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:09] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-10-31 09:43:26,905 - config.database - INFO - Database connection established
+2025-10-31 09:43:26,973 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:26] "GET /posts HTTP/1.1" 200 -
+2025-10-31 09:43:27,027 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:27] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-10-31 09:43:27,027 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:27] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-31 09:43:27,030 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:27] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-10-31 09:43:27,031 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:27] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-31 09:43:27,031 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:27] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-31 09:43:27,031 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:27] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-31 09:43:27,032 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:27] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-10-31 09:43:27,032 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:27] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-31 09:43:30,907 - config.database - INFO - Database connection established
+2025-10-31 09:43:30,912 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:30] "[32mGET /workflow/ HTTP/1.1[0m" 302 -
+2025-10-31 09:43:30,933 - config.database - INFO - Database connection established
+2025-10-31 09:43:30,949 - config.database - INFO - Database connection established
+2025-10-31 09:43:30,963 - config.database - INFO - Database connection established
+2025-10-31 09:43:30,974 - config.database - INFO - Database connection established
+2025-10-31 09:43:31,030 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "GET /workflow/posts/78/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-10-31 09:43:31,070 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-31 09:43:31,073 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-10-31 09:43:31,073 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-10-31 09:43:31,074 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-31 09:43:31,074 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "[36mGET /static/workflow_nav/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-31 09:43:31,097 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "GET /llm-actions/?stage=planning&substage=idea&step=initial_concept&post_id=78&step_id=41&v=5715917 HTTP/1.1" 200 -
+2025-10-31 09:43:31,109 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "GET /static/css/llm-actions.css HTTP/1.1" 200 -
+2025-10-31 09:43:31,112 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "[36mGET /static/js/prompt-manager.js HTTP/1.1[0m" 304 -
+2025-10-31 09:43:31,113 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "[36mGET /static/js/config-manager.js HTTP/1.1[0m" 304 -
+2025-10-31 09:43:31,114 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "[36mGET /static/js/logger.js HTTP/1.1[0m" 304 -
+2025-10-31 09:43:31,114 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "[36mGET /static/js/message-manager-core.js HTTP/1.1[0m" 304 -
+2025-10-31 09:43:31,114 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "[36mGET /static/js/message-manager-ui.js HTTP/1.1[0m" 304 -
+2025-10-31 09:43:31,114 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "[36mGET /static/js/ui-config.js HTTP/1.1[0m" 304 -
+2025-10-31 09:43:31,115 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "[36mGET /static/js/message-manager-preview.js HTTP/1.1[0m" 304 -
+2025-10-31 09:43:31,116 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "[36mGET /static/js/message-manager-storage.js HTTP/1.1[0m" 304 -
+2025-10-31 09:43:31,117 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "[36mGET /static/js/field-selector.js HTTP/1.1[0m" 304 -
+2025-10-31 09:43:31,117 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "[36mGET /static/js/debug-modules.js HTTP/1.1[0m" 304 -
+2025-10-31 09:43:31,118 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "[36mGET /static/js/accordion-manager.js HTTP/1.1[0m" 304 -
+2025-10-31 09:43:31,119 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "[36mGET /static/js/message-manager-elements.js HTTP/1.1[0m" 304 -
+2025-10-31 09:43:31,119 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "[36mGET /static/js/llm-actions.js HTTP/1.1[0m" 304 -
+2025-10-31 09:43:31,120 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "[36mGET /static/js/llm-config-manager.js HTTP/1.1[0m" 304 -
+2025-10-31 09:43:31,243 - config.database - INFO - Database connection established
+2025-10-31 09:43:31,247 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "GET /llm-actions/api/step-config/planning/idea/initial_concept HTTP/1.1" 200 -
+2025-10-31 09:43:31,253 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "[33mGET /api/llm/actions HTTP/1.1[0m" 404 -
+2025-10-31 09:43:31,254 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:43:31] "[33mGET /api/llm/system-prompts HTTP/1.1[0m" 404 -
+2025-10-31 09:45:28,730 - config.database - INFO - Database connection established
+2025-10-31 09:45:28,745 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:45:28] "GET /posts HTTP/1.1" 200 -
+2025-10-31 09:45:28,795 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:45:28] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-10-31 09:45:28,799 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:45:28] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-31 09:45:28,800 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:45:28] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-31 09:45:28,803 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:45:28] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-10-31 09:45:28,805 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:45:28] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-10-31 09:45:28,806 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:45:28] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-31 09:45:28,809 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:45:28] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-31 09:45:28,810 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 09:45:28] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
