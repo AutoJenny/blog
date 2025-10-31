@@ -83,14 +83,16 @@ async function loadWeek(year, weekNumber) {
   const ideasPromise = fetchJSON(`/planning/api/calendar/ideas/week/${weekNumber}`); // week-only
   const eventsPromise = fetchJSON(`/planning/api/calendar/events/${year}/${weekNumber}`);
   const schedulePromise = fetchJSON(`/planning/api/calendar/schedule/${year}/${weekNumber}`);
-  const syndicationPromise = fetchJSON(`/launchpad/api/syndication/schedules?platform=facebook&content_type=product`);
+  // Fetch both product and blog_post syndication schedules
+  const productSyndicationPromise = fetchJSON(`/launchpad/api/syndication/schedules?platform=facebook&content_type=product`);
+  const blogPostSyndicationPromise = fetchJSON(`/launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post`);
 
   let ideas = [];
   let events = [];
   let schedule = [];
   let syndication = [];
   try {
-    const [ideasRes, eventsRes, scheduleRes, syndicationRes] = await Promise.allSettled([ideasPromise, eventsPromise, schedulePromise, syndicationPromise]);
+    const [ideasRes, eventsRes, scheduleRes, productSyndicationRes, blogPostSyndicationRes] = await Promise.allSettled([ideasPromise, eventsPromise, schedulePromise, productSyndicationPromise, blogPostSyndicationPromise]);
     if (ideasRes.status === 'fulfilled') {
       const ideasData = ideasRes.value;
       ideas = Array.isArray(ideasData) ? ideasData : (ideasData?.ideas || []);
@@ -103,7 +105,10 @@ async function loadWeek(year, weekNumber) {
       const scheduleData = scheduleRes.value;
       schedule = Array.isArray(scheduleData) ? scheduleData : (scheduleData?.schedule || []);
     }
-    if (syndicationRes.status === 'fulfilled') syndication = (syndicationRes.value.schedules || []).filter(s => s && s.is_active !== false);
+    // Combine product and blog_post syndication schedules
+    const productSchedules = productSyndicationRes.status === 'fulfilled' ? (productSyndicationRes.value.schedules || []) : [];
+    const blogPostSchedules = blogPostSyndicationRes.status === 'fulfilled' ? (blogPostSyndicationRes.value.schedules || []) : [];
+    syndication = [...productSchedules, ...blogPostSchedules].filter(s => s && s.is_active !== false);
   } catch (e) {
     console.error('Error loading week data:', e);
     // Ignore; page still usable
@@ -226,7 +231,8 @@ async function loadWeek(year, weekNumber) {
       const timeDisplay = toDisplayTime(s.time);
       days.forEach((d) => {
         const target = document.getElementById(`syndication-row-day-${Math.min(Math.max(d, 1), 7)}`);
-        const item = { channel: s.platform || 'Facebook', operation: s.content_type === 'product' ? 'Product' : (s.content_type || ''), time_display: timeDisplay, _syndication: true };
+        const operation = s.content_type === 'product' ? 'Product' : (s.content_type === 'blog_post' ? 'Blog' : (s.content_type || ''));
+        const item = { channel: s.platform || 'Facebook', operation: operation, time_display: timeDisplay, name: s.name || '', _syndication: true };
         renderItems(target, [item], 'scheduled');
       });
     });

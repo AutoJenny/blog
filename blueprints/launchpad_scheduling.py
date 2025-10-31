@@ -105,9 +105,20 @@ def get_schedules():
                 SELECT column_name FROM information_schema.columns
                 WHERE table_name = 'daily_posts_schedule'
             """)
-            cols = {row['column_name'] for row in cursor.fetchall()}
+            cols_result = cursor.fetchall()
+            cols = {row['column_name'] for row in cols_result}
+            
+            logger.debug(f"Found columns in daily_posts_schedule: {cols}")
 
-            query = "SELECT * FROM daily_posts_schedule WHERE 1=1"
+            # Build SELECT with explicit columns
+            # Always include platform and content_type - they exist in the schema
+            select_cols = ['id', 'name', 'time', 'timezone', 'days', 'is_active', 'created_at', 'updated_at', 'platform', 'content_type']
+            if 'page_id' in cols:
+                select_cols.append('page_id')
+            if 'page_name' in cols:
+                select_cols.append('page_name')
+            
+            query = f"SELECT {', '.join(select_cols)} FROM daily_posts_schedule WHERE 1=1"
             params = []
 
             # Only show active schedules
@@ -124,12 +135,38 @@ def get_schedules():
 
             query += " ORDER BY time ASC"
 
+            logger.info(f"Executing query: {query}")
+            logger.info(f"With params: {params}")
             cursor.execute(query, params)
             schedules = cursor.fetchall()
             
+            logger.info(f"Found {len(schedules)} schedules")
+            if schedules:
+                logger.info(f"First schedule keys: {list(schedules[0].keys())}")
+                logger.info(f"First schedule platform: {schedules[0].get('platform')}")
+                logger.info(f"First schedule content_type: {schedules[0].get('content_type')}")
+            
+            # Convert to list of dicts and ensure all fields are included
+            schedules_list = []
+            for sched in schedules:
+                sched_dict = dict(sched)  # Ensure it's a dict
+                # Explicitly check and add platform/content_type
+                if 'platform' not in sched_dict or sched_dict.get('platform') is None:
+                    # Try to get it from the raw row
+                    platform_val = getattr(sched, 'platform', None) if hasattr(sched, 'platform') else None
+                    if platform_val is None:
+                        platform_val = sched.get('platform') if isinstance(sched, dict) else None
+                    sched_dict['platform'] = platform_val
+                if 'content_type' not in sched_dict or sched_dict.get('content_type') is None:
+                    content_type_val = getattr(sched, 'content_type', None) if hasattr(sched, 'content_type') else None
+                    if content_type_val is None:
+                        content_type_val = sched.get('content_type') if isinstance(sched, dict) else None
+                    sched_dict['content_type'] = content_type_val
+                schedules_list.append(sched_dict)
+            
             return jsonify({
                 'success': True,
-                'schedules': schedules
+                'schedules': schedules_list
             })
     except Exception as e:
         logger.error(f"Error getting schedules: {e}")

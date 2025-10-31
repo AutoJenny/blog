@@ -34,34 +34,70 @@ Object.assign(AIContentGenerationManager.prototype, {
     
            // Save generated content to database
            async saveGeneratedContent(content, contentType) {
-               if (!this.selectedData) return;
+               // Check if we're working with a blog post or product
+               const hasBlogPost = window.blogPostSelectionManager && window.blogPostSelectionManager.selectedPost;
+               const hasProduct = window.itemSelectionManager && window.itemSelectionManager.selectedProduct;
+               
+               if (!hasBlogPost && !hasProduct) return;
                
                try {
-                   const isProduct = this.processId === 6;
-                   const requestBody = {
-                       content_type: isProduct ? 'product' : 'blog_post',
-                       content: content
-                   };
+                   let response;
                    
-                   if (isProduct) {
-                       // For products, use product_id
-                       requestBody.product_id = this.selectedData.id;
+                   if (hasBlogPost) {
+                       // Save blog post content
+                       const postId = window.blogPostSelectionManager.selectedPost.id;
+                       response = await fetch('/launchpad/api/syndication/save-blog-content', {
+                           method: 'POST',
+                           headers: {
+                               'Content-Type': 'application/json',
+                           },
+                           body: JSON.stringify({
+                               post_id: postId,
+                               content_type: 'blog_post',
+                               content: content
+                           })
+                       });
+                   } else if (hasProduct) {
+                       // Save product content (existing logic)
+                       const requestBody = {
+                           product_id: window.itemSelectionManager.selectedProduct.id,
+                           content_type: 'product',
+                           content: content
+                       };
+                       response = await fetch('/launchpad/api/syndication/save-generated-content', {
+                           method: 'POST',
+                           headers: {
+                               'Content-Type': 'application/json',
+                           },
+                           body: JSON.stringify(requestBody)
+                       });
                    } else {
-                       // For blog sections, use section_id and include image data
-                       requestBody.section_id = this.selectedData.id;
-                       requestBody.section_image_filename = this.selectedData.section_image_filename;
-                       requestBody.section_image_url = this.selectedData.section_image_url;
-                       requestBody.section_title = this.selectedData.section_title;
-                       requestBody.post_title = this.selectedData.post_title;
+                       // Legacy section-based blog post handling
+                       if (!this.selectedData) return;
+                       const isProduct = this.processId === 6;
+                       const requestBody = {
+                           content_type: isProduct ? 'product' : 'blog_post',
+                           content: content
+                       };
+                       
+                       if (isProduct) {
+                           requestBody.product_id = this.selectedData.id;
+                       } else {
+                           requestBody.section_id = this.selectedData.id;
+                           requestBody.section_image_filename = this.selectedData.section_image_filename;
+                           requestBody.section_image_url = this.selectedData.section_image_url;
+                           requestBody.section_title = this.selectedData.section_title;
+                           requestBody.post_title = this.selectedData.post_title;
+                       }
+                       
+                       response = await fetch('/launchpad/api/syndication/save-generated-content', {
+                           method: 'POST',
+                           headers: {
+                               'Content-Type': 'application/json',
+                           },
+                           body: JSON.stringify(requestBody)
+                       });
                    }
-                   
-                   const response = await fetch('/launchpad/api/syndication/save-generated-content', {
-                       method: 'POST',
-                       headers: {
-                           'Content-Type': 'application/json',
-                       },
-                       body: JSON.stringify(requestBody)
-                   });
                    
                    const data = await response.json();
                    if (data.success) {
@@ -76,6 +112,36 @@ Object.assign(AIContentGenerationManager.prototype, {
     
     // Load existing generated content for the selected item
     async loadExistingContent() {
+        // Check if we're working with a blog post
+        const hasBlogPost = window.blogPostSelectionManager && window.blogPostSelectionManager.selectedPost;
+        
+        if (hasBlogPost) {
+            // Use blog post API
+            const postId = window.blogPostSelectionManager.selectedPost.id;
+            try {
+                const response = await fetch(`/launchpad/api/syndication/get-blog-content/${postId}`);
+                const data = await response.json();
+                
+                console.log('Load existing blog content response:', data);
+                
+                if (data.success && data.content) {
+                    this.generatedContent = data.content;
+                    this.displayGeneratedContent();
+                    this.enableContentActions();
+                    this.updateAIStatusHeader();
+                    console.log('Loaded existing blog content and updated header');
+                } else {
+                    this.generatedContent = '';
+                    this.updateAIStatusHeader();
+                    console.log('No existing blog content found');
+                }
+            } catch (error) {
+                console.error('Error loading existing blog content:', error);
+            }
+            return;
+        }
+        
+        // Legacy handling for products/sections
         if (!this.selectedData) {
             console.log('No selected data, skipping content load');
             return;
@@ -96,11 +162,11 @@ Object.assign(AIContentGenerationManager.prototype, {
                 this.generatedContent = data.content;
                 this.displayGeneratedContent();
                 this.enableContentActions();
-                this.updateAIStatusHeader(); // Update the accordion header
+                this.updateAIStatusHeader();
                 console.log('Loaded existing content and updated header');
             } else {
-                this.generatedContent = ''; // Clear any existing content
-                this.updateAIStatusHeader(); // Update header to show "Needs generation"
+                this.generatedContent = '';
+                this.updateAIStatusHeader();
                 console.log('No existing content found');
             }
         } catch (error) {

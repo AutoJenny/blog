@@ -1,0 +1,65 @@
+<!-- Blog Post Selection Section -->
+<div class="section-card" data-accordion="blog-post-selection">
+    <div class="section-title with-right-content" onclick="toggleAccordion('blog-post-selection')">
+        <div class="section-title-left">
+            <i class="fas fa-chevron-right accordion-chevron" id="blog-post-selection-chevron"></i>
+            <i class="fas fa-newspaper"></i>
+            Blog Post Selection
+        </div>
+        <div class="section-title-right" id="selected-post-display" style="font-size: 0.9rem; color: #94a3b8;">
+            No post selected
+        </div>
+    </div>
+    <div class="section-content" id="blog-post-selection-content">
+        <!-- Post Selection -->
+        <div class="mb-4">
+            <label for="postSelector" class="form-label text-white">Choose a published post:</label>
+            <select class="form-select bg-dark text-white border-secondary" id="postSelector">
+                <option value="">Loading posts...</option>
+            </select>
+            <small class="text-muted d-block mt-2">
+                <i class="fas fa-info-circle"></i>
+                Only posts with published URLs are shown
+            </small>
+        </div>
+        
+        <!-- Selected Post Details -->
+        <div id="postDetails" class="d-none">
+            <hr class="border-secondary">
+            <h6 class="text-info mb-3">Post Details</h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Title:</strong> <span id="postTitle" class="text-white"></span></p>
+                    <p><strong>Subtitle:</strong> <span id="postSubtitle" class="text-white"></span></p>
+                    <p><strong>Created Date:</strong> <span id="postCreatedAt" class="text-white"></span></p>
+                    <p><strong>Last Updated:</strong> <span id="postUpdatedAt" class="text-white"></span></p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Post ID:</strong> <span id="postId" class="text-white"></span></p>
+                    <p><strong>Status:</strong> <span id="postStatus" class="text-white"></span></p>
+                    <p><strong>Published URL:</strong> <br>
+                        <a id="postUrl" href="#" target="_blank" class="text-primary">
+                            <i class="fas fa-external-link-alt"></i>
+                            <span id="postUrlText">-</span>
+                        </a>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="mt-3" id="postSummary" style="display: none;">
+                <hr class="border-secondary">
+                <h6 class="text-info mb-2">Summary</h6>
+                <p id="postSummaryText" class="text-white" style="line-height: 1.6;"></p>
+            </div>
+        </div>
+        
+        <!-- Selection Status -->
+        <div id="selectionStatus" class="mt-3 d-none">
+            <div class="alert alert-success" role="alert">
+                <i class="fas fa-check-circle"></i>
+                Post selected and ready for content generation
+            </div>
+        </div>
+    </div>
+</div>
+

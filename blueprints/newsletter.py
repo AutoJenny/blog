@@ -33,6 +33,17 @@ from newsletter.services.qa_service import run_pre_send_checks
 from newsletter.services.approval_service import approve_issue, send_issue
 from newsletter.services.block_editor_service import get_suggestions, apply_suggestion, save_override, regenerate_text
 from newsletter.jobs.weekly_autodraft import run as run_autodraft
+from newsletter.db.queries_source_management import (
+    list_all_sources,
+    get_source,
+    create_source,
+    update_source,
+    delete_source,
+    get_cache_status,
+    get_item_stats,
+)
+from newsletter.db.queries_sources import get_cached_items
+from newsletter.jobs.prefetch_sources import run as run_prefetch
 
 bp = Blueprint('newsletter', __name__)
 
@@ -396,4 +407,203 @@ def preview_block(issue_id: int, block_id: int):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
+# Source Management Routes
+
+@bp.route('/newsletter/sources')
+def sources_management():
+    """Source aggregation management page."""
+    sources = list_all_sources()
+    cache_status = get_cache_status()
+    item_stats = get_item_stats()
+    
+    # Get cached items for preview (recent 20)
+    recent_items = get_cached_items(days_back=14, limit=20)
+    
+    return render_template(
+        'newsletter/sources.html',
+        sources=sources,
+        cache_status=cache_status,
+        item_stats=item_stats,
+        recent_items=recent_items,
+    )
+
+
+@bp.route('/newsletter/sources/add', methods=['POST'])
+def add_source():
+    """Add a new source."""
+    name = request.form.get('name', '').strip()
+    base_url = request.form.get('base_url', '').strip()
+    source_type = request.form.get('type', 'rss').strip()
+    enabled = request.form.get('enabled', 'off') == 'on'
+    api_key_ref = request.form.get('api_key_ref', '').strip() or None
+    
+    if not name or not base_url:
+        return redirect(url_for('newsletter.sources_management')), 302
+    
+    create_source(name=name, base_url=base_url, type=source_type, enabled=enabled, api_key_ref=api_key_ref)
+    return redirect(url_for('newsletter.sources_management'))
+
+
+@bp.route('/newsletter/sources/<int:source_id>/edit', methods=['POST'])
+def edit_source(source_id: int):
+    """Update an existing source."""
+    name = request.form.get('name', '').strip()
+    base_url = request.form.get('base_url', '').strip()
+    source_type = request.form.get('type', 'rss').strip()
+    enabled = request.form.get('enabled', 'off') == 'on'
+    api_key_ref = request.form.get('api_key_ref', '').strip() or None
+    
+    updates = {}
+    if name:
+        updates['name'] = name
+    if base_url:
+        updates['base_url'] = base_url
+    if source_type:
+        updates['type'] = source_type
+    updates['enabled'] = enabled
+    if api_key_ref is not None:
+        updates['api_key_ref'] = api_key_ref
+    
+    update_source(source_id, **updates)
+    return redirect(url_for('newsletter.sources_management'))
+
+
+@bp.route('/newsletter/sources/<int:source_id>/delete', methods=['POST'])
+def delete_source_route(source_id: int):
+    """Delete a source."""
+    delete_source(source_id)
+    return redirect(url_for('newsletter.sources_management'))
+
+
+@bp.route('/newsletter/sources/<int:source_id>/toggle', methods=['POST'])
+def toggle_source(source_id: int):
+    """Toggle source enabled/disabled."""
+    source = get_source(source_id)
+    if source:
+        update_source(source_id, enabled=not source.get('enabled', False))
+    return redirect(url_for('newsletter.sources_management'))
+
+
+@bp.route('/newsletter/sources/fetch', methods=['POST'])
+def trigger_fetch():
+    """Manually trigger source prefetch job."""
+    result = run_prefetch()
+    # Could show success/error message, but for now just redirect
+    return redirect(url_for('newsletter.sources_management'))
+
+
+@bp.route('/newsletter/sources/<int:source_id>/test', methods=['GET'])
+def test_source(source_id: int):
+    """Test a source by fetching and returning sample items."""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        source = get_source(source_id)
+        if not source:
+            logger.warning(f"Source test: source {source_id} not found")
+            return jsonify({'success': False, 'error': 'Source not found'}), 404
+        
+        if not source.get('enabled'):
+            logger.info(f"Source test: {source.get('name')} is disabled")
+            return jsonify({'success': False, 'error': 'Source is disabled. Enable it first to test.'}), 400
+        
+        # Use manager to create adapter and fetch
+        from newsletter.sources.manager import create_adapter_from_source
+        logger.info(f"Testing source: {source.get('name')} ({source.get('type')}) - {source.get('base_url')}")
+        
+        adapter = create_adapter_from_source(source)
+        
+        if not adapter:
+            error_msg = f"Could not create adapter for type: {source.get('type')}. Supported types: rss, reddit, html, event, museum"
+            logger.error(f"Source test: {error_msg}")
+            return jsonify({'success': False, 'error': error_msg}), 400
+        
+        # Log adapter category assignment for debugging
+        if hasattr(adapter, 'category'):
+            logger.debug(f"Adapter created with category: {adapter.category}")
+        
+        # Fetch items
+        logger.info(f"Fetching items from {source.get('name')}...")
+        items = adapter.fetch_and_normalize()
+        logger.info(f"Fetched {len(items)} items from {source.get('name')}")
+        
+        if not items:
+            return jsonify({
+                'success': True,
+                'items_count': 0,
+                'items': [],
+                'warning': 'No items found. The source may be empty, require authentication, or the URL may be incorrect.',
+            })
+        
+        # Limit to first 10 for preview
+        preview_items = items[:10]
+        
+        # Group by category for debugging
+        categories = {}
+        for item in items:
+            cat = item.get('category', 'other')
+            categories[cat] = categories.get(cat, 0) + 1
+        
+        return jsonify({
+            'success': True,
+            'items_count': len(items),
+            'categories': categories,
+            'items': [
+                {
+                    'title': item.get('title', ''),
+                    'url': item.get('url', ''),
+                    'category': item.get('category', 'other'),
+                    'source_name': item.get('source_name', ''),
+                    'published_at': item.get('published_at').isoformat() if item.get('published_at') else None,
+                    'event_date': item.get('event_date').isoformat() if item.get('event_date') else None,
+                }
+                for item in preview_items
+            ],
+        })
+    except Exception as e:
+        import traceback
+        error_msg = str(e)
+        logger.error(f"Source test failed for source {source_id}: {error_msg}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': error_msg,
+            'detail': f"Error type: {type(e).__name__}. Check server logs for full traceback.",
+        }), 500
+
+
+@bp.route('/newsletter/sources/items')
+def cached_items():
+    """Full cached items page with filters."""
+    # Get filter parameters
+    category_filter = request.args.get('category', '')
+    source_filter = request.args.get('source', '')
+    days_back = int(request.args.get('days', '14'))
+    
+    # Get items
+    items = get_cached_items(
+        category=category_filter if category_filter else None,
+        days_back=days_back,
+        limit=100
+    )
+    
+    # Filter by source if provided
+    if source_filter:
+        items = [item for item in items if item.get('source_name', '').lower() == source_filter.lower()]
+    
+    # Get unique categories and sources for filters
+    all_items = get_cached_items(days_back=30, limit=1000)
+    categories = sorted(set(item.get('category', 'other') for item in all_items if item.get('category')))
+    sources = sorted(set(item.get('source_name', '') for item in all_items if item.get('source_name')))
+    
+    return render_template(
+        'newsletter/cached_items.html',
+        items=items,
+        categories=categories,
+        sources=sources,
+        category_filter=category_filter,
+        source_filter=source_filter,
+        days_back=days_back,
+    )
 

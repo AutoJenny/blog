@@ -7,7 +7,7 @@ class IdeaModal {
     constructor() {
         this.currentIdeaId = null;
         this.currentEventId = null;
-        this.currentType = 'idea'; // 'idea' or 'event'
+        this.currentType = 'idea'; // 'theme', 'idea', or 'event'
         this.categories = [];
         this.init();
     }
@@ -15,7 +15,13 @@ class IdeaModal {
     switchType(type) {
         this.currentType = type;
         const title = document.getElementById('idea-modal-title');
-        title.textContent = type === 'idea' ? 'Manage Idea' : 'Manage Event';
+        if (type === 'theme') {
+            title.textContent = 'Manage Theme';
+        } else if (type === 'idea') {
+            title.textContent = 'Manage Idea';
+        } else {
+            title.textContent = 'Manage Event';
+        }
         
         // Show/hide fields based on type
         const weekGroup = document.querySelector('[for="idea-week-number"]')?.closest('.idea-form-group');
@@ -30,8 +36,8 @@ class IdeaModal {
             s.querySelector('#idea-add-source')
         );
         
-        if (type === 'idea') {
-            // Show idea-specific fields
+        if (type === 'theme' || type === 'idea') {
+            // Show idea/theme-specific fields (same fields for both)
             if (weekGroup) weekGroup.style.display = 'block';
             if (seasonalGroup) seasonalGroup.style.display = 'block';
             if (evergreenSection) evergreenSection.style.display = 'block';
@@ -69,19 +75,62 @@ class IdeaModal {
                     `;
                     newStartDateGroup.parentNode.insertBefore(newEndDateGroup, newStartDateGroup.nextSibling);
                     
+                    // Auto-update end date when start date changes (only if end date is empty)
+                    const startDateInput = newStartDateGroup.querySelector('#event-start-date');
+                    if (startDateInput) {
+                        startDateInput.addEventListener('change', (e) => {
+                            const endDateInput = document.getElementById('event-end-date');
+                            if (endDateInput && !endDateInput.value) {
+                                endDateInput.value = e.target.value;
+                            }
+                        });
+                    }
+                    
                     const newYearGroup = document.createElement('div');
                     newYearGroup.className = 'idea-form-group';
                     newYearGroup.id = 'event-year-group';
+                    // Build year dropdown: "Every year" first, then current year + next 10 years
+                    const currentYear = new Date().getFullYear();
+                    let yearOptions = '<option value="every_year">Every year</option>';
+                    for (let i = 0; i <= 10; i++) {
+                        const year = currentYear + i;
+                        yearOptions += `<option value="${year}" ${i === 0 ? 'selected' : ''}>${year}</option>`;
+                    }
                     newYearGroup.innerHTML = `
                         <label for="event-year" class="idea-label required">Year</label>
-                        <input type="number" id="event-year" name="year" class="idea-input" min="2020" max="2100" required />
+                        <select id="event-year" name="year" class="idea-select" required>
+                            ${yearOptions}
+                        </select>
                     `;
                     newEndDateGroup.parentNode.insertBefore(newYearGroup, newEndDateGroup.nextSibling);
+                    
+                    // Add advance notice field
+                    const newAdvanceNoticeGroup = document.createElement('div');
+                    newAdvanceNoticeGroup.className = 'idea-form-group';
+                    newAdvanceNoticeGroup.id = 'event-advance-notice-group';
+                    newAdvanceNoticeGroup.innerHTML = `
+                        <label for="event-advance-notice" class="idea-label">Advance Notice</label>
+                        <select id="event-advance-notice" name="advance_notice" class="idea-select">
+                            <option value="">No advance notice</option>
+                            <option value="1">1 week</option>
+                            <option value="2">2 weeks</option>
+                            <option value="4">4 weeks</option>
+                            <option value="8">8 weeks</option>
+                            <option value="12">12 weeks</option>
+                        </select>
+                        <small class="idea-help-text" style="display: block; margin-top: 0.25rem; font-size: 0.75rem; color: #94a3b8;">
+                            How far ahead to start promoting this event
+                        </small>
+                    `;
+                    newYearGroup.parentNode.insertBefore(newAdvanceNoticeGroup, newYearGroup.nextSibling);
                 }
             } else {
                 if (startDateGroup) startDateGroup.style.display = 'block';
                 if (endDateGroup) endDateGroup.style.display = 'block';
                 if (yearGroup) yearGroup.style.display = 'block';
+                // Show advance notice group if it exists
+                const advanceNoticeGroup = document.getElementById('event-advance-notice-group');
+                if (advanceNoticeGroup) advanceNoticeGroup.style.display = 'block';
             }
             
             // Hide idea-specific fields
@@ -116,7 +165,8 @@ class IdeaModal {
         // Add source button
         document.getElementById('idea-add-source')?.addEventListener('click', () => this.addSource());
 
-        // Type selector (Idea/Event) toggle
+        // Type selector (Theme/Idea/Event) toggle
+        document.getElementById('type-theme')?.addEventListener('change', () => this.switchType('theme'));
         document.getElementById('type-idea')?.addEventListener('change', () => this.switchType('idea'));
         document.getElementById('type-event')?.addEventListener('change', () => this.switchType('event'));
 
@@ -179,10 +229,12 @@ class IdeaModal {
             document.getElementById('type-idea').checked = false;
             await this.loadEvent(eventData);
         } else if (ideaId) {
-            // Load existing idea
+            // Load existing idea (will determine if it's theme or idea in loadIdea)
+            // Default to idea, but loadIdea will check item_classification
             this.currentType = 'idea';
             document.getElementById('type-idea').checked = true;
             document.getElementById('type-event').checked = false;
+            document.getElementById('type-theme').checked = false;
             await this.loadIdea(ideaId);
         } else {
             // New item - default to idea
@@ -195,6 +247,48 @@ class IdeaModal {
         // Apply type-specific field visibility
         this.switchType(this.currentType);
 
+        loading.style.display = 'none';
+        form.style.display = 'block';
+    }
+
+    openNew(type = 'idea', weekNumber = null) {
+        // Reset everything
+        this.resetForm();
+        
+        // Set the type
+        this.currentType = type;
+        this.currentIdeaId = null;
+        this.currentEventId = null;
+        
+        // Check the appropriate radio button
+        document.getElementById('type-theme').checked = (type === 'theme');
+        document.getElementById('type-idea').checked = (type === 'idea');
+        document.getElementById('type-event').checked = (type === 'event');
+        
+        // Apply type-specific field visibility
+        this.switchType(type);
+        
+        // Auto-fill week number if provided
+        if (weekNumber && type !== 'event') {
+            const weekInput = document.getElementById('idea-week-number');
+            if (weekInput) {
+                weekInput.value = weekNumber;
+            }
+        } else if (!weekNumber && type !== 'event') {
+            // Auto-fill with current week if not provided
+            const currentWeek = this.getISOWeekNumber(new Date());
+            const weekInput = document.getElementById('idea-week-number');
+            if (weekInput) {
+                weekInput.value = currentWeek;
+            }
+        }
+        
+        // Open the modal
+        const modal = document.getElementById('idea-modal');
+        const loading = document.getElementById('idea-modal-loading');
+        const form = document.getElementById('idea-modal-form');
+        
+        modal.style.display = 'flex';
         loading.style.display = 'none';
         form.style.display = 'block';
     }
@@ -236,19 +330,82 @@ class IdeaModal {
                     `;
                     startDateGroup.parentNode.insertBefore(endDateGroup, startDateGroup.nextSibling);
                     
+                    // Auto-update end date when start date changes (only if end date is empty)
+                    const startDateInput = startDateGroup.querySelector('#event-start-date');
+                    if (startDateInput) {
+                        startDateInput.addEventListener('change', (e) => {
+                            const endDateInput = document.getElementById('event-end-date');
+                            if (endDateInput && !endDateInput.value) {
+                                endDateInput.value = e.target.value;
+                            }
+                        });
+                    }
+                    
                     yearGroup = document.createElement('div');
                     yearGroup.className = 'idea-form-group';
                     yearGroup.id = 'event-year-group';
+                    // Build year dropdown: "Every year" first, then current year + next 10 years
+                    // Default to current year, or next year if start date is already past this year
+                    const today = new Date();
+                    const currentYear = today.getFullYear();
+                    let yearOptions = '<option value="every_year">Every year</option>';
+                    let defaultYear = currentYear;
+                    for (let i = 0; i <= 10; i++) {
+                        const year = currentYear + i;
+                        yearOptions += `<option value="${year}" ${i === 0 ? 'selected' : ''}>${year}</option>`;
+                    }
                     yearGroup.innerHTML = `
                         <label for="event-year" class="idea-label required">Year</label>
-                        <input type="number" id="event-year" name="year" class="idea-input" min="2020" max="2100" required />
+                        <select id="event-year" name="year" class="idea-select" required>
+                            ${yearOptions}
+                        </select>
                     `;
                     endDateGroup.parentNode.insertBefore(yearGroup, endDateGroup.nextSibling);
+                    
+                    // Update default year based on start date when it changes
+                    if (startDateInput) {
+                        startDateInput.addEventListener('change', (e) => {
+                            const yearSelect = document.getElementById('event-year');
+                            if (yearSelect && yearSelect.value === String(currentYear)) {
+                                const selectedDate = new Date(e.target.value);
+                                const selectedYear = selectedDate.getFullYear();
+                                if (selectedYear < currentYear || (selectedYear === currentYear && selectedDate < today)) {
+                                    // Date is in the past or already passed this year, default to next year
+                                    yearSelect.value = String(currentYear + 1);
+                                } else {
+                                    yearSelect.value = String(selectedYear);
+                                }
+                            }
+                        });
+                    }
+                    
+                    // Add advance notice field
+                    const newAdvanceNoticeGroup = document.createElement('div');
+                    newAdvanceNoticeGroup.className = 'idea-form-group';
+                    newAdvanceNoticeGroup.id = 'event-advance-notice-group';
+                    newAdvanceNoticeGroup.innerHTML = `
+                        <label for="event-advance-notice" class="idea-label">Advance Notice</label>
+                        <select id="event-advance-notice" name="advance_notice" class="idea-select">
+                            <option value="">No advance notice</option>
+                            <option value="1">1 week</option>
+                            <option value="2">2 weeks</option>
+                            <option value="4">4 weeks</option>
+                            <option value="8">8 weeks</option>
+                            <option value="12">12 weeks</option>
+                        </select>
+                        <small class="idea-help-text" style="display: block; margin-top: 0.25rem; font-size: 0.75rem; color: #94a3b8;">
+                            How far ahead to start promoting this event
+                        </small>
+                    `;
+                    yearGroup.parentNode.insertBefore(newAdvanceNoticeGroup, yearGroup.nextSibling);
                 }
             } else {
                 startDateGroup.style.display = 'block';
                 endDateGroup.style.display = 'block';
                 if (yearGroup) yearGroup.style.display = 'block';
+                // Show advance notice group if it exists
+                const advanceNoticeGroup = document.getElementById('event-advance-notice-group');
+                if (advanceNoticeGroup) advanceNoticeGroup.style.display = 'block';
             }
             
             // Populate form with ALL event data
@@ -270,7 +427,30 @@ class IdeaModal {
                 document.getElementById('event-end-date').value = endDate;
             }
             if (yearGroup) {
-                document.getElementById('event-year').value = eventData.year || new Date().getFullYear();
+                const yearSelect = document.getElementById('event-year');
+                if (yearSelect) {
+                    // Handle both number inputs (old) and select dropdowns (new)
+                    if (yearSelect.tagName === 'SELECT') {
+                        // It's a dropdown - set value to year or "every_year" if is_recurring
+                        const yearValue = eventData.is_recurring ? 'every_year' : (eventData.year || new Date().getFullYear());
+                        if (yearSelect.querySelector(`option[value="${yearValue}"]`)) {
+                            yearSelect.value = String(yearValue);
+                        } else {
+                            // Year not in dropdown, default to current year
+                            yearSelect.value = String(new Date().getFullYear());
+                        }
+                    } else {
+                        // Old number input (shouldn't happen, but handle it)
+                        yearSelect.value = eventData.year || new Date().getFullYear();
+                    }
+                }
+            }
+            
+            // Load advance notice
+            const advanceNoticeGroup = document.getElementById('event-advance-notice-group');
+            const advanceNoticeSelect = document.getElementById('event-advance-notice');
+            if (advanceNoticeSelect && eventData.advance_notice !== undefined && eventData.advance_notice !== null) {
+                advanceNoticeSelect.value = String(eventData.advance_notice);
             }
             
             // Load categories (events have categories too)
@@ -325,6 +505,19 @@ class IdeaModal {
 
             const data = await response.json();
             const idea = data.idea || data;
+
+            // Determine if it's a theme or regular idea
+            const classification = (idea.item_classification || 'idea').toLowerCase();
+            const isTheme = classification === 'theme';
+            
+            // Set the appropriate type
+            this.currentType = isTheme ? 'theme' : 'idea';
+            document.getElementById('type-theme').checked = isTheme;
+            document.getElementById('type-idea').checked = !isTheme;
+            document.getElementById('type-event').checked = false;
+            
+            // Update modal title and apply type switching
+            this.switchType(isTheme ? 'theme' : 'idea');
 
             // Populate form fields
             document.getElementById('idea-id').value = idea.id || '';
@@ -395,10 +588,14 @@ class IdeaModal {
         document.getElementById('idea-evergreen-notes-group').style.display = 'none';
         document.getElementById('idea-max-weeks-group').style.display = 'none';
         
-        // Reset modal title
+        // Reset type selector - default to idea
+        this.currentType = 'idea';
+        document.getElementById('type-idea').checked = true;
+        document.getElementById('type-theme').checked = false;
+        document.getElementById('type-event').checked = false;
         document.getElementById('idea-modal-title').textContent = 'Manage Idea';
         
-        // Auto-fill week number with current week
+        // Auto-fill week number with current week (for ideas/themes, not events)
         const currentWeek = this.getISOWeekNumber(new Date());
         const weekInput = document.getElementById('idea-week-number');
         if (weekInput) {
@@ -406,7 +603,7 @@ class IdeaModal {
             weekInput.removeAttribute('required'); // Remove required since we auto-fill
         }
         
-        // Show/hide fields based on type
+        // Show/hide fields based on default type (idea)
         const weekGroup = document.querySelector('[for="idea-week-number"]')?.closest('.idea-form-group');
         if (weekGroup) weekGroup.style.display = 'block';
         
@@ -589,10 +786,12 @@ class IdeaModal {
         const selectedCategories = Array.from(document.querySelectorAll('.idea-category-item input:checked'))
             .map(cb => parseInt(cb.value));
 
-        // Determine if this is an idea or event based on type selector
+        // Determine type based on type selector
+        const isTheme = document.getElementById('type-theme')?.checked || false;
         const isEvent = document.getElementById('type-event')?.checked || false;
+        const isIdea = document.getElementById('type-idea')?.checked || false;
         
-        // Get week number - default to current week if not set (for ideas)
+        // Get week number - default to current week if not set (for ideas/themes)
         let week_number = document.getElementById('idea-week-number').value;
         if (!week_number && !isEvent) {
             week_number = this.getISOWeekNumber(new Date());
@@ -606,26 +805,44 @@ class IdeaModal {
         };
 
         // Build form data with sanitization
-        const formData = {
-            idea_title: clean(document.getElementById('idea-title').value),
-            idea_description: clean(document.getElementById('idea-description').value),
-            week_number: week_number ? Math.max(1, Math.min(53, parseInt(week_number, 10) || 0)) : null,
-            content_type: clean(document.getElementById('idea-content-type').value),
-            seasonal_context: clean(document.getElementById('idea-seasonal-context').value),
-            priority: clean(document.getElementById('idea-priority').value) || 'random',
-            is_recurring: !!document.getElementById('idea-is-recurring').checked,
-            is_evergreen: !!document.getElementById('idea-is-evergreen').checked,
-            can_span_weeks: !!document.getElementById('idea-can-span-weeks').checked,
-            max_weeks: parseInt(document.getElementById('idea-max-weeks').value, 10) || 1,
-            tags: this.getTagsFromForm(),
-            sources: this.getSourcesFromForm(),
-            categories: selectedCategories
-        };
+        // For events, use event_title/event_description; for ideas/themes, use idea_title/idea_description
+        const titleField = isEvent ? 'event_title' : 'idea_title';
+        const descriptionField = isEvent ? 'event_description' : 'idea_description';
+        
+        const formData = {};
+        formData[titleField] = clean(document.getElementById('idea-title').value);
+        formData[descriptionField] = clean(document.getElementById('idea-description').value);
+        
+        // Only add idea/theme-specific fields if not an event
+        if (!isEvent) {
+            formData.week_number = week_number ? Math.max(1, Math.min(53, parseInt(week_number, 10) || 0)) : null;
+            formData.seasonal_context = clean(document.getElementById('idea-seasonal-context').value);
+            formData.is_evergreen = !!document.getElementById('idea-is-evergreen').checked;
+            formData.can_span_weeks = !!document.getElementById('idea-can-span-weeks').checked;
+            formData.max_weeks = parseInt(document.getElementById('idea-max-weeks').value, 10) || 1;
+            formData.sources = this.getSourcesFromForm();
+        }
+        
+        // Common fields
+        formData.content_type = clean(document.getElementById('idea-content-type').value);
+        formData.priority = clean(document.getElementById('idea-priority').value) || 'random';
+        formData.is_recurring = !!document.getElementById('idea-is-recurring').checked;
+        formData.tags = this.getTagsFromForm();
+        formData.categories = selectedCategories;
 
-        // Only include evergreen fields if is_evergreen
-        if (formData.is_evergreen) {
-            formData.evergreen_frequency = clean(document.getElementById('idea-evergreen-frequency').value);
-            formData.evergreen_notes = clean(document.getElementById('idea-evergreen-notes').value);
+        // Set item_classification for themes and ideas (only for ideas/themes, not events)
+        if (!isEvent) {
+            if (isTheme) {
+                formData.item_classification = 'theme';
+            } else if (isIdea) {
+                formData.item_classification = 'idea';
+            }
+            
+            // Only include evergreen fields if is_evergreen
+            if (formData.is_evergreen) {
+                formData.evergreen_frequency = clean(document.getElementById('idea-evergreen-frequency').value);
+                formData.evergreen_notes = clean(document.getElementById('idea-evergreen-notes').value);
+            }
         }
 
         // Add event-specific fields if it's an event
@@ -633,9 +850,32 @@ class IdeaModal {
             const startDateInput = document.getElementById('event-start-date');
             const endDateInput = document.getElementById('event-end-date');
             const yearInput = document.getElementById('event-year');
+            const advanceNoticeInput = document.getElementById('event-advance-notice');
+            
             if (startDateInput && clean(startDateInput.value)) formData.start_date = clean(startDateInput.value);
             if (endDateInput && clean(endDateInput.value)) formData.end_date = clean(endDateInput.value);
-            if (yearInput && yearInput.value) formData.year = parseInt(yearInput.value, 10) || null;
+            
+            // Handle year: "every_year" sets is_recurring=true, otherwise use the year value
+            if (yearInput && yearInput.value) {
+                if (yearInput.value === 'every_year') {
+                    formData.is_recurring = true;
+                    // For recurring events, we still need a year for the initial occurrence
+                    // Use the year from start_date or current year
+                    if (startDateInput && startDateInput.value) {
+                        const startDate = new Date(startDateInput.value);
+                        formData.year = startDate.getFullYear();
+                    } else {
+                        formData.year = new Date().getFullYear();
+                    }
+                } else {
+                    formData.year = parseInt(yearInput.value, 10) || null;
+                }
+            }
+            
+            // Handle advance notice
+            if (advanceNoticeInput && advanceNoticeInput.value) {
+                formData.advance_notice = parseInt(advanceNoticeInput.value, 10) || null;
+            }
         }
 
         try {
@@ -658,6 +898,17 @@ class IdeaModal {
                 // Use conversion endpoint to atomically convert event to idea
                 url = `/planning/api/calendar/events/${this.currentEventId}/convert-to-idea`;
                 method = 'POST';
+            } else if (isEvent) {
+                // Handle events separately
+                if (this.currentEventId && !ideaId) {
+                    // Updating an existing event (using event ID from currentEventId)
+                    url = `/planning/api/calendar/events/${this.currentEventId}`;
+                    method = 'PUT';
+                } else {
+                    // Creating a new event
+                    url = '/planning/api/calendar/events';
+                    method = 'POST';
+                }
             } else if (!ideaId) {
                 // Creating a new idea
                 url = '/planning/api/calendar/ideas';

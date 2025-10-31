@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+
+{% block title %}Newsletter — Cached Items{% endblock %}
+
+{% block head %}
+<style>
+    .create-form {
+        background: #151a2e;
+        border: 1px solid #2d3246;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .create-form input, .create-form select {
+        background: #0f172a !important;
+        color: #e6e8ef !important;
+        border: 1px solid #2d3246 !important;
+        padding: 10px 14px !important;
+        border-radius: 6px !important;
+    }
+    .btn-primary { 
+        background:#4e6bff; 
+        color:#fff; 
+        border:none; 
+        padding:10px 14px; 
+        border-radius:8px; 
+        font-weight:700; 
+        text-decoration:none; 
+        display:inline-block;
+        cursor: pointer;
+    }
+    .btn-primary:hover { background:#3d5ae5; }
+    .btn-secondary {
+        background: transparent;
+        color: #a5b4fc;
+        border: 1px solid #2d3246;
+        padding: 8px 14px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 13px;
+        text-decoration: none;
+        display: inline-block;
+        cursor: pointer;
+    }
+    .btn-secondary:hover {
+        background: #1b2138;
+        border-color: #3b82f6;
+    }
+    table.items-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    table.items-table thead th {
+        background: #1b2138;
+        color: #a5b4fc;
+        padding: 18px 28px;
+        text-align: left;
+        border: 1px solid #2d3246;
+        font-size: 13px;
+        font-weight: 800;
+    }
+    table.items-table tbody td {
+        background: #151a2e;
+        color: #e6e8ef;
+        padding: 16px 28px;
+        border: 1px solid #2d3246;
+        vertical-align: middle;
+    }
+    table.items-table tbody tr:hover td {
+        background: #181f36;
+    }
+    .score-high {
+        color: #6ee7b7;
+        font-weight: 700;
+    }
+    .score-medium {
+        color: #fcd34d;
+        font-weight: 700;
+    }
+    .score-low {
+        color: #9ca3af;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="mb-6 flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-white">
+                    <i class="fa-solid fa-box-archive"></i> Cached Items
+                </h1>
+                <p class="text-gray-400 mt-1">Browse and filter aggregated source items.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="/newsletter/sources" class="btn-secondary">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Sources
+                </a>
+            </div>
+        </div>
+
+        {# Filters #}
+        <div class="create-form">
+            <h3 class="text-white font-semibold mb-3" style="color: #a5b4fc; font-size: 16px;">
+                <i class="fa-solid fa-filter"></i> Filters
+            </h3>
+            <form method="get" action="/newsletter/sources/items" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label style="color: #a5b4fc; font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">Category</label>
+                    <select name="category" style="width: 100%;">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat }}" {% if category_filter == cat %}selected{% endif %}>
+                                {{ cat|capitalize }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label style="color: #a5b4fc; font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">Source</label>
+                    <select name="source" style="width: 100%;">
+                        <option value="">All Sources</option>
+                        {% for src in sources %}
+                            <option value="{{ src }}" {% if source_filter == src %}selected{% endif %}>
+                                {{ src }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label style="color: #a5b4fc; font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">Days Back</label>
+                    <select name="days" style="width: 100%;">
+                        <option value="7" {% if days_back == 7 %}selected{% endif %}>Last 7 days</option>
+                        <option value="14" {% if days_back == 14 %}selected{% endif %}>Last 14 days</option>
+                        <option value="30" {% if days_back == 30 %}selected{% endif %}>Last 30 days</option>
+                        <option value="60" {% if days_back == 60 %}selected{% endif %}>Last 60 days</option>
+                    </select>
+                </div>
+                <div style="display: flex; align-items: flex-end;">
+                    <button type="submit" class="btn-primary" style="width: 100%;">
+                        <i class="fa-solid fa-filter"></i> Apply Filters
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        {# Items Table #}
+        <div style="background: #151a2e; border: 1px solid #2d3246; border-radius: 8px; padding: 24px;">
+            <h2 class="text-xl font-bold text-white mb-4" style="color: #a5b4fc;">
+                <i class="fa-solid fa-list"></i> Cached Items ({{ items|length }})
+            </h2>
+            {% if items and items|length > 0 %}
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Source</th>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Freshness</th>
+                            <th>Signal</th>
+                            <th>Combined Score</th>
+                            <th>Date</th>
+                            <th>Location</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td style="color: #a5b4fc; font-weight: 600;">{{ item.source_name }}</td>
+                            <td style="font-weight: 600;">
+                                {% if item.url %}
+                                    <a href="{{ item.url }}" target="_blank" style="color: #7b8dff; text-decoration: none;" onmouseover="this.style.textDecoration='underline';" onmouseout="this.style.textDecoration='none';">
+                                        {{ item.title[:80] }}{% if item.title|length > 80 %}...{% endif %}
+                                    </a>
+                                {% else %}
+                                    {{ item.title[:80] }}{% if item.title|length > 80 %}...{% endif %}
+                                {% endif %}
+                            </td>
+                            <td style="color: #9ca3af; text-transform: capitalize;">{{ item.category or 'other' }}</td>
+                            <td style="color: #9ca3af; font-size: 12px;">
+                                <span class="{% if (item.freshness_score or 0) > 8 %}score-high{% elif (item.freshness_score or 0) > 4 %}score-medium{% else %}score-low{% endif %}">
+                                    {{ "%.2f"|format(item.freshness_score or 0) }}
+                                </span>
+                            </td>
+                            <td style="color: #9ca3af; font-size: 12px;">
+                                <span class="{% if (item.signal_score or 0) > 8 %}score-high{% elif (item.signal_score or 0) > 4 %}score-medium{% else %}score-low{% endif %}">
+                                    {{ "%.2f"|format(item.signal_score or 0) }}
+                                </span>
+                            </td>
+                            <td style="font-size: 14px;">
+                                <span class="{% if (item.combined_score or 0) > 15 %}score-high{% elif (item.combined_score or 0) > 8 %}score-medium{% else %}score-low{% endif %}">
+                                    {{ "%.2f"|format(item.combined_score or 0) }}
+                                </span>
+                            </td>
+                            <td style="color: #9ca3af; font-size: 12px;">
+                                {% if item.published_at %}
+                                    {{ item.published_at.strftime('%Y-%m-%d') if item.published_at else '—' }}
+                                {% elif item.event_date %}
+                                    {{ item.event_date.strftime('%Y-%m-%d') if item.event_date else '—' }}
+                                {% elif item.cached_at %}
+                                    {{ item.cached_at.strftime('%Y-%m-%d') if item.cached_at else '—' }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td style="color: #9ca3af; font-size: 12px;">
+                                {{ item.location or '—' }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div style="text-align: center; padding: 48px; color: #9ca3af;">
+                    <p style="font-size: 16px; margin-bottom: 12px;">No items found.</p>
+                    <p style="font-size: 14px;">Try adjusting your filters or run "Fetch Now" on the Sources page.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

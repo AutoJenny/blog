@@ -8,9 +8,12 @@ Object.assign(AIContentGenerationManager.prototype, {
     
     // Generate content using AI
     async generateContent() {
-        // Check if a product is selected
-        if (!window.itemSelectionManager || !window.itemSelectionManager.selectedProduct) {
-            alert('Please select a product first');
+        // Check if a product or blog post is selected
+        const hasProduct = window.itemSelectionManager && window.itemSelectionManager.selectedProduct;
+        const hasBlogPost = window.blogPostSelectionManager && window.blogPostSelectionManager.selectedPost;
+        
+        if (!hasProduct && !hasBlogPost) {
+            alert('Please select a product or blog post first');
             return;
         }
         
@@ -24,8 +27,11 @@ Object.assign(AIContentGenerationManager.prototype, {
             // Generate content using real AI
             await this.generateAIContent();
             
-            // Save generated content
-            await this.saveGeneratedContent(this.generatedContent, this.selectedContentType);
+            // Save generated content (determine content type based on what's selected)
+            const contentType = (window.blogPostSelectionManager && window.blogPostSelectionManager.selectedPost) 
+                ? 'blog_post' 
+                : (this.selectedContentType || 'product');
+            await this.saveGeneratedContent(this.generatedContent, contentType);
             
             // Update UI
             this.displayGeneratedContent();
@@ -45,25 +51,48 @@ Object.assign(AIContentGenerationManager.prototype, {
     
     // Generate content using real AI
     async generateAIContent() {
-        // Get the selected product ID from the item selection manager
-        if (!window.itemSelectionManager || !window.itemSelectionManager.selectedProduct) {
-            throw new Error('No product selected. Please select a product first.');
+        // Check if we're working with a product or blog post
+        const hasProduct = window.itemSelectionManager && window.itemSelectionManager.selectedProduct;
+        const hasBlogPost = window.blogPostSelectionManager && window.blogPostSelectionManager.selectedPost;
+        
+        if (!hasProduct && !hasBlogPost) {
+            throw new Error('No product or blog post selected. Please select one first.');
         }
         
-        const productId = window.itemSelectionManager.selectedProduct.id;
-        const contentType = this.selectedContentType || 'product';
-        
         try {
-            const response = await fetch('/launchpad/api/syndication/generate-social-content', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    product_id: productId,
-                    content_type: contentType
-                })
-            });
+            let response;
+            
+            if (hasBlogPost) {
+                // Generate content for blog post
+                const postId = window.blogPostSelectionManager.selectedPost.id;
+                const contentType = 'blog_post';
+                
+                response = await fetch('/launchpad/api/syndication/generate-blog-content', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        post_id: postId,
+                        content_type: contentType
+                    })
+                });
+            } else {
+                // Generate content for product
+                const productId = window.itemSelectionManager.selectedProduct.id;
+                const contentType = this.selectedContentType || 'product';
+                
+                response = await fetch('/launchpad/api/syndication/generate-social-content', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        product_id: productId,
+                        content_type: contentType
+                    })
+                });
+            }
             
             const data = await response.json();
             console.log('LLM API response:', data);
@@ -78,6 +107,27 @@ Object.assign(AIContentGenerationManager.prototype, {
             console.error('AI generation error:', error);
             throw error;
         }
+    },
+    
+    // Set selected post (called from blog post selection manager)
+    setSelectedPost(post) {
+        this.selectedPost = post;
+        // Enable generate button
+        const generateBtn = document.getElementById('generate-content-btn');
+        if (generateBtn) {
+            generateBtn.disabled = false;
+        }
+        // Update status
+        this.updateAIStatusHeader();
+    },
+    
+    // Set existing content (called when content already exists)
+    setExistingContent(content, queueItemId) {
+        this.generatedContent = content;
+        this.queueItemId = queueItemId;
+        this.displayGeneratedContent();
+        this.enableContentActions();
+        this.updateAIStatusHeader();
     },
     
     // Display generated content in the text area
