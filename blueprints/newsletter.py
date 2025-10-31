@@ -6,7 +6,7 @@ small; split views into helpers if it approaches ~400–500 LOC.
 
 from __future__ import annotations
 
-from flask import Blueprint, render_template, redirect, url_for, request
+from flask import Blueprint, render_template, redirect, url_for, request, jsonify
 import os, sys
 
 # Ensure the newsletter package (under blog-core/newsletter) is importable
@@ -31,6 +31,7 @@ from newsletter.selectors.theme import get_themes_for_week, parse_target_week, g
 from newsletter.services.draft_service import build_weekly_issue
 from newsletter.services.qa_service import run_pre_send_checks
 from newsletter.services.approval_service import approve_issue, send_issue
+from newsletter.services.block_editor_service import get_suggestions, apply_suggestion, save_override, regenerate_text
 from newsletter.jobs.weekly_autodraft import run as run_autodraft
 
 bp = Blueprint('newsletter', __name__)
@@ -281,5 +282,118 @@ def move_block_route(block_id: int):
     move_block(block_id=block_id, direction=direction)
     issue_id = int(request.form.get('issue_id', '0'))
     return redirect(url_for('newsletter.view_issue', issue_id=issue_id))
+
+
+# Block editor API endpoints (JSON)
+
+@bp.route('/newsletter/issue/<int:issue_id>/block/<int:block_id>/suggestions', methods=['GET'])
+def get_block_suggestions(issue_id: int, block_id: int):
+    """Get suggestions for a block."""
+    try:
+        from newsletter.db.queries_issue import get_block
+        block = get_block(block_id=block_id)
+        if not block:
+            return jsonify({'error': 'Block not found'}), 404
+        
+        issue = get_issue(issue_id=issue_id)
+        if not issue:
+            return jsonify({'error': 'Issue not found'}), 404
+        
+        target_week = issue.get('target_week', '')
+        block_type = block.get('type', '')
+        
+        result = get_suggestions(
+            block_id=block_id,
+            block_type=block_type,
+            issue_id=issue_id,
+            target_week=target_week
+        )
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@bp.route('/newsletter/issue/<int:issue_id>/block/<int:block_id>/select-suggestion', methods=['POST'])
+def select_block_suggestion(issue_id: int, block_id: int):
+    """Apply a suggestion to a block."""
+    try:
+        from newsletter.db.queries_issue import get_block
+        block = get_block(block_id=block_id)
+        if not block:
+            return jsonify({'error': 'Block not found'}), 404
+        
+        issue = get_issue(issue_id=issue_id)
+        if not issue:
+            return jsonify({'error': 'Issue not found'}), 404
+        
+        target_week = issue.get('target_week', '')
+        block_type = block.get('type', '')
+        
+        suggestion_id = request.json.get('suggestion_id') if request.is_json else None
+        if suggestion_id:
+            try:
+                suggestion_id = int(suggestion_id)
+            except Exception:
+                suggestion_id = None
+        
+        result = apply_suggestion(
+            block_id=block_id,
+            block_type=block_type,
+            issue_id=issue_id,
+            target_week=target_week,
+            suggestion_id=suggestion_id
+        )
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@bp.route('/newsletter/issue/<int:issue_id>/block/<int:block_id>/override', methods=['POST'])
+def override_block_text(issue_id: int, block_id: int):
+    """Save manual text override for a block."""
+    try:
+        from newsletter.db.queries_issue import get_block
+        block = get_block(block_id=block_id)
+        if not block:
+            return jsonify({'error': 'Block not found'}), 404
+        
+        block_type = block.get('type', '')
+        override_text = ''
+        
+        if request.is_json:
+            override_text = request.json.get('text', '')
+        else:
+            override_text = request.form.get('text', '')
+        
+        result = save_override(
+            block_id=block_id,
+            block_type=block_type,
+            override_text=override_text
+        )
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@bp.route('/newsletter/issue/<int:issue_id>/block/<int:block_id>/preview', methods=['GET'])
+def preview_block(issue_id: int, block_id: int):
+    """Get rendered HTML preview for a block."""
+    try:
+        from newsletter.db.queries_issue import get_block
+        block = get_block(block_id=block_id)
+        if not block:
+            return jsonify({'error': 'Block not found'}), 404
+        
+        # For now, return payload; later can render full HTML
+        payload = block.get('payload_json', {})
+        block_type = block.get('type', '')
+        
+        return jsonify({
+            'block_type': block_type,
+            'payload': payload,
+            'html': '',  # TODO: render actual HTML template
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 

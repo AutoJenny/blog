@@ -208,6 +208,22 @@ def set_block_enabled(*, block_id: int, enabled: bool) -> None:
             conn.commit()
 
 
+def get_block(*, block_id: int) -> Optional[Dict[str, Any]]:
+    """Get a single block by ID."""
+    with db_manager.get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, issue_id, type, position, enabled, payload_json, description, created_at, updated_at
+                FROM newsletter_block
+                WHERE id = %s
+                """,
+                (block_id,),
+            )
+            row = cur.fetchone()
+            return dict(row) if row else None
+
+
 def update_block_payload(*, block_id: int, payload: Dict[str, Any]) -> None:
     with db_manager.get_connection() as conn:
         with conn.cursor() as cur:

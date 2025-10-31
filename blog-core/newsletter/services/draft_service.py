@@ -10,6 +10,7 @@ from datetime import date
 from newsletter.db.queries_issue import create_issue, upsert_block
 from newsletter.selectors.blog_feature import select_feature_article
 from newsletter.selectors.snapshot import select_snapshot, fallback_snapshot
+from newsletter.selectors.intro import select_intro_content
 from newsletter.selectors.products import select_new_products, select_spotlight_product, group_variants
 from newsletter.selectors.category import select_category_feature
 from newsletter.selectors.evergreen import select_evergreen
@@ -38,13 +39,24 @@ def build_weekly_issue(*, target_week: str | None = None) -> Dict:
 
     position = 0
 
+    # Intro (uses new suggestion system)
+    intro_content = select_intro_content(target_week=target_week)
+    intro_payload = {
+        "text": intro_content.get('text', ''),
+        "suggestions": intro_content.get('suggestions', []),
+        "selected": intro_content.get('selected'),
+        "items_by_category": intro_content.get('items_by_category', {}),
+    }
+    upsert_block(issue_id=issue_id, block_type="intro", position=position, enabled=True, payload=intro_payload)
+    position += 1
+
     # Feature Article
     feature = select_feature_article()
     upsert_block(issue_id=issue_id, block_type="feature", position=position, enabled=True, payload=feature or {})
     position += 1
 
-    # Snapshot
-    snap = select_snapshot() or fallback_snapshot()
+    # Snapshot (uses new suggestion system)
+    snap = select_snapshot(target_week=target_week) or fallback_snapshot()
     upsert_block(issue_id=issue_id, block_type="snapshot", position=position, enabled=True, payload=snap)
     position += 1
 

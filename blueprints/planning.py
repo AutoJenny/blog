@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 from blueprints.planning_views import planning_dashboard as dashboard_func, planning_post_overview as post_overview_func, planning_concept as concept_func, categories_manage as categories_func, planning_research as research_func, planning_old_interface as old_interface_func
 from blueprints.planning_calendar_clean import planning_calendar as calendar_func, planning_calendar_view as calendar_view_func, planning_calendar_week_view as calendar_week_view_func, planning_calendar_ideas as ideas_func, planning_calendar_ideas_week as ideas_week_func
 from blueprints.planning_concept import planning_concept_brainstorm as brainstorm_func, planning_concept_section_structure as section_structure_func, planning_concept_topic_allocation as topic_allocation_func, planning_concept_titling as titling_func, planning_concept_outline as outline_func, planning_research_sources as sources_func, planning_research_visuals as visuals_func, planning_research_prompts as prompts_func, planning_research_verification as verification_func
-from blueprints.planning_api_calendar import api_calendar_categories as categories_api_func, api_calendar_weeks as weeks_api_func, api_calendar_ideas as ideas_api_func, api_calendar_events as events_api_func, api_calendar_schedule as schedule_api_func, api_calendar_ideas_for_week as ideas_week_api_func, api_add_calendar_idea as add_idea_api_func, api_update_calendar_idea as update_idea_api_func, api_delete_calendar_idea as delete_idea_api_func, api_calendar_idea_status as idea_status_api_func, api_get_calendar_idea as get_idea_api_func
+from blueprints.planning_api_calendar import api_calendar_categories as categories_api_func, api_calendar_weeks as weeks_api_func, api_calendar_ideas as ideas_api_func, api_calendar_events as events_api_func, api_calendar_schedule as schedule_api_func, api_calendar_ideas_for_week as ideas_week_api_func, api_add_calendar_idea as add_idea_api_func, api_update_calendar_idea as update_idea_api_func, api_delete_calendar_idea as delete_idea_api_func, api_calendar_idea_status as idea_status_api_func, api_get_calendar_idea as get_idea_api_func, api_convert_event_to_idea as convert_event_to_idea_api_func
 from blueprints.planning_api_posts import api_posts as posts_api_func
 from blueprints.planning_api_posts import confirm_calendar_idea as confirm_calendar_idea_func
 from blueprints.planning_api_post_specific import api_posts_expanded_idea as expanded_idea_api_func, api_posts_idea_seed as idea_seed_api_func, api_check_topic as check_topic_api_func, api_create_new_post as create_new_api_func, api_posts_idea_scope as idea_scope_api_func
@@ -196,6 +196,11 @@ def api_calendar_idea(idea_id):
         return get_idea_api_func(idea_id)
     else:
         return update_idea_api_func(idea_id)
+
+@bp.route('/api/calendar/events/<int:event_id>/convert-to-idea', methods=['POST'])
+def api_convert_event_to_idea(event_id):
+    """Convert an event to an idea (atomic operation)"""
+    return convert_event_to_idea_api_func(event_id)
 
 @bp.route('/api/calendar/ideas/<int:idea_id>', methods=['DELETE'])
 def api_calendar_delete_idea(idea_id):

@@ -639,10 +639,9 @@ class IdeaModal {
         }
 
         try {
-            // If we're converting from event to idea, always create new (ideaId will be event ID)
-            // If ideaId exists and it's actually an idea (not event), update it
-            // Otherwise create new
-            const shouldCreate = !ideaId || (this.currentEventId && ideaId == this.currentEventId);
+            // Check if we're converting an event to an idea
+            // We started with an event (currentEventId exists) but now saving as an idea (type is "idea", not "event")
+            const isConvertingEventToIdea = !isEvent && this.currentEventId && !ideaId;
             
             // Remove nulls to avoid sending empty values that may violate patterns
             Object.keys(formData).forEach((k) => {
@@ -651,10 +650,21 @@ class IdeaModal {
                 }
             });
 
-            const url = shouldCreate 
-                ? '/planning/api/calendar/ideas'
-                : `/planning/api/calendar/ideas/${ideaId}`;
-            const method = shouldCreate ? 'POST' : 'PUT';
+            let url, method;
+            
+            if (isConvertingEventToIdea) {
+                // Use conversion endpoint to atomically convert event to idea
+                url = `/planning/api/calendar/events/${this.currentEventId}/convert-to-idea`;
+                method = 'POST';
+            } else if (!ideaId) {
+                // Creating a new idea
+                url = '/planning/api/calendar/ideas';
+                method = 'POST';
+            } else {
+                // Updating an existing idea
+                url = `/planning/api/calendar/ideas/${ideaId}`;
+                method = 'PUT';
+            }
 
             const response = await fetch(url, {
                 method,
