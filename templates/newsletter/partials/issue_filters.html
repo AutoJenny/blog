@@ -1,0 +1,22 @@
+{% macro issue_filters(status_filter, q) -%}
+<form method="get" class="flex flex-wrap items-center gap-3 mb-4">
+  <div class="flex items-center gap-2">
+    <a href="/newsletter" class="{{ 'text-indigo-400 font-bold' if not status_filter else 'text-indigo-400 hover:underline' }}">All</a>
+    <span class="text-dark-text">·</span>
+    <a href="/newsletter?status=draft" class="{{ 'text-indigo-400 font-bold' if status_filter == 'draft' else 'text-indigo-400 hover:underline' }}">Draft</a>
+    <span class="text-dark-text">·</span>
+    <a href="/newsletter?status=approved" class="{{ 'text-indigo-400 font-bold' if status_filter == 'approved' else 'text-indigo-400 hover:underline' }}">Approved</a>
+    <span class="text-dark-text">·</span>
+    <a href="/newsletter?status=sent" class="{{ 'text-indigo-400 font-bold' if status_filter == 'sent' else 'text-indigo-400 hover:underline' }}">Sent</a>
+  </div>
+  <div class="flex items-center gap-2 ml-auto">
+    <input type="text" name="q" value="{{ q or '' }}" placeholder="Search subject/preheader" class="bg-[#0f172a] text-white border border-dark-border rounded px-2 py-1 w-56" />
+    {% if status_filter %}
+      <input type="hidden" name="status" value="{{ status_filter }}" />
+    {% endif %}
+    <button type="submit" class="admin-button border border-dark-accent text-white hover:bg-dark-bg px-3 py-1 rounded">Search</button>
+  </div>
+</form>
+{%- endmacro %}
+
+
