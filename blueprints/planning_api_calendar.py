@@ -231,17 +231,27 @@ def _safe_parse_json_request():
     """Parse JSON body without triggering 'Body is disturbed or locked' errors.
     Uses Flask's get_json which handles stream caching internally - safest approach.
     """
-    # Use get_json with silent=True and force=True
-    # force=True ensures we parse JSON even if Content-Type header might be wrong
+    # Use get_json with silent=True (without force=True to avoid stream issues)
     # silent=True returns None on error instead of raising
+    # Content-Type: application/json is set by the client, so force shouldn't be needed
     try:
-        data = request.get_json(silent=True, force=True)
+        data = request.get_json(silent=True)
         if data is not None and isinstance(data, dict):
             return data
         # If we got something but it's not a dict, return empty dict
         return {}
+    except RuntimeError as e:
+        # "Body is disturbed or locked" is a RuntimeError from Flask
+        # If this happens, log it and try to access cached data
+        if 'disturbed' in str(e).lower() or 'locked' in str(e).lower():
+            logger.warning(f"Request body already consumed, trying cached JSON: {e}")
+            # Try to access Flask's internal cache
+            if hasattr(request, '_cached_json') and request._cached_json:
+                return request._cached_json if isinstance(request._cached_json, dict) else {}
+        logger.error(f"Error parsing JSON request: {e}", exc_info=True)
+        return {}
     except Exception as e:
-        # If get_json itself fails (rare), log and return empty dict
+        # Any other error
         logger.error(f"Error parsing JSON request: {e}", exc_info=True)
         return {}
 
@@ -249,6 +259,155 @@ def _safe_parse_json_request():
 def _current_iso_week():
     from datetime import datetime
     return datetime.utcnow().isocalendar().week
+
+
+def api_convert_event_to_idea(event_id: int):
+    """Convert an event to an idea atomically: create idea, copy categories, update schedule, delete event."""
+    try:
+        import json
+        data = _safe_parse_json_request() or {}
+        
+        if not data.get('idea_title'):
+            return jsonify({'success': False, 'error': 'Missing field: idea_title'}), 400
+        if not data.get('week_number'):
+            data['week_number'] = _current_iso_week()
+        
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cursor:
+                # 1. Get event data and categories first
+                cursor.execute("""
+                    SELECT ce.*, 
+                           COALESCE(json_agg(cc.id), '[]'::json) as category_ids
+                    FROM calendar_events ce
+                    LEFT JOIN calendar_event_categories cec ON ce.id = cec.event_id
+                    LEFT JOIN calendar_categories cc ON cec.category_id = cc.id
+                    WHERE ce.id = %s
+                    GROUP BY ce.id
+                """, (event_id,))
+                event_row = cursor.fetchone()
+                
+                if not event_row:
+                    return jsonify({'success': False, 'error': 'Event not found'}), 404
+                
+                # Parse category IDs from the JSON aggregate
+                category_ids = []
+                try:
+                    cat_json = event_row['category_ids']
+                    if isinstance(cat_json, list):
+                        category_ids = [c for c in cat_json if c]
+                    elif cat_json:
+                        category_ids = json.loads(cat_json) if isinstance(cat_json, str) else cat_json
+                except Exception:
+                    pass
+                
+                # 2. Check which columns exist for calendar_ideas
+                cursor.execute("""
+                    SELECT column_name FROM information_schema.columns 
+                    WHERE table_name = 'calendar_ideas'
+                """)
+                existing_columns = {row['column_name'] for row in cursor.fetchall()}
+                
+                # 3. Create the idea using form data (prefer form data over event data)
+                fields = ['week_number', 'idea_title']
+                values = [
+                    int(data.get('week_number', event_row.get('week_number', _current_iso_week()))),
+                    data['idea_title'].strip()
+                ]
+                
+                # Map form fields to idea fields
+                if data.get('idea_description') and 'idea_description' in existing_columns:
+                    fields.append('idea_description')
+                    values.append(data['idea_description'].strip())
+                elif event_row.get('event_description') and 'idea_description' in existing_columns:
+                    fields.append('idea_description')
+                    values.append(event_row['event_description'].strip() if event_row['event_description'] else None)
+                
+                if data.get('seasonal_context') and 'seasonal_context' in existing_columns:
+                    fields.append('seasonal_context')
+                    values.append(data['seasonal_context'].strip())
+                
+                if data.get('content_type') and 'content_type' in existing_columns:
+                    fields.append('content_type')
+                    values.append(data['content_type'].strip())
+                elif event_row.get('content_type') and 'content_type' in existing_columns:
+                    fields.append('content_type')
+                    values.append(event_row['content_type'].strip() if event_row['content_type'] else None)
+                
+                if 'priority' in existing_columns:
+                    fields.append('priority')
+                    values.append((data.get('priority') or event_row.get('priority') or 'random').strip())
+                
+                if 'is_recurring' in existing_columns:
+                    fields.append('is_recurring')
+                    values.append(data.get('is_recurring', True))  # Ideas default to recurring
+                
+                if 'can_span_weeks' in existing_columns:
+                    fields.append('can_span_weeks')
+                    values.append(data.get('can_span_weeks', event_row.get('can_span_weeks', False)))
+                
+                if 'max_weeks' in existing_columns:
+                    fields.append('max_weeks')
+                    values.append(int(data.get('max_weeks', event_row.get('max_weeks', 1))))
+                
+                if 'is_evergreen' in existing_columns:
+                    fields.append('is_evergreen')
+                    values.append(data.get('is_evergreen', False))
+                
+                if data.get('evergreen_frequency') and 'evergreen_frequency' in existing_columns:
+                    fields.append('evergreen_frequency')
+                    values.append(data['evergreen_frequency'].strip())
+                
+                if data.get('evergreen_notes') and 'evergreen_notes' in existing_columns:
+                    fields.append('evergreen_notes')
+                    values.append(data['evergreen_notes'].strip())
+                
+                if data.get('tags') and 'tags' in existing_columns:
+                    fields.append('tags')
+                    values.append(json.dumps(data['tags']))
+                elif event_row.get('tags') and 'tags' in existing_columns:
+                    fields.append('tags')
+                    values.append(json.dumps(event_row['tags']) if isinstance(event_row['tags'], (dict, list)) else event_row['tags'])
+                
+                if data.get('sources') and 'sources' in existing_columns:
+                    fields.append('sources')
+                    values.append(json.dumps(data['sources']))
+                
+                placeholders = ', '.join(['%s'] * len(values))
+                field_names = ', '.join(fields)
+                
+                # 4. Insert the new idea
+                cursor.execute(
+                    f"INSERT INTO calendar_ideas ({field_names}) VALUES ({placeholders}) RETURNING id, week_number, idea_title",
+                    values
+                )
+                idea_row = cursor.fetchone()
+                new_idea_id = idea_row['id']
+                
+                # 5. Copy categories from event to idea (use form categories if provided, else event categories)
+                categories_to_use = data.get('categories', category_ids)
+                if categories_to_use:
+                    for cat_id in categories_to_use:
+                        cursor.execute(
+                            "INSERT INTO calendar_idea_categories (idea_id, category_id) VALUES (%s, %s) ON CONFLICT DO NOTHING",
+                            (new_idea_id, int(cat_id))
+                        )
+                
+                # 6. Update calendar_schedule entries to reference the new idea instead of the event
+                cursor.execute("""
+                    UPDATE calendar_schedule 
+                    SET idea_id = %s, event_id = NULL, updated_at = NOW()
+                    WHERE event_id = %s
+                """, (new_idea_id, event_id))
+                
+                # 7. Delete the event (cascades will clean up calendar_event_categories)
+                cursor.execute("DELETE FROM calendar_events WHERE id = %s", (event_id,))
+                
+                conn.commit()
+        
+        return jsonify({'success': True, 'idea': idea_row})
+    except Exception as e:
+        logger.error(f"Error converting event to idea: {e}", exc_info=True)
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 def api_add_calendar_idea():

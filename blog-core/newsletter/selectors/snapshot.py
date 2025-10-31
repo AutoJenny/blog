@@ -1,34 +1,46 @@
-"""Select a Scottish Snapshot item from approved sources with fallback."""
+"""Select a Scottish Snapshot item using new suggestion system."""
 
 from __future__ import annotations
 
 from typing import Any, Dict, Optional
-from newsletter.db.queries_libraries import list_snapshot_sources
+from newsletter.services.suggestion_service import generate_suggestions, template_snapshot_text, select_default
 
 
-def select_snapshot() -> Optional[Dict[str, Any]]:
-    """Return a simple snapshot seeded from an approved source list.
-
-    For MVP, we do not scrape; we surface a placeholder using the source name.
+def select_snapshot(*, target_week: str) -> Optional[Dict[str, Any]]:
+    """Return snapshot content using suggestion system.
+    
+    Fetches top-scored suggestions, selects default, generates text with attribution.
     """
-    sources = list_snapshot_sources(enabled_only=True)
-    if not sources:
-        return None
-    s = sources[0]
+    suggestions = generate_suggestions(block_type='snapshot', target_week=target_week, count=3)
+    
+    if not suggestions:
+        return fallback_snapshot()
+    
+    selected = select_default(suggestions)
+    if not selected:
+        return fallback_snapshot()
+    
+    text = template_snapshot_text(selected)
+    
     return {
-        "title": f"From {s['name']}",
-        "publisher": s["name"],
-        "url": s["base_url"],
-        "comment": "A wee highlight worth a look.",
+        "title": selected.get('title', ''),
+        "publisher": selected.get('source_name', ''),
+        "url": selected.get('url', ''),
+        "comment": text,
+        "suggestions": suggestions,  # Include all suggestions for UI
+        "selected_id": selected.get('id'),
     }
 
 
 def fallback_snapshot() -> Dict[str, Any]:
+    """Return fallback snapshot when no suggestions available."""
     return {
         "title": "This week in Scotland",
         "publisher": "In-house",
         "url": "",
         "comment": "A wee cultural moment while we fetch fresh headlines.",
+        "suggestions": [],
+        "selected_id": None,
     }
 
 
