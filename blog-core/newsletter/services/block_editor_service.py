@@ -15,36 +15,37 @@ from newsletter.selectors.snapshot import select_snapshot
 def get_suggestions(*, block_id: int, block_type: str, issue_id: int, target_week: str) -> Dict[str, Any]:
     """Get suggestions for a block.
     
+    Uses unified suggestion service for all block types.
     Returns dict with:
     - suggestions: List of scored suggestions
     - current: Currently selected item (if any)
+    - metadata: Type-specific metadata
     """
     # Get current block to see if there's already a selection
     block = get_block(block_id=block_id)
     current_payload = block.get('payload_json', {}) if block else {}
     
-    # Generate fresh suggestions
-    suggestions = generate_suggestions(block_type=block_type, target_week=target_week, count=3)
+    # Use unified suggestion service
+    result = get_suggestions_for_block(block_type=block_type, issue_id=issue_id, target_week=target_week)
     
-    # Get current selection from payload
-    current = None
-    if block_type == 'intro':
-        selected = current_payload.get('selected')
-        if selected:
-            current = selected
-    elif block_type == 'snapshot':
-        selected_id = current_payload.get('selected_id')
-        if selected_id and suggestions:
-            # Find matching suggestion by ID
-            for s in suggestions:
-                if s.get('id') == selected_id:
-                    current = s
-                    break
+    # For intro/snapshot, prefer suggestions from source items if available
+    # Otherwise use the unified service result
+    if block_type in ('intro', 'snapshot'):
+        # Try to get fresh suggestions from source items
+        source_suggestions = generate_suggestions(block_type=block_type, target_week=target_week, count=3)
+        if source_suggestions:
+            result['suggestions'] = source_suggestions
     
-    return {
-        'suggestions': suggestions,
-        'current': current,
-    }
+    # Merge current selection from payload if exists
+    if current_payload:
+        if block_type == 'intro':
+            result['current'] = current_payload.get('selected') or result.get('current')
+        elif block_type == 'snapshot':
+            result['current'] = current_payload or result.get('current')
+        else:
+            result['current'] = current_payload.get('selected') or current_payload or result.get('current')
+    
+    return result
 
 
 def apply_suggestion(*, block_id: int, block_type: str, issue_id: int, target_week: str, suggestion_id: int | None = None) -> Dict[str, Any]:
