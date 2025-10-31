@@ -49,12 +49,16 @@
 
 /* Modal Header */
 .idea-modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     padding: 1.5rem 2rem;
     border-bottom: 1px solid #334155;
     background: #1e293b;
+}
+
+.idea-modal-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
 }
 
 .idea-modal-title {
@@ -62,6 +66,48 @@
     font-size: 1.5rem;
     font-weight: 600;
     color: #e2e8f0;
+}
+
+.idea-modal-type-selector {
+    display: flex;
+    gap: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #334155;
+}
+
+.idea-type-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #0f172a;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #cbd5e1;
+}
+
+.idea-type-option:hover {
+    background: #1e293b;
+    border-color: #60a5fa;
+}
+
+.idea-type-option input[type="radio"] {
+    margin: 0;
+    cursor: pointer;
+    accent-color: #60a5fa;
+}
+
+.idea-type-option input[type="radio"]:checked + span {
+    color: #60a5fa;
+    font-weight: 500;
+}
+
+.idea-type-option:has(input[type="radio"]:checked) {
+    background: #1e40af;
+    border-color: #3b82f6;
+    color: #fff;
 }
 
 .idea-modal-close {
