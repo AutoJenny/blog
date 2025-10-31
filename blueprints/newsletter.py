@@ -16,6 +16,9 @@ from newsletter.db.queries_issue import (
     list_issues,
     count_issues,
     soft_delete_issue,
+    get_issue,
+    update_issue_theme,
+    update_issue_subject_preheader,
     list_blocks_by_issue,
     set_block_enabled,
     update_block_payload,
@@ -24,6 +27,7 @@ from newsletter.db.queries_issue import (
     move_block,
     shift_positions,
 )
+from newsletter.selectors.theme import get_themes_for_week, parse_target_week, get_theme_by_id
 from newsletter.services.draft_service import build_weekly_issue
 from newsletter.services.qa_service import run_pre_send_checks
 from newsletter.services.approval_service import approve_issue, send_issue
@@ -72,6 +76,16 @@ def create_or_regenerate_issue():
 @bp.route('/newsletter/issue/<int:issue_id>')
 def view_issue(issue_id: int):
     """Simple issue view showing blocks list (preview comes later)."""
+    issue = None
+    themes = []
+    try:
+        issue = get_issue(issue_id=issue_id)
+        if issue and issue.get('target_week'):
+            week_number = parse_target_week(issue['target_week'])
+            themes = get_themes_for_week(week_number)
+    except Exception:
+        pass
+    
     blocks = []
     try:
         blocks = list_blocks_by_issue(issue_id=issue_id)
@@ -107,7 +121,15 @@ def view_issue(issue_id: int):
                 blocks = list_blocks_by_issue(issue_id=issue_id)
             except Exception:
                 pass
-    return render_template('newsletter/issue.html', issue_id=issue_id, blocks=blocks)
+    
+    current_theme = None
+    if issue and issue.get('theme_id'):
+        try:
+            current_theme = get_theme_by_id(issue['theme_id'])
+        except Exception:
+            pass
+    
+    return render_template('newsletter/issue.html', issue_id=issue_id, issue=issue, blocks=blocks, themes=themes, current_theme=current_theme)
 
 
 @bp.route('/newsletter/issue/<int:issue_id>/preview')
@@ -150,6 +172,27 @@ def approve_issue_route(issue_id: int):
 def send_issue_route(issue_id: int):
     adapter = request.form.get('adapter', 'preview')
     result = send_issue(issue_id=issue_id, adapter=adapter)
+    return redirect(url_for('newsletter.view_issue', issue_id=issue_id))
+
+
+@bp.route('/newsletter/issue/<int:issue_id>/theme', methods=['POST'])
+def update_theme_route(issue_id: int):
+    """Update theme for an issue."""
+    theme_id = request.form.get('theme_id')
+    if theme_id and theme_id != '':
+        try:
+            theme_id_int = int(theme_id)
+            theme = get_theme_by_id(theme_id_int)
+            if theme:
+                update_issue_theme(issue_id=issue_id, theme_id=theme_id_int)
+                # Update subject and preheader from theme
+                subject = f"{theme.get('idea_title', 'This week in Scotland')} — {get_issue(issue_id).get('target_week', '')}"
+                preheader = theme.get('seasonal_context') or theme.get('idea_description') or "A quick wander through culture & craft."
+                update_issue_subject_preheader(issue_id=issue_id, subject=subject, preheader=preheader)
+        except Exception:
+            pass
+    else:
+        update_issue_theme(issue_id=issue_id, theme_id=None)
     return redirect(url_for('newsletter.view_issue', issue_id=issue_id))
 
 

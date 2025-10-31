@@ -13,6 +13,7 @@ from newsletter.selectors.snapshot import select_snapshot, fallback_snapshot
 from newsletter.selectors.products import select_new_products, select_spotlight_product, group_variants
 from newsletter.selectors.category import select_category_feature
 from newsletter.selectors.evergreen import select_evergreen
+from newsletter.selectors.theme import select_default_theme
 
 
 def build_weekly_issue(*, target_week: str | None = None) -> Dict:
@@ -21,9 +22,19 @@ def build_weekly_issue(*, target_week: str | None = None) -> Dict:
         iso_year, iso_week, _ = date.today().isocalendar()
         target_week = f"{iso_year}W{iso_week:02d}"
 
-    subject = f"This week in Scotland — {target_week}"
-    preheader = "A quick wander through culture & craft."
-    issue_id = create_issue(target_week=target_week, subject=subject, preheader=preheader)
+    # Select theme based on week
+    theme = select_default_theme(target_week=target_week)
+    theme_id = theme['id'] if theme else None
+    
+    # Generate subject and preheader from theme
+    if theme:
+        subject = f"{theme.get('idea_title', 'This week in Scotland')} — {target_week}"
+        preheader = theme.get('seasonal_context') or theme.get('idea_description') or "A quick wander through culture & craft."
+    else:
+        subject = f"This week in Scotland — {target_week}"
+        preheader = "A quick wander through culture & craft."
+    
+    issue_id = create_issue(target_week=target_week, subject=subject, preheader=preheader, theme_id=theme_id)
 
     position = 0
 
