@@ -38,6 +38,11 @@ function renderItems(container, items, type) {
       div.style.cursor = 'pointer';
       div.title = 'Click to edit idea';
     }
+    if (type === 'event' && (item.id || item._eventId)) {
+      div.dataset.eventId = item.id || item._eventId;
+      div.style.cursor = 'pointer';
+      div.title = 'Click to view/edit event';
+    }
     if (type === 'scheduled' && item._syndication) {
       // Syndication display: Channel — Operation — Time
       div.textContent = `${item.channel || 'Facebook'} — ${item.operation || 'Product'} — ${item.time_display || item.time || ''}`.trim();
