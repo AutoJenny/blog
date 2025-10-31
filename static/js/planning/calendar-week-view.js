@@ -98,9 +98,17 @@ async function loadWeek(year, weekNumber) {
   if (weekThemesContainer) {
     weekThemesContainer.innerHTML = '';
     if (showIdeas && ideas.length) {
-      // Mark selected idea(s) by matching scheduled post titles
-      const selectedTitles = new Set((schedule || []).map(sc => (sc.post_title || '').toLowerCase()).filter(Boolean));
-      const themedIdeas = ideas.map(i => ({ ...i, _selected: selectedTitles.has((i.idea_title || '').toLowerCase()) }));
+      // Mark selected idea(s) by matching scheduled post titles to idea titles
+      // Normalize titles for comparison (lowercase, trim)
+      const normalize = (s) => (s || '').toLowerCase().trim();
+      const selectedTitles = new Set((schedule || []).map(sc => normalize(sc.post_title)).filter(Boolean));
+      const themedIdeas = ideas.map(i => {
+        const ideaTitle = normalize(i.idea_title);
+        const isSelected = selectedTitles.has(ideaTitle) || 
+          Array.from(selectedTitles).some(st => st.includes(ideaTitle) || ideaTitle.includes(st));
+        return { ...i, _selected: isSelected };
+      });
+      console.log('Week themes:', themedIdeas.map(i => ({ title: i.idea_title, selected: i._selected })));
       renderItems(weekThemesContainer, themedIdeas, 'idea');
     }
   }

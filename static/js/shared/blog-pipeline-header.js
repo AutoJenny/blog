@@ -44,8 +44,8 @@ class BlogPipelineHeader {
     async loadPostData() {
         try {
             const postId = this.getPostId();
-            if (!postId) {
-                console.warn('[Blog Pipeline Header] Post ID not found');
+            if (!postId || postId === '0' || parseInt(postId) === 0) {
+                console.log('[Blog Pipeline Header] Post ID not found or is 0 (week-based view), skipping post data load');
                 return;
             }
 
