@@ -31,6 +31,11 @@ function renderItems(container, items, type) {
   items.forEach((item) => {
     const div = document.createElement('div');
     div.className = `item ${type}`;
+    if (type === 'idea' && item.id) {
+      div.dataset.ideaId = item.id;
+      div.style.cursor = 'pointer';
+      div.title = 'Click to edit idea';
+    }
     if (type === 'scheduled' && item._syndication) {
       // Syndication display: Channel — Operation — Time
       div.textContent = `${item.channel || 'Facebook'} — ${item.operation || 'Product'} — ${item.time_display || item.time || ''}`.trim();

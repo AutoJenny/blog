@@ -1,0 +1,184 @@
+<!-- Standalone Idea Management Modal Component -->
+<!-- This is a reusable component for editing calendar ideas -->
+
+<div id="idea-modal" class="idea-modal-overlay" style="display: none;">
+    <div class="idea-modal-container">
+        <!-- Modal Header -->
+        <div class="idea-modal-header">
+            <h2 class="idea-modal-title" id="idea-modal-title">Manage Idea</h2>
+            <button class="idea-modal-close" id="idea-modal-close" aria-label="Close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="idea-modal-body" id="idea-modal-body">
+            <!-- Loading State -->
+            <div id="idea-modal-loading" class="idea-modal-loading" style="display: none;">
+                <i class="fas fa-spinner fa-spin"></i> Loading...
+            </div>
+
+            <!-- Main Form (shown when loaded) -->
+            <form id="idea-modal-form" class="idea-modal-form">
+                <!-- Basic Information Section -->
+                <section class="idea-section">
+                    <h3 class="idea-section-title">
+                        <i class="fas fa-info-circle"></i>
+                        Basic Information
+                    </h3>
+                    
+                    <div class="idea-form-grid">
+                        <div class="idea-form-group idea-form-group-full">
+                            <label for="idea-title" class="idea-label required">Title</label>
+                            <input type="text" id="idea-title" name="idea_title" class="idea-input" required 
+                                   placeholder="e.g., Halloween / Samhain Origins" />
+                        </div>
+
+                        <div class="idea-form-group idea-form-group-full">
+                            <label for="idea-description" class="idea-label">Description</label>
+                            <textarea id="idea-description" name="idea_description" class="idea-textarea" rows="3"
+                                      placeholder="Brief description of the idea..."></textarea>
+                        </div>
+
+                        <div class="idea-form-group">
+                            <label for="idea-week-number" class="idea-label required">Week Number</label>
+                            <input type="number" id="idea-week-number" name="week_number" class="idea-input" 
+                                   min="1" max="52" required />
+                        </div>
+
+                        <div class="idea-form-group">
+                            <label for="idea-content-type" class="idea-label">Content Type</label>
+                            <select id="idea-content-type" name="content_type" class="idea-select">
+                                <option value="">Select...</option>
+                                <option value="guide">Guide</option>
+                                <option value="tutorial">Tutorial</option>
+                                <option value="list">List</option>
+                                <option value="review">Review</option>
+                                <option value="article">Article</option>
+                                <option value="story">Story</option>
+                            </select>
+                        </div>
+
+                        <div class="idea-form-group idea-form-group-full">
+                            <label for="idea-seasonal-context" class="idea-label">Seasonal Context</label>
+                            <input type="text" id="idea-seasonal-context" name="seasonal_context" class="idea-input"
+                                   placeholder="e.g., Halloween Celtic origins" />
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Categories Section -->
+                <section class="idea-section">
+                    <h3 class="idea-section-title">
+                        <i class="fas fa-tags"></i>
+                        Categories
+                    </h3>
+                    <div id="idea-categories-container" class="idea-categories-container">
+                        <!-- Categories will be dynamically loaded here -->
+                    </div>
+                </section>
+
+                <!-- Sources Section -->
+                <section class="idea-section">
+                    <h3 class="idea-section-title">
+                        <i class="fas fa-book"></i>
+                        Sources & References
+                        <button type="button" class="idea-btn-icon idea-btn-icon-sm" id="idea-add-source" title="Add Source">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </h3>
+                    <div id="idea-sources-container" class="idea-sources-container">
+                        <!-- Sources will be dynamically added here -->
+                    </div>
+                    <p class="idea-help-text">Add multiple sources, references, or research materials for this idea.</p>
+                </section>
+
+                <!-- Metadata Section -->
+                <section class="idea-section">
+                    <h3 class="idea-section-title">
+                        <i class="fas fa-cog"></i>
+                        Metadata
+                    </h3>
+                    
+                    <div class="idea-form-grid">
+                        <div class="idea-form-group">
+                            <label for="idea-priority" class="idea-label">Priority</label>
+                            <select id="idea-priority" name="priority" class="idea-select">
+                                <option value="random">Random</option>
+                                <option value="mandatory">Mandatory</option>
+                            </select>
+                        </div>
+
+                        <div class="idea-form-group">
+                            <label class="idea-checkbox-label">
+                                <input type="checkbox" id="idea-is-recurring" name="is_recurring" checked />
+                                <span>Recurring (yearly)</span>
+                            </label>
+                        </div>
+
+                        <div class="idea-form-group">
+                            <label class="idea-checkbox-label">
+                                <input type="checkbox" id="idea-is-evergreen" name="is_evergreen" />
+                                <span>Evergreen Content</span>
+                            </label>
+                        </div>
+
+                        <div class="idea-form-group" id="idea-evergreen-group" style="display: none;">
+                            <label for="idea-evergreen-frequency" class="idea-label">Frequency</label>
+                            <select id="idea-evergreen-frequency" name="evergreen_frequency" class="idea-select">
+                                <option value="low-frequency">Low Frequency</option>
+                                <option value="medium-frequency">Medium Frequency</option>
+                                <option value="high-frequency">High Frequency</option>
+                                <option value="one-time">One-Time</option>
+                            </select>
+                        </div>
+
+                        <div class="idea-form-group idea-form-group-full" id="idea-evergreen-notes-group" style="display: none;">
+                            <label for="idea-evergreen-notes" class="idea-label">Evergreen Notes</label>
+                            <textarea id="idea-evergreen-notes" name="evergreen_notes" class="idea-textarea" rows="2"
+                                      placeholder="Notes about evergreen usage..."></textarea>
+                        </div>
+
+                        <div class="idea-form-group">
+                            <label class="idea-checkbox-label">
+                                <input type="checkbox" id="idea-can-span-weeks" name="can_span_weeks" />
+                                <span>Can Span Multiple Weeks</span>
+                            </label>
+                        </div>
+
+                        <div class="idea-form-group" id="idea-max-weeks-group" style="display: none;">
+                            <label for="idea-max-weeks" class="idea-label">Max Weeks</label>
+                            <input type="number" id="idea-max-weeks" name="max_weeks" class="idea-input" 
+                                   min="1" value="1" />
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tags Section -->
+                <section class="idea-section">
+                    <h3 class="idea-section-title">
+                        <i class="fas fa-hashtag"></i>
+                        Tags
+                    </h3>
+                    <div id="idea-tags-container" class="idea-tags-container">
+                        <!-- Tags input will be here -->
+                    </div>
+                    <input type="text" id="idea-tags-input" class="idea-input idea-tags-input" 
+                           placeholder="Type a tag and press Enter..." />
+                </section>
+
+                <!-- Hidden ID field -->
+                <input type="hidden" id="idea-id" name="idea_id" />
+            </form>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="idea-modal-footer">
+            <button type="button" class="idea-btn idea-btn-secondary" id="idea-modal-cancel">Cancel</button>
+            <button type="button" class="idea-btn idea-btn-primary" id="idea-modal-save">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+        </div>
+    </div>
+</div>
+
