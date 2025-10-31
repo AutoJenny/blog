@@ -151,11 +151,7 @@ async function loadWeek(year, weekNumber) {
     });
   }
 
-  // Render unselected ideas into Ideas row (week ideas are not date-specific; place in first column for now)
-  if (showIdeas && ideasCells && unselectedIdeas.length) {
-    const target = document.getElementById('ideas-row-day-1');
-    renderItems(target, unselectedIdeas, 'idea');
-  }
+  // Do not duplicate week themes into Ideas row; Ideas row reserved for non-week ideas (none yet)
 
   // Syndication schedules are recurring by weekday; render time per selected days
   if (showSyndication && syndication.length && syndicationCells) {
