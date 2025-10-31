@@ -239,6 +239,13 @@ def api_add_calendar_idea():
 
         with db_manager.get_connection() as conn:
             with conn.cursor() as cursor:
+                # Check which columns exist
+                cursor.execute("""
+                    SELECT column_name FROM information_schema.columns 
+                    WHERE table_name = 'calendar_ideas'
+                """)
+                existing_columns = {row['column_name'] for row in cursor.fetchall()}
+                
                 # Prepare all fields
                 fields = ['week_number', 'idea_title']
                 values = [
@@ -246,46 +253,51 @@ def api_add_calendar_idea():
                     data['idea_title'].strip()
                 ]
                 
-                if data.get('idea_description'):
+                if data.get('idea_description') and 'idea_description' in existing_columns:
                     fields.append('idea_description')
                     values.append(data['idea_description'].strip())
                 
-                if data.get('seasonal_context'):
+                if data.get('seasonal_context') and 'seasonal_context' in existing_columns:
                     fields.append('seasonal_context')
                     values.append(data['seasonal_context'].strip())
                 
-                if data.get('content_type'):
+                if data.get('content_type') and 'content_type' in existing_columns:
                     fields.append('content_type')
                     values.append(data['content_type'].strip())
                 
-                fields.append('priority')
-                values.append((data.get('priority') or 'random').strip())
+                if 'priority' in existing_columns:
+                    fields.append('priority')
+                    values.append((data.get('priority') or 'random').strip())
                 
-                fields.append('is_recurring')
-                values.append(data.get('is_recurring', True))
+                if 'is_recurring' in existing_columns:
+                    fields.append('is_recurring')
+                    values.append(data.get('is_recurring', True))
                 
-                fields.append('can_span_weeks')
-                values.append(data.get('can_span_weeks', False))
+                if 'can_span_weeks' in existing_columns:
+                    fields.append('can_span_weeks')
+                    values.append(data.get('can_span_weeks', False))
                 
-                fields.append('max_weeks')
-                values.append(int(data.get('max_weeks', 1)))
+                if 'max_weeks' in existing_columns:
+                    fields.append('max_weeks')
+                    values.append(int(data.get('max_weeks', 1)))
                 
-                fields.append('is_evergreen')
-                values.append(data.get('is_evergreen', False))
+                if 'is_evergreen' in existing_columns:
+                    fields.append('is_evergreen')
+                    values.append(data.get('is_evergreen', False))
                 
-                if data.get('evergreen_frequency'):
+                if data.get('evergreen_frequency') and 'evergreen_frequency' in existing_columns:
                     fields.append('evergreen_frequency')
                     values.append(data['evergreen_frequency'].strip())
                 
-                if data.get('evergreen_notes'):
+                if data.get('evergreen_notes') and 'evergreen_notes' in existing_columns:
                     fields.append('evergreen_notes')
                     values.append(data['evergreen_notes'].strip())
                 
-                if data.get('tags'):
+                if data.get('tags') and 'tags' in existing_columns:
                     fields.append('tags')
                     values.append(json.dumps(data['tags']))
                 
-                if data.get('sources'):
+                if data.get('sources') and 'sources' in existing_columns:
                     fields.append('sources')
                     values.append(json.dumps(data['sources']))
 
@@ -320,45 +332,53 @@ def api_update_calendar_idea(idea_id: int):
     try:
         import json
         data = request.get_json(force=True) or {}
-        fields = []
-        values = []
         
-        # Update all possible fields
-        updatable_fields = [
-            'idea_title', 'idea_description', 'seasonal_context', 'content_type',
-            'priority', 'week_number', 'is_recurring', 'can_span_weeks', 'max_weeks',
-            'is_evergreen', 'evergreen_frequency', 'evergreen_notes'
-        ]
-        
-        for col in updatable_fields:
-            if col in data:
-                fields.append(col)
-                if col in ('is_recurring', 'can_span_weeks', 'is_evergreen'):
-                    values.append(bool(data[col]))
-                elif col == 'max_weeks':
-                    values.append(int(data[col]) if data[col] else 1)
-                elif col == 'week_number':
-                    values.append(int(data[col]))
-                else:
-                    values.append(data[col].strip() if data[col] else None)
-        
-        # Handle tags and sources as JSONB
-        if 'tags' in data:
-            fields.append('tags')
-            values.append(json.dumps(data['tags']) if data['tags'] else json.dumps([]))
-        
-        if 'sources' in data:
-            fields.append('sources')
-            values.append(json.dumps(data['sources']) if data['sources'] else json.dumps([]))
-        
-        if not fields:
-            return jsonify({'success': False, 'error': 'No fields provided'}), 400
-
-        set_clause = ", ".join(f"{c} = %s" for c in fields)
-        values.append(idea_id)
-
         with db_manager.get_connection() as conn:
             with conn.cursor() as cursor:
+                # Check which columns exist
+                cursor.execute("""
+                    SELECT column_name FROM information_schema.columns 
+                    WHERE table_name = 'calendar_ideas'
+                """)
+                existing_columns = {row['column_name'] for row in cursor.fetchall()}
+                
+                fields = []
+                values = []
+                
+                # Update all possible fields (only if column exists)
+                updatable_fields = [
+                    'idea_title', 'idea_description', 'seasonal_context', 'content_type',
+                    'priority', 'week_number', 'is_recurring', 'can_span_weeks', 'max_weeks',
+                    'is_evergreen', 'evergreen_frequency', 'evergreen_notes'
+                ]
+                
+                for col in updatable_fields:
+                    if col in data and col in existing_columns:
+                        fields.append(col)
+                        if col in ('is_recurring', 'can_span_weeks', 'is_evergreen'):
+                            values.append(bool(data[col]))
+                        elif col == 'max_weeks':
+                            values.append(int(data[col]) if data[col] else 1)
+                        elif col == 'week_number':
+                            values.append(int(data[col]))
+                        else:
+                            values.append(data[col].strip() if data[col] else None)
+                
+                # Handle tags and sources as JSONB (only if columns exist)
+                if 'tags' in data and 'tags' in existing_columns:
+                    fields.append('tags')
+                    values.append(json.dumps(data['tags']) if data['tags'] else json.dumps([]))
+                
+                if 'sources' in data and 'sources' in existing_columns:
+                    fields.append('sources')
+                    values.append(json.dumps(data['sources']) if data['sources'] else json.dumps([]))
+                
+                if not fields:
+                    return jsonify({'success': False, 'error': 'No fields provided'}), 400
+
+                set_clause = ", ".join(f"{c} = %s" for c in fields)
+                values.append(idea_id)
+
                 cursor.execute(f"UPDATE calendar_ideas SET {set_clause} WHERE id = %s RETURNING id", values)
                 row = cursor.fetchone()
                 
