@@ -28,6 +28,8 @@ async function fetchJSON(url) {
 }
 
 function renderItems(container, items, type) {
+  if (!items || !Array.isArray(items) || items.length === 0) return;
+  
   items.forEach((item) => {
     const div = document.createElement('div');
     div.className = `item ${type}`;

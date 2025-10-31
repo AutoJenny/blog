@@ -59,12 +59,20 @@ def api_calendar_ideas(week_number):
     """Get perpetual ideas for a specific week number"""
     try:
         with db_manager.get_cursor() as cursor:
+            # Check if sources column exists
             cursor.execute("""
+                SELECT column_name FROM information_schema.columns 
+                WHERE table_name = 'calendar_ideas' AND column_name = 'sources'
+            """)
+            has_sources = cursor.fetchone() is not None
+            sources_field = 'ci.sources' if has_sources else "'[]'::jsonb as sources"
+            
+            cursor.execute(f"""
                 SELECT ci.id, ci.week_number, ci.idea_title, ci.idea_description, 
                        ci.seasonal_context, ci.content_type, ci.priority, ci.tags,
                        ci.is_recurring, ci.can_span_weeks, ci.max_weeks, ci.is_evergreen,
                        ci.evergreen_frequency, ci.last_used_date, ci.usage_count,
-                       ci.evergreen_notes, ci.sources, ci.created_at, ci.updated_at,
+                       ci.evergreen_notes, {sources_field}, ci.created_at, ci.updated_at,
                        COALESCE(
                            json_agg(
                                json_build_object(
@@ -84,7 +92,7 @@ def api_calendar_ideas(week_number):
                          ci.seasonal_context, ci.content_type, ci.priority, ci.tags,
                          ci.is_recurring, ci.can_span_weeks, ci.max_weeks, ci.is_evergreen,
                          ci.evergreen_frequency, ci.last_used_date, ci.usage_count,
-                         ci.evergreen_notes, ci.sources, ci.created_at, ci.updated_at
+                         ci.evergreen_notes, ci.created_at, ci.updated_at
                 ORDER BY 
                     CASE ci.priority 
                         WHEN 'mandatory' THEN 1 
