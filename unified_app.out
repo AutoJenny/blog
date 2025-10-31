@@ -5869,3 +5869,33 @@ psycopg.ProgrammingError: cannot adapt type 'dict' using placeholder '%s' (forma
 2025-10-31 10:09:18,850 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:09:18] "GET /planning/api/calendar/events/2025/44 HTTP/1.1" 200 -
 2025-10-31 10:09:18,851 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:09:18] "GET /planning/api/calendar/ideas/week/44 HTTP/1.1" 200 -
 2025-10-31 10:09:18,851 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:09:18] "[33mGET /planning/api/posts/0 HTTP/1.1[0m" 404 -
+2025-10-31 10:09:41,591 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:09:41] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-10-31 10:09:41,592 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:09:41] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-10-31 10:09:41,593 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:09:41] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-10-31 10:09:41,598 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:09:41] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
+2025-10-31 10:09:41,599 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:09:41] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
+2025-10-31 10:09:41,599 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:09:41] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
+2025-10-31 10:11:03,612 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:11:03] "GET /planning/posts/0/calendar/week-view HTTP/1.1" 200 -
+2025-10-31 10:11:03,632 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:11:03] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-10-31 10:11:03,635 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:11:03] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-31 10:11:03,636 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:11:03] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-10-31 10:11:03,636 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:11:03] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-10-31 10:11:03,638 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:11:03] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-31 10:11:03,639 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:11:03] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-10-31 10:11:03,642 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:11:03] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-10-31 10:11:03,645 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:11:03] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-31 10:11:03,645 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:11:03] "[36mGET /static/js/planning/calendar-week-view.js HTTP/1.1[0m" 304 -
+2025-10-31 10:11:03,645 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:11:03] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-10-31 10:11:03,649 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:11:03] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-31 10:11:03,649 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:11:03] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-31 10:11:03,650 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:11:03] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-10-31 10:11:03,670 - config.database - INFO - Database connection established
+2025-10-31 10:11:03,670 - config.database - INFO - Database connection established
+2025-10-31 10:11:03,672 - config.database - INFO - Database connection established
+2025-10-31 10:11:03,672 - config.database - INFO - Database connection established
+2025-10-31 10:11:03,674 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:11:03] "GET /planning/api/calendar/events/2025/44 HTTP/1.1" 200 -
+2025-10-31 10:11:03,675 - config.database - INFO - Database connection established
+2025-10-31 10:11:03,675 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:11:03] "GET /planning/api/calendar/ideas/week/44 HTTP/1.1" 200 -
+2025-10-31 10:11:03,675 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:11:03] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 10:11:03,676 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:11:03] "GET /planning/api/calendar/schedule/2025/44 HTTP/1.1" 200 -
+2025-10-31 10:11:03,679 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:11:03] "[33mGET /planning/api/posts/0 HTTP/1.1[0m" 404 -

@@ -38,6 +38,9 @@ function renderItems(container, items, type) {
     } else {
       div.textContent = item.title || item.idea_title || item.name || item.summary || item.event_title || 'Untitled';
     }
+    if (type === 'idea' && item._selected) {
+      div.classList.add('selected');
+    }
     container.appendChild(div);
   });
 }
@@ -95,7 +98,10 @@ async function loadWeek(year, weekNumber) {
   if (weekThemesContainer) {
     weekThemesContainer.innerHTML = '';
     if (showIdeas && ideas.length) {
-      renderItems(weekThemesContainer, ideas, 'idea');
+      // Mark selected idea(s) by matching scheduled post titles
+      const selectedTitles = new Set((schedule || []).map(sc => (sc.post_title || '').toLowerCase()).filter(Boolean));
+      const themedIdeas = ideas.map(i => ({ ...i, _selected: selectedTitles.has((i.idea_title || '').toLowerCase()) }));
+      renderItems(weekThemesContainer, themedIdeas, 'idea');
     }
   }
 
