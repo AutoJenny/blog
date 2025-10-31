@@ -6197,3 +6197,66 @@ psycopg.ProgrammingError: cannot adapt type 'dict' using placeholder '%s' (forma
 2025-10-31 10:17:02,858 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:17:02] "GET /planning/api/calendar/schedule/2025/44 HTTP/1.1" 200 -
 2025-10-31 10:17:02,859 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:17:02] "GET /planning/api/calendar/events/2025/44 HTTP/1.1" 200 -
 2025-10-31 10:17:02,861 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:17:02] "[33mGET /planning/api/posts/0 HTTP/1.1[0m" 404 -
+2025-10-31 10:17:49,593 - config.database - INFO - Database connection established
+2025-10-31 10:17:49,611 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:17:49] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-10-31 10:22:09,603 - config.database - INFO - Database connection established
+2025-10-31 10:22:09,621 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:22:09] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-10-31 10:26:29,704 - config.database - INFO - Database connection established
+2025-10-31 10:26:29,717 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:26:29] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-10-31 10:30:49,706 - config.database - INFO - Database connection established
+2025-10-31 10:30:49,722 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:30:49] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-10-31 10:33:25,251 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:25] "GET /planning/posts/0/calendar/week-view HTTP/1.1" 200 -
+2025-10-31 10:33:25,344 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:25] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-10-31 10:33:25,347 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:25] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-31 10:33:25,351 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:25] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-31 10:33:25,353 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:25] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-10-31 10:33:25,354 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:25] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-10-31 10:33:25,354 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:25] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-10-31 10:33:25,356 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:25] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-10-31 10:33:25,359 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:25] "GET /static/js/shared/blog-pipeline-header.js HTTP/1.1" 200 -
+2025-10-31 10:33:25,360 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:25] "[36mGET /static/js/planning/calendar-week-view.js HTTP/1.1[0m" 304 -
+2025-10-31 10:33:25,362 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:25] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-31 10:33:25,365 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:25] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-31 10:33:25,365 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:25] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-10-31 10:33:25,367 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:25] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-31 10:33:25,385 - config.database - INFO - Database connection established
+2025-10-31 10:33:25,385 - config.database - INFO - Database connection established
+2025-10-31 10:33:25,386 - config.database - INFO - Database connection established
+2025-10-31 10:33:25,388 - config.database - INFO - Database connection established
+2025-10-31 10:33:25,389 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:25] "GET /planning/api/calendar/schedule/2025/44 HTTP/1.1" 200 -
+2025-10-31 10:33:25,390 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:25] "GET /planning/api/calendar/ideas/week/44 HTTP/1.1" 200 -
+2025-10-31 10:33:25,391 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:25] "GET /planning/api/calendar/events/2025/44 HTTP/1.1" 200 -
+2025-10-31 10:33:25,391 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:25] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 10:33:36,198 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:36] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-10-31 10:33:36,200 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:36] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-10-31 10:33:36,202 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:36] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-10-31 10:33:36,209 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:36] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
+2025-10-31 10:33:36,210 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:36] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
+2025-10-31 10:33:36,211 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:33:36] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
+2025-10-31 10:34:53,014 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/posts.py', reloading
+2025-10-31 10:34:53,238 - werkzeug - INFO -  * Restarting with stat
+2025-10-31 10:34:54,349 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-10-31 10:34:54,356 - werkzeug - WARNING -  * Debugger is active!
+2025-10-31 10:34:54,367 - werkzeug - INFO -  * Debugger PIN: 452-628-635
+2025-10-31 10:35:02,321 - config.database - INFO - Database connection established
+2025-10-31 10:35:02,364 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:35:02] "GET /newsletter HTTP/1.1" 200 -
+2025-10-31 10:35:02,474 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:35:02] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-10-31 10:35:02,475 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:35:02] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-31 10:35:02,475 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:35:02] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-10-31 10:35:02,476 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:35:02] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-10-31 10:35:02,479 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:35:02] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-31 10:35:02,479 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:35:02] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-31 10:35:02,480 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:35:02] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-31 10:35:02,480 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:35:02] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-31 10:35:09,600 - config.database - INFO - Database connection established
+2025-10-31 10:35:09,613 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 10:35:09] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-10-31 10:35:22,645 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_api_calendar.py', reloading
+2025-10-31 10:35:22,847 - werkzeug - INFO -  * Restarting with stat
+2025-10-31 10:35:23,806 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-10-31 10:35:23,813 - werkzeug - WARNING -  * Debugger is active!
+2025-10-31 10:35:23,823 - werkzeug - INFO -  * Debugger PIN: 452-628-635
+2025-10-31 10:35:54,165 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/db/queries_issue.py', reloading
+2025-10-31 10:35:54,389 - werkzeug - INFO -  * Restarting with stat
+2025-10-31 10:35:55,405 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/transformers/__init__.py)
+2025-10-31 10:35:55,412 - werkzeug - WARNING -  * Debugger is active!
+2025-10-31 10:35:55,424 - werkzeug - INFO -  * Debugger PIN: 452-628-635

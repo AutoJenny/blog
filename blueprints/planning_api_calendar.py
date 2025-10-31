@@ -155,9 +155,11 @@ def api_calendar_schedule(year, week_number):
             cursor.execute("""
                 SELECT cs.id, cs.post_id, cs.year, cs.week_number, cs.scheduled_date,
                        cs.created_at, cs.updated_at,
-                       p.title as post_title, p.status as post_status
+                       p.title as post_title, p.status as post_status,
+                       pd.idea_seed as post_idea_seed
                 FROM calendar_schedule cs
                 LEFT JOIN post p ON cs.post_id = p.id
+                LEFT JOIN post_development pd ON p.id = pd.post_id
                 WHERE cs.year = %s AND cs.week_number = %s
                 ORDER BY cs.scheduled_date
             """, (year, week_number))

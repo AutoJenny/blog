@@ -62,33 +62,51 @@ def upsert_block(*, issue_id: int, block_type: str, position: int, enabled: bool
             return None
 
 
-def list_issues(*, limit: int = 50, status: str | None = None) -> List[Dict[str, Any]]:
-    """List recent issues for dashboard."""
+def list_issues(*, limit: int = 12, offset: int = 0, status: str | None = None, q: str | None = None) -> List[Dict[str, Any]]:
+    """List issues with optional status filter, search, and pagination."""
+    where = []
+    params: List[Any] = []
+    if status:
+        where.append("status = %s")
+        params.append(status)
+    if q:
+        where.append("(subject ILIKE %s OR preheader ILIKE %s)")
+        like = f"%{q}%"
+        params.extend([like, like])
+    where_sql = (" WHERE " + " AND ".join(where)) if where else ""
+    sql = f"""
+        SELECT id, target_week, status, subject, preheader, last_sent_at, created_at, updated_at
+        FROM newsletter_issue
+        {where_sql}
+        ORDER BY created_at DESC
+        LIMIT %s OFFSET %s
+    """
+    params.extend([limit, offset])
     with db_manager.get_connection() as conn:
         with conn.cursor() as cur:
-            if status:
-                cur.execute(
-                    """
-                    SELECT id, target_week, status, subject, preheader, last_sent_at, created_at, updated_at
-                    FROM newsletter_issue
-                    WHERE status = %s
-                    ORDER BY created_at DESC
-                    LIMIT %s
-                    """,
-                    (status, limit),
-                )
-            else:
-                cur.execute(
-                    """
-                    SELECT id, target_week, status, subject, preheader, last_sent_at, created_at, updated_at
-                    FROM newsletter_issue
-                    ORDER BY created_at DESC
-                    LIMIT %s
-                    """,
-                    (limit,),
-                )
+            cur.execute(sql, tuple(params))
             rows = cur.fetchall() or []
             return [dict(r) for r in rows]
+
+
+def count_issues(*, status: str | None = None, q: str | None = None) -> int:
+    """Total issues count for pagination with same filters as list_issues."""
+    where = []
+    params: List[Any] = []
+    if status:
+        where.append("status = %s")
+        params.append(status)
+    if q:
+        where.append("(subject ILIKE %s OR preheader ILIKE %s)")
+        like = f"%{q}%"
+        params.extend([like, like])
+    where_sql = (" WHERE " + " AND ".join(where)) if where else ""
+    sql = f"SELECT COUNT(*) AS n FROM newsletter_issue {where_sql}"
+    with db_manager.get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql, tuple(params))
+            row = cur.fetchone()
+            return int(row['n']) if row else 0
 
 
 def get_block_type_description(*, block_type: str) -> str:
