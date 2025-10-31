@@ -75,6 +75,15 @@ def api_calendar_ideas(week_number):
             has_classification = cursor.fetchone() is not None
             classification_field = 'ci.item_classification' if has_classification else "'idea'::varchar as item_classification"
             
+            # Build GROUP BY clause with optional item_classification
+            group_by_fields = """ci.id, ci.week_number, ci.idea_title, ci.idea_description, 
+                         ci.seasonal_context, ci.content_type, ci.priority, ci.tags,
+                         ci.is_recurring, ci.can_span_weeks, ci.max_weeks, ci.is_evergreen,
+                         ci.evergreen_frequency, ci.last_used_date, ci.usage_count,
+                         ci.evergreen_notes, ci.created_at, ci.updated_at"""
+            if has_classification:
+                group_by_fields += ", ci.item_classification"
+            
             cursor.execute(f"""
                 SELECT ci.id, ci.week_number, ci.idea_title, ci.idea_description, 
                        ci.seasonal_context, ci.content_type, ci.priority, ci.tags,
@@ -96,11 +105,7 @@ def api_calendar_ideas(week_number):
                 LEFT JOIN calendar_idea_categories cic ON ci.id = cic.idea_id
                 LEFT JOIN calendar_categories cc ON cic.category_id = cc.id
                 WHERE ci.week_number = %s
-                GROUP BY ci.id, ci.week_number, ci.idea_title, ci.idea_description, 
-                         ci.seasonal_context, ci.content_type, ci.priority, ci.tags,
-                         ci.is_recurring, ci.can_span_weeks, ci.max_weeks, ci.is_evergreen,
-                         ci.evergreen_frequency, ci.last_used_date, ci.usage_count,
-                         ci.evergreen_notes, ci.created_at, ci.updated_at""" + (", ci.item_classification" if has_classification else "")
+                GROUP BY {group_by_fields}
                 ORDER BY 
                     CASE ci.priority 
                         WHEN 'mandatory' THEN 1 

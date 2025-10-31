@@ -15,6 +15,7 @@ from newsletter.selectors.products import select_new_products, select_spotlight_
 from newsletter.selectors.category import select_category_feature
 from newsletter.selectors.evergreen import select_evergreen
 from newsletter.selectors.theme import select_default_theme
+from newsletter.services.block_suggestion_service import auto_select_for_block
 
 
 def build_weekly_issue(*, target_week: str | None = None) -> Dict:
@@ -39,49 +40,40 @@ def build_weekly_issue(*, target_week: str | None = None) -> Dict:
 
     position = 0
 
-    # Intro (uses new suggestion system)
-    intro_content = select_intro_content(target_week=target_week)
-    intro_payload = {
-        "text": intro_content.get('text', ''),
-        "suggestions": intro_content.get('suggestions', []),
-        "selected": intro_content.get('selected'),
-        "items_by_category": intro_content.get('items_by_category', {}),
-    }
-    upsert_block(issue_id=issue_id, block_type="intro", position=position, enabled=True, payload=intro_payload)
-    position += 1
+    # Build all blocks using unified suggestion service
+    block_types = [
+        "intro",
+        "feature",
+        "snapshot",
+        "new_products",
+        "spotlight",
+        "category",
+        "evergreen",
+        "closing",
+    ]
 
-    # Feature Article
-    feature = select_feature_article()
-    upsert_block(issue_id=issue_id, block_type="feature", position=position, enabled=True, payload=feature or {})
-    position += 1
-
-    # Snapshot (uses new suggestion system)
-    snap = select_snapshot(target_week=target_week) or fallback_snapshot()
-    upsert_block(issue_id=issue_id, block_type="snapshot", position=position, enabled=True, payload=snap)
-    position += 1
-
-    # New Products or Spotlight (placeholder selection)
-    new_items = select_new_products(since_iso_timestamp=f"{date.today().isoformat()}T00:00:00Z")
-    if new_items:
-        grouped, _ = group_variants(new_items)
-        upsert_block(issue_id=issue_id, block_type="new_products", position=position, enabled=True, payload={"items": grouped[:6]})
-    else:
-        spotlight = select_spotlight_product()
-        upsert_block(issue_id=issue_id, block_type="spotlight", position=position, enabled=True, payload=spotlight or {})
-    position += 1
-
-    # Category Feature
-    category = select_category_feature()
-    upsert_block(issue_id=issue_id, block_type="category", position=position, enabled=True, payload=category or {})
-    position += 1
-
-    # Evergreen
-    evergreen = select_evergreen()
-    upsert_block(issue_id=issue_id, block_type="evergreen", position=position, enabled=True, payload=evergreen or {})
-    position += 1
-
-    # Closing placeholder
-    upsert_block(issue_id=issue_id, block_type="closing", position=position, enabled=True, payload={"text": "Warmly, from Scotland"})
+    for block_type in block_types:
+        if block_type == "closing":
+            # Closing is simple, no suggestions
+            payload = {"text": "Warmly, from Scotland"}
+        else:
+            # Use unified auto-select service
+            payload = auto_select_for_block(block_type=block_type, issue_id=issue_id, target_week=target_week)
+            # Ensure suggestions are stored in payload for all blocks that use them
+            if block_type in ("intro", "snapshot"):
+                # These already have suggestions from select_intro_content/select_snapshot
+                pass
+            else:
+                # For other blocks, get suggestions and store them
+                from newsletter.services.block_suggestion_service import get_suggestions_for_block
+                suggestions_result = get_suggestions_for_block(block_type=block_type, issue_id=issue_id, target_week=target_week)
+                if suggestions_result.get('suggestions'):
+                    payload['suggestions'] = suggestions_result['suggestions']
+                if suggestions_result.get('current'):
+                    payload['selected'] = suggestions_result['current']
+        
+        upsert_block(issue_id=issue_id, block_type=block_type, position=position, enabled=True, payload=payload)
+        position += 1
 
     return {"issue_id": issue_id, "target_week": target_week}
 
