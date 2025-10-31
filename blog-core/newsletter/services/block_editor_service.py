@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 from newsletter.db.queries_issue import get_block, update_block_payload
 from newsletter.services.suggestion_service import generate_suggestions
+from newsletter.services.block_suggestion_service import get_suggestions_for_block, auto_select_for_block
 from newsletter.rendering.intro_text import generate_intro_text
 from newsletter.rendering.snapshot_text import generate_snapshot_text
 from newsletter.selectors.intro import select_intro_content

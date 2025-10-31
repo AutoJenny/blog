@@ -197,12 +197,20 @@ def api_get_calendar_idea(idea_id):
     """Get a single calendar idea by ID with full details."""
     try:
         with db_manager.get_cursor() as cursor:
+            # Check if item_classification column exists
             cursor.execute("""
+                SELECT column_name FROM information_schema.columns 
+                WHERE table_name = 'calendar_ideas' AND column_name = 'item_classification'
+            """)
+            has_classification = cursor.fetchone() is not None
+            classification_field = 'ci.item_classification' if has_classification else "'idea'::varchar as item_classification"
+            
+            cursor.execute(f"""
                 SELECT ci.id, ci.week_number, ci.idea_title, ci.idea_description, 
                        ci.seasonal_context, ci.content_type, ci.priority, ci.tags,
                        ci.is_recurring, ci.can_span_weeks, ci.max_weeks, ci.is_evergreen,
                        ci.evergreen_frequency, ci.last_used_date, ci.usage_count,
-                       ci.evergreen_notes, ci.sources, ci.created_at, ci.updated_at,
+                       ci.evergreen_notes, ci.sources, {classification_field}, ci.created_at, ci.updated_at,
                        COALESCE(
                            json_agg(
                                json_build_object(
@@ -222,7 +230,7 @@ def api_get_calendar_idea(idea_id):
                          ci.seasonal_context, ci.content_type, ci.priority, ci.tags,
                          ci.is_recurring, ci.can_span_weeks, ci.max_weeks, ci.is_evergreen,
                          ci.evergreen_frequency, ci.last_used_date, ci.usage_count,
-                         ci.evergreen_notes, ci.created_at, ci.updated_at
+                         ci.evergreen_notes, ci.created_at, ci.updated_at""" + (", ci.item_classification" if has_classification else "") + """
             """, (idea_id,))
             
             idea = cursor.fetchone()
