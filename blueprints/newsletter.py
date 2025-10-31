@@ -20,6 +20,7 @@ from newsletter.db.queries_issue import (
     delete_block,
     insert_block,
     move_block,
+    shift_positions,
 )
 from newsletter.services.draft_service import build_weekly_issue
 from newsletter.services.qa_service import run_pre_send_checks
@@ -56,6 +57,36 @@ def view_issue(issue_id: int):
         blocks = list_blocks_by_issue(issue_id=issue_id)
     except Exception:
         blocks = []
+    # Auto-generate one of each block type if none exist yet
+    if not blocks:
+        default_types = [
+            "intro",
+            "feature",
+            "snapshot",
+            "new_products",
+            "spotlight",
+            "category",
+            "evergreen",
+            "closing",
+        ]
+        pos = 0
+        for t in default_types:
+            insert_block(issue_id=issue_id, block_type=t, position=pos, enabled=True, payload={})
+            pos += 1
+        try:
+            blocks = list_blocks_by_issue(issue_id=issue_id)
+        except Exception:
+            blocks = []
+    else:
+        # Ensure Intro exists for existing issues; if missing, prepend at position 0
+        has_intro = any((b.get("type") == "intro") for b in blocks)
+        if not has_intro:
+            try:
+                shift_positions(issue_id=issue_id, from_position=0)
+                insert_block(issue_id=issue_id, block_type="intro", position=0, enabled=True, payload={})
+                blocks = list_blocks_by_issue(issue_id=issue_id)
+            except Exception:
+                pass
     return render_template('newsletter/issue.html', issue_id=issue_id, blocks=blocks)
 
 
@@ -150,14 +181,30 @@ def remove_block(block_id: int):
 @bp.route('/newsletter/issue/<int:issue_id>/block/add', methods=['POST'])
 def add_block(issue_id: int):
     block_type = request.form.get('type', 'evergreen')
-    # Calculate position: max position + 1, or 0 if no blocks
+    # Calculate position: optional provided, else append to end
     try:
         existing = list_blocks_by_issue(issue_id=issue_id)
-        if existing:
-            max_pos = max(b.get('position', 0) for b in existing)
-            position = max_pos + 1
+        desired = request.form.get('position')
+        if desired is not None and desired != '':
+            try:
+                desired_pos = int(desired)
+            except Exception:
+                desired_pos = 0
+            if desired_pos < 0:
+                desired_pos = 0
+            if existing:
+                max_pos = max(b.get('position', 0) for b in existing)
+                if desired_pos > max_pos + 1:
+                    desired_pos = max_pos + 1
+                # Shift existing blocks at and after desired_pos
+                shift_positions(issue_id=issue_id, from_position=desired_pos)
+            position = desired_pos
         else:
-            position = 0
+            if existing:
+                max_pos = max(b.get('position', 0) for b in existing)
+                position = max_pos + 1
+            else:
+                position = 0
     except Exception:
         position = 9999
     payload = {}

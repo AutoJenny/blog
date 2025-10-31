@@ -175,6 +175,143 @@ def api_calendar_schedule(year, week_number):
         logger.error(f"Error fetching calendar schedule: {e}")
         return jsonify({'error': str(e)}), 500
 
+def api_add_calendar_idea():
+    """Create a new week idea and persist it to calendar_ideas."""
+    try:
+        data = request.get_json(force=True) or {}
+        required = ['idea_title', 'week_number']
+        for f in required:
+            if not data.get(f):
+                return jsonify({'success': False, 'error': f'Missing field: {f}'}), 400
+
+        idea_title = data['idea_title'].strip()
+        idea_description = (data.get('idea_description') or '').strip()
+        priority = (data.get('priority') or 'random').strip()
+        content_type = (data.get('content_type') or 'guide').strip()
+        week_number = int(data['week_number'])
+
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO calendar_ideas (week_number, idea_title, idea_description, content_type, priority, is_recurring)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    RETURNING id, week_number, idea_title, idea_description, content_type, priority, is_recurring
+                    """,
+                    (week_number, idea_title, idea_description, content_type, priority, False)
+                )
+                row = cursor.fetchone()
+                conn.commit()
+
+        return jsonify({'success': True, 'idea': row})
+    except Exception as e:
+        logger.error(f"Error adding calendar idea: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+def api_update_calendar_idea(idea_id: int):
+    """Update an existing week idea."""
+    try:
+        data = request.get_json(force=True) or {}
+        fields = []
+        values = []
+        for col in ('idea_title', 'idea_description', 'priority', 'content_type', 'week_number'):
+            if col in data and data[col] is not None:
+                fields.append(col)
+                values.append(data[col])
+        if not fields:
+            return jsonify({'success': False, 'error': 'No fields provided'}), 400
+
+        set_clause = ", ".join(f"{c} = %s" for c in fields)
+        values.append(idea_id)
+
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(f"UPDATE calendar_ideas SET {set_clause} WHERE id = %s RETURNING id, week_number, idea_title, idea_description, content_type, priority, is_recurring", values)
+                row = cursor.fetchone()
+                conn.commit()
+        if not row:
+            return jsonify({'success': False, 'error': 'Idea not found'}), 404
+        return jsonify({'success': True, 'idea': row})
+    except Exception as e:
+        logger.error(f"Error updating calendar idea: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+def api_delete_calendar_idea(idea_id: int):
+    """Delete a week idea."""
+    try:
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("DELETE FROM calendar_ideas WHERE id = %s RETURNING id", (idea_id,))
+                row = cursor.fetchone()
+                conn.commit()
+        if not row:
+            return jsonify({'success': False, 'error': 'Idea not found'}), 404
+        return jsonify({'success': True})
+    except Exception as e:
+        logger.error(f"Error deleting calendar idea: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+def api_calendar_idea_status(idea_id: int):
+    """Resolve the post creation status for the selected idea by matching scheduled posts in the same week/year.
+    Heuristic: find most recent post scheduled in that (year, week) whose title ilike the idea title; otherwise latest scheduled for the week.
+    """
+    try:
+        year = request.args.get('year', type=int)
+        week_number = request.args.get('week_number', type=int)
+        if not year or not week_number:
+            return jsonify({'success': False, 'error': 'year and week_number are required'}), 400
+
+        with db_manager.get_cursor() as cursor:
+            # Fetch idea title
+            cursor.execute("SELECT idea_title FROM calendar_ideas WHERE id = %s", (idea_id,))
+            idea_row = cursor.fetchone()
+            if not idea_row:
+                return jsonify({'success': False, 'error': 'Idea not found'}), 404
+            idea_title = idea_row['idea_title']
+
+            # Try title match first
+            cursor.execute(
+                """
+                SELECT p.id, p.title, p.status, cs.scheduled_date
+                FROM calendar_schedule cs
+                LEFT JOIN post p ON cs.post_id = p.id
+                WHERE cs.year = %s AND cs.week_number = %s AND p.title ILIKE %s
+                ORDER BY cs.scheduled_date DESC NULLS LAST, p.updated_at DESC NULLS LAST
+                LIMIT 1
+                """,
+                (year, week_number, f"%{idea_title}%")
+            )
+            post = cursor.fetchone()
+            if not post:
+                # Fallback: any scheduled post for that week
+                cursor.execute(
+                    """
+                    SELECT p.id, p.title, p.status, cs.scheduled_date
+                    FROM calendar_schedule cs
+                    LEFT JOIN post p ON cs.post_id = p.id
+                    WHERE cs.year = %s AND cs.week_number = %s
+                    ORDER BY cs.scheduled_date DESC NULLS LAST, p.updated_at DESC NULLS LAST
+                    LIMIT 1
+                    """,
+                    (year, week_number)
+                )
+                post = cursor.fetchone()
+
+        status = None
+        post_id = None
+        title = None
+        scheduled_date = None
+        if post:
+            post_id = post['id']
+            title = post['title']
+            status = post['status']
+            scheduled_date = post['scheduled_date'].isoformat() if post['scheduled_date'] else None
+
+        return jsonify({'success': True, 'post': {'id': post_id, 'title': title, 'status': status, 'scheduled_date': scheduled_date}})
+    except Exception as e:
+        logger.error(f"Error getting idea status: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 def api_calendar_ideas_for_week(week_number):
     """Get ideas for a specific week (alias for api_calendar_ideas)"""
     return api_calendar_ideas(week_number)

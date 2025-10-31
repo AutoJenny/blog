@@ -11,7 +11,9 @@
         {% for b in blocks %}
           {% set t = b.type %}
           {% set block = b.payload_json %}
-          {% if t == 'feature' %}
+          {% if t == 'intro' %}
+            {% include 'newsletter/partials/intro.html' %}
+          {% elif t == 'feature' %}
             {% include 'newsletter/partials/feature.html' %}
           {% elif t == 'snapshot' %}
             {% include 'newsletter/partials/snapshot.html' %}

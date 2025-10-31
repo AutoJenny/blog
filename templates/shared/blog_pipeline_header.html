@@ -88,6 +88,10 @@
                    class="sub-stage-btn" data-substage="view">
                     Calendar View
                 </a>
+                <a href="{{ url_for('planning.planning_calendar_week_view', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="week-view">
+                    Week View
+                </a>
                 <a href="#" 
                    id="week-ideas-link"
                    class="sub-stage-btn" 
@@ -218,6 +222,7 @@
 const subtitles = {
     'calendar': {
         'view': 'Weekly view of your content schedule - 52 weeks organized by month',
+        'week-view': 'Focus on a single week: ideas, events, and scheduled items',
         'ideas': 'AI-powered suggestions based on seasons, trends, and content gaps.'
     },
     'concept': {

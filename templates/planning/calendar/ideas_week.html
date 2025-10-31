@@ -40,7 +40,7 @@
             <div class="idea-generator">
                 <div class="available-ideas">
                     <div class="available-ideas-header">
-                        <h4>Available Ideas for Week {{ week_number }}</h4>
+                        <h4>Available</h4>
                         <button class="btn btn-secondary" onclick="openNewIdeaDialog()">
                             <i class="fas fa-plus"></i> New Idea
                         </button>
@@ -51,7 +51,7 @@
                 </div>
                 
                 <div class="selected-idea">
-                    <h4>Selected Idea</h4>
+                    <h4>Selected</h4>
                     <div id="selected-idea-display" class="selected-idea-content">
                         <div class="no-selection">No idea selected</div>
                     </div>
@@ -191,16 +191,17 @@
 
 .idea-generator {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
 }
 
 .available-ideas, .selected-idea {
     background: #1e293b;
     border: 1px solid #334155;
     border-radius: 8px;
-    padding: 1.5rem;
+    padding: 1.25rem 1.5rem;
 }
+.selected-idea { margin-top: .5rem; }
 
 .available-ideas-header {
     display: flex;
@@ -220,8 +221,8 @@
 }
 
 .idea-item {
-    background: #0f172a;
-    border: 1px solid #334155;
+    background: #7c2d12; /* dull browny orange */
+    border: 1px solid #9a3412;
     border-radius: 6px;
     padding: 1rem;
     margin-bottom: 0.5rem;
@@ -230,13 +231,14 @@
 }
 
 .idea-item:hover {
-    background: #1e293b;
-    border-color: #3b82f6;
+    background: #8a3516;
+    border-color: #c2410c;
 }
 
 .idea-item.selected {
-    background: #1e40af;
-    border-color: #3b82f6;
+    background: #ea580c; /* darker orange than calendar page */
+    border-color: #c2410c;
+    color: #0f172a;
 }
 
 .idea-header {
@@ -247,7 +249,7 @@
 }
 
 .idea-title {
-    color: #f1f5f9;
+    color: #fde68a;
     font-weight: 600;
     font-size: 1rem;
 }
@@ -270,7 +272,7 @@
 }
 
 .idea-description {
-    color: #94a3b8;
+    color: #fef3c7;
     font-size: 0.9rem;
     margin-bottom: 0.5rem;
 }
@@ -279,15 +281,19 @@
     display: flex;
     gap: 1rem;
     font-size: 0.8rem;
-    color: #64748b;
+    color: #fcd34d;
 }
+.idea-actions { display:flex; gap:.5rem; margin-top:.5rem; }
+.btn-icon { background: transparent; border: 1px solid rgba(255,255,255,0.2); color:#f1f5f9; padding: .25rem .5rem; border-radius:4px; cursor:pointer; }
+.btn-icon:hover { background: rgba(255,255,255,0.1); }
 
 .selected-idea-content {
     min-height: 200px;
     padding: 1rem;
-    background: #0f172a;
+    background: #ea580c; /* selected panel */
+    color: #0f172a;
     border-radius: 6px;
-    border: 1px solid #334155;
+    border: 1px solid #c2410c;
 }
 
 .selected-idea-actions {
@@ -527,7 +533,8 @@ function displayAvailableIdeas() {
         return;
     }
     
-    availableIdeas.forEach((idea, index) => {
+    const items = availableIdeas.filter(i => !selectedIdea || i.id !== selectedIdea.id);
+    items.forEach((idea, index) => {
         const ideaItem = document.createElement('div');
         ideaItem.className = 'idea-item';
         ideaItem.innerHTML = `
@@ -540,9 +547,21 @@ function displayAvailableIdeas() {
                 <span><i class="fas fa-tag"></i> ${idea.content_type}</span>
                 <span><i class="fas fa-calendar"></i> Week ${idea.week_number}</span>
             </div>
+            <div class="idea-actions">
+                <button class="btn-icon" data-action="edit"><i class="fas fa-edit"></i> Edit</button>
+                <button class="btn-icon" data-action="delete"><i class="fas fa-trash"></i> Delete</button>
+            </div>
         `;
         
         ideaItem.addEventListener('click', () => selectIdea(idea, index));
+        ideaItem.querySelector('[data-action="edit"]').addEventListener('click', async (ev) => {
+            ev.stopPropagation();
+            await editIdea(idea);
+        });
+        ideaItem.querySelector('[data-action="delete"]').addEventListener('click', async (ev) => {
+            ev.stopPropagation();
+            await deleteIdea(idea);
+        });
         ideasList.appendChild(ideaItem);
     });
 }
@@ -554,11 +573,15 @@ function selectIdea(idea, index) {
     });
     
     // Add selection to clicked item
-    document.querySelectorAll('.idea-item')[index].classList.add('selected');
+    const listItems = document.querySelectorAll('.idea-item');
+    if (listItems[index]) listItems[index].classList.add('selected');
     
     selectedIdea = idea;
     displaySelectedIdea();
     document.getElementById('confirm-btn').disabled = false;
+
+    // Refresh available list to exclude selected
+    displayAvailableIdeas();
 }
 
 function displaySelectedIdea() {
@@ -580,6 +603,7 @@ function displaySelectedIdea() {
             <span><i class="fas fa-calendar"></i> Week ${selectedIdea.week_number}</span>
         </div>
     `;
+    updateSelectedStatus();
 }
 
 function autoSelectIdea() {
@@ -642,6 +666,7 @@ async function confirmSelection() {
                 Successfully ${action} (ID: ${postId}) for "${selectedIdea.idea_title}"
             </div>
         `;
+        updateSelectedStatus();
         
         // Redirect to Planning → Idea Generation (post-based)
         setTimeout(() => {
@@ -690,23 +715,22 @@ document.getElementById('new-idea-form').addEventListener('submit', async functi
     };
     
     try {
-        // Add idea to database (this would need a new API endpoint)
-        console.log('Adding new idea:', ideaData);
-        
-        // For now, just add to local list
-        availableIdeas.push({
-            id: Date.now(), // Temporary ID
-            idea_title: ideaData.idea_title,
-            idea_description: ideaData.idea_description,
-            priority: ideaData.priority,
-            content_type: ideaData.content_type,
-            week_number: ideaData.week_number,
-            is_recurring: false
+        // Persist idea
+        const resp = await fetch('/planning/api/calendar/ideas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(ideaData)
         });
-        
-        // Refresh display
+        const result = await resp.json();
+        if (!resp.ok || !result.success) throw new Error(result.error || 'Failed to add idea');
+
+        const newIdea = result.idea;
+        availableIdeas.push(newIdea);
+
+        // Refresh and select the new idea
         displayAvailableIdeas();
         closeNewIdeaDialog();
+        selectIdea(newIdea, 0);
         
     } catch (error) {
         console.error('Error adding idea:', error);

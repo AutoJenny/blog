@@ -29,9 +29,9 @@
         </div>
 
         <div class="week-filters">
-            <label><input type="checkbox" id="toggle-ideas" checked> Blog Themes</label>
-            <label><input type="checkbox" id="toggle-events" checked> Events</label>
-            <label><input type="checkbox" id="toggle-syndication" checked> Syndication (Facebook Product)</label>
+            <label class="filter-pill filter-ideas active"><input type="checkbox" id="toggle-ideas" checked> Blog Themes</label>
+            <label class="filter-pill filter-events active"><input type="checkbox" id="toggle-events" checked> Events</label>
+            <label class="filter-pill filter-syndication active"><input type="checkbox" id="toggle-syndication" checked> Syndication (Facebook Product)</label>
         </div>
 
         <div class="week-themes" id="week-themes"></div>
@@ -73,10 +73,22 @@
 .btn-secondary:hover { background: rgba(255,255,255,0.2); }
 .week-controls { display:flex; align-items:center; justify-content:space-between; background:#1e293b; border:1px solid #334155; border-radius:8px; padding:.75rem 1rem; margin-bottom: 1rem; }
 .week-filters { display:flex; gap:16px; align-items:center; justify-content:center; color:#cbd5e1; margin: 0 0 12px 0; }
-.week-filters label { display:flex; gap:8px; align-items:center; background:#1e293b; border:1px solid #334155; padding:.35rem .6rem; border-radius:999px; }
+.week-filters .filter-pill { display:flex; gap:8px; align-items:center; padding:.35rem .6rem; border-radius:999px; border:2px solid transparent; cursor:pointer; }
+.week-filters .filter-pill input { margin-right:6px; }
+/* Themes: bright orange when active, darker orange when inactive */
+.filter-ideas { background:#7c2d12; border-color:#9a3412; color:#fff; }
+.filter-ideas.active { background:#f97316; border-color:#ea580c; color:#0f172a; }
+/* Events: blue background */
+.filter-events { background:#1d4ed8; border-color:#2563eb; color:#fff; }
+.filter-events.active { background:#1d4ed8; border-color:#3b82f6; color:#fff; }
+/* Syndication: outlined blue, no fill */
+.filter-syndication { background:transparent; border-color:#3b82f6; color:#93c5fd; }
+.filter-syndication.active { background:rgba(59,130,246,0.08); border-color:#60a5fa; color:#bfdbfe; }
 .week-themes { display:flex; flex-direction:column; gap:8px; background:#0f172a; border:1px solid #334155; border-radius:8px; padding:.75rem 1rem; margin-bottom: 1rem; width:100%; }
-.week-themes .item { padding:8px 12px; font-size:.9rem; color:#e2e8f0; text-align:left; background:transparent; border-radius:0; border:none; }
-.week-themes .item.idea { color:#94a3b8; border-left:3px solid #374151; padding-left:12px; }
+.week-themes .item { padding:8px 12px; font-size:.9rem; color:#0f172a; text-align:left; border-radius:6px; border:none; }
+.week-themes .item.idea { background:#f97316; }
+/* If needed for a less emphasized (unselected) theme state */
+.week-themes .item.idea.unselected { background:#7c2d12; color:#e2e8f0; }
 .nav-btn { padding:.5rem; background:transparent; border:1px solid #475569; border-radius:4px; color:#94a3b8; cursor:pointer; }
 .nav-btn:hover { background:#334155; color:#e2e8f0; }
 .week-meta { display:flex; gap:1.25rem; color:#cbd5e1; font-weight:600; }
@@ -88,7 +100,8 @@
 .item { padding:6px 8px; border-radius:6px; font-size:.8rem; color:#e2e8f0; }
 .item.idea { background:#374151; }
 .item.event { background:#1d4ed8; }
-.item.scheduled { background:#10b981; }
+/* Syndication scheduled posts: outlined blue, no background */
+.item.scheduled.syndication { background:transparent; color:#93c5fd; border:2px solid #3b82f6; }
 .legend { margin-top: 12px; display:flex; gap:10px; color:#94a3b8; font-size:.85rem; }
 .calendar-actions { margin-top: 1rem; }
 .bottom-actions { display: flex; justify-content: flex-end; }
@@ -100,6 +113,8 @@
 
 <script>
 window.postId = {{ post_id }};
+window.currentStage = 'calendar';
+window.currentSubstage = 'week-view';
 </script>
 <script type="module" src="/static/js/planning/calendar-week-view.js"></script>
 

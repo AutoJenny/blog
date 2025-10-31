@@ -28,7 +28,12 @@
         {% for b in blocks %}
         <div class="border border-dark-border rounded p-4">
           <div class="flex items-center justify-between">
-            <div class="text-white font-semibold">{{ loop.index }}. {{ b.type }}</div>
+            <div>
+              <div class="text-white font-semibold">{{ loop.index }}. {{ b.type }}</div>
+              {% if b.description %}
+                <div class="text-gray-400 text-xs mt-1">{{ b.description }}</div>
+              {% endif %}
+            </div>
             <div class="flex items-center gap-2">
               <form method="post" action="/newsletter/block/{{ b.id }}/move" style="display:inline;">
                 <input type="hidden" name="issue_id" value="{{ issue_id }}" />
@@ -75,7 +80,8 @@
     {% endif %}
     <form method="post" action="/newsletter/issue/{{ issue_id }}/block/add" class="mt-4 flex items-center gap-2">
       <label class="text-dark-text text-sm">Add Block:</label>
-      <select name="type" class="bg-[#0f172a] text-white border border-dark-border rounded p-1">
+      <select name="type" class="bg-[#0f172a] text-white border border-dark-border rounded p-1 appearance-none focus:outline-none focus:ring-1 focus:ring-dark-accent" style="background-color:#0f172a; color:#fff;">
+        <option value="intro">intro</option>
         <option value="feature">feature</option>
         <option value="snapshot">snapshot</option>
         <option value="new_products">new_products</option>
@@ -84,6 +90,8 @@
         <option value="evergreen">evergreen</option>
         <option value="closing">closing</option>
       </select>
+      <label class="text-dark-text text-sm">at position</label>
+      <input name="position" type="number" min="0" class="w-20 bg-[#0f172a] text-white border border-dark-border rounded p-1 appearance-none focus:outline-none focus:ring-1 focus:ring-dark-accent" style="background-color:#0f172a; color:#fff;" placeholder="end" />
       <button type="submit" class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-3 py-1 rounded">Add</button>
     </form>
   </div>

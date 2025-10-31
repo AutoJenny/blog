@@ -7,6 +7,7 @@ functions and must remain small. Split further if it approaches 400–500 LOC.
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
+from psycopg.types.json import Json
 from config.database import db_manager
 
 
@@ -55,7 +56,7 @@ def upsert_block(*, issue_id: int, block_type: str, position: int, enabled: bool
                 INSERT INTO newsletter_block (issue_id, type, position, enabled, payload_json)
                 VALUES (%s, %s, %s, %s, %s)
                 """,
-                (issue_id, block_type, position, enabled, payload),
+                (issue_id, block_type, position, enabled, Json(payload)),
             )
             conn.commit()
             return None
@@ -90,12 +91,26 @@ def list_issues(*, limit: int = 50, status: str | None = None) -> List[Dict[str,
             return [dict(r) for r in rows]
 
 
+def get_block_type_description(*, block_type: str) -> str:
+    """Get default description for a block type from newsletter_block_type table."""
+    with db_manager.get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT description FROM newsletter_block_type WHERE type = %s",
+                (block_type,),
+            )
+            row = cur.fetchone()
+            return row['description'] if row else ''
+
+
 def list_blocks_by_issue(*, issue_id: int) -> List[Dict[str, Any]]:
+    """List blocks for an issue, including description from block or default from type."""
     with db_manager.get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT id, issue_id, type, enabled, position, payload_json, pinned_ids, created_at, updated_at
+                SELECT id, issue_id, type, enabled, position, payload_json, pinned_ids, 
+                       COALESCE(description, '') AS description, created_at, updated_at
                 FROM newsletter_block
                 WHERE issue_id = %s
                 ORDER BY position ASC, id ASC
@@ -103,7 +118,12 @@ def list_blocks_by_issue(*, issue_id: int) -> List[Dict[str, Any]]:
                 (issue_id,),
             )
             rows = cur.fetchall() or []
-            return [dict(r) for r in rows]
+            blocks = [dict(r) for r in rows]
+            # Fill in descriptions from default if block description is empty
+            for block in blocks:
+                if not block.get('description'):
+                    block['description'] = get_block_type_description(block_type=block['type'])
+            return blocks
 
 
 def set_block_enabled(*, block_id: int, enabled: bool) -> None:
@@ -129,7 +149,7 @@ def update_block_payload(*, block_id: int, payload: Dict[str, Any]) -> None:
                 SET payload_json = %s, updated_at = NOW()
                 WHERE id = %s
                 """,
-                (payload, block_id),
+                (Json(payload), block_id),
             )
             conn.commit()
 
@@ -141,16 +161,34 @@ def delete_block(*, block_id: int) -> None:
             conn.commit()
 
 
-def insert_block(*, issue_id: int, block_type: str, position: int, enabled: bool, payload: Dict[str, Any]) -> int:
+def shift_positions(*, issue_id: int, from_position: int) -> None:
+    """Shift positions down starting at from_position (inclusive)."""
     with db_manager.get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO newsletter_block (issue_id, type, position, enabled, payload_json)
-                VALUES (%s, %s, %s, %s, %s)
+                UPDATE newsletter_block
+                SET position = position + 1, updated_at = NOW()
+                WHERE issue_id = %s AND position >= %s
+                """,
+                (issue_id, from_position),
+            )
+            conn.commit()
+
+
+def insert_block(*, issue_id: int, block_type: str, position: int, enabled: bool, payload: Dict[str, Any], description: str | None = None) -> int:
+    """Insert a new block, getting default description if not provided."""
+    if description is None:
+        description = get_block_type_description(block_type=block_type)
+    with db_manager.get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO newsletter_block (issue_id, type, position, enabled, payload_json, description)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 RETURNING id
                 """,
-                (issue_id, block_type, position, enabled, payload),
+                (issue_id, block_type, position, enabled, Json(payload), description),
             )
             row = cur.fetchone()
             if not row:
