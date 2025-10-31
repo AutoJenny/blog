@@ -227,15 +227,40 @@ def api_get_calendar_idea(idea_id):
         logger.error(f"Error fetching calendar idea: {e}")
         return jsonify({'error': str(e)}), 500
 
+def _safe_parse_json_request():
+    """Parse JSON body without triggering 'Body is disturbed or locked' errors.
+    Tries request.get_json(silent=True) first; falls back to raw data parse.
+    """
+    try:
+        data = request.get_json(silent=True)
+        if data is not None:
+            return data if isinstance(data, dict) else {}
+    except Exception:
+        pass
+    # Fallback to raw body
+    try:
+        raw = request.get_data(cache=True, as_text=True) or "{}"
+        import json as _json
+        return _json.loads(raw) if raw.strip() else {}
+    except Exception:
+        return {}
+
+
+def _current_iso_week():
+    from datetime import datetime
+    return datetime.utcnow().isocalendar().week
+
+
 def api_add_calendar_idea():
     """Create a new week idea and persist it to calendar_ideas."""
     try:
         import json
-        data = request.get_json(force=True) or {}
-        required = ['idea_title', 'week_number']
-        for f in required:
-            if not data.get(f):
-                return jsonify({'success': False, 'error': f'Missing field: {f}'}), 400
+        data = _safe_parse_json_request() or {}
+        # Apply backend defaults so client doesn't have to supply everything
+        if not data.get('idea_title'):
+            return jsonify({'success': False, 'error': 'Missing field: idea_title'}), 400
+        if not data.get('week_number'):
+            data['week_number'] = _current_iso_week()
 
         with db_manager.get_connection() as conn:
             with conn.cursor() as cursor:
@@ -331,7 +356,7 @@ def api_update_calendar_idea(idea_id: int):
     """Update an existing week idea."""
     try:
         import json
-        data = request.get_json(force=True) or {}
+        data = _safe_parse_json_request() or {}
         
         with db_manager.get_connection() as conn:
             with conn.cursor() as cursor:
