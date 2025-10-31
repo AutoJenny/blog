@@ -84,12 +84,20 @@ def api_calendar_ideas(week_number):
             if has_classification:
                 group_by_fields += ", ci.item_classification"
             
+            # Check if important_notes column exists
+            cursor.execute("""
+                SELECT column_name FROM information_schema.columns 
+                WHERE table_name = 'calendar_ideas' AND column_name = 'important_notes'
+            """)
+            has_important_notes = cursor.fetchone() is not None
+            important_notes_field = 'ci.important_notes' if has_important_notes else "'[]'::jsonb as important_notes"
+            
             cursor.execute(f"""
                 SELECT ci.id, ci.week_number, ci.idea_title, ci.idea_description, 
                        ci.seasonal_context, ci.content_type, ci.priority, ci.tags,
                        ci.is_recurring, ci.can_span_weeks, ci.max_weeks, ci.is_evergreen,
                        ci.evergreen_frequency, ci.last_used_date, ci.usage_count,
-                       ci.evergreen_notes, {sources_field}, {classification_field}, ci.created_at, ci.updated_at,
+                       ci.evergreen_notes, {sources_field}, {classification_field}, {important_notes_field}, ci.created_at, ci.updated_at,
                        COALESCE(
                            json_agg(
                                json_build_object(
@@ -128,8 +136,10 @@ def api_calendar_ideas(week_number):
         return jsonify({'error': str(e)}), 500
 
 def api_calendar_events(year, week_number):
-    """Get events for a specific year and week"""
+    """Get events for a specific year and week, including events whose advance notice overlaps this week"""
     try:
+        from datetime import date, timedelta
+        
         with db_manager.get_cursor() as cursor:
             # Check if advance_notice column exists
             cursor.execute("""
@@ -139,10 +149,43 @@ def api_calendar_events(year, week_number):
             has_advance_notice = cursor.fetchone() is not None
             advance_notice_field = 'ce.advance_notice' if has_advance_notice else 'NULL::integer as advance_notice'
             
+            # Check if important_notes column exists
+            cursor.execute("""
+                SELECT column_name FROM information_schema.columns 
+                WHERE table_name = 'calendar_events' AND column_name = 'important_notes'
+            """)
+            has_event_important_notes = cursor.fetchone() is not None
+            event_important_notes_field = 'ce.important_notes' if has_event_important_notes else "'[]'::jsonb as important_notes"
+            
+            # Calculate the week start and end dates for the requested week
+            # Use date.fromisocalendar for ISO week calculation
+            week_start_date = date.fromisocalendar(year, week_number, 1)  # Monday
+            week_end_date = date.fromisocalendar(year, week_number, 7)     # Sunday
+            
+            # Build WHERE clause: events that occur in this week OR have advance notice overlapping this week
+            params = [year, week_number]
+            
+            if has_advance_notice:
+                # Include events in this week OR events whose advance notice overlaps
+                where_clause = """(
+                    (ce.year = %s AND ce.week_number = %s)
+                    OR (
+                        ce.advance_notice IS NOT NULL 
+                        AND ce.advance_notice > 0
+                        AND ce.start_date IS NOT NULL
+                        AND (ce.start_date::date - INTERVAL '1 week' * ce.advance_notice) <= %s
+                        AND (ce.start_date::date - INTERVAL '1 day') >= %s
+                    )
+                )"""
+                params.extend([week_end_date, week_start_date])
+            else:
+                # Only events in this week
+                where_clause = "(ce.year = %s AND ce.week_number = %s)"
+            
             cursor.execute(f"""
                 SELECT ce.id, ce.event_title, ce.event_description, ce.start_date, ce.end_date,
                        ce.is_recurring, ce.priority, ce.tags, ce.content_type, ce.year,
-                       {advance_notice_field}, ce.created_at, ce.updated_at,
+                       {advance_notice_field}, {event_important_notes_field}, ce.created_at, ce.updated_at,
                        EXTRACT(ISODOW FROM ce.start_date)::integer as weekday,
                        COALESCE(
                            json_agg(
@@ -158,12 +201,12 @@ def api_calendar_events(year, week_number):
                 FROM calendar_events ce
                 LEFT JOIN calendar_event_categories cec ON ce.id = cec.event_id
                 LEFT JOIN calendar_categories cc ON cec.category_id = cc.id
-                WHERE ce.year = %s AND ce.week_number = %s
+                WHERE {where_clause}
                 GROUP BY ce.id, ce.event_title, ce.event_description, ce.start_date, ce.end_date,
                          ce.is_recurring, ce.priority, ce.tags, ce.content_type, ce.year,
-                         ce.created_at, ce.updated_at, EXTRACT(ISODOW FROM ce.start_date)""" + (", ce.advance_notice" if has_advance_notice else "") + """
+                         ce.created_at, ce.updated_at, EXTRACT(ISODOW FROM ce.start_date)""" + (", ce.advance_notice" if has_advance_notice else "") + (", ce.important_notes" if has_event_important_notes else "") + """
                 ORDER BY ce.start_date, ce.priority
-            """, (year, week_number))
+            """, tuple(params))
             
             events = cursor.fetchall()
             
@@ -219,12 +262,20 @@ def api_get_calendar_idea(idea_id):
             has_classification = cursor.fetchone() is not None
             classification_field = 'ci.item_classification' if has_classification else "'idea'::varchar as item_classification"
             
+            # Check if important_notes column exists
+            cursor.execute("""
+                SELECT column_name FROM information_schema.columns 
+                WHERE table_name = 'calendar_ideas' AND column_name = 'important_notes'
+            """)
+            has_important_notes = cursor.fetchone() is not None
+            important_notes_field = 'ci.important_notes' if has_important_notes else "'[]'::jsonb as important_notes"
+            
             cursor.execute(f"""
                 SELECT ci.id, ci.week_number, ci.idea_title, ci.idea_description, 
                        ci.seasonal_context, ci.content_type, ci.priority, ci.tags,
                        ci.is_recurring, ci.can_span_weeks, ci.max_weeks, ci.is_evergreen,
                        ci.evergreen_frequency, ci.last_used_date, ci.usage_count,
-                       ci.evergreen_notes, ci.sources, {classification_field}, ci.created_at, ci.updated_at,
+                       ci.evergreen_notes, ci.sources, {classification_field}, {important_notes_field}, ci.created_at, ci.updated_at,
                        COALESCE(
                            json_agg(
                                json_build_object(
@@ -244,7 +295,7 @@ def api_get_calendar_idea(idea_id):
                          ci.seasonal_context, ci.content_type, ci.priority, ci.tags,
                          ci.is_recurring, ci.can_span_weeks, ci.max_weeks, ci.is_evergreen,
                          ci.evergreen_frequency, ci.last_used_date, ci.usage_count,
-                         ci.evergreen_notes, ci.created_at, ci.updated_at""" + (", ci.item_classification" if has_classification else "") + """
+                         ci.evergreen_notes, ci.created_at, ci.updated_at""" + (", ci.item_classification" if has_classification else "") + (", ci.important_notes" if has_important_notes else "") + """
             """, (idea_id,))
             
             idea = cursor.fetchone()
@@ -530,6 +581,10 @@ def api_add_calendar_idea():
                 if data.get('sources') and 'sources' in existing_columns:
                     fields.append('sources')
                     values.append(json.dumps(data['sources']))
+                
+                if 'important_notes' in existing_columns and data.get('important_notes') is not None:
+                    fields.append('important_notes')
+                    values.append(json.dumps(data['important_notes']))
 
                 placeholders = ', '.join(['%s'] * len(values))
                 field_names = ', '.join(fields)
@@ -579,7 +634,7 @@ def api_update_calendar_idea(idea_id: int):
                 updatable_fields = [
                     'idea_title', 'idea_description', 'seasonal_context', 'content_type',
                     'priority', 'week_number', 'is_recurring', 'can_span_weeks', 'max_weeks',
-                    'is_evergreen', 'evergreen_frequency', 'evergreen_notes', 'item_classification'
+                    'is_evergreen', 'evergreen_frequency', 'evergreen_notes', 'item_classification', 'important_notes'
                 ]
                 
                 for col in updatable_fields:
@@ -595,6 +650,8 @@ def api_update_calendar_idea(idea_id: int):
                             # Ensure it's either 'theme' or 'idea'
                             val = (data[col] or 'idea').strip().lower()
                             values.append('theme' if val == 'theme' else 'idea')
+                        elif col == 'important_notes':
+                            values.append(json.dumps(data[col]) if data[col] else json.dumps([]))
                         else:
                             values.append(data[col].strip() if data[col] else None)
                 
@@ -773,6 +830,10 @@ def api_add_calendar_event():
                     fields.append('advance_notice')
                     values.append(int(data['advance_notice']))
                 
+                if 'important_notes' in existing_columns and data.get('important_notes') is not None:
+                    fields.append('important_notes')
+                    values.append(json.dumps(data['important_notes']))
+                
                 placeholders = ', '.join(['%s'] * len(values))
                 field_names = ', '.join(fields)
                 
@@ -819,7 +880,7 @@ def api_update_calendar_event(event_id: int):
                 
                 updatable_fields = [
                     'event_title', 'event_description', 'start_date', 'end_date', 'year',
-                    'content_type', 'priority', 'is_recurring', 'advance_notice'
+                    'content_type', 'priority', 'is_recurring', 'advance_notice', 'important_notes'
                 ]
                 
                 for col in updatable_fields:
@@ -831,6 +892,8 @@ def api_update_calendar_event(event_id: int):
                             values.append(int(data[col]))
                         elif col == 'advance_notice':
                             values.append(int(data[col]) if data[col] else None)
+                        elif col == 'important_notes':
+                            values.append(json.dumps(data[col]) if data[col] else json.dumps([]))
                         elif col in ('start_date', 'end_date'):
                             values.append(data[col])
                         else:

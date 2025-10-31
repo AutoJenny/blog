@@ -165,6 +165,9 @@ class IdeaModal {
         // Add source button
         document.getElementById('idea-add-source')?.addEventListener('click', () => this.addSource());
 
+        // Add note button
+        document.getElementById('idea-add-note')?.addEventListener('click', () => this.addNote());
+
         // Type selector (Theme/Idea/Event) toggle
         document.getElementById('type-theme')?.addEventListener('change', () => this.switchType('theme'));
         document.getElementById('type-idea')?.addEventListener('change', () => this.switchType('idea'));
@@ -408,6 +411,9 @@ class IdeaModal {
                 if (advanceNoticeGroup) advanceNoticeGroup.style.display = 'block';
             }
             
+            // Store notes data for reference
+            this._notesData = eventData.important_notes || [];
+            
             // Populate form with ALL event data
             document.getElementById('idea-id').value = eventData.id || '';
             document.getElementById('idea-title').value = eventData.event_title || '';
@@ -458,6 +464,9 @@ class IdeaModal {
             
             // Load tags
             this.renderTags(eventData.tags || []);
+            
+            // Load important notes
+            this.renderNotes(eventData.important_notes || []);
             
             // Events don't have sources or evergreen fields - hide only evergreen section, keep sources visible but empty
             const sourcesSection = Array.from(document.querySelectorAll('.idea-section')).find(s => 
@@ -519,6 +528,9 @@ class IdeaModal {
             // Update modal title and apply type switching
             this.switchType(isTheme ? 'theme' : 'idea');
 
+            // Store notes data for reference
+            this._notesData = idea.important_notes || [];
+            
             // Populate form fields
             document.getElementById('idea-id').value = idea.id || '';
             document.getElementById('idea-title').value = idea.idea_title || '';
@@ -559,6 +571,9 @@ class IdeaModal {
 
             // Load tags
             this.renderTags(idea.tags || []);
+            
+            // Load important notes
+            this.renderNotes(idea.important_notes || []);
 
         } catch (error) {
             console.error('Error loading idea:', error);
@@ -581,8 +596,10 @@ class IdeaModal {
         document.getElementById('idea-id').value = '';
         this.currentIdeaId = null;
         this.currentEventId = null;
+        this._notesData = [];
         this.renderCategories([]);
         this.renderSources([]);
+        this.renderNotes([]);
         this.renderTags([]);
         document.getElementById('idea-evergreen-group').style.display = 'none';
         document.getElementById('idea-evergreen-notes-group').style.display = 'none';
@@ -723,6 +740,198 @@ class IdeaModal {
         return sources;
     }
 
+    renderNotes(notes) {
+        const container = document.getElementById('idea-notes-container');
+        container.innerHTML = '';
+
+        if (notes.length === 0) {
+            return; // Don't show message when empty
+        }
+
+        notes.forEach((note, index) => {
+            const noteId = note.id || `temp-${Date.now()}-${index}`;
+            const isEditing = note._editing || false;
+            const noteDiv = document.createElement('div');
+            noteDiv.className = `idea-note-item ${isEditing ? 'editing' : ''}`;
+            noteDiv.dataset.noteId = noteId;
+            
+            if (isEditing) {
+                noteDiv.innerHTML = `
+                    <div class="idea-note-header">
+                        <span style="color: #94a3b8; font-size: 0.875rem;">Note ${index + 1}</span>
+                        <div class="idea-note-actions">
+                            <button type="button" class="idea-note-save" data-note-id="${noteId}">
+                                <i class="fas fa-check"></i> Save
+                            </button>
+                            <button type="button" class="idea-note-cancel" data-note-id="${noteId}">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </div>
+                    <textarea class="idea-note-textarea" data-note-id="${noteId}">${this.escapeHtml(note.text || '')}</textarea>
+                `;
+            } else {
+                noteDiv.innerHTML = `
+                    <div class="idea-note-header">
+                        <span style="color: #94a3b8; font-size: 0.875rem;">Note ${index + 1}</span>
+                        <div class="idea-note-actions">
+                            <button type="button" class="idea-note-edit" data-note-id="${noteId}">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button type="button" class="idea-note-remove" data-note-id="${noteId}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="idea-note-text">${this.escapeHtml(note.text || '')}</div>
+                `;
+            }
+            
+            container.appendChild(noteDiv);
+        });
+
+        // Add event handlers
+        container.querySelectorAll('.idea-note-edit').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const noteId = btn.dataset.noteId;
+                this.editNote(noteId);
+            });
+        });
+
+        container.querySelectorAll('.idea-note-save').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const noteId = btn.dataset.noteId;
+                this.saveNote(noteId);
+            });
+        });
+
+        container.querySelectorAll('.idea-note-cancel').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const noteId = btn.dataset.noteId;
+                this.cancelEditNote(noteId);
+            });
+        });
+
+        container.querySelectorAll('.idea-note-remove').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const noteId = btn.dataset.noteId;
+                this.removeNote(noteId);
+            });
+        });
+    }
+
+    addNote() {
+        const notes = this.getNotesFromForm();
+        const newNote = {
+            id: `temp-${Date.now()}`,
+            text: '',
+            created_at: new Date().toISOString(),
+            _editing: true
+        };
+        notes.push(newNote);
+        this.renderNotes(notes);
+    }
+
+    editNote(noteId) {
+        const notes = this.getNotesFromForm();
+        const noteIndex = notes.findIndex(n => (n.id || n._tempId) === noteId);
+        if (noteIndex !== -1) {
+            notes[noteIndex]._editing = true;
+            notes[noteIndex]._originalText = notes[noteIndex].text;
+            this.renderNotes(notes);
+        }
+    }
+
+    saveNote(noteId) {
+        const notes = this.getNotesFromForm();
+        const noteIndex = notes.findIndex(n => (n.id || n._tempId) === noteId);
+        if (noteIndex !== -1) {
+            const textarea = document.querySelector(`textarea[data-note-id="${noteId}"]`);
+            if (textarea) {
+                const newText = textarea.value.trim();
+                if (!newText) {
+                    // Empty note - remove it
+                    this.removeNote(noteId);
+                    return;
+                }
+                notes[noteIndex].text = newText;
+                notes[noteIndex]._editing = false;
+                delete notes[noteIndex]._originalText;
+                // Ensure it has an ID if it was temporary
+                if (!notes[noteIndex].id || notes[noteIndex].id.startsWith('temp-')) {
+                    notes[noteIndex].id = notes[noteIndex].id || `temp-${Date.now()}`;
+                }
+                if (!notes[noteIndex].created_at) {
+                    notes[noteIndex].created_at = new Date().toISOString();
+                }
+                this.renderNotes(notes);
+            }
+        }
+    }
+
+    cancelEditNote(noteId) {
+        const notes = this.getNotesFromForm();
+        const noteIndex = notes.findIndex(n => (n.id || n._tempId) === noteId);
+        if (noteIndex !== -1) {
+            if (notes[noteIndex]._originalText !== undefined) {
+                notes[noteIndex].text = notes[noteIndex]._originalText;
+            }
+            notes[noteIndex]._editing = false;
+            delete notes[noteIndex]._originalText;
+            // If it was a new empty note, remove it
+            if (!notes[noteIndex].text && (!notes[noteIndex].id || notes[noteIndex].id.startsWith('temp-'))) {
+                notes.splice(noteIndex, 1);
+            }
+            this.renderNotes(notes);
+        }
+    }
+
+    removeNote(noteId) {
+        if (!confirm('Delete this note?')) return;
+        const notes = this.getNotesFromForm();
+        const noteIndex = notes.findIndex(n => (n.id || n._tempId) === noteId);
+        if (noteIndex !== -1) {
+            notes.splice(noteIndex, 1);
+            this.renderNotes(notes);
+        }
+    }
+
+    getNotesFromForm() {
+        const notes = [];
+        const noteItems = document.querySelectorAll('.idea-note-item');
+        
+        noteItems.forEach((item) => {
+            const noteId = item.dataset.noteId;
+            const isEditing = item.classList.contains('editing');
+            
+            let text = '';
+            if (isEditing) {
+                const textarea = item.querySelector('.idea-note-textarea');
+                text = textarea ? textarea.value.trim() : '';
+            } else {
+                const textDiv = item.querySelector('.idea-note-text');
+                text = textDiv ? textDiv.textContent.trim() : '';
+            }
+            
+            // Find the original note data if it exists
+            const existingNote = this._notesData?.find(n => (n.id || n._tempId) === noteId);
+            const note = {
+                id: existingNote?.id || noteId,
+                text: text,
+                created_at: existingNote?.created_at || new Date().toISOString(),
+                _editing: isEditing,
+                _tempId: noteId
+            };
+            
+            // Only include non-empty notes or existing notes
+            if (text || existingNote) {
+                notes.push(note);
+            }
+        });
+        
+        return notes;
+    }
+
     renderTags(tags) {
         const container = document.getElementById('idea-tags-container');
         container.innerHTML = '';
@@ -829,6 +1038,22 @@ class IdeaModal {
         formData.is_recurring = !!document.getElementById('idea-is-recurring').checked;
         formData.tags = this.getTagsFromForm();
         formData.categories = selectedCategories;
+        
+        // Important notes (clean up temporary fields before saving)
+        const notes = this.getNotesFromForm().map(note => {
+            const cleaned = { text: note.text || '' };
+            if (note.id && !note.id.startsWith('temp-')) {
+                cleaned.id = note.id;
+            } else {
+                // Generate UUID-like ID for new notes
+                cleaned.id = 'note-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            }
+            if (note.created_at) cleaned.created_at = note.created_at;
+            return cleaned;
+        }).filter(note => note.text.trim().length > 0);
+        if (notes.length > 0) {
+            formData.important_notes = notes;
+        }
 
         // Set item_classification for themes and ideas (only for ideas/themes, not events)
         if (!isEvent) {
@@ -900,7 +1125,8 @@ class IdeaModal {
                 method = 'POST';
             } else if (isEvent) {
                 // Handle events separately
-                if (this.currentEventId && !ideaId) {
+                // For events, use currentEventId (ignore ideaId which might contain the event ID)
+                if (this.currentEventId) {
                     // Updating an existing event (using event ID from currentEventId)
                     url = `/planning/api/calendar/events/${this.currentEventId}`;
                     method = 'PUT';

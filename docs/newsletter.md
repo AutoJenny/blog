@@ -10,7 +10,7 @@ This document outlines the newsletter system: schema, flows, UI, adapters, and f
 - `newsletter_snapshot_source(id, name, base_url, type, enabled, api_key_ref, created_at, updated_at)`
 - `newsletter_rotation(id, topic, cooldown_weeks, weight, created_at, updated_at)`
 - `newsletter_send_log(id, issue_id, provider, provider_id, sent_at, checksum, created_at)`
-- `newsletter_source_item(id, source_name, title, url, published_at, event_date, location, category, raw_data, signal_score, freshness_score, combined_score, cached_at, created_at)`
+- `newsletter_source_item(id, source_name, title, url, published_at, event_date, location, category, raw_data, signal_score, freshness_score, combined_score, suitability_score, suitability_notes, source_url_hash, is_event, calendar_event_id, cached_at, created_at)`
 - `newsletter_source_cache(id, source_name, last_fetched_at, last_status, notes, created_at, updated_at)`
 - `newsletter_block_type(type, description)` - default descriptions for block types
 
@@ -19,6 +19,8 @@ Migrations:
 - `migrations/20251030_add_theme_id_to_newsletter_issue.sql` - Theme integration
 - `migrations/20251030_add_block_descriptions.sql` - Block type descriptions
 - `migrations/20251031_add_newsletter_source_items.sql` - Source aggregation system
+- `migrations/20251031_seed_newsletter_sources.sql` - Initial source seed data
+- `migrations/20251101_add_newsletter_enhancement_fields.sql` - Suitability scores, URL hashes, calendar links
 
 ## High-level flow
 1. **Source prefetch** (daily): External sources (RSS, Reddit, HTML) are fetched, scored, and cached in `newsletter_source_item`.
@@ -68,10 +70,47 @@ Migrations:
 
 External content is aggregated from multiple sources:
 - **RSS Feeds**: BBC Scotland, Met Office (via `RSSAdapter`)
-- **Reddit API**: /r/Scotland, /r/Highlands (via `RedditAdapter`)
+- **Reddit API**: /r/Scotland, /r/Highlands (via `RedditAdapter` with engagement thresholds)
 - **HTML Scrapers**: Historic Environment Scotland, Museums/Galleries "What's On" pages (via `HTMLAdapter`)
+- **Weather Pages**: BBC/Met Office forecast and report pages (via `WeatherHTMLAdapter`)
 
 All sources are normalized to common shape, scored (freshness + signal), and cached in `newsletter_source_item`.
+
+### Source Adapters
+
+- **`RSSAdapter`**: Fetches RSS/Atom feeds, extracts title, URL, published date, description
+- **`RedditAdapter`**: Fetches hot posts from subreddits via public JSON API
+  - **Engagement thresholds**: Minimum 50 upvotes and 10 comments (configurable)
+  - **Suitability filtering**: Filters low-quality posts, political content, requires Scottish relevance
+- **`HTMLAdapter`**: Scrapes event listings from HTML pages with site-specific selectors
+  - Cookie session handling for consent banners
+  - User-agent rotation to avoid detection
+  - UK locale-aware date parsing
+- **`WeatherHTMLAdapter`**: Scrapes weather forecast/report pages (BBC, Met Office)
+  - Extracts forecasts, warnings, conditions, temperatures
+
+### Specialized Processing Pipeline
+
+The prefetch job (`jobs/prefetch_sources.py`) routes items to specialized processing:
+
+1. **Events** (`category='event'`):
+   - Deduplication check (fuzzy title matching + date proximity)
+   - Import to `calendar_events` table with category linking
+   - Mark source items with `is_event=True` and `calendar_event_id`
+
+2. **News** (`category='news'`):
+   - LLM-based suitability analysis (0-10 score, 6.0+ threshold)
+   - Cached results to avoid re-analysis
+   - Keyword fallback when LLM unavailable
+   - Only items above threshold are stored
+
+3. **Weather** (`category='weather'`):
+   - All items stored (no filtering)
+   - Scored for freshness and signal
+
+4. **Community/Reddit** (`category='community'`):
+   - Pre-filtered by adapter (engagement + suitability)
+   - Stored directly
 
 ### Scoring Rules
 - **Freshness**: Items in -3 to +10 day window get higher scores
@@ -79,7 +118,53 @@ All sources are normalized to common shape, scored (freshness + signal), and cac
 - **Diversity**: Prefers mix of categories (weather/event/community)
 - **Safety**: Filters political keywords, title length limits, requires valid URLs
 
+### Content Analysis Service
+
+**`services/content_analysis_service.py`**: LLM-based news suitability assessment
+- Analyzes articles for Scottish heritage/culture relevance
+- Returns 0-10 score with reasoning
+- Caches results in database by URL hash
+- Falls back to keyword matching when LLM unavailable
+- Default threshold: 6.0 (configurable)
+
+### Deduplication Service
+
+**`services/deduplication_service.py`**: Prevents duplicate content
+- **Fuzzy title matching**: 85% similarity threshold with date proximity (±3 days)
+- **URL hash matching**: SHA256 hash of URLs for exact duplicates
+- **Helper functions**:
+  - `check_calendar_event_duplicate()`: Check if event already in calendar
+  - `check_source_item_duplicate()`: Check if URL already cached
+  - `should_skip_item()`: Unified check for both tables
+
+### Event Import Service
+
+**`services/event_import_service.py`**: Imports events into calendar
+- Takes normalized event items
+- Checks for duplicates before import
+- Links to calendar categories
+- Calculates ISO week numbers
+- Returns import results with skip counts
+
 See `blog-core/newsletter/services/scoring.py` and `blog-core/newsletter/services/suggestion_service.py`.
+
+## Daily Source Check Job
+
+**`jobs/daily_source_check.py`**: Scheduled job wrapper for prefetch pipeline
+- Runs daily (default: 06:00, configurable)
+- Executes prefetch job with specialized processing
+- Returns summary with counts per category
+- Can be triggered manually or via cron/launchd
+
+Usage:
+```bash
+python3 blog-core/newsletter/jobs/daily_source_check.py
+```
+
+Schedule via cron:
+```bash
+0 6 * * * cd /path/to/blog && python3 blog-core/newsletter/jobs/daily_source_check.py
+```
 
 ## Block Editors
 
