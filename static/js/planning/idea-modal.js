@@ -598,32 +598,44 @@ class IdeaModal {
             week_number = this.getISOWeekNumber(new Date());
         }
 
+        // Helper to clean string -> null if empty
+        const clean = (s) => {
+            if (s === undefined || s === null) return null;
+            const t = String(s).trim();
+            return t.length ? t : null;
+        };
+
+        // Build form data with sanitization
         const formData = {
-            idea_title: document.getElementById('idea-title').value,
-            idea_description: document.getElementById('idea-description').value,
-            week_number: week_number ? parseInt(week_number) : null,
-            content_type: document.getElementById('idea-content-type').value || null,
-            seasonal_context: document.getElementById('idea-seasonal-context').value || null,
-            priority: document.getElementById('idea-priority').value,
-            is_recurring: document.getElementById('idea-is-recurring').checked,
-            is_evergreen: document.getElementById('idea-is-evergreen').checked,
-            evergreen_frequency: document.getElementById('idea-evergreen-frequency').value,
-            evergreen_notes: document.getElementById('idea-evergreen-notes').value || null,
-            can_span_weeks: document.getElementById('idea-can-span-weeks').checked,
-            max_weeks: parseInt(document.getElementById('idea-max-weeks').value) || 1,
+            idea_title: clean(document.getElementById('idea-title').value),
+            idea_description: clean(document.getElementById('idea-description').value),
+            week_number: week_number ? Math.max(1, Math.min(53, parseInt(week_number, 10) || 0)) : null,
+            content_type: clean(document.getElementById('idea-content-type').value),
+            seasonal_context: clean(document.getElementById('idea-seasonal-context').value),
+            priority: clean(document.getElementById('idea-priority').value) || 'random',
+            is_recurring: !!document.getElementById('idea-is-recurring').checked,
+            is_evergreen: !!document.getElementById('idea-is-evergreen').checked,
+            can_span_weeks: !!document.getElementById('idea-can-span-weeks').checked,
+            max_weeks: parseInt(document.getElementById('idea-max-weeks').value, 10) || 1,
             tags: this.getTagsFromForm(),
             sources: this.getSourcesFromForm(),
             categories: selectedCategories
         };
+
+        // Only include evergreen fields if is_evergreen
+        if (formData.is_evergreen) {
+            formData.evergreen_frequency = clean(document.getElementById('idea-evergreen-frequency').value);
+            formData.evergreen_notes = clean(document.getElementById('idea-evergreen-notes').value);
+        }
 
         // Add event-specific fields if it's an event
         if (isEvent) {
             const startDateInput = document.getElementById('event-start-date');
             const endDateInput = document.getElementById('event-end-date');
             const yearInput = document.getElementById('event-year');
-            if (startDateInput) formData.start_date = startDateInput.value;
-            if (endDateInput) formData.end_date = endDateInput.value;
-            if (yearInput) formData.year = parseInt(yearInput.value);
+            if (startDateInput && clean(startDateInput.value)) formData.start_date = clean(startDateInput.value);
+            if (endDateInput && clean(endDateInput.value)) formData.end_date = clean(endDateInput.value);
+            if (yearInput && yearInput.value) formData.year = parseInt(yearInput.value, 10) || null;
         }
 
         try {
@@ -632,6 +644,13 @@ class IdeaModal {
             // Otherwise create new
             const shouldCreate = !ideaId || (this.currentEventId && ideaId == this.currentEventId);
             
+            // Remove nulls to avoid sending empty values that may violate patterns
+            Object.keys(formData).forEach((k) => {
+                if (formData[k] === null || (Array.isArray(formData[k]) && formData[k].length === 0)) {
+                    delete formData[k];
+                }
+            });
+
             const url = shouldCreate 
                 ? '/planning/api/calendar/ideas/add'
                 : `/planning/api/calendar/ideas/${ideaId}`;
@@ -644,8 +663,15 @@ class IdeaModal {
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Failed to save idea');
+                let message = 'Failed to save idea';
+                try {
+                    const error = await response.json();
+                    message = error.error || message;
+                } catch (_) {
+                    const text = await response.text();
+                    message = text || message;
+                }
+                throw new Error(message);
             }
 
             const data = await response.json();
