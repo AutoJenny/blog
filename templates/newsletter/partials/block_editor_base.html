@@ -1,42 +1,55 @@
 {# Common wrapper for all block editors #}
-<div class="border border-dark-border rounded p-4">
-  <div class="flex items-center justify-between">
-    <div>
-      <div class="text-white font-semibold">{{ (loop_index if loop_index is defined) or (block.position + 1) }}. {{ block.type }}</div>
-      {% if block.description %}
-        <div class="text-gray-400 text-xs mt-1">{{ block.description }}</div>
-      {% endif %}
-    </div>
-    <div class="flex items-center gap-2">
-      <form method="post" action="/newsletter/block/{{ block.id }}/move" style="display:inline;">
-        <input type="hidden" name="issue_id" value="{{ issue_id }}" />
-        <input type="hidden" name="direction" value="up" />
-        <button type="submit" class="text-dark-text hover:text-white" title="Move up">↑</button>
-      </form>
-      <form method="post" action="/newsletter/block/{{ block.id }}/move" style="display:inline;">
-        <input type="hidden" name="issue_id" value="{{ issue_id }}" />
-        <input type="hidden" name="direction" value="down" />
-        <button type="submit" class="text-dark-text hover:text-white" title="Move down">↓</button>
-      </form>
-      <form method="post" action="/newsletter/block/{{ block.id }}/delete" style="display:inline;" onsubmit="return confirm('Delete this block?');">
-        <input type="hidden" name="issue_id" value="{{ issue_id }}" />
-        <button type="submit" class="text-red-400 hover:text-red-300" title="Delete">Delete</button>
-      </form>
-    </div>
-  </div>
-  <div class="mt-2 flex items-center gap-3">
-    <form method="post" action="/newsletter/block/{{ block.id }}/toggle" style="display:inline;">
-      <input type="hidden" name="issue_id" value="{{ issue_id }}" />
-      <input type="hidden" name="enabled" value="{{ not block.enabled }}" />
-      <button type="submit" class="admin-button px-3 py-1 rounded border {{ 'border-green-600 text-green-400' if block.enabled else 'border-gray-600 text-gray-400' }}">
-        {{ 'Disable' if block.enabled else 'Enable' }}
-      </button>
-    </form>
-    <span class="text-dark-text">Status: {{ 'enabled' if block.enabled else 'disabled' }}</span>
-  </div>
-  
-  {# Block type-specific editor #}
-  <div class="mt-4">
+<div class="newsletter-block-accordion" data-block-id="{{ block.id }}" style="background: #151a2e; border: 1px solid #2d3246; border-radius: 8px; margin-bottom: 16px; overflow: hidden;">
+  <details class="block-accordion-details" data-block-id="{{ block.id }}" id="block-{{ block.id }}">
+    <summary style="cursor: pointer; padding: 20px; display: flex; align-items: center; justify-content: space-between; background: #151a2e; user-select: none; list-style: none;">
+      <div style="flex: 1;">
+        <div style="color: #e6e8ef; font-weight: 700; font-size: 28px; line-height: 1.2; margin-bottom: 4px;">
+          {{ (loop_index if loop_index is defined) or (block.position + 1) }}. {{ block.type }}
+        </div>
+        {% if block.description %}
+          <div style="color: #9ca3af; font-size: 13px; margin-top: 2px;">{{ block.description }}</div>
+        {% endif %}
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-left: 16px;">
+        <div class="flex items-center gap-2" style="display: flex; align-items: center; gap: 8px;">
+          <form method="post" action="/newsletter/block/{{ block.id }}/move" style="display:inline;" onclick="event.stopPropagation();">
+            <input type="hidden" name="issue_id" value="{{ issue_id }}" />
+            <input type="hidden" name="direction" value="up" />
+            <button type="submit" style="background: transparent; color: #9ca3af; border: 1px solid #2d3246; padding: 6px 10px; border-radius: 6px; cursor: pointer;" title="Move up" onmouseover="this.style.background='#1b2138'; this.style.color='#a5b4fc';" onmouseout="this.style.background='transparent'; this.style.color='#9ca3af';">
+              <i class="fa-solid fa-arrow-up"></i>
+            </button>
+          </form>
+          <form method="post" action="/newsletter/block/{{ block.id }}/move" style="display:inline;" onclick="event.stopPropagation();">
+            <input type="hidden" name="issue_id" value="{{ issue_id }}" />
+            <input type="hidden" name="direction" value="down" />
+            <button type="submit" style="background: transparent; color: #9ca3af; border: 1px solid #2d3246; padding: 6px 10px; border-radius: 6px; cursor: pointer;" title="Move down" onmouseover="this.style.background='#1b2138'; this.style.color='#a5b4fc';" onmouseout="this.style.background='transparent'; this.style.color='#9ca3af';">
+              <i class="fa-solid fa-arrow-down"></i>
+            </button>
+          </form>
+          <form method="post" action="/newsletter/block/{{ block.id }}/delete" style="display:inline;" onsubmit="return confirm('Delete this block?');" onclick="event.stopPropagation();">
+            <input type="hidden" name="issue_id" value="{{ issue_id }}" />
+            <button type="submit" style="background: transparent; color: #ef4444; border: 1px solid #2d3246; padding: 6px 10px; border-radius: 6px; cursor: pointer;" title="Delete" onmouseover="this.style.background='#3b0b0b'; this.style.borderColor='#ef4444';" onmouseout="this.style.background='transparent'; this.style.borderColor='#2d3246';">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </form>
+        </div>
+        <i class="fa-solid fa-chevron-down accordion-icon" style="color: #a5b4fc; margin-left: 12px; transition: transform 0.2s;"></i>
+      </div>
+    </summary>
+    <div class="block-accordion-content" style="padding: 0 20px 20px 20px; border-top: 1px solid #2d3246;">
+      <div class="flex items-center gap-3 mb-4 pb-3" style="padding-top: 16px; border-bottom: 1px solid #2d3246; display: flex; align-items: center; gap: 12px;">
+        <form method="post" action="/newsletter/block/{{ block.id }}/toggle" style="display:inline;">
+          <input type="hidden" name="issue_id" value="{{ issue_id }}" />
+          <input type="hidden" name="enabled" value="{{ not block.enabled }}" />
+          <button type="submit" style="background: {% if block.enabled %}#0b3b2e{% else %}#23273a{% endif %}; color: {% if block.enabled %}#6ee7b7{% else %}#9ca3af{% endif %}; border: 1px solid {% if block.enabled %}#10b981{% else %}#2d3246{% endif %}; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">
+            <i class="fa-solid fa-{% if block.enabled %}toggle-on{% else %}toggle-off{% endif %}"></i> {{ 'Disable' if block.enabled else 'Enable' }}
+          </button>
+        </form>
+        <span style="color: #9ca3af; font-size: 13px;">Status: <strong style="color: {% if block.enabled %}#6ee7b7{% else %}#9ca3af{% endif %};">{{ 'enabled' if block.enabled else 'disabled' }}</strong></span>
+      </div>
+      
+      {# Block type-specific editor #}
+      <div class="mt-4">
     {% if block.type == 'intro' %}
       {% set b = block %}
       {% include 'newsletter/partials/block_editor_intro.html' %}
@@ -45,18 +58,24 @@
       {% include 'newsletter/partials/block_editor_snapshot.html' %}
     {% else %}
       {# Fallback: JSON editor for other block types #}
-      <details class="mt-3">
-        <summary class="cursor-pointer text-dark-text">Edit payload</summary>
-        <form method="post" action="/newsletter/block/{{ block.id }}/update" class="mt-2">
+      <details style="margin-top: 12px;">
+        <summary style="color: #a5b4fc; cursor: pointer; font-weight: 600; padding: 8px; background: #1b2138; border: 1px solid #2d3246; border-radius: 6px; margin-bottom: 8px;">
+          <i class="fa-solid fa-code"></i> Edit payload JSON
+        </summary>
+        <form method="post" action="/newsletter/block/{{ block.id }}/update" style="margin-top: 12px;">
           <input type="hidden" name="issue_id" value="{{ issue_id }}" />
-          <label class="text-dark-text text-sm">Payload JSON</label>
-          <textarea name="payload_json" rows="6" class="w-full bg-[#0f172a] text-white border border-dark-border rounded p-2 font-mono text-sm">{{ (block.payload_json | tojson(indent=2)) if block.payload_json else '{}' }}</textarea>
-          <div class="mt-2 text-right">
-            <button type="submit" class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-3 py-1 rounded">Save</button>
+          <label style="color: #a5b4fc; font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">Payload JSON</label>
+          <textarea name="payload_json" rows="8" style="width: 100%; background: #0f172a; color: #e6e8ef; border: 1px solid #2d3246; border-radius: 6px; padding: 12px; font-family: monospace; font-size: 12px; line-height: 1.6;">{{ (block.payload_json | tojson(indent=2)) if block.payload_json else '{}' }}</textarea>
+          <div style="margin-top: 12px; text-align: right;">
+            <button type="submit" style="background: #4e6bff; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; cursor: pointer;">
+              <i class="fa-solid fa-save"></i> Save
+            </button>
           </div>
         </form>
       </details>
     {% endif %}
-  </div>
+      </div>
+    </div>
+  </details>
 </div>
 
