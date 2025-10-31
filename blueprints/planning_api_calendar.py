@@ -270,12 +270,20 @@ def api_get_calendar_idea(idea_id):
             has_important_notes = cursor.fetchone() is not None
             important_notes_field = 'ci.important_notes' if has_important_notes else "'[]'::jsonb as important_notes"
             
+            # Check if sources column exists
+            cursor.execute("""
+                SELECT column_name FROM information_schema.columns 
+                WHERE table_name = 'calendar_ideas' AND column_name = 'sources'
+            """)
+            has_sources = cursor.fetchone() is not None
+            sources_field = 'ci.sources' if has_sources else "'[]'::jsonb as sources"
+            
             cursor.execute(f"""
                 SELECT ci.id, ci.week_number, ci.idea_title, ci.idea_description, 
                        ci.seasonal_context, ci.content_type, ci.priority, ci.tags,
                        ci.is_recurring, ci.can_span_weeks, ci.max_weeks, ci.is_evergreen,
                        ci.evergreen_frequency, ci.last_used_date, ci.usage_count,
-                       ci.evergreen_notes, ci.sources, {classification_field}, {important_notes_field}, ci.created_at, ci.updated_at,
+                       ci.evergreen_notes, {sources_field}, {classification_field}, {important_notes_field}, ci.created_at, ci.updated_at,
                        COALESCE(
                            json_agg(
                                json_build_object(
@@ -295,7 +303,7 @@ def api_get_calendar_idea(idea_id):
                          ci.seasonal_context, ci.content_type, ci.priority, ci.tags,
                          ci.is_recurring, ci.can_span_weeks, ci.max_weeks, ci.is_evergreen,
                          ci.evergreen_frequency, ci.last_used_date, ci.usage_count,
-                         ci.evergreen_notes, ci.created_at, ci.updated_at""" + (", ci.item_classification" if has_classification else "") + (", ci.important_notes" if has_important_notes else "") + """
+                         ci.evergreen_notes, ci.created_at, ci.updated_at""" + (", ci.sources" if has_sources else "") + (", ci.item_classification" if has_classification else "") + (", ci.important_notes" if has_important_notes else "") + """
             """, (idea_id,))
             
             idea = cursor.fetchone()
