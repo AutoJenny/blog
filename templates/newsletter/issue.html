@@ -56,53 +56,8 @@
     {% if blocks and blocks|length > 0 %}
       <div class="space-y-4">
         {% for b in blocks %}
-        <div class="border border-dark-border rounded p-4">
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="text-white font-semibold">{{ loop.index }}. {{ b.type }}</div>
-              {% if b.description %}
-                <div class="text-gray-400 text-xs mt-1">{{ b.description }}</div>
-              {% endif %}
-            </div>
-            <div class="flex items-center gap-2">
-              <form method="post" action="/newsletter/block/{{ b.id }}/move" style="display:inline;">
-                <input type="hidden" name="issue_id" value="{{ issue_id }}" />
-                <input type="hidden" name="direction" value="up" />
-                <button type="submit" class="text-dark-text hover:text-white">↑</button>
-              </form>
-              <form method="post" action="/newsletter/block/{{ b.id }}/move" style="display:inline;">
-                <input type="hidden" name="issue_id" value="{{ issue_id }}" />
-                <input type="hidden" name="direction" value="down" />
-                <button type="submit" class="text-dark-text hover:text-white">↓</button>
-              </form>
-              <form method="post" action="/newsletter/block/{{ b.id }}/delete" style="display:inline;" onsubmit="return confirm('Delete this block?');">
-                <input type="hidden" name="issue_id" value="{{ issue_id }}" />
-                <button type="submit" class="text-red-400 hover:text-red-300">Delete</button>
-              </form>
-            </div>
-          </div>
-          <div class="mt-2 flex items-center gap-3">
-            <form method="post" action="/newsletter/block/{{ b.id }}/toggle" style="display:inline;">
-              <input type="hidden" name="issue_id" value="{{ issue_id }}" />
-              <input type="hidden" name="enabled" value="{{ not b.enabled }}" />
-              <button type="submit" class="admin-button px-3 py-1 rounded border {{ 'border-green-600 text-green-400' if b.enabled else 'border-gray-600 text-gray-400' }}">
-                {{ 'Disable' if b.enabled else 'Enable' }}
-              </button>
-            </form>
-            <span class="text-dark-text">Status: {{ 'enabled' if b.enabled else 'disabled' }}</span>
-          </div>
-          <details class="mt-3">
-            <summary class="cursor-pointer text-dark-text">Edit payload</summary>
-            <form method="post" action="/newsletter/block/{{ b.id }}/update" class="mt-2">
-              <input type="hidden" name="issue_id" value="{{ issue_id }}" />
-              <label class="text-dark-text text-sm">Payload JSON</label>
-              <textarea name="payload_json" rows="6" class="w-full bg-[#0f172a] text-white border border-dark-border rounded p-2 font-mono text-sm">{{ (b.payload_json | tojson(indent=2)) if b.payload_json else '{}' }}</textarea>
-              <div class="mt-2 text-right">
-                <button type="submit" class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-3 py-1 rounded">Save</button>
-              </div>
-            </form>
-          </details>
-        </div>
+          {% set block = b %}
+          {% include 'newsletter/partials/block_editor_base.html' %}
         {% endfor %}
       </div>
     {% else %}

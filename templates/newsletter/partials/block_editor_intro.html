@@ -1,0 +1,196 @@
+{# Intro block editor: suggestions list, override textarea, preview #}
+<div class="block-editor-intro" data-block-id="{{ b.id }}" data-issue-id="{{ issue_id }}">
+  {# Current content preview #}
+  <div class="mb-4 p-3 bg-[#0f172a] border border-dark-border rounded">
+    <div class="text-dark-text text-xs mb-1">Current Content:</div>
+    <div class="text-white text-sm" id="intro-preview-{{ b.id }}">
+      {% if b.payload_json and b.payload_json.text %}
+        {{ b.payload_json.text }}
+      {% else %}
+        <span class="text-gray-500">No content yet. Generate suggestions below.</span>
+      {% endif %}
+    </div>
+  </div>
+
+  {# Auto-select toggle #}
+  <div class="mb-4 flex items-center gap-3">
+    <label class="flex items-center gap-2 cursor-pointer">
+      <input type="checkbox" id="auto-select-{{ b.id }}" checked class="w-4 h-4 rounded bg-[#0f172a] border-dark-border text-dark-accent focus:ring-dark-accent">
+      <span class="text-dark-text text-sm">Auto-select best suggestion</span>
+    </label>
+    <button type="button" class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-3 py-1 rounded text-sm" onclick="loadSuggestions({{ b.id }}, 'intro')">
+      Regenerate Suggestions
+    </button>
+  </div>
+
+  {# Suggestions list #}
+  <div class="mb-4">
+    <div class="text-dark-text text-sm mb-2">Suggestions:</div>
+    <div id="intro-suggestions-{{ b.id }}" class="space-y-2">
+      {% if b.payload_json and b.payload_json.suggestions %}
+        {% for suggestion in b.payload_json.suggestions[:3] %}
+        <div class="p-3 bg-[#0f172a] border border-dark-border rounded suggestion-item" data-suggestion-id="{{ suggestion.id }}">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <div class="text-white text-sm font-medium mb-1">{{ suggestion.title }}</div>
+              <div class="text-dark-text text-xs mb-1">
+                <span class="font-medium">{{ suggestion.source_name }}</span>
+                {% if suggestion.category %}
+                  <span class="mx-1">·</span>
+                  <span class="capitalize">{{ suggestion.category }}</span>
+                {% endif %}
+                {% if suggestion.combined_score is defined %}
+                  <span class="mx-1">·</span>
+                  <span>Score: {{ "%.1f"|format(suggestion.combined_score) }}</span>
+                {% endif %}
+              </div>
+              {% if suggestion.url %}
+                <a href="{{ suggestion.url }}" target="_blank" class="text-indigo-400 hover:underline text-xs">View source →</a>
+              {% endif %}
+            </div>
+            <button type="button" class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-3 py-1 rounded text-sm ml-3" onclick="applySuggestion({{ b.id }}, {{ suggestion.id }}, 'intro')">
+              Use This
+            </button>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="text-gray-500 text-sm">No suggestions loaded. Click "Regenerate Suggestions" to fetch.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# Manual override textarea #}
+  <div class="mb-4">
+    <label class="text-dark-text text-sm mb-1 block">Manual Override (optional):</label>
+    <textarea id="intro-override-{{ b.id }}" rows="4" class="w-full bg-[#0f172a] text-white border border-dark-border rounded p-2 text-sm" placeholder="Enter custom intro text...">{{ b.payload_json.text if (b.payload_json and b.payload_json.text and b.payload_json.manual_override) else '' }}</textarea>
+    <div class="mt-2 flex items-center gap-2">
+      <button type="button" class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-3 py-1 rounded text-sm" onclick="saveOverride({{ b.id }}, 'intro')">
+        Save Override
+      </button>
+      <button type="button" class="admin-button border border-dark-border text-dark-text hover:bg-dark-bg px-3 py-1 rounded text-sm" onclick="clearOverride({{ b.id }}, 'intro')">
+        Clear Override
+      </button>
+    </div>
+  </div>
+
+  {# Preview toggle #}
+  <details class="mt-3">
+    <summary class="cursor-pointer text-dark-text text-sm">Preview rendered HTML</summary>
+    <div class="mt-2 p-3 bg-[#0f172a] border border-dark-border rounded">
+      <div id="intro-html-preview-{{ b.id }}" class="text-dark-text text-xs">
+        <em>Preview will appear here</em>
+      </div>
+      <button type="button" class="mt-2 admin-button border border-dark-border text-dark-text hover:bg-dark-bg px-3 py-1 rounded text-sm" onclick="loadPreview({{ b.id }}, 'intro')">
+        Load Preview
+      </button>
+    </div>
+  </details>
+</div>
+
+{# JavaScript for intro editor #}
+<script>
+function loadSuggestions(blockId, blockType) {
+  const issueId = document.querySelector(`[data-block-id="${blockId}"]`).dataset.issueId;
+  fetch(`/newsletter/issue/${issueId}/block/${blockId}/suggestions`)
+    .then(r => r.json())
+    .then(data => {
+      const container = document.getElementById(`${blockType}-suggestions-${blockId}`);
+      if (data.suggestions && data.suggestions.length > 0) {
+        container.innerHTML = data.suggestions.map(s => `
+          <div class="p-3 bg-[#0f172a] border border-dark-border rounded suggestion-item" data-suggestion-id="${s.id}">
+            <div class="flex items-start justify-between">
+              <div class="flex-1">
+                <div class="text-white text-sm font-medium mb-1">${s.title || ''}</div>
+                <div class="text-dark-text text-xs mb-1">
+                  <span class="font-medium">${s.source_name || ''}</span>
+                  ${s.category ? `<span class="mx-1">·</span><span class="capitalize">${s.category}</span>` : ''}
+                  ${s.combined_score !== undefined ? `<span class="mx-1">·</span><span>Score: ${s.combined_score.toFixed(1)}</span>` : ''}
+                </div>
+                ${s.url ? `<a href="${s.url}" target="_blank" class="text-indigo-400 hover:underline text-xs">View source →</a>` : ''}
+              </div>
+              <button type="button" class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-3 py-1 rounded text-sm ml-3" onclick="applySuggestion(${blockId}, ${s.id}, '${blockType}')">
+                Use This
+              </button>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        container.innerHTML = '<div class="text-gray-500 text-sm">No suggestions available.</div>';
+      }
+    })
+    .catch(err => {
+      console.error('Failed to load suggestions:', err);
+      alert('Failed to load suggestions. Please try again.');
+    });
+}
+
+function applySuggestion(blockId, suggestionId, blockType) {
+  const issueId = document.querySelector(`[data-block-id="${blockId}"]`).dataset.issueId;
+  fetch(`/newsletter/issue/${issueId}/block/${blockId}/select-suggestion`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({suggestion_id: suggestionId})
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        if (data.text) {
+          document.getElementById(`${blockType}-preview-${blockId}`).textContent = data.text;
+        }
+        alert('Suggestion applied successfully!');
+        // Reload page to show updated payload
+        window.location.reload();
+      } else {
+        alert('Failed to apply suggestion: ' + (data.error || 'Unknown error'));
+      }
+    })
+    .catch(err => {
+      console.error('Failed to apply suggestion:', err);
+      alert('Failed to apply suggestion. Please try again.');
+    });
+}
+
+function saveOverride(blockId, blockType) {
+  const issueId = document.querySelector(`[data-block-id="${blockId}"]`).dataset.issueId;
+  const text = document.getElementById(`${blockType}-override-${blockId}`).value;
+  fetch(`/newsletter/issue/${issueId}/block/${blockId}/override`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({text: text})
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        document.getElementById(`${blockType}-preview-${blockId}`).textContent = text;
+        alert('Override saved successfully!');
+        window.location.reload();
+      } else {
+        alert('Failed to save override: ' + (data.error || 'Unknown error'));
+      }
+    })
+    .catch(err => {
+      console.error('Failed to save override:', err);
+      alert('Failed to save override. Please try again.');
+    });
+}
+
+function clearOverride(blockId, blockType) {
+  document.getElementById(`${blockType}-override-${blockId}`).value = '';
+  // Optionally reload to reset preview
+}
+
+function loadPreview(blockId, blockType) {
+  const issueId = document.querySelector(`[data-block-id="${blockId}"]`).dataset.issueId;
+  fetch(`/newsletter/issue/${issueId}/block/${blockId}/preview`)
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById(`${blockType}-html-preview-${blockId}`).innerHTML = data.html || '<em>Preview not available</em>';
+    })
+    .catch(err => {
+      console.error('Failed to load preview:', err);
+      document.getElementById(`${blockType}-html-preview-${blockId}`).innerHTML = '<em>Failed to load preview</em>';
+    });
+}
+</script>
+

@@ -393,11 +393,17 @@ def api_convert_event_to_idea(event_id: int):
                         )
                 
                 # 6. Update calendar_schedule entries to reference the new idea instead of the event
+                #    Only if calendar_schedule has an event_id column in this deployment
                 cursor.execute("""
-                    UPDATE calendar_schedule 
-                    SET idea_id = %s, event_id = NULL, updated_at = NOW()
-                    WHERE event_id = %s
-                """, (new_idea_id, event_id))
+                    SELECT 1 FROM information_schema.columns 
+                    WHERE table_name = 'calendar_schedule' AND column_name = 'event_id'
+                """)
+                if cursor.fetchone():
+                    cursor.execute("""
+                        UPDATE calendar_schedule 
+                        SET idea_id = %s, event_id = NULL, updated_at = NOW()
+                        WHERE event_id = %s
+                    """, (new_idea_id, event_id))
                 
                 # 7. Delete the event (cascades will clean up calendar_event_categories)
                 cursor.execute("DELETE FROM calendar_events WHERE id = %s", (event_id,))

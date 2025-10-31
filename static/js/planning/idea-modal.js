@@ -641,7 +641,9 @@ class IdeaModal {
         try {
             // Check if we're converting an event to an idea
             // We started with an event (currentEventId exists) but now saving as an idea (type is "idea", not "event")
-            const isConvertingEventToIdea = !isEvent && this.currentEventId && !ideaId;
+            // Also check if ideaId matches currentEventId (event ID was put in idea-id field when loading event)
+            const isConvertingEventToIdea = !isEvent && this.currentEventId && 
+                (!ideaId || String(ideaId) === String(this.currentEventId));
             
             // Remove nulls to avoid sending empty values that may violate patterns
             Object.keys(formData).forEach((k) => {
