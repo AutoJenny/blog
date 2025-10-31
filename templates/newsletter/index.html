@@ -1,66 +1,220 @@
 {% extends 'base.html' %}
 
-{% block title %}Newsletter — Dashboard{% endblock %}
+{% block title %}Newsletter{% endblock %}
 
-{% block content %}
-{% from 'shared/breadcrumb.html' import breadcrumb %}
-{% from 'newsletter/partials/issue_filters.html' import issue_filters %}
-{% from 'newsletter/partials/issue_cards.html' import issue_cards %}
-{% from 'newsletter/partials/pagination.html' import pagination %}
+{% block head %}
+<style>
+    table.newsletter-table {
+        width: 100% !important;
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
+    }
 
-<section class="max-w-6xl mx-auto px-4 py-10">
-  {{ breadcrumb([
-    { 'label': 'Home', 'href': '/' },
-    { 'label': 'Newsletter' }
-  ]) }}
+    table.newsletter-table thead th {
+        background: #1b2138 !important;
+        color: #a5b4fc !important;
+        padding: 18px 28px !important;
+        text-align: left !important;
+        border: 1px solid #2d3246 !important;
+        font-size: 13px !important;
+        font-weight: 800 !important;
+    }
 
-  <div class="flex items-center justify-between mb-6">
-    <div>
-      <h1 class="text-3xl font-bold text-white">Newsletter</h1>
-      <p class="text-dark-text mt-1">Create, review, and send the weekly issue.</p>
-    </div>
-    <div class="flex items-center gap-3">
-      <form method="post" action="/newsletter/autodraft">
-        <button type="submit" class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-4 py-2 rounded-lg">Auto‑Draft This Week</button>
-      </form>
-    </div>
-  </div>
+    table.newsletter-table tbody td {
+        background: #151a2e !important;
+        color: #e6e8ef !important;
+        padding: 16px 28px !important;
+        border: 1px solid #2d3246 !important;
+        vertical-align: middle !important;
+        line-height: 1.6 !important;
+    }
 
-  <div class="bg-dark-bg border border-dark-border rounded-lg p-6 mb-6">
-    <form method="post" action="/newsletter/issue">
-      <div class="flex flex-wrap items-end gap-3">
-        <div>
-          <label class="text-dark-text text-sm">Subject</label>
-          <input name="subject" placeholder="This week in Scotland — YYYYWww" class="px-3 py-2 rounded border border-dark-border bg-[#0f172a] text-white" />
-        </div>
-        <div class="flex-1 min-w-[240px]">
-          <label class="text-dark-text text-sm">Preheader</label>
-          <input name="preheader" placeholder="A quick wander through culture & craft." class="px-3 py-2 rounded border border-dark-border bg-[#0f172a] text-white w-full" />
-        </div>
-        <button type="submit" class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-4 py-2 rounded-lg">New Draft</button>
-      </div>
-    </form>
+    table.newsletter-table tbody tr:hover td {
+        background: #181f36 !important;
+    }
+    table.newsletter-table tbody tr {
+        cursor: pointer;
+    }
 
-    {% if issues and issues|length > 0 %}
-      {{ issue_filters(status_filter, q) }}
-      {{ issue_cards(issues) }}
-      {{ pagination(page, total_pages) }}
-    {% else %}
-      <div class="rounded-lg border border-dashed border-dark-border p-8 text-center">
-        <h2 class="text-white font-semibold mb-2">No issues yet</h2>
-        <p class="text-dark-text mb-4">Create your first draft with a single click.</p>
-        <form method="post" action="/newsletter/autodraft">
-          <button type="submit" class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-4 py-2 rounded-lg">Auto‑Draft This Week</button>
-        </form>
-      </div>
-    {% endif %}
-  </div>
-  <div class="mt-6">
-    <a href="/newsletter" class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-4 py-2 rounded-lg">Refresh</a>
-  </div>
-  <style>
-    .admin-button { transition: background .2s ease; }
-  </style>
+    .actions { text-align: right !important; white-space: nowrap !important; }
+    .btn-primary { background:#4e6bff; color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:700; text-decoration:none; display:inline-block; }
+    .btn-primary:hover { background:#3d5ae5; }
+    .status { display:inline-block; padding:6px 10px; border-radius:999px; font-weight:700; font-size:12px; background:#23273a; color:#a5b4fc; border:1px solid #31364a; }
+    .status-sent { background:#0b3b2e; color:#6ee7b7; border-color:#10b981; }
+    .status-approved { background:#1e3a5f; color:#93c5fd; border-color:#3b82f6; }
+    .status-draft { background:#3e2609; color:#fcd34d; border-color:#f59e0b; }
+    
+    .filter-bar {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 16px;
+        padding: 12px;
+        background: #151a2e;
+        border: 1px solid #2d3246;
+        border-radius: 8px;
+    }
+    .filter-links a {
+        color: #a5b4fc;
+        text-decoration: none;
+        margin-right: 12px;
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+    .filter-links a:hover { background: #1b2138; }
+    .filter-links a.active { background: #4e6bff; color: #fff; font-weight: 700; }
+    
+    .search-input {
+        background: #0f172a !important;
+        color: #e6e8ef !important;
+        border: 1px solid #2d3246 !important;
+        padding: 8px 12px !important;
+        border-radius: 6px !important;
+        width: 240px;
+    }
+    
+    .create-form {
+        background: #151a2e;
+        border: 1px solid #2d3246;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .create-form input {
+        background: #0f172a !important;
+        color: #e6e8ef !important;
+        border: 1px solid #2d3246 !important;
+        padding: 10px 14px !important;
+        border-radius: 6px !important;
+    }
+</style>
 {% endblock %}
 
+{% block content %}
+<div class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="mb-6 flex items-center justify-between">
+            <h1 class="text-2xl font-bold text-white">
+                <i class="fa-solid fa-envelope"></i> Newsletter
+            </h1>
+            <form method="post" action="/newsletter/autodraft" style="display:inline;">
+                <button type="submit" class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-4 py-2 rounded-lg flex items-center gap-2 shadow transition">
+                    <i class="fa-solid fa-magic"></i>
+                    Auto‑Draft This Week
+                </button>
+            </form>
+        </div>
 
+        <div class="create-form">
+            <form method="post" action="/newsletter/issue">
+                <div class="flex flex-wrap items-end gap-3">
+                    <div>
+                        <label class="text-gray-400 text-sm block mb-1">Subject</label>
+                        <input name="subject" placeholder="This week in Scotland — YYYYWww" class="px-3 py-2 rounded border border-dark-border bg-[#0f172a] text-white" />
+                    </div>
+                    <div class="flex-1 min-w-[240px]">
+                        <label class="text-gray-400 text-sm block mb-1">Preheader</label>
+                        <input name="preheader" placeholder="A quick wander through culture & craft." class="px-3 py-2 rounded border border-dark-border bg-[#0f172a] text-white w-full" />
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        <i class="fa-solid fa-plus"></i> New Draft
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        {% if issues and issues|length > 0 %}
+            <div class="filter-bar">
+                <div class="filter-links">
+                    <a href="/newsletter" class="{{ 'active' if not status_filter else '' }}">All</a>
+                    <a href="/newsletter?status=draft" class="{{ 'active' if status_filter == 'draft' else '' }}">Draft</a>
+                    <a href="/newsletter?status=approved" class="{{ 'active' if status_filter == 'approved' else '' }}">Approved</a>
+                    <a href="/newsletter?status=sent" class="{{ 'active' if status_filter == 'sent' else '' }}">Sent</a>
+                </div>
+                <form method="get" class="flex items-center gap-2 ml-auto">
+                    {% if status_filter %}
+                        <input type="hidden" name="status" value="{{ status_filter }}" />
+                    {% endif %}
+                    <input type="text" name="q" value="{{ q or '' }}" placeholder="Search subject/preheader" class="search-input" />
+                    <button type="submit" class="btn-primary">Search</button>
+                </form>
+            </div>
+
+            <table class="newsletter-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Subject</th>
+                        <th>Week</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Last Sent</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in issues %}
+                    <tr onclick="window.location.href='/newsletter/issue/{{ i.id }}'">
+                        <td style="color:#9ca3af; font-weight:600;">{{ i.id }}</td>
+                        <td style="font-weight:700;">{{ i.subject or ('Issue #' ~ i.id) }}</td>
+                        <td style="color:#9ca3af;">{{ i.target_week or '—' }}</td>
+                        <td>
+                            {% if i.status == 'sent' %}
+                                <span class="status status-sent">Sent</span>
+                            {% elif i.status == 'approved' %}
+                                <span class="status status-approved">Approved</span>
+                            {% elif i.status == 'draft' %}
+                                <span class="status status-draft">Draft</span>
+                            {% else %}
+                                <span class="status">{{ i.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="color:#9ca3af;">{{ i.created_at.strftime('%Y-%m-%d') if i.created_at else '—' }}</td>
+                        <td style="color:#9ca3af;">{{ i.last_sent_at.strftime('%Y-%m-%d') if i.last_sent_at else '—' }}</td>
+                        <td class="actions">
+                            <a href="/newsletter/issue/{{ i.id }}" class="btn-primary" onclick="event.stopPropagation();">Edit</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% if total_pages > 1 %}
+            <div class="flex items-center justify-between mt-6">
+                <div class="text-gray-400 text-sm">Page {{ page }} of {{ total_pages }}</div>
+                <div class="flex items-center gap-2">
+                    {% if page > 1 %}
+                        {% set prev_url = '/newsletter?' %}
+                        {% if status_filter %}{% set prev_url = prev_url ~ 'status=' ~ status_filter ~ '&' %}{% endif %}
+                        {% if q %}{% set prev_url = prev_url ~ 'q=' ~ q ~ '&' %}{% endif %}
+                        {% set prev_url = prev_url ~ 'page=' ~ (page - 1) %}
+                        <a class="btn-primary" href="{{ prev_url }}">Previous</a>
+                    {% else %}
+                        <span class="text-gray-400">Previous</span>
+                    {% endif %}
+                    {% if page < total_pages %}
+                        {% set next_url = '/newsletter?' %}
+                        {% if status_filter %}{% set next_url = next_url ~ 'status=' ~ status_filter ~ '&' %}{% endif %}
+                        {% if q %}{% set next_url = next_url ~ 'q=' ~ q ~ '&' %}{% endif %}
+                        {% set next_url = next_url ~ 'page=' ~ (page + 1) %}
+                        <a class="btn-primary" href="{{ next_url }}">Next</a>
+                    {% else %}
+                        <span class="text-gray-400">Next</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        {% else %}
+            <div style="background:#151a2e; border:1px solid #2d3246; border-radius:8px; padding:48px; text-align:center;">
+                <h2 style="color:#e6e8ef; font-size:18px; font-weight:700; margin-bottom:8px;">No issues yet</h2>
+                <p style="color:#9ca3af; margin-bottom:20px;">Create your first draft with a single click.</p>
+                <form method="post" action="/newsletter/autodraft" style="display:inline;">
+                    <button type="submit" class="btn-primary">
+                        <i class="fa-solid fa-magic"></i> Auto‑Draft This Week
+                    </button>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
