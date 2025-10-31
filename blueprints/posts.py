@@ -167,9 +167,17 @@ def api_posts():
                 cursor.execute("""
                     SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
                            p.clan_post_id, p.clan_last_attempt, p.clan_error, p.clan_uploaded_url,
-                           pd.idea_seed, pd.provisional_title, pd.intro_blurb
+                           pd.idea_seed, pd.provisional_title, pd.intro_blurb,
+                           cs.year AS sched_year, cs.week_number AS sched_week, cs.scheduled_date
                     FROM post p
                     LEFT JOIN post_development pd ON p.id = pd.post_id
+                    LEFT JOIN LATERAL (
+                        SELECT year, week_number, scheduled_date, updated_at
+                        FROM calendar_schedule
+                        WHERE post_id = p.id
+                        ORDER BY scheduled_date DESC NULLS LAST, updated_at DESC
+                        LIMIT 1
+                    ) cs ON TRUE
                     WHERE p.status = 'deleted'
                     ORDER BY p.created_at DESC
                 """)
@@ -177,9 +185,17 @@ def api_posts():
                 cursor.execute("""
                     SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
                            p.clan_post_id, p.clan_last_attempt, p.clan_error, p.clan_uploaded_url,
-                           pd.idea_seed, pd.provisional_title, pd.intro_blurb
+                           pd.idea_seed, pd.provisional_title, pd.intro_blurb,
+                           cs.year AS sched_year, cs.week_number AS sched_week, cs.scheduled_date
                     FROM post p
                     LEFT JOIN post_development pd ON p.id = pd.post_id
+                    LEFT JOIN LATERAL (
+                        SELECT year, week_number, scheduled_date, updated_at
+                        FROM calendar_schedule
+                        WHERE post_id = p.id
+                        ORDER BY scheduled_date DESC NULLS LAST, updated_at DESC
+                        LIMIT 1
+                    ) cs ON TRUE
                     WHERE p.status != 'deleted'
                     ORDER BY p.updated_at DESC, p.id DESC
                 """)

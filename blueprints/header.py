@@ -114,7 +114,7 @@ def header_preview(post_id):
         with db_manager.get_cursor() as cursor:
             # Get post data
             cursor.execute("""
-                SELECT id, title, subtitle, summary, slug, status,
+                SELECT id, title, subtitle, summary, slug, status, 
                        clan_post_id, clan_uploaded_url,
                        created_at, updated_at, header_image_id, author_id, author_name
                 FROM post

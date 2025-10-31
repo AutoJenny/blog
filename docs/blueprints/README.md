@@ -4,7 +4,7 @@
 
 This document tracks all blueprints in the unified blog application, their purpose, routes, and modularity status.
 
-Last Updated: 2025-10-28
+Last Updated: 2025-10-30
 
 ## Complete Blueprint Inventory
 
@@ -23,7 +23,7 @@ Last Updated: 2025-10-28
 | **launchpad/publishing.py** | 599 | publishing | /launchpad | Publishing | 📦 Ready | 🔵 Available |
 | **ui_state.py** | 472 | ui_state | /ui-state | System | ✅ Active | ✅ Good |
 | **core.py** | 383 | core | / | System | ✅ Active | ✅ Good |
-| **launchpad_scheduling.py** | 376 | (legacy?) | - | Legacy? | ⚠️ Check | Review |
+| **launchpad_scheduling.py** | 377 | launchpad_scheduling | /launchpad/api | Scheduling API | ✅ Active | ✅ Good |
 | **planning.py** | 361 | planning | /planning | Workflow | ✅ Active | ✅ Good |
 | **automation_calendar.py** | 359 | automation_calendar | /launchpad | System | ✅ Active | ✅ Good |
 | **database.py** | 348 | database | /database | System | ✅ Active | ✅ Good |
@@ -234,6 +234,10 @@ Last Updated: 2025-10-28
 
 ### Utility Modules
 - `blueprints/launchpad_utils.py` - Shared utilities (`get_next_posting_slot`, `strip_html_doc`)
+
+### Frontend Modules (Syndication Scheduling)
+- `static/js/posting-control.js` - Posting Control manager (UI orchestration)
+- `static/js/posting-control-utils.js` - Time formatting and next-post calculations
 
 ### Configuration
 - `config/database.py` - Database management

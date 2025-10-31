@@ -1,0 +1,18 @@
+{% if block %}
+<section style="margin-bottom:24px;">
+  <h3 style="color:#fff; font-size:16px; font-weight:700; margin:0 0 10px 0;">Product Spotlight</h3>
+  {% if block.image_url %}
+  <img src="{{ block.image_url }}" alt="{{ block.name }}" style="width:100%; height:auto; border-radius:8px;" />
+  {% endif %}
+  <div style="color:#fff; font-weight:600; margin-top:6px;">{{ block.name }}</div>
+  {% if block.short_description %}
+  <p style="color:#c9cedc; margin:6px 0 0 0;">{{ block.short_description }}</p>
+  {% endif %}
+  {% if block.slug %}
+  <p style="margin:8px 0 0 0;"><a href="{{ block.slug }}" style="color:#8ab4ff;">Learn more</a></p>
+  {% endif %}
+</section>
+{% endif %}
+
+
+

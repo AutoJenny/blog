@@ -1,0 +1,17 @@
+{% if block and block.title %}
+<section style="margin-bottom:24px;">
+  <h2 style="color:#fff; font-size:20px; font-weight:700; margin:0 0 8px 0;">{{ block.title }}</h2>
+  {% if block.hero_image %}
+    <img src="{{ block.hero_image }}" alt="{{ block.title }}" style="width:100%; height:auto; border-radius:8px;" />
+  {% endif %}
+  {% if block.excerpt %}
+    <p style="color:#c9cedc; margin:8px 0 0 0;">{{ block.excerpt }}</p>
+  {% endif %}
+  {% if block.url %}
+    <p style="margin:8px 0 0 0;"><a href="{{ block.url }}" style="color:#8ab4ff;">Read more</a></p>
+  {% endif %}
+</section>
+{% endif %}
+
+
+

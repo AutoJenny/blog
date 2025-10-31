@@ -23,6 +23,12 @@ def planning_calendar_view(post_id):
                           post_id=post_id,
                           blueprint_name='planning')
 
+def planning_calendar_week_view(post_id):
+    """Calendar Week View sub-stage (week-per-view)"""
+    return render_template('planning/calendar/week_view.html',
+                          post_id=post_id,
+                          blueprint_name='planning')
+
 def planning_calendar_ideas(post_id):
     """Idea Generation sub-stage"""
     try:

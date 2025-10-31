@@ -1,0 +1,21 @@
+{% if block and block.items %}
+<section style="margin-bottom:24px;">
+  <h3 style="color:#fff; font-size:16px; font-weight:700; margin:0 0 10px 0;">New This Week</h3>
+  <table role="presentation" width="100%" style="border-collapse:collapse;">
+    <tr>
+      {% for p in block.items %}
+      <td style="vertical-align:top; padding:6px; width:33.33%;">
+        {% if p.image_url %}
+        <img src="{{ p.image_url }}" alt="{{ p.name }}" style="width:100%; height:auto; border-radius:6px;" />
+        {% endif %}
+        <div style="color:#fff; font-weight:600; margin-top:6px;">{{ p.name }}</div>
+        {% if p.slug %}<a href="{{ p.slug }}" style="color:#8ab4ff;">Explore</a>{% endif %}
+      </td>
+      {% endfor %}
+    </tr>
+  </table>
+</section>
+{% endif %}
+
+
+

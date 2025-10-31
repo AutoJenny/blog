@@ -332,6 +332,19 @@
                     </div>
                 </section>
 
+                <!-- Calendar Quick Access Panel -->
+                <section class="mb-6">
+                    <a href="/planning/posts/{{ first_post_id }}/calendar/week-view" class="block w-full">
+                        <div class="card-dark rounded-xl px-6 py-3 flex items-center justify-between hover:bg-slate-800 transition border border-slate-700">
+                            <div class="flex items-center gap-3">
+                                <span class="icon-circle"><i class="fa-solid fa-calendar-days text-blue-400 text-xl"></i></span>
+                                <span class="text-base font-semibold text-white">Calendar</span>
+                            </div>
+                            <span class="text-dark-accent text-sm">Open week view</span>
+                        </div>
+                    </a>
+                </section>
+
                 <!-- Blog & Newsletter Panels -->
                 <section class="mb-12">
                     <h2 class="text-2xl section-title mb-6 flex items-center gap-2">
@@ -346,8 +359,9 @@
                                 <p class="text-dark-accent text-sm text-center">Core stages for producing a blog post</p>
                             </div>
                             <div class="flex flex-col gap-2 mt-2">
-                                <a href="/launchpad/one-click-blog" class="text-dark-accent hover:text-white text-sm transition">⚡ One‑Click Blog</a>
-                                <a href="/authoring/" class="text-dark-accent hover:text-white text-sm transition"> Authoring</a>
+                                <a href="/planning/posts/{{ first_post_id }}/calendar/ideas" class="text-dark-accent hover:text-white text-sm transition">🧭 Planning</a>
+                                <a href="/posts/{{ first_post_id }}/sections/drafting" class="text-dark-accent hover:text-white text-sm transition"> Authoring</a>
+                                <a href="/imaging/posts/{{ first_post_id }}/sections/image-generation" class="text-dark-accent hover:text-white text-sm transition"> Imaging</a>
                                 <a href="/header/posts/{{ first_post_id }}/title-summary" class="text-dark-accent hover:text-white text-sm transition"> Header</a>
                                 <a href="/launchpad/publishing" class="text-dark-accent hover:text-white text-sm transition"> Publishing</a>
                                 <!-- Calendar intentionally omitted here; link separately below -->

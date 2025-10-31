@@ -56,6 +56,10 @@ def create_app(config_name=None):
     
     from blueprints.automation_core import bp as automation_bp
     app.register_blueprint(automation_bp)
+
+    # Newsletter top-level blueprint
+    from blueprints.newsletter import bp as newsletter_bp
+    app.register_blueprint(newsletter_bp)
     
     from blueprints.llm_actions import bp as llm_actions_bp
     app.register_blueprint(llm_actions_bp, url_prefix='/llm-actions')

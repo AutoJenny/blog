@@ -115,70 +115,19 @@ class PostingControlManager {
     }
 
     formatTimeForDisplay(time) {
-        const [hours, minutes] = time.split(':');
-        const hour = parseInt(hours);
-        const ampm = hour >= 12 ? 'PM' : 'AM';
-        const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-        return `${displayHour}:${minutes} ${ampm}`;
+        return window.PostingControlUtils.formatTimeForDisplay(time);
     }
 
     getDayName(dayNumber) {
-        const days = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        return days[dayNumber];
+        return window.PostingControlUtils.getDayName(dayNumber);
     }
 
     formatSchedulePattern(days, time, timezone) {
-        const timeFormatted = this.formatTimeForDisplay(time);
-        
-        if (days.length === 7) {
-            return `Every day at ${timeFormatted} ${timezone}`;
-        } else if (days.length === 5 && days.includes(1) && days.includes(5)) {
-            return `Weekdays at ${timeFormatted} ${timezone}`;
-        } else if (days.length === 2 && days.includes(6) && days.includes(7)) {
-            return `Weekends at ${timeFormatted} ${timezone}`;
-        } else {
-            const dayNames = days.map(day => this.getDayName(day)).join(', ');
-            return `${dayNames} at ${timeFormatted} ${timezone}`;
-        }
+        return window.PostingControlUtils.formatSchedulePattern(days, time, timezone);
     }
 
     calculateNextPostTime(days, time, timezone) {
-        const now = new Date();
-        const today = now.getDay() || 7; // Convert Sunday (0) to 7
-        
-        // Find next selected day
-        let nextDay = null;
-        for (let i = 0; i < 7; i++) {
-            const checkDay = ((today + i - 1) % 7) + 1;
-            if (days.includes(checkDay)) {
-                nextDay = checkDay;
-                break;
-            }
-        }
-        
-        if (!nextDay) {
-            return 'No posts scheduled';
-        }
-        
-        // Calculate days until next post
-        const daysUntilNext = nextDay > today ? nextDay - today : (7 - today) + nextDay;
-        const nextPostDate = new Date(now);
-        nextPostDate.setDate(nextPostDate.getDate() + daysUntilNext);
-        
-        // Set the time
-        const [hours, minutes] = time.split(':');
-        nextPostDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-        
-        const dayName = this.getDayName(nextDay);
-        const timeFormatted = this.formatTimeForDisplay(time);
-        
-        if (daysUntilNext === 0) {
-            return `Today at ${timeFormatted} ${timezone}`;
-        } else if (daysUntilNext === 1) {
-            return `Tomorrow at ${timeFormatted} ${timezone}`;
-        } else {
-            return `${dayName} at ${timeFormatted} ${timezone}`;
-        }
+        return window.PostingControlUtils.calculateNextPostTime(days, time, timezone);
     }
 
     async handleSaveNewSchedule() {
@@ -190,6 +139,10 @@ class PostingControlManager {
         const time = timeField ? timeField.value : '17:00';
         const timezone = timezoneField ? timezoneField.value : 'GMT';
         const selectedDays = this.getNewSelectedDays();
+
+        // Derive platform and content type from page
+        const platform = window.pageData?.platform?.name || 'facebook';
+        const contentType = (window.pageData?.channel_type?.name === 'product_post') ? 'product' : 'blog_post';
         
         if (!name) {
             alert('Please enter a schedule name.');
@@ -211,7 +164,9 @@ class PostingControlManager {
                     name: name,
                     time: time,
                     timezone: timezone,
-                    days: selectedDays
+                    days: selectedDays,
+                    platform: platform,
+                    content_type: contentType
                 })
             });
             
@@ -234,7 +189,7 @@ class PostingControlManager {
                     }, 2000);
                 }
             } else {
-                alert('Error saving schedule: ' + data.error);
+                alert('Error saving schedule: ' + (data.error ?? 'Unknown error'));
             }
         } catch (error) {
             console.error('Error saving schedule:', error);

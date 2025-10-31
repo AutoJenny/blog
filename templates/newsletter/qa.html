@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Newsletter — QA {{ issue_id }}{% endblock %}
+
+{% block content %}
+<section class="max-w-5xl mx-auto px-4 py-10">
+  <h1 class="text-3xl font-bold text-white mb-4">QA — Issue #{{ issue_id }}</h1>
+  {% if checks and checks|length > 0 %}
+    <ul class="space-y-2">
+      {% for name, ok in checks %}
+      <li class="text-white">
+        <span class="text-dark-text mr-2">{{ name }}</span>
+        <span class="{% if ok %}text-green-400{% else %}text-red-400{% endif %}">{{ 'OK' if ok else 'FAIL' }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-dark-text">No checks available.</p>
+  {% endif %}
+  <div class="mt-6">
+    <a href="/newsletter/issue/{{ issue_id }}" class="text-indigo-400 hover:underline">Back to Issue</a>
+  </div>
+</section>
+{% endblock %}
+
+
+
