@@ -7,6 +7,8 @@ from typing import Any, Dict, List, Optional
 from datetime import datetime
 from newsletter.db.queries_sources import get_cached_items, check_repeat_cooldown
 from newsletter.services.scoring import score_items, apply_diversity_rules
+from newsletter.rendering.intro_text import generate_intro_text
+from newsletter.rendering.snapshot_text import generate_snapshot_text
 
 
 def validate_link(url: str, timeout: int = 5) -> bool:
@@ -108,61 +110,15 @@ def template_intro_text(weather_item: Dict[str, Any] | None = None,
                         community_item: Dict[str, Any] | None = None) -> str:
     """Generate 2-3 sentence intro text from selected items.
     
-    Tone: warm, observational, with inline attribution.
+    Delegates to rendering module.
     """
-    sentences = []
-    
-    # Weather sentence (if available)
-    if weather_item:
-        source = weather_item.get('source_name', '')
-        title = weather_item.get('title', '')
-        # Simple phrasing: "The Met Office reports..." or "Weather warnings are in effect..."
-        if 'met office' in source.lower():
-            sentences.append(f"The Met Office reports: {title}")
-        else:
-            sentences.append(f"{source} reports: {title}")
-    
-    # Event/community sentence
-    if event_item:
-        source = event_item.get('source_name', '')
-        title = event_item.get('title', '')
-        location = event_item.get('location', '')
-        if location:
-            sentences.append(f"{source} has announced: {title} in {location}.")
-        else:
-            sentences.append(f"{source} has announced: {title}.")
-    elif community_item:
-        source = community_item.get('source_name', '')
-        title = community_item.get('title', '')
-        if 'reddit' in source.lower():
-            sentences.append(f"A fun discussion on {source}: {title}")
-        else:
-            sentences.append(f"{source}: {title}")
-    
-    # Fallback if nothing available
-    if not sentences:
-        return "A quick wander through culture & craft from Scotland this week."
-    
-    # Join with soft segue
-    text = ". ".join(sentences)
-    if len(sentences) > 1:
-        text += " If you're nearby, it's worth a look."
-    
-    return text
+    return generate_intro_text(weather_item, event_item, community_item)
 
 
 def template_snapshot_text(item: Dict[str, Any]) -> str:
-    """Generate single-item snapshot text with attribution."""
-    source = item.get('source_name', '')
-    title = item.get('title', '')
+    """Generate single-item snapshot text with attribution.
     
-    # Attribution phrasing
-    if 'bbc' in source.lower():
-        return f"BBC Scotland reports: {title}"
-    elif 'reddit' in source.lower():
-        return f"A fun discussion on {source}: {title}"
-    elif 'met office' in source.lower():
-        return f"The Met Office reports: {title}"
-    else:
-        return f"{source}: {title}"
+    Delegates to rendering module.
+    """
+    return generate_snapshot_text(item)
 

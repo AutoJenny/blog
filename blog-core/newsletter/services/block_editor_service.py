@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 from newsletter.db.queries_issue import get_block, update_block_payload
-from newsletter.services.suggestion_service import generate_suggestions, template_intro_text, template_snapshot_text
+from newsletter.services.suggestion_service import generate_suggestions
+from newsletter.rendering.intro_text import generate_intro_text
+from newsletter.rendering.snapshot_text import generate_snapshot_text
 from newsletter.selectors.intro import select_intro_content
 from newsletter.selectors.snapshot import select_snapshot
 
@@ -76,7 +78,7 @@ def apply_suggestion(*, block_id: int, block_type: str, issue_id: int, target_we
             "items_by_category": intro_content.get('items_by_category', {}),
         }
     elif block_type == 'snapshot':
-        text = template_snapshot_text(selected)
+        text = generate_snapshot_text(selected)
         payload = {
             "title": selected.get('title', ''),
             "publisher": selected.get('source_name', ''),

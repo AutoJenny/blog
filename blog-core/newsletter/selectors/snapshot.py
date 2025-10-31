@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from typing import Any, Dict, Optional
-from newsletter.services.suggestion_service import generate_suggestions, template_snapshot_text, select_default
+from newsletter.services.suggestion_service import generate_suggestions, select_default
+from newsletter.rendering.snapshot_text import generate_snapshot_text
 
 
 def select_snapshot(*, target_week: str) -> Optional[Dict[str, Any]]:
@@ -20,7 +21,7 @@ def select_snapshot(*, target_week: str) -> Optional[Dict[str, Any]]:
     if not selected:
         return fallback_snapshot()
     
-    text = template_snapshot_text(selected)
+    text = generate_snapshot_text(selected)
     
     return {
         "title": selected.get('title', ''),

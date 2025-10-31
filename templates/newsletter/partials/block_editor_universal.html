@@ -1,0 +1,36 @@
+{# Universal block editor base: shared controls, suitable for most blocks #}
+<div class="block-editor-universal" data-block-id="{{ block.id }}" data-issue-id="{{ issue_id }}">
+  <div class="mb-4 p-3 bg-[#0f172a] border border-dark-border rounded">
+    <div class="text-dark-text text-xs mb-1">Current Payload (JSON):</div>
+    <pre class="text-xs text-white overflow-x-auto">{{ (block.payload_json | tojson(indent=2)) if block.payload_json else '{}' }}</pre>
+  </div>
+
+  <div class="mb-4 flex items-center gap-3">
+    <label class="flex items-center gap-2 cursor-pointer">
+      <input type="checkbox" checked class="w-4 h-4 rounded bg-[#0f172a] border-dark-border text-dark-accent focus:ring-dark-accent">
+      <span class="text-dark-text text-sm">Auto-select best suggestion</span>
+    </label>
+    <button type="button" class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-3 py-1 rounded text-sm" onclick="loadSuggestions({{ block.id }}, '{{ block.type }}')">
+      Regenerate Suggestions
+    </button>
+  </div>
+
+  <div class="mb-4">
+    <div class="text-dark-text text-sm mb-2">Suggestions:</div>
+    <div id="{{ block.type }}-suggestions-{{ block.id }}" class="space-y-2">
+      <div class="text-gray-500 text-sm">No suggestions loaded. Click "Regenerate Suggestions" to fetch.</div>
+    </div>
+  </div>
+
+  <details class="mt-3">
+    <summary class="cursor-pointer text-dark-text text-sm">Manual JSON override</summary>
+    <form method="post" action="/newsletter/block/{{ block.id }}/update" class="mt-2">
+      <input type="hidden" name="issue_id" value="{{ issue_id }}" />
+      <label class="text-dark-text text-sm">Payload JSON</label>
+      <textarea name="payload_json" rows="6" class="w-full bg-[#0f172a] text-white border border-dark-border rounded p-2 font-mono text-sm">{{ (block.payload_json | tojson(indent=2)) if block.payload_json else '{}' }}</textarea>
+      <div class="mt-2 text-right">
+        <button type="submit" class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-3 py-1 rounded">Save</button>
+      </div>
+    </form>
+  </details>
+</div>

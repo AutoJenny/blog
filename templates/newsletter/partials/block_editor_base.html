@@ -1,0 +1,62 @@
+{# Common wrapper for all block editors #}
+<div class="border border-dark-border rounded p-4">
+  <div class="flex items-center justify-between">
+    <div>
+      <div class="text-white font-semibold">{{ loop.index }}. {{ block.type }}</div>
+      {% if block.description %}
+        <div class="text-gray-400 text-xs mt-1">{{ block.description }}</div>
+      {% endif %}
+    </div>
+    <div class="flex items-center gap-2">
+      <form method="post" action="/newsletter/block/{{ block.id }}/move" style="display:inline;">
+        <input type="hidden" name="issue_id" value="{{ issue_id }}" />
+        <input type="hidden" name="direction" value="up" />
+        <button type="submit" class="text-dark-text hover:text-white" title="Move up">↑</button>
+      </form>
+      <form method="post" action="/newsletter/block/{{ block.id }}/move" style="display:inline;">
+        <input type="hidden" name="issue_id" value="{{ issue_id }}" />
+        <input type="hidden" name="direction" value="down" />
+        <button type="submit" class="text-dark-text hover:text-white" title="Move down">↓</button>
+      </form>
+      <form method="post" action="/newsletter/block/{{ block.id }}/delete" style="display:inline;" onsubmit="return confirm('Delete this block?');">
+        <input type="hidden" name="issue_id" value="{{ issue_id }}" />
+        <button type="submit" class="text-red-400 hover:text-red-300" title="Delete">Delete</button>
+      </form>
+    </div>
+  </div>
+  <div class="mt-2 flex items-center gap-3">
+    <form method="post" action="/newsletter/block/{{ block.id }}/toggle" style="display:inline;">
+      <input type="hidden" name="issue_id" value="{{ issue_id }}" />
+      <input type="hidden" name="enabled" value="{{ not block.enabled }}" />
+      <button type="submit" class="admin-button px-3 py-1 rounded border {{ 'border-green-600 text-green-400' if block.enabled else 'border-gray-600 text-gray-400' }}">
+        {{ 'Disable' if block.enabled else 'Enable' }}
+      </button>
+    </form>
+    <span class="text-dark-text">Status: {{ 'enabled' if block.enabled else 'disabled' }}</span>
+  </div>
+  
+  {# Block type-specific editor #}
+  <div class="mt-4">
+    {% if block.type == 'intro' %}
+      {% set b = block %}
+      {% include 'newsletter/partials/block_editor_intro.html' %}
+    {% elif block.type == 'snapshot' %}
+      {% set b = block %}
+      {% include 'newsletter/partials/block_editor_snapshot.html' %}
+    {% else %}
+      {# Fallback: JSON editor for other block types #}
+      <details class="mt-3">
+        <summary class="cursor-pointer text-dark-text">Edit payload</summary>
+        <form method="post" action="/newsletter/block/{{ block.id }}/update" class="mt-2">
+          <input type="hidden" name="issue_id" value="{{ issue_id }}" />
+          <label class="text-dark-text text-sm">Payload JSON</label>
+          <textarea name="payload_json" rows="6" class="w-full bg-[#0f172a] text-white border border-dark-border rounded p-2 font-mono text-sm">{{ (block.payload_json | tojson(indent=2)) if block.payload_json else '{}' }}</textarea>
+          <div class="mt-2 text-right">
+            <button type="submit" class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-3 py-1 rounded">Save</button>
+          </div>
+        </form>
+      </details>
+    {% endif %}
+  </div>
+</div>
+

@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
-from newsletter.services.suggestion_service import generate_suggestions, template_intro_text
+from newsletter.services.suggestion_service import generate_suggestions
+from newsletter.rendering.intro_text import generate_intro_text
 from newsletter.services.scoring import apply_diversity_rules
 
 
@@ -70,7 +71,7 @@ def select_intro_content(*, target_week: str) -> Dict[str, Any]:
                     community_item = item
     
     # Generate text from selected items
-    text = template_intro_text(weather_item, event_item, community_item)
+    text = generate_intro_text(weather_item, event_item, community_item)
     
     # Build top 3 suggestions for UI
     top_suggestions = []
