@@ -65,6 +65,24 @@ async function loadWeek(year, weekNumber) {
       const dayNum = String(d.getUTCDate());
       header.innerHTML = `${label}<span class="day-num">${dayNum}</span>`;
     }
+    // Create vertical sections: content (events/ideas/schedule) and syndication
+    const contentSection = document.createElement('div');
+    contentSection.className = 'day-section content-section';
+    contentSection.id = `day-${i + 1}-content`;
+    const syndicationSection = document.createElement('div');
+    syndicationSection.className = 'day-section syndication-section';
+    syndicationSection.id = `day-${i + 1}-syndication`;
+    // Optional labels
+    const contentLabel = document.createElement('div');
+    contentLabel.className = 'section-label';
+    contentLabel.textContent = 'Events & Ideas';
+    const syndicationLabel = document.createElement('div');
+    syndicationLabel.className = 'section-label';
+    syndicationLabel.textContent = 'Syndication';
+    contentSection.appendChild(contentLabel);
+    syndicationSection.appendChild(syndicationLabel);
+    body.appendChild(contentSection);
+    body.appendChild(syndicationSection);
   }
   document.getElementById('week-dates').textContent = `${formatDate(dates[0])} – ${formatDate(dates[6])}`;
 
@@ -113,19 +131,17 @@ async function loadWeek(year, weekNumber) {
     }
   }
 
-  // Render events and schedule by their weekday if available
+  // Render events and schedule to the content section for each day
   if (showEvents) {
     events.forEach((ev) => {
       const dayIdx = ev.weekday || ev.day || 1; // 1..7
-      const target = document.getElementById(`day-${Math.min(Math.max(dayIdx, 1), 7)}`);
-      renderItems(target, [ev], 'event');
+      const contentTarget = document.getElementById(`day-${Math.min(Math.max(dayIdx, 1), 7)}-content`);
+      renderItems(contentTarget, [ev], 'event');
     });
-  }
-  if (showEvents) {
     schedule.forEach((sc) => {
       const dayIdx = sc.weekday || sc.day || 1;
-      const target = document.getElementById(`day-${Math.min(Math.max(dayIdx, 1), 7)}`);
-      renderItems(target, [sc], 'scheduled');
+      const contentTarget = document.getElementById(`day-${Math.min(Math.max(dayIdx, 1), 7)}-content`);
+      renderItems(contentTarget, [sc], 'scheduled');
     });
   }
 
@@ -154,7 +170,7 @@ async function loadWeek(year, weekNumber) {
       const days = normalizeDays(s.days);
       const timeDisplay = toDisplayTime(s.time);
       days.forEach((d) => {
-        const target = document.getElementById(`day-${Math.min(Math.max(d, 1), 7)}`);
+        const target = document.getElementById(`day-${Math.min(Math.max(d, 1), 7)}-syndication`);
         const item = { channel: s.platform || 'Facebook', operation: s.content_type === 'product' ? 'Product' : (s.content_type || ''), time_display: timeDisplay, _syndication: true };
         renderItems(target, [item], 'scheduled');
       });
