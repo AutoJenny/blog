@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 # Import functions from new modules
 from blueprints.planning_views import planning_dashboard as dashboard_func, planning_post_overview as post_overview_func, planning_concept as concept_func, categories_manage as categories_func, planning_research as research_func, planning_old_interface as old_interface_func
-from blueprints.planning_calendar_clean import planning_calendar as calendar_func, planning_calendar_view as calendar_view_func, planning_calendar_ideas as ideas_func, planning_calendar_ideas_week as ideas_week_func
+from blueprints.planning_calendar_clean import planning_calendar as calendar_func, planning_calendar_view as calendar_view_func, planning_calendar_week_view as calendar_week_view_func, planning_calendar_ideas as ideas_func, planning_calendar_ideas_week as ideas_week_func
 from blueprints.planning_concept import planning_concept_brainstorm as brainstorm_func, planning_concept_section_structure as section_structure_func, planning_concept_topic_allocation as topic_allocation_func, planning_concept_titling as titling_func, planning_concept_outline as outline_func, planning_research_sources as sources_func, planning_research_visuals as visuals_func, planning_research_prompts as prompts_func, planning_research_verification as verification_func
 from blueprints.planning_api_calendar import api_calendar_categories as categories_api_func, api_calendar_weeks as weeks_api_func, api_calendar_ideas as ideas_api_func, api_calendar_events as events_api_func, api_calendar_schedule as schedule_api_func, api_calendar_ideas_for_week as ideas_week_api_func
 from blueprints.planning_api_posts import api_posts as posts_api_func
@@ -80,6 +80,11 @@ def planning_old_interface(post_id):
 def planning_calendar_view(post_id):
     """Calendar view page"""
     return calendar_view_func(post_id)
+
+@bp.route('/posts/<int:post_id>/calendar/week-view')
+def planning_calendar_week_view(post_id):
+    """Calendar week (week-per-view) page"""
+    return calendar_week_view_func(post_id)
 
 @bp.route('/calendar/ideas/week/<int:week_number>')
 def planning_calendar_ideas_week(week_number):

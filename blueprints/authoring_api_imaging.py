@@ -814,7 +814,7 @@ def api_generate_image_concepts(post_id, section_id):
                     logger.warning(f"Error updating sections JSON (non-critical): {e}")
             
             # Commit all changes
-            cursor.connection.commit()
+                    cursor.connection.commit()
             
             # Verify primary storage succeeded
             if section_id.isdigit() and not section_saved_to_table:

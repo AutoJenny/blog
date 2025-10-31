@@ -60,7 +60,7 @@ function initUberGenerate() {
                 setTimeout(() => {
                     uberBtn.innerHTML = '<i class="fas fa-magic"></i> Generate All (Title, Subtitle, Summary, Slug)';
                 }, 2000);
-
+                
                 // Notify opener (launchpad) that header title & summary completed
                 try { if (window.opener) window.opener.postMessage('header_title_summary_complete', '*'); } catch (_) {}
                 

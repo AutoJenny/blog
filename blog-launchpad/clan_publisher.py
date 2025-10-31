@@ -1071,17 +1071,17 @@ class ClanPublisher:
                             cursor.connection.commit()
                             logger.info("✅ Auto-selected random cross-promotion IDs and persisted to DB")
                 # Build cross_promotion object
-                if full_post_data.get('cross_promotion_category_id') or full_post_data.get('cross_promotion_product_id'):
-                    full_post_data['cross_promotion'] = {
-                        'category_id': full_post_data.get('cross_promotion_category_id'),
-                        'category_title': full_post_data.get('cross_promotion_category_title', ''),
-                        'product_id': full_post_data.get('cross_promotion_product_id'),
-                        'product_title': full_post_data.get('cross_promotion_product_title', ''),
-                        'category_position': full_post_data.get('cross_promotion_category_position'),
-                        'product_position': full_post_data.get('cross_promotion_product_position'),
-                        'category_widget_html': full_post_data.get('cross_promotion_category_widget_html'),
-                        'product_widget_html': full_post_data.get('cross_promotion_product_widget_html')
-                    }
+            if full_post_data.get('cross_promotion_category_id') or full_post_data.get('cross_promotion_product_id'):
+                full_post_data['cross_promotion'] = {
+                    'category_id': full_post_data.get('cross_promotion_category_id'),
+                    'category_title': full_post_data.get('cross_promotion_category_title', ''),
+                    'product_id': full_post_data.get('cross_promotion_product_id'),
+                    'product_title': full_post_data.get('cross_promotion_product_title', ''),
+                    'category_position': full_post_data.get('cross_promotion_category_position'),
+                    'product_position': full_post_data.get('cross_promotion_product_position'),
+                    'category_widget_html': full_post_data.get('cross_promotion_category_widget_html'),
+                    'product_widget_html': full_post_data.get('cross_promotion_product_widget_html')
+                }
                     # Auto-generate widget HTML if missing
                     widget_changed = False
                     cp = full_post_data['cross_promotion']
@@ -1108,7 +1108,7 @@ class ClanPublisher:
                             c2.connection.commit()
                             logger.info("✅ Auto-generated widget HTML and persisted to DB")
                     logger.info(f"✅ Mapped cross-promotion: cat_id={cp.get('category_id')}, prod_id={cp.get('product_id')}")
-                else:
+            else:
                     logger.info("No cross-promotion data found after auto-selection attempt")
             except Exception as e:
                 logger.warning(f"Cross-promotion auto-selection/generation error: {e}")

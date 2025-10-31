@@ -107,24 +107,24 @@ def api_select_concept(post_id, section_id):
                             if str(s.get('id')) == str(section_id):
                                 s['selected_image_concept'] = concept_id
                                 break
-                        
-                        # Update JSON in database
-                        cursor.execute("""
-                            UPDATE post_development 
-                            SET sections = %s 
-                            WHERE post_id = %s
-                        """, (json.dumps(sections_data), post_id))
-                        logger.info(f"[DEBUG] Also updated selected_image_concept in post_development.sections JSON for section {section_id}")
+                    
+                    # Update JSON in database
+                    cursor.execute("""
+                        UPDATE post_development 
+                        SET sections = %s 
+                        WHERE post_id = %s
+                    """, (json.dumps(sections_data), post_id))
+                    logger.info(f"[DEBUG] Also updated selected_image_concept in post_development.sections JSON for section {section_id}")
                 except (json.JSONDecodeError, TypeError) as e:
                     logger.warning(f"Error updating sections JSON (non-critical): {e}")
-            
+                
             # Commit all changes
             cursor.connection.commit()
             
             # Verify primary storage succeeded
             if str(section_id).isdigit() and not section_saved_to_table:
                 return jsonify({'error': 'Failed to save to post_section table (primary storage)'}), 500
-                
+            
             return jsonify({
                 'success': True,
                 'message': 'Concept selected successfully'

@@ -1,0 +1,15 @@
+{% if block %}
+<section style="margin-bottom:24px;">
+  <h3 style="color:#fff; font-size:16px; font-weight:700; margin:0 0 6px 0;">Scottish Snapshot</h3>
+  <p style="color:#c9cedc; margin:0;">
+    {% if block.url %}<a href="{{ block.url }}" style="color:#8ab4ff;">{{ block.title }}</a>{% else %}{{ block.title }}{% endif %}
+    <span style="color:#8a8f9f;"> — {{ block.publisher }}</span>
+  </p>
+  {% if block.comment %}
+    <p style="color:#c9cedc; margin:6px 0 0 0;">{{ block.comment }}</p>
+  {% endif %}
+</section>
+{% endif %}
+
+
+

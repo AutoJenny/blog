@@ -217,17 +217,17 @@ def publish_post_to_clan(post_id):
                 post['created_at'] = None
         
         # Always fetch cross-promotion data (decoupled from header image presence)
-        with db_manager.get_cursor() as cursor:
-            cursor.execute("""
-                SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
-                       cross_promotion_category_id, cross_promotion_category_title,
-                       cross_promotion_product_id, cross_promotion_product_title,
-                       cross_promotion_category_position, cross_promotion_product_position,
-                       cross_promotion_category_widget_html, cross_promotion_product_widget_html
-                FROM post WHERE id = %s
-            """, (post_id,))
-            header_data = cursor.fetchone()
-
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
+                           cross_promotion_category_id, cross_promotion_category_title,
+                           cross_promotion_product_id, cross_promotion_product_title,
+                           cross_promotion_category_position, cross_promotion_product_position,
+                           cross_promotion_category_widget_html, cross_promotion_product_widget_html
+                    FROM post WHERE id = %s
+                """, (post_id,))
+                header_data = cursor.fetchone()
+                
             # Add header image if exists (optional)
             header_image_path = find_header_image(post_id)
             if header_image_path:
@@ -239,18 +239,18 @@ def publish_post_to_clan(post_id):
                     'width': header_data['header_image_width'] if header_data else None,
                     'height': header_data['header_image_height'] if header_data else None
                 }
-
+                
             # Map cross-promotion regardless of header image
-            post['cross_promotion'] = {
-                'category_id': header_data['cross_promotion_category_id'] if header_data else None,
-                'category_title': header_data['cross_promotion_category_title'] if header_data else None,
-                'product_id': header_data['cross_promotion_product_id'] if header_data else None,
-                'product_title': header_data['cross_promotion_product_title'] if header_data else None,
+                post['cross_promotion'] = {
+                    'category_id': header_data['cross_promotion_category_id'] if header_data else None,
+                    'category_title': header_data['cross_promotion_category_title'] if header_data else None,
+                    'product_id': header_data['cross_promotion_product_id'] if header_data else None,
+                    'product_title': header_data['cross_promotion_product_title'] if header_data else None,
                 'category_position': header_data.get('cross_promotion_category_position') if header_data else None,
                 'product_position': header_data.get('cross_promotion_product_position') if header_data else None,
                 'category_widget_html': header_data.get('cross_promotion_category_widget_html') if header_data else None,
                 'product_widget_html': header_data.get('cross_promotion_product_widget_html') if header_data else None
-            }
+                }
 
             # Auto-select random category/product IDs and default positions if missing
             try:

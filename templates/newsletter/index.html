@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Newsletter — Dashboard{% endblock %}
+
+{% block content %}
+<section class="max-w-6xl mx-auto px-4 py-10">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-white">Newsletter</h1>
+      <p class="text-dark-text mt-1">Create, review, and send the weekly issue.</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <form method="post" action="/newsletter/autodraft">
+        <button type="submit" class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-4 py-2 rounded-lg">Auto‑Draft This Week</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="bg-dark-bg border border-dark-border rounded-lg p-6 mb-6">
+    <form method="post" action="/newsletter/issue">
+      <div class="flex flex-wrap items-end gap-3">
+        <div>
+          <label class="text-dark-text text-sm">Subject</label>
+          <input name="subject" placeholder="This week in Scotland — YYYYWww" class="px-3 py-2 rounded border border-dark-border bg-[#0f172a] text-white" />
+        </div>
+        <div class="flex-1 min-w-[240px]">
+          <label class="text-dark-text text-sm">Preheader</label>
+          <input name="preheader" placeholder="A quick wander through culture & craft." class="px-3 py-2 rounded border border-dark-border bg-[#0f172a] text-white w-full" />
+        </div>
+        <button type="submit" class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-4 py-2 rounded-lg">New Draft</button>
+      </div>
+    </form>
+
+    {% if issues and issues|length > 0 %}
+      <div class="mb-4">
+        <label class="text-dark-text text-sm mr-2">Filter:</label>
+        <a href="/newsletter" class="{{ 'text-indigo-400 font-bold' if not status_filter else 'text-indigo-400 hover:underline' }} mr-2">All</a>
+        <a href="/newsletter?status=draft" class="{{ 'text-indigo-400 font-bold' if status_filter == 'draft' else 'text-indigo-400 hover:underline' }} mr-2">Draft</a>
+        <a href="/newsletter?status=approved" class="{{ 'text-indigo-400 font-bold' if status_filter == 'approved' else 'text-indigo-400 hover:underline' }} mr-2">Approved</a>
+        <a href="/newsletter?status=sent" class="{{ 'text-indigo-400 font-bold' if status_filter == 'sent' else 'text-indigo-400 hover:underline' }}">Sent</a>
+      </div>
+      <table class="w-full text-left">
+        <thead>
+          <tr>
+            <th class="text-dark-text py-2">ID</th>
+            <th class="text-dark-text py-2">Week</th>
+            <th class="text-dark-text py-2">Status</th>
+            <th class="text-dark-text py-2">Subject</th>
+            <th class="text-dark-text py-2">Created</th>
+            <th class="text-dark-text py-2">Last Sent</th>
+            <th class="text-dark-text py-2">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i in issues %}
+          <tr class="border-t border-dark-border hover:bg-[#0f172a]">
+            <td class="py-2 text-white">{{ i.id }}</td>
+            <td class="py-2 text-white">{{ i.target_week }}</td>
+            <td class="py-2">
+              {% if i.status == 'sent' %}
+                <span class="text-green-400">Sent</span>
+              {% elif i.status == 'approved' %}
+                <span class="text-blue-400">Approved</span>
+              {% elif i.status == 'draft' %}
+                <span class="text-yellow-400">Draft</span>
+              {% else %}
+                <span class="text-white">{{ i.status }}</span>
+              {% endif %}
+            </td>
+            <td class="py-2 text-white truncate" style="max-width: 360px;">{{ i.subject }}</td>
+            <td class="py-2 text-dark-text text-sm">{{ i.created_at.strftime('%Y-%m-%d') if i.created_at else '—' }}</td>
+            <td class="py-2 text-dark-text text-sm">{{ i.last_sent_at.strftime('%Y-%m-%d') if i.last_sent_at else '—' }}</td>
+            <td class="py-2">
+              <a href="/newsletter/issue/{{ i.id }}" class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-3 py-1 rounded">Edit</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="rounded-lg border border-dashed border-dark-border p-8 text-center">
+        <h2 class="text-white font-semibold mb-2">No issues yet</h2>
+        <p class="text-dark-text mb-4">Create your first draft with a single click.</p>
+        <form method="post" action="/newsletter/autodraft">
+          <button type="submit" class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-4 py-2 rounded-lg">Auto‑Draft This Week</button>
+        </form>
+      </div>
+    {% endif %}
+  </div>
+  <div class="mt-6">
+    <a href="/newsletter" class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-4 py-2 rounded-lg">Refresh</a>
+  </div>
+  <style>
+    .admin-button { transition: background .2s ease; }
+  </style>
+{% endblock %}
+
+

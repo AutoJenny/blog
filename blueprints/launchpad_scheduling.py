@@ -100,19 +100,30 @@ def get_schedules():
         content_type = request.args.get('content_type')
         
         with db_manager.get_cursor() as cursor:
+            # Detect optional columns to keep compatibility if migrations not applied yet
+            cursor.execute("""
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'daily_posts_schedule'
+            """)
+            cols = {row['column_name'] for row in cursor.fetchall()}
+
             query = "SELECT * FROM daily_posts_schedule WHERE 1=1"
             params = []
-            
-            if platform:
+
+            # Only show active schedules
+            if 'is_active' in cols:
+                query += " AND is_active = true"
+
+            if platform and 'platform' in cols:
                 query += " AND platform = %s"
                 params.append(platform)
-            
-            if content_type:
+
+            if content_type and 'content_type' in cols:
                 query += " AND content_type = %s"
                 params.append(content_type)
-            
+
             query += " ORDER BY time ASC"
-            
+
             cursor.execute(query, params)
             schedules = cursor.fetchall()
             
@@ -143,17 +154,59 @@ def add_schedule():
         
         with db_manager.get_connection() as conn:
             with conn.cursor() as cursor:
+                # Check columns; if missing, apply migration inline (user approved)
                 cursor.execute("""
-                    INSERT INTO daily_posts_schedule (time, platform, content_type, days, timezone, is_active)
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                """, (
-                    data['time'],
-                    data['platform'],
-                    data['content_type'],
-                    data['days'],
-                    data.get('timezone', 'UTC'),
-                    data.get('is_active', True)
-                ))
+                    SELECT column_name FROM information_schema.columns 
+                    WHERE table_name = 'daily_posts_schedule'
+                """)
+                existing_cols = {row['column_name'] for row in cursor.fetchall()}
+
+                required_adds = []
+                if 'name' not in existing_cols:
+                    required_adds.append("ADD COLUMN IF NOT EXISTS name VARCHAR(255) NOT NULL DEFAULT 'Schedule'")
+                if 'platform' not in existing_cols:
+                    required_adds.append("ADD COLUMN IF NOT EXISTS platform VARCHAR(50)")
+                if 'content_type' not in existing_cols:
+                    required_adds.append("ADD COLUMN IF NOT EXISTS content_type VARCHAR(50)")
+                if 'page_id' not in existing_cols:
+                    required_adds.append("ADD COLUMN IF NOT EXISTS page_id VARCHAR(100)")
+                if 'page_name' not in existing_cols:
+                    required_adds.append("ADD COLUMN IF NOT EXISTS page_name VARCHAR(200)")
+
+                if required_adds:
+                    alter_sql = "ALTER TABLE daily_posts_schedule\n" + ",\n".join(required_adds) + ";"
+                    cursor.execute(alter_sql)
+                    # Backfill sensible defaults for platform/content_type
+                    cursor.execute("""
+                        UPDATE daily_posts_schedule
+                        SET platform = COALESCE(platform, 'facebook'),
+                            content_type = COALESCE(content_type, 'product')
+                        WHERE platform IS NULL OR content_type IS NULL
+                    """)
+
+                # Now perform insert with full column set
+                # Ensure JSONB-compatible value for days
+                days_value = data['days']
+                try:
+                    import json as _json
+                    if not isinstance(days_value, str):
+                        days_value = _json.dumps(days_value)
+                except Exception:
+                    pass
+
+                if 'name' in existing_cols or required_adds:
+                    cursor.execute("""
+                        INSERT INTO daily_posts_schedule (name, time, platform, content_type, days, timezone, is_active)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    """, (
+                        data.get('name') or 'Schedule',
+                        data['time'],
+                        data['platform'],
+                        data['content_type'],
+                        days_value,
+                        data.get('timezone', 'UTC'),
+                        data.get('is_active', True)
+                    ))
                 conn.commit()
                 
                 return jsonify({
@@ -256,6 +309,70 @@ def clear_schedules():
             'success': False,
             'error': str(e)
         }), 500
+
+@bp.route('/api/syndication/schedules/purge-legacy', methods=['POST'])
+def purge_legacy_schedules():
+    """Hard-delete legacy or inactive schedules to eliminate duplicates in UI."""
+    try:
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cursor:
+                # Ensure optional columns exist checks
+                cursor.execute("""
+                    SELECT column_name FROM information_schema.columns
+                    WHERE table_name = 'daily_posts_schedule'
+                """)
+                cols = {row['column_name'] for row in cursor.fetchall()}
+
+                # Build deletion criteria for legacy rows
+                delete_clauses = ["is_active = false"] if 'is_active' in cols else []
+                if 'platform' in cols:
+                    delete_clauses.append("platform IS NULL")
+                if 'content_type' in cols:
+                    delete_clauses.append("content_type IS NULL")
+
+                if delete_clauses:
+                    delete_sql = "DELETE FROM daily_posts_schedule WHERE " + " OR ".join(delete_clauses)
+                    cursor.execute(delete_sql)
+                    deleted_count = cursor.rowcount
+                else:
+                    deleted_count = 0
+
+                conn.commit()
+
+        return jsonify({'success': True, 'deleted': deleted_count})
+    except Exception as e:
+        logger.error(f"Error purging legacy schedules: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@bp.route('/api/syndication/schedules/backfill', methods=['POST'])
+def backfill_schedules_platform_content_type():
+    """Backfill platform/content_type (and optional page fields) for legacy rows."""
+    try:
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cursor:
+                # Ensure columns exist (safe if already applied)
+                cursor.execute("""
+                    ALTER TABLE daily_posts_schedule
+                    ADD COLUMN IF NOT EXISTS platform VARCHAR(50),
+                    ADD COLUMN IF NOT EXISTS content_type VARCHAR(50),
+                    ADD COLUMN IF NOT EXISTS page_id VARCHAR(100),
+                    ADD COLUMN IF NOT EXISTS page_name VARCHAR(200)
+                """)
+
+                # Backfill sensible defaults
+                cursor.execute("""
+                    UPDATE daily_posts_schedule
+                    SET platform = COALESCE(platform, 'facebook'),
+                        content_type = COALESCE(content_type, 'product')
+                    WHERE platform IS NULL OR content_type IS NULL
+                """)
+
+                conn.commit()
+
+        return jsonify({'success': True, 'message': 'Backfill complete'})
+    except Exception as e:
+        logger.error(f"Error in schedules backfill: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @bp.route('/api/syndication/today-status')
 def get_today_status():

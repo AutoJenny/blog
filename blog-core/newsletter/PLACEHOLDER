@@ -1,0 +1,12 @@
+"""Newsletter package.
+
+This package contains the newsletter feature modules. Files are intentionally
+kept small; when any file approaches ~400–500 LOC, split it into additional
+modules to preserve readability and maintainability.
+"""
+
+__all__ = []
+
+
+
+
