@@ -137,8 +137,9 @@ async function loadWeek(year, weekNumber) {
   const weekThemesContainer = document.getElementById('week-themes');
   if (weekThemesContainer) {
     weekThemesContainer.innerHTML = '';
-    if (showThemes && themes.length) {
-      renderItems(weekThemesContainer, themes, 'idea');
+    if (showThemes) {
+      if (themes.length) renderItems(weekThemesContainer, themes, 'idea');
+      if (unselectedIdeas.length) renderItems(weekThemesContainer, unselectedIdeas, 'idea');
     }
   }
 

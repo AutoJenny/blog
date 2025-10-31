@@ -62,10 +62,12 @@ def upsert_block(*, issue_id: int, block_type: str, position: int, enabled: bool
             return None
 
 
-def list_issues(*, limit: int = 12, offset: int = 0, status: str | None = None, q: str | None = None) -> List[Dict[str, Any]]:
-    """List issues with optional status filter, search, and pagination."""
+def list_issues(*, limit: int = 12, offset: int = 0, status: str | None = None, q: str | None = None, show_deleted: bool = False) -> List[Dict[str, Any]]:
+    """List issues with optional status filter, search, pagination, and deleted filter."""
     where = []
     params: List[Any] = []
+    if not show_deleted:
+        where.append("status != 'deleted'")
     if status:
         where.append("status = %s")
         params.append(status)
@@ -89,10 +91,12 @@ def list_issues(*, limit: int = 12, offset: int = 0, status: str | None = None, 
             return [dict(r) for r in rows]
 
 
-def count_issues(*, status: str | None = None, q: str | None = None) -> int:
+def count_issues(*, status: str | None = None, q: str | None = None, show_deleted: bool = False) -> int:
     """Total issues count for pagination with same filters as list_issues."""
     where = []
     params: List[Any] = []
+    if not show_deleted:
+        where.append("status != 'deleted'")
     if status:
         where.append("status = %s")
         params.append(status)
@@ -214,6 +218,21 @@ def insert_block(*, issue_id: int, block_type: str, position: int, enabled: bool
             new_id = row['id']
             conn.commit()
             return int(new_id)
+
+
+def soft_delete_issue(*, issue_id: int) -> None:
+    """Mark an issue as deleted (soft delete)."""
+    with db_manager.get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                UPDATE newsletter_issue
+                SET status = 'deleted', updated_at = NOW()
+                WHERE id = %s
+                """,
+                (issue_id,),
+            )
+            conn.commit()
 
 
 def move_block(*, block_id: int, direction: str) -> None:
