@@ -151,12 +151,49 @@
 .legend-item.scheduled { background:#10b981; color:#fff; }
 </style>
 
+<!-- Idea Modal Component Styles -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/planning/idea-modal.css') }}">
+
 <script>
 window.postId = {{ post_id }};
 window.currentStage = 'calendar';
 window.currentSubstage = 'week-view';
 </script>
 <script type="module" src="/static/js/planning/calendar-week-view.js"></script>
+<script src="{{ url_for('static', filename='js/planning/idea-modal.js') }}"></script>
+
+<!-- Include the idea modal component -->
+{% include 'planning/calendar/idea_modal.html' %}
+
+<script>
+    // Initialize idea modal and hook up click handlers after DOM loads
+    document.addEventListener('DOMContentLoaded', () => {
+        const ideaModal = getIdeaModal();
+        
+        // Make theme items clickable
+        document.addEventListener('click', (e) => {
+            const themeItem = e.target.closest('.week-themes .item.idea');
+            if (themeItem) {
+                const ideaId = themeItem.dataset.ideaId;
+                if (ideaId) {
+                    ideaModal.open(parseInt(ideaId));
+                }
+            }
+        });
+        
+        // Listen for idea-saved event to refresh calendar
+        window.addEventListener('idea-saved', () => {
+            // Reload the week view
+            const currentYear = parseInt(document.getElementById('week-year')?.textContent || new Date().getFullYear());
+            const currentWeek = parseInt(document.getElementById('week-number')?.textContent || 44);
+            if (typeof loadWeek === 'function') {
+                loadWeek(currentYear, currentWeek);
+            } else {
+                location.reload();
+            }
+        });
+    });
+</script>
 
 {% endblock %}
 
