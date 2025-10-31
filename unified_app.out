@@ -1122,3 +1122,280 @@ LINE 21:                     OR (
 2025-10-31 21:53:41,362 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:53:41] "GET /planning/api/calendar/ideas/116 HTTP/1.1" 200 -
 2025-10-31 21:54:39,732 - config.database - INFO - Database connection established
 2025-10-31 21:54:39,740 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:54:39] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-10-31 21:55:36,889 - config.database - INFO - Database connection established
+2025-10-31 21:55:36,906 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:55:36] "GET /planning/api/calendar/ideas/50 HTTP/1.1" 200 -
+2025-10-31 21:55:50,505 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:55:50] "GET /planning/posts/0/calendar/week-view HTTP/1.1" 200 -
+2025-10-31 21:56:42,440 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:56:42] "GET /planning/posts/0/calendar/week-view HTTP/1.1" 200 -
+2025-10-31 21:58:15,870 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:15] "GET /planning/posts/0/calendar/week-view HTTP/1.1" 200 -
+2025-10-31 21:58:15,893 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:15] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-10-31 21:58:15,895 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:15] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-31 21:58:15,898 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:15] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-10-31 21:58:15,898 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:15] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-31 21:58:15,899 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:15] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-10-31 21:58:15,899 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:15] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-10-31 21:58:15,899 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:15] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-10-31 21:58:15,900 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:15] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-10-31 21:58:15,901 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:15] "[36mGET /static/css/planning/idea-modal.css HTTP/1.1[0m" 304 -
+2025-10-31 21:58:15,903 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:15] "[36mGET /static/js/planning/calendar-week-view.js HTTP/1.1[0m" 304 -
+2025-10-31 21:58:15,905 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:15] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-31 21:58:15,906 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:15] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-31 21:58:15,906 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:15] "GET /static/js/planning/idea-modal.js HTTP/1.1" 200 -
+2025-10-31 21:58:15,907 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:15] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-10-31 21:58:15,907 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:15] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-31 21:58:15,925 - config.database - INFO - Database connection established
+2025-10-31 21:58:15,927 - config.database - INFO - Database connection established
+2025-10-31 21:58:15,927 - config.database - INFO - Database connection established
+2025-10-31 21:58:15,927 - config.database - INFO - Database connection established
+2025-10-31 21:58:15,928 - config.database - INFO - Database connection established
+2025-10-31 21:58:15,929 - config.database - INFO - Database connection established
+2025-10-31 21:58:15,930 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:15] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 21:58:15,931 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:15] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-10-31 21:58:15,931 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:15] "GET /planning/api/calendar/categories HTTP/1.1" 200 -
+2025-10-31 21:58:15,933 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:15] "GET /planning/api/calendar/schedule/2025/44 HTTP/1.1" 200 -
+2025-10-31 21:58:15,940 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:15] "GET /planning/api/calendar/events/2025/44 HTTP/1.1" 200 -
+2025-10-31 21:58:15,942 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:15] "GET /planning/api/calendar/ideas/week/44 HTTP/1.1" 200 -
+2025-10-31 21:58:18,757 - config.database - INFO - Database connection established
+2025-10-31 21:58:18,760 - config.database - INFO - Database connection established
+2025-10-31 21:58:18,760 - config.database - INFO - Database connection established
+2025-10-31 21:58:18,760 - config.database - INFO - Database connection established
+2025-10-31 21:58:18,760 - config.database - INFO - Database connection established
+2025-10-31 21:58:18,762 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:18] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 21:58:18,762 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:18] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-10-31 21:58:18,764 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:18] "GET /planning/api/calendar/schedule/2025/45 HTTP/1.1" 200 -
+2025-10-31 21:58:18,772 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:18] "GET /planning/api/calendar/events/2025/45 HTTP/1.1" 200 -
+2025-10-31 21:58:18,776 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:18] "GET /planning/api/calendar/ideas/week/45 HTTP/1.1" 200 -
+2025-10-31 21:58:18,970 - config.database - INFO - Database connection established
+2025-10-31 21:58:18,970 - config.database - INFO - Database connection established
+2025-10-31 21:58:18,971 - config.database - INFO - Database connection established
+2025-10-31 21:58:18,974 - config.database - INFO - Database connection established
+2025-10-31 21:58:18,975 - config.database - INFO - Database connection established
+2025-10-31 21:58:18,977 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:18] "GET /planning/api/calendar/schedule/2025/46 HTTP/1.1" 200 -
+2025-10-31 21:58:18,977 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:18] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 21:58:18,978 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:18] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-10-31 21:58:18,987 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:18] "GET /planning/api/calendar/events/2025/46 HTTP/1.1" 200 -
+2025-10-31 21:58:18,990 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:18] "GET /planning/api/calendar/ideas/week/46 HTTP/1.1" 200 -
+2025-10-31 21:58:19,112 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,113 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,115 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,115 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,116 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,119 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 21:58:19,119 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-10-31 21:58:19,120 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /planning/api/calendar/schedule/2025/47 HTTP/1.1" 200 -
+2025-10-31 21:58:19,131 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /planning/api/calendar/events/2025/47 HTTP/1.1" 200 -
+2025-10-31 21:58:19,133 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /planning/api/calendar/ideas/week/47 HTTP/1.1" 200 -
+2025-10-31 21:58:19,262 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,264 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,266 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,266 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,268 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 21:58:19,269 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /planning/api/calendar/schedule/2025/48 HTTP/1.1" 200 -
+2025-10-31 21:58:19,269 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,273 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-10-31 21:58:19,283 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /planning/api/calendar/events/2025/48 HTTP/1.1" 200 -
+2025-10-31 21:58:19,284 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /planning/api/calendar/ideas/week/48 HTTP/1.1" 200 -
+2025-10-31 21:58:19,453 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,454 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,454 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,456 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,457 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,458 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 21:58:19,458 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /planning/api/calendar/schedule/2025/49 HTTP/1.1" 200 -
+2025-10-31 21:58:19,459 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-10-31 21:58:19,469 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /planning/api/calendar/events/2025/49 HTTP/1.1" 200 -
+2025-10-31 21:58:19,472 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /planning/api/calendar/ideas/week/49 HTTP/1.1" 200 -
+2025-10-31 21:58:19,618 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,618 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,621 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,622 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,623 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,626 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 21:58:19,627 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-10-31 21:58:19,627 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /planning/api/calendar/schedule/2025/50 HTTP/1.1" 200 -
+2025-10-31 21:58:19,640 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /planning/api/calendar/ideas/week/50 HTTP/1.1" 200 -
+2025-10-31 21:58:19,640 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /planning/api/calendar/events/2025/50 HTTP/1.1" 200 -
+2025-10-31 21:58:19,754 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,754 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,756 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,756 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,756 - config.database - INFO - Database connection established
+2025-10-31 21:58:19,759 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-10-31 21:58:19,760 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 21:58:19,762 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /planning/api/calendar/schedule/2025/51 HTTP/1.1" 200 -
+2025-10-31 21:58:19,771 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /planning/api/calendar/events/2025/51 HTTP/1.1" 200 -
+2025-10-31 21:58:19,772 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:19] "GET /planning/api/calendar/ideas/week/51 HTTP/1.1" 200 -
+2025-10-31 21:58:20,686 - config.database - INFO - Database connection established
+2025-10-31 21:58:20,686 - config.database - INFO - Database connection established
+2025-10-31 21:58:20,687 - config.database - INFO - Database connection established
+2025-10-31 21:58:20,689 - config.database - INFO - Database connection established
+2025-10-31 21:58:20,693 - config.database - INFO - Database connection established
+2025-10-31 21:58:20,695 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:20] "GET /planning/api/calendar/schedule/2025/52 HTTP/1.1" 200 -
+2025-10-31 21:58:20,696 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:20] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 21:58:20,697 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:20] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-10-31 21:58:20,704 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:20] "GET /planning/api/calendar/events/2025/52 HTTP/1.1" 200 -
+2025-10-31 21:58:20,705 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:20] "GET /planning/api/calendar/ideas/week/52 HTTP/1.1" 200 -
+2025-10-31 21:58:23,948 - config.database - INFO - Database connection established
+2025-10-31 21:58:23,965 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:23] "GET /planning/api/calendar/ideas/116 HTTP/1.1" 200 -
+2025-10-31 21:58:39,739 - config.database - INFO - Database connection established
+2025-10-31 21:58:39,750 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:58:39] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-10-31 21:59:08,957 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:59:08] "[31m[1mGET /planning/api/calendar/ideas HTTP/1.1[0m" 405 -
+2025-10-31 21:59:14,888 - config.database - INFO - Database connection established
+2025-10-31 21:59:14,908 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:59:14] "GET /planning/api/calendar/ideas/116 HTTP/1.1" 200 -
+2025-10-31 21:59:20,243 - config.database - INFO - Database connection established
+2025-10-31 21:59:20,269 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:59:20] "GET /planning/api/calendar/ideas/116 HTTP/1.1" 200 -
+2025-10-31 21:59:30,458 - config.database - INFO - Database connection established
+2025-10-31 21:59:30,479 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:59:30] "GET /planning/api/calendar/ideas/116 HTTP/1.1" 200 -
+2025-10-31 21:59:45,036 - config.database - INFO - Database connection established
+2025-10-31 21:59:45,058 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:59:45] "GET /planning/api/calendar/ideas/116 HTTP/1.1" 200 -
+2025-10-31 21:59:45,584 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-10-31 21:59:45,623 - werkzeug - INFO -  * Restarting with stat
+2025-10-31 21:59:45,936 - werkzeug - WARNING -  * Debugger is active!
+2025-10-31 21:59:45,942 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-10-31 21:59:51,946 - config.database - INFO - Database connection established
+2025-10-31 21:59:51,963 - blueprints.planning_api_calendar - ERROR - Error fetching calendar idea: column ci.sources does not exist
+LINE 6:                        ci.evergreen_notes, ci.sources, ci.it...
+                                                   ^
+2025-10-31 21:59:51,964 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 21:59:51] "[35m[1mGET /planning/api/calendar/ideas/116 HTTP/1.1[0m" 500 -
+2025-10-31 22:00:00,064 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_api_calendar.py', reloading
+2025-10-31 22:00:00,109 - werkzeug - INFO -  * Restarting with stat
+2025-10-31 22:00:00,425 - werkzeug - WARNING -  * Debugger is active!
+2025-10-31 22:00:00,431 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-10-31 22:00:05,469 - config.database - INFO - Database connection established
+2025-10-31 22:00:05,485 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:00:05] "GET /planning/api/calendar/ideas/116 HTTP/1.1" 200 -
+2025-10-31 22:00:05,900 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_api_calendar.py', reloading
+2025-10-31 22:00:05,943 - werkzeug - INFO -  * Restarting with stat
+2025-10-31 22:00:06,257 - werkzeug - WARNING -  * Debugger is active!
+2025-10-31 22:00:06,263 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-10-31 22:00:12,245 - config.database - INFO - Database connection established
+2025-10-31 22:00:12,261 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:00:12] "GET /planning/api/calendar/ideas/116 HTTP/1.1" 200 -
+2025-10-31 22:00:12,755 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:00:12] "GET /planning/posts/0/calendar/week-view HTTP/1.1" 200 -
+2025-10-31 22:00:17,241 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_api_calendar.py', reloading
+2025-10-31 22:00:17,287 - werkzeug - INFO -  * Restarting with stat
+2025-10-31 22:00:17,598 - werkzeug - WARNING -  * Debugger is active!
+2025-10-31 22:00:17,603 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-10-31 22:01:09,469 - config.database - INFO - Database connection established
+2025-10-31 22:01:09,493 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:09] "GET /planning/api/calendar/ideas/116 HTTP/1.1" 200 -
+2025-10-31 22:01:26,660 - config.database - INFO - Database connection established
+2025-10-31 22:01:26,689 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:26] "POST /planning/api/calendar/events HTTP/1.1" 200 -
+2025-10-31 22:01:26,702 - config.database - INFO - Database connection established
+2025-10-31 22:01:26,709 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:26] "DELETE /planning/api/calendar/ideas/116 HTTP/1.1" 200 -
+2025-10-31 22:01:29,914 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:29] "GET /planning/posts/0/calendar/week-view HTTP/1.1" 200 -
+2025-10-31 22:01:29,931 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:29] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-10-31 22:01:29,932 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:29] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-10-31 22:01:29,933 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:29] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-10-31 22:01:29,933 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:29] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-10-31 22:01:29,934 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:29] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-10-31 22:01:29,935 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:29] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-10-31 22:01:29,935 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:29] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-10-31 22:01:29,937 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:29] "[36mGET /static/css/planning/idea-modal.css HTTP/1.1[0m" 304 -
+2025-10-31 22:01:29,938 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:29] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-10-31 22:01:29,938 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:29] "[36mGET /static/js/planning/calendar-week-view.js HTTP/1.1[0m" 304 -
+2025-10-31 22:01:29,939 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:29] "[36mGET /static/js/planning/idea-modal.js HTTP/1.1[0m" 304 -
+2025-10-31 22:01:29,941 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:29] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-10-31 22:01:29,941 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:29] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-10-31 22:01:29,942 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:29] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-10-31 22:01:29,943 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:29] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-10-31 22:01:30,068 - config.database - INFO - Database connection established
+2025-10-31 22:01:30,069 - config.database - INFO - Database connection established
+2025-10-31 22:01:30,069 - config.database - INFO - Database connection established
+2025-10-31 22:01:30,071 - config.database - INFO - Database connection established
+2025-10-31 22:01:30,072 - config.database - INFO - Database connection established
+2025-10-31 22:01:30,074 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:30] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 22:01:30,074 - config.database - INFO - Database connection established
+2025-10-31 22:01:30,074 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:30] "GET /planning/api/calendar/schedule/2025/44 HTTP/1.1" 200 -
+2025-10-31 22:01:30,075 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:30] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-10-31 22:01:30,076 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:30] "GET /planning/api/calendar/categories HTTP/1.1" 200 -
+2025-10-31 22:01:30,085 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:30] "GET /planning/api/calendar/events/2025/44 HTTP/1.1" 200 -
+2025-10-31 22:01:30,087 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:30] "GET /planning/api/calendar/ideas/week/44 HTTP/1.1" 200 -
+2025-10-31 22:01:35,153 - config.database - INFO - Database connection established
+2025-10-31 22:01:35,153 - config.database - INFO - Database connection established
+2025-10-31 22:01:35,154 - config.database - INFO - Database connection established
+2025-10-31 22:01:35,155 - config.database - INFO - Database connection established
+2025-10-31 22:01:35,156 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:35] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-10-31 22:01:35,157 - config.database - INFO - Database connection established
+2025-10-31 22:01:35,157 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:35] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 22:01:35,158 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:35] "GET /planning/api/calendar/schedule/2025/45 HTTP/1.1" 200 -
+2025-10-31 22:01:35,167 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:35] "GET /planning/api/calendar/events/2025/45 HTTP/1.1" 200 -
+2025-10-31 22:01:35,168 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:35] "GET /planning/api/calendar/ideas/week/45 HTTP/1.1" 200 -
+2025-10-31 22:01:35,385 - config.database - INFO - Database connection established
+2025-10-31 22:01:35,386 - config.database - INFO - Database connection established
+2025-10-31 22:01:35,386 - config.database - INFO - Database connection established
+2025-10-31 22:01:35,387 - config.database - INFO - Database connection established
+2025-10-31 22:01:35,388 - config.database - INFO - Database connection established
+2025-10-31 22:01:35,390 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:35] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 22:01:35,390 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:35] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-10-31 22:01:35,391 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:35] "GET /planning/api/calendar/schedule/2025/46 HTTP/1.1" 200 -
+2025-10-31 22:01:35,402 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:35] "GET /planning/api/calendar/events/2025/46 HTTP/1.1" 200 -
+2025-10-31 22:01:35,404 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:35] "GET /planning/api/calendar/ideas/week/46 HTTP/1.1" 200 -
+2025-10-31 22:01:37,137 - config.database - INFO - Database connection established
+2025-10-31 22:01:37,137 - config.database - INFO - Database connection established
+2025-10-31 22:01:37,137 - config.database - INFO - Database connection established
+2025-10-31 22:01:37,139 - config.database - INFO - Database connection established
+2025-10-31 22:01:37,140 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:37] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 22:01:37,140 - config.database - INFO - Database connection established
+2025-10-31 22:01:37,144 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:37] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-10-31 22:01:37,146 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:37] "GET /planning/api/calendar/schedule/2025/47 HTTP/1.1" 200 -
+2025-10-31 22:01:37,155 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:37] "GET /planning/api/calendar/events/2025/47 HTTP/1.1" 200 -
+2025-10-31 22:01:37,157 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:37] "GET /planning/api/calendar/ideas/week/47 HTTP/1.1" 200 -
+2025-10-31 22:01:37,358 - config.database - INFO - Database connection established
+2025-10-31 22:01:37,358 - config.database - INFO - Database connection established
+2025-10-31 22:01:37,358 - config.database - INFO - Database connection established
+2025-10-31 22:01:37,359 - config.database - INFO - Database connection established
+2025-10-31 22:01:37,360 - config.database - INFO - Database connection established
+2025-10-31 22:01:37,361 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:37] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 22:01:37,362 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:37] "GET /planning/api/calendar/schedule/2025/48 HTTP/1.1" 200 -
+2025-10-31 22:01:37,363 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:37] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-10-31 22:01:37,373 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:37] "GET /planning/api/calendar/events/2025/48 HTTP/1.1" 200 -
+2025-10-31 22:01:37,376 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:37] "GET /planning/api/calendar/ideas/week/48 HTTP/1.1" 200 -
+2025-10-31 22:01:37,599 - config.database - INFO - Database connection established
+2025-10-31 22:01:37,599 - config.database - INFO - Database connection established
+2025-10-31 22:01:37,602 - config.database - INFO - Database connection established
+2025-10-31 22:01:37,602 - config.database - INFO - Database connection established
+2025-10-31 22:01:37,603 - config.database - INFO - Database connection established
+2025-10-31 22:01:37,605 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:37] "GET /planning/api/calendar/schedule/2025/49 HTTP/1.1" 200 -
+2025-10-31 22:01:37,606 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:37] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 22:01:37,606 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:37] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-10-31 22:01:37,616 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:37] "GET /planning/api/calendar/events/2025/49 HTTP/1.1" 200 -
+2025-10-31 22:01:37,619 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:37] "GET /planning/api/calendar/ideas/week/49 HTTP/1.1" 200 -
+2025-10-31 22:01:38,122 - config.database - INFO - Database connection established
+2025-10-31 22:01:38,122 - config.database - INFO - Database connection established
+2025-10-31 22:01:38,122 - config.database - INFO - Database connection established
+2025-10-31 22:01:38,123 - config.database - INFO - Database connection established
+2025-10-31 22:01:38,123 - config.database - INFO - Database connection established
+2025-10-31 22:01:38,125 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:38] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 22:01:38,125 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:38] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-10-31 22:01:38,126 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:38] "GET /planning/api/calendar/schedule/2025/50 HTTP/1.1" 200 -
+2025-10-31 22:01:38,139 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:38] "GET /planning/api/calendar/events/2025/50 HTTP/1.1" 200 -
+2025-10-31 22:01:38,139 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:38] "GET /planning/api/calendar/ideas/week/50 HTTP/1.1" 200 -
+2025-10-31 22:01:39,280 - config.database - INFO - Database connection established
+2025-10-31 22:01:39,280 - config.database - INFO - Database connection established
+2025-10-31 22:01:39,282 - config.database - INFO - Database connection established
+2025-10-31 22:01:39,282 - config.database - INFO - Database connection established
+2025-10-31 22:01:39,284 - config.database - INFO - Database connection established
+2025-10-31 22:01:39,286 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:39] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 22:01:39,286 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:39] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-10-31 22:01:39,287 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:39] "GET /planning/api/calendar/schedule/2025/51 HTTP/1.1" 200 -
+2025-10-31 22:01:39,296 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:39] "GET /planning/api/calendar/events/2025/51 HTTP/1.1" 200 -
+2025-10-31 22:01:39,299 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:39] "GET /planning/api/calendar/ideas/week/51 HTTP/1.1" 200 -
+2025-10-31 22:01:39,521 - config.database - INFO - Database connection established
+2025-10-31 22:01:39,522 - config.database - INFO - Database connection established
+2025-10-31 22:01:39,522 - config.database - INFO - Database connection established
+2025-10-31 22:01:39,523 - config.database - INFO - Database connection established
+2025-10-31 22:01:39,524 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:39] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 22:01:39,525 - config.database - INFO - Database connection established
+2025-10-31 22:01:39,525 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:39] "GET /planning/api/calendar/schedule/2025/52 HTTP/1.1" 200 -
+2025-10-31 22:01:39,527 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:39] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-10-31 22:01:39,539 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:39] "GET /planning/api/calendar/events/2025/52 HTTP/1.1" 200 -
+2025-10-31 22:01:39,540 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:39] "GET /planning/api/calendar/ideas/week/52 HTTP/1.1" 200 -
+2025-10-31 22:01:47,560 - config.database - INFO - Database connection established
+2025-10-31 22:01:47,560 - config.database - INFO - Database connection established
+2025-10-31 22:01:47,560 - config.database - INFO - Database connection established
+2025-10-31 22:01:47,560 - config.database - INFO - Database connection established
+2025-10-31 22:01:47,562 - config.database - INFO - Database connection established
+2025-10-31 22:01:47,563 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:47] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-10-31 22:01:47,564 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:47] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-10-31 22:01:47,565 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:47] "GET /planning/api/calendar/schedule/2026/1 HTTP/1.1" 200 -
+2025-10-31 22:01:47,575 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:47] "GET /planning/api/calendar/events/2026/1 HTTP/1.1" 200 -
+2025-10-31 22:01:47,578 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:01:47] "GET /planning/api/calendar/ideas/week/1 HTTP/1.1" 200 -
+2025-10-31 22:02:39,744 - config.database - INFO - Database connection established
+2025-10-31 22:02:39,758 - werkzeug - INFO - 127.0.0.1 - - [31/Oct/2025 22:02:39] "GET /launchpad/api/queue HTTP/1.1" 200 -

@@ -164,15 +164,23 @@ def api_calendar_weeks(year):
     """Get all calendar weeks for a given year"""
     return weeks_api_func(year)
 
-@bp.route('/api/calendar/ideas/<int:week_number>', methods=['GET'])
-def api_calendar_ideas(week_number):
-    """Get perpetual ideas for a specific week number"""
-    return ideas_api_func(week_number)
+@bp.route('/api/calendar/ideas/<int:idea_id>', methods=['GET', 'PUT'])
+def api_calendar_idea(idea_id):
+    """Get or update an idea - must come before week_number route"""
+    if request.method == 'GET':
+        return get_idea_api_func(idea_id)
+    else:
+        return update_idea_api_func(idea_id)
 
 @bp.route('/api/calendar/ideas/week/<int:week_number>', methods=['GET'])
 def api_calendar_ideas_for_week(week_number):
     """Get ideas for a specific week"""
     return ideas_week_api_func(week_number)
+
+@bp.route('/api/calendar/ideas/<int:week_number>', methods=['GET'])
+def api_calendar_ideas(week_number):
+    """Get perpetual ideas for a specific week number"""
+    return ideas_api_func(week_number)
 
 @bp.route('/api/calendar/events/<int:year>/<int:week_number>', methods=['GET'])
 def api_calendar_events(year, week_number):
@@ -188,14 +196,6 @@ def api_calendar_schedule(year, week_number):
 def api_calendar_add_idea():
     """Create a new idea for a week"""
     return add_idea_api_func()
-
-@bp.route('/api/calendar/ideas/<int:idea_id>', methods=['GET', 'PUT'])
-def api_calendar_idea(idea_id):
-    """Get or update an idea"""
-    if request.method == 'GET':
-        return get_idea_api_func(idea_id)
-    else:
-        return update_idea_api_func(idea_id)
 
 @bp.route('/api/calendar/events', methods=['POST'])
 def api_add_event():

@@ -13,6 +13,10 @@ class IdeaModal {
     }
 
     switchType(type) {
+        // Preserve form values before switching (to prevent data loss)
+        const titleValue = document.getElementById('idea-title')?.value || '';
+        const descriptionValue = document.getElementById('idea-description')?.value || '';
+        
         this.currentType = type;
         const title = document.getElementById('idea-modal-title');
         if (type === 'theme') {
@@ -22,6 +26,18 @@ class IdeaModal {
         } else {
             title.textContent = 'Manage Event';
         }
+        
+        // Restore form values after switching (in case they were cleared)
+        setTimeout(() => {
+            const titleInput = document.getElementById('idea-title');
+            const descriptionInput = document.getElementById('idea-description');
+            if (titleInput && titleValue && !titleInput.value) {
+                titleInput.value = titleValue;
+            }
+            if (descriptionInput && descriptionValue && !descriptionInput.value) {
+                descriptionInput.value = descriptionValue;
+            }
+        }, 0);
         
         // Show/hide fields based on type
         const weekGroup = document.querySelector('[for="idea-week-number"]')?.closest('.idea-form-group');
@@ -1110,6 +1126,10 @@ class IdeaModal {
             const isConvertingEventToIdea = !isEvent && this.currentEventId && 
                 (!ideaId || String(ideaId) === String(this.currentEventId));
             
+            // Check if we're converting an idea to an event
+            // We started with an idea (currentIdeaId exists) but now saving as an event (type is "event")
+            const isConvertingIdeaToEvent = isEvent && this.currentIdeaId && !this.currentEventId;
+            
             // Remove nulls to avoid sending empty values that may violate patterns
             Object.keys(formData).forEach((k) => {
                 if (formData[k] === null || (Array.isArray(formData[k]) && formData[k].length === 0)) {
@@ -1123,6 +1143,49 @@ class IdeaModal {
                 // Use conversion endpoint to atomically convert event to idea
                 url = `/planning/api/calendar/events/${this.currentEventId}/convert-to-idea`;
                 method = 'POST';
+            } else if (isConvertingIdeaToEvent) {
+                // Converting idea to event: create new event and delete the idea
+                // First, create the event
+                url = '/planning/api/calendar/events';
+                method = 'POST';
+                
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) {
+                    let message = 'Failed to create event';
+                    try {
+                        const error = await response.json();
+                        message = error.error || message;
+                    } catch (_) {
+                        message = `Failed to create event: ${response.statusText}`;
+                    }
+                    throw new Error(message);
+                }
+
+                const result = await response.json();
+                const newEventId = result.id || result.event?.id;
+
+                // Then delete the original idea
+                if (this.currentIdeaId && newEventId) {
+                    const deleteResponse = await fetch(`/planning/api/calendar/ideas/${this.currentIdeaId}`, {
+                        method: 'DELETE'
+                    });
+                    if (!deleteResponse.ok) {
+                        console.warn('Event created but failed to delete original idea:', this.currentIdeaId);
+                    }
+                }
+
+                alert('Idea converted to event successfully');
+                this.close();
+                // Trigger page reload or refresh calendar
+                if (window.location.pathname.includes('/calendar')) {
+                    window.location.reload();
+                }
+                return;
             } else if (isEvent) {
                 // Handle events separately
                 // For events, use currentEventId (ignore ideaId which might contain the event ID)
