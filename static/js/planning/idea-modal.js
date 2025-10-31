@@ -373,9 +373,21 @@ class IdeaModal {
         }
     }
 
+    getISOWeekNumber(date) {
+        // Get ISO week number for a date (matches calendar-week-view.js logic)
+        const target = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNr = (target.getUTCDay() + 6) % 7; // Monday=0
+        target.setUTCDate(target.getUTCDate() - dayNr + 3);
+        const firstThursday = new Date(Date.UTC(target.getUTCFullYear(), 0, 4));
+        const weekNumber = 1 + Math.round(((target - firstThursday) / 86400000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7);
+        return weekNumber;
+    }
+
     resetForm() {
         document.getElementById('idea-modal-form').reset();
         document.getElementById('idea-id').value = '';
+        this.currentIdeaId = null;
+        this.currentEventId = null;
         this.renderCategories([]);
         this.renderSources([]);
         this.renderTags([]);
@@ -386,14 +398,24 @@ class IdeaModal {
         // Reset modal title
         document.getElementById('idea-modal-title').textContent = 'Manage Idea';
         
+        // Auto-fill week number with current week
+        const currentWeek = this.getISOWeekNumber(new Date());
+        const weekInput = document.getElementById('idea-week-number');
+        if (weekInput) {
+            weekInput.value = currentWeek;
+            weekInput.removeAttribute('required'); // Remove required since we auto-fill
+        }
+        
         // Show/hide fields based on type
         const weekGroup = document.querySelector('[for="idea-week-number"]')?.closest('.idea-form-group');
         if (weekGroup) weekGroup.style.display = 'block';
         
         const startDateGroup = document.getElementById('event-start-date-group');
         const endDateGroup = document.getElementById('event-end-date-group');
+        const yearGroup = document.getElementById('event-year-group');
         if (startDateGroup) startDateGroup.style.display = 'none';
         if (endDateGroup) endDateGroup.style.display = 'none';
+        if (yearGroup) yearGroup.style.display = 'none';
         
         // Show all sections
         Array.from(document.querySelectorAll('.idea-section')).forEach(s => s.style.display = 'block');
