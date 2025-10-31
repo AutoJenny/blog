@@ -48,20 +48,28 @@
         <!-- Horizontal rows aligned with day columns -->
         <div class="rows-container">
             <!-- Themes row (spans all columns in one line) -->
-            <div class="row-header">Themes</div>
-            <div class="week-themes" id="week-themes"></div>
+            <div class="row-section" data-filter="themes">
+                <div class="row-header">Themes</div>
+                <div class="week-themes" id="week-themes"></div>
+            </div>
 
             <!-- Events row: header + 7 aligned cells -->
-            <div class="row-header">Events</div>
-            <div class="row-grid" id="events-row"></div>
+            <div class="row-section" data-filter="events">
+                <div class="row-header">Events</div>
+                <div class="row-grid" id="events-row"></div>
+            </div>
 
             <!-- Ideas row: header + 7 aligned cells -->
-            <div class="row-header">Ideas</div>
-            <div class="row-grid" id="ideas-row"></div>
+            <div class="row-section" data-filter="ideas">
+                <div class="row-header">Ideas</div>
+                <div class="row-grid" id="ideas-row"></div>
+            </div>
 
             <!-- Syndication row: header + 7 aligned cells -->
-            <div class="row-header">Syndication</div>
-            <div class="row-grid" id="syndication-row"></div>
+            <div class="row-section" data-filter="syndication">
+                <div class="row-header">Syndication</div>
+                <div class="row-grid" id="syndication-row"></div>
+            </div>
         </div>
 
         <div class="legend">
@@ -117,6 +125,8 @@
 .day-header .day-title { padding:.5rem .75rem; border-bottom:none; color:#94a3b8; font-weight:600; display:flex; align-items:center; justify-content:space-between; }
 .day-header .day-title .day-num { color:#cbd5e1; font-weight:700; }
 .rows-container { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+.row-section { display: flex; flex-direction: column; gap: 0.5rem; }
+.row-section.hidden { display: none; }
 .row-header { grid-column: 1 / -1; font-weight: 600; color: #cbd5e1; padding: 0.25rem 0; font-size: 0.8rem; text-align: center; line-height: 1; }
 .row-grid { display:grid; grid-template-columns: repeat(7, 1fr); gap:8px; }
 .row-grid .row-cell { background:#0f172a; border:1px solid #334155; border-radius:8px; min-height: 80px; padding:.5rem; display:flex; flex-direction:column; gap:6px; }

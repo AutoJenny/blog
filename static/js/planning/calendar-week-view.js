@@ -131,6 +131,17 @@ async function loadWeek(year, weekNumber) {
     }
   });
 
+  // Toggle row visibility based on filters
+  const themesSection = document.querySelector('[data-filter="themes"]');
+  const eventsSection = document.querySelector('[data-filter="events"]');
+  const ideasSection = document.querySelector('[data-filter="ideas"]');
+  const syndicationSection = document.querySelector('[data-filter="syndication"]');
+  
+  if (themesSection) themesSection.classList.toggle('hidden', !showThemes);
+  if (eventsSection) eventsSection.classList.toggle('hidden', !showEvents);
+  if (ideasSection) ideasSection.classList.toggle('hidden', !showIdeas);
+  if (syndicationSection) syndicationSection.classList.toggle('hidden', !showSyndication);
+
   // Render Themes as week-wide themes: single row spanning the week (only selected ideas)
   const weekThemesContainer = document.getElementById('week-themes');
   if (weekThemesContainer) {
