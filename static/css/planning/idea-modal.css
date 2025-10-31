@@ -328,6 +328,129 @@
     background: rgba(239, 68, 68, 0.1);
 }
 
+/* Important Notes */
+.idea-notes-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.idea-note-item {
+    background: #0f172a;
+    border: 1px solid #475569;
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    transition: all 0.2s;
+}
+
+.idea-note-item:hover {
+    border-color: #60a5fa;
+}
+
+.idea-note-item.editing {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+}
+
+.idea-note-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.idea-note-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.idea-note-text {
+    color: #e2e8f0;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    min-height: 1.5em;
+}
+
+.idea-note-textarea {
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    padding: 0.75rem;
+    color: #e2e8f0;
+    font-size: 0.9375rem;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 80px;
+    width: 100%;
+    transition: all 0.2s;
+}
+
+.idea-note-textarea:focus {
+    outline: none;
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+}
+
+.idea-note-edit,
+.idea-note-save,
+.idea-note-cancel {
+    background: transparent;
+    border: 1px solid #475569;
+    color: #cbd5e1;
+    cursor: pointer;
+    padding: 0.375rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.idea-note-edit:hover {
+    background: rgba(96, 165, 250, 0.1);
+    border-color: #60a5fa;
+    color: #60a5fa;
+}
+
+.idea-note-save {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: #fff;
+}
+
+.idea-note-save:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+.idea-note-cancel {
+    border-color: #475569;
+}
+
+.idea-note-cancel:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.idea-note-remove {
+    background: transparent;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.idea-note-remove:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
 .idea-source-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);

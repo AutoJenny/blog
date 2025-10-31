@@ -7,6 +7,7 @@ from config.database import db_manager
 from newsletter.sources.rss_adapter import RSSAdapter
 from newsletter.sources.reddit_adapter import RedditAdapter
 from newsletter.sources.html_adapter import HTMLAdapter
+from newsletter.sources.weather_adapter import WeatherHTMLAdapter
 
 
 def get_enabled_sources() -> List[Dict[str, Any]]:
@@ -25,7 +26,7 @@ def get_enabled_sources() -> List[Dict[str, Any]]:
             return [dict(r) for r in rows]
 
 
-def create_adapter_from_source(source: Dict[str, Any]) -> RSSAdapter | RedditAdapter | HTMLAdapter | None:
+def create_adapter_from_source(source: Dict[str, Any]) -> RSSAdapter | RedditAdapter | HTMLAdapter | WeatherHTMLAdapter | None:
     """Create appropriate adapter based on source type.
     
     Source types map:
@@ -60,6 +61,14 @@ def create_adapter_from_source(source: Dict[str, Any]) -> RSSAdapter | RedditAda
             if len(parts) > 1:
                 subreddit = parts[1].split('/')[0].split('?')[0]
         return RedditAdapter(source_name=name, subreddit=subreddit, category='community')
+    
+    elif source_type == 'weather' or (source_type == 'html' and 'weather' in name.lower()):
+        # Weather HTML scraper for forecast/report pages
+        return WeatherHTMLAdapter(
+            source_name=name,
+            base_url=base_url,
+            category='weather'
+        )
     
     elif source_type in ('html', 'event', 'museum'):
         # HTML scraper for "What's On" pages

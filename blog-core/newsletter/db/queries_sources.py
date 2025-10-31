@@ -16,22 +16,29 @@ def store_source_items(items: List[Dict[str, Any]]) -> int:
     if not items:
         return 0
     
+    import hashlib
+    
     stored = 0
     with db_manager.get_connection() as conn:
         with conn.cursor() as cur:
             for item in items:
                 try:
+                    url = item.get('url', '')
+                    url_hash = hashlib.sha256(url.encode('utf-8')).hexdigest() if url else None
+                    
                     cur.execute(
                         """
                         INSERT INTO newsletter_source_item 
-                        (source_name, title, url, published_at, event_date, location, category, raw_data, signal_score, freshness_score)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        (source_name, title, url, published_at, event_date, location, category, 
+                         raw_data, signal_score, freshness_score, source_url_hash, 
+                         suitability_score, suitability_notes, is_event, calendar_event_id)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         ON CONFLICT DO NOTHING
                         """,
                         (
                             item.get('source_name'),
                             item.get('title'),
-                            item.get('url'),
+                            url,
                             item.get('published_at'),
                             item.get('event_date'),
                             item.get('location'),
@@ -39,10 +46,17 @@ def store_source_items(items: List[Dict[str, Any]]) -> int:
                             Json(item.get('raw_data', {})),
                             item.get('signal_score', 0.0),
                             item.get('freshness_score', 0.0),
+                            url_hash,
+                            item.get('suitability_score'),
+                            item.get('suitability_notes'),
+                            item.get('is_event', False),
+                            item.get('calendar_event_id'),
                         ),
                     )
                     stored += 1
-                except Exception:
+                except Exception as e:
+                    import logging
+                    logging.warning(f"Failed to store source item: {e}")
                     continue
             conn.commit()
     return stored

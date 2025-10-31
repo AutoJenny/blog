@@ -29,7 +29,7 @@
         </div>
 
         <div class="week-filters">
-            <label class="filter-pill filter-ideas active"><input type="checkbox" id="toggle-themes" checked> Themes</label>
+            <label class="filter-pill filter-themes active"><input type="checkbox" id="toggle-themes" checked> Themes</label>
             <label class="filter-pill filter-events active"><input type="checkbox" id="toggle-events" checked> Events</label>
             <label class="filter-pill filter-ideas active"><input type="checkbox" id="toggle-ideas" checked> Ideas</label>
             <label class="filter-pill filter-syndication active"><input type="checkbox" id="toggle-syndication" checked> Syndication</label>
@@ -117,8 +117,11 @@
 .week-filters .filter-pill { display:flex; gap:8px; align-items:center; padding:.35rem .6rem; border-radius:999px; border:2px solid transparent; cursor:pointer; }
 .week-filters .filter-pill input { margin-right:6px; }
 /* Themes: bright orange when active, darker orange when inactive */
-.filter-ideas { background:#7c2d12; border-color:#9a3412; color:#fff; }
-.filter-ideas.active { background:#f97316; border-color:#ea580c; color:#0f172a; }
+.filter-themes { background:#7c2d12; border-color:#9a3412; color:#fff; }
+.filter-themes.active { background:#f97316; border-color:#ea580c; color:#0f172a; }
+/* Ideas: purple background */
+.filter-ideas { background:#6d28d9; border-color:#7c3aed; color:#fff; }
+.filter-ideas.active { background:#8b5cf6; border-color:#a78bfa; color:#fff; }
 /* Events: blue background */
 .filter-events { background:#1d4ed8; border-color:#2563eb; color:#fff; }
 .filter-events.active { background:#1d4ed8; border-color:#3b82f6; color:#fff; }
@@ -155,15 +158,53 @@
 .day-section + .day-section { margin-top:6px; }
 .section-label { font-size:.75rem; color:#94a3b8; text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px; }
 .item { padding:6px 8px; border-radius:6px; font-size:.8rem; color:#e2e8f0; }
-.item.idea { background:#374151; }
+.item.idea { background:#7c3aed; color:#fff; cursor:pointer; }
 .item.event { background:#1d4ed8; }
+/* Advance notice indicators for events */
+.item.advance-notice { 
+  font-size: 0.7rem; 
+  padding: 3px 6px; 
+  margin-top: 4px;
+  border-radius: 4px;
+  line-height: 1.3;
+}
+.item.advance-notice.advance-start {
+  background: rgba(29, 78, 216, 0.3);
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  color: #bfdbfe;
+  font-weight: 500;
+}
+.item.advance-notice.advance-intermediate {
+  background: transparent;
+  color: #60a5fa;
+  font-size: 0.65rem;
+  opacity: 0.7;
+}
+.item.advance-notice .advance-name,
+.item.advance-notice .advance-text {
+  display: inline-block;
+  max-width: calc(100% - 20px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.item.advance-notice .advance-arrow {
+  display: inline-block;
+  margin-left: 4px;
+  color: #93c5fd;
+  font-weight: bold;
+}
+.item.advance-notice:hover {
+  opacity: 1;
+  background: rgba(29, 78, 216, 0.2);
+}
 /* Syndication scheduled posts: outlined blue, no background */
 .item.scheduled.syndication { background:transparent; color:#93c5fd; border:2px solid #3b82f6; }
 .legend { margin-top: 12px; display:flex; gap:10px; color:#94a3b8; font-size:.85rem; }
 .calendar-actions { margin-top: 1rem; }
 .bottom-actions { display: flex; justify-content: flex-end; }
 .legend-item { padding:2px 8px; border-radius:999px; border:1px solid #334155; }
-.legend-item.idea { background:#374151; color:#e2e8f0; }
+.legend-item.idea { background:#7c3aed; color:#fff; }
 .legend-item.event { background:#1d4ed8; color:#fff; }
 .legend-item.scheduled { background:#10b981; color:#fff; }
 </style>
@@ -206,6 +247,30 @@ window.currentSubstage = 'week-view';
                 if (event) {
                     console.log('Opening event modal for:', event);
                     ideaModal.open(null, event);
+                }
+            }
+        });
+        
+        // Make ideas in the ideas-row clickable - open in modal (for ideas in the ideas-row, not themes)
+        document.addEventListener('click', (e) => {
+            const ideaItem = e.target.closest('#ideas-row .item.idea');
+            if (ideaItem) {
+                if (ideaItem.dataset.ideaId) {
+                    // Existing idea with ID - open for editing
+                    const ideaId = parseInt(ideaItem.dataset.ideaId);
+                    console.log('Opening idea modal for ID:', ideaId);
+                    ideaModal.open(ideaId);
+                } else {
+                    // Legacy idea without ID - create new with this title
+                    const title = ideaItem.textContent.trim();
+                    const weekNumber = parseInt(document.getElementById('week-number')?.textContent || '44');
+                    console.log('Opening new idea modal for legacy idea:', title, 'week:', weekNumber);
+                    ideaModal.openNew('idea', weekNumber);
+                    // Pre-fill the title if possible
+                    setTimeout(() => {
+                        const titleInput = document.getElementById('idea-title');
+                        if (titleInput) titleInput.value = title;
+                    }, 100);
                 }
             }
         });

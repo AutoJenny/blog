@@ -33,10 +33,15 @@ function renderItems(container, items, type) {
   items.forEach((item) => {
     const div = document.createElement('div');
     div.className = `item ${type}`;
-    if (type === 'idea' && item.id) {
-      div.dataset.ideaId = item.id;
+    if (type === 'idea') {
+      // Make all ideas clickable, even legacy ones without IDs
+      if (item.id) {
+        div.dataset.ideaId = item.id;
+        div.title = 'Click to edit idea';
+      } else {
+        div.title = 'Click to add full details for this idea';
+      }
       div.style.cursor = 'pointer';
-      div.title = 'Click to edit idea';
     }
     if (type === 'event' && (item.id || item._eventId)) {
       div.dataset.eventId = item.id || item._eventId;
@@ -55,6 +60,130 @@ function renderItems(container, items, type) {
     }
     container.appendChild(div);
   });
+}
+
+function renderAdvanceNotice(event, weekDates, year, weekNumber) {
+  // Calculate advance notice period
+  if (!event.advance_notice || event.advance_notice <= 0 || !event.start_date) return;
+  
+  const eventStartDate = new Date(event.start_date);
+  // Normalize to midnight UTC for date-only comparison
+  eventStartDate.setUTCHours(0, 0, 0, 0);
+  
+  // Calculate the start of the advance notice period (advance_notice weeks before event)
+  // advance_notice is in weeks, so multiply by 7 to get days
+  // Use setTime to avoid issues with setUTCDate when crossing month boundaries
+  const advanceStart = new Date(eventStartDate);
+  advanceStart.setTime(eventStartDate.getTime() - (event.advance_notice * 7 * 24 * 60 * 60 * 1000));
+  advanceStart.setUTCHours(0, 0, 0, 0);
+  
+  // Calculate the end of the advance notice period (day before event)
+  const advanceEnd = new Date(eventStartDate);
+  advanceEnd.setUTCDate(eventStartDate.getUTCDate() - 1);
+  advanceEnd.setUTCHours(23, 59, 59, 999);
+  
+  
+  // Check if any part of the advance notice period falls within this week
+  const weekStart = new Date(weekDates[0]);
+  weekStart.setUTCHours(0, 0, 0, 0);
+  const weekEnd = new Date(weekDates[6]);
+  weekEnd.setUTCHours(23, 59, 59, 999);
+  
+  // If advance notice period doesn't overlap with this week, skip
+  if (advanceEnd.getTime() < weekStart.getTime() || advanceStart.getTime() > weekEnd.getTime()) return;
+  
+  const eventTitle = event.event_title || 'Untitled Event';
+  
+  // Render advance notice for each day in this week that's in the advance notice period
+  weekDates.forEach((date, dayIndex) => {
+    const dayOfWeek = dayIndex + 1; // 1-7 (Mon-Sun)
+    
+    // Normalize date to midnight for comparison
+    const dayDate = new Date(date);
+    dayDate.setUTCHours(0, 0, 0, 0);
+    
+    // Check if this day is in the advance notice period (before event date, on or after advance start)
+    if (dayDate.getTime() >= advanceStart.getTime() && dayDate.getTime() <= advanceEnd.getTime()) {
+      const target = document.getElementById(`events-row-day-${dayOfWeek}`);
+      if (!target) return;
+      
+      // Determine if this is the "start" button day
+      // Priority 1: If this IS the actual advance start date, it always gets the start button
+      // Priority 2: If the actual advance start is NOT in this week, show start button on first day in THIS week
+      
+      const isActualAdvanceStart = dayDate.getTime() === advanceStart.getTime();
+      
+      // Check if the actual advance start date is anywhere in this week
+      const advanceStartInThisWeek = weekDates.some(d => {
+        const dNorm = new Date(d);
+        dNorm.setUTCHours(0, 0, 0, 0);
+        return dNorm.getTime() === advanceStart.getTime();
+      });
+      
+      // If this IS the actual advance start date, it always gets the start button
+      if (isActualAdvanceStart) {
+        const advanceDiv = document.createElement('div');
+        advanceDiv.className = 'item advance-notice advance-start';
+        advanceDiv.dataset.eventId = event.id;
+        advanceDiv.style.cursor = 'pointer';
+        advanceDiv.title = `${eventTitle} - Advance notice (${event.advance_notice} weeks ahead)`;
+        advanceDiv.innerHTML = `<span class="advance-name">${escapeHtml(eventTitle)}</span> <span class="advance-arrow">→</span>`;
+        target.appendChild(advanceDiv);
+        
+        advanceDiv.addEventListener('click', (clickEvent) => {
+          clickEvent.stopPropagation();
+          const eventData = window.currentWeekEvents?.find(ev => ev.id === event.id);
+          if (eventData) {
+            const ideaModal = window.getIdeaModal ? window.getIdeaModal() : null;
+            if (ideaModal) {
+              ideaModal.open(null, eventData);
+            }
+          }
+        });
+        return; // Don't render intermediate items for this day if it's the actual start
+      }
+      
+      // For all other days in the advance notice period, only show intermediate text
+      // The start button ONLY appears on the actual advance start date (handled above)
+      const isFirstDay = false;
+      
+      const advanceDiv = document.createElement('div');
+      advanceDiv.className = 'item advance-notice';
+      advanceDiv.dataset.eventId = event.id;
+      advanceDiv.style.cursor = 'pointer';
+      advanceDiv.title = `${eventTitle} - Advance notice (${event.advance_notice} weeks ahead)`;
+      
+      if (isFirstDay) {
+        // Small button at the start of the period
+        advanceDiv.className += ' advance-start';
+        advanceDiv.innerHTML = `<span class="advance-name">${escapeHtml(eventTitle)}</span> <span class="advance-arrow">→</span>`;
+      } else {
+        // Small text with arrow for intermediate days
+        advanceDiv.className += ' advance-intermediate';
+        advanceDiv.innerHTML = `<span class="advance-text">${escapeHtml(eventTitle)}</span> <span class="advance-arrow">→</span>`;
+      }
+      
+      target.appendChild(advanceDiv);
+      
+      // Add click handler to open event modal
+      advanceDiv.addEventListener('click', (clickEvent) => {
+        clickEvent.stopPropagation();
+        const eventData = window.currentWeekEvents?.find(ev => ev.id === event.id);
+        if (eventData) {
+          const ideaModal = window.getIdeaModal ? window.getIdeaModal() : null;
+          if (ideaModal) {
+            ideaModal.open(null, eventData);
+          }
+        }
+      });
+    }
+  });
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 }
 
 async function loadWeek(year, weekNumber) {
@@ -197,9 +326,37 @@ async function loadWeek(year, weekNumber) {
     // Store events globally for click handler access
     window.currentWeekEvents = events;
     events.forEach((ev) => {
-      const dayIdx = ev.weekday || ev.day || 1; // 1..7
-      const target = document.getElementById(`events-row-day-${Math.min(Math.max(dayIdx, 1), 7)}`);
-      renderItems(target, [ev], 'event');
+      // Only render the main event icon if the event's actual date is in this week
+      const eventStartDate = ev.start_date ? new Date(ev.start_date) : null;
+      if (eventStartDate) {
+        eventStartDate.setUTCHours(0, 0, 0, 0);
+        const weekStartDate = new Date(dates[0]);
+        weekStartDate.setUTCHours(0, 0, 0, 0);
+        const weekEndDate = new Date(dates[6]);
+        weekEndDate.setUTCHours(23, 59, 59, 999);
+        
+        // Check if the event's actual date falls within this week
+        const eventInThisWeek = eventStartDate.getTime() >= weekStartDate.getTime() && 
+                                eventStartDate.getTime() <= weekEndDate.getTime();
+        
+        if (eventInThisWeek) {
+          // Only render the main event icon if the event date is actually in this week
+          const dayIdx = ev.weekday || ev.day || 1; // 1..7
+          const target = document.getElementById(`events-row-day-${Math.min(Math.max(dayIdx, 1), 7)}`);
+          renderItems(target, [ev], 'event');
+        }
+      } else {
+        // Fallback: render if no start_date (shouldn't happen, but handle gracefully)
+        const dayIdx = ev.weekday || ev.day || 1; // 1..7
+        const target = document.getElementById(`events-row-day-${Math.min(Math.max(dayIdx, 1), 7)}`);
+        renderItems(target, [ev], 'event');
+      }
+      
+      // Always render advance notice period if the event has one
+      // (this will only show indicators for days in the advance period, not the main event)
+      if (ev.advance_notice && ev.start_date) {
+        renderAdvanceNotice(ev, dates, year, weekNumber);
+      }
     });
   }
 
