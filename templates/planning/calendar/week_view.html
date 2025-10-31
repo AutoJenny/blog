@@ -35,14 +35,14 @@
             <label class="filter-pill filter-syndication active"><input type="checkbox" id="toggle-syndication" checked> Syndication</label>
         </div>
 
-        <div class="week-grid">
-            <div class="day" data-day="1"><div class="day-title">Mon</div><div class="day-body" id="day-1"></div></div>
-            <div class="day" data-day="2"><div class="day-title">Tue</div><div class="day-body" id="day-2"></div></div>
-            <div class="day" data-day="3"><div class="day-title">Wed</div><div class="day-body" id="day-3"></div></div>
-            <div class="day" data-day="4"><div class="day-title">Thu</div><div class="day-body" id="day-4"></div></div>
-            <div class="day" data-day="5"><div class="day-title">Fri</div><div class="day-body" id="day-5"></div></div>
-            <div class="day" data-day="6"><div class="day-title">Sat</div><div class="day-body" id="day-6"></div></div>
-            <div class="day" data-day="7"><div class="day-title">Sun</div><div class="day-body" id="day-7"></div></div>
+        <div class="week-grid week-grid-headers">
+            <div class="day-header" data-day="1"><div class="day-title">Mon</div></div>
+            <div class="day-header" data-day="2"><div class="day-title">Tue</div></div>
+            <div class="day-header" data-day="3"><div class="day-title">Wed</div></div>
+            <div class="day-header" data-day="4"><div class="day-title">Thu</div></div>
+            <div class="day-header" data-day="5"><div class="day-title">Fri</div></div>
+            <div class="day-header" data-day="6"><div class="day-title">Sat</div></div>
+            <div class="day-header" data-day="7"><div class="day-title">Sun</div></div>
         </div>
 
         <!-- Horizontal rows aligned with day columns -->
@@ -112,6 +112,10 @@
 .nav-btn:hover { background:#334155; color:#e2e8f0; }
 .week-meta { display:flex; gap:1.25rem; color:#cbd5e1; font-weight:600; }
 .week-grid { display:grid; grid-template-columns: repeat(7, 1fr); gap:8px; }
+.week-grid-headers { margin-bottom: 0.5rem; }
+.day-header { background:#0f172a; border:1px solid #334155; border-radius:8px; padding:0; }
+.day-header .day-title { padding:.5rem .75rem; border-bottom:none; color:#94a3b8; font-weight:600; display:flex; align-items:center; justify-content:space-between; }
+.day-header .day-title .day-num { color:#cbd5e1; font-weight:700; }
 .rows-container { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
 .row-header { grid-column: 1 / -1; font-weight: 600; color: #cbd5e1; padding: 0.25rem 0; font-size: 0.8rem; text-align: center; line-height: 1; }
 .row-grid { display:grid; grid-template-columns: repeat(7, 1fr); gap:8px; }
