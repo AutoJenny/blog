@@ -107,15 +107,36 @@ async function loadWeek(year, weekNumber) {
   }
 
   // Get filter toggles
+  const showThemes = document.getElementById('toggle-themes')?.checked !== false;
   const showIdeas = document.getElementById('toggle-ideas')?.checked !== false;
   const showEvents = document.getElementById('toggle-events')?.checked !== false;
   const showSyndication = document.getElementById('toggle-syndication')?.checked !== false;
 
-  // Render ideas as week-wide themes: single row spanning the week
+  // Build row grids cells for rows container
+  const ensureRowCells = (rowId) => {
+    const row = document.getElementById(rowId);
+    if (!row) return null;
+    row.innerHTML = '';
+    const cells = [];
+    for (let i = 1; i <= 7; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'row-cell';
+      cell.id = `${rowId}-day-${i}`;
+      row.appendChild(cell);
+      cells.push(cell);
+    }
+    return cells;
+  };
+
+  const eventsCells = ensureRowCells('events-row');
+  const ideasCells = ensureRowCells('ideas-row');
+  const syndicationCells = ensureRowCells('syndication-row');
+
+  // Render Themes as week-wide themes: single row spanning the week
   const weekThemesContainer = document.getElementById('week-themes');
   if (weekThemesContainer) {
     weekThemesContainer.innerHTML = '';
-    if (showIdeas && ideas.length) {
+    if (showThemes && ideas.length) {
       // Prefer matching the post's saved idea seed; fallback to post title
       const normalize = (s) => (s || '').toLowerCase().trim();
       const selectedSeeds = new Set((schedule || []).map(sc => normalize(sc.post_idea_seed)).filter(Boolean));
@@ -131,22 +152,23 @@ async function loadWeek(year, weekNumber) {
     }
   }
 
-  // Render events and schedule to the content section for each day
-  if (showEvents) {
+  // Render events per day into Events row
+  if (showEvents && eventsCells) {
     events.forEach((ev) => {
       const dayIdx = ev.weekday || ev.day || 1; // 1..7
-      const contentTarget = document.getElementById(`day-${Math.min(Math.max(dayIdx, 1), 7)}-content`);
-      renderItems(contentTarget, [ev], 'event');
-    });
-    schedule.forEach((sc) => {
-      const dayIdx = sc.weekday || sc.day || 1;
-      const contentTarget = document.getElementById(`day-${Math.min(Math.max(dayIdx, 1), 7)}-content`);
-      renderItems(contentTarget, [sc], 'scheduled');
+      const target = document.getElementById(`events-row-day-${Math.min(Math.max(dayIdx, 1), 7)}`);
+      renderItems(target, [ev], 'event');
     });
   }
 
+  // Render ideas per day into Ideas row (week ideas are not date-specific; place in first column for now)
+  if (showIdeas && ideasCells && ideas.length) {
+    const target = document.getElementById('ideas-row-day-1');
+    renderItems(target, ideas, 'idea');
+  }
+
   // Syndication schedules are recurring by weekday; render time per selected days
-  if (showSyndication && syndication.length) {
+  if (showSyndication && syndication.length && syndicationCells) {
     // days in daily_posts_schedule are stored as JSON (likely numeric 1..7 or names). Normalize to numeric 1..7
     const normalizeDays = (days) => {
       if (!days) return [];
@@ -170,7 +192,7 @@ async function loadWeek(year, weekNumber) {
       const days = normalizeDays(s.days);
       const timeDisplay = toDisplayTime(s.time);
       days.forEach((d) => {
-        const target = document.getElementById(`day-${Math.min(Math.max(d, 1), 7)}-syndication`);
+        const target = document.getElementById(`syndication-row-day-${Math.min(Math.max(d, 1), 7)}`);
         const item = { channel: s.platform || 'Facebook', operation: s.content_type === 'product' ? 'Product' : (s.content_type || ''), time_display: timeDisplay, _syndication: true };
         renderItems(target, [item], 'scheduled');
       });
@@ -207,6 +229,7 @@ async function loadWeek(year, weekNumber) {
       loadWeek(state.year, state.weekNumber);
     });
   };
+  attach('toggle-themes');
   attach('toggle-ideas');
   attach('toggle-events');
   attach('toggle-syndication');

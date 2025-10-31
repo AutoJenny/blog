@@ -29,9 +29,10 @@
         </div>
 
         <div class="week-filters">
-            <label class="filter-pill filter-ideas active"><input type="checkbox" id="toggle-ideas" checked> Blog Themes</label>
+            <label class="filter-pill filter-ideas active"><input type="checkbox" id="toggle-themes" checked> Themes</label>
             <label class="filter-pill filter-events active"><input type="checkbox" id="toggle-events" checked> Events</label>
-            <label class="filter-pill filter-syndication active"><input type="checkbox" id="toggle-syndication" checked> Syndication (Facebook Product)</label>
+            <label class="filter-pill filter-ideas active"><input type="checkbox" id="toggle-ideas" checked> Ideas</label>
+            <label class="filter-pill filter-syndication active"><input type="checkbox" id="toggle-syndication" checked> Syndication</label>
         </div>
 
         <div class="week-themes" id="week-themes"></div>
@@ -44,6 +45,21 @@
             <div class="day" data-day="5"><div class="day-title">Fri</div><div class="day-body" id="day-5"></div></div>
             <div class="day" data-day="6"><div class="day-title">Sat</div><div class="day-body" id="day-6"></div></div>
             <div class="day" data-day="7"><div class="day-title">Sun</div><div class="day-body" id="day-7"></div></div>
+        </div>
+
+        <!-- Horizontal rows aligned with day columns -->
+        <div class="rows-container">
+            <!-- Themes row (spans all columns in one line via existing week-themes) -->
+            <div class="week-themes" id="week-themes"></div>
+
+            <!-- Events row: 7 aligned cells -->
+            <div class="row-grid" id="events-row"></div>
+
+            <!-- Ideas row: 7 aligned cells (week ideas placed in first column for now) -->
+            <div class="row-grid" id="ideas-row"></div>
+
+            <!-- Syndication row: 7 aligned cells -->
+            <div class="row-grid" id="syndication-row"></div>
         </div>
 
         <div class="legend">
@@ -94,6 +110,9 @@
 .nav-btn:hover { background:#334155; color:#e2e8f0; }
 .week-meta { display:flex; gap:1.25rem; color:#cbd5e1; font-weight:600; }
 .week-grid { display:grid; grid-template-columns: repeat(7, 1fr); gap:8px; }
+.rows-container { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+.row-grid { display:grid; grid-template-columns: repeat(7, 1fr); gap:8px; }
+.row-grid .row-cell { background:#0f172a; border:1px solid #334155; border-radius:8px; min-height: 80px; padding:.5rem; display:flex; flex-direction:column; gap:6px; }
 .day { background:#0f172a; border:1px solid #334155; border-radius:8px; min-height: 160px; display:flex; flex-direction:column; }
 .day-title { padding:.5rem .75rem; border-bottom:1px solid #334155; color:#94a3b8; font-weight:600; display:flex; align-items:center; justify-content:space-between; }
 .day-title .day-num { color:#cbd5e1; font-weight:700; }
