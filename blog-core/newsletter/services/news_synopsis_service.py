@@ -487,12 +487,13 @@ def get_news_items(days_back: int = 7) -> List[Dict[str, Any]]:
           AND published_at::date >= %s
           AND source_url_hash IS NOT NULL
           AND (
-            suitability_score >= 6.0
+            suitability_score >= 3.0
             OR suitability_score IS NULL
           )
         ORDER BY 
           source_url_hash,
-          CASE WHEN suitability_score >= 6.0 THEN 0 ELSE 1 END,
+          CASE WHEN suitability_score >= 3.0 THEN 0 ELSE 1 END,
+          suitability_score DESC NULLS LAST,
           published_at DESC, 
           combined_score DESC NULLS LAST,
           id DESC
@@ -519,8 +520,9 @@ def generate_news_summary(days_back: int = 7, limit: int = 100, sort_by: str = '
     items = get_news_items(days_back=days_back)
     
     # Filter to only items that have been analyzed and passed threshold
+    # Lowered threshold from 6.0 to 3.0 to show items with moderate relevance
     # Handle None values: item.get('suitability_score') can return None, so use or 0
-    analyzed_items = [item for item in items if (item.get('suitability_score') or 0) >= 6.0]
+    analyzed_items = [item for item in items if (item.get('suitability_score') or 0) >= 3.0]
     unanalyzed_count = len(items) - len(analyzed_items)
     
     if not analyzed_items:
