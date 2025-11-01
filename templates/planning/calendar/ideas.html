@@ -14,12 +14,46 @@
     {% set mode = mode|default('post-based') %}
     <script>
     window.postId = {{ post_id }};
-    {% if year and week_number %}
-    window.year = {{ year }};
-    window.weekNumber = {{ week_number }};
-    {% endif %}
     window.currentStage = 'planning';
     window.currentSubstage = 'ideas';
+    
+    // UNIFIED PERSISTENCE: URL is canonical source
+    // Read from URL parameters first (most authoritative)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlYear = urlParams.get('year');
+    const urlWeek = urlParams.get('week');
+    
+    if (urlYear && urlWeek) {
+        // Use URL parameters (canonical source)
+        window.year = parseInt(urlYear);
+        window.weekNumber = parseInt(urlWeek);
+        // Save to localStorage as fallback
+        localStorage.setItem('calendar-week-view-year', urlYear);
+        localStorage.setItem('calendar-week-view-week', urlWeek);
+    } else if ({{ year|default(0) }} && {{ week_number|default(0) }}) {
+        // Fallback to backend-provided values and update URL
+        window.year = {{ year }};
+        window.weekNumber = {{ week_number }};
+        const url = new URL(window.location.href);
+        url.searchParams.set('year', window.year);
+        url.searchParams.set('week', window.weekNumber);
+        window.history.replaceState({}, '', url);
+        localStorage.setItem('calendar-week-view-year', String(window.year));
+        localStorage.setItem('calendar-week-view-week', String(window.weekNumber));
+    } else {
+        // Final fallback: try localStorage
+        const savedYear = localStorage.getItem('calendar-week-view-year');
+        const savedWeek = localStorage.getItem('calendar-week-view-week');
+        if (savedYear && savedWeek) {
+            window.year = parseInt(savedYear);
+            window.weekNumber = parseInt(savedWeek);
+            // Update URL to reflect saved week
+            const url = new URL(window.location.href);
+            url.searchParams.set('year', window.year);
+            url.searchParams.set('week', window.weekNumber);
+            window.history.replaceState({}, '', url);
+        }
+    }
     </script>
     {% include 'shared/blog_pipeline_header.html' %}
     

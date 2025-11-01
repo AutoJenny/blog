@@ -15,15 +15,30 @@ class BlogPipelineHeader {
         // Load post data when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
             console.log('[Blog Pipeline Header] DOM ready, loading post data...');
-            // Read URL params early if available to set window vars before header updates
-            const urlParams = new URLSearchParams(window.location.search);
-            const urlYear = urlParams.get('year');
-            const urlWeek = urlParams.get('week');
-            if (urlYear && urlWeek && (!window.year || !window.weekNumber)) {
-                window.year = parseInt(urlYear);
-                window.weekNumber = parseInt(urlWeek);
-                localStorage.setItem('calendar-week-view-year', urlYear);
-                localStorage.setItem('calendar-week-view-week', urlWeek);
+            // Ensure window vars are set from URL early (UNIFIED PERSISTENCE)
+            if (!window.year || !window.weekNumber) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const urlYear = urlParams.get('year');
+                const urlWeek = urlParams.get('week');
+                if (urlYear && urlWeek) {
+                    window.year = parseInt(urlYear);
+                    window.weekNumber = parseInt(urlWeek);
+                    localStorage.setItem('calendar-week-view-year', urlYear);
+                    localStorage.setItem('calendar-week-view-week', urlWeek);
+                } else {
+                    // Fallback to localStorage if URL doesn't have params
+                    const savedYear = localStorage.getItem('calendar-week-view-year');
+                    const savedWeek = localStorage.getItem('calendar-week-view-week');
+                    if (savedYear && savedWeek) {
+                        window.year = parseInt(savedYear);
+                        window.weekNumber = parseInt(savedWeek);
+                        // Update URL to reflect saved week (make URL canonical)
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('year', window.year);
+                        url.searchParams.set('week', window.weekNumber);
+                        window.history.replaceState({}, '', url);
+                    }
+                }
             }
             this.loadPostData();
             this.attachWeekParameterToNavLinks();
@@ -154,7 +169,44 @@ class BlogPipelineHeader {
             return;
         }
 
+        // UNIFIED PERSISTENCE: Check if viewed week matches post's scheduled week
+        // Get current viewed week (from URL or window vars)
+        let viewedYear, viewedWeek;
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlYear = urlParams.get('year');
+        const urlWeek = urlParams.get('week');
+        
+        if (urlYear && urlWeek) {
+            viewedYear = parseInt(urlYear);
+            viewedWeek = parseInt(urlWeek);
+        } else if (window.year && window.weekNumber) {
+            viewedYear = window.year;
+            viewedWeek = window.weekNumber;
+        }
+
         try {
+            // First check if post's scheduled week matches viewed week
+            let weekMismatch = false;
+            if (viewedYear && viewedWeek) {
+                const scheduleResp = await fetch(`/planning/api/posts/${postId}`);
+                if (scheduleResp.ok) {
+                    const postData = await scheduleResp.json();
+                    if (postData.schedule && postData.schedule.year && postData.schedule.week_number) {
+                        const scheduledYear = postData.schedule.year;
+                        const scheduledWeek = postData.schedule.week_number;
+                        if (scheduledYear !== viewedYear || scheduledWeek !== viewedWeek) {
+                            weekMismatch = true;
+                        }
+                    }
+                }
+            }
+
+            // If week mismatch, don't show taxonomy (viewing a different week than post is scheduled for)
+            if (weekMismatch) {
+                taxonomyEl.textContent = '';
+                return;
+            }
+
             const response = await fetch(`/planning/api/posts/${postId}/taxonomy`);
             if (!response.ok) {
                 taxonomyEl.textContent = '';
@@ -197,21 +249,40 @@ class BlogPipelineHeader {
         
         let year, weekNumber, selectedTheme;
         
-        // PRIORITY 1: Use currently viewed week
-        // First check window variables (set early by week-view page initialization or from URL params)
-        if (window.year && window.weekNumber) {
+        // UNIFIED PERSISTENCE: Single priority order
+        // PRIORITY 1: URL parameters (canonical source)
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlYear = urlParams.get('year');
+        const urlWeek = urlParams.get('week');
+        
+        if (urlYear && urlWeek) {
+            year = parseInt(urlYear);
+            weekNumber = parseInt(urlWeek);
+            // Ensure window vars match URL (source of truth)
+            window.year = year;
+            window.weekNumber = weekNumber;
+            localStorage.setItem('calendar-week-view-year', urlYear);
+            localStorage.setItem('calendar-week-view-week', urlWeek);
+        } else if (window.year && window.weekNumber) {
+            // PRIORITY 2: Window variables (set by templates from URL)
             year = window.year;
             weekNumber = window.weekNumber;
         } else {
-            // Fallback 1: Check URL parameters
-            const urlParams = new URLSearchParams(window.location.search);
-            const urlYear = urlParams.get('year');
-            const urlWeek = urlParams.get('week');
-            if (urlYear && urlWeek) {
-                year = parseInt(urlYear);
-                weekNumber = parseInt(urlWeek);
+            // PRIORITY 3: Fallback to localStorage
+            const savedYear = localStorage.getItem('calendar-week-view-year');
+            const savedWeek = localStorage.getItem('calendar-week-view-week');
+            if (savedYear && savedWeek) {
+                year = parseInt(savedYear);
+                weekNumber = parseInt(savedWeek);
+                // Update URL to reflect saved week (make URL canonical)
+                const url = new URL(window.location.href);
+                url.searchParams.set('year', year);
+                url.searchParams.set('week', weekNumber);
+                window.history.replaceState({}, '', url);
+                window.year = year;
+                window.weekNumber = weekNumber;
             } else {
-                // Fallback 2: check displayed week info on week-view page (populated by loadWeek())
+                // PRIORITY 4: Check week-view page DOM elements (for week-view page only)
                 const weekYearEl = document.getElementById('week-year');
                 const weekNumberEl = document.getElementById('week-number');
                 if (weekYearEl && weekNumberEl && weekYearEl.textContent && weekNumberEl.textContent.trim()) {
@@ -220,6 +291,13 @@ class BlogPipelineHeader {
                     if (yearStr && weekStr) {
                         year = parseInt(yearStr);
                         weekNumber = parseInt(weekStr);
+                        // Update URL to reflect displayed week
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('year', year);
+                        url.searchParams.set('week', weekNumber);
+                        window.history.replaceState({}, '', url);
+                        window.year = year;
+                        window.weekNumber = weekNumber;
                     }
                 }
             }
@@ -522,23 +600,23 @@ class BlogPipelineHeader {
     }
     
     attachWeekParameterToNavLinks() {
-        // Get current week/year from window vars, URL params, or localStorage
-        let year = window.year;
-        let weekNumber = window.weekNumber;
+        // UNIFIED PERSISTENCE: Use same priority order as updateWeekAndTheme
+        // PRIORITY 1: URL parameters (canonical source)
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlYear = urlParams.get('year');
+        const urlWeek = urlParams.get('week');
         
-        // Try URL parameters
-        if (!year || !weekNumber) {
-            const urlParams = new URLSearchParams(window.location.search);
-            const urlYear = urlParams.get('year');
-            const urlWeek = urlParams.get('week');
-            if (urlYear && urlWeek) {
-                year = parseInt(urlYear);
-                weekNumber = parseInt(urlWeek);
-            }
-        }
+        let year, weekNumber;
         
-        // Try localStorage (from week-view)
-        if (!year || !weekNumber) {
+        if (urlYear && urlWeek) {
+            year = parseInt(urlYear);
+            weekNumber = parseInt(urlWeek);
+        } else if (window.year && window.weekNumber) {
+            // PRIORITY 2: Window variables
+            year = window.year;
+            weekNumber = window.weekNumber;
+        } else {
+            // PRIORITY 3: localStorage
             const savedYear = localStorage.getItem('calendar-week-view-year');
             const savedWeek = localStorage.getItem('calendar-week-view-week');
             if (savedYear && savedWeek) {

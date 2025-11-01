@@ -346,14 +346,45 @@ function getCurrentISOWeek() {
     return weekNum;
 }
 
-// Set Week Ideas link to the week being viewed (from window.weekNumber) or current week
+// Set Week Ideas link to the week being viewed (from URL params, window vars, or current week)
 function setWeekIdeasLink() {
     const weekIdeasLink = document.getElementById('week-ideas-link');
     if (weekIdeasLink) {
-        // Check if we're viewing a specific week (from calendar week view)
-        const viewedWeek = window.weekNumber;
-        const weekToUse = viewedWeek && viewedWeek > 0 ? viewedWeek : getCurrentISOWeek();
-        weekIdeasLink.href = `/planning/calendar/ideas/week/${weekToUse}`;
+        // UNIFIED PERSISTENCE: Use same priority order
+        // PRIORITY 1: URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlYear = urlParams.get('year');
+        const urlWeek = urlParams.get('week');
+        
+        let weekToUse;
+        let yearToUse;
+        
+        if (urlWeek) {
+            weekToUse = parseInt(urlWeek);
+            yearToUse = urlYear ? parseInt(urlYear) : new Date().getFullYear();
+        } else if (window.weekNumber) {
+            // PRIORITY 2: Window variables
+            weekToUse = window.weekNumber;
+            yearToUse = window.year || new Date().getFullYear();
+        } else {
+            // PRIORITY 3: localStorage or current week
+            const savedWeek = localStorage.getItem('calendar-week-view-week');
+            if (savedWeek) {
+                weekToUse = parseInt(savedWeek);
+                const savedYear = localStorage.getItem('calendar-week-view-year');
+                yearToUse = savedYear ? parseInt(savedYear) : new Date().getFullYear();
+            } else {
+                weekToUse = getCurrentISOWeek();
+                yearToUse = new Date().getFullYear();
+            }
+        }
+        
+        // Include year and week in URL if we have them
+        let href = `/planning/calendar/ideas/week/${weekToUse}`;
+        if (yearToUse && weekToUse) {
+            href += `?year=${yearToUse}&week=${weekToUse}`;
+        }
+        weekIdeasLink.href = href;
     }
 }
 
