@@ -104,6 +104,10 @@ def create_app(config_name=None):
     from blueprints.authoring_api_photography import bp as authoring_photography_bp
     app.register_blueprint(authoring_photography_bp)
     
+    # Register settings blueprint
+    from blueprints.settings import bp as settings_bp
+    app.register_blueprint(settings_bp, url_prefix='/settings')
+    
     # TEMPORARY: Test route for Authoring template preview
     @app.route('/test-authoring/<int:post_id>')
     def test_authoring_preview(post_id):
