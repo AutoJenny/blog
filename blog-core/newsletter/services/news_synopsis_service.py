@@ -464,21 +464,25 @@ def get_news_items(days_back: int = 7) -> List[Dict[str, Any]]:
     start_date = today - timedelta(days=days_back)
     
     sql = """
-        SELECT id, source_name, title, url, published_at, 
+        SELECT DISTINCT ON (source_url_hash) 
+               id, source_name, title, url, published_at, 
                suitability_score, suitability_notes, raw_data,
                signal_score, freshness_score, combined_score
         FROM newsletter_source_item
         WHERE category = 'news'
           AND published_at IS NOT NULL
           AND published_at::date >= %s
+          AND source_url_hash IS NOT NULL
           AND (
             suitability_score >= 6.0
             OR suitability_score IS NULL
           )
         ORDER BY 
+          source_url_hash,
           CASE WHEN suitability_score >= 6.0 THEN 0 ELSE 1 END,
           published_at DESC, 
-          combined_score DESC NULLS LAST
+          combined_score DESC NULLS LAST,
+          id DESC
     """
     
     with db_manager.get_connection() as conn:
