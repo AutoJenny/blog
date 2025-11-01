@@ -117,8 +117,7 @@ Provide your assessment in JSON format:
         )
         
         if not response:
-            logger.warning("LLM returned empty response for suitability analysis")
-            return _fallback_suitability_analysis(title, description)
+            raise ValueError("LLM returned empty response for suitability analysis - cannot proceed without LLM")
         
         # Parse JSON from response
         import json
@@ -165,91 +164,16 @@ Provide your assessment in JSON format:
                     'relevant': bool(relevant),
                 }
             except (json.JSONDecodeError, ValueError, KeyError) as e:
-                logger.warning(f"Could not parse LLM JSON response: {e}. Response was: {response[:200]}")
-                # Continue to dimension extraction fallback
+                raise ValueError(f"Could not parse LLM JSON response: {e}. Response was: {response[:500]}")
         
-        # Fallback: try to extract dimension scores from text
-        # Look for patterns like "historical_interest: 75" or "historical: 75"
-        historical = 50.0
-        cultural = 50.0
-        quirky = 50.0
-        economic = 50.0
-        political = 50.0
+        # If we can't extract JSON, raise error
+        raise ValueError(f"LLM response did not contain valid JSON. Response: {response[:500]}")
         
-        for key in ['historical', 'cultural', 'quirky', 'economic', 'political']:
-            pattern = rf'{key}["\s:]*(\d+\.?\d*)'
-            match = re.search(pattern, response, re.IGNORECASE)
-            if match:
-                val = float(match.group(1))
-                if key == 'historical':
-                    historical = max(1.0, min(100.0, val))
-                elif key == 'cultural':
-                    cultural = max(1.0, min(100.0, val))
-                elif key == 'quirky':
-                    quirky = max(1.0, min(100.0, val))
-                elif key == 'economic':
-                    economic = max(1.0, min(100.0, val))
-                elif key == 'political':
-                    political = max(1.0, min(100.0, val))
-        
-        # Calculate score from dimensions (each already clamped to 1-100)
-        average = (historical + cultural + quirky + economic + political) / 5.0
-        score = ((average - 1.0) / 99.0) * 8.0 + 1.0
-        
-        return {
-            'suitability_score': round(score, 1),
-            'suitability_notes': response[:500],
-            'relevant': score >= DEFAULT_SUITABILITY_THRESHOLD,
-        }
-        
-        # Complete fallback
-        return _fallback_suitability_analysis(title, description)
-        
-        except Exception as e:
-            logger.error(f"Error in LLM suitability analysis: {e}", exc_info=True)
-            raise  # Re-raise exception - no fallback
+    except Exception as e:
+        logger.error(f"Error in LLM suitability analysis: {e}", exc_info=True)
+        raise  # Re-raise exception - no fallback
 
 
-def _fallback_suitability_analysis(title: str, description: Optional[str] = None) -> Dict[str, Any]:
-    """Fallback keyword-based suitability analysis when LLM is unavailable.
-    
-    Uses conservative scoring - most stories should score low (2-4).
-    """
-    text_to_check = f"{title} {description or ''}".lower()
-    
-    # Check for indicators of low relevance (obituaries, local news, etc.)
-    low_interest_terms = ['dies', 'died', 'death', 'obituary', 'aged', 'former', 'ex-',
-                          'local', 'council', 'ban', 'zones', 'bricklayer', 'farewell',
-                          'firework', 'set he built']
-    
-    is_low_interest = any(term in text_to_check for term in low_interest_terms)
-    
-    # High-interest heritage/cultural terms
-    high_interest_terms = ['archaeological', 'archaeology', 'heritage', 'castle', 'museum',
-                          'language revival', 'cultural', 'historic', 'preservation',
-                          'tradition', 'gaelic', 'scots language']
-    
-    has_high_interest = any(term in text_to_check for term in high_interest_terms)
-    
-    # Conservative scoring: default to low scores
-    if is_low_interest and not has_high_interest:
-        # Mundane local news, obituaries - score 2-3
-        score = 2.0 + (0.5 if 'scotland' in text_to_check or 'scottish' in text_to_check else 0.0)
-    elif has_high_interest:
-        # Heritage/cultural content - score 5-6
-        score = 5.0 + (1.0 if any(word in text_to_check for word in ['major', 'significant', 'discovery']) else 0.0)
-    else:
-        # Neutral - score 3-4
-        score = 3.0 + (0.5 if 'scotland' in text_to_check or 'scottish' in text_to_check else 0.0)
-    
-    # Clamp to 1-9
-    score = max(1.0, min(9.0, score))
-    
-    return {
-        'suitability_score': round(score, 1),
-        'suitability_notes': f'Fallback analysis: Low-interest story' if is_low_interest else f'Fallback analysis: Neutral story',
-        'relevant': score >= DEFAULT_SUITABILITY_THRESHOLD,
-    }
 
 
 def analyze_item(item: Dict[str, Any], cache_results: bool = True) -> Dict[str, Any]:
