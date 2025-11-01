@@ -52,29 +52,51 @@ Imagine a typical reader: someone of Scottish descent living in the US, with fam
 Article Title: {title}
 {f"Description: {description[:500]}" if description else ""}
 
-Rate this article on FIVE separate dimensions, each on a scale of 1-100 (use the FULL range, be nuanced):
+Rate this article on FIVE separate dimensions, each on a scale of 1-100. CRITICAL: Most stories should have MOST dimensions scoring 10-40. Only truly exceptional stories should have dimensions above 70. Be CRITICAL and use LOW scores liberally.
 
-1. HISTORICAL INTEREST (1-100): How interesting is this from a historical perspective? Does it reveal something about Scotland's past, heritage sites, archaeology, historical figures, or preservation of historical artifacts/buildings?
+1. HISTORICAL INTEREST (1-100): 
+   - Scores 1-20: No historical content, just current events
+   - Scores 21-40: Minor historical mention or local history
+   - Scores 41-60: Some historical context
+   - Scores 61-80: Substantial historical content, heritage sites, notable historical figures
+   - Scores 81-100: Major historical discoveries, archaeology, preservation of national heritage
 
-2. CULTURAL INTEREST (1-100): How interesting is this from a cultural perspective? Does it relate to Scottish traditions, language, music, literature, arts, festivals, or cultural identity?
+2. CULTURAL INTEREST (1-100):
+   - Scores 1-20: No cultural content, just daily news
+   - Scores 21-40: Minor cultural mention
+   - Scores 41-60: Some cultural context
+   - Scores 61-80: Substantial cultural content (traditions, language, arts)
+   - Scores 81-100: Major cultural significance, festivals, cultural revivals
 
-3. QUIRKY INTEREST (1-100): How interesting is this from a quirky/unique perspective? Does it have an unusual angle, local color, human interest, or something charmingly Scottish that would make diaspora readers smile?
+3. QUIRKY INTEREST (1-100):
+   - Scores 1-20: Mundane, everyday news
+   - Scores 21-40: Slightly interesting angle
+   - Scores 41-60: Moderately interesting, some human interest
+   - Scores 61-80: Very quirky/interesting, would make diaspora smile
+   - Scores 81-100: Exceptionally quirky, charmingly Scottish
 
-4. ECONOMIC IMPORTANCE (1-100): How significant is this economically? Does it affect Scotland's economy, businesses, tourism, industry, or economic development in ways diaspora might care about?
+4. ECONOMIC IMPORTANCE (1-100):
+   - Scores 1-20: No economic significance
+   - Scores 21-40: Minor local economic impact
+   - Scores 41-60: Some economic relevance
+   - Scores 61-80: Significant economic developments diaspora might care about
+   - Scores 81-100: Major economic significance (tourism, major industries)
 
-5. POLITICAL IMPORTANCE (1-100): How significant is this politically? Does it relate to Scottish governance, devolution, independence, or political developments that matter beyond daily party politics?
+5. POLITICAL IMPORTANCE (1-100):
+   - Scores 1-20: Daily politics, local governance
+   - Scores 21-40: Minor political note
+   - Scores 41-60: Some political relevance
+   - Scores 61-80: Significant political developments (devolution, independence)
+   - Scores 81-100: Major political significance affecting Scotland's future
 
-For each dimension, use the FULL 1-100 range thoughtfully:
-- Low scores (1-30): Minimal relevance to this dimension
-- Moderate scores (31-60): Some relevance but not compelling
-- High scores (61-80): Strong relevance, would genuinely interest diaspora readers
-- Very high scores (81-100): Exceptional relevance, compelling and significant
+EXAMPLES TO GUIDE YOU:
+- "Former footballer dies aged 73" → Historical=15, Cultural=20, Quirky=25, Economic=5, Political=5 (average=14 → score 2.1)
+- "Glasgow firework ban zones" → Historical=10, Cultural=15, Quirky=30, Economic=25, Political=40 (average=24 → score 2.9)
+- "Local council decision" → Historical=5, Cultural=10, Quirky=15, Economic=20, Political=35 (average=17 → score 2.3)
+- "Archaeological discovery at Scottish castle" → Historical=90, Cultural=70, Quirky=60, Economic=50, Political=20 (average=58 → score 5.6)
+- "Scottish language revival program" → Historical=60, Cultural=95, Quirky=50, Economic=40, Political=50 (average=59 → score 5.7)
 
-Be nuanced and thoughtful. A story about a local council decision might score: Historical=15, Cultural=20, Quirky=30, Economic=25, Political=40 (average=26 → score 2.6).
-
-A story about preserving a historic Highland estate might score: Historical=85, Cultural=75, Quirky=60, Economic=45, Political=30 (average=59 → score 5.9).
-
-A major archaeological discovery might score: Historical=95, Cultural=80, Quirky=70, Economic=50, Political=20 (average=63 → score 6.3).
+MOST daily news stories should have MOST dimensions in the 10-40 range. Be strict!
 
 Provide your assessment in JSON format:
 {{
