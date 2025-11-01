@@ -202,7 +202,17 @@ Handle both array and object formats
 - **LLM Failures**: Graceful handling of AI generation errors
 - **Database Issues**: Error logging and user notification
 - **Data Validation**: Ensures required fields are present
+  - **Section Count Validation**: Ensures LLM generates exactly the number of sections requested
+  - **Missing Section Detection**: Raises error if any section is missing a title
+  - **Index Matching**: Validates that all sections have matching indices
 - **Retry Mechanism**: Built-in retry for transient failures
+
+### Recent Improvements (November 2025)
+
+- **Enhanced LLM Prompting**: Prompt now explicitly lists all sections with themes and topics, making it clear that ALL sections need titles
+- **Mandatory Section Generation**: Added validation to ensure LLM generates exactly `len(topic_allocation)` titles - returns error if fewer sections are generated
+- **Fixed Section Matching**: Corrected bug in section matching logic that was overwriting outer loop variable
+- **Direct post_section Writes**: Save function now writes directly to `post_section` table in addition to `post_development.sections`, ensuring all sections are persisted even if database triggers fail
 
 ### Integration Points
 
