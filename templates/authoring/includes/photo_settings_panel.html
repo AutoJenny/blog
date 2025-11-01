@@ -1,0 +1,53 @@
+<!-- Photo Settings Panel - Self-contained include with CSS and JS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/authoring/llm-settings-panel.css') }}">
+
+<!-- Photo Settings Panel - Self-contained include -->
+<div class="llm-settings-panel" id="photo-settings-panel">
+    <div class="panel-header" onclick="togglePhotoSettingsAccordion()">
+        <h4><span class="panel-name-green">Photo Settings:</span> <span id="photo-settings-title">Loading...</span></h4>
+        <div class="header-actions">
+            <i class="fas fa-chevron-up" id="photo-settings-accordion-icon"></i>
+        </div>
+    </div>
+    
+    <div class="panel-content" id="photo-settings-accordion-content" style="display: none;">
+        <!-- Active Settings Display -->
+        <div id="photo-provider-info" class="provider-info">
+            <!-- Photo provider, model, and settings will appear here -->
+        </div>
+        
+        <!-- Provider Selection -->
+        <div class="provider-selection">
+            <label for="photo-provider-select">Provider:</label>
+            <select id="photo-provider-select">
+                <option value="Ollama">Ollama</option>
+                <option value="OpenAI">OpenAI</option>
+            </select>
+        </div>
+        
+        <!-- Model Selection -->
+        <div class="model-selection">
+            <label for="photo-model-select">Model:</label>
+            <select id="photo-model-select">
+                <option value="llama3.2:latest">llama3.2:latest</option>
+                <option value="gpt-4">gpt-4</option>
+            </select>
+        </div>
+        
+        <!-- Parameters -->
+        <div class="model-parameters">
+            <div class="param-row">
+                <label for="photo-temperature">Temperature:</label>
+                <input type="range" id="photo-temperature" value="0.7" min="0" max="2" step="0.1">
+                <span class="param-value" id="photo-temperature-value">0.7</span>
+            </div>
+            <div class="param-row">
+                <label for="photo-max-tokens">Max Tokens:</label>
+                <input type="number" id="photo-max-tokens" value="2000" min="100" max="4000" step="100">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/authoring/photo-settings-panel.js') }}"></script>
+

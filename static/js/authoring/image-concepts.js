@@ -23,10 +23,23 @@ document.addEventListener('DOMContentLoaded', () => {
   initTabs();
 
   const postId = window.postId;
-  const output = new ImageConceptsOutputPanel({ postId });
+  // Check which illustration method is being used
+  const illustrationMethod = window.illustrationMethod || 'LLM-creation';
   
-  // Make output panel globally available for LLM module
-  window.imageConceptsOutputPanel = output;
+  let output;
+  if (illustrationMethod === 'Photo-harvesting') {
+    // PhotoHarvestingOutputPanel should be available globally from photo-harvesting-output-panel.js
+    if (typeof PhotoHarvestingOutputPanel !== 'undefined') {
+      output = new PhotoHarvestingOutputPanel({ postId });
+      window.photoHarvestingOutputPanel = output;
+    } else {
+      console.error('[Image Concepts] PhotoHarvestingOutputPanel not found');
+      return;
+    }
+  } else {
+    output = new ImageConceptsOutputPanel({ postId });
+    window.imageConceptsOutputPanel = output;
+  }
 
   // Initialize LLM module immediately for prompt loading
   initializeLLMForSection('section_1'); // Initialize with first section ID

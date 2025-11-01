@@ -18,6 +18,26 @@
     window.currentStage = 'authoring';
                 window.currentSubstage = 'image-prompts';
   window.postId = {{ post_id|default(0) }};
+  
+    // Read week/year from URL parameters and set window vars for header
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlYear = urlParams.get('year');
+    const urlWeek = urlParams.get('week');
+    if (urlYear && urlWeek) {
+        window.year = parseInt(urlYear);
+        window.weekNumber = parseInt(urlWeek);
+        // Also save to localStorage for persistence
+        localStorage.setItem('calendar-week-view-year', urlYear);
+        localStorage.setItem('calendar-week-view-week', urlWeek);
+    } else {
+        // Try localStorage as fallback
+        const savedYear = localStorage.getItem('calendar-week-view-year');
+        const savedWeek = localStorage.getItem('calendar-week-view-week');
+        if (savedYear && savedWeek) {
+            window.year = parseInt(savedYear);
+            window.weekNumber = parseInt(savedWeek);
+        }
+    }
 </script>
 <script src="{{ url_for('static', filename='js/authoring/styles-manager.js') }}"></script>
 <script src="{{ url_for('static', filename='js/authoring/prompt-preview.js') }}"></script>

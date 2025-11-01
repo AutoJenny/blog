@@ -1,0 +1,46 @@
+<!-- Photo Prompts Panel - Self-contained include with CSS and JS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/authoring/llm-prompts-panel.css') }}">
+
+<!-- Photo Prompts Panel - Self-contained include -->
+<div class="llm-prompts-panel" id="photo-prompts-panel">
+    <div class="panel-header" onclick="togglePhotoPromptsAccordion()">
+        <h4><span class="panel-name-green">Photo Prompts:</span> <span id="photo-prompt-title">Loading...</span></h4>
+        <div class="header-actions">
+            <i class="fas fa-chevron-up" id="photo-prompts-accordion-icon"></i>
+        </div>
+    </div>
+    
+    <div class="panel-content" id="photo-prompts-accordion-content" style="display: none;">
+        <!-- Prompt Display -->
+        <div id="photo-prompt-display" class="prompt-display">
+            <div class="field-source-info" style="font-size: 0.7rem; color: #64748b; font-style: italic; margin-bottom: 0.5rem;">
+                Source: <span id="photo-prompt-endpoint-display">Loading...</span>
+            </div>
+            <!-- Photo prompt will appear here -->
+        </div>
+        
+        <!-- Prompt Edit Form -->
+        <div id="photo-prompt-edit" class="prompt-edit" style="display: none;">
+            <div class="form-group">
+                <label for="photo-system-prompt-edit">System Prompt <span class="field-source">(llm_prompt.system_prompt)</span></label>
+                <textarea id="photo-system-prompt-edit" rows="4" placeholder="System prompt..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="photo-user-prompt-edit">User Prompt <span class="field-source">(llm_prompt.prompt_text)</span></label>
+                <textarea id="photo-user-prompt-edit" rows="8" placeholder="User prompt..."></textarea>
+            </div>
+            <div class="prompt-actions">
+                <button class="btn btn-secondary" id="photo-save-prompt-btn">Save</button>
+                <button class="btn btn-secondary" id="photo-cancel-edit-btn">Cancel</button>
+            </div>
+        </div>
+        
+        <!-- Edit Controls -->
+        <div class="prompt-actions" id="photo-prompt-actions">
+            <button class="btn btn-secondary" id="photo-edit-prompt-btn">Edit Prompt</button>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/authoring/photo-prompts-panel.js') }}"></script>
+

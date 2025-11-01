@@ -25,12 +25,12 @@ def authoring_sections_image_concepts(post_id):
     """Image concepts step - Step 53"""
     try:
         with db_manager.get_cursor() as cursor:
-            # Get post details with taxonomy
+            # Get post details with taxonomy illustration_method
             cursor.execute("""
                 SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
-                       p.content_type_id, ti.common_assets
+                       p.content_type_id, content_type.illustration_method
                 FROM post p
-                LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                LEFT JOIN taxonomy_item content_type ON p.content_type_id = content_type.id
                 WHERE p.id = %s
             """, (post_id,))
             post = cursor.fetchone()
@@ -38,26 +38,15 @@ def authoring_sections_image_concepts(post_id):
             if not post:
                 return "Post not found", 404
             
-            # Check if this content type uses photography workflow
-            uses_photography = False
-            if post.get('common_assets'):
-                assets = post['common_assets']
-                if isinstance(assets, str):
-                    try:
-                        assets = json.loads(assets)
-                    except:
-                        assets = []
-                # Check if any asset contains "photography" or "landscape photography"
-                if isinstance(assets, list):
-                    asset_text = ' '.join(assets).lower()
-                    uses_photography = 'photography' in asset_text or 'landscape photography' in asset_text
+            # Get illustration_method from taxonomy (default to 'LLM-creation' if null/not found)
+            illustration_method = post.get('illustration_method') or 'LLM-creation'
             
             return render_template('authoring/sections/image_concepts.html', 
                                  post_id=post_id,
                                  post=post,
                                  page_title="Image Concepts",
                                  blueprint_name='authoring',
-                                 uses_photography=uses_photography)
+                                 illustration_method=illustration_method)
             
     except Exception as e:
         logger.error(f"Error in authoring_sections_image_concepts: {e}")
