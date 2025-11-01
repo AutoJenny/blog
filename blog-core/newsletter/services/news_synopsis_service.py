@@ -431,7 +431,8 @@ def generate_news_summary(days_back: int = 7) -> Dict[str, Any]:
     items = get_news_items(days_back=days_back)
     
     # Filter to only items that have been analyzed and passed threshold
-    analyzed_items = [item for item in items if item.get('suitability_score', 0) >= 6.0]
+    # Handle None values: item.get('suitability_score') can return None, so use or 0
+    analyzed_items = [item for item in items if (item.get('suitability_score') or 0) >= 6.0]
     unanalyzed_count = len(items) - len(analyzed_items)
     
     if not analyzed_items:
