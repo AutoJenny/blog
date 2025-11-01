@@ -263,7 +263,10 @@
   background: rgba(29, 78, 216, 0.2);
 }
 /* Syndication scheduled posts: outlined blue, no background */
-.item.scheduled.syndication { background:transparent; color:#93c5fd; border:2px solid #3b82f6; }
+.item.scheduled.syndication { background:transparent; color:#93c5fd; border:2px solid #3b82f6; transition: all 0.2s; }
+.item.scheduled.syndication:hover { background:rgba(59, 130, 246, 0.1); border-color:#60a5fa; color:#bfdbfe; }
+.item.scheduled.syndication i { flex-shrink: 0; }
+.item.scheduled.syndication span { flex: 1; }
 .legend { margin-top: 12px; display:flex; gap:10px; color:#94a3b8; font-size:.85rem; }
 .calendar-actions { margin-top: 1rem; }
 .bottom-actions { display: flex; justify-content: flex-end; }

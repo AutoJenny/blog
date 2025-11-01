@@ -27,6 +27,31 @@ async function fetchJSON(url) {
   return res.json();
 }
 
+// Helper function to get platform icon class
+function getPlatformIcon(platformName) {
+  const platform = (platformName || 'facebook').toLowerCase();
+  const iconMap = {
+    'facebook': 'fab fa-facebook',
+    'instagram': 'fab fa-instagram',
+    'twitter': 'fab fa-twitter',
+    'linkedin': 'fab fa-linkedin',
+    'youtube': 'fab fa-youtube',
+    'pinterest': 'fab fa-pinterest',
+    'tiktok': 'fab fa-tiktok'
+  };
+  return iconMap[platform] || 'fas fa-share-alt'; // Default icon
+}
+
+// Helper function to build syndication URL
+function getSyndicationUrl(platform, contentType) {
+  const platformName = (platform || 'facebook').toLowerCase();
+  const contentTypeSlug = (contentType || 'product_post').toLowerCase();
+  // Convert content_type to URL format (e.g., 'product' -> 'product_post', 'blog_post' -> 'blog_post')
+  const urlContentType = contentTypeSlug === 'product' ? 'product_post' : 
+                         contentTypeSlug === 'blog' ? 'blog_post' : contentTypeSlug;
+  return `/launchpad/syndication/${platformName}/${urlContentType}`;
+}
+
 function renderItems(container, items, type) {
   if (!items || !Array.isArray(items) || items.length === 0) return;
   
@@ -49,9 +74,43 @@ function renderItems(container, items, type) {
       div.title = 'Click to view/edit event';
     }
     if (type === 'scheduled' && item._syndication) {
-      // Syndication display: Channel — Operation — Time
-      div.textContent = `${item.channel || 'Facebook'} — ${item.operation || 'Product'} — ${item.time_display || item.time || ''}`.trim();
+      // Syndication display: Platform icon + Operation — Time
       div.classList.add('syndication');
+      div.style.cursor = 'pointer';
+      div.style.display = 'flex';
+      div.style.alignItems = 'center';
+      div.style.gap = '6px';
+      div.title = `Click to manage ${item.operation || 'Product'} posts on ${item.channel || 'Facebook'}`;
+      
+      // Create platform icon
+      const icon = document.createElement('i');
+      const platformName = (item.platform || item.channel || 'facebook').toLowerCase();
+      icon.className = getPlatformIcon(platformName);
+      icon.style.fontSize = '0.875rem';
+      // Platform-specific icon colors
+      icon.style.color = platformName === 'instagram' ? '#E1306C' : 
+                         platformName === 'twitter' ? '#1DA1F2' :
+                         platformName === 'linkedin' ? '#0077B5' :
+                         '#93c5fd'; // Default blue for Facebook
+      
+      // Create text content
+      const textSpan = document.createElement('span');
+      textSpan.textContent = `${item.operation || 'Product'} — ${item.time_display || item.time || ''}`.trim();
+      
+      // Build URL for click
+      const platform = (item.platform || item.channel || 'facebook').toLowerCase();
+      const contentType = (item.content_type || (item.operation === 'Blog' ? 'blog_post' : 'product_post')).toLowerCase();
+      const url = getSyndicationUrl(platform, contentType);
+      
+      // Make clickable
+      div.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        window.location.href = url;
+      };
+      
+      div.appendChild(icon);
+      div.appendChild(textSpan);
     } else {
       div.textContent = item.title || item.idea_title || item.name || item.summary || item.event_title || 'Untitled';
     }
@@ -415,7 +474,15 @@ async function loadWeek(year, weekNumber) {
       days.forEach((d) => {
         const target = document.getElementById(`syndication-row-day-${Math.min(Math.max(d, 1), 7)}`);
         const operation = s.content_type === 'product' ? 'Product' : (s.content_type === 'blog_post' ? 'Blog' : (s.content_type || ''));
-        const item = { channel: s.platform || 'Facebook', operation: operation, time_display: timeDisplay, name: s.name || '', _syndication: true };
+        const item = { 
+          platform: s.platform || 'facebook', // Use platform for icon lookup
+          channel: s.platform || 'Facebook', // Keep channel for compatibility
+          content_type: s.content_type || 'product', // For URL generation
+          operation: operation, 
+          time_display: timeDisplay, 
+          name: s.name || '', 
+          _syndication: true 
+        };
         renderItems(target, [item], 'scheduled');
       });
     });
