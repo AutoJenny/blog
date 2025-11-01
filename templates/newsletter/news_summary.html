@@ -30,9 +30,10 @@
 </div>
 
 <script>
-async function loadNewsSummary() {
+async function loadNewsSummary(sortBy = 'combined_score', limit = 100) {
     try {
-        const response = await fetch('/newsletter/news/summary?days_back=7');
+        const url = `/newsletter/news/summary?days_back=7&limit=${limit}&sort_by=${sortBy}`;
+        const response = await fetch(url);
         
         if (!response.ok) {
             const errorText = await response.text();
@@ -47,6 +48,12 @@ async function loadNewsSummary() {
         
         const data = result.data;
         const container = document.getElementById('news-summary-container');
+        
+        // Update story count
+        const countEl = document.getElementById('story-count');
+        if (countEl) {
+            countEl.textContent = `${data.total_stories} stories from ${Object.keys(data.sources || {}).length} sources`;
+        }
         
         let html = '';
         
@@ -149,9 +156,13 @@ async function loadNewsSummary() {
                                                     <i class="fa-solid fa-calendar"></i>
                                                     ${pubDate}
                                                 </span>` : ''}
-                                                ${story.suitability_score ? `<span class="flex items-center gap-1">
+                                                ${story.suitability_score ? `<span class="flex items-center gap-1" title="Relevance score - how well this story matches our Scottish heritage/culture values">
                                                     <i class="fa-solid fa-star"></i>
-                                                    Score: ${story.suitability_score}/10
+                                                    Relevance: ${story.suitability_score}/10
+                                                </span>` : ''}
+                                                ${story.combined_score ? `<span class="flex items-center gap-1" title="Combined score (relevance + freshness)">
+                                                    <i class="fa-solid fa-chart-line"></i>
+                                                    Combined: ${parseFloat(story.combined_score).toFixed(1)}
                                                 </span>` : ''}
                                             </div>
                                         </div>
@@ -276,8 +287,17 @@ async function reanalyzeNews() {
     }
 }
 
+let currentSort = 'combined_score';
+let currentLimit = 100;
+
+function changeSort() {
+    const select = document.getElementById('sort-select');
+    currentSort = select.value;
+    loadNewsSummary(currentSort, currentLimit);
+}
+
 // Load summary on page load
-loadNewsSummary();
+loadNewsSummary(currentSort, currentLimit);
 </script>
 
 {% endblock %}
