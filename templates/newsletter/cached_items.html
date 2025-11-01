@@ -208,7 +208,7 @@
                             <td style="font-size: 12px;">
                                 {% if item.suitability_score is not none %}
                                     <span class="{% if (item.suitability_score or 0) >= 6 %}score-high{% elif (item.suitability_score or 0) >= 4 %}score-medium{% else %}score-low{% endif %}" title="{{ item.suitability_notes or '' }}">
-                                        {{ "%.1f"|format(item.suitability_score) }}/10
+                                        {{ "%.1f"|format(item.suitability_score) }}/9
                                     </span>
                                 {% else %}
                                     <span style="color: #6b7280;">Not analyzed</span>
@@ -241,7 +241,7 @@
                                                 <i class="fa-solid fa-brain"></i> LLM Analysis:
                                             </div>
                                             <div style="color: #9ca3af; font-size: 12px; line-height: 1.5; margin-bottom: 6px;">
-                                                Score: <strong style="color: #6ee7b7;">{{ "%.1f"|format(item.suitability_score) }}/10</strong>
+                                                Score: <strong style="color: #6ee7b7;">{{ "%.1f"|format(item.suitability_score) }}/9</strong>
                                             </div>
                                             <div style="color: #9ca3af; font-size: 11px; line-height: 1.6; font-style: italic; background: #1b2138; padding: 8px; border-radius: 4px;">
                                                 {{ item.suitability_notes }}
