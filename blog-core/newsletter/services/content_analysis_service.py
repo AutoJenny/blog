@@ -90,10 +90,17 @@ EXAMPLES TO GUIDE YOU:
 - "Former footballer dies aged 73" → Historical=15, Cultural=20, Quirky=25, Economic=5, Political=5 (average=14 → score 2.1)
 - "Glasgow firework ban zones" → Historical=10, Cultural=15, Quirky=30, Economic=25, Political=40 (average=24 → score 2.9)
 - "Local council decision" → Historical=5, Cultural=10, Quirky=15, Economic=20, Political=35 (average=17 → score 2.3)
+- "Woman charged after patient records accessed in NHS data breach" → Historical=5, Cultural=5, Quirky=5, Economic=10, Political=15 (average=8 → score 1.7) - CRIME/LOCAL ONLY, very low relevance
+- "Man arrested after woman found dead following flat fire" → Historical=5, Cultural=5, Quirky=5, Economic=5, Political=5 (average=5 → score 1.4) - CRIME, minimal diaspora interest
 - "Archaeological discovery at Scottish castle" → Historical=90, Cultural=70, Quirky=60, Economic=50, Political=20 (average=58 → score 5.6)
 - "Scottish language revival program" → Historical=60, Cultural=95, Quirky=50, Economic=40, Political=50 (average=59 → score 5.7)
 
-MOST daily news stories should have MOST dimensions in the 10-40 range. Be strict!
+SPECIAL INSTRUCTIONS:
+- CRIME STORIES (arrests, charges, murders, fires, etc.): Score ALL dimensions 1-10. These are of minimal interest to diaspora unless they involve historical/cultural significance. Average should be 5-10 → final score 1.4-2.0.
+- LOCAL-ONLY STORIES (council decisions, local infrastructure, neighborhood news): Score most dimensions 5-20 unless they have broader Scottish significance. These are routine governance that doesn't matter to diaspora.
+- ROUTINE BREAKING NEWS (sports scores, daily politics, weather reports): Score 10-30 on most dimensions unless culturally/historically significant.
+
+MOST daily news stories should have MOST dimensions in the 10-40 range. Be strict! Crime and local-only stories should score 1-2.
 
 Provide your assessment in JSON format:
 {{
@@ -108,8 +115,8 @@ Provide your assessment in JSON format:
 """
     
     try:
-        # Use LLM to analyze - use available model (mistral:latest or llama3.2:latest)
-        model_name = os.environ.get('DEFAULT_LLM_MODEL', 'mistral:latest')
+        # Use LLM to analyze - use available model (llama3.2:latest or mistral:latest)
+        model_name = os.environ.get('DEFAULT_LLM_MODEL', 'llama3.2:latest')
         response = llm_service.generate(
             prompt=prompt,
             model_name=model_name,
