@@ -443,6 +443,38 @@ def weather_summary_page():
     return render_template('newsletter/weather_summary.html')
 
 
+@bp.route('/newsletter/news/summary')
+def news_summary():
+    """Get news summary from synopses."""
+    try:
+        from newsletter.services.news_synopsis_service import generate_news_summary
+        
+        days_back = request.args.get('days_back', 7, type=int)
+        
+        summary = generate_news_summary(days_back=days_back)
+        
+        # If requested as HTML page
+        if request.args.get('view') == 'page':
+            return render_template('newsletter/news_summary.html', summary=summary)
+        
+        # Otherwise return JSON
+        return jsonify({
+            'status': 'success',
+            'data': summary
+        })
+    except Exception as e:
+        logger.error(f"Error generating news summary: {e}", exc_info=True)
+        if request.args.get('view') == 'page':
+            return render_template('newsletter/news_summary.html', error=str(e))
+        return jsonify({'error': str(e)}), 500
+
+
+@bp.route('/newsletter/news')
+def news_summary_page():
+    """News summary page UI."""
+    return render_template('newsletter/news_summary.html')
+
+
 @bp.route('/newsletter/sources')
 def sources_management():
     """Source aggregation management page."""

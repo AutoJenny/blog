@@ -62,25 +62,30 @@ def process_events(items: List[Dict[str, Any]]) -> Dict[str, Any]:
 
 
 def process_news(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Process news-type items: analyze suitability and filter."""
+    """Process news-type items: fetch full content, analyze, generate synopsis."""
+    from newsletter.services.news_synopsis_service import process_news_with_synopsis
+    
     news_items = [item for item in items if item.get('category') == 'news']
     
-    if not news_items:
-        return []
+    if news_items:
+        logger.info(f"Processing {len(news_items)} news items with full content analysis and synopsis generation")
     
-    # Analyze suitability for each news item
-    analyzed = []
+    # Process each news item: fetch content, analyze, generate synopsis
+    processed = []
     for item in news_items:
-        analyzed_item = analyze_item(item, cache_results=True)
-        
-        # Only keep items above threshold
-        score = analyzed_item.get('suitability_score', 0)
-        if score >= 6.0:  # Default threshold
-            analyzed.append(analyzed_item)
-        else:
-            logger.debug(f"Filtered out news item (score {score}): {analyzed_item.get('title', 'Unknown')[:50]}")
+        try:
+            processed_item = process_news_with_synopsis(item, cache_results=True)
+            if processed_item:
+                processed.append(processed_item)
+                logger.info(f"✓ Processed news: {item.get('title', 'Unknown')[:50]} (score: {processed_item.get('suitability_score', 0)})")
+            else:
+                logger.debug(f"Filtered out news item: {item.get('title', 'Unknown')[:50]}")
+        except Exception as e:
+            logger.error(f"Error processing news item {item.get('title', 'Unknown')[:50]}: {e}", exc_info=True)
+            continue
     
-    return analyzed
+    logger.info(f"Processed {len(processed)} relevant news items out of {len(news_items)} total")
+    return processed
 
 
 def process_weather(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
