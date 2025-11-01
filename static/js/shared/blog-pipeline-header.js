@@ -108,7 +108,46 @@ class BlogPipelineHeader {
             console.log('[Blog Pipeline Header] Updated updated date to:', post.updated_at);
         }
 
+        // Update taxonomy display
+        await this.updateTaxonomyDisplay();
+
         console.log('[Blog Pipeline Header] Header fields updated');
+    }
+
+    async updateTaxonomyDisplay() {
+        const taxonomyEl = document.getElementById('pipeline-title-taxonomy');
+        if (!taxonomyEl) return;
+
+        const postId = this.getPostId();
+        if (!postId || postId === '0' || parseInt(postId) === 0) {
+            taxonomyEl.textContent = '';
+            return;
+        }
+
+        try {
+            const response = await fetch(`/planning/api/posts/${postId}/taxonomy`);
+            if (!response.ok) {
+                taxonomyEl.textContent = '';
+                return;
+            }
+
+            const data = await response.json();
+            if (!data.success || !data.taxonomy) {
+                taxonomyEl.textContent = '';
+                return;
+            }
+
+            const taxonomy = data.taxonomy;
+            // Display as "Category: Type" where Category is theme_name and Type is content_type_name
+            if (taxonomy.theme_name && taxonomy.content_type_name) {
+                taxonomyEl.textContent = `${taxonomy.theme_name}: ${taxonomy.content_type_name}`;
+            } else {
+                taxonomyEl.textContent = '';
+            }
+        } catch (error) {
+            console.warn('[Blog Pipeline Header] Error updating taxonomy display:', error);
+            taxonomyEl.textContent = '';
+        }
     }
 
     async updateWeekAndTheme() {
