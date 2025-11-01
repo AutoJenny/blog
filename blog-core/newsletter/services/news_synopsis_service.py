@@ -309,51 +309,6 @@ Provide your assessment in JSON format:
                     'relevant': bool(relevant),
                 }
             except (json.JSONDecodeError, ValueError, KeyError) as e:
-                logger.warning(f"Could not parse LLM JSON response: {e}")
-                # Fall through to dimension extraction fallback
-        
-        # Fallback: try to extract dimension scores from text
-        historical = 50.0
-        cultural = 50.0
-        quirky = 50.0
-        economic = 50.0
-        political = 50.0
-        
-        for key in ['historical', 'cultural', 'quirky', 'economic', 'political']:
-            pattern = rf'{key}["\s:]*(\d+\.?\d*)'
-            match = re.search(pattern, response, re.IGNORECASE)
-            if match:
-                val = float(match.group(1))
-                if key == 'historical':
-                    historical = max(1.0, min(100.0, val))
-                elif key == 'cultural':
-                    cultural = max(1.0, min(100.0, val))
-                elif key == 'quirky':
-                    quirky = max(1.0, min(100.0, val))
-                elif key == 'economic':
-                    economic = max(1.0, min(100.0, val))
-                elif key == 'political':
-                    political = max(1.0, min(100.0, val))
-        
-        # Calculate score from dimensions (each already clamped to 1-100)
-        average = (historical + cultural + quirky + economic + political) / 5.0
-        score = ((average - 1.0) / 99.0) * 8.0 + 1.0
-        
-                # Extract synopsis from LLM response
-                synopsis = result.get('synopsis', 'No synopsis generated')
-                if not synopsis or synopsis == 'No synopsis generated':
-                    raise ValueError("LLM response did not include synopsis")
-                
-                # Clean subscription text from synopsis
-                synopsis = clean_subscription_text(synopsis)
-                
-                return {
-                    'suitability_score': round(score, 1),
-                    'suitability_notes': reasoning[:500],
-                    'synopsis': synopsis[:1000],  # Limit synopsis length
-                    'relevant': bool(relevant),
-                }
-            except (json.JSONDecodeError, ValueError, KeyError) as e:
                 raise ValueError(f"Could not parse LLM JSON response: {e}. Response was: {response[:500]}")
         
         # If we can't extract JSON, raise error
