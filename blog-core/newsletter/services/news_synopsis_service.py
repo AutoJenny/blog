@@ -413,11 +413,13 @@ def process_news_with_synopsis(item: Dict[str, Any], cache_results: bool = True)
         return None
     
     # Check cache if enabled
+    # If cache_results is False, skip cache entirely (for re-analysis)
     if cache_results:
         cached = _get_cached_news_synopsis(url)
         if cached:
             item.update(cached)
             return item if item.get('suitability_score', 0) >= 6.0 else None
+    # If cache_results is False, we skip cache and continue to fresh analysis
     
     # Fetch full article content
     logger.info(f"Fetching article content from {url}")
