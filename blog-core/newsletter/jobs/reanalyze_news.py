@@ -9,7 +9,6 @@ from config.database import db_manager
 from newsletter.services.news_synopsis_service import process_news_with_synopsis
 from newsletter.services.scoring import score_items
 from newsletter.db.queries_sources import store_source_items
-from config.database import db_manager
 
 logger = logging.getLogger(__name__)
 
