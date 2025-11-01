@@ -339,52 +339,29 @@ Provide your assessment in JSON format:
         average = (historical + cultural + quirky + economic + political) / 5.0
         score = ((average - 1.0) / 99.0) * 8.0 + 1.0
         
-        # Generate basic synopsis from article content
-        synopsis = _extract_basic_synopsis(title, article_content)
-        # Clean subscription text from synopsis
-        synopsis = clean_subscription_text(synopsis)
+                # Extract synopsis from LLM response
+                synopsis = result.get('synopsis', 'No synopsis generated')
+                if not synopsis or synopsis == 'No synopsis generated':
+                    raise ValueError("LLM response did not include synopsis")
+                
+                # Clean subscription text from synopsis
+                synopsis = clean_subscription_text(synopsis)
+                
+                return {
+                    'suitability_score': round(score, 1),
+                    'suitability_notes': reasoning[:500],
+                    'synopsis': synopsis[:1000],  # Limit synopsis length
+                    'relevant': bool(relevant),
+                }
+            except (json.JSONDecodeError, ValueError, KeyError) as e:
+                raise ValueError(f"Could not parse LLM JSON response: {e}. Response was: {response[:500]}")
         
-        return {
-            'suitability_score': round(score, 1),
-            'suitability_notes': response[:500],
-            'synopsis': synopsis,
-            'relevant': score >= 6.0,
-        }
+        # If we can't extract JSON, raise error
+        raise ValueError(f"LLM response did not contain valid JSON. Response: {response[:500]}")
         
     except Exception as e:
         logger.error(f"Error in LLM synopsis generation: {e}", exc_info=True)
-        return _fallback_synopsis(title, article_content)
-
-
-def _extract_basic_synopsis(title: str, content: str) -> str:
-    """Extract basic synopsis from article content (fallback)."""
-    # Clean content first
-    content = clean_subscription_text(content)
-    
-    # Take first few sentences
-    sentences = re.split(r'[.!?]+\s+', content)
-    if len(sentences) >= 2:
-        synopsis = '. '.join(sentences[:3]) + '.'
-        return synopsis[:500]
-    return content[:300] + '...' if len(content) > 300 else content
-
-
-def _fallback_synopsis(title: str, content: str) -> Dict[str, Any]:
-    """Fallback synopsis generation when LLM is unavailable."""
-    from newsletter.services.content_analysis_service import _fallback_suitability_analysis
-    
-    # Use keyword-based suitability analysis
-    suitability_result = _fallback_suitability_analysis(title, content)
-    
-    # Generate basic synopsis from content
-    synopsis = _extract_basic_synopsis(title, content)
-    
-    return {
-        'suitability_score': suitability_result['suitability_score'],
-        'suitability_notes': suitability_result['suitability_notes'],
-        'synopsis': synopsis,
-        'relevant': suitability_result['relevant'],
-    }
+        raise  # Re-raise exception - no fallback
 
 
 def process_news_with_synopsis(item: Dict[str, Any], cache_results: bool = True) -> Optional[Dict[str, Any]]:
