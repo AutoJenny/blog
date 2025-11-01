@@ -4760,3 +4760,11 @@ NameError: name 'logger' is not defined
 2025-11-01 21:16:48,025 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:48] "[36mGET /newsletter/news?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
 2025-11-01 21:17:14,219 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/newsletter.py', reloading
 2025-11-01 21:17:14,269 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 21:17:14,629 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 21:17:14,636 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 21:17:32,126 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/news_synopsis_service.py', reloading
+2025-11-01 21:17:32,165 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 21:17:32,503 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 21:17:32,510 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 21:17:53,185 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/news_synopsis_service.py', reloading
+2025-11-01 21:17:53,230 - werkzeug - INFO -  * Restarting with stat
