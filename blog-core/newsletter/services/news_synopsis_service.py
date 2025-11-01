@@ -260,8 +260,8 @@ Provide your assessment in JSON format:
             max_tokens=500
         )
         
-            if not response:
-                raise ValueError("LLM returned empty response for synopsis generation - cannot proceed without LLM")
+        if not response:
+            raise ValueError("LLM returned empty response for synopsis generation - cannot proceed without LLM")
         
         # Parse JSON from response
         import json
