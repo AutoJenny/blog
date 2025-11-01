@@ -4582,3 +4582,37 @@ requests.exceptions.HTTPError: 404 Client Error: Not Found for url: http://local
 2025-11-01 21:09:55,167 - werkzeug - INFO -  * Debugger PIN: 263-852-041
 2025-11-01 21:09:58,955 - config.database - INFO - Database connection established
 2025-11-01 21:09:58,963 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:09:58] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-01 21:10:03,952 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/jobs/reanalyze_news.py', reloading
+2025-11-01 21:10:04,002 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 21:10:04,328 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 21:10:04,334 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 21:10:13,066 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/content_analysis_service.py', reloading
+2025-11-01 21:10:13,113 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 21:10:13,416 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 21:10:13,422 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 21:15:18,972 - config.database - INFO - Database connection established
+2025-11-01 21:15:18,978 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:15:18] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-01 21:15:26,907 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/content_analysis_service.py', reloading
+2025-11-01 21:15:26,960 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 21:15:27,290 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 21:15:27,297 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 21:15:34,907 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/content_analysis_service.py', reloading
+2025-11-01 21:15:34,948 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 21:15:35,278 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 21:15:35,283 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 21:15:40,749 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/content_analysis_service.py', reloading
+2025-11-01 21:15:40,798 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 21:15:41,129 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 21:15:41,135 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 21:15:53,092 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/news_synopsis_service.py', reloading
+2025-11-01 21:15:53,138 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 21:15:53,487 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 21:15:53,493 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 21:15:57,908 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/news_synopsis_service.py', reloading
+2025-11-01 21:15:57,958 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 21:15:58,500 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 21:15:58,506 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 21:16:01,857 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/news_synopsis_service.py', reloading
+2025-11-01 21:16:01,898 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 21:16:02,227 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 21:16:02,234 - werkzeug - INFO -  * Debugger PIN: 263-852-041

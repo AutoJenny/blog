@@ -47,33 +47,44 @@ def analyze_news_suitability(title: str, description: Optional[str] = None, url:
     # Construct prompt for content analysis
     prompt = f"""You are analyzing news articles for a Scottish heritage and culture newsletter with a primarily US-Scots diaspora audience - people of Scottish descent living in the United States, Canada, Australia, and other countries who maintain an interest in the history and culture of their "old country".
 
-Think like a diaspora community member: What would make someone far from Scotland pause and be genuinely interested? Stories about Scottish history, archaeology, heritage sites, cultural traditions, language, music, literature, notable Scottish figures (past and present), and developments that connect to Scotland's cultural identity.
+Imagine a typical reader: someone of Scottish descent living in the US, with family connections to Scotland, interested in learning about the "old country" - its history, culture, traditions, and contemporary developments that matter.
 
 Article Title: {title}
 {f"Description: {description[:500]}" if description else ""}
 
-Rate this article's relevance on a scale of 1-9, where:
-- The average score across all articles should be around 5
-- Use the FULL range (1-9) - don't cluster scores at the extremes
-- Score 1-2: Minimal connection - purely local current events, sports scores, minor local figures, daily politics
-- Score 3-4: Some connection but limited diaspora appeal - regional news, local obituaries, current sports news
-- Score 5: Moderate relevance - stories with some cultural/historical context that diaspora might find mildly interesting
-- Score 6-7: Good relevance - substantial Scottish cultural/historical content, heritage stories, notable developments
-- Score 8-9: High relevance - stories of lasting significance: major archaeological discoveries, cultural revivals, heritage preservation, internationally significant Scottish figures/events
+Rate this article on FIVE separate dimensions, each on a scale of 1-100 (use the FULL range, be nuanced):
 
-Consider:
-- Historical/cultural depth vs. fleeting current events
-- Interest to someone thousands of miles away vs. someone living in Scotland today
-- Long-term significance vs. immediate news value
-- Connection to Scottish identity, heritage, traditions vs. just happening to occur in Scotland
+1. HISTORICAL INTEREST (1-100): How interesting is this from a historical perspective? Does it reveal something about Scotland's past, heritage sites, archaeology, historical figures, or preservation of historical artifacts/buildings?
 
-Be thoughtful and nuanced. A local politician's daily activities might score 2, while a story about preserving a historic Highland site might score 7. A major archaeological discovery at a Scottish castle would score 8-9, while a Rangers/Celtic match result might score 3. Judge each story on its own merits considering diaspora interest in the "old country".
+2. CULTURAL INTEREST (1-100): How interesting is this from a cultural perspective? Does it relate to Scottish traditions, language, music, literature, arts, festivals, or cultural identity?
+
+3. QUIRKY INTEREST (1-100): How interesting is this from a quirky/unique perspective? Does it have an unusual angle, local color, human interest, or something charmingly Scottish that would make diaspora readers smile?
+
+4. ECONOMIC IMPORTANCE (1-100): How significant is this economically? Does it affect Scotland's economy, businesses, tourism, industry, or economic development in ways diaspora might care about?
+
+5. POLITICAL IMPORTANCE (1-100): How significant is this politically? Does it relate to Scottish governance, devolution, independence, or political developments that matter beyond daily party politics?
+
+For each dimension, use the FULL 1-100 range thoughtfully:
+- Low scores (1-30): Minimal relevance to this dimension
+- Moderate scores (31-60): Some relevance but not compelling
+- High scores (61-80): Strong relevance, would genuinely interest diaspora readers
+- Very high scores (81-100): Exceptional relevance, compelling and significant
+
+Be nuanced and thoughtful. A story about a local council decision might score: Historical=15, Cultural=20, Quirky=30, Economic=25, Political=40 (average=26 → score 2.6).
+
+A story about preserving a historic Highland estate might score: Historical=85, Cultural=75, Quirky=60, Economic=45, Political=30 (average=59 → score 5.9).
+
+A major archaeological discovery might score: Historical=95, Cultural=80, Quirky=70, Economic=50, Political=20 (average=63 → score 6.3).
 
 Provide your assessment in JSON format:
 {{
-    "score": <number 1-9, average around 5, use full range>,
-    "reasoning": "<explain your score focusing on: (1) relevance to Scottish heritage/culture, (2) diaspora appeal from distance, (3) lasting significance vs. ephemeral news>",
-    "relevant": <true if score >= 6.0, false otherwise>
+    "historical_interest": <number 1-100>,
+    "cultural_interest": <number 1-100>,
+    "quirky_interest": <number 1-100>,
+    "economic_importance": <number 1-100>,
+    "political_importance": <number 1-100>,
+    "reasoning": "<brief explanation of your scores for each dimension>",
+    "relevant": <true if calculated score >= 6.0, false otherwise>
 }}
 """
     
@@ -99,17 +110,34 @@ Provide your assessment in JSON format:
         if json_match:
             try:
                 result = json.loads(json_match.group(0))
-                score = float(result.get('score', 5))  # Default to 5 if missing
-                reasoning = result.get('reasoning', 'No reasoning provided')
-                relevant = result.get('relevant', score >= DEFAULT_SUITABILITY_THRESHOLD)
                 
-                # STRICT clamp to 1-9 range - LLM might return 10, we must enforce
-                if score > 9.0:
-                    logger.warning(f"LLM returned score {score}, clamping to 9.0")
-                    score = 9.0
-                elif score < 1.0:
-                    logger.warning(f"LLM returned score {score}, clamping to 1.0")
-                    score = 1.0
+                # Calculate score from five dimensions
+                historical = float(result.get('historical_interest', 50))
+                cultural = float(result.get('cultural_interest', 50))
+                quirky = float(result.get('quirky_interest', 50))
+                economic = float(result.get('economic_importance', 50))
+                political = float(result.get('political_importance', 50))
+                
+                # Clamp each dimension to 1-100
+                historical = max(1.0, min(100.0, historical))
+                cultural = max(1.0, min(100.0, cultural))
+                quirky = max(1.0, min(100.0, quirky))
+                economic = max(1.0, min(100.0, economic))
+                political = max(1.0, min(100.0, political))
+                
+                # Average the five dimensions
+                average = (historical + cultural + quirky + economic + political) / 5.0
+                
+                # Divide by 10 to get final score (1-100 -> 0.1-10, then normalize to 1-9)
+                # Map 1-100 to 1-9 range: (average - 1) / 99 * 8 + 1
+                score = ((average - 1.0) / 99.0) * 8.0 + 1.0
+                
+                reasoning = result.get('reasoning', 'No reasoning provided')
+                if not reasoning or reasoning == 'No reasoning provided':
+                    # Build reasoning from dimension scores
+                    reasoning = f"Historical: {historical:.0f}/100, Cultural: {cultural:.0f}/100, Quirky: {quirky:.0f}/100, Economic: {economic:.0f}/100, Political: {political:.0f}/100. Average: {average:.1f}/100."
+                
+                relevant = result.get('relevant', score >= DEFAULT_SUITABILITY_THRESHOLD)
                 
                 return {
                     'suitability_score': round(score, 1),
@@ -119,16 +147,39 @@ Provide your assessment in JSON format:
             except (json.JSONDecodeError, ValueError, KeyError) as e:
                 logger.warning(f"Could not parse LLM JSON response: {e}")
         
-        # Fallback: try to extract score from text
-        score_match = re.search(r'score["\s:]*(\d+\.?\d*)', response, re.IGNORECASE)
-        if score_match:
-            score = float(score_match.group(1))
-            score = max(1.0, min(9.0, score))  # Clamp to 1-9 range
-            return {
-                'suitability_score': round(score, 1),
-                'suitability_notes': response[:500],
-                'relevant': score >= DEFAULT_SUITABILITY_THRESHOLD,
-            }
+        # Fallback: try to extract dimension scores from text
+        # Look for patterns like "historical_interest: 75" or "historical: 75"
+        historical = 50.0
+        cultural = 50.0
+        quirky = 50.0
+        economic = 50.0
+        political = 50.0
+        
+        for key in ['historical', 'cultural', 'quirky', 'economic', 'political']:
+            pattern = rf'{key}["\s:]*(\d+\.?\d*)'
+            match = re.search(pattern, response, re.IGNORECASE)
+            if match:
+                val = float(match.group(1))
+                if key == 'historical':
+                    historical = max(1.0, min(100.0, val))
+                elif key == 'cultural':
+                    cultural = max(1.0, min(100.0, val))
+                elif key == 'quirky':
+                    quirky = max(1.0, min(100.0, val))
+                elif key == 'economic':
+                    economic = max(1.0, min(100.0, val))
+                elif key == 'political':
+                    political = max(1.0, min(100.0, val))
+        
+        # Calculate score from dimensions
+        average = (historical + cultural + quirky + economic + political) / 5.0
+        score = ((average - 1.0) / 99.0) * 8.0 + 1.0
+        
+        return {
+            'suitability_score': round(score, 1),
+            'suitability_notes': response[:500],
+            'relevant': score >= DEFAULT_SUITABILITY_THRESHOLD,
+        }
         
         # Complete fallback
         return _fallback_suitability_analysis(title, description)
