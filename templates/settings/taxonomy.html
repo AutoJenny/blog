@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taxonomy Settings - BlogForge</title>
+    <link href="/static/css/dist/main.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        .header-gradient {
+            background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
+        }
+        .taxonomy-item {
+            background-color: #23273a;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        .taxonomy-item-indented {
+            margin-left: 2rem;
+            background-color: #1a1e2e;
+            border-left: 3px solid #6366f1;
+        }
+        .common-assets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .asset-badge {
+            background-color: #374151;
+            color: #e5e7eb;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-dark-bg text-dark-text flex flex-col">
+    {% include 'shared/header.html' %}
+
+    <!-- Main Content -->
+    <main class="flex-grow">
+        <div class="max-w-6xl mx-auto mt-8 bg-dark-bg border border-dark-border rounded-xl shadow-lg p-8">
+            <div class="mb-6">
+                <a href="/settings" class="text-indigo-400 hover:text-indigo-300 inline-flex items-center gap-2 mb-4">
+                    <i class="fas fa-arrow-left"></i> Back to Settings
+                </a>
+                <h1 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-tags text-indigo-400"></i> Taxonomy
+                </h1>
+                <p class="text-dark-text">
+                    Hierarchical view of taxonomy tiers, themes, content types, and formats.
+                </p>
+            </div>
+
+            {% if error %}
+            <div class="bg-red-900 border border-red-700 rounded-lg p-4 mb-6">
+                <p class="text-red-200">Error loading taxonomy data: {{ error }}</p>
+            </div>
+            {% endif %}
+
+            {% if taxonomy_data %}
+                <!-- Themes Tier -->
+                {% if taxonomy_data.theme %}
+                <div class="mb-8">
+                    <div class="bg-[#23273a] rounded-lg border border-dark-border p-6 mb-4">
+                        <h2 class="text-xl font-semibold text-white mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-palette text-indigo-400"></i>
+                            {{ taxonomy_data.theme.tier.display_name }}
+                        </h2>
+                        {% if taxonomy_data.theme.tier.description %}
+                        <p class="text-dark-text text-sm mb-4">{{ taxonomy_data.theme.tier.description }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="space-y-3">
+                        {% for item in taxonomy_data.theme['items'] %}
+                        <div class="taxonomy-item">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-semibold text-white mb-1">{{ item.display_name }}</h3>
+                                    <p class="text-dark-text text-sm mb-2">{{ item.description or 'No description' }}</p>
+                                    <div class="flex items-center gap-4 text-xs text-dark-text">
+                                        <span><strong>Slug:</strong> <code class="bg-[#0a0c12] px-2 py-1 rounded">{{ item.slug }}</code></span>
+                                        {% if item.illustration_method %}
+                                        <span><strong>Illustration Method:</strong> <span class="px-2 py-1 rounded {% if item.illustration_method == 'Photo-harvesting' %}bg-blue-900 text-blue-200{% else %}bg-purple-900 text-purple-200{% endif %}">{{ item.illustration_method }}</span></span>
+                                        {% endif %}
+                                    </div>
+                                    {% if item.common_assets %}
+                                        {% if item.common_assets is iterable and item.common_assets is not string %}
+                                            {% if item.common_assets|length > 0 %}
+                                            <div class="common-assets mt-2">
+                                                {% for asset in item.common_assets %}
+                                                <span class="asset-badge">{{ asset }}</span>
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Content Types under this Theme -->
+                            {% if taxonomy_data.content_type and item.slug in taxonomy_data.content_type.by_theme %}
+                            <div class="mt-4 pt-4 border-t border-dark-border">
+                                <h4 class="text-sm font-semibold text-indigo-400 mb-3">Content Types:</h4>
+                                <div class="space-y-2">
+                                    {% for content_item in taxonomy_data.content_type.by_theme[item.slug]['items'] %}
+                                    <div class="taxonomy-item-indented">
+                                        <h5 class="text-base font-semibold text-white mb-1">{{ content_item.display_name }}</h5>
+                                        <p class="text-dark-text text-sm mb-2">{{ content_item.description or 'No description' }}</p>
+                                        <div class="flex items-center gap-4 text-xs text-dark-text">
+                                            <span><strong>Slug:</strong> <code class="bg-[#0a0c12] px-2 py-1 rounded">{{ content_item.slug }}</code></span>
+                                            {% if content_item.illustration_method %}
+                                            <span><strong>Illustration Method:</strong> <span class="px-2 py-1 rounded {% if content_item.illustration_method == 'Photo-harvesting' %}bg-blue-900 text-blue-200{% else %}bg-purple-900 text-purple-200{% endif %}">{{ content_item.illustration_method }}</span></span>
+                                            {% endif %}
+                                        </div>
+                                        {% if content_item.common_assets %}
+                                            {% if content_item.common_assets is iterable and content_item.common_assets is not string %}
+                                                {% if content_item.common_assets|length > 0 %}
+                                                <div class="common-assets mt-2">
+                                                    {% for asset in content_item.common_assets %}
+                                                    <span class="asset-badge">{{ asset }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Formats Tier -->
+                {% if taxonomy_data.format %}
+                <div class="mb-8">
+                    <div class="bg-[#23273a] rounded-lg border border-dark-border p-6 mb-4">
+                        <h2 class="text-xl font-semibold text-white mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-file-alt text-indigo-400"></i>
+                            {{ taxonomy_data.format.tier.display_name }}
+                        </h2>
+                        {% if taxonomy_data.format.tier.description %}
+                        <p class="text-dark-text text-sm mb-4">{{ taxonomy_data.format.tier.description }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {% for item in taxonomy_data.format['items'] %}
+                        <div class="taxonomy-item">
+                            <h3 class="text-lg font-semibold text-white mb-1">{{ item.display_name }}</h3>
+                            <p class="text-dark-text text-sm mb-2">{{ item.description or 'No description' }}</p>
+                            <div class="flex items-center gap-4 text-xs text-dark-text">
+                                <span><strong>Slug:</strong> <code class="bg-[#0a0c12] px-2 py-1 rounded">{{ item.slug }}</code></span>
+                            </div>
+                            {% if item.common_assets %}
+                                {% if item.common_assets is iterable and item.common_assets is not string %}
+                                    {% if item.common_assets|length > 0 %}
+                                    <div class="common-assets mt-2">
+                                        {% for asset in item.common_assets %}
+                                        <span class="asset-badge">{{ asset }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+            {% else %}
+            <div class="bg-[#23273a] rounded-lg border border-dark-border p-6 text-center">
+                <p class="text-dark-text">No taxonomy data available.</p>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-indigo-950 border-t border-dark-border py-6 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-dark-text">
+                &copy; 2025 BlogForge. All rights reserved.
+            </p>
+        </div>
+    </footer>
+</body>
+</html>
+
