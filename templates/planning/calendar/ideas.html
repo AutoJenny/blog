@@ -12,6 +12,15 @@
     <!-- Include condensed header -->
     {% set page_title = 'Planning' %}
     {% set mode = mode|default('post-based') %}
+    <script>
+    window.postId = {{ post_id }};
+    {% if year and week_number %}
+    window.year = {{ year }};
+    window.weekNumber = {{ week_number }};
+    {% endif %}
+    window.currentStage = 'planning';
+    window.currentSubstage = 'ideas';
+    </script>
     {% include 'shared/blog_pipeline_header.html' %}
     
     {% block process_content %}

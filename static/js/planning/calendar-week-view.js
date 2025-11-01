@@ -189,6 +189,15 @@ function escapeHtml(text) {
 async function loadWeek(year, weekNumber) {
   document.getElementById('week-year').textContent = String(year);
   document.getElementById('week-number').textContent = String(weekNumber);
+  
+  // Set window variables for header access
+  window.year = year;
+  window.weekNumber = weekNumber;
+  
+  // Update header week info and theme
+  if (typeof blogPipelineHeader !== 'undefined' && blogPipelineHeader.updateWeekAndTheme) {
+    await blogPipelineHeader.updateWeekAndTheme();
+  }
 
   const weekStart = getWeekStartDate(year, weekNumber);
   const dates = [];

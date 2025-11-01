@@ -17,6 +17,31 @@
     color: #f1f5f9;
     margin: 0;
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.pipeline-title-prefix {
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+.pipeline-title-week-info {
+    color: #cbd5e1;
+    font-weight: 500;
+}
+
+.pipeline-title-separator {
+    color: #64748b;
+    margin: 0 0.5rem;
+}
+
+.pipeline-title-theme {
+    color: #f97316;
+    font-weight: 600;
 }
 
 /* Post Details Line */
