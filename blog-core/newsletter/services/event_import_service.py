@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 from datetime import datetime, timedelta
 import logging
+from psycopg.types.json import Json
 from config.database import db_manager
 from newsletter.services.deduplication_service import check_calendar_event_duplicate, should_skip_item
 
@@ -127,7 +128,7 @@ def import_event_to_calendar(
                 year,
                 'event',
                 1,  # Default priority
-                {'source': source_name, 'location': location, 'url': url} if url or location else {'source': source_name},
+                Json({'source': source_name, 'location': location, 'url': url} if url or location else {'source': source_name}),
                 False  # Not recurring by default
             ))
             
