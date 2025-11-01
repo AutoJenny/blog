@@ -374,6 +374,21 @@ def process_news_with_synopsis(item: Dict[str, Any], cache_results: bool = True)
     logger.info(f"Generating synopsis for: {title}")
     result = generate_article_synopsis(title, article_content, url)
     
+    # Post-process: Detect crime/local-only keywords and cap score if needed
+    # This is a safety net in case LLM doesn't follow instructions perfectly
+    title_lower = title.lower()
+    crime_keywords = ['arrested', 'arrest', 'charged', 'charge', 'murder', 'killed', 'death', 'dead', 
+                     'fire', 'crime', 'assault', 'attack', 'stabbing', 'shooting', 'robbery', 'theft',
+                     'breach', 'data breach', 'hack', 'hacking', 'violence', 'incident']
+    
+    is_crime_story = any(kw in title_lower for kw in crime_keywords)
+    
+    if is_crime_story and result['suitability_score'] > 2.0:
+        # Force crime stories to max 2.0 regardless of LLM score
+        logger.info(f"Capping crime story score from {result['suitability_score']} to 2.0: {title[:50]}")
+        result['suitability_score'] = min(2.0, result['suitability_score'])
+        result['suitability_notes'] = f"{result['suitability_notes']} [Auto-capped: crime story detected]"
+    
     # Note: We return the item even if below threshold - let caller decide what to do with it
     # This allows re-analysis to update ALL scores, not just those above threshold
     
@@ -496,6 +511,21 @@ def get_news_items(days_back: int = 7) -> List[Dict[str, Any]]:
           AND (
             suitability_score >= 3.0
             OR suitability_score IS NULL
+          )
+          -- Exclude crime stories that scored too high (likely analyzed with old system)
+          AND NOT (
+            suitability_score > 2.0
+            AND (
+              LOWER(title) LIKE '%arrested%' 
+              OR LOWER(title) LIKE '%arrest%'
+              OR LOWER(title) LIKE '%charged%'
+              OR LOWER(title) LIKE '%murder%'
+              OR LOWER(title) LIKE '%killed%'
+              OR LOWER(title) LIKE '%dead%'
+              OR LOWER(title) LIKE '%death%'
+              OR (LOWER(title) LIKE '%fire%' AND LOWER(title) LIKE '%found%')
+              OR LOWER(title) LIKE '%breach%'
+            )
           )
         ORDER BY 
           source_url_hash,
