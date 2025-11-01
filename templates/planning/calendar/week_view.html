@@ -55,13 +55,34 @@
         </div>
 
         <div class="week-grid week-grid-headers">
-            <div class="day-header" data-day="1"><div class="day-title">Mon</div></div>
-            <div class="day-header" data-day="2"><div class="day-title">Tue</div></div>
-            <div class="day-header" data-day="3"><div class="day-title">Wed</div></div>
-            <div class="day-header" data-day="4"><div class="day-title">Thu</div></div>
-            <div class="day-header" data-day="5"><div class="day-title">Fri</div></div>
-            <div class="day-header" data-day="6"><div class="day-title">Sat</div></div>
-            <div class="day-header" data-day="7"><div class="day-title">Sun</div></div>
+            <div class="day-header" data-day="1">
+                <div class="day-title">Mon</div>
+                <div class="social-focus" data-day="1"></div>
+            </div>
+            <div class="day-header" data-day="2">
+                <div class="day-title">Tue</div>
+                <div class="social-focus" data-day="2"></div>
+            </div>
+            <div class="day-header" data-day="3">
+                <div class="day-title">Wed</div>
+                <div class="social-focus" data-day="3"></div>
+            </div>
+            <div class="day-header" data-day="4">
+                <div class="day-title">Thu</div>
+                <div class="social-focus" data-day="4"></div>
+            </div>
+            <div class="day-header" data-day="5">
+                <div class="day-title">Fri</div>
+                <div class="social-focus" data-day="5"></div>
+            </div>
+            <div class="day-header" data-day="6">
+                <div class="day-title">Sat</div>
+                <div class="social-focus" data-day="6"></div>
+            </div>
+            <div class="day-header" data-day="7">
+                <div class="day-title">Sun</div>
+                <div class="social-focus" data-day="7"></div>
+            </div>
         </div>
 
         <!-- Horizontal rows aligned with day columns -->
@@ -180,8 +201,11 @@
 .week-grid { display:grid; grid-template-columns: repeat(7, 1fr); gap:8px; }
 .week-grid-headers { margin-bottom: 0.5rem; }
 .day-header { background:#0f172a; border:1px solid #334155; border-radius:8px; padding:0; }
-.day-header .day-title { padding:.5rem .75rem; border-bottom:none; color:#94a3b8; font-weight:600; display:flex; align-items:center; justify-content:space-between; }
+.day-header .day-title { padding:.5rem .75rem .25rem .75rem; border-bottom:none; color:#94a3b8; font-weight:600; display:flex; align-items:center; justify-content:space-between; }
 .day-header .day-title .day-num { color:#cbd5e1; font-weight:700; }
+.day-header .social-focus { padding:0 .75rem .5rem .75rem; font-size:0.75rem; color:#60a5fa; cursor:pointer; transition:color 0.2s; }
+.day-header .social-focus:hover { color:#93c5fd; text-decoration:underline; }
+.day-header .social-focus.empty { color:#64748b; font-style:italic; }
 .rows-container { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
 .row-section { display: flex; flex-direction: column; gap: 0.5rem; }
 .row-section.hidden { display: none; }
@@ -260,8 +284,20 @@ window.currentSubstage = 'week-view';
 <script type="module" src="/static/js/planning/calendar-week-view.js"></script>
 <script src="{{ url_for('static', filename='js/planning/idea-modal.js') }}"></script>
 
+<script>
+// Utility function for escaping HTML
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+</script>
+
 <!-- Include the idea modal component -->
 {% include 'planning/calendar/idea_modal.html' %}
+
+<!-- Include the social focus modal component -->
+{% include 'planning/calendar/social_focus_modal.html' %}
 
 <script>
     // Initialize idea modal and hook up click handlers after DOM loads
