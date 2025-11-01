@@ -263,6 +263,9 @@ Provide your assessment in JSON format:
                 # Map 1-100 average to 1-9 range: (average - 1) / 99 * 8 + 1
                 score = ((average - 1.0) / 99.0) * 8.0 + 1.0
                 
+                # Final clamp to ensure 1-9 range (safety check in case average somehow > 100)
+                score = max(1.0, min(9.0, score))
+                
                 reasoning = result.get('reasoning', 'No reasoning provided')
                 if not reasoning or reasoning == 'No reasoning provided':
                     # Build reasoning from dimension scores
@@ -310,6 +313,8 @@ Provide your assessment in JSON format:
         # Calculate score from dimensions
         average = (historical + cultural + quirky + economic + political) / 5.0
         score = ((average - 1.0) / 99.0) * 8.0 + 1.0
+        # Final clamp to ensure 1-9 range
+        score = max(1.0, min(9.0, score))
         
         # Generate basic synopsis from article content
         synopsis = _extract_basic_synopsis(title, article_content)
