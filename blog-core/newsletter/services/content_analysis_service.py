@@ -45,27 +45,61 @@ def analyze_news_suitability(title: str, description: Optional[str] = None, url:
             return _fallback_suitability_analysis(title, description)
     
     # Construct prompt for content analysis
-    prompt = f"""You are analyzing news articles for a Scottish heritage and culture newsletter. 
-Evaluate this article's suitability for inclusion in a newsletter focused on Scottish heritage, culture, community, and related topics.
+    prompt = f"""You are analyzing news articles for a Scottish heritage and culture newsletter with an international diaspora audience (especially US-Scots, Canadian-Scots, Australians of Scottish descent, etc.). 
+
+The newsletter focuses on Scottish heritage, culture, traditions, history, and topics of lasting significance. Be STRICT and use the FULL 0-10 range. Most articles should score 3-7, with 10/10 reserved for truly exceptional stories of long-term historical or cultural importance.
 
 Article Title: {title}
 {f"Description: {description[:500]}" if description else ""}
 
-Rate the article's suitability on a scale of 0-10, where:
-- 10: Highly relevant (directly about Scottish heritage, culture, traditions, history, notable Scottish people/places/events)
-- 7-9: Very relevant (Scottish topics, community stories, cultural events, regional news)
-- 5-6: Moderately relevant (peripheral Scottish connection, could be tangentially relevant)
-- 3-4: Somewhat relevant (weak connection, might be interesting but off-topic)
-- 0-2: Not relevant (no clear Scottish connection, unrelated topics)
+Rate the article's suitability on a scale of 0-10, with these STRICT criteria:
+
+10: EXCEPTIONAL - Stories of lasting historical/cultural significance that would interest international diaspora:
+   - Major discoveries about Scottish history, archaeology, heritage sites
+   - Significant cultural revivals, language preservation, traditional arts
+   - Major museum/archive acquisitions of Scottish historical importance
+   - Stories about internationally known Scottish figures, landmarks, or traditions
+
+8-9: VERY HIGH - Substantial Scottish cultural/historical content of interest beyond Scotland:
+   - Important cultural events, festivals, traditions with broader appeal
+   - Notable Scottish heritage sites, museums, cultural institutions
+   - Stories about Scottish diaspora communities globally
+   - Significant developments in Scottish arts, literature, music with cultural depth
+
+6-7: MODERATE-HIGH - Scottish content with some broader appeal:
+   - Regional news with cultural/historical context
+   - Current events tied to Scottish identity or traditions
+   - Community stories that reflect Scottish culture
+   - Sports/cultural events of regional significance (e.g., Highland Games)
+
+4-5: MODERATE - Local Scottish news with limited diaspora appeal:
+   - Local current events, politics, local sports
+   - Obituaries of regional figures (unless historically significant)
+   - Daily news with Scottish setting but no cultural depth
+   - Stories that happen to be in Scotland but aren't about Scottish culture
+
+2-3: LOW - Minimal Scottish connection or purely local interest:
+   - General UK news with weak Scottish angle
+   - Local business, politics without cultural significance
+   - Obituaries of minor local figures
+   - Sports news (local teams, managers) without broader cultural context
+
+0-1: NOT RELEVANT - No meaningful Scottish heritage/culture connection
+
+CRITICAL DISTINCTIONS:
+- "Rangers/Celtic manager news" = 4-5 (local sports interest, current event, limited diaspora appeal)
+- "Former footballer dies" = 2-3 (local obituary, unless internationally known figure)
+- "Archaeological discovery at Scottish castle" = 8-10 (historical significance, diaspora interest)
+- "Scottish language revival program" = 8-10 (cultural significance, diaspora interest)
+
+Use the FULL range. Average scores should be around 5. Reserve 10/10 for truly exceptional stories that would be remembered years from now. Most daily news should score 3-6.
 
 Provide your assessment in JSON format:
 {{
-    "score": <number 0-10>,
-    "reasoning": "<brief explanation of why this score, mention any Scottish connections or why it's not suitable>",
+    "score": <number 0-10, use full range, be strict>,
+    "reasoning": "<explain why this score, specifically address: (1) historical/cultural significance, (2) diaspora appeal, (3) long-term vs short-term interest>",
     "relevant": <true if score >= 6.0, false otherwise>
 }}
-
-Be strict but fair. Only articles with genuine Scottish connections should score 6.0 or higher.
 """
     
     try:
