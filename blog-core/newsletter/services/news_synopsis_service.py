@@ -253,8 +253,8 @@ Provide your assessment in JSON format:
 """
     
     try:
-        # Use available model (mistral:latest or llama3.2:latest)
-        model_name = os.environ.get('DEFAULT_LLM_MODEL', 'mistral:latest')
+        # Use available model (llama3.2:latest or mistral:latest)
+        model_name = os.environ.get('DEFAULT_LLM_MODEL', 'llama3.2:latest')
         response = llm_service.generate(
             prompt=prompt,
             model_name=model_name,

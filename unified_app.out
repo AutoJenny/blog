@@ -3633,3 +3633,46 @@ ValueError: Could not parse LLM JSON response: Expecting ',' delimiter: line 13 
 2025-11-01 21:43:00,038 - werkzeug - INFO -  * Restarting with stat
 2025-11-01 21:43:00,372 - werkzeug - WARNING -  * Debugger is active!
 2025-11-01 21:43:00,378 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 21:43:22,583 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:43:22] "GET /newsletter/news HTTP/1.1" 200 -
+2025-11-01 21:43:22,601 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:43:22] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-01 21:43:22,601 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:43:22] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-01 21:43:22,601 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:43:22] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-01 21:43:22,602 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:43:22] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-01 21:43:22,604 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:43:22] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-01 21:43:22,604 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:43:22] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-01 21:43:22,605 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:43:22] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-01 21:43:22,605 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:43:22] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-01 21:43:22,635 - config.database - INFO - Database connection established
+2025-11-01 21:43:22,642 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:43:22] "GET /newsletter/news/summary?days_back=7&limit=100&sort_by=combined_score HTTP/1.1" 200 -
+2025-11-01 21:45:09,158 - config.database - INFO - Database connection established
+2025-11-01 21:45:09,163 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:45:09] "GET /newsletter/news/summary?days_back=7&limit=100&sort_by=suitability_score HTTP/1.1" 200 -
+2025-11-01 21:47:18,953 - config.database - INFO - Database connection established
+2025-11-01 21:47:18,967 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:47:18] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-01 21:52:39,027 - config.database - INFO - Database connection established
+2025-11-01 21:52:39,033 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:52:39] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-01 21:57:58,999 - config.database - INFO - Database connection established
+2025-11-01 21:57:59,009 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:57:59] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-01 22:03:19,004 - config.database - INFO - Database connection established
+2025-11-01 22:03:19,018 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 22:03:19] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-01 22:08:39,044 - config.database - INFO - Database connection established
+2025-11-01 22:08:39,056 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 22:08:39] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-01 22:13:59,037 - config.database - INFO - Database connection established
+2025-11-01 22:13:59,049 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 22:13:59] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-01 22:19:19,051 - config.database - INFO - Database connection established
+2025-11-01 22:19:19,063 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 22:19:19] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-01 22:24:39,051 - config.database - INFO - Database connection established
+2025-11-01 22:24:39,066 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 22:24:39] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-01 22:29:58,960 - config.database - INFO - Database connection established
+2025-11-01 22:29:58,973 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 22:29:58] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-01 22:32:00,598 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/news_synopsis_service.py', reloading
+2025-11-01 22:32:00,646 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 22:32:00,987 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 22:32:00,993 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 22:32:02,187 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/content_analysis_service.py', reloading
+2025-11-01 22:32:02,234 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 22:32:02,574 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 22:32:02,580 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 22:32:08,058 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/content_analysis_service.py', reloading
+2025-11-01 22:32:08,105 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 22:32:08,436 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 22:32:08,443 - werkzeug - INFO -  * Debugger PIN: 263-852-041
