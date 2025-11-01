@@ -14,13 +14,13 @@ logger = logging.getLogger(__name__)
 
 
 def clean_subscription_text(text: str) -> str:
-    """Remove subscription marketing text and boilerplate from article content.
+    """Remove subscription marketing text, bylines, and boilerplate from article content.
     
     Args:
         text: Article text or synopsis
         
     Returns:
-        Cleaned text with subscription messages removed
+        Cleaned text with subscription messages and bylines removed
     """
     if not text:
         return text
@@ -39,7 +39,24 @@ def clean_subscription_text(text: str) -> str:
         r'Enjoy.*?benefits.*?subscription.*?\.\s*',
     ]
     
+    # Bylines and author credits (typically at start of text)
+    # Order matters - more specific patterns first
+    byline_patterns = [
+        r'^Editor,\s+[A-Z][a-z]+\s+[A-Z][a-z]+\s+[A-Z][a-z]+\s+',  # e.g., "Editor, Fife Free Press "
+        r'^[A-Z][a-z]+\s+Editor,\s+[A-Z][a-z]+\s+[A-Z][a-z]+\s+',  # e.g., "Lifestyle Editor, Publication Name "
+        r'^[A-Z][a-z]+\s+and\s+[a-z]+\s+(?:correspondent|reporter|writer|editor)\s+',  # e.g., "Arts and culture correspondent "
+        r'^[A-Z][a-z]+\s+(?:Editor|Correspondent|Reporter|Writer|Specialist|Journalist|Columnist)\s+',  # e.g., "Digital Reporter ", "Lifestyle Editor "
+        r'^Golf\s+Specialist\s+',  # Specific case
+        r'^Food\s+and\s+drink\s+writer\s+',  # Specific case
+    ]
+    
     cleaned = text
+    
+    # First remove bylines (at start of text)
+    for pattern in byline_patterns:
+        cleaned = re.sub(pattern, '', cleaned, flags=re.IGNORECASE | re.MULTILINE)
+    
+    # Then remove subscription patterns
     for pattern in subscription_patterns:
         # Remove the pattern (case-insensitive, dotall)
         cleaned = re.sub(pattern, '', cleaned, flags=re.IGNORECASE | re.DOTALL)

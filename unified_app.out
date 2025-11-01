@@ -1059,3 +1059,90 @@ NameError: name 'logger' is not defined
 2025-11-01 20:35:00,549 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:35:00] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
 2025-11-01 20:35:00,576 - config.database - INFO - Database connection established
 2025-11-01 20:35:00,580 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:35:00] "GET /newsletter/news/summary?days_back=7 HTTP/1.1" 200 -
+2025-11-01 20:35:44,696 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:35:44] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-11-01 20:35:44,698 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:35:44] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-11-01 20:35:44,699 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:35:44] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-01 20:35:44,703 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:35:44] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
+2025-11-01 20:35:44,703 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:35:44] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
+2025-11-01 20:35:44,703 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:35:44] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
+2025-11-01 20:36:09,170 - config.database - INFO - Database connection established
+2025-11-01 20:36:09,178 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:09] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-01 20:36:23,213 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:23] "GET /newsletter/news HTTP/1.1" 200 -
+2025-11-01 20:36:25,313 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:25] "GET /newsletter/news HTTP/1.1" 200 -
+2025-11-01 20:36:25,329 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:25] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-01 20:36:25,331 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:25] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-01 20:36:25,331 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:25] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-01 20:36:25,332 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:25] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-01 20:36:25,333 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:25] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-01 20:36:25,333 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:25] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-01 20:36:25,334 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:25] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-01 20:36:25,335 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:25] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-01 20:36:25,347 - config.database - INFO - Database connection established
+2025-11-01 20:36:25,351 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:25] "GET /newsletter/news/summary?days_back=7 HTTP/1.1" 200 -
+2025-11-01 20:36:27,607 - config.database - INFO - Database connection established
+2025-11-01 20:36:27,610 - newsletter.jobs.clean_existing_synopses - INFO - Found 12 news items with synopses to clean
+2025-11-01 20:36:27,611 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:27] "POST /newsletter/news/clean HTTP/1.1" 200 -
+2025-11-01 20:36:39,569 - config.database - INFO - Database connection established
+2025-11-01 20:36:39,574 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:39] "GET /newsletter/news/summary?days_back=7 HTTP/1.1" 200 -
+2025-11-01 20:36:41,200 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:41] "GET /newsletter/news HTTP/1.1" 200 -
+2025-11-01 20:36:41,215 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:41] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-01 20:36:41,216 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:41] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-01 20:36:41,218 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:41] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-01 20:36:41,218 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:41] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-01 20:36:41,219 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:41] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-01 20:36:41,219 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:41] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-01 20:36:41,220 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:41] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-01 20:36:41,220 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:41] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-01 20:36:41,231 - config.database - INFO - Database connection established
+2025-11-01 20:36:41,236 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:41] "GET /newsletter/news/summary?days_back=7 HTTP/1.1" 200 -
+2025-11-01 20:36:42,736 - config.database - INFO - Database connection established
+2025-11-01 20:36:42,739 - newsletter.jobs.clean_existing_synopses - INFO - Found 12 news items with synopses to clean
+2025-11-01 20:36:42,741 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:42] "POST /newsletter/news/clean HTTP/1.1" 200 -
+2025-11-01 20:36:48,572 - config.database - INFO - Database connection established
+2025-11-01 20:36:48,577 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:36:48] "GET /newsletter/news/summary?days_back=7 HTTP/1.1" 200 -
+2025-11-01 20:39:35,972 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/news_synopsis_service.py', reloading
+2025-11-01 20:39:36,025 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 20:39:36,364 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 20:39:36,370 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 20:39:37,570 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/news_synopsis_service.py', reloading
+2025-11-01 20:39:37,620 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 20:39:37,940 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 20:39:37,946 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 20:39:50,282 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:39:50] "GET /newsletter/news HTTP/1.1" 200 -
+2025-11-01 20:39:50,300 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:39:50] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-01 20:39:50,300 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:39:50] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-01 20:39:50,301 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:39:50] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-01 20:39:50,301 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:39:50] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-01 20:39:50,302 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:39:50] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-01 20:39:50,302 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:39:50] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-01 20:39:50,304 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:39:50] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-01 20:39:50,304 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:39:50] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-01 20:39:50,327 - config.database - INFO - Database connection established
+2025-11-01 20:39:50,332 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:39:50] "GET /newsletter/news/summary?days_back=7 HTTP/1.1" 200 -
+2025-11-01 20:39:51,029 - config.database - INFO - Database connection established
+2025-11-01 20:39:51,033 - newsletter.jobs.clean_existing_synopses - INFO - Found 12 news items with synopses to clean
+2025-11-01 20:39:51,038 - newsletter.jobs.clean_existing_synopses - DEBUG - Cleaned synopsis for item 156
+2025-11-01 20:39:51,039 - newsletter.jobs.clean_existing_synopses - DEBUG - Cleaned synopsis for item 160
+2025-11-01 20:39:51,040 - newsletter.jobs.clean_existing_synopses - DEBUG - Cleaned synopsis for item 157
+2025-11-01 20:39:51,040 - newsletter.jobs.clean_existing_synopses - DEBUG - Cleaned synopsis for item 161
+2025-11-01 20:39:51,040 - newsletter.jobs.clean_existing_synopses - DEBUG - Cleaned synopsis for item 165
+2025-11-01 20:39:51,041 - newsletter.jobs.clean_existing_synopses - DEBUG - Cleaned synopsis for item 162
+2025-11-01 20:39:51,042 - newsletter.jobs.clean_existing_synopses - DEBUG - Cleaned synopsis for item 158
+2025-11-01 20:39:51,042 - newsletter.jobs.clean_existing_synopses - DEBUG - Cleaned synopsis for item 166
+2025-11-01 20:39:51,042 - newsletter.jobs.clean_existing_synopses - DEBUG - Cleaned synopsis for item 163
+2025-11-01 20:39:51,043 - newsletter.jobs.clean_existing_synopses - DEBUG - Cleaned synopsis for item 159
+2025-11-01 20:39:51,043 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:39:51] "POST /newsletter/news/clean HTTP/1.1" 200 -
+2025-11-01 20:39:53,158 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/news_synopsis_service.py', reloading
+2025-11-01 20:39:53,203 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 20:39:53,528 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 20:39:53,534 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 20:39:53,670 - config.database - INFO - Database connection established
+2025-11-01 20:39:53,675 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:39:53] "GET /newsletter/news/summary?days_back=7 HTTP/1.1" 200 -
+2025-11-01 20:40:09,929 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/news_synopsis_service.py', reloading
+2025-11-01 20:40:09,983 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 20:40:10,313 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 20:40:10,319 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 20:40:22,326 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/news_synopsis_service.py', reloading
+2025-11-01 20:40:22,382 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 20:40:22,741 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 20:40:22,748 - werkzeug - INFO -  * Debugger PIN: 263-852-041
