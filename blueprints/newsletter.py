@@ -493,6 +493,24 @@ def reanalyze_news():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@bp.route('/newsletter/news/clean', methods=['POST'])
+def clean_synopses():
+    """Clean subscription text from existing synopses."""
+    try:
+        from newsletter.jobs.clean_existing_synopses import clean_all_synopses
+        
+        result = clean_all_synopses()
+        
+        return jsonify({
+            'success': True,
+            'message': f"Cleaned {result['updated']} synopses, {result['unchanged']} unchanged",
+            'result': result
+        })
+    except Exception as e:
+        logger.error(f"Error cleaning synopses: {e}", exc_info=True)
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @bp.route('/newsletter/sources')
 def sources_management():
     """Source aggregation management page."""
