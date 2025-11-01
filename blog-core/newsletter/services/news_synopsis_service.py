@@ -241,13 +241,18 @@ Provide your assessment in JSON format:
         if json_match:
             try:
                 result = json.loads(json_match.group(0))
-                score = float(result.get('score', 0))
+                score = float(result.get('score', 5))  # Default to 5 if missing
                 reasoning = result.get('reasoning', 'No reasoning provided')
                 synopsis = result.get('synopsis', 'No synopsis generated')
                 relevant = result.get('relevant', score >= 6.0)
                 
-                # Clamp score to 1-9 (diaspora-focused range)
-                score = max(1.0, min(9.0, score))
+                # STRICT clamp to 1-9 range - LLM might return 10, we must enforce
+                if score > 9.0:
+                    logger.warning(f"LLM returned score {score}, clamping to 9.0")
+                    score = 9.0
+                elif score < 1.0:
+                    logger.warning(f"LLM returned score {score}, clamping to 1.0")
+                    score = 1.0
                 
                 # Note: No post-processing rules - let LLM be nuanced
                 # Scores are clamped to 1-9 range above
@@ -363,10 +368,8 @@ def process_news_with_synopsis(item: Dict[str, Any], cache_results: bool = True)
     logger.info(f"Generating synopsis for: {title}")
     result = generate_article_synopsis(title, article_content, url)
     
-    # Only keep items that pass threshold
-    if result['suitability_score'] < 6.0:
-        logger.debug(f"Article below threshold (score {result['suitability_score']}): {title[:50]}")
-        return None
+    # Note: We return the item even if below threshold - let caller decide what to do with it
+    # This allows re-analysis to update ALL scores, not just those above threshold
     
     # Update item with synopsis and analysis
     # Ensure synopsis is cleaned (in case it wasn't cleaned during generation)

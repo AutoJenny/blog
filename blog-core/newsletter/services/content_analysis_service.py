@@ -99,12 +99,17 @@ Provide your assessment in JSON format:
         if json_match:
             try:
                 result = json.loads(json_match.group(0))
-                score = float(result.get('score', 0))
+                score = float(result.get('score', 5))  # Default to 5 if missing
                 reasoning = result.get('reasoning', 'No reasoning provided')
                 relevant = result.get('relevant', score >= DEFAULT_SUITABILITY_THRESHOLD)
                 
-                # Clamp score to 1-9 (diaspora-focused range, averaging 5)
-                score = max(1.0, min(9.0, score))
+                # STRICT clamp to 1-9 range - LLM might return 10, we must enforce
+                if score > 9.0:
+                    logger.warning(f"LLM returned score {score}, clamping to 9.0")
+                    score = 9.0
+                elif score < 1.0:
+                    logger.warning(f"LLM returned score {score}, clamping to 1.0")
+                    score = 1.0
                 
                 return {
                     'suitability_score': round(score, 1),
@@ -150,16 +155,16 @@ def _fallback_suitability_analysis(title: str, description: Optional[str] = None
     # Count keyword matches
     matches = sum(1 for keyword in scottish_keywords if keyword in text_to_check)
     
-    # Simple scoring: 1 point per keyword match, max 8
-    score = min(8.0, matches * 1.5)
+    # Simple scoring: 1 point per keyword match, max 7
+    score = min(7.0, matches * 1.2)
     
     # Boost score if multiple keywords
     if matches >= 3:
-        score += 1.0
+        score += 0.5
     if matches >= 5:
-        score += 1.0
+        score += 0.5
     
-    score = min(10.0, score)
+    score = min(9.0, max(1.0, score))  # Clamp to 1-9 range
     
     return {
         'suitability_score': round(score, 1),
