@@ -271,9 +271,6 @@ Provide your assessment in JSON format:
                 synopsis = result.get('synopsis', 'No synopsis generated')
                 relevant = result.get('relevant', score >= 6.0)
                 
-                # Note: No post-processing rules - let LLM be nuanced
-                # Scores are clamped to 1-9 range above
-                
                 # Clean subscription text from synopsis
                 synopsis = clean_subscription_text(synopsis)
                 
@@ -285,6 +282,7 @@ Provide your assessment in JSON format:
                 }
             except (json.JSONDecodeError, ValueError, KeyError) as e:
                 logger.warning(f"Could not parse LLM JSON response: {e}")
+                # Fall through to dimension extraction fallback
         
         # Fallback: try to extract dimension scores from text
         historical = 50.0
@@ -324,9 +322,6 @@ Provide your assessment in JSON format:
             'synopsis': synopsis,
             'relevant': score >= 6.0,
         }
-    
-    # Complete fallback if dimension extraction failed
-    return _fallback_synopsis(title, article_content)
         
     except Exception as e:
         logger.error(f"Error in LLM synopsis generation: {e}", exc_info=True)
