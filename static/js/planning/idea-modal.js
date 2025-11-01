@@ -172,6 +172,7 @@ class IdeaModal {
         document.getElementById('idea-modal-close')?.addEventListener('click', () => this.close());
         document.getElementById('idea-modal-cancel')?.addEventListener('click', () => this.close());
         document.getElementById('idea-modal-save')?.addEventListener('click', () => this.save());
+        document.getElementById('idea-modal-delete')?.addEventListener('click', () => this.delete());
         
         // Close on overlay click
         document.getElementById('idea-modal')?.addEventListener('click', (e) => {
@@ -262,6 +263,16 @@ class IdeaModal {
             document.getElementById('type-event').checked = false;
             this.resetForm();
         }
+        
+        // Show delete button only for existing items (ideas or events)
+        const deleteBtn = document.getElementById('idea-modal-delete');
+        if (deleteBtn) {
+            if ((this.currentIdeaId || this.currentEventId)) {
+                deleteBtn.style.display = 'block';
+            } else {
+                deleteBtn.style.display = 'none';
+            }
+        }
 
         // Apply type-specific field visibility
         this.switchType(this.currentType);
@@ -278,6 +289,12 @@ class IdeaModal {
         this.currentType = type;
         this.currentIdeaId = null;
         this.currentEventId = null;
+        
+        // Hide delete button for new items
+        const deleteBtn = document.getElementById('idea-modal-delete');
+        if (deleteBtn) {
+            deleteBtn.style.display = 'none';
+        }
         
         // Check the appropriate radio button
         document.getElementById('type-theme').checked = (type === 'theme');
@@ -1235,6 +1252,54 @@ class IdeaModal {
         } catch (error) {
             console.error('Error saving idea:', error);
             alert('Failed to save idea: ' + error.message);
+        }
+    }
+
+    async delete() {
+        if (!this.currentIdeaId && !this.currentEventId) {
+            return;
+        }
+        
+        if (!confirm('Are you sure you want to delete this item? This action cannot be undone.')) {
+            return;
+        }
+        
+        try {
+            let url, itemType;
+            if (this.currentEventId) {
+                url = `/planning/api/calendar/events/${this.currentEventId}`;
+                itemType = 'event';
+            } else if (this.currentIdeaId) {
+                url = `/planning/api/calendar/ideas/${this.currentIdeaId}`;
+                itemType = 'idea';
+            } else {
+                return;
+            }
+            
+            const response = await fetch(url, {
+                method: 'DELETE'
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || `Failed to delete ${itemType}`);
+            }
+            
+            alert(`${itemType.charAt(0).toUpperCase() + itemType.slice(1)} deleted successfully`);
+            this.close();
+            
+            // Trigger page reload or refresh calendar if we're on a calendar page
+            if (window.location.pathname.includes('/calendar')) {
+                window.location.reload();
+            } else {
+                // Trigger a custom event that pages can listen to
+                window.dispatchEvent(new CustomEvent('idea-deleted', {
+                    detail: { id: this.currentIdeaId || this.currentEventId, type: itemType }
+                }));
+            }
+        } catch (error) {
+            console.error('Error deleting item:', error);
+            alert(`Failed to delete: ${error.message}`);
         }
     }
 

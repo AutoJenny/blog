@@ -20,10 +20,29 @@
 
         <div class="week-controls">
             <button class="nav-btn" id="prev-week"><i class="fas fa-chevron-left"></i></button>
+            <button class="nav-btn nav-btn-text" id="this-week-btn" title="Jump to current week">This week</button>
             <div class="week-meta">
                 <div class="year">Year: <span id="week-year"></span></div>
                 <div class="week">Week: <span id="week-number"></span></div>
                 <div class="dates" id="week-dates"></div>
+            </div>
+            <div class="week-picker-container">
+                <button class="nav-btn nav-btn-text" id="week-picker-btn" title="Pick a week"><i class="fas fa-calendar"></i></button>
+                <div class="week-picker-popup" id="week-picker-popup" style="display: none;">
+                    <div class="week-picker-content">
+                        <div class="week-picker-header">
+                            <button class="week-picker-nav" id="picker-year-prev"><i class="fas fa-chevron-left"></i></button>
+                            <select id="picker-year" class="week-picker-select"></select>
+                            <button class="week-picker-nav" id="picker-year-next"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div class="week-picker-months" id="week-picker-months">
+                            <!-- Months and weeks will be generated here -->
+                        </div>
+                        <div class="week-picker-actions">
+                            <button class="week-picker-btn week-picker-cancel" id="week-picker-cancel">Cancel</button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <button class="nav-btn" id="next-week"><i class="fas fa-chevron-right"></i></button>
         </div>
@@ -136,7 +155,28 @@
 .week-themes .item.idea.selected { background:#ea580c !important; color:#0f172a !important; border-color:#c2410c !important; }
 .nav-btn { padding:.5rem; background:transparent; border:1px solid #475569; border-radius:4px; color:#94a3b8; cursor:pointer; }
 .nav-btn:hover { background:#334155; color:#e2e8f0; }
+.nav-btn-text { padding:.5rem .75rem; font-size:.875rem; }
 .week-meta { display:flex; gap:1.25rem; color:#cbd5e1; font-weight:600; }
+.week-picker-container { position:relative; }
+.week-picker-popup { position:absolute; top:calc(100% + 8px); right:0; background:#1e293b; border:1px solid #334155; border-radius:8px; padding:1rem; z-index:1000; min-width:320px; max-width:400px; box-shadow:0 10px 25px rgba(0,0,0,0.5); }
+.week-picker-content { display:flex; flex-direction:column; gap:.75rem; }
+.week-picker-header { display:flex; align-items:center; justify-content:center; gap:.5rem; margin-bottom:.5rem; }
+.week-picker-nav { padding:.375rem .5rem; background:transparent; border:1px solid #475569; border-radius:4px; color:#94a3b8; cursor:pointer; font-size:.75rem; }
+.week-picker-nav:hover { background:#334155; color:#e2e8f0; }
+.week-picker-select { padding:.5rem .75rem; background:#0f172a; border:1px solid #334155; border-radius:4px; color:#e2e8f0; font-size:.875rem; font-weight:600; cursor:pointer; }
+.week-picker-select:focus { outline:none; border-color:#3b82f6; }
+.week-picker-months { display:flex; flex-direction:column; gap:1rem; max-height:400px; overflow-y:auto; }
+.week-picker-month { border-bottom:1px solid #334155; padding-bottom:.75rem; }
+.week-picker-month:last-child { border-bottom:none; }
+.week-picker-month-header { color:#cbd5e1; font-weight:600; font-size:.875rem; margin-bottom:.5rem; padding:.25rem 0; }
+.week-picker-weeks { display:flex; flex-wrap:wrap; gap:.375rem; }
+.week-picker-week { padding:.375rem .625rem; background:#0f172a; border:1px solid #334155; border-radius:4px; color:#cbd5e1; font-size:.8125rem; cursor:pointer; transition:all 0.2s; }
+.week-picker-week:hover { background:#334155; border-color:#3b82f6; color:#e2e8f0; }
+.week-picker-week.selected { background:#3b82f6; border-color:#3b82f6; color:#fff; font-weight:600; }
+.week-picker-actions { display:flex; gap:.5rem; justify-content:flex-end; margin-top:.5rem; }
+.week-picker-btn { padding:.375rem .75rem; border-radius:4px; border:1px solid #475569; font-size:.875rem; cursor:pointer; }
+.week-picker-cancel { background:transparent; color:#94a3b8; }
+.week-picker-cancel:hover { background:#334155; }
 .week-grid { display:grid; grid-template-columns: repeat(7, 1fr); gap:8px; }
 .week-grid-headers { margin-bottom: 0.5rem; }
 .day-header { background:#0f172a; border:1px solid #334155; border-radius:8px; padding:0; }

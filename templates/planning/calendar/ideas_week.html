@@ -487,9 +487,31 @@ async function loadIdeasForWeek() {
             // API returns {ideas: [...], success: true, week_number: X} or just an array
             availableIdeas = Array.isArray(data) ? data : (data.ideas || []);
         }
+        
+        // Check for existing selection in calendar_schedule
+        let existingSelection = null;
+        try {
+            const scheduleResp = await fetch(`/planning/api/calendar/schedule/${window.year}/${window.weekNumber}`);
+            if (scheduleResp.ok) {
+                const scheduleData = await scheduleResp.json();
+                if (scheduleData.schedule && scheduleData.schedule.length > 0) {
+                    // Find first schedule entry with an idea_id
+                    const scheduleWithIdea = scheduleData.schedule.find(s => s.idea_id);
+                    if (scheduleWithIdea && scheduleWithIdea.idea_id) {
+                        existingSelection = availableIdeas.find(i => i.id === scheduleWithIdea.idea_id);
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('Error checking schedule:', e);
+        }
+        
         if (availableIdeas && availableIdeas.length > 0) {
-            // Preserve previous selection by id if present
-            if (selectedIdea) {
+            // Restore existing selection if found
+            if (existingSelection) {
+                selectedIdea = existingSelection;
+            } else if (selectedIdea) {
+                // Preserve previous selection by id if present
                 const found = availableIdeas.find(i => i.id === selectedIdea.id);
                 if (found) {
                     selectedIdea = found;
@@ -562,13 +584,32 @@ function displayAvailableIdeas() {
     });
 }
 
-function selectIdea(idea) {
+async function selectIdea(idea) {
     selectedIdea = idea;
     displaySelectedIdea();
     document.getElementById('confirm-btn').disabled = false;
     
     // Re-render available list to exclude the selected one
     displayAvailableIdeas();
+    
+    // Save selection to calendar_schedule so it persists
+    try {
+        const resp = await fetch('/planning/api/calendar/select-theme', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                idea_id: idea.id,
+                year: window.year,
+                week_number: window.weekNumber
+            })
+        });
+        const result = await resp.json();
+        if (!resp.ok || !result.success) {
+            console.warn('Failed to save theme selection:', result.error);
+        }
+    } catch (e) {
+        console.warn('Error saving theme selection:', e);
+    }
     
     // Update status for the selected idea
     updateSelectedStatus();

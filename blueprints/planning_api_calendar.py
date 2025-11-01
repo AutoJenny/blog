@@ -226,7 +226,7 @@ def api_calendar_schedule(year, week_number):
     try:
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
-                SELECT cs.id, cs.post_id, cs.year, cs.week_number, cs.scheduled_date,
+                SELECT cs.id, cs.post_id, cs.idea_id, cs.year, cs.week_number, cs.scheduled_date,
                        cs.created_at, cs.updated_at,
                        p.title as post_title, p.status as post_status,
                        pd.idea_seed as post_idea_seed
@@ -715,6 +715,84 @@ def api_delete_calendar_idea(idea_id: int):
         return jsonify({'success': True})
     except Exception as e:
         logger.error(f"Error deleting calendar idea: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+def api_delete_calendar_event(event_id: int):
+    """Delete a calendar event."""
+    try:
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("DELETE FROM calendar_events WHERE id = %s RETURNING id", (event_id,))
+                row = cursor.fetchone()
+                conn.commit()
+        if not row:
+            return jsonify({'success': False, 'error': 'Event not found'}), 404
+        return jsonify({'success': True})
+    except Exception as e:
+        logger.error(f"Error deleting calendar event: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+def api_select_theme_idea():
+    """Select a theme/idea for a specific week/year by saving to calendar_schedule.
+    This allows themes to persist their selection before a post is created.
+    """
+    try:
+        from flask import request
+        data = _safe_parse_json_request() or {}
+        idea_id = data.get('idea_id')
+        year = data.get('year')
+        week_number = data.get('week_number')
+        
+        if not idea_id:
+            return jsonify({'success': False, 'error': 'idea_id is required'}), 400
+        if not year or not week_number:
+            return jsonify({'success': False, 'error': 'year and week_number are required'}), 400
+        
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cursor:
+                # Verify idea exists
+                cursor.execute("SELECT id, item_classification FROM calendar_ideas WHERE id = %s", (idea_id,))
+                idea = cursor.fetchone()
+                if not idea:
+                    return jsonify({'success': False, 'error': 'Idea not found'}), 404
+                
+                # Check if there's already a schedule entry for this week/year
+                cursor.execute("""
+                    SELECT id, idea_id, post_id 
+                    FROM calendar_schedule 
+                    WHERE year = %s AND week_number = %s
+                    LIMIT 1
+                """, (year, week_number))
+                existing = cursor.fetchone()
+                
+                if existing:
+                    # Update existing schedule entry to use this idea_id
+                    # Don't overwrite post_id if it exists (preserve existing post association)
+                    cursor.execute("""
+                        UPDATE calendar_schedule 
+                        SET idea_id = %s, updated_at = NOW()
+                        WHERE id = %s
+                        RETURNING id, idea_id, post_id
+                    """, (idea_id, existing['id']))
+                else:
+                    # Create new schedule entry with idea_id but no post_id yet
+                    cursor.execute("""
+                        INSERT INTO calendar_schedule (year, week_number, idea_id, status, created_at, updated_at)
+                        VALUES (%s, %s, %s, 'planned', NOW(), NOW())
+                        RETURNING id, idea_id, post_id
+                    """, (year, week_number, idea_id))
+                
+                result = cursor.fetchone()
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'schedule_id': result['id'],
+                    'idea_id': result['idea_id'],
+                    'post_id': result['post_id']
+                })
+    except Exception as e:
+        logger.error(f"Error selecting theme/idea: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 def api_calendar_idea_status(idea_id: int):

@@ -207,10 +207,17 @@
 
         <!-- Modal Footer -->
         <div class="idea-modal-footer">
-            <button type="button" class="idea-btn idea-btn-secondary" id="idea-modal-cancel">Cancel</button>
-            <button type="button" class="idea-btn idea-btn-primary" id="idea-modal-save">
-                <i class="fas fa-save"></i> Save Changes
-            </button>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <button type="button" class="idea-btn idea-btn-danger" id="idea-modal-delete" style="display: none;">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <button type="button" class="idea-btn idea-btn-secondary" id="idea-modal-cancel">Cancel</button>
+                <button type="button" class="idea-btn idea-btn-primary" id="idea-modal-save">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </div>
         </div>
     </div>
 </div>
