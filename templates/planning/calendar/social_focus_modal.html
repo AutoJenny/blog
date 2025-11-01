@@ -1,0 +1,197 @@
+<!-- Social Focus Modal -->
+<div id="social-focus-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content social-focus-modal-content">
+        <div class="modal-header">
+            <h2 id="social-focus-modal-title">Social Focus Details</h2>
+            <button class="modal-close" id="social-focus-modal-close">&times;</button>
+        </div>
+        <div class="modal-body" id="social-focus-modal-body">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="social-focus-modal-close-btn">Close</button>
+            <button type="button" class="btn btn-primary" id="social-focus-modal-edit-btn" style="display: none;">Edit</button>
+        </div>
+    </div>
+</div>
+
+<!-- Social Focus Edit Modal -->
+<div id="social-focus-edit-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content social-focus-edit-modal-content">
+        <div class="modal-header">
+            <h2 id="social-focus-edit-modal-title">Edit Social Focus</h2>
+            <button class="modal-close" id="social-focus-edit-modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="social-focus-edit-form">
+                <input type="hidden" id="social-focus-edit-id">
+                <input type="hidden" id="social-focus-edit-day">
+                
+                <div class="form-group">
+                    <label for="social-focus-edit-focus">Social Focus</label>
+                    <input type="text" id="social-focus-edit-focus" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="social-focus-edit-format">Format</label>
+                    <input type="text" id="social-focus-edit-format" class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label for="social-focus-edit-purpose">Purpose</label>
+                    <textarea id="social-focus-edit-purpose" class="form-control" rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="social-focus-edit-example">Example</label>
+                    <textarea id="social-focus-edit-example" class="form-control" rows="3"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="social-focus-edit-modal-cancel-btn">Cancel</button>
+            <button type="button" class="btn btn-primary" id="social-focus-edit-modal-save-btn">Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<style>
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.modal-content {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #334155;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #f1f5f9;
+    font-size: 1.25rem;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    color: #e2e8f0;
+}
+
+.modal-body {
+    padding: 1rem;
+    color: #cbd5e1;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 1rem;
+    border-top: 1px solid #334155;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #cbd5e1;
+    font-weight: 500;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.5rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    color: #f1f5f9;
+    font-size: 0.875rem;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+}
+
+.btn-secondary {
+    background: #475569;
+    color: #e2e8f0;
+}
+
+.btn-secondary:hover {
+    background: #64748b;
+}
+
+.social-focus-detail {
+    margin-bottom: 1rem;
+}
+
+.social-focus-detail-label {
+    font-weight: 600;
+    color: #94a3b8;
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.social-focus-detail-value {
+    color: #e2e8f0;
+    margin-bottom: 0.75rem;
+}
+</style>
+

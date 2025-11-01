@@ -224,13 +224,16 @@ async function loadWeek(year, weekNumber) {
   // Fetch both product and blog_post syndication schedules
   const productSyndicationPromise = fetchJSON(`/launchpad/api/syndication/schedules?platform=facebook&content_type=product`);
   const blogPostSyndicationPromise = fetchJSON(`/launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post`);
+  // Fetch weekly social focus
+  const socialFocusPromise = fetchJSON(`/planning/api/social-focus/week`);
 
   let ideas = [];
   let events = [];
   let schedule = [];
   let syndication = [];
+  let socialFocuses = [];
   try {
-    const [ideasRes, eventsRes, scheduleRes, productSyndicationRes, blogPostSyndicationRes] = await Promise.allSettled([ideasPromise, eventsPromise, schedulePromise, productSyndicationPromise, blogPostSyndicationPromise]);
+    const [ideasRes, eventsRes, scheduleRes, productSyndicationRes, blogPostSyndicationRes, socialFocusRes] = await Promise.allSettled([ideasPromise, eventsPromise, schedulePromise, productSyndicationPromise, blogPostSyndicationPromise, socialFocusPromise]);
     if (ideasRes.status === 'fulfilled') {
       const ideasData = ideasRes.value;
       ideas = Array.isArray(ideasData) ? ideasData : (ideasData?.ideas || []);
@@ -247,6 +250,14 @@ async function loadWeek(year, weekNumber) {
     const productSchedules = productSyndicationRes.status === 'fulfilled' ? (productSyndicationRes.value.schedules || []) : [];
     const blogPostSchedules = blogPostSyndicationRes.status === 'fulfilled' ? (blogPostSyndicationRes.value.schedules || []) : [];
     syndication = [...productSchedules, ...blogPostSchedules].filter(s => s && s.is_active !== false);
+    
+    // Load social focus data
+    if (socialFocusRes.status === 'fulfilled') {
+      const socialFocusData = socialFocusRes.value;
+      if (socialFocusData && socialFocusData.success && socialFocusData.focuses) {
+        socialFocuses = socialFocusData.focuses;
+      }
+    }
   } catch (e) {
     console.error('Error loading week data:', e);
     // Ignore; page still usable
@@ -409,6 +420,9 @@ async function loadWeek(year, weekNumber) {
       });
     });
   }
+  
+  // Render social focuses under day headers
+  renderSocialFocuses(socialFocuses);
 }
 
 (function init() {
@@ -672,6 +686,248 @@ async function loadWeek(year, weekNumber) {
 
   // Load the saved week (or current week if none saved)
   loadWeek(state.year, state.weekNumber);
+})();
+
+// Social Focus Functions
+function renderSocialFocuses(focuses) {
+  // Create a map of day_of_week -> focus for quick lookup
+  const focusMap = {};
+  focuses.forEach(focus => {
+    focusMap[focus.day_of_week] = focus;
+  });
+  
+  // Update each day header
+  for (let day = 1; day <= 7; day++) {
+    const focusEl = document.querySelector(`.social-focus[data-day="${day}"]`);
+    if (focusEl) {
+      const focus = focusMap[day];
+      if (focus && focus.social_focus) {
+        focusEl.textContent = focus.social_focus;
+        focusEl.classList.remove('empty');
+        focusEl.dataset.focusId = focus.id;
+      } else {
+        focusEl.textContent = 'No focus set';
+        focusEl.classList.add('empty');
+        focusEl.removeAttribute('data-focus-id');
+      }
+    }
+  }
+}
+
+// Social Focus Modal Management
+(function initSocialFocusModal() {
+  let modal, editModal, modalTitle, modalBody, closeBtns, editBtn, saveBtn;
+  let currentFocusData = null;
+  
+  function getElements() {
+    modal = document.getElementById('social-focus-modal');
+    editModal = document.getElementById('social-focus-edit-modal');
+    modalTitle = document.getElementById('social-focus-modal-title');
+    modalBody = document.getElementById('social-focus-modal-body');
+    closeBtns = [
+      document.getElementById('social-focus-modal-close'),
+      document.getElementById('social-focus-modal-close-btn'),
+      document.getElementById('social-focus-edit-modal-close'),
+      document.getElementById('social-focus-edit-modal-cancel-btn')
+    ];
+    editBtn = document.getElementById('social-focus-modal-edit-btn');
+    saveBtn = document.getElementById('social-focus-edit-modal-save-btn');
+  }
+  
+  // Wait for DOM and ensure elements are available
+  function ensureInit() {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(init, 200);
+      });
+    } else {
+      setTimeout(init, 200);
+    }
+  }
+  
+  // Set up click handler immediately (before init) so it works even if init is delayed
+  document.addEventListener('click', async (e) => {
+    const focusEl = e.target.closest('.social-focus');
+    if (focusEl) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Ensure elements are available
+      getElements();
+      
+      // Check if it has a focus ID (not empty)
+      if (focusEl.dataset.focusId && !focusEl.classList.contains('empty')) {
+        const dayOfWeek = parseInt(focusEl.dataset.day);
+        
+        console.log('Clicked social focus for day:', dayOfWeek, 'Focus ID:', focusEl.dataset.focusId);
+        
+        try {
+          const response = await fetch(`/planning/api/social-focus/day/${dayOfWeek}`);
+          if (response.ok) {
+            const data = await response.json();
+            console.log('Social focus API response:', data);
+            if (data.success && data.focus) {
+              currentFocusData = data.focus;
+              showFocusModal(data.focus);
+            } else {
+              console.error('API returned success but no focus data');
+            }
+          } else {
+            console.error('Failed to load social focus:', response.status);
+            const errorData = await response.json().catch(() => ({}));
+            console.error('Error details:', errorData);
+          }
+        } catch (error) {
+          console.error('Error loading social focus:', error);
+          alert('Error loading social focus details: ' + error.message);
+        }
+      } else {
+        // No focus set for this day
+        console.log('No social focus set for this day');
+      }
+    }
+  });
+  
+  function init() {
+    getElements();
+    
+    if (!modal || !editModal) {
+      console.warn('Social focus modal elements not found, retrying...');
+      setTimeout(init, 500);
+      return;
+    }
+    
+    console.log('Social focus modal initialized');
+    
+    // Close modal handlers
+    closeBtns.forEach(btn => {
+      if (btn) {
+        btn.addEventListener('click', () => {
+          if (modal) modal.style.display = 'none';
+          if (editModal) editModal.style.display = 'none';
+        });
+      }
+    });
+    
+    // Click outside to close
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.style.display = 'none';
+      });
+    }
+    if (editModal) {
+      editModal.addEventListener('click', (e) => {
+        if (e.target === editModal) editModal.style.display = 'none';
+      });
+    }
+    
+    // Save button handler for edit modal
+    if (saveBtn) {
+      saveBtn.addEventListener('click', async () => {
+        const focusId = parseInt(document.getElementById('social-focus-edit-id').value);
+        const data = {
+          social_focus: document.getElementById('social-focus-edit-focus').value,
+          format: document.getElementById('social-focus-edit-format').value,
+          purpose: document.getElementById('social-focus-edit-purpose').value,
+          example: document.getElementById('social-focus-edit-example').value
+        };
+        
+        try {
+          const response = await fetch(`/planning/api/social-focus/${focusId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+          
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+              editModal.style.display = 'none';
+              // Reload social focuses
+              const socialFocusRes = await fetch(`/planning/api/social-focus/week`);
+              if (socialFocusRes.ok) {
+                const focusData = await socialFocusRes.json();
+                if (focusData.success) {
+                  renderSocialFocuses(focusData.focuses);
+                }
+              }
+            }
+          } else {
+            const error = await response.json();
+            alert(`Error: ${error.error || 'Failed to save'}`);
+          }
+        } catch (error) {
+          console.error('Error saving social focus:', error);
+          alert('Error saving social focus');
+        }
+      });
+    }
+  }
+  
+  function showFocusModal(focus) {
+    getElements(); // Ensure we have latest references
+    if (!modal || !modalBody || !modalTitle) {
+      console.error('Modal elements not found:', { modal: !!modal, modalBody: !!modalBody, modalTitle: !!modalTitle });
+      return;
+    }
+    
+    console.log('Showing modal for focus:', focus);
+    
+    const dayNames = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    modalTitle.textContent = `${dayNames[focus.day_of_week]} - ${focus.social_focus}`;
+    
+    modalBody.innerHTML = `
+      <div class="social-focus-detail">
+        <div class="social-focus-detail-label">Social Focus</div>
+        <div class="social-focus-detail-value">${escapeHtml(focus.social_focus || 'Not set')}</div>
+      </div>
+      <div class="social-focus-detail">
+        <div class="social-focus-detail-label">Format</div>
+        <div class="social-focus-detail-value">${escapeHtml(focus.format || 'Not set')}</div>
+      </div>
+      <div class="social-focus-detail">
+        <div class="social-focus-detail-label">Purpose</div>
+        <div class="social-focus-detail-value">${escapeHtml(focus.purpose || 'Not set')}</div>
+      </div>
+      <div class="social-focus-detail">
+        <div class="social-focus-detail-label">Example</div>
+        <div class="social-focus-detail-value">${escapeHtml(focus.example || 'Not set')}</div>
+      </div>
+    `;
+    
+    if (editBtn) {
+      editBtn.style.display = 'block';
+      editBtn.onclick = () => {
+        if (modal) modal.style.display = 'none';
+        showEditModal(focus);
+      };
+    }
+    
+    if (modal) {
+      modal.style.display = 'flex';
+      console.log('Modal displayed');
+    } else {
+      console.error('Modal element is null');
+    }
+  }
+  
+  function showEditModal(focus) {
+    if (!editModal) return;
+    
+    document.getElementById('social-focus-edit-id').value = focus.id;
+    document.getElementById('social-focus-edit-day').value = focus.day_of_week;
+    document.getElementById('social-focus-edit-focus').value = focus.social_focus || '';
+    document.getElementById('social-focus-edit-format').value = focus.format || '';
+    document.getElementById('social-focus-edit-purpose').value = focus.purpose || '';
+    document.getElementById('social-focus-edit-example').value = focus.example || '';
+    
+    const dayNames = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    document.getElementById('social-focus-edit-modal-title').textContent = `Edit ${dayNames[focus.day_of_week]} Social Focus`;
+    
+      editModal.style.display = 'flex';
+  }
+  
+  ensureInit();
 })();
 
 
