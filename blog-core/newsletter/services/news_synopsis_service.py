@@ -228,11 +228,17 @@ Your task:
 
 0-1: NOT RELEVANT - No meaningful Scottish heritage/culture connection
 
-CRITICAL EXAMPLES:
+CRITICAL EXAMPLES - FOLLOW THESE STRICTLY:
 - "Rangers/Celtic manager news" → 4-5 (local sports, current event, limited diaspora appeal)
-- "Former footballer dies aged 73" → 2-3 (local obituary, unless internationally known)
+- "Former footballer dies aged 73" → 2-3 MAX (local obituary, not internationally significant, diaspora won't care)
+- "Former Aberdeen and Arsenal footballer dies" → 2-3 MAX (local Scottish footballer, not a historical/cultural figure)
 - "Archaeological discovery at Scottish castle" → 8-10 (historical significance)
 - "Scottish language revival program" → 8-10 (cultural significance, diaspora interest)
+
+MANDATORY RULES:
+1. OBITUARIES: Local/regional figures (sports, politicians, business) = 2-3 MAX. Only internationally known historical/cultural figures score higher.
+2. SPORTS OBITUARIES: Unless the person is internationally famous (like Sir Alex Ferguson level), score 2-3. Local footballers, even from major clubs, are NOT diaspora-interest.
+3. NEVER give 10/10 to obituaries unless the person is of major historical/cultural importance (e.g., a renowned Scottish historian, museum curator, cultural preservationist).
 
 2. Generate a brief synopsis (2-3 sentences) summarizing the key points relevant to Scottish heritage/culture.
 
@@ -272,6 +278,31 @@ Provide your assessment in JSON format:
                 
                 # Clamp score to 0-10
                 score = max(0.0, min(10.0, score))
+                
+                # POST-PROCESSING: Enforce strict rules for obituaries
+                title_lower = title.lower()
+                content_lower = content_preview.lower() if content_preview else ''
+                
+                # Cap obituaries of local/regional figures at 3.0
+                is_obituary = any(term in title_lower or term in content_lower for term in [
+                    'dies', 'died', 'death', 'dead', 'obituary', 'passes away', 
+                    'passed away', 'funeral', 'mourning'
+                ])
+                
+                # Check if it's a local sports/political/business figure (not internationally known)
+                is_local_figure = any(term in title_lower for term in [
+                    'former', 'ex-', 'aged', 'footballer', 'player', 'manager',
+                    'msp', 'councillor', 'councillor', 'businessman', 'businesswoman'
+                ]) and not any(term in title_lower for term in [
+                    'sir', 'dame', 'nobel', 'historic', 'archaeological', 'museum',
+                    'curator', 'historian', 'cultural', 'heritage'
+                ])
+                
+                if is_obituary and is_local_figure and score > 3.0:
+                    # Cap local obituaries at 3.0
+                    score = 3.0
+                    reasoning = reasoning + " [ADJUSTED: Local obituary capped at 3.0 - not diaspora-interest]"
+                    relevant = False  # Below threshold
                 
                 # Clean subscription text from synopsis
                 synopsis = clean_subscription_text(synopsis)

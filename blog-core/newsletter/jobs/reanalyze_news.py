@@ -26,16 +26,17 @@ def reanalyze_news_items(days_back: int = 30, limit: int = 50) -> Dict[str, Any]
     today = date.today()
     start_date = today - timedelta(days=days_back)
     
-    # Get news items without synopsis or with null suitability_score
+    # Get news items to re-analyze: those without scores, OR those with existing scores (to force re-analysis)
     sql = """
         SELECT id, source_name, title, url, published_at, category,
-               raw_data
+               raw_data, suitability_score
         FROM newsletter_source_item
         WHERE category = 'news'
-          AND (suitability_score IS NULL OR raw_data->>'synopsis' IS NULL)
           AND published_at IS NOT NULL
           AND published_at::date >= %s
-        ORDER BY published_at DESC
+        ORDER BY 
+          CASE WHEN suitability_score IS NULL THEN 0 ELSE 1 END,
+          published_at DESC
         LIMIT %s
     """
     
@@ -63,21 +64,27 @@ def reanalyze_news_items(days_back: int = 30, limit: int = 50) -> Dict[str, Any]
     
     for item in items_to_process:
         try:
-            # Process with synopsis service
+            # Process with synopsis service (force re-analysis, ignore cache)
             processed = process_news_with_synopsis(item, cache_results=False)
             
-            if processed and processed.get('suitability_score', 0) >= 6.0:
+            if processed:
+                # Always update the score, even if below threshold
                 # Score the item
                 scored = score_items([processed])
                 
-                # Update in database
+                # Update in database (store_source_items handles deduplication)
                 stored = store_source_items(scored)
-                processed_count += 1
-                logger.info(f"✓ Re-analyzed: {item['title'][:50]} (score: {processed.get('suitability_score', 0)})")
+                
+                final_score = processed.get('suitability_score', 0)
+                if final_score >= 6.0:
+                    processed_count += 1
+                    logger.info(f"✓ Re-analyzed: {item['title'][:50]} (score: {final_score})")
+                else:
+                    skipped_count += 1
+                    logger.debug(f"Re-scored below threshold: {item['title'][:50]} (score: {final_score})")
             else:
                 skipped_count += 1
-                score = processed.get('suitability_score', 0) if processed else 0
-                logger.debug(f"Skipped (score {score}): {item['title'][:50]}")
+                logger.debug(f"Failed to process: {item['title'][:50]}")
                 
         except Exception as e:
             error_count += 1
