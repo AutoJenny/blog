@@ -47,7 +47,7 @@ def create_adapter_from_source(source: Dict[str, Any]) -> RSSAdapter | RedditAda
         if any(term in name_lower for term in ['weather', 'met office', 'metoffice', 'forecast', 'warnings']):
             category = 'weather'
         # News sources: explicit checks
-        elif any(term in name_lower for term in ['bbc', 'scotsman', 'news']):
+        elif any(term in name_lower for term in ['bbc', 'scotsman', 'herald', 'news']):
             category = 'news'
         # Default to news if unclear
         
