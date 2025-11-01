@@ -488,11 +488,13 @@ def get_news_items(days_back: int = 7) -> List[Dict[str, Any]]:
             return [dict(r) for r in rows]
 
 
-def generate_news_summary(days_back: int = 7) -> Dict[str, Any]:
+def generate_news_summary(days_back: int = 7, limit: int = 100, sort_by: str = 'combined_score') -> Dict[str, Any]:
     """Generate news summary from synopses.
     
     Args:
         days_back: Days to look back
+        limit: Maximum number of stories to return
+        sort_by: Sort key - 'combined_score', 'suitability_score', or 'published_at'
         
     Returns:
         Dict with summary and top stories
@@ -526,8 +528,8 @@ def generate_news_summary(days_back: int = 7) -> Dict[str, Any]:
             sources[source_name] = []
         sources[source_name].append(item)
     
-    # Top stories by combined score
-    top_stories = sorted(analyzed_items, key=lambda x: x.get('combined_score', 0) or 0, reverse=True)[:10]
+    # Return all analyzed items (sorted by combined score by default, but can be re-sorted in UI)
+    top_stories = sorted(analyzed_items, key=lambda x: x.get('combined_score', 0) or 0, reverse=True)
     
     # Generate summary text from top stories
     summary_parts = []

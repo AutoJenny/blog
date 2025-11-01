@@ -450,8 +450,10 @@ def news_summary():
         from newsletter.services.news_synopsis_service import generate_news_summary
         
         days_back = request.args.get('days_back', 7, type=int)
+        limit = request.args.get('limit', 100, type=int)  # Default to 100, allow override
+        sort_by = request.args.get('sort_by', 'combined_score')  # combined_score, suitability_score, published_at
         
-        summary = generate_news_summary(days_back=days_back)
+        summary = generate_news_summary(days_back=days_back, limit=limit, sort_by=sort_by)
         
         # If requested as HTML page
         if request.args.get('view') == 'page':
