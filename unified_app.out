@@ -1146,3 +1146,9 @@ NameError: name 'logger' is not defined
 2025-11-01 20:40:22,382 - werkzeug - INFO -  * Restarting with stat
 2025-11-01 20:40:22,741 - werkzeug - WARNING -  * Debugger is active!
 2025-11-01 20:40:22,748 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 20:41:09,153 - config.database - INFO - Database connection established
+2025-11-01 20:41:09,160 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:41:09] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-01 20:41:31,096 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/sources/manager.py', reloading
+2025-11-01 20:41:31,145 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 20:41:31,488 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 20:41:31,495 - werkzeug - INFO -  * Debugger PIN: 263-852-041
