@@ -2403,3 +2403,22 @@ requests.exceptions.HTTPError: 404 Client Error: Not Found for url: http://local
 2025-11-01 20:48:57,331 - werkzeug - INFO -  * Restarting with stat
 2025-11-01 20:48:57,658 - werkzeug - WARNING -  * Debugger is active!
 2025-11-01 20:48:57,664 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 20:49:17,310 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:49:17] "GET /newsletter/news HTTP/1.1" 200 -
+2025-11-01 20:49:17,327 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:49:17] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-01 20:49:17,328 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:49:17] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-01 20:49:17,328 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:49:17] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-01 20:49:17,329 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:49:17] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-01 20:49:17,331 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:49:17] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-01 20:49:17,332 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:49:17] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-01 20:49:17,332 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:49:17] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-01 20:49:17,332 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:49:17] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-01 20:49:17,359 - config.database - INFO - Database connection established
+2025-11-01 20:49:17,366 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:49:17] "GET /newsletter/news/summary?days_back=7&limit=100&sort_by=combined_score HTTP/1.1" 200 -
+2025-11-01 20:52:37,360 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/news_synopsis_service.py', reloading
+2025-11-01 20:52:37,423 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 20:52:37,757 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 20:52:37,763 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 20:52:40,023 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/db/queries_sources.py', reloading
+2025-11-01 20:52:40,063 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 20:52:40,401 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 20:52:40,407 - werkzeug - INFO -  * Debugger PIN: 263-852-041

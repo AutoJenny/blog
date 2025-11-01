@@ -26,6 +26,20 @@ def store_source_items(items: List[Dict[str, Any]]) -> int:
                     url = item.get('url', '')
                     url_hash = hashlib.sha256(url.encode('utf-8')).hexdigest() if url else None
                     
+                    # Check if URL hash already exists to avoid duplicates
+                    if url_hash:
+                        cur.execute(
+                            """
+                            SELECT id FROM newsletter_source_item 
+                            WHERE source_url_hash = %s 
+                            LIMIT 1
+                            """,
+                            (url_hash,)
+                        )
+                        if cur.fetchone():
+                            # Skip duplicate
+                            continue
+                    
                     cur.execute(
                         """
                         INSERT INTO newsletter_source_item 
@@ -33,7 +47,6 @@ def store_source_items(items: List[Dict[str, Any]]) -> int:
                          raw_data, signal_score, freshness_score, source_url_hash, 
                          suitability_score, suitability_notes, is_event, calendar_event_id)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                        ON CONFLICT DO NOTHING
                         """,
                         (
                             item.get('source_name'),
