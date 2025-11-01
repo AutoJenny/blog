@@ -32,17 +32,14 @@ def analyze_news_suitability(title: str, description: Optional[str] = None, url:
     import os
     import sys
     
+    # Import LLM service - MUST succeed, no fallback
+    sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
     try:
-        sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
         from app.llm.services import LLMService
         llm_service = LLMService()
     except ImportError:
-        try:
-            from modules.llm_service import LLMService
-            llm_service = LLMService()
-        except ImportError:
-            logger.error("Could not import LLMService - suitability analysis will use fallback")
-            return _fallback_suitability_analysis(title, description)
+        from modules.llm_service import LLMService
+        llm_service = LLMService()
     
     # Construct prompt for content analysis
     prompt = f"""You are analyzing news articles for a Scottish heritage and culture newsletter with a primarily US-Scots diaspora audience - people of Scottish descent living in the United States, Canada, Australia, and other countries who maintain an interest in the history and culture of their "old country".
@@ -208,9 +205,9 @@ Provide your assessment in JSON format:
         # Complete fallback
         return _fallback_suitability_analysis(title, description)
         
-    except Exception as e:
-        logger.error(f"Error in LLM suitability analysis: {e}", exc_info=True)
-        return _fallback_suitability_analysis(title, description)
+        except Exception as e:
+            logger.error(f"Error in LLM suitability analysis: {e}", exc_info=True)
+            raise  # Re-raise exception - no fallback
 
 
 def _fallback_suitability_analysis(title: str, description: Optional[str] = None) -> Dict[str, Any]:

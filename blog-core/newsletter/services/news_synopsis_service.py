@@ -165,21 +165,17 @@ def generate_article_synopsis(title: str, article_content: str, url: Optional[st
             'relevant': bool (score >= threshold)
         }
     """
-    # Import LLM service
+    # Import LLM service - MUST succeed, no fallback
     import os
     import sys
     
+    sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
     try:
-        sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
         from app.llm.services import LLMService
         llm_service = LLMService()
     except ImportError:
-        try:
-            from modules.llm_service import LLMService
-            llm_service = LLMService()
-        except ImportError:
-            logger.error("Could not import LLMService - using fallback")
-            return _fallback_synopsis(title, article_content)
+        from modules.llm_service import LLMService
+        llm_service = LLMService()
     
     # Construct prompt for analysis and synopsis
     content_preview = article_content[:2000] if len(article_content) > 2000 else article_content
@@ -264,9 +260,8 @@ Provide your assessment in JSON format:
             max_tokens=500
         )
         
-        if not response:
-            logger.warning("LLM returned empty response for synopsis generation")
-            return _fallback_synopsis(title, article_content)
+            if not response:
+                raise ValueError("LLM returned empty response for synopsis generation - cannot proceed without LLM")
         
         # Parse JSON from response
         import json
