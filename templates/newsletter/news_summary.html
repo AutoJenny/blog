@@ -28,10 +28,16 @@
 async function loadNewsSummary() {
     try {
         const response = await fetch('/newsletter/news/summary?days_back=7');
-        const result = await response.json();
         
         if (!response.ok) {
-            throw new Error(result.error || 'Failed to load news summary');
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+        
+        const result = await response.json();
+        
+        if (!result || !result.data) {
+            throw new Error('Invalid response format from server');
         }
         
         const data = result.data;
@@ -101,11 +107,21 @@ async function loadNewsSummary() {
                     </h2>
                     <div class="space-y-4">
                         ${data.top_stories.map((story, idx) => {
-                            const pubDate = story.published_at ? new Date(story.published_at).toLocaleDateString('en-GB', {
-                                day: 'numeric',
-                                month: 'short',
-                                year: 'numeric'
-                            }) : '';
+                            let pubDate = '';
+                            try {
+                                if (story.published_at) {
+                                    const date = new Date(story.published_at);
+                                    if (!isNaN(date.getTime())) {
+                                        pubDate = date.toLocaleDateString('en-GB', {
+                                            day: 'numeric',
+                                            month: 'short',
+                                            year: 'numeric'
+                                        });
+                                    }
+                                }
+                            } catch (e) {
+                                console.warn('Error parsing date:', story.published_at, e);
+                            }
                             
                             return `
                                 <div class="bg-[#1e293b] border border-[#2d3246] rounded-lg p-5">
@@ -180,10 +196,14 @@ async function loadNewsSummary() {
         
     } catch (error) {
         console.error('Error loading news summary:', error);
+        const errorMsg = error.message || 'Unknown error occurred';
         document.getElementById('news-summary-container').innerHTML = `
             <div class="bg-red-900/20 border border-red-500 rounded-lg p-6">
                 <h3 class="text-red-400 font-semibold mb-2">Error Loading Summary</h3>
-                <p class="text-red-300">${error.message}</p>
+                <p class="text-red-300 mb-4">${errorMsg}</p>
+                <button onclick="loadNewsSummary()" class="px-4 py-2 bg-[#7b8dff] text-white rounded hover:bg-[#6a7dee] transition">
+                    <i class="fa-solid fa-refresh"></i> Try Again
+                </button>
             </div>
         `;
     }
