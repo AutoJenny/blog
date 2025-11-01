@@ -624,6 +624,34 @@ def validate_publish_data(post_id):
                     'field': field
                 })
         
+        # Check taxonomy fields (required for publishing)
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT theme_id, content_type_id, format_id
+                FROM post
+                WHERE id = %s
+            """, (post_id,))
+            taxonomy_check = cursor.fetchone()
+            
+            if not taxonomy_check or not taxonomy_check.get('theme_id'):
+                issues.append({
+                    'type': 'missing_taxonomy',
+                    'field': 'theme_id',
+                    'message': 'Post must have a theme assigned. Please assign taxonomy in Planning stage.'
+                })
+            if not taxonomy_check or not taxonomy_check.get('content_type_id'):
+                issues.append({
+                    'type': 'missing_taxonomy',
+                    'field': 'content_type_id',
+                    'message': 'Post must have a content type assigned. Please assign taxonomy in Planning stage.'
+                })
+            if not taxonomy_check or not taxonomy_check.get('format_id'):
+                issues.append({
+                    'type': 'missing_taxonomy',
+                    'field': 'format_id',
+                    'message': 'Post must have a format assigned. Please assign taxonomy in Planning stage.'
+                })
+        
         # Check meta_image points to optimized path
         meta_image = post.get('meta_image', '')
         if meta_image and '/raw/' in meta_image:

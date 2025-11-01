@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% block title %}Taxonomy Assignment - Content Calendar - Planning - BlogForge{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Include condensed header -->
+    {% set page_title = 'Planning' %}
+    <script>
+    window.postId = {{ post_id }};
+    window.currentStage = 'planning';
+    window.currentSubstage = 'taxonomy';
+    </script>
+    {% include 'shared/blog_pipeline_header.html' %}
+    
+    {% block process_content %}
+    <div class="taxonomy-main">
+        <div class="taxonomy-header">
+            <h2>Taxonomy Assignment</h2>
+            <p>Classify your post by Content Category, Content Type, and Format</p>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-error">
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        <div class="taxonomy-content">
+            <!-- Current Taxonomy Display -->
+            <div class="taxonomy-display-panel">
+                <h3>Current Taxonomy</h3>
+                <div id="current-taxonomy" class="taxonomy-display">
+                    <div class="loading">Loading taxonomy...</div>
+                </div>
+            </div>
+
+            <!-- Taxonomy Assignment Panel -->
+            <div class="taxonomy-assignment-panel">
+                <div class="panel-header">
+                    <h3>Assign Taxonomy</h3>
+                    <button class="btn btn-primary" id="generate-taxonomy-btn">
+                        <i class="fas fa-magic"></i> Generate Taxonomy
+                    </button>
+                </div>
+
+                <div id="taxonomy-form" class="taxonomy-form">
+                    <!-- Content Category Selection -->
+                    <div class="taxonomy-field">
+                        <label for="theme-select">Content Category *</label>
+                        <select id="theme-select" class="form-select" required>
+                            <option value="">-- Select Content Category --</option>
+                        </select>
+                        <small class="field-help">Top-level thematic grouping</small>
+                    </div>
+
+                    <!-- Content Type Selection -->
+                    <div class="taxonomy-field">
+                        <label for="content-type-select">Content Type *</label>
+                        <select id="content-type-select" class="form-select" required disabled>
+                            <option value="">-- Select Content Category first --</option>
+                        </select>
+                        <small class="field-help">Specific content category (must match selected content category)</small>
+                    </div>
+
+                    <!-- Format Selection -->
+                    <div class="taxonomy-field">
+                        <label for="format-select">Format *</label>
+                        <select id="format-select" class="form-select" required>
+                            <option value="">-- Select Format --</option>
+                        </select>
+                        <small class="field-help">Content format type</small>
+                    </div>
+
+                    <!-- Common Assets Display -->
+                    <div id="common-assets-display" class="common-assets-display" style="display: none;">
+                        <h4>Common Assets for Selected Content Type</h4>
+                        <div id="common-assets-list" class="assets-list"></div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="taxonomy-actions">
+                        <button class="btn btn-primary" id="save-taxonomy-btn" disabled>
+                            <i class="fas fa-save"></i> Save Taxonomy
+                        </button>
+                        <button class="btn btn-secondary" id="cancel-btn">
+                            Cancel
+                        </button>
+                    </div>
+
+                    <!-- Generation Status -->
+                    <div id="generation-status" class="generation-status" style="display: none;">
+                        <div class="loading-spinner"></div>
+                        <span>Generating taxonomy...</span>
+                    </div>
+
+                    <!-- LLM Reasoning Display -->
+                    <div id="reasoning-display" class="reasoning-display" style="display: none;">
+                        <h4>LLM Reasoning</h4>
+                        <div id="reasoning-text" class="reasoning-text"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</div>
+
+<style>
+.taxonomy-main {
+    padding: 2rem 0;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.taxonomy-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.taxonomy-header h2 {
+    font-size: 2rem;
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+}
+
+.taxonomy-header p {
+    color: #94a3b8;
+    font-size: 1.125rem;
+}
+
+.taxonomy-content {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 2rem;
+}
+
+.taxonomy-display-panel,
+.taxonomy-assignment-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.taxonomy-display-panel h3,
+.taxonomy-assignment-panel h3 {
+    color: #f1f5f9;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.taxonomy-display {
+    color: #cbd5e1;
+}
+
+.taxonomy-item {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: #0f172a;
+    border-radius: 4px;
+}
+
+.taxonomy-item-label {
+    font-weight: 600;
+    color: #94a3b8;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+}
+
+.taxonomy-item-value {
+    color: #f1f5f9;
+    font-size: 1rem;
+}
+
+.taxonomy-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.taxonomy-field label {
+    display: block;
+    color: #f1f5f9;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.form-select {
+    width: 100%;
+    padding: 0.75rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    color: #f1f5f9;
+    font-size: 1rem;
+}
+
+.form-select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.field-help {
+    display: block;
+    color: #64748b;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.common-assets-display {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #0f172a;
+    border-radius: 4px;
+}
+
+.common-assets-display h4 {
+    color: #f1f5f9;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+}
+
+.assets-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.asset-badge {
+    padding: 0.375rem 0.75rem;
+    background: #334155;
+    border-radius: 4px;
+    color: #cbd5e1;
+    font-size: 0.875rem;
+}
+
+.taxonomy-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #2563eb;
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background: #475569;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #64748b;
+}
+
+.generation-status {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: #0f172a;
+    border-radius: 4px;
+    color: #cbd5e1;
+}
+
+.loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #334155;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.reasoning-display {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #0f172a;
+    border-radius: 4px;
+}
+
+.reasoning-display h4 {
+    color: #f1f5f9;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+}
+
+.reasoning-text {
+    color: #cbd5e1;
+    line-height: 1.6;
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+}
+
+.alert-error {
+    background: #7f1d1d;
+    color: #fca5a5;
+    border: 1px solid #991b1b;
+}
+</style>
+
+<script src="{{ url_for('static', filename='js/planning/taxonomy-assignment.js') }}"></script>
+{% endblock %}
+

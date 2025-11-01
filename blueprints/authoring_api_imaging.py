@@ -25,22 +25,39 @@ def authoring_sections_image_concepts(post_id):
     """Image concepts step - Step 53"""
     try:
         with db_manager.get_cursor() as cursor:
-            # Get post details
+            # Get post details with taxonomy
             cursor.execute("""
-                SELECT id, title, status, created_at, updated_at
-                FROM post 
-                WHERE id = %s
+                SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                       p.content_type_id, ti.common_assets
+                FROM post p
+                LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                WHERE p.id = %s
             """, (post_id,))
             post = cursor.fetchone()
             
             if not post:
                 return "Post not found", 404
             
+            # Check if this content type uses photography workflow
+            uses_photography = False
+            if post.get('common_assets'):
+                assets = post['common_assets']
+                if isinstance(assets, str):
+                    try:
+                        assets = json.loads(assets)
+                    except:
+                        assets = []
+                # Check if any asset contains "photography" or "landscape photography"
+                if isinstance(assets, list):
+                    asset_text = ' '.join(assets).lower()
+                    uses_photography = 'photography' in asset_text or 'landscape photography' in asset_text
+            
             return render_template('authoring/sections/image_concepts.html', 
                                  post_id=post_id,
                                  post=post,
                                  page_title="Image Concepts",
-                                 blueprint_name='authoring')
+                                 blueprint_name='authoring',
+                                 uses_photography=uses_photography)
             
     except Exception as e:
         logger.error(f"Error in authoring_sections_image_concepts: {e}")
@@ -51,16 +68,31 @@ def authoring_sections_image_prompts(post_id):
     """Image prompts step - Step 54"""
     try:
         with db_manager.get_cursor() as cursor:
-            # Get post details
+            # Get post taxonomy to determine workflow
             cursor.execute("""
-                SELECT id, title, status, created_at, updated_at
-                FROM post 
-                WHERE id = %s
+                SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                       p.content_type_id, ti.common_assets
+                FROM post p
+                LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                WHERE p.id = %s
             """, (post_id,))
             post = cursor.fetchone()
             
             if not post:
                 return "Post not found", 404
+            
+            # Check if this content type uses photography workflow
+            uses_photography = False
+            if post.get('common_assets'):
+                assets = post['common_assets']
+                if isinstance(assets, str):
+                    try:
+                        assets = json.loads(assets)
+                    except:
+                        assets = []
+                if isinstance(assets, list):
+                    asset_text = ' '.join(assets).lower()
+                    uses_photography = 'photography' in asset_text or 'landscape photography' in asset_text
             
             # Get the image prompts prompt from database
             cursor.execute("""
@@ -77,7 +109,8 @@ def authoring_sections_image_prompts(post_id):
                                  post=post,
                                  page_title="Image Prompts",
                                  blueprint_name='authoring',
-                                 prompt_data=prompt_data)
+                                 prompt_data=prompt_data,
+                                 uses_photography=uses_photography)
             
     except Exception as e:
         logger.error(f"Error in authoring_sections_image_prompts: {e}")
