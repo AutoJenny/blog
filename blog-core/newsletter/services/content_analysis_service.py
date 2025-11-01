@@ -86,11 +86,17 @@ Rate the article's suitability on a scale of 0-10, with these STRICT criteria:
 
 0-1: NOT RELEVANT - No meaningful Scottish heritage/culture connection
 
-CRITICAL DISTINCTIONS:
+CRITICAL DISTINCTIONS - FOLLOW THESE STRICTLY:
 - "Rangers/Celtic manager news" = 4-5 (local sports interest, current event, limited diaspora appeal)
-- "Former footballer dies" = 2-3 (local obituary, unless internationally known figure)
+- "Former footballer dies" = 2-3 MAX (local obituary, unless internationally known historical/cultural figure)
+- "Former Aberdeen and Arsenal footballer dies aged 73" = 2-3 MAX (local Scottish footballer, not diaspora-interest)
 - "Archaeological discovery at Scottish castle" = 8-10 (historical significance, diaspora interest)
 - "Scottish language revival program" = 8-10 (cultural significance, diaspora interest)
+
+MANDATORY RULES:
+1. OBITUARIES: Local/regional figures (sports, politicians, business) = 2-3 MAX. Only internationally known historical/cultural figures score higher.
+2. SPORTS OBITUARIES: Unless the person is internationally famous (Sir Alex Ferguson level), score 2-3. Local footballers, even from major clubs, are NOT diaspora-interest.
+3. NEVER give 10/10 to obituaries unless the person is of major historical/cultural importance (renowned Scottish historian, museum curator, cultural preservationist).
 
 Use the FULL range. Average scores should be around 5. Reserve 10/10 for truly exceptional stories that would be remembered years from now. Most daily news should score 3-6.
 
