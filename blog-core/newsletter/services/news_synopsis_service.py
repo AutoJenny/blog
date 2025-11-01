@@ -324,8 +324,9 @@ Provide your assessment in JSON format:
             'synopsis': synopsis,
             'relevant': score >= 6.0,
         }
-        
-        return _fallback_synopsis(title, article_content)
+    
+    # Complete fallback if dimension extraction failed
+    return _fallback_synopsis(title, article_content)
         
     except Exception as e:
         logger.error(f"Error in LLM synopsis generation: {e}", exc_info=True)
