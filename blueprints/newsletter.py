@@ -446,6 +446,9 @@ def weather_summary_page():
 @bp.route('/newsletter/news/summary')
 def news_summary():
     """Get news summary from synopses."""
+    import logging
+    logger = logging.getLogger(__name__)
+    
     try:
         from newsletter.services.news_synopsis_service import generate_news_summary
         

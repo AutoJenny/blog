@@ -4620,3 +4620,143 @@ requests.exceptions.HTTPError: 404 Client Error: Not Found for url: http://local
 2025-11-01 21:16:14,281 - werkzeug - INFO -  * Restarting with stat
 2025-11-01 21:16:14,620 - werkzeug - WARNING -  * Debugger is active!
 2025-11-01 21:16:14,626 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 21:16:21,235 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/news_synopsis_service.py', reloading
+2025-11-01 21:16:21,288 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 21:16:21,617 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 21:16:21,623 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 21:16:27,134 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/news_synopsis_service.py', reloading
+2025-11-01 21:16:27,187 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 21:16:27,501 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 21:16:27,506 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 21:16:35,382 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:35] "[35m[1mPOST /newsletter/news/reanalyze HTTP/1.1[0m" 500 -
+Traceback (most recent call last):
+  File "/Users/autojenny/Documents/projects/blog/blueprints/newsletter.py", line 484, in reanalyze_news
+    from newsletter.jobs.reanalyze_news import reanalyze_news_items
+  File "/Users/autojenny/Documents/projects/blog/blog-core/newsletter/jobs/reanalyze_news.py", line 9, in <module>
+    from newsletter.services.news_synopsis_service import process_news_with_synopsis
+  File "/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/news_synopsis_service.py", line 329
+    return _fallback_synopsis(title, article_content)
+    ^^^^^^
+SyntaxError: expected 'except' or 'finally' block
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.13/site-packages/flask/app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/flask/app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+  File "/opt/homebrew/lib/python3.13/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/opt/homebrew/lib/python3.13/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/opt/homebrew/lib/python3.13/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/opt/homebrew/lib/python3.13/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/autojenny/Documents/projects/blog/blueprints/newsletter.py", line 494, in reanalyze_news
+    logger.error(f"Error re-analyzing news: {e}", exc_info=True)
+    ^^^^^^
+NameError: name 'logger' is not defined
+2025-11-01 21:16:44,581 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:44] "GET /newsletter/news HTTP/1.1" 200 -
+2025-11-01 21:16:44,606 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:44] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-01 21:16:44,607 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:44] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-01 21:16:44,608 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:44] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-01 21:16:44,609 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:44] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-01 21:16:44,610 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:44] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-01 21:16:44,611 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:44] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-01 21:16:44,611 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:44] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-01 21:16:44,611 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:44] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-01 21:16:44,622 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:44] "[35m[1mGET /newsletter/news/summary?days_back=7&limit=100&sort_by=combined_score HTTP/1.1[0m" 500 -
+Traceback (most recent call last):
+  File "/Users/autojenny/Documents/projects/blog/blueprints/newsletter.py", line 450, in news_summary
+    from newsletter.services.news_synopsis_service import generate_news_summary
+  File "/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/news_synopsis_service.py", line 329
+    return _fallback_synopsis(title, article_content)
+    ^^^^^^
+SyntaxError: expected 'except' or 'finally' block
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.13/site-packages/flask/app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/flask/app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+  File "/opt/homebrew/lib/python3.13/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/opt/homebrew/lib/python3.13/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/opt/homebrew/lib/python3.13/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/opt/homebrew/lib/python3.13/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/autojenny/Documents/projects/blog/blueprints/newsletter.py", line 468, in news_summary
+    logger.error(f"Error generating news summary: {e}", exc_info=True)
+    ^^^^^^
+NameError: name 'logger' is not defined
+2025-11-01 21:16:44,626 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:44] "GET /newsletter/news?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+2025-11-01 21:16:47,987 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:47] "GET /newsletter/news HTTP/1.1" 200 -
+2025-11-01 21:16:48,006 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:48] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-01 21:16:48,009 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:48] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-01 21:16:48,009 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:48] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-01 21:16:48,009 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:48] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-01 21:16:48,010 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:48] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-01 21:16:48,012 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:48] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-01 21:16:48,013 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:48] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-01 21:16:48,014 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:48] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-01 21:16:48,021 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:48] "[35m[1mGET /newsletter/news/summary?days_back=7&limit=100&sort_by=combined_score HTTP/1.1[0m" 500 -
+Traceback (most recent call last):
+  File "/Users/autojenny/Documents/projects/blog/blueprints/newsletter.py", line 450, in news_summary
+    from newsletter.services.news_synopsis_service import generate_news_summary
+  File "/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/news_synopsis_service.py", line 329
+    return _fallback_synopsis(title, article_content)
+    ^^^^^^
+SyntaxError: expected 'except' or 'finally' block
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.13/site-packages/flask/app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/flask/app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+  File "/opt/homebrew/lib/python3.13/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/opt/homebrew/lib/python3.13/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/opt/homebrew/lib/python3.13/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/opt/homebrew/lib/python3.13/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/autojenny/Documents/projects/blog/blueprints/newsletter.py", line 468, in news_summary
+    logger.error(f"Error generating news summary: {e}", exc_info=True)
+    ^^^^^^
+NameError: name 'logger' is not defined
+2025-11-01 21:16:48,025 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 21:16:48] "[36mGET /newsletter/news?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-11-01 21:17:14,219 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/newsletter.py', reloading
+2025-11-01 21:17:14,269 - werkzeug - INFO -  * Restarting with stat
