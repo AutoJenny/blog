@@ -2422,3 +2422,13 @@ requests.exceptions.HTTPError: 404 Client Error: Not Found for url: http://local
 2025-11-01 20:52:40,063 - werkzeug - INFO -  * Restarting with stat
 2025-11-01 20:52:40,401 - werkzeug - WARNING -  * Debugger is active!
 2025-11-01 20:52:40,407 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 20:53:58,991 - config.database - INFO - Database connection established
+2025-11-01 20:53:58,999 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:53:58] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-01 20:53:59,813 - config.database - INFO - Database connection established
+2025-11-01 20:53:59,821 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:53:59] "GET /newsletter/news/summary?days_back=7&limit=100&sort_by=suitability_score HTTP/1.1" 200 -
+2025-11-01 20:59:18,954 - config.database - INFO - Database connection established
+2025-11-01 20:59:18,964 - werkzeug - INFO - 127.0.0.1 - - [01/Nov/2025 20:59:18] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-01 20:59:36,007 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/content_analysis_service.py', reloading
+2025-11-01 20:59:36,063 - werkzeug - INFO -  * Restarting with stat
+2025-11-01 20:59:36,395 - werkzeug - WARNING -  * Debugger is active!
+2025-11-01 20:59:36,400 - werkzeug - INFO -  * Debugger PIN: 263-852-041
