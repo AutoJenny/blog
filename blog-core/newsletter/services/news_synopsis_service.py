@@ -312,17 +312,18 @@ Provide your assessment in JSON format:
         # Calculate score from dimensions
         average = (historical + cultural + quirky + economic + political) / 5.0
         score = ((average - 1.0) / 99.0) * 8.0 + 1.0
-            # Generate basic synopsis from article content
-            synopsis = _extract_basic_synopsis(title, article_content)
-            # Clean subscription text from synopsis
-            synopsis = clean_subscription_text(synopsis)
-            
-            return {
-                'suitability_score': round(score, 1),
-                'suitability_notes': response[:500],
-                'synopsis': synopsis,
-                'relevant': score >= 6.0,
-            }
+        
+        # Generate basic synopsis from article content
+        synopsis = _extract_basic_synopsis(title, article_content)
+        # Clean subscription text from synopsis
+        synopsis = clean_subscription_text(synopsis)
+        
+        return {
+            'suitability_score': round(score, 1),
+            'suitability_notes': response[:500],
+            'synopsis': synopsis,
+            'relevant': score >= 6.0,
+        }
         
         return _fallback_synopsis(title, article_content)
         
