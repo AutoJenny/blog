@@ -528,8 +528,20 @@ def generate_news_summary(days_back: int = 7, limit: int = 100, sort_by: str = '
             sources[source_name] = []
         sources[source_name].append(item)
     
-    # Return all analyzed items (sorted by combined score by default, but can be re-sorted in UI)
-    top_stories = sorted(analyzed_items, key=lambda x: x.get('combined_score', 0) or 0, reverse=True)
+    # Sort stories based on requested sort order
+    if sort_by == 'suitability_score':
+        # Sort by suitability score (relevance to values) - highest first
+        top_stories = sorted(analyzed_items, key=lambda x: x.get('suitability_score', 0) or 0, reverse=True)
+    elif sort_by == 'published_at':
+        # Sort by recency - newest first
+        top_stories = sorted(analyzed_items, key=lambda x: x.get('published_at') or datetime.min, reverse=True)
+    else:
+        # Default: sort by combined score (relevance + freshness)
+        top_stories = sorted(analyzed_items, key=lambda x: x.get('combined_score', 0) or 0, reverse=True)
+    
+    # Apply limit
+    if limit > 0:
+        top_stories = top_stories[:limit]
     
     # Generate summary text from top stories
     summary_parts = []

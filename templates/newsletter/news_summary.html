@@ -2,18 +2,31 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
-    <div class="mb-6 flex items-center justify-between">
-        <div>
-            <h1 class="text-3xl font-bold text-white mb-2">News Synopsis</h1>
-            <p class="text-gray-400">Weekly news overview from Scottish sources</p>
+    <div class="mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h1 class="text-3xl font-bold text-white mb-2">News Synopsis</h1>
+                <p class="text-gray-400">Weekly news overview from Scottish sources</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="clean-btn" onclick="cleanSynopses()" class="bg-[#1e293b] hover:bg-[#334155] border border-[#475569] text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 transition shadow">
+                    <i class="fa-solid fa-broom"></i> Clean Synopses
+                </button>
+                <button id="reanalyze-btn" onclick="reanalyzeNews()" class="bg-[#4e6bff] hover:bg-[#3d5ae5] text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 transition shadow">
+                    <i class="fa-solid fa-refresh"></i> Re-analyze News
+                </button>
+            </div>
         </div>
-        <div class="flex items-center gap-3">
-            <button id="clean-btn" onclick="cleanSynopses()" class="bg-[#1e293b] hover:bg-[#334155] border border-[#475569] text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 transition shadow">
-                <i class="fa-solid fa-broom"></i> Clean Synopses
-            </button>
-            <button id="reanalyze-btn" onclick="reanalyzeNews()" class="bg-[#4e6bff] hover:bg-[#3d5ae5] text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 transition shadow">
-                <i class="fa-solid fa-refresh"></i> Re-analyze News
-            </button>
+        
+        <!-- Sort controls -->
+        <div class="bg-[#0f172a] border border-[#2d3246] rounded-lg p-4 flex items-center gap-4">
+            <label class="text-gray-400 text-sm font-semibold">Sort by:</label>
+            <select id="sort-select" onchange="changeSort()" class="bg-[#1e293b] border border-[#2d3246] text-white px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#7b8dff]">
+                <option value="combined_score">Relevance + Freshness</option>
+                <option value="suitability_score">Relevance to Values (Score)</option>
+                <option value="published_at">Recency (Newest First)</option>
+            </select>
+            <span class="text-gray-500 text-sm ml-auto" id="story-count">Loading...</span>
         </div>
     </div>
 
