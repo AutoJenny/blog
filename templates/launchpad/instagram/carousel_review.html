@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Carousel Review - Post {{ post_id }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid #334155;
+        }
+        
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: #f1f5f9;
+        }
+        
+        .header .post-title {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+        
+        .review-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 1024px) {
+            .review-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .panel {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #334155;
+        }
+        
+        .panel h2 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #f1f5f9;
+            border-bottom: 2px solid #334155;
+            padding-bottom: 10px;
+        }
+        
+        .carousel-preview {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding: 10px;
+            scroll-snap-type: x mandatory;
+        }
+        
+        .carousel-preview::-webkit-scrollbar {
+            height: 8px;
+        }
+        
+        .carousel-preview::-webkit-scrollbar-track {
+            background: #334155;
+            border-radius: 4px;
+        }
+        
+        .carousel-preview::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        
+        .slide-item {
+            flex: 0 0 250px;
+            scroll-snap-align: start;
+            background: #0f172a;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #334155;
+            transition: border-color 0.2s;
+        }
+        
+        .slide-item:hover {
+            border-color: #10b981;
+        }
+        
+        .slide-item.active {
+            border-color: #3b82f6;
+        }
+        
+        .slide-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .slide-number {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        .caption-preview {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        .caption-stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+        
+        .schedule-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .schedule-item {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .schedule-item label {
+            display: block;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 5px;
+        }
+        
+        .schedule-item .value {
+            font-size: 1.1rem;
+            color: #f1f5f9;
+            font-weight: 600;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #334155;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .btn-secondary {
+            background: #475569;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #334155;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-ready {
+            background: #10b981;
+            color: white;
+        }
+        
+        .status-draft {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .status-published {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            border: 3px solid #334155;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background: #7f1d1d;
+            border: 1px solid #991b1b;
+            color: #fca5a5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .error-message.active {
+            display: block;
+        }
+        
+        .success-message {
+            background: #064e3b;
+            border: 1px solid #065f46;
+            color: #6ee7b7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .success-message.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fab fa-instagram"></i> Instagram Carousel Review</h1>
+            <div class="post-title" id="post-title">Loading...</div>
+        </div>
+        
+        <div class="error-message" id="error-message"></div>
+        <div class="success-message" id="success-message"></div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>Loading carousel data...</div>
+        </div>
+        
+        <div id="review-content" style="display: none;">
+            <div class="review-grid">
+                <!-- Carousel Preview Panel -->
+                <div class="panel">
+                    <h2><i class="fas fa-images"></i> Carousel Slides</h2>
+                    <div class="carousel-preview" id="carousel-preview">
+                        <!-- Slides will be loaded here -->
+                    </div>
+                    <div style="margin-top: 15px; text-align: center; color: #94a3b8;">
+                        <span id="slide-count">0 slides</span>
+                    </div>
+                </div>
+                
+                <!-- Caption Preview Panel -->
+                <div class="panel">
+                    <h2><i class="fas fa-comment-alt"></i> Caption</h2>
+                    <div class="caption-preview" id="caption-preview">Loading caption...</div>
+                    <div class="caption-stats">
+                        <span id="caption-length">0 characters</span>
+                        <span id="caption-hashtags">0 hashtags</span>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <button class="btn btn-secondary" onclick="regenerateCaption()" style="width: 100%;">
+                            <i class="fas fa-sync-alt"></i> Regenerate Caption
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Schedule Info Panel -->
+            <div class="panel">
+                <h2><i class="fas fa-calendar-alt"></i> Schedule Information</h2>
+                <div class="schedule-info">
+                    <div class="schedule-item">
+                        <label>Status</label>
+                        <div class="value">
+                            <span class="status-badge" id="status-badge">Ready</span>
+                        </div>
+                    </div>
+                    <div class="schedule-item">
+                        <label>Scheduled Date</label>
+                        <div class="value" id="scheduled-date">Loading...</div>
+                    </div>
+                    <div class="schedule-item">
+                        <label>Scheduled Time</label>
+                        <div class="value" id="scheduled-time">Loading...</div>
+                    </div>
+                    <div class="schedule-item">
+                        <label>Timezone</label>
+                        <div class="value" id="timezone">Europe/London</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Actions Panel -->
+            <div class="panel">
+                <h2><i class="fas fa-cog"></i> Actions</h2>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="approveAndSchedule()">
+                        <i class="fas fa-check"></i> Approve & Schedule
+                    </button>
+                    <button class="btn btn-success" onclick="publishNow()">
+                        <i class="fas fa-paper-plane"></i> Publish Now
+                    </button>
+                    <button class="btn btn-secondary" onclick="regenerateCarousel()">
+                        <i class="fas fa-redo"></i> Regenerate Carousel
+                    </button>
+                    <button class="btn btn-danger" onclick="cancelQueue()">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const postId = {{ post_id }};
+        let queueItemId = null;
+        let carouselData = null;
+        
+        // Load carousel data
+        async function loadCarouselData() {
+            document.getElementById('loading').classList.add('active');
+            
+            try {
+                // Get carousel preview
+                const previewResponse = await fetch(`/launchpad/api/instagram/carousel/preview/${postId}`);
+                const previewData = await previewResponse.json();
+                
+                if (!previewData.success) {
+                    throw new Error(previewData.error || 'Failed to load carousel preview');
+                }
+                
+                carouselData = previewData;
+                
+                // Get queue item info
+                const queueResponse = await fetch(`/launchpad/api/syndication/queue?post_id=${postId}&platform=instagram&content_type=blog_post`);
+                const queueData = await queueResponse.json();
+                
+                if (queueData.success && queueData.items && queueData.items.length > 0) {
+                    const queueItem = queueData.items[0];
+                    queueItemId = queueItem.id;
+                    
+                    // Update schedule info
+                    if (queueItem.scheduled_date) {
+                        document.getElementById('scheduled-date').textContent = new Date(queueItem.scheduled_date).toLocaleDateString();
+                    }
+                    if (queueItem.scheduled_time) {
+                        document.getElementById('scheduled-time').textContent = queueItem.scheduled_time;
+                    }
+                    if (queueItem.timezone) {
+                        document.getElementById('timezone').textContent = queueItem.timezone;
+                    }
+                    
+                    // Update status
+                    const statusBadge = document.getElementById('status-badge');
+                    statusBadge.textContent = queueItem.status || 'ready';
+                    statusBadge.className = 'status-badge status-' + (queueItem.status || 'ready');
+                    
+                    // Load caption
+                    if (queueItem.generated_content) {
+                        document.getElementById('caption-preview').textContent = queueItem.generated_content;
+                        updateCaptionStats(queueItem.generated_content);
+                    }
+                }
+                
+                // Get post title
+                const postResponse = await fetch(`/launchpad/api/syndication/posts/${postId}`);
+                const postData = await postResponse.json();
+                if (postData.success && postData.post) {
+                    document.getElementById('post-title').textContent = postData.post.title;
+                }
+                
+                // Render slides
+                renderSlides(previewData.slides);
+                
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('review-content').style.display = 'block';
+                
+            } catch (error) {
+                document.getElementById('loading').classList.remove('active');
+                showError(error.message);
+            }
+        }
+        
+        function renderSlides(slides) {
+            const container = document.getElementById('carousel-preview');
+            container.innerHTML = '';
+            
+            document.getElementById('slide-count').textContent = `${slides.length} slides`;
+            
+            slides.forEach((slide, index) => {
+                const slideItem = document.createElement('div');
+                slideItem.className = 'slide-item';
+                if (index === 0) slideItem.classList.add('active');
+                
+                slideItem.innerHTML = `
+                    <div class="slide-number">Slide ${slide.slide_number}</div>
+                    <img src="${slide.url}" alt="Slide ${slide.slide_number}" loading="lazy">
+                `;
+                
+                slideItem.addEventListener('click', () => {
+                    document.querySelectorAll('.slide-item').forEach(item => item.classList.remove('active'));
+                    slideItem.classList.add('active');
+                });
+                
+                container.appendChild(slideItem);
+            });
+        }
+        
+        function updateCaptionStats(caption) {
+            document.getElementById('caption-length').textContent = `${caption.length} characters`;
+            const hashtags = (caption.match(/#\w+/g) || []).length;
+            document.getElementById('caption-hashtags').textContent = `${hashtags} hashtags`;
+        }
+        
+        async function approveAndSchedule() {
+            if (!queueItemId) {
+                showError('Queue item not found. Please regenerate carousel.');
+                return;
+            }
+            
+            if (!confirm('Approve and schedule this carousel for posting?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/launchpad/api/syndication/queue/${queueItemId}/approve`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('Carousel approved and scheduled successfully!');
+                    setTimeout(() => {
+                        window.location.href = '/launchpad';
+                    }, 2000);
+                } else {
+                    showError(data.error || 'Failed to approve carousel');
+                }
+            } catch (error) {
+                showError('Error approving carousel: ' + error.message);
+            }
+        }
+        
+        async function publishNow() {
+            if (!confirm('Publish this carousel to Instagram now? This cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/launchpad/api/instagram/carousel/post/${postId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        queue_item_id: queueItemId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('Carousel published to Instagram successfully! Post ID: ' + (data.post_id || data.creation_id));
+                    setTimeout(() => {
+                        window.location.href = '/launchpad';
+                    }, 3000);
+                } else {
+                    showError(data.error || 'Failed to publish carousel');
+                }
+            } catch (error) {
+                showError('Error publishing carousel: ' + error.message);
+            }
+        }
+        
+        async function regenerateCarousel() {
+            if (!confirm('Regenerate carousel? This will create a new version.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/launchpad/api/instagram/carousel/build/${postId}`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('Carousel regenerated successfully!');
+                    loadCarouselData();
+                } else {
+                    showError(data.error || 'Failed to regenerate carousel');
+                }
+            } catch (error) {
+                showError('Error regenerating carousel: ' + error.message);
+            }
+        }
+        
+        async function regenerateCaption() {
+            try {
+                const response = await fetch(`/launchpad/api/instagram/caption/generate/${postId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        use_llm: true
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('caption-preview').textContent = data.caption;
+                    updateCaptionStats(data.caption);
+                    showSuccess('Caption regenerated successfully!');
+                } else {
+                    showError(data.error || 'Failed to regenerate caption');
+                }
+            } catch (error) {
+                showError('Error regenerating caption: ' + error.message);
+            }
+        }
+        
+        async function cancelQueue() {
+            if (!confirm('Cancel this carousel? It will be removed from the queue.')) {
+                return;
+            }
+            
+            if (!queueItemId) {
+                showError('Queue item not found.');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/launchpad/api/syndication/queue/${queueItemId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('Carousel cancelled.');
+                    setTimeout(() => {
+                        window.location.href = '/launchpad';
+                    }, 1500);
+                } else {
+                    showError(data.error || 'Failed to cancel carousel');
+                }
+            } catch (error) {
+                showError('Error cancelling carousel: ' + error.message);
+            }
+        }
+        
+        function showError(message) {
+            const errorEl = document.getElementById('error-message');
+            errorEl.textContent = message;
+            errorEl.classList.add('active');
+            setTimeout(() => errorEl.classList.remove('active'), 5000);
+        }
+        
+        function showSuccess(message) {
+            const successEl = document.getElementById('success-message');
+            successEl.textContent = message;
+            successEl.classList.add('active');
+            setTimeout(() => successEl.classList.remove('active'), 5000);
+        }
+        
+        // Load data on page load
+        loadCarouselData();
+    </script>
+</body>
+</html>
+

@@ -339,12 +339,14 @@ function getCurrentISOWeek() {
     return weekNum;
 }
 
-// Set Week Ideas link to current week
+// Set Week Ideas link to the week being viewed (from window.weekNumber) or current week
 function setWeekIdeasLink() {
     const weekIdeasLink = document.getElementById('week-ideas-link');
     if (weekIdeasLink) {
-        const currentWeek = getCurrentISOWeek();
-        weekIdeasLink.href = `/planning/calendar/ideas/week/${currentWeek}`;
+        // Check if we're viewing a specific week (from calendar week view)
+        const viewedWeek = window.weekNumber;
+        const weekToUse = viewedWeek && viewedWeek > 0 ? viewedWeek : getCurrentISOWeek();
+        weekIdeasLink.href = `/planning/calendar/ideas/week/${weekToUse}`;
     }
 }
 

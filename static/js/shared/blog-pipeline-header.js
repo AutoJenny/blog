@@ -170,6 +170,48 @@ class BlogPipelineHeader {
                             }
                         }
                     }
+                    
+                    // If still no theme selected, auto-select first available theme for this week
+                    if (!selectedTheme && weekNumber) {
+                        try {
+                            const ideasResp = await fetch(`/planning/api/calendar/ideas/week/${weekNumber}`);
+                            if (ideasResp.ok) {
+                                const ideasData = await ideasResp.json();
+                                const ideas = Array.isArray(ideasData) ? ideasData : (ideasData?.ideas || []);
+                                
+                                // Find themes (item_classification === 'theme')
+                                const themes = ideas.filter(i => 
+                                    (i.item_classification || 'idea').toLowerCase() === 'theme'
+                                );
+                                
+                                if (themes.length > 0) {
+                                    // Auto-select first theme (already sorted by priority from API)
+                                    const firstTheme = themes[0];
+                                    selectedTheme = firstTheme.idea_title;
+                                    
+                                    // Auto-select this theme in the schedule
+                                    try {
+                                        const selectResp = await fetch('/planning/api/calendar/select-theme', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({
+                                                idea_id: firstTheme.id,
+                                                year: year,
+                                                week_number: weekNumber
+                                            })
+                                        });
+                                        if (selectResp.ok) {
+                                            console.log('[Blog Pipeline Header] Auto-selected theme:', selectedTheme);
+                                        }
+                                    } catch (e) {
+                                        console.warn('[Blog Pipeline Header] Error auto-selecting theme:', e);
+                                    }
+                                }
+                            }
+                        } catch (e) {
+                            console.warn('[Blog Pipeline Header] Error checking for themes:', e);
+                        }
+                    }
                 } catch (e) {
                     console.warn('[Blog Pipeline Header] Error fetching theme from week schedule:', e);
                 }
@@ -248,6 +290,50 @@ class BlogPipelineHeader {
                                         }
                                     }
                                 }
+                            }
+                        }
+                        
+                        // If no theme selected yet, check if themes exist for this week and auto-select first one
+                        if (!selectedTheme && weekNumber && year) {
+                            try {
+                                const ideasResp = await fetch(`/planning/api/calendar/ideas/week/${weekNumber}`);
+                                if (ideasResp.ok) {
+                                    const ideasData = await ideasResp.json();
+                                    const ideas = Array.isArray(ideasData) ? ideasData : (ideasData?.ideas || []);
+                                    
+                                    // Find themes (item_classification === 'theme')
+                                    const themes = ideas.filter(i => 
+                                        (i.item_classification || 'idea').toLowerCase() === 'theme'
+                                    );
+                                    
+                                    if (themes.length > 0) {
+                                        // Auto-select first theme (already sorted by priority from API)
+                                        const firstTheme = themes[0];
+                                        selectedTheme = firstTheme.idea_title;
+                                        
+                                        // Auto-select this theme in the schedule
+                                        try {
+                                            const selectResp = await fetch('/planning/api/calendar/select-theme', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({
+                                                    idea_id: firstTheme.id,
+                                                    year: year,
+                                                    week_number: weekNumber
+                                                })
+                                            });
+                                            if (selectResp.ok) {
+                                                console.log('[Blog Pipeline Header] Auto-selected theme:', selectedTheme);
+                                                // After auto-selecting, update the display immediately
+                                                themeEl.textContent = selectedTheme;
+                                            }
+                                        } catch (e) {
+                                            console.warn('[Blog Pipeline Header] Error auto-selecting theme:', e);
+                                        }
+                                    }
+                                }
+                            } catch (e) {
+                                console.warn('[Blog Pipeline Header] Error checking for themes:', e);
                             }
                         }
                     } catch (e) {
