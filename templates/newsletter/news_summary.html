@@ -169,9 +169,9 @@ async function loadNewsSummary(sortBy = 'combined_score', limit = 100) {
                                                     <i class="fa-solid fa-calendar"></i>
                                                     ${pubDate}
                                                 </span>` : ''}
-                                                ${story.suitability_score ? `<span class="flex items-center gap-1" title="Relevance score - how well this story matches our Scottish heritage/culture values">
+                                                ${story.suitability_score ? `<span class="flex items-center gap-1" title="Relevance score (1-9) - diaspora interest in Scottish heritage/culture">
                                                     <i class="fa-solid fa-star"></i>
-                                                    Relevance: ${story.suitability_score}/10
+                                                    Relevance: ${story.suitability_score}/9
                                                 </span>` : ''}
                                                 ${story.combined_score ? `<span class="flex items-center gap-1" title="Combined score (relevance + freshness)">
                                                     <i class="fa-solid fa-chart-line"></i>
