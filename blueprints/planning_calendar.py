@@ -88,3 +88,28 @@ def planning_calendar_ideas(post_id):
                               post_id=post_id, year=year, week_number=week_number,
                               blueprint_name='planning',
                               mode='post-based')
+
+def planning_calendar_taxonomy(post_id):
+    """Taxonomy assignment page"""
+    try:
+        # Get post data to check if it exists
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("SELECT id, title FROM post WHERE id = %s", (post_id,))
+            post = cursor.fetchone()
+            
+            if not post:
+                return render_template('planning/calendar/taxonomy.html', 
+                                      post_id=post_id,
+                                      blueprint_name='planning',
+                                      error='Post not found')
+            
+            return render_template('planning/calendar/taxonomy.html', 
+                                  post_id=post_id,
+                                  post_title=post['title'],
+                                  blueprint_name='planning')
+    except Exception as e:
+        logger.error(f"Error in planning_calendar_taxonomy: {e}")
+        return render_template('planning/calendar/taxonomy.html', 
+                              post_id=post_id,
+                              blueprint_name='planning',
+                              error=str(e))

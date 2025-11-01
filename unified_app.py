@@ -94,6 +94,16 @@ def create_app(config_name=None):
     from blueprints.planning import bp as planning_bp
     app.register_blueprint(planning_bp)
     
+    # Register taxonomy API blueprints
+    from blueprints.taxonomy_api import bp as taxonomy_api_bp
+    app.register_blueprint(taxonomy_api_bp)
+    
+    from blueprints.planning_api_taxonomy import bp as planning_taxonomy_api_bp
+    app.register_blueprint(planning_taxonomy_api_bp)
+    
+    from blueprints.authoring_api_photography import bp as authoring_photography_bp
+    app.register_blueprint(authoring_photography_bp)
+    
     # TEMPORARY: Test route for Authoring template preview
     @app.route('/test-authoring/<int:post_id>')
     def test_authoring_preview(post_id):

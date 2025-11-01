@@ -92,6 +92,10 @@
                    class="sub-stage-btn" data-substage="ideas">
                     Idea Generation
                 </a>
+                <a href="{{ url_for('planning.planning_calendar_taxonomy', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="taxonomy">
+                    Taxonomy
+                </a>
                 <a href="{{ url_for('planning.planning_concept_brainstorm', post_id=post_id) }}" 
                    class="sub-stage-btn" data-substage="brainstorm">
                     Topic Brainstorming
