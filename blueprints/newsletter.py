@@ -475,6 +475,24 @@ def news_summary_page():
     return render_template('newsletter/news_summary.html')
 
 
+@bp.route('/newsletter/news/reanalyze', methods=['POST'])
+def reanalyze_news():
+    """Re-analyze existing news items with synopsis service."""
+    try:
+        from newsletter.jobs.reanalyze_news import reanalyze_news_items
+        
+        result = reanalyze_news_items(days_back=30, limit=50)
+        
+        return jsonify({
+            'success': True,
+            'message': f"Re-analyzed {result['processed']} items, skipped {result['skipped']}, errors {result['errors']}",
+            'result': result
+        })
+    except Exception as e:
+        logger.error(f"Error re-analyzing news: {e}", exc_info=True)
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @bp.route('/newsletter/sources')
 def sources_management():
     """Source aggregation management page."""

@@ -400,10 +400,16 @@ def get_news_items(days_back: int = 7) -> List[Dict[str, Any]]:
                signal_score, freshness_score, combined_score
         FROM newsletter_source_item
         WHERE category = 'news'
-          AND suitability_score >= 6.0
           AND published_at IS NOT NULL
           AND published_at::date >= %s
-        ORDER BY published_at DESC, combined_score DESC
+          AND (
+            suitability_score >= 6.0
+            OR suitability_score IS NULL
+          )
+        ORDER BY 
+          CASE WHEN suitability_score >= 6.0 THEN 0 ELSE 1 END,
+          published_at DESC, 
+          combined_score DESC NULLS LAST
     """
     
     with db_manager.get_connection() as conn:
@@ -424,26 +430,34 @@ def generate_news_summary(days_back: int = 7) -> Dict[str, Any]:
     """
     items = get_news_items(days_back=days_back)
     
-    if not items:
+    # Filter to only items that have been analyzed and passed threshold
+    analyzed_items = [item for item in items if item.get('suitability_score', 0) >= 6.0]
+    unanalyzed_count = len(items) - len(analyzed_items)
+    
+    if not analyzed_items:
+        summary_msg = 'No relevant news stories found for this period.'
+        if unanalyzed_count > 0:
+            summary_msg += f' {unanalyzed_count} items need analysis. Click "Re-analyze News" to process them.'
         return {
             'generated_at': datetime.now(),
             'days_back': days_back,
             'total_stories': 0,
-            'summary_text': 'No relevant news stories found for this period.',
+            'unanalyzed_count': unanalyzed_count,
+            'summary_text': summary_msg,
             'top_stories': [],
             'sources': {},
         }
     
     # Group by source
     sources = {}
-    for item in items:
+    for item in analyzed_items:
         source_name = item.get('source_name', 'Unknown')
         if source_name not in sources:
             sources[source_name] = []
         sources[source_name].append(item)
     
     # Top stories by combined score
-    top_stories = sorted(items, key=lambda x: x.get('combined_score', 0), reverse=True)[:10]
+    top_stories = sorted(analyzed_items, key=lambda x: x.get('combined_score', 0) or 0, reverse=True)[:10]
     
     # Generate summary text from top stories
     summary_parts = []
@@ -468,7 +482,8 @@ def generate_news_summary(days_back: int = 7) -> Dict[str, Any]:
     return {
         'generated_at': datetime.now(),
         'days_back': days_back,
-        'total_stories': len(items),
+        'total_stories': len(analyzed_items),
+        'unanalyzed_count': unanalyzed_count,
         'summary_text': summary_text,
         'top_stories': [
             {
