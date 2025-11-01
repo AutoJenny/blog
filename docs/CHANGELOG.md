@@ -1,5 +1,15 @@
 # Changelog
 
+## 2025-11-01 (continued - evening)
+
+- Section Titling: Fixed bug where only first section received title/description - now generates for all sections
+- Section Titling: Enhanced LLM prompt to explicitly list all sections with themes and topics
+- Section Titling: Added validation to ensure LLM generates exactly the correct number of section titles
+- Section Titling: Fixed section matching logic bug that was overwriting outer loop variable
+- Section Titling: Added direct writes to post_section table in addition to post_development.sections
+- Idea Expansion: Enhanced Important Notes highlighting in prompt with mandatory requirements and explicit instructions
+- Idea Expansion: Improved theme data fetching to handle cases where theme selected for week before post creation
+
 ## 2025-11-01 (continued)
 
 - Page Headers: Replaced post ID display with date span, week number, and selected theme across all blog pipeline pages
