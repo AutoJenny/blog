@@ -4,24 +4,10 @@
     <!-- Main Title Line -->
     <div class="main-title-line">
         <h1 class="pipeline-title" id="pipeline-title">
-            {% if mode == 'week-based' %}
-                {# Week-based pages: show week, post_id is just for context #}
-                {{ page_title }}: Week {{ week_number }}
-            {% elif mode == 'post-based' or not mode %}
-                {# Post-based pages: show post_id, even if 0 #}
-                {% if post_id and post_id > 0 %}
-                    {{ page_title }}: ID: {{ post_id }}
-                {% else %}
-                    {{ page_title }}: ID: {{ post_id|default(0) }}
-                {% endif %}
-            {% elif week_number %}
-                {# Fallback: if week_number provided but no mode, treat as week-based #}
-                {{ page_title }}: Week {{ week_number }}
-            {% elif post_id and post_id > 0 %}
-                {{ page_title }}: ID: {{ post_id }}
-            {% else %}
-                {{ page_title }}
-            {% endif %}
+            <span class="pipeline-title-prefix" id="pipeline-title-prefix"></span>
+            <span class="pipeline-title-week-info" id="pipeline-title-week-info"></span>
+            <span class="pipeline-title-separator" style="margin: 0 0.5rem;">|</span>
+            <span class="pipeline-title-theme" id="pipeline-title-theme">Unselected theme</span>
         </h1>
     </div>
     

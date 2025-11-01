@@ -1,5 +1,13 @@
 # Changelog
 
+## 2025-11-01 (continued)
+
+- Page Headers: Replaced post ID display with date span, week number, and selected theme across all blog pipeline pages
+- Page Headers: Added fallback logic to fetch theme from week schedule when post schedule doesn't include theme
+- Page Headers: Removed stage prefix (Planning/Calendar) from header - now shows only week info and theme
+- API: Updated planning_api_posts to include selected_theme_title in schedule responses
+- UI: Added CSS styling for new header elements (prefix, week info, separator, theme)
+
 ## 2025-11-01
 
 - Week View Navigation: Added localStorage persistence for calendar week view (remembers selected week/year across sessions).

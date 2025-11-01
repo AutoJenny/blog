@@ -37,6 +37,8 @@ class BlogPipelineHeader {
             console.log('[Blog Pipeline Header] DOM still loading, waiting for DOMContentLoaded...');
         } else {
             console.log('[Blog Pipeline Header] DOM already loaded, loading post data with delay...');
+            // Update week/theme immediately for week-based pages
+            this.updateWeekAndTheme();
             setTimeout(() => this.loadPostData(), 500);
         }
     }
@@ -68,7 +70,10 @@ class BlogPipelineHeader {
         }
     }
 
-    updateHeaderFields() {
+    async updateHeaderFields() {
+        // Update week info and theme (works for both post-based and week-based)
+        await this.updateWeekAndTheme();
+        
         if (!this.postData || !this.postData.post) {
             console.warn('[Blog Pipeline Header] No post data available for update');
             return;
@@ -104,6 +109,190 @@ class BlogPipelineHeader {
         }
 
         console.log('[Blog Pipeline Header] Header fields updated');
+    }
+
+    async updateWeekAndTheme() {
+        const prefixEl = document.getElementById('pipeline-title-prefix');
+        const weekInfoEl = document.getElementById('pipeline-title-week-info');
+        const themeEl = document.getElementById('pipeline-title-theme');
+        
+        if (!prefixEl || !weekInfoEl || !themeEl) return;
+        
+        // Determine stage name from current path
+        const stageName = this.getStageName();
+        if (stageName) {
+            prefixEl.textContent = stageName + ': ';
+        } else {
+            prefixEl.textContent = '';
+        }
+        
+        let year, weekNumber, selectedTheme;
+        
+        // Try to get from post data (post-based)
+        if (this.postData && this.postData.schedule) {
+            year = this.postData.schedule.year;
+            weekNumber = this.postData.schedule.week_number;
+            selectedTheme = this.postData.schedule.selected_theme_title;
+            
+            // If schedule doesn't have theme but has idea_id, fetch it
+            if (!selectedTheme && this.postData.schedule.idea_id) {
+                try {
+                    const ideaResp = await fetch(`/planning/api/calendar/ideas/${this.postData.schedule.idea_id}`);
+                    if (ideaResp.ok) {
+                        const ideaData = await ideaResp.json();
+                        const idea = ideaData.idea || ideaData;
+                        if (idea && idea.idea_title) {
+                            selectedTheme = idea.idea_title;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[Blog Pipeline Header] Error fetching theme from idea_id:', e);
+                }
+            }
+            
+            // If still no theme and we have week info, check week schedule
+            if (!selectedTheme && year && weekNumber) {
+                try {
+                    const weekResp = await fetch(`/planning/api/calendar/schedule/${year}/${weekNumber}`);
+                    if (weekResp.ok) {
+                        const weekData = await weekResp.json();
+                        if (weekData.schedule && Array.isArray(weekData.schedule) && weekData.schedule.length > 0) {
+                            const scheduleWithIdea = weekData.schedule.find(s => s.idea_id);
+                            if (scheduleWithIdea && scheduleWithIdea.idea_id) {
+                                const ideaResp = await fetch(`/planning/api/calendar/ideas/${scheduleWithIdea.idea_id}`);
+                                if (ideaResp.ok) {
+                                    const ideaData = await ideaResp.json();
+                                    const idea = ideaData.idea || ideaData;
+                                    if (idea && idea.idea_title) {
+                                        selectedTheme = idea.idea_title;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[Blog Pipeline Header] Error fetching theme from week schedule:', e);
+                }
+            }
+        } else {
+            // Try to get from template variables (week-based or post-based without schedule)
+            const postId = this.getPostId();
+            if (postId && postId !== '0' && parseInt(postId) !== 0) {
+                // Post-based: fetch schedule - but also check week schedule for theme
+                try {
+                    const resp = await fetch(`/planning/api/posts/${postId}`);
+                    if (resp.ok) {
+                        const data = await resp.json();
+                        if (data.schedule) {
+                            year = data.schedule.year;
+                            weekNumber = data.schedule.week_number;
+                            selectedTheme = data.schedule.selected_theme_title;
+                            
+                            // If no theme from post schedule but we have week info, check week schedule
+                            if (!selectedTheme && year && weekNumber) {
+                                const weekResp = await fetch(`/planning/api/calendar/schedule/${year}/${weekNumber}`);
+                                if (weekResp.ok) {
+                                    const weekData = await weekResp.json();
+                                    if (weekData.schedule && Array.isArray(weekData.schedule) && weekData.schedule.length > 0) {
+                                        const scheduleWithIdea = weekData.schedule.find(s => s.idea_id);
+                                        if (scheduleWithIdea && scheduleWithIdea.idea_id) {
+                                            const ideaResp = await fetch(`/planning/api/calendar/ideas/${scheduleWithIdea.idea_id}`);
+                                            if (ideaResp.ok) {
+                                                const ideaData = await ideaResp.json();
+                                                const idea = ideaData.idea || ideaData;
+                                                if (idea && idea.idea_title) {
+                                                    selectedTheme = idea.idea_title;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[Blog Pipeline Header] Error fetching schedule:', e);
+                }
+            } else {
+                // Week-based: get from localStorage, window variables, or URL params
+                const savedYear = localStorage.getItem('calendar-week-view-year');
+                const savedWeek = localStorage.getItem('calendar-week-view-week');
+                
+                // Also check window variables (set by templates)
+                if (window.year && window.weekNumber) {
+                    year = window.year;
+                    weekNumber = window.weekNumber;
+                } else if (savedYear && savedWeek) {
+                    year = parseInt(savedYear);
+                    weekNumber = parseInt(savedWeek);
+                }
+                
+                if (year && weekNumber) {
+                    // Fetch theme for this week
+                    try {
+                        const resp = await fetch(`/planning/api/calendar/schedule/${year}/${weekNumber}`);
+                        if (resp.ok) {
+                            const data = await resp.json();
+                            if (data.schedule && Array.isArray(data.schedule) && data.schedule.length > 0) {
+                                // Find schedule entry with idea_id (selected theme)
+                                const scheduleWithIdea = data.schedule.find(s => s.idea_id);
+                                if (scheduleWithIdea && scheduleWithIdea.idea_id) {
+                                    // Fetch the idea details to get the title
+                                    const ideaResp = await fetch(`/planning/api/calendar/ideas/${scheduleWithIdea.idea_id}`);
+                                    if (ideaResp.ok) {
+                                        const ideaData = await ideaResp.json();
+                                        // Handle both {idea: {...}} and direct {...} response formats
+                                        const idea = ideaData.idea || ideaData;
+                                        if (idea && idea.idea_title) {
+                                            selectedTheme = idea.idea_title;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('[Blog Pipeline Header] Error fetching theme:', e);
+                    }
+                }
+            }
+        }
+        
+        // Update week info
+        if (year && weekNumber) {
+            // Calculate date span for the week
+            const weekStart = this.getWeekStartDate(year, weekNumber);
+            const weekEnd = new Date(weekStart);
+            weekEnd.setUTCDate(weekEnd.getUTCDate() + 6);
+            
+            const startStr = this.formatDate(weekStart);
+            const endStr = this.formatDate(weekEnd);
+            weekInfoEl.textContent = `${startStr} – ${endStr}, Week ${weekNumber}`;
+        } else {
+            weekInfoEl.textContent = '';
+        }
+        
+        // Update theme
+        if (selectedTheme) {
+            themeEl.textContent = selectedTheme;
+        } else {
+            themeEl.textContent = 'Unselected theme';
+        }
+    }
+
+    getStageName() {
+        // No prefix needed - just show week info and theme
+        return '';
+    }
+
+    getWeekStartDate(year, weekNumber) {
+        const simple = new Date(Date.UTC(year, 0, 4 + (weekNumber - 1) * 7));
+        const dow = (simple.getUTCDay() + 6) % 7;
+        simple.setUTCDate(simple.getUTCDate() - dow);
+        return simple; // Monday
+    }
+
+    formatDate(d) {
+        return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
     }
 
     getPostId() {

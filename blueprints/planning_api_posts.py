@@ -30,11 +30,16 @@ def api_posts(post_id):
             if not result:
                 return jsonify({'error': 'Post not found'}), 404
             
-            # Get calendar schedule
+            # Get calendar schedule with selected theme
             cursor.execute("""
-                SELECT id, year, week_number, scheduled_date, created_at, updated_at
-                FROM calendar_schedule 
-                WHERE post_id = %s
+                SELECT cs.id, cs.year, cs.week_number, cs.scheduled_date, cs.idea_id, 
+                       cs.created_at, cs.updated_at,
+                       ci.idea_title as selected_theme_title
+                FROM calendar_schedule cs
+                LEFT JOIN calendar_ideas ci ON cs.idea_id = ci.id
+                WHERE cs.post_id = %s
+                ORDER BY cs.created_at DESC
+                LIMIT 1
             """, (post_id,))
             
             schedule = cursor.fetchone()
