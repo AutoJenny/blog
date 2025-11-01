@@ -107,17 +107,15 @@ def reanalyze_news_items(days_back: int = 30, limit: int = 50) -> Dict[str, Any]
                             ))
                             conn.commit()
                 
-                final_score = processed.get('suitability_score', 0)
-                # STRICT clamp to 1-9 range - enforce in database update
+                # Get the final score (already clamped by SQL LEAST/GREATEST)
+                final_score = processed.get('suitability_score', 5.0)
+                # Verify clamp (should already be done, but double-check)
                 if final_score > 9.0:
-                    logger.warning(f"Score {final_score} exceeds 9, clamping to 9.0: {item['title'][:50]}")
+                    logger.error(f"CRITICAL: Score {final_score} still exceeds 9 after clamping! Title: {item['title'][:50]}")
                     final_score = 9.0
                 elif final_score < 1.0:
-                    logger.warning(f"Score {final_score} below 1, clamping to 1.0: {item['title'][:50]}")
+                    logger.error(f"CRITICAL: Score {final_score} still below 1 after clamping! Title: {item['title'][:50]}")
                     final_score = 1.0
-                
-                # Update the processed dict so database gets correct score
-                processed['suitability_score'] = final_score
                 
                 if final_score >= 6.0:
                     processed_count += 1

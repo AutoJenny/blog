@@ -6351,3 +6351,5 @@ requests.exceptions.HTTPError: 404 Client Error: Not Found for url: http://local
 2025-11-01 21:21:27,696 - werkzeug - INFO -  * Restarting with stat
 2025-11-01 21:21:28,020 - werkzeug - WARNING -  * Debugger is active!
 2025-11-01 21:21:28,026 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-01 21:21:37,830 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/jobs/reanalyze_news.py', reloading
+2025-11-01 21:21:37,875 - werkzeug - INFO -  * Restarting with stat
