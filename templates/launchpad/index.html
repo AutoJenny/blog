@@ -959,6 +959,76 @@
                 </div>
             </div>
             
+            <!-- Blog Posts Module (Instagram) -->
+            <div class="module-card active" style="border: 3px solid #E1306C;">
+                <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                    <div class="module-icon" style="background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); margin-right: 15px;">
+                        <i class="fab fa-instagram"></i>
+                    </div>
+                    <span style="color: #E1306C; font-size: 1.2rem; font-weight: 600;">Instagram</span>
+                </div>
+                <h2 class="module-title">Blog Posts</h2>
+                <p class="module-description">
+                    Convert blog posts into engaging Instagram posts. AI-powered content rewriting 
+                    with platform-specific requirements and automated publishing workflows.
+                </p>
+                <div class="module-stats">
+                    <div class="stat">
+                        <i class="fas fa-robot"></i>
+                        <span id="instagram-blog-posts-converted">Loading...</span> converted
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-magic"></i>
+                        <span id="instagram-ai-rewrites">Loading...</span> AI rewrites
+                    </div>
+                </div>
+                <div class="module-actions">
+                    <a href="/launchpad/syndication/instagram/blog_post" class="btn btn-primary">
+                        <i class="fas fa-cog"></i>
+                        Manage Blog Posts
+                    </a>
+                    <a href="/syndication/create-piece" class="btn btn-secondary">
+                        <i class="fas fa-plus"></i>
+                        Create New Post
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Instagram Carousel Module -->
+            <div class="module-card active" style="border: 3px solid #E1306C;">
+                <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                    <div class="module-icon" style="background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); margin-right: 15px;">
+                        <i class="fab fa-instagram"></i>
+                    </div>
+                    <span style="color: #E1306C; font-size: 1.2rem; font-weight: 600;">Instagram</span>
+                </div>
+                <h2 class="module-title">Blog Carousel Posts</h2>
+                <p class="module-description">
+                    Weekly Instagram carousel posts from blog articles. Auto-generates 8-10 slide carousels 
+                    with text overlays, scheduled for Monday 12:00-18:00 UK time.
+                </p>
+                <div class="module-stats">
+                    <div class="stat">
+                        <i class="fas fa-images"></i>
+                        <span id="instagram-carousels-pending">Loading...</span> pending
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-calendar-check"></i>
+                        <span id="instagram-carousels-scheduled">Loading...</span> scheduled
+                    </div>
+                </div>
+                <div class="module-actions">
+                    <button class="btn btn-primary" onclick="autoGenerateCarousel()">
+                        <i class="fas fa-magic"></i>
+                        Auto-Generate Carousel
+                    </button>
+                    <a href="/launchpad/api/instagram/carousel/queue" class="btn btn-secondary">
+                        <i class="fas fa-list"></i>
+                        View Queue
+                    </a>
+                </div>
+            </div>
+            
             <!-- One-Click Blog Module -->
             <div class="module-card active" style="border: 3px solid #8b5cf6; cursor: pointer;" onclick="window.location.href='/launchpad/one-click-blog'">
                 <div class="module-icon" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa);">
@@ -1270,14 +1340,28 @@
                         document.getElementById('ai-rewrites').textContent = facebookPieces.filter(piece => 
                             piece.llm_provider && piece.llm_provider !== 'none'
                         ).length;
+                        
+                        // Load Instagram blog posts stats
+                        const instagramPieces = syndicationData.pieces.filter(piece => 
+                            piece.platform_name === 'Instagram' && piece.channel_type_name === 'blog_post'
+                        );
+                        
+                        document.getElementById('instagram-blog-posts-converted').textContent = instagramPieces.length;
+                        document.getElementById('instagram-ai-rewrites').textContent = instagramPieces.filter(piece => 
+                            piece.llm_provider && piece.llm_provider !== 'none'
+                        ).length;
                     } else {
                         document.getElementById('blog-posts-converted').textContent = '0';
                         document.getElementById('ai-rewrites').textContent = '0';
+                        document.getElementById('instagram-blog-posts-converted').textContent = '0';
+                        document.getElementById('instagram-ai-rewrites').textContent = '0';
                     }
                 } catch (error) {
-                    console.error('Error loading Facebook blog posts stats:', error);
+                    console.error('Error loading Facebook/Instagram blog posts stats:', error);
                     document.getElementById('blog-posts-converted').textContent = '0';
                     document.getElementById('ai-rewrites').textContent = '0';
+                    document.getElementById('instagram-blog-posts-converted').textContent = '0';
+                    document.getElementById('instagram-ai-rewrites').textContent = '0';
                 }
                 
                 // Load Social Media Command Center stats
@@ -1932,6 +2016,30 @@
         }
         
         // Load stats when page loads
+        async function autoGenerateCarousel() {
+            if (!confirm('Auto-generate Instagram carousel for the next unposted blog article? This will create a carousel and schedule it for next Monday.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/launchpad/api/instagram/carousel/auto-generate', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`Carousel generated successfully!\n\nPost: ${data.post_title}\nSlides: ${data.carousel.slide_count}\nScheduled: ${data.schedule.scheduled_date} at ${data.schedule.scheduled_time}\n\nRedirecting to review...`);
+                    window.location.href = `/launchpad/instagram/carousel/${data.post_id}/review`;
+                } else {
+                    alert(`Failed to generate carousel: ${data.error || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Error generating carousel:', error);
+                alert(`Error generating carousel: ${error.message}`);
+            }
+        }
+        
         document.addEventListener('DOMContentLoaded', function() {
             loadModuleStats();
             loadCommandCenterKPIs();

@@ -110,32 +110,49 @@ VALIDATION RULES:
             }), 500
         
         # Format the prompt with actual data
-        # Use the simplest possible format to avoid LLM confusion
+        # Include comprehensive section information to help LLM generate all titles
         sections_text = ""
         for i, allocation in enumerate(topic_allocation):
             section_theme = allocation.get('section_theme', f'Section {i+1}')
-            sections_text += f"{i+1}. {section_theme}\n"
+            topics = allocation.get('topics', [])
+            topics_text = ", ".join(topics[:5])  # Limit to first 5 topics to avoid prompt bloat
+            if len(topics) > 5:
+                topics_text += f" (and {len(topics) - 5} more)"
+            sections_text += f"Section {i+1}:\n"
+            sections_text += f"  Theme: {section_theme}\n"
+            if topics_text:
+                sections_text += f"  Topics: {topics_text}\n"
+            sections_text += "\n"
+        
+        # Create explicit section list for the JSON template
+        section_templates = []
+        for i, allocation in enumerate(topic_allocation):
+            section_theme = allocation.get('section_theme', f'Section {i+1}')
+            section_templates.append(f'{{ "index": {i+1}, "original": "{section_theme}", "title": "Your Creative Title Here" }}')
         
         formatted_prompt = f"""Generate creative section titles for this blog post.
 
 BLOG POST TOPIC: {expanded_idea}
 
-SECTIONS TO TITLE:
+SECTIONS TO TITLE (YOU MUST GENERATE A TITLE FOR EACH SECTION):
 {sections_text.strip()}
 
-REQUIREMENTS:
-- Generate exactly {len(topic_allocation)} titles
+CRITICAL REQUIREMENTS:
+- You MUST generate exactly {len(topic_allocation)} titles - one for EACH section listed above
 - Each title should be 2-4 words
 - Make titles poetic and evocative
 - Do not include the blog post topic in your titles
+- You MUST include all {len(topic_allocation)} sections in your response - do not skip any
 
-OUTPUT FORMAT (JSON only):
+OUTPUT FORMAT (JSON only - must include ALL {len(topic_allocation)} sections):
 {{
-  "post_title": "{expanded_idea}",
+  "post_title": "{expanded_idea[:100]}",
   "sections": [
-    {", ".join([f'{{ "index": {i+1}, "original": "{allocation.get("section_theme", f"Section {i+1}")}", "title": "Your Creative Title Here" }}' for i, allocation in enumerate(topic_allocation)])}
+    {", ".join(section_templates)}
   ]
-}}"""
+}}
+
+REMINDER: Your response MUST contain exactly {len(topic_allocation)} sections in the "sections" array. Do not generate fewer titles."""
         
         # Call LLM service
         try:
@@ -247,28 +264,55 @@ OUTPUT FORMAT (JSON only):
                     
                     logger.info(f"Successfully validated {len(sections)} sections")
                     
+                    # CRITICAL VALIDATION: Ensure we have titles for ALL sections
+                    if len(sections) < len(topic_allocation):
+                        logger.error(f"LLM only generated {len(sections)} titles but {len(topic_allocation)} sections were requested!")
+                        logger.error(f"Generated sections: {[s.get('index') for s in sections]}")
+                        return jsonify({
+                            'success': False,
+                            'error': f'LLM only generated {len(sections)} titles but {len(topic_allocation)} sections were requested. Please try again.',
+                            'expected_count': len(topic_allocation),
+                            'actual_count': len(sections),
+                            'raw_response': response['content']
+                        }), 500
+                    
                     # Merge topics from topic allocation with generated titles
+                    # Match sections by index, ensuring we have one title per allocation
                     enhanced_sections = []
-                    for i, section in enumerate(sections):
-                        # Find matching topic allocation by index
-                        matching_allocation = None
-                        for allocation in topic_allocation:
-                            if allocation.get('section_id') == f'section_{i+1}':
-                                matching_allocation = allocation
+                    for i, allocation in enumerate(topic_allocation):
+                        # Find the section with matching index
+                        matching_section = None
+                        for section in sections:
+                            section_index = section.get('index')
+                            # Handle both numeric and string indices
+                            if section_index == i + 1 or str(section_index) == str(i + 1):
+                                matching_section = section
                                 break
+                        
+                        if not matching_section:
+                            logger.error(f"Could not find generated title for section {i+1} (allocation: {allocation.get('section_theme')})")
+                            logger.error(f"Available section indices: {[s.get('index') for s in sections]}")
+                            raise ValueError(f"Missing title for section {i+1}: {allocation.get('section_theme')}")
                         
                         # Create enhanced section with topics
                         enhanced_section = {
                             'id': i + 1,
-                            'index': section.get('index', i + 1),
-                            'title': section.get('title', f'Section {i+1}'),
-                            'subtitle': section.get('original', ''),
-                            'order': section.get('index', i + 1),
-                            'topics': matching_allocation.get('topics', []) if matching_allocation else []
+                            'index': matching_section.get('index', i + 1),
+                            'title': matching_section.get('title', f'Section {i+1}'),
+                            'subtitle': matching_section.get('original', allocation.get('section_theme', '')),
+                            'order': matching_section.get('index', i + 1),
+                            'topics': allocation.get('topics', [])
                         }
                         enhanced_sections.append(enhanced_section)
                     
-                    logger.info(f"Enhanced {len(enhanced_sections)} sections with topics")
+                    logger.info(f"Enhanced {len(enhanced_sections)} sections with topics (expected {len(topic_allocation)})")
+                    
+                    # Final validation: ensure we have exactly the right number
+                    if len(enhanced_sections) != len(topic_allocation):
+                        logger.error(f"Mismatch: enhanced {len(enhanced_sections)} sections but {len(topic_allocation)} allocations")
+                        raise ValueError(f"Section count mismatch: expected {len(topic_allocation)}, got {len(enhanced_sections)}")
+                    
+                    logger.info(f"Successfully processed all {len(enhanced_sections)} sections")
                     return jsonify({
                         'success': True,
                         'sections': enhanced_sections,
@@ -367,11 +411,17 @@ def api_save_sections(post_id):
 
         # Convert to JSON strings for database storage
         sections_json = json.dumps(sections_data)
+        
+        # Extract section headings for section_headings field (used by trigger to sync to post_section)
+        if not section_headings:
+            section_headings = [section.get('title', section.get('section_heading', f'Section {i+1}')) for i, section in enumerate(sections)]
         headings_json = json.dumps(section_headings)
         
         # Create section order array
-        section_order = [section.get('id', f"section_{i+1}") for i, section in enumerate(sections)]
+        section_order = [section.get('id', section.get('order', i+1)) for i, section in enumerate(sections)]
         order_json = json.dumps(section_order)
+        
+        logger.info(f"Saving {len(sections)} sections: headings={len(section_headings)}, order={len(section_order)}")
         
         # Save to database
         with db_manager.get_cursor() as cursor:
@@ -387,6 +437,40 @@ def api_save_sections(post_id):
                     INSERT INTO post_development (post_id, sections, section_headings, section_order, updated_at)
                     VALUES (%s, %s, %s, %s, %s)
                 """, (post_id, sections_json, headings_json, order_json, datetime.now()))
+            
+            # Also write directly to post_section table to ensure all sections are saved
+            logger.info(f"Writing {len(sections)} sections to post_section table")
+            for i, section in enumerate(sections):
+                section_order_val = section.get('order', section.get('index', i + 1))
+                section_title = section.get('title', section.get('section_heading', f'Section {i+1}'))
+                section_description = section.get('subtitle', section.get('section_description', section.get('original', '')))
+                
+                # Check if section already exists
+                cursor.execute("""
+                    SELECT id FROM post_section 
+                    WHERE post_id = %s AND section_order = %s
+                """, (post_id, section_order_val))
+                existing = cursor.fetchone()
+                
+                if existing:
+                    # Update existing section
+                    cursor.execute("""
+                        UPDATE post_section 
+                        SET section_heading = %s, 
+                            section_description = %s,
+                            updated_at = %s
+                        WHERE post_id = %s AND section_order = %s
+                    """, (section_title, section_description, datetime.now(), post_id, section_order_val))
+                    logger.info(f"Updated section {section_order_val}: {section_title}")
+                else:
+                    # Insert new section
+                    cursor.execute("""
+                        INSERT INTO post_section (post_id, section_order, section_heading, section_description, status, created_at, updated_at)
+                        VALUES (%s, %s, %s, %s, 'draft', %s, %s)
+                    """, (post_id, section_order_val, section_title, section_description, datetime.now(), datetime.now()))
+                    logger.info(f"Inserted section {section_order_val}: {section_title}")
+            
+            logger.info(f"Successfully saved {len(sections)} sections to post_section table")
         
         return jsonify({
             'success': True,

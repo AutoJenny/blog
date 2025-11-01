@@ -65,13 +65,24 @@ class LLMPromptsPanel {
     detectPageType() {
         const substage = window.currentSubstage;
         const mapping = {
+            // Authoring substages
             'drafting': 'author_draft',
             'image-concepts': 'image_concepts', 
             'image-prompts': 'image_prompts',
             'image-captions': 'image_captions',
-            'image-generation': 'image_generation'
+            'image-generation': 'image_generation',
+            // Planning substages
+            'ideas': 'ideas',
+            'ideas-week': 'ideas', // Week-based ideas page
+            'brainstorm': 'brainstorm',
+            'section-structure': 'section_structure',
+            'topic-allocation': 'topic_allocation',
+            'titling': 'titling',
+            'topic-refinement': 'topic_refinement',
+            'sections': 'sections',
+            'grouping': 'grouping'
         };
-        return mapping[substage] || 'author_draft';
+        return mapping[substage] || (window.currentStage === 'planning' ? 'ideas' : 'author_draft');
     }
 
     getPageConfig() {
@@ -136,9 +147,23 @@ class LLMPromptsPanel {
             
             if (data.success && data.prompt) {
                 const prompt = data.prompt;
+                let systemPrompt = prompt.system_prompt || '';
+                let userPrompt = prompt.prompt_text || prompt.text || '';
+                
+                // If system_prompt is null/empty but prompt_text contains [system] markers, parse it
+                if (!systemPrompt && userPrompt.includes('[system]')) {
+                    const parts = userPrompt.split('[system]');
+                    if (parts.length > 1) {
+                        // Extract system prompt (everything before the last [system] marker)
+                        systemPrompt = parts.slice(0, -1).join('[system]').trim();
+                        // User prompt is everything after the last [system] marker
+                        userPrompt = parts[parts.length - 1].trim();
+                    }
+                }
+                
                 this.currentPrompt = {
-                    system_prompt: prompt.system_prompt || '',
-                    prompt_text: (prompt.prompt_text || prompt.text || '')
+                    system_prompt: systemPrompt,
+                    prompt_text: userPrompt
                 };
 
                 console.log('[LLM Prompts Panel] API Response:', {
@@ -288,16 +313,22 @@ class LLMPromptsPanel {
     async restoreAccordionState() {
         try {
             const key = `llm-prompts-accordion-state-${this.pageType}`;
-            const resp = await fetch(`/authoring/api/ui/preferences/${encodeURIComponent(key)}`);
-            const data = await resp.json();
-            const state = data && data.value ? (typeof data.value === 'string' ? data.value : (data.value.state||'')) : '';
-            if (state === 'open') {
-                const content = document.getElementById('prompts-accordion-content');
-                const icon = document.getElementById('prompts-accordion-icon');
-                if (content && icon) {
-                    content.style.display = 'block';
-                    icon.classList.remove('fa-chevron-up');
-                    icon.classList.add('fa-chevron-down');
+            // Use planning API for planning pages, authoring API for authoring pages
+            const apiBase = (window.currentStage === 'planning' || window.currentStage === 'concept') 
+                ? '/planning/api/ui/preferences' 
+                : '/authoring/api/ui/preferences';
+            const resp = await fetch(`${apiBase}/${encodeURIComponent(key)}`);
+            if (resp.ok) {
+                const data = await resp.json();
+                const state = data && data.value ? (typeof data.value === 'string' ? data.value : (data.value.state||'')) : '';
+                if (state === 'open') {
+                    const content = document.getElementById('prompts-accordion-content');
+                    const icon = document.getElementById('prompts-accordion-icon');
+                    if (content && icon) {
+                        content.style.display = 'block';
+                        icon.classList.remove('fa-chevron-up');
+                        icon.classList.add('fa-chevron-down');
+                    }
                 }
             }
         } catch(_) {}
@@ -328,27 +359,55 @@ function toggleLLMPromptsAccordion() {
     const content = document.getElementById('prompts-accordion-content');
     const icon = document.getElementById('prompts-accordion-icon');
     
+    // Use planning API for planning pages, authoring API for authoring pages
+    const apiBase = (window.currentStage === 'planning' || window.currentStage === 'concept') 
+        ? '/planning/api/ui/preferences' 
+        : '/authoring/api/ui/preferences';
+    
+    // Get pageType from existing panel instance if available, otherwise detect it
+    let pageType = window.currentSubstage || 'drafting';
+    if (window.llmPromptsPanel && window.llmPromptsPanel.pageType) {
+        pageType = window.llmPromptsPanel.pageType;
+    } else {
+        // Map substage to pageType (simplified version of detectPageType)
+        const mapping = {
+            'drafting': 'author_draft',
+            'image-concepts': 'image_concepts',
+            'image-prompts': 'image_prompts',
+            'image-captions': 'image_captions',
+            'image-generation': 'image_generation',
+            'ideas': 'ideas',
+            'ideas-week': 'ideas',
+            'brainstorm': 'brainstorm',
+            'section-structure': 'section_structure',
+            'topic-allocation': 'topic_allocation',
+            'titling': 'titling',
+            'topic-refinement': 'topic_refinement',
+            'sections': 'sections',
+            'grouping': 'grouping'
+        };
+        pageType = mapping[window.currentSubstage] || pageType;
+    }
+    
     if (content.style.display === 'none' || content.style.display === '') {
         content.style.display = 'block';
         icon.classList.remove('fa-chevron-up');
         icon.classList.add('fa-chevron-down');
         try {
-            const substage = window.currentSubstage || 'drafting';
-            const key = `llm-prompts-accordion-state-${substage}`;
-            fetch(`/authoring/api/ui/preferences/${encodeURIComponent(key)}`, {
+            const key = `llm-prompts-accordion-state-${pageType}`;
+            fetch(`${apiBase}/${encodeURIComponent(key)}`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ value: 'open' })
-            });
+            }).catch(() => {}); // Silently fail if API doesn't exist
         } catch(_) {}
     } else {
         content.style.display = 'none';
         icon.classList.remove('fa-chevron-down');
         icon.classList.add('fa-chevron-up');
         try {
-            const substage = window.currentSubstage || 'drafting';
-            const key = `llm-prompts-accordion-state-${substage}`;
-            fetch(`/authoring/api/ui/preferences/${encodeURIComponent(key)}`, {
+            const key = `llm-prompts-accordion-state-${pageType}`;
+            fetch(`${apiBase}/${encodeURIComponent(key)}`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ value: 'closed' })
-            });
+            }).catch(() => {}); // Silently fail if API doesn't exist
         } catch(_) {}
     }
 }

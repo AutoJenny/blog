@@ -471,8 +471,14 @@ let availableIdeas = {{ ideas | tojson }};
 let selectedIdea = null;
 
 // Initialize page
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     console.log('Week-based ideas page loaded for week', window.weekNumber);
+    
+    // Update header week and theme, with auto-selection if needed
+    if (typeof blogPipelineHeader !== 'undefined' && blogPipelineHeader.updateWeekAndTheme) {
+        await blogPipelineHeader.updateWeekAndTheme();
+    }
+    
     loadIdeasForWeek();
     updatePostCreationStatus();
 });

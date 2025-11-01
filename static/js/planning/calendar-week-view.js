@@ -257,6 +257,11 @@ async function loadWeek(year, weekNumber) {
   if (typeof blogPipelineHeader !== 'undefined' && blogPipelineHeader.updateWeekAndTheme) {
     await blogPipelineHeader.updateWeekAndTheme();
   }
+  
+  // Update Week Ideas link to point to current viewed week
+  if (typeof setWeekIdeasLink === 'function') {
+    setWeekIdeasLink();
+  }
 
   const weekStart = getWeekStartDate(year, weekNumber);
   const dates = [];

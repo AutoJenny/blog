@@ -43,11 +43,89 @@ def api_posts_expanded_idea(post_id):
     
     elif request.method == 'POST':
         try:
-            data = request.get_json()
-            idea_seed = data.get('idea_seed', '')
-            
-            if not idea_seed:
-                return jsonify({'error': 'Idea seed is required'}), 400
+            # Get selected theme with full details (Title, Description, Important Notes)
+            selected_theme = None
+            with db_manager.get_cursor() as cursor:
+                # Try to get schedule by post_id first
+                cursor.execute("""
+                    SELECT cs.idea_id, cs.year, cs.week_number
+                    FROM calendar_schedule cs
+                    WHERE cs.post_id = %s
+                    ORDER BY cs.created_at DESC
+                    LIMIT 1
+                """, (post_id,))
+                schedule = cursor.fetchone()
+                
+                # If no schedule found by post_id with idea_id, try to get post's year/week
+                # and look up schedule by year/week instead (theme might be selected before post is created)
+                if not schedule or not schedule.get('idea_id'):
+                    # Get post's scheduled week/year from calendar_schedule
+                    cursor.execute("""
+                        SELECT year, week_number
+                        FROM calendar_schedule
+                        WHERE post_id = %s
+                        LIMIT 1
+                    """, (post_id,))
+                    post_schedule = cursor.fetchone()
+                    
+                    if post_schedule and post_schedule.get('year') and post_schedule.get('week_number'):
+                        # Look up schedule by year/week (any schedule entry for that week with an idea_id)
+                        cursor.execute("""
+                            SELECT cs.idea_id, cs.year, cs.week_number
+                            FROM calendar_schedule cs
+                            WHERE cs.year = %s AND cs.week_number = %s AND cs.idea_id IS NOT NULL
+                            ORDER BY cs.created_at DESC
+                            LIMIT 1
+                        """, (post_schedule['year'], post_schedule['week_number']))
+                        week_schedule = cursor.fetchone()
+                        
+                        if week_schedule and week_schedule.get('idea_id'):
+                            # Found theme for this week - update the post's schedule entry to link them
+                            cursor.execute("""
+                                UPDATE calendar_schedule
+                                SET idea_id = %s, updated_at = NOW()
+                                WHERE post_id = %s AND year = %s AND week_number = %s
+                            """, (week_schedule['idea_id'], post_id, post_schedule['year'], post_schedule['week_number']))
+                            schedule = week_schedule
+                
+                if not schedule or not schedule.get('idea_id'):
+                    return jsonify({'error': 'No selected theme found for this post. Please select a theme in the calendar week view.'}), 400
+                
+                idea_id = schedule['idea_id']
+                
+                # Check if important_notes column exists
+                cursor.execute("""
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name = 'calendar_ideas' AND column_name = 'important_notes'
+                """)
+                has_important_notes = cursor.fetchone() is not None
+                
+                # Fetch full theme data
+                important_notes_field = 'ci.important_notes' if has_important_notes else "'[]'::jsonb as important_notes"
+                cursor.execute(f"""
+                    SELECT ci.idea_title, ci.idea_description, {important_notes_field}
+                    FROM calendar_ideas ci
+                    WHERE ci.id = %s
+                """, (idea_id,))
+                theme_data = cursor.fetchone()
+                
+                if not theme_data:
+                    return jsonify({'error': 'Selected theme not found in database'}), 404
+                
+                selected_theme = {
+                    'title': theme_data.get('idea_title') or '',
+                    'description': theme_data.get('idea_description') or '',
+                    'important_notes': []
+                }
+                
+                if has_important_notes and theme_data.get('important_notes'):
+                    import json
+                    notes_data = theme_data['important_notes']
+                    if isinstance(notes_data, (list, dict)):
+                        selected_theme['important_notes'] = notes_data if isinstance(notes_data, list) else [notes_data]
+                    elif isinstance(notes_data, str):
+                        selected_theme['important_notes'] = json.loads(notes_data)
             
             # Generate expanded idea using LLM
             llm_service = LLMService()
@@ -57,7 +135,7 @@ def api_posts_expanded_idea(post_id):
                 cursor.execute("""
                     SELECT system_prompt, prompt_text
                     FROM llm_prompt 
-                    WHERE name = 'Expanded Idea Generation'
+                    WHERE name ILIKE '%idea%expansion%' OR name ILIKE '%scottish%idea%'
                     ORDER BY id DESC
                     LIMIT 1
                 """)
@@ -68,12 +146,43 @@ def api_posts_expanded_idea(post_id):
                     prompt_text = prompt_data['prompt_text']
                 else:
                     # Fallback prompts
-                    system_prompt = "You are an expert content creator. Expand the given idea seed into a comprehensive, engaging expanded idea that can be developed into a full blog post."
-                    prompt_text = "Expand this idea seed into a comprehensive expanded idea:\n\n{idea_seed}"
+                    system_prompt = "You are an expert content creator specializing in Scottish and Celtic history and culture. Expand the given theme into a comprehensive, engaging expanded idea that can be developed into a full blog post."
+                    prompt_text = "Expand this theme into a comprehensive expanded idea:\n\n[theme_data]"
+            
+            # Build theme content string to replace [data:idea_seed] or [theme_data]
+            theme_content = f"Title: {selected_theme['title']}\n\n"
+            if selected_theme['description']:
+                theme_content += f"Description: {selected_theme['description']}\n\n"
+            
+            # Add Important Notes if they exist - HIGHLIGHTED as CRITICAL AND MANDATORY
+            if selected_theme['important_notes'] and len(selected_theme['important_notes']) > 0:
+                theme_content += "\n\n"
+                theme_content += "=" * 70 + "\n"
+                theme_content += "⚠️  CRITICAL: IMPORTANT NOTES - MANDATORY REQUIREMENTS ⚠️\n"
+                theme_content += "=" * 70 + "\n"
+                theme_content += "\n"
+                theme_content += "EACH OF THE FOLLOWING NOTES REPRESENTS A MANDATORY TOPIC THAT MUST BE EXPLICITLY INCLUDED.\n"
+                theme_content += "YOU CANNOT SKIP, OMIT, OR GLOSS OVER ANY OF THESE - EACH MUST BE EXPLICITLY MENTIONED.\n"
+                theme_content += "IF A NOTE SAYS 'Mention X', YOU MUST EXPLICITLY MENTION X IN YOUR RESPONSE.\n"
+                theme_content += "\n"
+                for i, note in enumerate(selected_theme['important_notes'], 1):
+                    note_text = note.get('text', '') if isinstance(note, dict) else str(note)
+                    if note_text:
+                        theme_content += f"⚠️  MANDATORY NOTE #{i}: {note_text}\n"
+                        theme_content += f"   → THIS TOPIC/POINT MUST BE EXPLICITLY AND CLEARLY MENTIONED IN YOUR EXPANDED IDEA\n"
+                        theme_content += f"   → DO NOT ALLUDE TO IT - YOU MUST EXPLICITLY INCLUDE IT\n\n"
+                theme_content += "=" * 70 + "\n"
+                theme_content += "⚠️  FINAL REMINDER: Every single Important Note above is MANDATORY.\n"
+                theme_content += "⚠️  You must explicitly address each one - no exceptions.\n"
+                theme_content += "⚠️  If you fail to explicitly mention all Important Notes, your response is incomplete.\n"
+                theme_content += "=" * 70 + "\n\n"
+            
+            # Replace placeholder in prompt (handle both old and new formats)
+            user_prompt = prompt_text.replace('[data:idea_seed]', theme_content).replace('{idea_seed}', theme_content).replace('[theme_data]', theme_content)
             
             messages = [
                 {'role': 'system', 'content': system_prompt},
-                {'role': 'user', 'content': prompt_text.replace('{idea_seed}', idea_seed)}
+                {'role': 'user', 'content': user_prompt}
             ]
             
             response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages, max_tokens=2000)

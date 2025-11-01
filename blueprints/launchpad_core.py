@@ -86,7 +86,12 @@ def syndication_platform_channel(platform_name, channel_type):
             'blog_post': {
                 'display_name': 'Blog Posts',
                 'icon': 'newspaper',
-                'description': 'Automated Facebook posts featuring blog content and articles'
+                'description': 'Weekly Instagram carousel posts from blog articles' if platform_name == 'instagram' else 'Automated Facebook posts featuring blog content and articles'
+            },
+            'carousel': {
+                'display_name': 'Carousel Posts',
+                'icon': 'images',
+                'description': 'Instagram carousel posts with multiple slides'
             }
         }
         

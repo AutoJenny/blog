@@ -60,6 +60,9 @@ def create_app(config_name=None):
     from blueprints.launchpad.blog_post_syndication import bp as blog_post_syndication_bp
     app.register_blueprint(blog_post_syndication_bp, url_prefix='/launchpad')
     
+    from blueprints.launchpad.instagram_carousel import bp as instagram_carousel_bp
+    app.register_blueprint(instagram_carousel_bp, url_prefix='/launchpad')
+    
     from blueprints.automation_core import bp as automation_bp
     app.register_blueprint(automation_bp)
 

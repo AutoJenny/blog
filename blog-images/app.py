@@ -2358,6 +2358,48 @@ def add_watermark(image, watermark, position='bottom-right'):
     
     return image
 
+def add_watermark_with_opacity(image, watermark, position='bottom-right', opacity=0.6):
+    """Add watermark with specified opacity (0.0-1.0) for Instagram."""
+    if watermark is None:
+        return image
+    
+    from PIL import ImageEnhance
+    
+    # Resize watermark to reasonable size (max 200px width)
+    watermark_width = min(200, image.width // 4)
+    watermark_height = int(watermark.height * (watermark_width / watermark.width))
+    watermark_resized = watermark.resize((watermark_width, watermark_height), Image.Resampling.LANCZOS)
+    
+    # Apply opacity to watermark
+    enhancer = ImageEnhance.Brightness(watermark_resized)
+    # Convert opacity to brightness adjustment (simplified approach)
+    # Actually, we need to use alpha channel for proper opacity
+    watermark_with_alpha = Image.new('RGBA', watermark_resized.size, (0, 0, 0, 0))
+    watermark_with_alpha.paste(watermark_resized, (0, 0))
+    
+    # Apply opacity to alpha channel
+    alpha = watermark_with_alpha.split()[3]
+    alpha = alpha.point(lambda p: int(p * opacity))
+    watermark_with_alpha.putalpha(alpha)
+    
+    # Calculate position with 10px margins
+    margin = 10
+    if position == 'bottom-right':
+        x = image.width - watermark_width - margin
+        y = image.height - watermark_height - margin
+    else:
+        x = margin
+        y = image.height - watermark_height - margin
+    
+    # Create new image with alpha channel if needed
+    if image.mode != 'RGBA':
+        image = image.convert('RGBA')
+    
+    # Paste watermark with opacity
+    image.paste(watermark_with_alpha, (x, y), watermark_with_alpha)
+    
+    return image
+
 def add_ai_generated_text(image):
     """Add 'AI-generated image' text to bottom left."""
     from PIL import ImageDraw
@@ -2387,6 +2429,187 @@ def add_ai_generated_text(image):
         draw.text((x, y), text, fill=text_color)
     
     return image
+
+def create_portrait_version(source_image_path, output_path, target_width=1080, target_height=1350):
+    """
+    Convert landscape image to portrait (1080×1350px) format for Instagram.
+    
+    Args:
+        source_image_path: Path to source landscape image (optimized version)
+        output_path: Path where portrait version will be saved
+        target_width: Target width (default 1080px)
+        target_height: Target height (default 1350px)
+    
+    Returns:
+        dict with success status and file info
+    """
+    try:
+        from PIL import Image
+        
+        # Load source image
+        source_image = Image.open(source_image_path)
+        
+        # Convert to RGB if needed (remove alpha channel for JPG)
+        if source_image.mode in ('RGBA', 'LA', 'P'):
+            # Create white background
+            rgb_image = Image.new('RGB', source_image.size, (255, 255, 255))
+            if source_image.mode == 'P':
+                source_image = source_image.convert('RGBA')
+            rgb_image.paste(source_image, mask=source_image.split()[3] if source_image.mode == 'RGBA' else None)
+            source_image = rgb_image
+        elif source_image.mode != 'RGB':
+            source_image = source_image.convert('RGB')
+        
+        # Calculate aspect ratios
+        source_aspect = source_image.width / source_image.height
+        target_aspect = target_width / target_height
+        
+        # Resize and crop/pad to fit target dimensions
+        if source_aspect > target_aspect:
+            # Source is wider - fit to width, crop top/bottom
+            new_height = int(target_width / source_aspect)
+            resized = source_image.resize((target_width, new_height), Image.Resampling.LANCZOS)
+            
+            # Create target canvas with white background (for padding)
+            portrait_image = Image.new('RGB', (target_width, target_height), (255, 255, 255))
+            
+            # Center vertically (add padding top/bottom)
+            y_offset = (target_height - new_height) // 2
+            portrait_image.paste(resized, (0, y_offset))
+        else:
+            # Source is taller - fit to height, add padding left/right
+            new_width = int(target_height * source_aspect)
+            resized = source_image.resize((new_width, target_height), Image.Resampling.LANCZOS)
+            
+            # Create target canvas with white background
+            portrait_image = Image.new('RGB', (target_width, target_height), (255, 255, 255))
+            
+            # Center horizontally
+            x_offset = (target_width - new_width) // 2
+            portrait_image.paste(resized, (x_offset, 0))
+        
+        # Load watermark and apply with Instagram-specific opacity (50-70%)
+        watermark_path = os.path.join('static', 'images', 'site', 'clan-watermark.png')
+        if os.path.exists(watermark_path):
+            watermark = load_watermark(watermark_path)
+            if watermark:
+                # Apply watermark with reduced opacity for Instagram (60% opacity)
+                portrait_image = add_watermark_with_opacity(portrait_image, watermark, 'bottom-right', opacity=0.6)
+        
+        # Add AI-generated text
+        portrait_image = add_ai_generated_text(portrait_image)
+        
+        # Convert back to RGB for JPEG saving (if watermark was applied, it may be RGBA)
+        if portrait_image.mode == 'RGBA':
+            rgb_image = Image.new('RGB', portrait_image.size, (255, 255, 255))
+            rgb_image.paste(portrait_image, mask=portrait_image.split()[3] if len(portrait_image.split()) == 4 else None)
+            portrait_image = rgb_image
+        
+        # Ensure output directory exists
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        
+        # Save as JPG with quality optimization to keep under 1MB
+        quality = 85
+        portrait_image.save(output_path, 'JPEG', quality=quality, optimize=True)
+        
+        # Check file size and reduce quality if needed
+        file_size = os.path.getsize(output_path)
+        max_size = 1024 * 1024  # 1MB
+        
+        if file_size > max_size:
+            # Reduce quality incrementally until under 1MB
+            for q in range(80, 50, -5):
+                portrait_image.save(output_path, 'JPEG', quality=q, optimize=True)
+                if os.path.getsize(output_path) <= max_size:
+                    break
+        
+        file_size_final = os.path.getsize(output_path)
+        
+        return {
+            'success': True,
+            'output_path': output_path,
+            'file_size': file_size_final,
+            'dimensions': (target_width, target_height)
+        }
+        
+    except Exception as e:
+        print(f"❌ Error creating portrait version: {e}")
+        import traceback
+        traceback.print_exc()
+        return {
+            'success': False,
+            'error': str(e)
+        }
+
+def find_optimized_image_for_portrait(post_id, image_type='section', section_id=None):
+    """
+    Find the first optimized image to use as source for portrait generation.
+    
+    Args:
+        post_id: Post ID
+        image_type: 'section' or 'header'
+        section_id: Section ID (required if image_type is 'section')
+    
+    Returns:
+        Path to optimized image or None if not found
+    """
+    if image_type == 'header':
+        optimized_dir = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'optimized')
+    elif image_type == 'section' and section_id:
+        optimized_dir = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections', str(section_id), 'optimized')
+    else:
+        return None
+    
+    if not os.path.exists(optimized_dir):
+        return None
+    
+    # Get first image file from optimized directory
+    for filename in os.listdir(optimized_dir):
+        if allowed_file(filename):
+            return os.path.join(optimized_dir, filename)
+    
+    return None
+
+def generate_portrait_for_image(post_id, image_type='section', section_id=None):
+    """
+    Generate portrait version for a single image (section or header).
+    
+    Returns:
+        dict with success status and file info
+    """
+    # Find source optimized image
+    source_path = find_optimized_image_for_portrait(post_id, image_type, section_id)
+    if not source_path:
+        return {
+            'success': False,
+            'error': f'No optimized image found for {image_type} {section_id or "header"}'
+        }
+    
+    # Determine output path
+    if image_type == 'header':
+        output_dir = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'portrait')
+        output_filename = 'header_portrait.jpg'
+    else:
+        output_dir = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections', str(section_id), 'portrait')
+        output_filename = f'section_{section_id}_portrait.jpg'
+    
+    output_path = os.path.join(output_dir, output_filename)
+    
+    # Generate portrait version
+    result = create_portrait_version(source_path, output_path)
+    
+    if result['success']:
+        # Return relative URL path
+        if image_type == 'header':
+            url_path = f'/static/content/posts/{post_id}/header/portrait/{output_filename}'
+        else:
+            url_path = f'/static/content/posts/{post_id}/sections/{section_id}/portrait/{output_filename}'
+        
+        result['url_path'] = url_path
+        result['image_type'] = image_type
+        result['section_id'] = section_id
+    
+    return result
 
 def watermark_single_image(image_path, watermark, output_path):
     """Process a single image with watermark and AI text."""
@@ -2527,6 +2750,120 @@ def preview_watermarking(post_id):
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/portrait/generate-all/<int:post_id>', methods=['POST'])
+def generate_all_portrait_versions(post_id):
+    """Generate portrait versions for all sections and header images."""
+    try:
+        results = {
+            'header': None,
+            'sections': [],
+            'success_count': 0,
+            'failed_count': 0
+        }
+        
+        # Generate header portrait
+        header_result = generate_portrait_for_image(post_id, 'header')
+        if header_result['success']:
+            results['header'] = header_result
+            results['success_count'] += 1
+        else:
+            results['failed_count'] += 1
+            print(f"⚠️  Header portrait generation failed: {header_result.get('error')}")
+        
+        # Get all sections for this post
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                cur.execute("""
+                    SELECT id, section_order
+                    FROM post_section 
+                    WHERE post_id = %s 
+                    ORDER BY section_order
+                """, (post_id,))
+                sections = cur.fetchall()
+        
+        # Generate portrait for each section
+        for section in sections:
+            section_id = section['id']
+            section_result = generate_portrait_for_image(post_id, 'section', section_id)
+            
+            if section_result['success']:
+                results['sections'].append(section_result)
+                results['success_count'] += 1
+            else:
+                results['failed_count'] += 1
+                print(f"⚠️  Section {section_id} portrait generation failed: {section_result.get('error')}")
+        
+        return jsonify({
+            'success': True,
+            'post_id': post_id,
+            'results': results,
+            'message': f'Generated {results["success_count"]} portrait images, {results["failed_count"]} failed'
+        })
+        
+    except Exception as e:
+        print(f"❌ Error generating portrait versions: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/portrait/generate/<int:post_id>/header', methods=['POST'])
+def generate_header_portrait(post_id):
+    """Generate portrait version for header image."""
+    try:
+        result = generate_portrait_for_image(post_id, 'header')
+        
+        if result['success']:
+            return jsonify({
+                'success': True,
+                'post_id': post_id,
+                'result': result
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': result.get('error', 'Failed to generate portrait')
+            }), 500
+            
+    except Exception as e:
+        print(f"❌ Error generating portrait: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/portrait/generate/<int:post_id>/section/<int:section_id>', methods=['POST'])
+def generate_section_portrait(post_id, section_id):
+    """Generate portrait version for a section image."""
+    try:
+        result = generate_portrait_for_image(post_id, 'section', section_id)
+        
+        if result['success']:
+            return jsonify({
+                'success': True,
+                'post_id': post_id,
+                'section_id': section_id,
+                'result': result
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': result.get('error', 'Failed to generate portrait')
+            }), 500
+            
+    except Exception as e:
+        print(f"❌ Error generating portrait: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 @app.route('/api/watermark/process/<int:post_id>', methods=['POST'])
 def process_watermarking(post_id):
