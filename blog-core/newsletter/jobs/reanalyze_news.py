@@ -80,42 +80,27 @@ def reanalyze_news_items(days_back: int = 30, limit: int = 50) -> Dict[str, Any]
                 url_hash = hashlib.sha256(url.encode('utf-8')).hexdigest() if url else None
                 
                 if url_hash:
-                    # Get final score (already clamped above)
                     final_score = processed.get('suitability_score', 5.0)
-                    
-                    # Double-check clamp before database update
-                    if final_score > 9.0:
-                        final_score = 9.0
-                    elif final_score < 1.0:
-                        final_score = 1.0
                     
                     with db_manager.get_connection() as conn:
                         with conn.cursor() as cur:
-                            # Direct update of existing record with STRICT 1-9 clamp
+                            # Direct update of existing record
                             cur.execute("""
                                 UPDATE newsletter_source_item
-                                SET suitability_score = LEAST(GREATEST(%s, 1.0), 9.0),
+                                SET suitability_score = %s,
                                     suitability_notes = %s,
                                     raw_data = COALESCE(raw_data, '{}'::jsonb) || %s::jsonb
                                 WHERE source_url_hash = %s
                                 AND category = 'news'
                             """, (
-                                final_score,  # Already clamped
+                                final_score,
                                 processed.get('suitability_notes'),
                                 Json({'synopsis': processed.get('synopsis', '')}),
                                 url_hash
                             ))
                             conn.commit()
                 
-                # Get the final score (already clamped by SQL LEAST/GREATEST)
                 final_score = processed.get('suitability_score', 5.0)
-                # Verify clamp (should already be done, but double-check)
-                if final_score > 9.0:
-                    logger.error(f"CRITICAL: Score {final_score} still exceeds 9 after clamping! Title: {item['title'][:50]}")
-                    final_score = 9.0
-                elif final_score < 1.0:
-                    logger.error(f"CRITICAL: Score {final_score} still below 1 after clamping! Title: {item['title'][:50]}")
-                    final_score = 1.0
                 
                 if final_score >= 6.0:
                     processed_count += 1

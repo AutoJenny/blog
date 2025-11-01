@@ -125,14 +125,13 @@ Provide your assessment in JSON format:
                 economic = max(1.0, min(100.0, economic))
                 political = max(1.0, min(100.0, political))
                 
-                # Average the five dimensions
+                # Average the five dimensions (each already clamped to 1-100)
+                # Since each dimension is 1-100, average will be 1-100
                 average = (historical + cultural + quirky + economic + political) / 5.0
                 
                 # Map 1-100 average to 1-9 range: (average - 1) / 99 * 8 + 1
+                # This formula ensures: average=1 -> score=1, average=100 -> score=9
                 score = ((average - 1.0) / 99.0) * 8.0 + 1.0
-                
-                # Final clamp to ensure 1-9 range (safety check in case average somehow > 100)
-                score = max(1.0, min(9.0, score))
                 
                 reasoning = result.get('reasoning', 'No reasoning provided')
                 if not reasoning or reasoning == 'No reasoning provided':
@@ -173,11 +172,9 @@ Provide your assessment in JSON format:
                 elif key == 'political':
                     political = max(1.0, min(100.0, val))
         
-        # Calculate score from dimensions
+        # Calculate score from dimensions (each already clamped to 1-100)
         average = (historical + cultural + quirky + economic + political) / 5.0
         score = ((average - 1.0) / 99.0) * 8.0 + 1.0
-        # Final clamp to ensure 1-9 range
-        score = max(1.0, min(9.0, score))
         
         return {
             'suitability_score': round(score, 1),
