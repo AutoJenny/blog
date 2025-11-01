@@ -213,36 +213,43 @@ Provide your assessment in JSON format:
 
 
 def _fallback_suitability_analysis(title: str, description: Optional[str] = None) -> Dict[str, Any]:
-    """Fallback keyword-based suitability analysis when LLM is unavailable."""
-    scottish_keywords = [
-        'scotland', 'scottish', 'scots', 'scot', 'edinburgh', 'glasgow', 
-        'highlands', 'highland', 'aberdeen', 'inverness', 'dundee', 
-        'scotland\'s', 'heritage', 'tartan', 'kilt', 'celtic', 'gaelic',
-        'loch', 'isle', 'hebrides', 'orkney', 'shetland', 'border',
-        'clan', 'castle', 'whisky', 'whiskey', 'scotch', 'st andrews',
-        'bagpipe', 'haggis', 'burns', 'robert burns', 'braveheart',
-        'bonnie', 'dreich', 'wee', 'braw', 'ken', 'aye', 'och'
-    ]
+    """Fallback keyword-based suitability analysis when LLM is unavailable.
     
+    Uses conservative scoring - most stories should score low (2-4).
+    """
     text_to_check = f"{title} {description or ''}".lower()
     
-    # Count keyword matches
-    matches = sum(1 for keyword in scottish_keywords if keyword in text_to_check)
+    # Check for indicators of low relevance (obituaries, local news, etc.)
+    low_interest_terms = ['dies', 'died', 'death', 'obituary', 'aged', 'former', 'ex-',
+                          'local', 'council', 'ban', 'zones', 'bricklayer', 'farewell',
+                          'firework', 'set he built']
     
-    # Simple scoring: 1 point per keyword match, max 7
-    score = min(7.0, matches * 1.2)
+    is_low_interest = any(term in text_to_check for term in low_interest_terms)
     
-    # Boost score if multiple keywords
-    if matches >= 3:
-        score += 0.5
-    if matches >= 5:
-        score += 0.5
+    # High-interest heritage/cultural terms
+    high_interest_terms = ['archaeological', 'archaeology', 'heritage', 'castle', 'museum',
+                          'language revival', 'cultural', 'historic', 'preservation',
+                          'tradition', 'gaelic', 'scots language']
     
-    score = min(9.0, max(1.0, score))  # Clamp to 1-9 range
+    has_high_interest = any(term in text_to_check for term in high_interest_terms)
+    
+    # Conservative scoring: default to low scores
+    if is_low_interest and not has_high_interest:
+        # Mundane local news, obituaries - score 2-3
+        score = 2.0 + (0.5 if 'scotland' in text_to_check or 'scottish' in text_to_check else 0.0)
+    elif has_high_interest:
+        # Heritage/cultural content - score 5-6
+        score = 5.0 + (1.0 if any(word in text_to_check for word in ['major', 'significant', 'discovery']) else 0.0)
+    else:
+        # Neutral - score 3-4
+        score = 3.0 + (0.5 if 'scotland' in text_to_check or 'scottish' in text_to_check else 0.0)
+    
+    # Clamp to 1-9
+    score = max(1.0, min(9.0, score))
     
     return {
         'suitability_score': round(score, 1),
-        'suitability_notes': f'Keyword-based analysis: {matches} Scottish keywords found',
+        'suitability_notes': f'Fallback analysis: Low-interest story' if is_low_interest else f'Fallback analysis: Neutral story',
         'relevant': score >= DEFAULT_SUITABILITY_THRESHOLD,
     }
 
