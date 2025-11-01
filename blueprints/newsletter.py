@@ -410,6 +410,39 @@ def preview_block(issue_id: int, block_id: int):
 
 # Source Management Routes
 
+@bp.route('/newsletter/weather/summary')
+def weather_summary():
+    """Get weather summary for past week and forecast."""
+    try:
+        from newsletter.services.weather_summary_service import generate_weather_summary
+        
+        days_back = request.args.get('days_back', 7, type=int)
+        days_ahead = request.args.get('days_ahead', 7, type=int)
+        
+        summary = generate_weather_summary(days_back=days_back, days_ahead=days_ahead)
+        
+        # If requested as HTML page
+        if request.args.get('view') == 'page':
+            return render_template('newsletter/weather_summary.html', summary=summary)
+        
+        # Otherwise return JSON
+        return jsonify({
+            'status': 'success',
+            'data': summary
+        })
+    except Exception as e:
+        logger.error(f"Error generating weather summary: {e}", exc_info=True)
+        if request.args.get('view') == 'page':
+            return render_template('newsletter/weather_summary.html', error=str(e))
+        return jsonify({'error': str(e)}), 500
+
+
+@bp.route('/newsletter/weather')
+def weather_summary_page():
+    """Weather summary page UI."""
+    return render_template('newsletter/weather_summary.html')
+
+
 @bp.route('/newsletter/sources')
 def sources_management():
     """Source aggregation management page."""
@@ -495,61 +528,132 @@ def trigger_fetch():
 
 @bp.route('/newsletter/sources/<int:source_id>/test', methods=['GET'])
 def test_source(source_id: int):
-    """Test a source by fetching and returning sample items."""
+    """Test a source by fetching and returning sample items with proper error handling."""
     import logging
+    import traceback
     logger = logging.getLogger(__name__)
     
     try:
         source = get_source(source_id)
         if not source:
             logger.warning(f"Source test: source {source_id} not found")
-            return jsonify({'success': False, 'error': 'Source not found'}), 404
+            return jsonify({
+                'success': False, 
+                'error': 'Source not found',
+                'error_type': 'not_found'
+            }), 404
         
         if not source.get('enabled'):
             logger.info(f"Source test: {source.get('name')} is disabled")
-            return jsonify({'success': False, 'error': 'Source is disabled. Enable it first to test.'}), 400
+            return jsonify({
+                'success': False, 
+                'error': 'Source is disabled. Enable it first to test.',
+                'error_type': 'disabled'
+            }), 400
         
         # Use manager to create adapter and fetch
         from newsletter.sources.manager import create_adapter_from_source
-        logger.info(f"Testing source: {source.get('name')} ({source.get('type')}) - {source.get('base_url')}")
         
-        adapter = create_adapter_from_source(source)
+        source_name = source.get('name', 'Unknown')
+        source_type = source.get('type', 'unknown')
+        source_url = source.get('base_url', '')
+        
+        logger.info(f"Testing source: {source_name} (type: {source_type}, url: {source_url})")
+        
+        # Create adapter with explicit error handling
+        try:
+            adapter = create_adapter_from_source(source)
+        except Exception as adapter_error:
+            error_msg = f"Failed to create adapter: {str(adapter_error)}"
+            logger.error(f"Source test adapter creation failed: {error_msg}", exc_info=True)
+            return jsonify({
+                'success': False,
+                'error': error_msg,
+                'error_type': 'adapter_creation_error',
+                'source_name': source_name,
+                'source_type': source_type
+            }), 500
         
         if not adapter:
-            error_msg = f"Could not create adapter for type: {source.get('type')}. Supported types: rss, reddit, html, event, museum"
+            error_msg = f"Could not create adapter for type: {source_type}. Supported types: rss, reddit, html, weather, event, museum"
             logger.error(f"Source test: {error_msg}")
-            return jsonify({'success': False, 'error': error_msg}), 400
+            return jsonify({
+                'success': False, 
+                'error': error_msg,
+                'error_type': 'unsupported_type',
+                'source_type': source_type
+            }), 400
         
         # Log adapter category assignment for debugging
+        adapter_category = None
         if hasattr(adapter, 'category'):
-            logger.debug(f"Adapter created with category: {adapter.category}")
+            adapter_category = adapter.category
+            logger.info(f"Adapter created: {type(adapter).__name__} with category: {adapter_category}")
+        else:
+            logger.warning(f"Adapter {type(adapter).__name__} has no category attribute")
         
-        # Fetch items
-        logger.info(f"Fetching items from {source.get('name')}...")
-        items = adapter.fetch_and_normalize()
-        logger.info(f"Fetched {len(items)} items from {source.get('name')}")
+        # Fetch items with error handling
+        try:
+            logger.info(f"Fetching items from {source_name}...")
+            items = adapter.fetch_and_normalize()
+            logger.info(f"Fetched {len(items)} items from {source_name}")
+        except Exception as fetch_error:
+            error_msg = f"Failed to fetch from source: {str(fetch_error)}"
+            logger.error(f"Source test fetch failed for {source_name}: {error_msg}", exc_info=True)
+            return jsonify({
+                'success': False,
+                'error': error_msg,
+                'error_type': 'fetch_error',
+                'source_name': source_name,
+                'details': str(fetch_error)
+            }), 500
         
         if not items:
             return jsonify({
                 'success': True,
                 'items_count': 0,
+                'categories': {},
                 'items': [],
                 'warning': 'No items found. The source may be empty, require authentication, or the URL may be incorrect.',
+                'adapter_category': adapter_category
             })
         
         # Limit to first 10 for preview
         preview_items = items[:10]
         
-        # Group by category for debugging
+        # Group by category for debugging and validation
         categories = {}
+        category_breakdown = {}
         for item in items:
             cat = item.get('category', 'other')
             categories[cat] = categories.get(cat, 0) + 1
+            if cat not in category_breakdown:
+                category_breakdown[cat] = []
+            category_breakdown[cat].append(item.get('title', 'No title')[:50])
+        
+        # Validate category assignment
+        category_mismatch = False
+        expected_category = None
+        if adapter_category and categories:
+            # Check if adapter category matches items
+            if adapter_category not in categories:
+                category_mismatch = True
+                expected_category = adapter_category
+                logger.warning(
+                    f"Category mismatch: adapter category '{adapter_category}' but items have categories: {list(categories.keys())}"
+                )
         
         return jsonify({
             'success': True,
             'items_count': len(items),
             'categories': categories,
+            'category_breakdown': {k: len(v) for k, v in category_breakdown.items()},
+            'adapter_category': adapter_category,
+            'category_validation': {
+                'match': not category_mismatch,
+                'expected': expected_category,
+                'found': list(categories.keys())
+            },
             'items': [
                 {
                     'title': item.get('title', ''),
@@ -558,18 +662,20 @@ def test_source(source_id: int):
                     'source_name': item.get('source_name', ''),
                     'published_at': item.get('published_at').isoformat() if item.get('published_at') else None,
                     'event_date': item.get('event_date').isoformat() if item.get('event_date') else None,
+                    'raw_data_preview': str(item.get('raw_data', {}))[:100] if item.get('raw_data') else None,
                 }
                 for item in preview_items
             ],
         })
     except Exception as e:
-        import traceback
         error_msg = str(e)
+        error_trace = traceback.format_exc()
         logger.error(f"Source test failed for source {source_id}: {error_msg}", exc_info=True)
         return jsonify({
             'success': False,
             'error': error_msg,
-            'detail': f"Error type: {type(e).__name__}. Check server logs for full traceback.",
+            'error_type': 'unexpected_error',
+            'traceback': error_trace if logger.level <= logging.DEBUG else None
         }), 500
 
 

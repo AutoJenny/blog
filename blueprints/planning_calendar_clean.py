@@ -32,32 +32,49 @@ def planning_calendar_week_view(post_id):
 def planning_calendar_ideas(post_id):
     """Idea Generation sub-stage"""
     try:
-        with db_manager.get_cursor() as cursor:
-            cursor.execute("""
-                SELECT cs.year, cs.week_number, cs.scheduled_date
-                FROM calendar_schedule cs
-                WHERE cs.post_id = %s
-                ORDER BY cs.created_at DESC
-                LIMIT 1
-            """, (post_id,))
-            
-            schedule = cursor.fetchone()
-            
-            if schedule:
-                year = schedule['year']
-                week_number = schedule['week_number']
-            else:
-                # Default to current week if no schedule found
-                from datetime import datetime
-                year = datetime.now().year
-                week_number = datetime.now().isocalendar()[1]
-            
-            return render_template('planning/calendar/ideas.html', 
-                                   post_id=post_id,
-                                   year=year,
-                                   week_number=week_number,
-                                   blueprint_name='planning',
-                                   mode='post-based')
+        from flask import request
+        from datetime import datetime
+        
+        # PRIORITY 1: Read from URL query parameters (canonical source)
+        url_year = request.args.get('year', type=int)
+        url_week = request.args.get('week', type=int)
+        
+        year = None
+        week_number = None
+        
+        if url_year and url_week:
+            # Use URL parameters as primary source
+            year = url_year
+            week_number = url_week
+        else:
+            # PRIORITY 2: Fall back to post's schedule from database
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT cs.year, cs.week_number, cs.scheduled_date
+                    FROM calendar_schedule cs
+                    WHERE cs.post_id = %s
+                    ORDER BY cs.created_at DESC
+                    LIMIT 1
+                """, (post_id,))
+                
+                schedule = cursor.fetchone()
+                
+                if schedule:
+                    year = schedule['year']
+                    week_number = schedule['week_number']
+        
+        # PRIORITY 3: Final fallback to current week if nothing found
+        if not year or not week_number:
+            now = datetime.now()
+            year = now.year
+            week_number = now.isocalendar()[1]
+        
+        return render_template('planning/calendar/ideas.html', 
+                               post_id=post_id,
+                               year=year,
+                               week_number=week_number,
+                               blueprint_name='planning',
+                               mode='post-based')
     except Exception as e:
         logger.error(f"Error in planning_calendar_ideas: {e}")
         from datetime import datetime

@@ -31,6 +31,22 @@ def calculate_freshness_score(item: Dict[str, Any], reference_date: datetime | N
         except Exception:
             return 0.0
     
+    # Normalize both to date for comparison if needed
+    from datetime import date
+    if isinstance(item_date, date) and not isinstance(item_date, datetime):
+        # Convert date to datetime at midnight for comparison
+        item_date = datetime.combine(item_date, datetime.min.time())
+    elif isinstance(item_date, datetime):
+        # Normalize to date
+        item_date = item_date.date()
+        item_date = datetime.combine(item_date, datetime.min.time())
+    
+    if isinstance(reference_date, date) and not isinstance(reference_date, datetime):
+        reference_date = datetime.combine(reference_date, datetime.min.time())
+    elif isinstance(reference_date, datetime):
+        # Keep as datetime
+        pass
+    
     # Calculate days difference
     delta = (item_date - reference_date).days
     
