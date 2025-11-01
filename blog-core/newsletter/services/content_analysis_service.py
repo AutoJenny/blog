@@ -168,7 +168,8 @@ Provide your assessment in JSON format:
                     'relevant': bool(relevant),
                 }
             except (json.JSONDecodeError, ValueError, KeyError) as e:
-                logger.warning(f"Could not parse LLM JSON response: {e}")
+                logger.warning(f"Could not parse LLM JSON response: {e}. Response was: {response[:200]}")
+                # Continue to dimension extraction fallback
         
         # Fallback: try to extract dimension scores from text
         # Look for patterns like "historical_interest: 75" or "historical: 75"
