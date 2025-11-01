@@ -184,9 +184,9 @@ def generate_article_synopsis(title: str, article_content: str, url: Optional[st
     # Construct prompt for analysis and synopsis
     content_preview = article_content[:2000] if len(article_content) > 2000 else article_content
     
-    prompt = f"""You are analyzing news articles for a Scottish heritage and culture newsletter with an international diaspora audience (especially US-Scots, Canadian-Scots, Australians of Scottish descent, etc.).
+    prompt = f"""You are analyzing news articles for a Scottish heritage and culture newsletter with a primarily US-Scots diaspora audience - people of Scottish descent living in the United States, Canada, Australia, and other countries who maintain an interest in the history and culture of their "old country".
 
-The newsletter focuses on Scottish heritage, culture, traditions, history, and topics of lasting significance. Be STRICT and use the FULL 0-10 range. Most articles should score 3-7, with 10/10 reserved for truly exceptional stories.
+Think like a diaspora community member: What would make someone far from Scotland pause and be genuinely interested? Stories about Scottish history, archaeology, heritage sites, cultural traditions, language, music, literature, notable Scottish figures (past and present), and developments that connect to Scotland's cultural identity.
 
 Article Title: {title}
 {f"URL: {url}" if url else ""}
@@ -195,60 +195,30 @@ Article Content (first 2000 chars):
 {content_preview}
 
 Your task:
-1. Evaluate the article's suitability using STRICT criteria (0-10 scale):
+1. Evaluate the article's relevance on a scale of 1-9, where:
+   - The average score across all articles should be around 5
+   - Use the FULL range (1-9) - don't cluster scores at the extremes
+   - Score 1-2: Minimal connection - purely local current events, sports scores, minor local figures, daily politics
+   - Score 3-4: Some connection but limited diaspora appeal - regional news, local obituaries, current sports news
+   - Score 5: Moderate relevance - stories with some cultural/historical context that diaspora might find mildly interesting
+   - Score 6-7: Good relevance - substantial Scottish cultural/historical content, heritage stories, notable developments
+   - Score 8-9: High relevance - stories of lasting significance: major archaeological discoveries, cultural revivals, heritage preservation, internationally significant Scottish figures/events
 
-10: EXCEPTIONAL - Lasting historical/cultural significance, diaspora interest:
-   - Major discoveries about Scottish history, archaeology, heritage sites
-   - Significant cultural revivals, language preservation, traditional arts
-   - Major museum/archive acquisitions of Scottish historical importance
-   - Stories about internationally known Scottish figures, landmarks, traditions
+Consider:
+- Historical/cultural depth vs. fleeting current events
+- Interest to someone thousands of miles away vs. someone living in Scotland today
+- Long-term significance vs. immediate news value
+- Connection to Scottish identity, heritage, traditions vs. just happening to occur in Scotland
 
-8-9: VERY HIGH - Substantial Scottish cultural/historical content:
-   - Important cultural events, festivals, traditions with broader appeal
-   - Notable Scottish heritage sites, museums, cultural institutions
-   - Stories about Scottish diaspora communities globally
-   - Significant developments in Scottish arts, literature, music with cultural depth
+Be thoughtful and nuanced. A local politician's daily activities might score 2, while a story about preserving a historic Highland site might score 7. A major archaeological discovery at a Scottish castle would score 8-9, while a Rangers/Celtic match result might score 3. Judge each story on its own merits considering diaspora interest in the "old country".
 
-6-7: MODERATE-HIGH - Scottish content with some broader appeal:
-   - Regional news with cultural/historical context
-   - Current events tied to Scottish identity or traditions
-   - Community stories that reflect Scottish culture
-   - Sports/cultural events of regional significance
-
-4-5: MODERATE - Local Scottish news with limited diaspora appeal:
-   - Local current events, politics, local sports
-   - Obituaries of regional figures (unless historically significant)
-   - Daily news with Scottish setting but no cultural depth
-
-2-3: LOW - Minimal Scottish connection or purely local interest:
-   - General UK news with weak Scottish angle
-   - Local business, politics without cultural significance
-   - Obituaries of minor local figures
-   - Sports news (local teams, managers) without broader cultural context
-
-0-1: NOT RELEVANT - No meaningful Scottish heritage/culture connection
-
-CRITICAL EXAMPLES - FOLLOW THESE STRICTLY:
-- "Rangers/Celtic manager news" → 4-5 (local sports, current event, limited diaspora appeal)
-- "Former footballer dies aged 73" → 2-3 MAX (local obituary, not internationally significant, diaspora won't care)
-- "Former Aberdeen and Arsenal footballer dies" → 2-3 MAX (local Scottish footballer, not a historical/cultural figure)
-- "Archaeological discovery at Scottish castle" → 8-10 (historical significance)
-- "Scottish language revival program" → 8-10 (cultural significance, diaspora interest)
-
-MANDATORY RULES:
-1. OBITUARIES: Local/regional figures (sports, politicians, business) = 2-3 MAX. Only internationally known historical/cultural figures score higher.
-2. SPORTS OBITUARIES: Unless the person is internationally famous (like Sir Alex Ferguson level), score 2-3. Local footballers, even from major clubs, are NOT diaspora-interest.
-3. NEVER give 10/10 to obituaries unless the person is of major historical/cultural importance (e.g., a renowned Scottish historian, museum curator, cultural preservationist).
-
-2. Generate a brief synopsis (2-3 sentences) summarizing the key points relevant to Scottish heritage/culture.
-
-3. Use the FULL range. Average around 5. Reserve 10/10 for truly exceptional stories. Most daily news should score 3-6.
+2. Generate a brief synopsis (2-3 sentences) summarizing the key points relevant to Scottish heritage/culture from a diaspora perspective.
 
 Provide your assessment in JSON format:
 {{
-    "score": <number 0-10, use full range, be strict>,
-    "reasoning": "<explain why this score, address: (1) historical/cultural significance, (2) diaspora appeal, (3) long-term vs short-term interest>",
-    "synopsis": "<2-3 sentence summary focusing on Scottish heritage/culture relevance>",
+    "score": <number 1-9, average around 5, use full range>,
+    "reasoning": "<explain your score focusing on: (1) relevance to Scottish heritage/culture, (2) diaspora appeal from distance, (3) lasting significance vs. ephemeral news>",
+    "synopsis": "<2-3 sentence summary focusing on Scottish heritage/culture relevance from diaspora perspective>",
     "relevant": <true if score >= 6.0, false otherwise>
 }}
 """
@@ -276,33 +246,11 @@ Provide your assessment in JSON format:
                 synopsis = result.get('synopsis', 'No synopsis generated')
                 relevant = result.get('relevant', score >= 6.0)
                 
-                # Clamp score to 0-10
-                score = max(0.0, min(10.0, score))
+                # Clamp score to 1-9 (diaspora-focused range)
+                score = max(1.0, min(9.0, score))
                 
-                # POST-PROCESSING: Enforce strict rules for obituaries
-                title_lower = title.lower()
-                content_lower = content_preview.lower() if content_preview else ''
-                
-                # Cap obituaries of local/regional figures at 3.0
-                is_obituary = any(term in title_lower or term in content_lower for term in [
-                    'dies', 'died', 'death', 'dead', 'obituary', 'passes away', 
-                    'passed away', 'funeral', 'mourning'
-                ])
-                
-                # Check if it's a local sports/political/business figure (not internationally known)
-                is_local_figure = any(term in title_lower for term in [
-                    'former', 'ex-', 'aged', 'footballer', 'player', 'manager',
-                    'msp', 'councillor', 'councillor', 'businessman', 'businesswoman'
-                ]) and not any(term in title_lower for term in [
-                    'sir', 'dame', 'nobel', 'historic', 'archaeological', 'museum',
-                    'curator', 'historian', 'cultural', 'heritage'
-                ])
-                
-                if is_obituary and is_local_figure and score > 3.0:
-                    # Cap local obituaries at 3.0
-                    score = 3.0
-                    reasoning = reasoning + " [ADJUSTED: Local obituary capped at 3.0 - not diaspora-interest]"
-                    relevant = False  # Below threshold
+                # Note: No post-processing rules - let LLM be nuanced
+                # Scores are clamped to 1-9 range above
                 
                 # Clean subscription text from synopsis
                 synopsis = clean_subscription_text(synopsis)
@@ -320,7 +268,7 @@ Provide your assessment in JSON format:
         score_match = re.search(r'score["\s:]*(\d+\.?\d*)', response, re.IGNORECASE)
         if score_match:
             score = float(score_match.group(1))
-            score = max(0.0, min(10.0, score))
+            score = max(1.0, min(9.0, score))  # Clamp to 1-9 range
             # Generate basic synopsis from article content
             synopsis = _extract_basic_synopsis(title, article_content)
             # Clean subscription text from synopsis
