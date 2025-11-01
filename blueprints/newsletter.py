@@ -576,6 +576,8 @@ def test_source(source_id: int):
 @bp.route('/newsletter/sources/items')
 def cached_items():
     """Full cached items page with filters."""
+    from newsletter.db.queries_source_management import list_all_sources
+    
     # Get filter parameters
     category_filter = request.args.get('category', '')
     source_filter = request.args.get('source', '')
@@ -585,22 +587,24 @@ def cached_items():
     items = get_cached_items(
         category=category_filter if category_filter else None,
         days_back=days_back,
-        limit=100
+        limit=500  # Increased limit to show more items
     )
     
     # Filter by source if provided
     if source_filter:
         items = [item for item in items if item.get('source_name', '').lower() == source_filter.lower()]
     
-    # Get unique categories and sources for filters
-    all_items = get_cached_items(days_back=30, limit=1000)
-    categories = sorted(set(item.get('category', 'other') for item in all_items if item.get('category')))
-    sources = sorted(set(item.get('source_name', '') for item in all_items if item.get('source_name')))
+    # Get all possible categories (including weather)
+    all_categories = ['news', 'weather', 'event', 'community', 'other']
+    
+    # Get all sources from database (not just cached items)
+    all_sources = list_all_sources()
+    sources = sorted([s.get('name', '') for s in all_sources if s.get('name')])
     
     return render_template(
         'newsletter/cached_items.html',
         items=items,
-        categories=categories,
+        categories=all_categories,
         sources=sources,
         category_filter=category_filter,
         source_filter=source_filter,

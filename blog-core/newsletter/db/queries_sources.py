@@ -83,7 +83,8 @@ def get_cached_items(*, category: str | None = None, days_back: int = 14, limit:
     
     sql = f"""
         SELECT id, source_name, title, url, published_at, event_date, location, category, 
-               raw_data, signal_score, freshness_score, combined_score, cached_at
+               raw_data, signal_score, freshness_score, combined_score, cached_at,
+               suitability_score, suitability_notes, is_event, calendar_event_id
         FROM newsletter_source_item
         {where_sql}
         ORDER BY combined_score DESC, cached_at DESC

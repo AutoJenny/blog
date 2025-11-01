@@ -277,14 +277,20 @@ async function loadWeek(year, weekNumber) {
     const classification = (i.item_classification || 'idea').toLowerCase();
     if (classification === 'theme') {
       // Check if theme is selected (appears in schedule)
+      // Primary check: if idea_id matches in schedule
+      const selectedIdeaIds = new Set((schedule || []).map(sc => sc.idea_id).filter(Boolean));
+      const isSelectedById = selectedIdeaIds.has(i.id);
+      
+      // Fallback: check title matching (for legacy posts created before idea_id was stored)
       const normalize = (s) => (s || '').toLowerCase().trim();
       const selectedSeeds = new Set((schedule || []).map(sc => normalize(sc.post_idea_seed)).filter(Boolean));
       const selectedTitles = new Set((schedule || []).map(sc => normalize(sc.post_title)).filter(Boolean));
       const ideaTitle = normalize(i.idea_title);
-      const isSelected = selectedSeeds.has(ideaTitle) ||
+      const isSelectedByTitle = selectedSeeds.has(ideaTitle) ||
         selectedTitles.has(ideaTitle) ||
         Array.from(selectedTitles).some(st => st.includes(ideaTitle) || ideaTitle.includes(st));
-      themes.push({ ...i, _selected: isSelected });
+      
+      themes.push({ ...i, _selected: isSelectedById || isSelectedByTitle });
     } else {
       // Regular idea (not a theme)
       regularIdeas.push(i);
@@ -398,23 +404,227 @@ async function loadWeek(year, weekNumber) {
 
 (function init() {
   const now = new Date();
-  const { year, weekNumber } = getISOWeekInfo(now);
-  let state = { year, weekNumber };
+  const currentWeekInfo = getISOWeekInfo(now);
+  
+  // Load saved week from localStorage, or default to current week
+  const savedWeek = localStorage.getItem('calendar-week-view-week');
+  const savedYear = localStorage.getItem('calendar-week-view-year');
+  
+  let state;
+  if (savedWeek && savedYear) {
+    state = { 
+      year: parseInt(savedYear), 
+      weekNumber: parseInt(savedWeek) 
+    };
+  } else {
+    state = { 
+      year: currentWeekInfo.year, 
+      weekNumber: currentWeekInfo.weekNumber 
+    };
+  }
+
+  // Save function to persist state
+  function saveState(year, weekNumber) {
+    localStorage.setItem('calendar-week-view-year', String(year));
+    localStorage.setItem('calendar-week-view-week', String(weekNumber));
+    state = { year, weekNumber };
+  }
+
+  // Load week function that also saves
+  function loadWeekAndSave(year, weekNumber) {
+    saveState(year, weekNumber);
+    loadWeek(year, weekNumber);
+  }
 
   document.getElementById('prev-week').addEventListener('click', () => {
     const start = getWeekStartDate(state.year, state.weekNumber);
     start.setUTCDate(start.getUTCDate() - 7);
     const info = getISOWeekInfo(start);
-    state = { year: info.year, weekNumber: info.weekNumber };
-    loadWeek(state.year, state.weekNumber);
+    loadWeekAndSave(info.year, info.weekNumber);
   });
 
   document.getElementById('next-week').addEventListener('click', () => {
     const start = getWeekStartDate(state.year, state.weekNumber);
     start.setUTCDate(start.getUTCDate() + 7);
     const info = getISOWeekInfo(start);
-    state = { year: info.year, weekNumber: info.weekNumber };
-    loadWeek(state.year, state.weekNumber);
+    loadWeekAndSave(info.year, info.weekNumber);
+  });
+
+  // "This week" button
+  document.getElementById('this-week-btn').addEventListener('click', () => {
+    loadWeekAndSave(currentWeekInfo.year, currentWeekInfo.weekNumber);
+  });
+
+  // Week picker - month/week list interface
+  const pickerBtn = document.getElementById('week-picker-btn');
+  const pickerPopup = document.getElementById('week-picker-popup');
+  const pickerCancel = document.getElementById('week-picker-cancel');
+  const pickerYear = document.getElementById('picker-year');
+  const pickerYearPrev = document.getElementById('picker-year-prev');
+  const pickerYearNext = document.getElementById('picker-year-next');
+  const pickerMonths = document.getElementById('week-picker-months');
+  
+  let selectedPickerYear = state.year;
+
+  // Function to get weeks for a month
+  function getWeeksForMonth(year, month) {
+    const weeks = [];
+    const monthStart = new Date(Date.UTC(year, month, 1));
+    const monthEnd = new Date(Date.UTC(year, month + 1, 0));
+    
+    // Find the week containing the first day of the month
+    const firstWeekInfo = getISOWeekInfo(monthStart);
+    let currentWeek = firstWeekInfo.weekNumber;
+    let currentYear = firstWeekInfo.year;
+    
+    // If the first day is late in the week, might need previous week too
+    const weekStart = getWeekStartDate(currentYear, currentWeek);
+    if (weekStart.getUTCMonth() < month) {
+      // This week mostly belongs to previous month, start from next week
+      const nextWeekStart = new Date(weekStart);
+      nextWeekStart.setUTCDate(nextWeekStart.getUTCDate() + 7);
+      const nextWeekInfo = getISOWeekInfo(nextWeekStart);
+      currentWeek = nextWeekInfo.weekNumber;
+      currentYear = nextWeekInfo.year;
+    }
+    
+    // Collect all weeks that overlap with this month
+    while (true) {
+      const weekStartDate = getWeekStartDate(currentYear, currentWeek);
+      const weekEndDate = new Date(weekStartDate);
+      weekEndDate.setUTCDate(weekEndDate.getUTCDate() + 6);
+      
+      // Check if this week overlaps with the month
+      if (weekStartDate.getUTCMonth() === month && weekStartDate.getUTCFullYear() === year ||
+          weekEndDate.getUTCMonth() === month && weekEndDate.getUTCFullYear() === year ||
+          (weekStartDate.getUTCMonth() < month && weekEndDate.getUTCMonth() >= month && weekStartDate.getUTCFullYear() === year) ||
+          (weekStartDate.getUTCMonth() > month && weekEndDate.getUTCMonth() <= month && weekStartDate.getUTCFullYear() === year)) {
+        const weekInfo = { week: currentWeek, year: currentYear, startDate: new Date(weekStartDate) };
+        weeks.push(weekInfo);
+      } else if (weekStartDate.getUTCMonth() > month && weekStartDate.getUTCFullYear() === year) {
+        // We've passed the month
+        break;
+      }
+      
+      // Move to next week
+      currentWeek++;
+      if (currentWeek > 52) {
+        currentWeek = 1;
+        currentYear++;
+        if (currentYear > year) break;
+      }
+      
+      // Safety check to avoid infinite loop
+      if (weeks.length > 10) break;
+    }
+    
+    return weeks;
+  }
+
+  // Function to render months and weeks for a year
+  function renderYearWeeks(year) {
+    pickerMonths.innerHTML = '';
+    selectedPickerYear = year;
+    
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                        'July', 'August', 'September', 'October', 'November', 'December'];
+    
+    for (let month = 0; month < 12; month++) {
+      const weeks = getWeeksForMonth(year, month);
+      if (weeks.length === 0) continue;
+      
+      const monthDiv = document.createElement('div');
+      monthDiv.className = 'week-picker-month';
+      
+      const header = document.createElement('div');
+      header.className = 'week-picker-month-header';
+      header.textContent = monthNames[month];
+      monthDiv.appendChild(header);
+      
+      const weeksContainer = document.createElement('div');
+      weeksContainer.className = 'week-picker-weeks';
+      
+      weeks.forEach(({ week, year: weekYear, startDate }) => {
+        const weekBtn = document.createElement('button');
+        weekBtn.className = 'week-picker-week';
+        weekBtn.type = 'button';
+        
+        // Format: "Week X: DD MMM - DD MMM"
+        const weekEnd = new Date(startDate);
+        weekEnd.setUTCDate(weekEnd.getUTCDate() + 6);
+        const startStr = formatDate(startDate);
+        const endStr = formatDate(weekEnd);
+        weekBtn.textContent = `Week ${week}: ${startStr} – ${endStr}`;
+        
+        // Highlight if this is the currently selected week
+        if (weekYear === state.year && week === state.weekNumber) {
+          weekBtn.classList.add('selected');
+        }
+        
+        weekBtn.addEventListener('click', () => {
+          loadWeekAndSave(weekYear, week);
+          pickerPopup.style.display = 'none';
+        });
+        
+        weeksContainer.appendChild(weekBtn);
+      });
+      
+      monthDiv.appendChild(weeksContainer);
+      pickerMonths.appendChild(monthDiv);
+    }
+  }
+
+  // Populate year dropdown
+  function populateYearSelect() {
+    pickerYear.innerHTML = '';
+    const currentYear = new Date().getFullYear();
+    for (let y = currentYear - 2; y <= currentYear + 3; y++) {
+      const option = document.createElement('option');
+      option.value = y;
+      option.textContent = y;
+      if (y === selectedPickerYear) {
+        option.selected = true;
+      }
+      pickerYear.appendChild(option);
+    }
+  }
+
+  pickerBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    selectedPickerYear = state.year;
+    populateYearSelect();
+    renderYearWeeks(selectedPickerYear);
+    pickerPopup.style.display = pickerPopup.style.display === 'none' ? 'block' : 'none';
+  });
+
+  pickerYear.addEventListener('change', (e) => {
+    selectedPickerYear = parseInt(e.target.value);
+    renderYearWeeks(selectedPickerYear);
+  });
+
+  pickerYearPrev.addEventListener('click', () => {
+    selectedPickerYear--;
+    populateYearSelect();
+    pickerYear.value = selectedPickerYear;
+    renderYearWeeks(selectedPickerYear);
+  });
+
+  pickerYearNext.addEventListener('click', () => {
+    selectedPickerYear++;
+    populateYearSelect();
+    pickerYear.value = selectedPickerYear;
+    renderYearWeeks(selectedPickerYear);
+  });
+
+  pickerCancel.addEventListener('click', () => {
+    pickerPopup.style.display = 'none';
+  });
+
+  // Close picker when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!pickerPopup.contains(e.target) && e.target !== pickerBtn) {
+      pickerPopup.style.display = 'none';
+    }
   });
 
   // Filter change handlers
@@ -422,7 +632,10 @@ async function loadWeek(year, weekNumber) {
     const el = document.getElementById(id);
     if (el) el.addEventListener('change', () => {
       updateFilterVisuals();
-      loadWeek(state.year, state.weekNumber);
+      // Reload current week (filters don't change the week, just visibility)
+      const currentYear = parseInt(localStorage.getItem('calendar-week-view-year') || currentWeekInfo.year);
+      const currentWeek = parseInt(localStorage.getItem('calendar-week-view-week') || currentWeekInfo.weekNumber);
+      loadWeek(currentYear, currentWeek);
     });
   };
   attach('toggle-themes');
@@ -448,6 +661,7 @@ async function loadWeek(year, weekNumber) {
 
   updateFilterVisuals();
 
+  // Load the saved week (or current week if none saved)
   loadWeek(state.year, state.weekNumber);
 })();
 

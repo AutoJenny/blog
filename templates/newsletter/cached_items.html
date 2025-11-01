@@ -67,6 +67,12 @@
         border: 1px solid #2d3246;
         vertical-align: middle;
     }
+    table.items-table tbody td details summary {
+        cursor: pointer;
+    }
+    table.items-table tbody td details summary::-webkit-details-marker {
+        display: none;
+    }
     table.items-table tbody tr:hover td {
         background: #181f36;
     }
@@ -161,8 +167,12 @@
                             <th>Freshness</th>
                             <th>Signal</th>
                             <th>Combined Score</th>
+                            {% if category_filter == 'news' %}
+                            <th>Suitability</th>
+                            {% endif %}
                             <th>Date</th>
                             <th>Location</th>
+                            <th>Details</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -194,6 +204,17 @@
                                     {{ "%.2f"|format(item.combined_score or 0) }}
                                 </span>
                             </td>
+                            {% if category_filter == 'news' %}
+                            <td style="font-size: 12px;">
+                                {% if item.suitability_score is not none %}
+                                    <span class="{% if (item.suitability_score or 0) >= 6 %}score-high{% elif (item.suitability_score or 0) >= 4 %}score-medium{% else %}score-low{% endif %}" title="{{ item.suitability_notes or '' }}">
+                                        {{ "%.1f"|format(item.suitability_score) }}/10
+                                    </span>
+                                {% else %}
+                                    <span style="color: #6b7280;">Not analyzed</span>
+                                {% endif %}
+                            </td>
+                            {% endif %}
                             <td style="color: #9ca3af; font-size: 12px;">
                                 {% if item.published_at %}
                                     {{ item.published_at.strftime('%Y-%m-%d') if item.published_at else '—' }}
@@ -207,6 +228,48 @@
                             </td>
                             <td style="color: #9ca3af; font-size: 12px;">
                                 {{ item.location or '—' }}
+                            </td>
+                            <td style="position: relative;">
+                                <details style="cursor: pointer;">
+                                    <summary style="color: #7b8dff; font-size: 12px; font-weight: 600; user-select: none; list-style: none;">
+                                        <i class="fa-solid fa-info-circle"></i> View
+                                    </summary>
+                                    <div style="margin-top: 8px; padding: 12px; background: #0f172a; border: 1px solid #2d3246; border-radius: 6px; max-width: 600px; position: relative; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                                        {% if item.suitability_score is not none and item.suitability_notes %}
+                                        <div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #2d3246;">
+                                            <div style="color: #a5b4fc; font-size: 11px; font-weight: 600; margin-bottom: 6px;">
+                                                <i class="fa-solid fa-brain"></i> LLM Analysis:
+                                            </div>
+                                            <div style="color: #9ca3af; font-size: 12px; line-height: 1.5; margin-bottom: 6px;">
+                                                Score: <strong style="color: #6ee7b7;">{{ "%.1f"|format(item.suitability_score) }}/10</strong>
+                                            </div>
+                                            <div style="color: #9ca3af; font-size: 11px; line-height: 1.6; font-style: italic; background: #1b2138; padding: 8px; border-radius: 4px;">
+                                                {{ item.suitability_notes }}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        {% if item.raw_data %}
+                                        <div style="margin-bottom: 12px;">
+                                            <div style="color: #a5b4fc; font-size: 11px; font-weight: 600; margin-bottom: 6px;">
+                                                <i class="fa-solid fa-database"></i> Raw Data (from source):
+                                            </div>
+                                            <pre style="color: #9ca3af; font-size: 10px; line-height: 1.5; margin: 0; white-space: pre-wrap; word-break: break-word; max-height: 300px; overflow-y: auto; background: #1b2138; padding: 10px; border-radius: 4px; border: 1px solid #2d3246;">{{ (item.raw_data | tojson(indent=2)) if item.raw_data else '{}' }}</pre>
+                                        </div>
+                                        {% endif %}
+                                        {% if item.is_event and item.calendar_event_id %}
+                                        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #2d3246;">
+                                            <div style="color: #6ee7b7; font-size: 11px;">
+                                                <i class="fa-solid fa-calendar"></i> Imported to calendar (ID: {{ item.calendar_event_id }})
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        {% if not item.raw_data and not item.suitability_score %}
+                                        <div style="color: #9ca3af; font-size: 12px; font-style: italic;">
+                                            No additional data available
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </details>
                             </td>
                         </tr>
                         {% endfor %}

@@ -20,6 +20,9 @@
       <input type="checkbox" id="auto-select-{{ b.id }}" checked style="width: 18px; height: 18px; border-radius: 4px; background: #0f172a; border: 1px solid #2d3246; accent-color: #4e6bff;">
       <span style="color: #a5b4fc; font-size: 13px;">Auto-select best suggestion</span>
     </label>
+    <a href="/newsletter/sources" target="_blank" style="background: transparent; color: #a5b4fc; border: 1px solid #2d3246; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; text-decoration: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onmouseover="this.style.background='#0f172a'; this.style.borderColor='#4e6bff';" onmouseout="this.style.background='transparent'; this.style.borderColor='#2d3246';">
+      <i class="fa-solid fa-gear"></i> Manage Sources
+    </a>
     <button type="button" style="background: #4e6bff; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; margin-left: auto;" onclick="loadSuggestions({{ b.id }}, 'intro')">
       <i class="fa-solid fa-refresh"></i> Regenerate Suggestions
     </button>

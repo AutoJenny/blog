@@ -547,6 +547,17 @@
     background: #64748b;
 }
 
+.idea-btn-danger {
+    background: #dc2626;
+    border-color: #ef4444;
+    color: #fff;
+}
+
+.idea-btn-danger:hover {
+    background: #b91c1c;
+    border-color: #dc2626;
+}
+
 .idea-btn-icon {
     background: transparent;
     border: 1px solid #475569;
