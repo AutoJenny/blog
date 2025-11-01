@@ -80,18 +80,27 @@ def reanalyze_news_items(days_back: int = 30, limit: int = 50) -> Dict[str, Any]
                 url_hash = hashlib.sha256(url.encode('utf-8')).hexdigest() if url else None
                 
                 if url_hash:
+                    # Get final score (already clamped above)
+                    final_score = processed.get('suitability_score', 5.0)
+                    
+                    # Double-check clamp before database update
+                    if final_score > 9.0:
+                        final_score = 9.0
+                    elif final_score < 1.0:
+                        final_score = 1.0
+                    
                     with db_manager.get_connection() as conn:
                         with conn.cursor() as cur:
-                            # Direct update of existing record
+                            # Direct update of existing record with STRICT 1-9 clamp
                             cur.execute("""
                                 UPDATE newsletter_source_item
-                                SET suitability_score = %s,
+                                SET suitability_score = LEAST(GREATEST(%s, 1.0), 9.0),
                                     suitability_notes = %s,
                                     raw_data = COALESCE(raw_data, '{}'::jsonb) || %s::jsonb
                                 WHERE source_url_hash = %s
                                 AND category = 'news'
                             """, (
-                                processed.get('suitability_score'),
+                                final_score,  # Already clamped
                                 processed.get('suitability_notes'),
                                 Json({'synopsis': processed.get('synopsis', '')}),
                                 url_hash
@@ -99,13 +108,16 @@ def reanalyze_news_items(days_back: int = 30, limit: int = 50) -> Dict[str, Any]
                             conn.commit()
                 
                 final_score = processed.get('suitability_score', 0)
-                # Ensure score is in 1-9 range
+                # STRICT clamp to 1-9 range - enforce in database update
                 if final_score > 9.0:
-                    logger.warning(f"Score {final_score} exceeds 9, clamping: {item['title'][:50]}")
+                    logger.warning(f"Score {final_score} exceeds 9, clamping to 9.0: {item['title'][:50]}")
                     final_score = 9.0
                 elif final_score < 1.0:
-                    logger.warning(f"Score {final_score} below 1, clamping: {item['title'][:50]}")
+                    logger.warning(f"Score {final_score} below 1, clamping to 1.0: {item['title'][:50]}")
                     final_score = 1.0
+                
+                # Update the processed dict so database gets correct score
+                processed['suitability_score'] = final_score
                 
                 if final_score >= 6.0:
                     processed_count += 1
