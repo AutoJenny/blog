@@ -13,6 +13,44 @@ from config.database import db_manager
 logger = logging.getLogger(__name__)
 
 
+def clean_subscription_text(text: str) -> str:
+    """Remove subscription marketing text and boilerplate from article content.
+    
+    Args:
+        text: Article text or synopsis
+        
+    Returns:
+        Cleaned text with subscription messages removed
+    """
+    if not text:
+        return text
+    
+    # Common subscription patterns (case-insensitive)
+    subscription_patterns = [
+        r'Did you know with a Digital Subscription to.*?much more\.\s*',
+        r'Subscribe to.*?for.*?\.\s*',
+        r'Get unlimited access.*?\.\s*',
+        r'Sign up for.*?newsletter.*?\.\s*',
+        r'Start your.*?subscription.*?\.\s*',
+        r'Become a member.*?\.\s*',
+        r'Join.*?for exclusive.*?\.\s*',
+        r'Unlock.*?premium content.*?\.\s*',
+        r'Support.*?journalism.*?subscribe.*?\.\s*',
+        r'Enjoy.*?benefits.*?subscription.*?\.\s*',
+    ]
+    
+    cleaned = text
+    for pattern in subscription_patterns:
+        # Remove the pattern (case-insensitive, dotall)
+        cleaned = re.sub(pattern, '', cleaned, flags=re.IGNORECASE | re.DOTALL)
+    
+    # Remove multiple consecutive whitespace/newlines
+    cleaned = re.sub(r'\s+', ' ', cleaned)
+    cleaned = re.sub(r'\n\s*\n', '\n\n', cleaned)
+    
+    return cleaned.strip()
+
+
 def fetch_article_content(url: str) -> Optional[str]:
     """Fetch and extract main article content from a news URL.
     
@@ -77,6 +115,8 @@ def fetch_article_content(url: str) -> Optional[str]:
         # Clean up whitespace
         if content:
             content = ' '.join(content.split())
+            # Remove subscription marketing text
+            content = clean_subscription_text(content)
             # Limit length to avoid token limits (roughly 5000 words)
             if len(content) > 30000:
                 content = content[:30000] + '...'
@@ -184,6 +224,9 @@ Be strict but fair. Only articles with genuine Scottish connections should score
                 # Clamp score to 0-10
                 score = max(0.0, min(10.0, score))
                 
+                # Clean subscription text from synopsis
+                synopsis = clean_subscription_text(synopsis)
+                
                 return {
                     'suitability_score': round(score, 1),
                     'suitability_notes': reasoning[:500],
@@ -200,6 +243,9 @@ Be strict but fair. Only articles with genuine Scottish connections should score
             score = max(0.0, min(10.0, score))
             # Generate basic synopsis from article content
             synopsis = _extract_basic_synopsis(title, article_content)
+            # Clean subscription text from synopsis
+            synopsis = clean_subscription_text(synopsis)
+            
             return {
                 'suitability_score': round(score, 1),
                 'suitability_notes': response[:500],
@@ -216,6 +262,9 @@ Be strict but fair. Only articles with genuine Scottish connections should score
 
 def _extract_basic_synopsis(title: str, content: str) -> str:
     """Extract basic synopsis from article content (fallback)."""
+    # Clean content first
+    content = clean_subscription_text(content)
+    
     # Take first few sentences
     sentences = re.split(r'[.!?]+\s+', content)
     if len(sentences) >= 2:
@@ -292,14 +341,17 @@ def process_news_with_synopsis(item: Dict[str, Any], cache_results: bool = True)
         return None
     
     # Update item with synopsis and analysis
+    # Ensure synopsis is cleaned (in case it wasn't cleaned during generation)
+    synopsis = clean_subscription_text(result['synopsis'])
+    
     item['suitability_score'] = result['suitability_score']
     item['suitability_notes'] = result['suitability_notes']
-    item['synopsis'] = result['synopsis']
+    item['synopsis'] = synopsis
     
-    # Store synopsis in raw_data
+    # Store synopsis in raw_data (use cleaned version)
     if 'raw_data' not in item:
         item['raw_data'] = {}
-    item['raw_data']['synopsis'] = result['synopsis']
+    item['raw_data']['synopsis'] = synopsis
     item['raw_data']['article_content_length'] = len(article_content)
     
     # Cache result

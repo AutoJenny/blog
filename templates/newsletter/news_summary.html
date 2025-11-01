@@ -7,9 +7,14 @@
             <h1 class="text-3xl font-bold text-white mb-2">News Synopsis</h1>
             <p class="text-gray-400">Weekly news overview from Scottish sources</p>
         </div>
-        <button id="reanalyze-btn" onclick="reanalyzeNews()" class="bg-[#4e6bff] hover:bg-[#3d5ae5] text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 transition">
-            <i class="fa-solid fa-refresh"></i> Re-analyze News
-        </button>
+        <div class="flex items-center gap-2">
+            <button id="clean-btn" onclick="cleanSynopses()" class="bg-[#0f172a] hover:bg-[#1e293b] border border-[#2d3246] text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 transition">
+                <i class="fa-solid fa-broom"></i> Clean Synopses
+            </button>
+            <button id="reanalyze-btn" onclick="reanalyzeNews()" class="bg-[#4e6bff] hover:bg-[#3d5ae5] text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 transition">
+                <i class="fa-solid fa-refresh"></i> Re-analyze News
+            </button>
+        </div>
     </div>
 
     <div id="news-summary-container">
@@ -206,6 +211,37 @@ async function loadNewsSummary() {
                 </button>
             </div>
         `;
+    }
+}
+
+async function cleanSynopses() {
+    const btn = document.getElementById('clean-btn');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cleaning...';
+    
+    try {
+        const response = await fetch('/newsletter/news/clean', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert(result.message);
+            // Reload the summary
+            loadNewsSummary();
+        } else {
+            alert('Error: ' + (result.error || 'Failed to clean synopses'));
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
     }
 }
 
