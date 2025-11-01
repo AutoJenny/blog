@@ -89,7 +89,12 @@
                         <td style="color:#9ca3af; font-weight:600;">{{ post.id }}</td>
                         <td style="font-weight:700;">{{ post.title }}</td>
                         <td>
-                            {% if post.display_status == 'published' %}
+                            {% if show_deleted and post.display_status == 'deleted' %}
+                                <select class="status-dropdown" data-post-id="{{ post.id }}" style="background:#3b0b0b; color:#fca5a5; border:1px solid #ef4444; padding:6px 10px; border-radius:999px; font-weight:700; font-size:12px; cursor:pointer;" onchange="handleStatusChange(this)">
+                                    <option value="deleted" selected>Deleted</option>
+                                    <option value="restore">Undelete</option>
+                                </select>
+                            {% elif post.display_status == 'published' %}
                                 <span class="status status-published">Published</span>
                             {% elif post.display_status == 'error' %}
                                 <span class="status status-error">Error</span>
@@ -113,7 +118,9 @@
                             <a href="/planning/posts/{{ post.id }}/calendar/ideas"
                                class="btn-primary" onclick="event.stopPropagation();">Edit in Workflow</a>
                             <a href="/posts/{{ post.id }}" class="icon-btn" title="Preview" onclick="event.stopPropagation();"><i class="fa-solid fa-eye"></i></a>
+                            {% if post.display_status != 'published' %}
                             <button class="icon-btn delete-btn" title="Delete" data-post-id="{{ post.id }}" onclick="event.stopPropagation();"><i class="fa-solid fa-xmark" style="color:#ef4444;"></i></button>
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}
@@ -149,7 +156,11 @@
         btn.addEventListener('click', async () => {
             if (!confirm('Are you sure you want to delete this post?')) return;
             const postId = btn.dataset.postId;
-            await updatePostStatus(postId, 'deleted');
+            const response = await updatePostStatus(postId, 'deleted');
+            if (!response.ok) {
+                const data = await response.json();
+                alert(data.error || 'Failed to delete post');
+            }
         });
     });
 
@@ -159,7 +170,33 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ value: status })
         });
-        if (resp.ok) location.reload();
+        if (resp.ok) {
+            location.reload();
+        }
+        return resp;
+    }
+
+    async function handleStatusChange(selectElement) {
+        const postId = selectElement.dataset.postId;
+        const action = selectElement.value;
+        
+        if (action === 'deleted') {
+            // User selected "Deleted" again, do nothing (or reset dropdown)
+            return;
+        }
+        
+        if (action === 'restore') {
+            // Confirm undelete - will restore to previous status (or draft if unknown)
+            if (!confirm('Are you sure you want to restore this post? It will be restored to its previous status (or draft if unknown).')) {
+                // Reset dropdown to deleted
+                selectElement.value = 'deleted';
+                return;
+            }
+            
+            // Use a special value that the backend will interpret as "restore"
+            // The backend will restore to previous_status if available, otherwise 'draft'
+            await updatePostStatus(postId, 'restore');
+        }
     }
 
     // Simple client-side sorting

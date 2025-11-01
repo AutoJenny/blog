@@ -15,7 +15,18 @@ class BlogPipelineHeader {
         // Load post data when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
             console.log('[Blog Pipeline Header] DOM ready, loading post data...');
+            // Read URL params early if available to set window vars before header updates
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlYear = urlParams.get('year');
+            const urlWeek = urlParams.get('week');
+            if (urlYear && urlWeek && (!window.year || !window.weekNumber)) {
+                window.year = parseInt(urlYear);
+                window.weekNumber = parseInt(urlWeek);
+                localStorage.setItem('calendar-week-view-year', urlYear);
+                localStorage.setItem('calendar-week-view-week', urlWeek);
+            }
             this.loadPostData();
+            this.attachWeekParameterToNavLinks();
         });
 
         // Also load when data tab is clicked
@@ -30,15 +41,34 @@ class BlogPipelineHeader {
         this.updateNavigationHighlighting();
         
         // Also run after a short delay to catch pages that set window.currentStage after DOM ready
-        setTimeout(() => this.updateNavigationHighlighting(), 100);
+        setTimeout(() => {
+            this.updateNavigationHighlighting();
+            this.attachWeekParameterToNavLinks();
+        }, 100);
         
         // If DOM is already loaded, load post data immediately with a longer delay
         if (document.readyState === 'loading') {
             console.log('[Blog Pipeline Header] DOM still loading, waiting for DOMContentLoaded...');
         } else {
             console.log('[Blog Pipeline Header] DOM already loaded, loading post data with delay...');
-            // Update week/theme immediately for week-based pages
-            this.updateWeekAndTheme();
+            // For week-view pages, wait for loadWeek() to set window.year/weekNumber first
+            // Delay updateWeekAndTheme to allow week-view scripts to initialize
+            // Check if we're on a week-view page by looking for week-controls element
+            const isWeekViewPage = document.querySelector('.week-controls') !== null;
+            if (isWeekViewPage) {
+                // On week-view pages, wait longer for week-view script to initialize
+                setTimeout(() => {
+                    this.updateWeekAndTheme();
+                }, 300);
+            } else {
+                // On other pages, wait a bit longer to allow page scripts to set window.year/weekNumber
+                // Pages with URL params need time for scripts to execute
+                setTimeout(() => {
+                    this.updateWeekAndTheme();
+                    // Also re-attach week params to links after window vars are set
+                    this.attachWeekParameterToNavLinks();
+                }, 200);
+            }
             setTimeout(() => this.loadPostData(), 500);
         }
     }
@@ -167,8 +197,86 @@ class BlogPipelineHeader {
         
         let year, weekNumber, selectedTheme;
         
-        // Try to get from post data (post-based)
-        if (this.postData && this.postData.schedule) {
+        // PRIORITY 1: Use currently viewed week
+        // First check window variables (set early by week-view page initialization or from URL params)
+        if (window.year && window.weekNumber) {
+            year = window.year;
+            weekNumber = window.weekNumber;
+        } else {
+            // Fallback 1: Check URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlYear = urlParams.get('year');
+            const urlWeek = urlParams.get('week');
+            if (urlYear && urlWeek) {
+                year = parseInt(urlYear);
+                weekNumber = parseInt(urlWeek);
+            } else {
+                // Fallback 2: check displayed week info on week-view page (populated by loadWeek())
+                const weekYearEl = document.getElementById('week-year');
+                const weekNumberEl = document.getElementById('week-number');
+                if (weekYearEl && weekNumberEl && weekYearEl.textContent && weekNumberEl.textContent.trim()) {
+                    const yearStr = weekYearEl.textContent.trim();
+                    const weekStr = weekNumberEl.textContent.trim();
+                    if (yearStr && weekStr) {
+                        year = parseInt(yearStr);
+                        weekNumber = parseInt(weekStr);
+                    }
+                }
+            }
+        }
+        
+        // PRIORITY 2: If we have viewed week, fetch theme for that week (not post schedule)
+        if (year && weekNumber) {
+            // Fetch theme for the currently viewed week
+            try {
+                const weekResp = await fetch(`/planning/api/calendar/schedule/${year}/${weekNumber}`);
+                if (weekResp.ok) {
+                    const weekData = await weekResp.json();
+                    if (weekData.schedule && Array.isArray(weekData.schedule) && weekData.schedule.length > 0) {
+                        const scheduleWithIdea = weekData.schedule.find(s => s.idea_id);
+                        if (scheduleWithIdea && scheduleWithIdea.idea_id) {
+                            const ideaResp = await fetch(`/planning/api/calendar/ideas/${scheduleWithIdea.idea_id}`);
+                            if (ideaResp.ok) {
+                                const ideaData = await ideaResp.json();
+                                const idea = ideaData.idea || ideaData;
+                                if (idea && idea.idea_title) {
+                                    selectedTheme = idea.idea_title;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // If no theme selected yet, check if themes exist for this week and auto-select first one
+                if (!selectedTheme && weekNumber && year) {
+                    try {
+                        const ideasResp = await fetch(`/planning/api/calendar/ideas/week/${weekNumber}`);
+                        if (ideasResp.ok) {
+                            const ideasData = await ideasResp.json();
+                            const ideas = Array.isArray(ideasData) ? ideasData : (ideasData?.ideas || []);
+                            
+                            // Find themes (item_classification === 'theme')
+                            const themes = ideas.filter(i => 
+                                (i.item_classification || 'idea').toLowerCase() === 'theme'
+                            );
+                            
+                            if (themes.length > 0) {
+                                // Auto-select first theme (already sorted by priority from API)
+                                const firstTheme = themes[0];
+                                selectedTheme = firstTheme.idea_title;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('[Blog Pipeline Header] Error checking for themes:', e);
+                    }
+                }
+            } catch (e) {
+                console.warn('[Blog Pipeline Header] Error fetching theme from week schedule:', e);
+            }
+        }
+        
+        // PRIORITY 3: Try to get from post data (post-based) - only if window vars not set
+        if (!year && !weekNumber && this.postData && this.postData.schedule) {
             year = this.postData.schedule.year;
             weekNumber = this.postData.schedule.week_number;
             selectedTheme = this.postData.schedule.selected_theme_title;
@@ -258,15 +366,19 @@ class BlogPipelineHeader {
         } else {
             // Try to get from template variables (week-based or post-based without schedule)
             const postId = this.getPostId();
-            if (postId && postId !== '0' && parseInt(postId) !== 0) {
+            // Only fetch post schedule if we don't have window.year/weekNumber (viewed week takes priority)
+            if (!year && !weekNumber && postId && postId !== '0' && parseInt(postId) !== 0) {
                 // Post-based: fetch schedule - but also check week schedule for theme
                 try {
                     const resp = await fetch(`/planning/api/posts/${postId}`);
                     if (resp.ok) {
                         const data = await resp.json();
                         if (data.schedule) {
-                            year = data.schedule.year;
-                            weekNumber = data.schedule.week_number;
+                            // Only use post schedule if window vars weren't set (viewed week takes priority)
+                            if (!window.year || !window.weekNumber) {
+                                year = data.schedule.year;
+                                weekNumber = data.schedule.week_number;
+                            }
                             selectedTheme = data.schedule.selected_theme_title;
                             
                             // If no theme from post schedule but we have week info, check week schedule
@@ -407,6 +519,98 @@ class BlogPipelineHeader {
     getStageName() {
         // No prefix needed - just show week info and theme
         return '';
+    }
+    
+    attachWeekParameterToNavLinks() {
+        // Get current week/year from window vars, URL params, or localStorage
+        let year = window.year;
+        let weekNumber = window.weekNumber;
+        
+        // Try URL parameters
+        if (!year || !weekNumber) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlYear = urlParams.get('year');
+            const urlWeek = urlParams.get('week');
+            if (urlYear && urlWeek) {
+                year = parseInt(urlYear);
+                weekNumber = parseInt(urlWeek);
+            }
+        }
+        
+        // Try localStorage (from week-view)
+        if (!year || !weekNumber) {
+            const savedYear = localStorage.getItem('calendar-week-view-year');
+            const savedWeek = localStorage.getItem('calendar-week-view-week');
+            if (savedYear && savedWeek) {
+                year = parseInt(savedYear);
+                weekNumber = parseInt(savedWeek);
+            }
+        }
+        
+        // Get valid post_id (handle post_id=0 by using saved post or finding scheduled post for week)
+        const currentPostId = this.getPostId();
+        let validPostId = currentPostId;
+        
+        if (!validPostId || validPostId === '0' || parseInt(validPostId) === 0) {
+            // Try localStorage
+            const savedPostId = localStorage.getItem('blogForgeSelectedPostId');
+            if (savedPostId && parseInt(savedPostId) > 0) {
+                validPostId = savedPostId;
+            } else if (year && weekNumber) {
+                // Try to find a post scheduled for this week (async, will update links when ready)
+                fetch(`/planning/api/calendar/schedule/${year}/${weekNumber}`)
+                    .then(resp => resp.json())
+                    .then(data => {
+                        if (data.schedule && Array.isArray(data.schedule) && data.schedule.length > 0) {
+                            const scheduleWithPost = data.schedule.find(s => s.post_id);
+                            if (scheduleWithPost && scheduleWithPost.post_id) {
+                                this.updateNavLinksWithPostId(scheduleWithPost.post_id, year, weekNumber);
+                            }
+                        }
+                    })
+                    .catch(err => console.warn('[Blog Pipeline Header] Error fetching schedule for post_id:', err));
+            }
+        }
+        
+        // If we have week info, attach it to all navigation links
+        if (year && weekNumber) {
+            // Get all navigation links (stage buttons and sub-stage buttons)
+            const navLinks = document.querySelectorAll('.stage-btn, .sub-stage-btn');
+            navLinks.forEach(link => {
+                let href = link.getAttribute('href');
+                if (!href) return;
+                
+                // Replace post_id=0 with valid post_id if we have one
+                if (validPostId && validPostId !== '0' && parseInt(validPostId) !== 0) {
+                    href = href.replace(/\/posts\/0\//g, `/posts/${validPostId}/`);
+                    link.setAttribute('href', href);
+                }
+                
+                // Add query parameters if not already present
+                if (!href.includes('?year=') && !href.includes('?week=')) {
+                    const separator = href.includes('?') ? '&' : '?';
+                    link.setAttribute('href', `${href}${separator}year=${year}&week=${weekNumber}`);
+                }
+            });
+        }
+    }
+    
+    updateNavLinksWithPostId(postId, year, weekNumber) {
+        // Update all navigation links with the found post_id and week params
+        const navLinks = document.querySelectorAll('.stage-btn, .sub-stage-btn');
+        navLinks.forEach(link => {
+            let href = link.getAttribute('href');
+            if (!href) return;
+            
+            // Replace any post_id with the found one
+            href = href.replace(/\/posts\/\d+\//g, `/posts/${postId}/`);
+            
+            // Add/update query parameters
+            const url = new URL(href, window.location.origin);
+            url.searchParams.set('year', year);
+            url.searchParams.set('week', weekNumber);
+            link.setAttribute('href', url.pathname + url.search);
+        });
     }
 
     getWeekStartDate(year, weekNumber) {

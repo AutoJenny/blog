@@ -214,7 +214,11 @@ def api_update_post_status(post_id):
     Update a post's status.
     Used by posts_list.html template for delete/restore operations.
     
-    Expected JSON: {"value": "deleted" | "draft" | "published" | etc.}
+    Expected JSON: {"value": "deleted" | "draft" | "published" | "restore" | etc.}
+    
+    - Cannot delete published posts (returns error)
+    - When restoring from deleted, restores to 'published' if it was published before
+    - Otherwise normal status update
     """
     try:
         data = request.get_json()
@@ -225,19 +229,59 @@ def api_update_post_status(post_id):
         if not new_status:
             return jsonify({"error": "Status value is required"}), 400
         
-        with db_manager.get_cursor() as cursor:
-            cursor.execute("""
-                UPDATE post 
-                SET status = %s, updated_at = NOW()
-                WHERE id = %s
-            """, (new_status, post_id))
-            
-            if cursor.rowcount == 0:
-                return jsonify({"error": "Post not found"}), 404
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cursor:
+                # Get current status
+                cursor.execute("SELECT status FROM post WHERE id = %s", (post_id,))
+                current = cursor.fetchone()
+                
+                if not current:
+                    return jsonify({"error": "Post not found"}), 404
+                
+                current_status = current['status']
+                
+                # Prevent deletion of published posts
+                if new_status == 'deleted' and current_status == 'published':
+                    return jsonify({
+                        "error": "Cannot delete published posts. Please unpublish first.",
+                        "success": False
+                    }), 400
+                
+                # When restoring from deleted, check if it should be restored to published
+                # We'll check if there's a clan_post_id or other indicators it was published
+                if current_status == 'deleted' and new_status == 'restore':
+                    # Check if post was published by looking for indicators
+                    cursor.execute("""
+                        SELECT clan_post_id, clan_uploaded_url 
+                        FROM post 
+                        WHERE id = %s
+                    """, (post_id,))
+                    post_info = cursor.fetchone()
+                    
+                    # If it has clan_post_id or uploaded_url, it was likely published
+                    if post_info and (post_info.get('clan_post_id') or post_info.get('clan_uploaded_url')):
+                        restore_to = 'published'
+                    else:
+                        restore_to = 'draft'
+                    
+                    cursor.execute("""
+                        UPDATE post 
+                        SET status = %s, updated_at = NOW()
+                        WHERE id = %s
+                    """, (restore_to, post_id))
+                else:
+                    # Normal status update
+                    cursor.execute("""
+                        UPDATE post 
+                        SET status = %s, updated_at = NOW()
+                        WHERE id = %s
+                    """, (new_status, post_id))
+                
+                conn.commit()
         
         return jsonify({
             "success": True,
-            "message": f"Post status updated to '{new_status}'"
+            "message": f"Post status updated"
         })
         
     except Exception as e:

@@ -253,6 +253,12 @@ async function loadWeek(year, weekNumber) {
   window.year = year;
   window.weekNumber = weekNumber;
   
+  // Update URL to reflect current week being viewed
+  const url = new URL(window.location.href);
+  url.searchParams.set('year', year);
+  url.searchParams.set('week', weekNumber);
+  window.history.replaceState({ year, weekNumber }, '', url);
+  
   // Update header week info and theme
   if (typeof blogPipelineHeader !== 'undefined' && blogPipelineHeader.updateWeekAndTheme) {
     await blogPipelineHeader.updateWeekAndTheme();
@@ -501,21 +507,48 @@ async function loadWeek(year, weekNumber) {
   const now = new Date();
   const currentWeekInfo = getISOWeekInfo(now);
   
-  // Load saved week from localStorage, or default to current week
-  const savedWeek = localStorage.getItem('calendar-week-view-week');
-  const savedYear = localStorage.getItem('calendar-week-view-year');
+  // PRIORITY 1: Check URL parameters (most authoritative)
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlYear = urlParams.get('year');
+  const urlWeek = urlParams.get('week');
   
   let state;
-  if (savedWeek && savedYear) {
-    state = { 
-      year: parseInt(savedYear), 
-      weekNumber: parseInt(savedWeek) 
+  if (urlYear && urlWeek) {
+    // Use week from URL
+    state = {
+      year: parseInt(urlYear),
+      weekNumber: parseInt(urlWeek)
     };
+    // Save to localStorage for persistence
+    localStorage.setItem('calendar-week-view-year', urlYear);
+    localStorage.setItem('calendar-week-view-week', urlWeek);
   } else {
-    state = { 
-      year: currentWeekInfo.year, 
-      weekNumber: currentWeekInfo.weekNumber 
-    };
+    // PRIORITY 2: Load saved week from localStorage
+    const savedWeek = localStorage.getItem('calendar-week-view-week');
+    const savedYear = localStorage.getItem('calendar-week-view-year');
+    
+    if (savedWeek && savedYear) {
+      state = { 
+        year: parseInt(savedYear), 
+        weekNumber: parseInt(savedWeek) 
+      };
+      // Update URL to reflect saved week
+      const url = new URL(window.location.href);
+      url.searchParams.set('year', state.year);
+      url.searchParams.set('week', state.weekNumber);
+      window.history.replaceState({ year: state.year, weekNumber: state.weekNumber }, '', url);
+    } else {
+      // PRIORITY 3: Default to current week
+      state = { 
+        year: currentWeekInfo.year, 
+        weekNumber: currentWeekInfo.weekNumber 
+      };
+      // Update URL to reflect current week
+      const url = new URL(window.location.href);
+      url.searchParams.set('year', state.year);
+      url.searchParams.set('week', state.weekNumber);
+      window.history.replaceState({ year: state.year, weekNumber: state.weekNumber }, '', url);
+    }
   }
 
   // Save function to persist state
@@ -529,6 +562,15 @@ async function loadWeek(year, weekNumber) {
   function loadWeekAndSave(year, weekNumber) {
     saveState(year, weekNumber);
     loadWeek(year, weekNumber);
+  }
+  
+  // Initial load - ensure window vars are set before header tries to use them
+  window.year = state.year;
+  window.weekNumber = state.weekNumber;
+  
+  // Trigger header update immediately after setting window vars
+  if (typeof blogPipelineHeader !== 'undefined' && blogPipelineHeader.updateWeekAndTheme) {
+    blogPipelineHeader.updateWeekAndTheme();
   }
 
   document.getElementById('prev-week').addEventListener('click', () => {

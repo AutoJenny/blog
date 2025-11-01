@@ -19,9 +19,34 @@
     window.currentStage = 'authoring';
         window.currentSubstage = 'image-concepts';
   window.postId = {{ post_id|default(0) }};
+  window.illustrationMethod = '{{ illustration_method|default("LLM-creation") }}';
+  
+    // Read week/year from URL parameters and set window vars for header
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlYear = urlParams.get('year');
+    const urlWeek = urlParams.get('week');
+    if (urlYear && urlWeek) {
+        window.year = parseInt(urlYear);
+        window.weekNumber = parseInt(urlWeek);
+        // Also save to localStorage for persistence
+        localStorage.setItem('calendar-week-view-year', urlYear);
+        localStorage.setItem('calendar-week-view-week', urlWeek);
+    } else {
+        // Try localStorage as fallback
+        const savedYear = localStorage.getItem('calendar-week-view-year');
+        const savedWeek = localStorage.getItem('calendar-week-view-week');
+        if (savedYear && savedWeek) {
+            window.year = parseInt(savedYear);
+            window.weekNumber = parseInt(savedWeek);
+        }
+    }
 </script>
 <!-- Ensure specialized scripts load after the asset stack -->
+{% if illustration_method == 'Photo-harvesting' %}
+<script src="{{ url_for('static', filename='js/authoring/photo-harvesting-output-panel.js') }}"></script>
+{% else %}
 <script src="{{ url_for('static', filename='js/authoring/image-concepts-output-panel.js') }}"></script>
+{% endif %}
 {% endblock %}
 
 {% block title %}Image Concepts - Section Authoring{% endblock %}
@@ -88,20 +113,38 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="workspace-container">
         {% include 'shared/sections_panel.html' %}
         <div class="editor-panel">
+            <!-- Route Indicator -->
+            <div class="route-indicator" style="background: {% if illustration_method == 'Photo-harvesting' %}#1e40af{% else %}#7c3aed{% endif %}; color: white; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas {% if illustration_method == 'Photo-harvesting' %}fa-camera{% else %}fa-magic{% endif %}" style="font-size: 1.1rem;"></i>
+                <span>Illustration Route: <strong>{{ illustration_method }}</strong></span>
+            </div>
+            
+            {% if illustration_method == 'Photo-harvesting' %}
+            <!-- Photo Settings Panel -->
+            {% include 'authoring/includes/photo_settings_panel.html' %}
+            
+            <!-- Photo Prompts Panel -->
+            {% include 'authoring/includes/photo_prompts_panel.html' %}
+            {% else %}
             <!-- LLM Settings Panel -->
             {% include 'authoring/includes/llm_settings_panel.html' %}
             
             <!-- LLM Prompts Panel -->
             {% include 'authoring/includes/llm_prompts_panel.html' %}
+            {% endif %}
             
-            <!-- Context Panel -->
+            <!-- Context Panel (shared) -->
             {% include 'authoring/includes/context_panel.html' %}
             
-            <!-- Batch Progress Panel -->
+            <!-- Batch Progress Panel (shared) -->
             {% include 'authoring/includes/batch_progress_panel.html' %}
             
-            <!-- Output Panel: Image Concepts -->
+            <!-- Output Panel -->
+            {% if illustration_method == 'Photo-harvesting' %}
+            {% include 'authoring/includes/output_panel_photo_harvesting.html' %}
+            {% else %}
             {% include 'authoring/includes/output_panel_image_concepts.html' %}
+            {% endif %}
         </div>
     </div>
 </div>
