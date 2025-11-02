@@ -66,9 +66,10 @@ def process_events(items: List[Dict[str, Any]]) -> Dict[str, Any]:
             item['calendar_event_id'] = result['id']
     
     return {
-        'processed': len(event_items),
+        'processed': len(deduplicated),
         'imported': import_result.get('imported', 0),
         'skipped': skipped_count + import_result.get('skipped', 0),
+        'filtered': filtered_count,
     }
 
 

@@ -1427,3 +1427,11 @@ LINE 10:                                 AND is_selected = TRUE
 2025-11-02 09:53:52,062 - werkzeug - INFO -  * Restarting with stat
 2025-11-02 09:53:52,406 - werkzeug - WARNING -  * Debugger is active!
 2025-11-02 09:53:52,412 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 09:54:07,186 - config.database - INFO - Database connection established
+2025-11-02 09:54:07,190 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:54:07] "GET /planning/api/posts/78/taxonomy HTTP/1.1" 200 -
+2025-11-02 09:54:08,769 - config.database - INFO - Database connection established
+2025-11-02 09:54:08,773 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:54:08] "GET /planning/api/posts/81/taxonomy HTTP/1.1" 200 -
+2025-11-02 09:54:12,927 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/jobs/prefetch_sources.py', reloading
+2025-11-02 09:54:12,978 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 09:54:13,319 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 09:54:13,325 - werkzeug - INFO -  * Debugger PIN: 263-852-041
