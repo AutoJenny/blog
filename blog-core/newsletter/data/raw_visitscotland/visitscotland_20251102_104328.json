@@ -1,0 +1,24 @@
+{
+  "source": "VisitScotland - Music Festivals",
+  "base_url": "https://www.visitscotland.com/things-to-do/events/music-festivals",
+  "extracted_at": "2025-11-02T10:43:28.874654",
+  "event_count": 2,
+  "events": [
+    {
+      "title": "sign up for the under 26 newsletter",
+      "url": "https://emails.glasgowlife.org.uk/k/Cgi-It-Uk-Limited/celtic_connections_under_26",
+      "date_text": "for 2025",
+      "description": ", there's a community for those under 26 where you can alsosign up for the under 26 newsletterfor discounts and updates.",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/music-festivals",
+      "extracted_at": "2025-11-02T10:43:28.842657"
+    },
+    {
+      "title": "Mull accommodation",
+      "url": "https://www.visitscotland.com/places-to-go/islands/isle-mull/accommodation",
+      "date_text": "for 2026",
+      "description": ".",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/music-festivals",
+      "extracted_at": "2025-11-02T10:43:28.842790"
+    }
+  ]
+}

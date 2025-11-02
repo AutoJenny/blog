@@ -1,0 +1,104 @@
+{
+  "source": "VisitScotland - Edinburgh Festivals",
+  "base_url": "https://www.visitscotland.com/things-to-do/events/edinburgh-festivals",
+  "extracted_at": "2025-11-02T10:43:19.488202",
+  "event_count": 12,
+  "events": [
+    {
+      "title": "Edinburgh Science Festival",
+      "url": "https://www.edinburghfestivalcity.com/festivals/edinburgh-science-festival",
+      "date_text": "5-20 April 2025",
+      "description": "",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/edinburgh-festivals",
+      "extracted_at": "2025-11-02T10:43:19.453857"
+    },
+    {
+      "title": "Edinburgh International Children's Festival",
+      "url": "https://www.edinburghfestivalcity.com/festivals/edinburgh-international-childrens-festival",
+      "date_text": "24 May-1 June 2025",
+      "description": "",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/edinburgh-festivals",
+      "extracted_at": "2025-11-02T10:43:19.453886"
+    },
+    {
+      "title": "Leith Festival",
+      "url": "https://leithfestival.com/",
+      "date_text": "14-22 June 2025",
+      "description": "",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/edinburgh-festivals",
+      "extracted_at": "2025-11-02T10:43:19.453903"
+    },
+    {
+      "title": "Edinburgh Jazz and Blues Festival",
+      "url": "https://ejbf.co.uk/",
+      "date_text": "11-20 July 2025",
+      "description": "",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/edinburgh-festivals",
+      "extracted_at": "2025-11-02T10:43:19.453918"
+    },
+    {
+      "title": "The Royal Edinburgh Military Tattoo",
+      "url": "https://www.edintattoo.co.uk/",
+      "date_text": "1-23 August 2025",
+      "description": "",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/edinburgh-festivals",
+      "extracted_at": "2025-11-02T10:43:19.453931"
+    },
+    {
+      "title": "Edinburgh International Festival",
+      "url": "https://www.eif.co.uk/",
+      "date_text": "1 - 24 August 2025",
+      "description": "",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/edinburgh-festivals",
+      "extracted_at": "2025-11-02T10:43:19.453944"
+    },
+    {
+      "title": "Edinburgh Festival Fringe",
+      "url": "https://www.edfringe.com/",
+      "date_text": "1 - 25 August 2025",
+      "description": "",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/edinburgh-festivals",
+      "extracted_at": "2025-11-02T10:43:19.453956"
+    },
+    {
+      "title": "Edinburgh Art Festival",
+      "url": "https://www.edinburghartfestival.com/",
+      "date_text": "7-24 August 2025",
+      "description": "",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/edinburgh-festivals",
+      "extracted_at": "2025-11-02T10:43:19.453967"
+    },
+    {
+      "title": "Edinburgh International Book Festival",
+      "url": "https://www.edbookfest.co.uk/",
+      "date_text": "9-24 August 2025",
+      "description": "",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/edinburgh-festivals",
+      "extracted_at": "2025-11-02T10:43:19.453979"
+    },
+    {
+      "title": "Edinburgh International Film Festival",
+      "url": "https://www.edinburghfestivalcity.com/festivals/edinburgh-international-film-festival",
+      "date_text": "14-20 August 2025",
+      "description": "",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/edinburgh-festivals",
+      "extracted_at": "2025-11-02T10:43:19.453990"
+    },
+    {
+      "title": "Edinburgh International Storytelling Festival",
+      "url": "https://www.edinburghfestivalcity.com/festivals/scottish-international-storytelling-festival",
+      "date_text": "22 October-1 November 2025",
+      "description": "",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/edinburgh-festivals",
+      "extracted_at": "2025-11-02T10:43:19.454004"
+    },
+    {
+      "title": "Edinburgh's Hogmanay",
+      "url": "https://www.edinburghfestivalcity.com/festivals/edinburghs-hogmanay",
+      "date_text": "2025 - 1 January 2026",
+      "description": "",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/edinburgh-festivals",
+      "extracted_at": "2025-11-02T10:43:19.454016"
+    }
+  ]
+}

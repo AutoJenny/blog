@@ -209,14 +209,14 @@ class VisitScotlandScraper(SourceAdapter):
                         description = after_date[:500]  # Limit length
                 
                 # Include this event (we already confirmed it has a date)
-                    events.append({
-                        'title': title,
-                        'url': href,
-                        'date_text': date_text,
-                        'description': description,
-                        'source_url': url,
-                        'extracted_at': datetime.now().isoformat(),
-                    })
+                events.append({
+                    'title': title,
+                    'url': href,
+                    'date_text': date_text,
+                    'description': description,
+                    'source_url': url,
+                    'extracted_at': datetime.now().isoformat(),
+                })
             
             logger.info(f"Extracted {len(events)} events from {url}")
             return events
@@ -306,6 +306,25 @@ class VisitScotlandScraper(SourceAdapter):
         
         return events
     
+    def normalize(self, item: Dict[str, Any]) -> Dict[str, Any]:
+        """Normalize a raw event item to standard format.
+        
+        Args:
+            item: Raw event dict from scrape
+            
+        Returns:
+            Normalized item dict
+        """
+        return {
+            'title': item.get('title', ''),
+            'url': item.get('url', ''),
+            'date_text': item.get('date_text', ''),
+            'description': item.get('description', ''),
+            'category': self.category,
+            'source_name': self.source_name,
+            'raw_data': item,  # Preserve all raw data
+        }
+    
     def fetch_and_normalize(self) -> List[Dict[str, Any]]:
         """Fetch and return normalized items (raw events for now, will be parsed by LLM later)."""
         raw_events = self.fetch()
@@ -314,15 +333,7 @@ class VisitScotlandScraper(SourceAdapter):
         # Full parsing will happen in a second pass with LLM
         normalized = []
         for event in raw_events:
-            normalized.append({
-                'title': event['title'],
-                'url': event['url'],
-                'date_text': event.get('date_text', ''),
-                'description': event.get('description', ''),
-                'category': self.category,
-                'source_name': self.source_name,
-                'raw_data': event,  # Preserve all raw data
-            })
+            normalized.append(self.normalize(event))
         
         return normalized
 

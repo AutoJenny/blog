@@ -132,16 +132,28 @@ def find_duplicate_event(
             # First check: exact URL match (if URL provided)
             if url:
                 url_hash = hashlib.sha256(url.encode('utf-8')).hexdigest()
-                cur.execute("""
-                    SELECT id, title, url, event_date, location, source_name, cached_at,
-                           raw_data, suitability_score, suitability_notes
-                    FROM newsletter_source_item
-                    WHERE category = 'event'
-                    AND source_url_hash = %s
-                    AND (%s IS NULL OR id != %s)
-                    ORDER BY cached_at DESC
-                    LIMIT 1
-                """, (url_hash, exclude_id, exclude_id))
+                # Handle None exclude_id properly
+                if exclude_id is None:
+                    cur.execute("""
+                        SELECT id, title, url, event_date, location, source_name, cached_at,
+                               raw_data, suitability_score, suitability_notes
+                        FROM newsletter_source_item
+                        WHERE category = 'event'
+                        AND source_url_hash = %s
+                        ORDER BY cached_at DESC
+                        LIMIT 1
+                    """, (url_hash,))
+                else:
+                    cur.execute("""
+                        SELECT id, title, url, event_date, location, source_name, cached_at,
+                               raw_data, suitability_score, suitability_notes
+                        FROM newsletter_source_item
+                        WHERE category = 'event'
+                        AND source_url_hash = %s
+                        AND id != %s
+                        ORDER BY cached_at DESC
+                        LIMIT 1
+                    """, (url_hash, exclude_id))
                 
                 row = cur.fetchone()
                 if row:
@@ -164,17 +176,30 @@ def find_duplicate_event(
             # Second check: similar title (fuzzy match)
             # Get recent events to check
             cutoff_date = datetime.now() - timedelta(days=365)  # Check last year
-            cur.execute("""
-                SELECT id, title, url, event_date, location, source_name, cached_at,
-                       raw_data, suitability_score, suitability_notes
-                FROM newsletter_source_item
-                WHERE category = 'event'
-                AND (%s IS NULL OR id != %s)
-                AND (event_date >= %s OR event_date IS NULL OR cached_at >= %s)
-                ORDER BY 
-                    CASE WHEN source_name = %s THEN 0 ELSE 1 END,  -- Prefer same source
-                    cached_at DESC
-            """, (exclude_id, exclude_id, cutoff_date, cutoff_date, source_name or ''))
+            # Handle None exclude_id properly
+            if exclude_id is None:
+                cur.execute("""
+                    SELECT id, title, url, event_date, location, source_name, cached_at,
+                           raw_data, suitability_score, suitability_notes
+                    FROM newsletter_source_item
+                    WHERE category = 'event'
+                    AND (event_date >= %s OR event_date IS NULL OR cached_at >= %s)
+                    ORDER BY 
+                        CASE WHEN source_name = %s THEN 0 ELSE 1 END,
+                        cached_at DESC
+                """, (cutoff_date, cutoff_date, source_name or ''))
+            else:
+                cur.execute("""
+                    SELECT id, title, url, event_date, location, source_name, cached_at,
+                           raw_data, suitability_score, suitability_notes
+                    FROM newsletter_source_item
+                    WHERE category = 'event'
+                    AND id != %s
+                    AND (event_date >= %s OR event_date IS NULL OR cached_at >= %s)
+                    ORDER BY 
+                        CASE WHEN source_name = %s THEN 0 ELSE 1 END,
+                        cached_at DESC
+                """, (exclude_id, cutoff_date, cutoff_date, source_name or ''))
             
             rows = cur.fetchall() or []
             
