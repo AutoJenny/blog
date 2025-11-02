@@ -66,6 +66,13 @@ Migrations:
 - `POST /newsletter/issue/:id/block/add` - Add new block
 - `POST /newsletter/block/:id/move` - Move block up/down
 
+### Event Management
+- `GET /newsletter/events` - Events Synopsis page (summary with filters)
+- `GET /newsletter/events/<id>` - Event detail page with inline editing
+- `POST /newsletter/events/<id>/update` - Update event field (title, description, date_text, event_date, location)
+- `POST /newsletter/events/<id>/recurrence-type` - Update event classification (annual/one_off)
+- `DELETE /newsletter/events/<id>` - Delete event (soft or hard delete)
+
 ## Source Aggregation System
 
 External content is aggregated from multiple sources:
@@ -94,9 +101,12 @@ All sources are normalized to common shape, scored (freshness + signal), and cac
 The prefetch job (`jobs/prefetch_sources.py`) routes items to specialized processing:
 
 1. **Events** (`category='event'`):
+   - False positive filtering (page headings, navigation, newsletter signups, accommodation listings)
+   - LLM-based parsing for intelligent date/location/title extraction
    - Deduplication check (fuzzy title matching + date proximity)
+   - Classification as annual or one-off events
    - Import to `calendar_events` table with category linking
-   - Mark source items with `is_event=True` and `calendar_event_id`
+   - Mark source items with `is_event=True` and `calendar_event_id` and `event_recurrence_type`
 
 2. **News** (`category='news'`):
    - LLM-based suitability analysis (0-10 score, 6.0+ threshold)
