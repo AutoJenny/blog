@@ -190,14 +190,46 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Generate taxonomy using LLM
     async function generateTaxonomy() {
-        // Get expanded idea
+        // CRITICAL: Get expanded idea for the CORRECT week, not just the post_id
         try {
-            const expandedIdeaResponse = await fetch(`/planning/api/posts/${postId}/expanded-idea`);
+            // Read year/week from URL parameters (canonical source)
+            const urlParams = new URLSearchParams(window.location.search);
+            const year = urlParams.get('year') || window.year;
+            const week = urlParams.get('week') || window.weekNumber;
+            
+            let expandedIdeaUrl = `/planning/api/posts/${postId}/expanded-idea`;
+            if (year && week) {
+                expandedIdeaUrl += `?year=${year}&week=${week}`;
+            }
+            
+            const expandedIdeaResponse = await fetch(expandedIdeaUrl);
             const expandedIdeaData = await expandedIdeaResponse.json();
             
             if (!expandedIdeaData.success || !expandedIdeaData.expanded_idea) {
                 alert('Please generate an expanded idea first before assigning taxonomy.');
                 return;
+            }
+            
+            // CRITICAL: Determine the correct post_id for taxonomy assignment
+            // If we're viewing a different week than the post's schedule, we should assign
+            // taxonomy to the post that's actually scheduled for this week
+            let targetPostId = postId;
+            
+            if (year && week) {
+                // Try to find the post scheduled for this week
+                try {
+                    const scheduleResponse = await fetch(`/planning/api/calendar/schedule/${year}/${week}`);
+                    const scheduleData = await scheduleResponse.json();
+                    if (scheduleData.schedule && Array.isArray(scheduleData.schedule) && scheduleData.schedule.length > 0) {
+                        const weekSchedule = scheduleData.schedule.find(s => s.post_id && s.idea_id);
+                        if (weekSchedule && weekSchedule.post_id) {
+                            targetPostId = weekSchedule.post_id;
+                            console.log(`Taxonomy will be assigned to post ${targetPostId} (scheduled for week ${year}/${week})`);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Could not find post for week, using provided post_id:', e);
+                }
             }
             
             // Show loading state
@@ -212,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    post_id: postId,
+                    post_id: targetPostId,  // Use the correct post_id for the week
                     expanded_idea: expandedIdeaData.expanded_idea
                 })
             });
