@@ -6,13 +6,37 @@
 class BlogPipelineHeader {
     constructor() {
         this.postData = null;
+        this.linksUpdated = false; // Flag to prevent multiple updates
         this.init();
     }
 
     init() {
         console.log('[Blog Pipeline Header] Initializing...');
         
-        // Load post data when DOM is ready
+        // CRITICAL FIX: Attach week params ONLY when links exist in DOM
+        // Use a function that waits for links to exist, then runs once
+        const attachWhenReady = () => {
+            // Check if links exist
+            const navLinks = document.querySelectorAll('.stage-btn, .sub-stage-btn');
+            if (navLinks.length === 0) {
+                // Links don't exist yet - wait a bit and try again (max 20 attempts = 1 second)
+                const attempts = attachWhenReady.attempts || 0;
+                if (attempts < 20) {
+                    attachWhenReady.attempts = attempts + 1;
+                    console.log(`[Blog Pipeline Header] Nav links not found yet, waiting... (attempt ${attempts + 1}/20)`);
+                    setTimeout(attachWhenReady, 50);
+                } else {
+                    console.warn('[Blog Pipeline Header] Nav links not found after 20 attempts, giving up');
+                }
+                return;
+            }
+            
+            // Links exist - attach week params ONCE
+            console.log('[Blog Pipeline Header] Nav links found, attaching week params...');
+            attachWhenReady.attempts = 0; // Reset for next call
+            this.attachWeekParameterToNavLinks();
+        };
+        
         document.addEventListener('DOMContentLoaded', () => {
             console.log('[Blog Pipeline Header] DOM ready, loading post data...');
             // Ensure window vars are set from URL early (UNIFIED PERSISTENCE)
@@ -40,9 +64,16 @@ class BlogPipelineHeader {
                     }
                 }
             }
+            
+            // Wait for links to exist, then attach week params ONCE
+            attachWhenReady();
             this.loadPostData();
-            this.attachWeekParameterToNavLinks();
         });
+        
+        // If DOM already loaded when script loads, try immediately
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            attachWhenReady();
+        }
 
         // Also load when data tab is clicked
         document.addEventListener('click', (event) => {
@@ -58,7 +89,7 @@ class BlogPipelineHeader {
         // Also run after a short delay to catch pages that set window.currentStage after DOM ready
         setTimeout(() => {
             this.updateNavigationHighlighting();
-            this.attachWeekParameterToNavLinks();
+            // DO NOT call attachWeekParameterToNavLinks here - it causes race conditions
         }, 100);
         
         // If DOM is already loaded, load post data immediately with a longer delay
@@ -80,8 +111,7 @@ class BlogPipelineHeader {
                 // Pages with URL params need time for scripts to execute
                 setTimeout(() => {
                     this.updateWeekAndTheme();
-                    // Also re-attach week params to links after window vars are set
-                    this.attachWeekParameterToNavLinks();
+                    // DO NOT call attachWeekParameterToNavLinks here - it causes race conditions
                 }, 200);
             }
             setTimeout(() => this.loadPostData(), 500);
@@ -600,87 +630,90 @@ class BlogPipelineHeader {
     }
     
     attachWeekParameterToNavLinks() {
-        // UNIFIED PERSISTENCE: Use same priority order as updateWeekAndTheme
-        // PRIORITY 1: URL parameters (canonical source)
+        // CRITICAL FIX: Read ONLY from CURRENT URL parameters (canonical source)
+        // Always read fresh from window.location.search to avoid stale data
+        const currentUrl = window.location.href;
         const urlParams = new URLSearchParams(window.location.search);
         const urlYear = urlParams.get('year');
         const urlWeek = urlParams.get('week');
         
-        let year, weekNumber;
-        
-        if (urlYear && urlWeek) {
-            year = parseInt(urlYear);
-            weekNumber = parseInt(urlWeek);
-        } else if (window.year && window.weekNumber) {
-            // PRIORITY 2: Window variables
-            year = window.year;
-            weekNumber = window.weekNumber;
-        } else {
-            // PRIORITY 3: localStorage
-            const savedYear = localStorage.getItem('calendar-week-view-year');
-            const savedWeek = localStorage.getItem('calendar-week-view-week');
-            if (savedYear && savedWeek) {
-                year = parseInt(savedYear);
-                weekNumber = parseInt(savedWeek);
-            }
+        // If URL has no week params, don't modify links (preserve existing behavior)
+        if (!urlYear || !urlWeek) {
+            console.log('[Blog Pipeline Header] No week params in URL, skipping link update');
+            return;
         }
         
-        // Get valid post_id (handle post_id=0 by using saved post or finding scheduled post for week)
-        // CRITICAL: We MUST preserve the current URL's year/week, not the post's schedule!
+        const year = parseInt(urlYear);
+        const weekNumber = parseInt(urlWeek);
+        
+        // Check if links exist - if not, this function was called too early
+        const navLinks = document.querySelectorAll('.stage-btn, .sub-stage-btn');
+        if (navLinks.length === 0) {
+            console.log('[Blog Pipeline Header] No nav links found yet, cannot attach week params');
+            return;
+        }
+        
+        // Check if we've already updated links for this week/year combination
+        // Use a cache key based on URL to avoid redundant updates
+        const cacheKey = `navLinksUpdated_${year}_${weekNumber}_${currentUrl}`;
+        if (this.linksUpdated && sessionStorage.getItem(cacheKey) === 'true') {
+            console.log('[Blog Pipeline Header] Links already updated for this week, skipping');
+            return;
+        }
+        
+        console.log(`[Blog Pipeline Header] Attaching week params: year=${year}, week=${weekNumber} to ${navLinks.length} links (URL: ${currentUrl})`);
+        
+        // Get valid post_id (handle post_id=0 by using saved post)
         const currentPostId = this.getPostId();
         let validPostId = currentPostId;
         
-        // CRITICAL FIX: Always use the CURRENT URL's year/week (from URL params, window vars, or localStorage)
-        // NOT the post's scheduled year/week. This ensures week context is preserved.
-        const currentYear = year;  // Already determined from URL/window/localStorage above
-        const currentWeek = weekNumber;  // Already determined from URL/window/localStorage above
-        
         if (!validPostId || validPostId === '0' || parseInt(validPostId) === 0) {
-            // Try localStorage for post_id
+            // Try localStorage for post_id (don't fetch async - that causes race conditions)
             const savedPostId = localStorage.getItem('blogForgeSelectedPostId');
             if (savedPostId && parseInt(savedPostId) > 0) {
                 validPostId = savedPostId;
-            } else if (currentYear && currentWeek) {
-                // Try to find a post scheduled for the CURRENT VIEWED week (async, will update links when ready)
-                fetch(`/planning/api/calendar/schedule/${currentYear}/${currentWeek}`)
-                    .then(resp => resp.json())
-                    .then(data => {
-                        if (data.schedule && Array.isArray(data.schedule) && data.schedule.length > 0) {
-                            const scheduleWithPost = data.schedule.find(s => s.post_id);
-                            if (scheduleWithPost && scheduleWithPost.post_id) {
-                                // CRITICAL: Use CURRENT year/week, NOT the post's schedule year/week
-                                this.updateNavLinksWithPostId(scheduleWithPost.post_id, currentYear, currentWeek);
-                            }
-                        }
-                    })
-                    .catch(err => console.warn('[Blog Pipeline Header] Error fetching schedule for post_id:', err));
+                console.log(`[Blog Pipeline Header] Using saved post_id from localStorage: ${validPostId}`);
             }
+            // NOTE: We DON'T do async fetch here - it causes race conditions
+            // If post_id=0, just leave it as 0 in the links
         }
         
-        // If we have week info, attach it to all navigation links
-        // CRITICAL: Use currentYear/currentWeek (from URL), NOT post's schedule
-        if (currentYear && currentWeek) {
-            // Get all navigation links (stage buttons and sub-stage buttons)
-            const navLinks = document.querySelectorAll('.stage-btn, .sub-stage-btn');
-            navLinks.forEach(link => {
-                let href = link.getAttribute('href');
-                if (!href) return;
-                
-                // Replace post_id=0 with valid post_id if we have one
-                if (validPostId && validPostId !== '0' && parseInt(validPostId) !== 0) {
-                    href = href.replace(/\/posts\/0\//g, `/posts/${validPostId}/`);
-                    link.setAttribute('href', href);
-                }
-                
-                // Add query parameters if not already present
-                // CRITICAL: Use currentYear/currentWeek from URL, not post schedule
-                const urlObj = new URL(href, window.location.origin);
-                // Always update with current viewed week (from URL), even if params exist
-                urlObj.searchParams.set('year', currentYear);
-                urlObj.searchParams.set('week', currentWeek);
-                link.setAttribute('href', urlObj.pathname + urlObj.search);
-            });
-        }
+        // Attach week/year params to ALL navigation links immediately and synchronously
+        let updatedCount = 0;
+        navLinks.forEach(link => {
+            let href = link.getAttribute('href');
+            if (!href) {
+                console.log('[Blog Pipeline Header] Link has no href, skipping:', link);
+                return;
+            }
+            
+            const originalHref = href;
+            
+            // Replace post_id=0 with valid post_id if we have one
+            if (validPostId && validPostId !== '0' && parseInt(validPostId) !== 0) {
+                href = href.replace(/\/posts\/0\//g, `/posts/${validPostId}/`);
+            }
+            
+            // Always update with URL's year/week (canonical source)
+            // CRITICAL: Create new URL object each time to avoid stale references
+            const urlObj = new URL(href, window.location.origin);
+            urlObj.searchParams.set('year', year);
+            urlObj.searchParams.set('week', weekNumber);
+            const newHref = urlObj.pathname + urlObj.search;
+            
+            link.setAttribute('href', newHref);
+            
+            if (originalHref !== newHref) {
+                updatedCount++;
+                console.log(`[Blog Pipeline Header] Updated link: ${originalHref} -> ${newHref}`);
+            }
+        });
+        
+        // Mark as updated for this URL/week combination
+        sessionStorage.setItem(cacheKey, 'true');
+        this.linksUpdated = true;
+        
+        console.log(`[Blog Pipeline Header] Updated ${updatedCount} of ${navLinks.length} links`);
     }
     
     updateNavLinksWithPostId(postId, year, weekNumber) {

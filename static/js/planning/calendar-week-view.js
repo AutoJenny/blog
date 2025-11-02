@@ -249,15 +249,20 @@ async function loadWeek(year, weekNumber) {
   document.getElementById('week-year').textContent = String(year);
   document.getElementById('week-number').textContent = String(weekNumber);
   
-  // Set window variables for header access
-  window.year = year;
-  window.weekNumber = weekNumber;
-  
-  // Update URL to reflect current week being viewed
+  // CRITICAL: Update URL FIRST (before setting window vars) so attachWeekParameterToNavLinks reads correct values
   const url = new URL(window.location.href);
   url.searchParams.set('year', year);
   url.searchParams.set('week', weekNumber);
   window.history.replaceState({ year, weekNumber }, '', url);
+  
+  // Set window variables for header access
+  window.year = year;
+  window.weekNumber = weekNumber;
+  
+  // CRITICAL: Immediately update nav links with new week params from URL
+  if (typeof blogPipelineHeader !== 'undefined' && blogPipelineHeader.attachWeekParameterToNavLinks) {
+    blogPipelineHeader.attachWeekParameterToNavLinks();
+  }
   
   // Update header week info and theme
   if (typeof blogPipelineHeader !== 'undefined' && blogPipelineHeader.updateWeekAndTheme) {
@@ -564,9 +569,22 @@ async function loadWeek(year, weekNumber) {
     loadWeek(year, weekNumber);
   }
   
-  // Initial load - ensure window vars are set before header tries to use them
+  // CRITICAL: Update URL FIRST (before window vars) so attachWeekParameterToNavLinks reads correct values
+  // This ensures the URL is the canonical source before any script reads it
+  const url = new URL(window.location.href);
+  url.searchParams.set('year', state.year);
+  url.searchParams.set('week', state.weekNumber);
+  window.history.replaceState({ year: state.year, weekNumber: state.weekNumber }, '', url);
+  
+  // Then set window vars
   window.year = state.year;
   window.weekNumber = state.weekNumber;
+  
+  // CRITICAL: Immediately update nav links with week params from URL (now canonical)
+  // Do this BEFORE any other updates to ensure links are correct
+  if (typeof blogPipelineHeader !== 'undefined' && blogPipelineHeader.attachWeekParameterToNavLinks) {
+    blogPipelineHeader.attachWeekParameterToNavLinks();
+  }
   
   // Trigger header update immediately after setting window vars
   if (typeof blogPipelineHeader !== 'undefined' && blogPipelineHeader.updateWeekAndTheme) {
