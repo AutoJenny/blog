@@ -129,6 +129,7 @@ Provide your response in JSON format:
     try:
         # Use available model
         model_name = os.environ.get('DEFAULT_LLM_MODEL', 'llama3.2:latest')
+        # LLMService has 'generate' method
         response = llm_service.generate(
             prompt=prompt,
             model_name=model_name,

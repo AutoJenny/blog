@@ -249,23 +249,17 @@ async function loadWeek(year, weekNumber) {
   document.getElementById('week-year').textContent = String(year);
   document.getElementById('week-number').textContent = String(weekNumber);
   
-  // CRITICAL: Update URL FIRST (before setting window vars) so attachWeekParameterToNavLinks reads correct values
-  const url = new URL(window.location.href);
-  url.searchParams.set('year', year);
-  url.searchParams.set('week', weekNumber);
-  window.history.replaceState({ year, weekNumber }, '', url);
+  // SINGLE SOURCE OF TRUTH: Update URL using WeekContext
+  if (window.WeekContext) {
+    window.WeekContext.setWeekContext(year, weekNumber);
+  }
   
-  // Set window variables for header access
-  window.year = year;
-  window.weekNumber = weekNumber;
-  
-  // CRITICAL: Clear the linksUpdated flag when week changes so links get re-updated
+  // Clear the linksUpdated flag when week changes so links get re-updated
   if (typeof blogPipelineHeader !== 'undefined') {
     blogPipelineHeader.linksUpdated = false;
   }
   
-  // CRITICAL: Update nav links AFTER URL is updated and flag is cleared
-  // Small delay to ensure header script sees the new URL
+  // Update nav links AFTER URL is updated and flag is cleared
   setTimeout(() => {
     if (typeof blogPipelineHeader !== 'undefined' && blogPipelineHeader.attachWeekParameterToNavLinks) {
       blogPipelineHeader.attachWeekParameterToNavLinks();
@@ -517,64 +511,27 @@ async function loadWeek(year, weekNumber) {
 }
 
 (function init() {
-  const now = new Date();
-  const currentWeekInfo = getISOWeekInfo(now);
-  
-  // PRIORITY 1: Check URL parameters (most authoritative)
-  const urlParams = new URLSearchParams(window.location.search);
-  const urlYear = urlParams.get('year');
-  const urlWeek = urlParams.get('week');
-  
+  // SINGLE SOURCE OF TRUTH: Get week context from URL only
   let state;
-  if (urlYear && urlWeek) {
-    // Use week from URL
+  if (window.WeekContext) {
+    const weekContext = window.WeekContext.getWeekContextWithDefault();
     state = {
-      year: parseInt(urlYear),
-      weekNumber: parseInt(urlWeek)
+      year: weekContext.year,
+      weekNumber: weekContext.week
     };
-    // Save to localStorage for persistence
-    localStorage.setItem('calendar-week-view-year', urlYear);
-    localStorage.setItem('calendar-week-view-week', urlWeek);
-  } else {
-    // PRIORITY 2: Load saved week from localStorage
-    const savedWeek = localStorage.getItem('calendar-week-view-week');
-    const savedYear = localStorage.getItem('calendar-week-view-year');
-    
-    if (savedWeek && savedYear) {
-      state = { 
-        year: parseInt(savedYear), 
-        weekNumber: parseInt(savedWeek) 
-      };
-      // Update URL to reflect saved week
-      const url = new URL(window.location.href);
-      url.searchParams.set('year', state.year);
-      url.searchParams.set('week', state.weekNumber);
-      window.history.replaceState({ year: state.year, weekNumber: state.weekNumber }, '', url);
-    } else {
-      // PRIORITY 3: Default to current week
-      state = { 
-        year: currentWeekInfo.year, 
-        weekNumber: currentWeekInfo.weekNumber 
-      };
-      // Update URL to reflect current week
-      const url = new URL(window.location.href);
-      url.searchParams.set('year', state.year);
-      url.searchParams.set('week', state.weekNumber);
-      window.history.replaceState({ year: state.year, weekNumber: state.weekNumber }, '', url);
+    // If URL didn't have week params, update URL with default
+    const urlContext = window.WeekContext.getWeekContext();
+    if (!urlContext && window.WeekContext) {
+      window.WeekContext.setWeekContext(state.year, state.weekNumber);
     }
-  }
-
-  // Save function to persist state
-  function saveState(year, weekNumber) {
-    localStorage.setItem('calendar-week-view-year', String(year));
-    localStorage.setItem('calendar-week-view-week', String(weekNumber));
-    state = { year, weekNumber };
-  }
-
-  // Load week function that also saves
-  function loadWeekAndSave(year, weekNumber) {
-    saveState(year, weekNumber);
-    loadWeek(year, weekNumber);
+  } else {
+    // Fallback if WeekContext not loaded (shouldn't happen)
+    const now = new Date();
+    const currentWeekInfo = getISOWeekInfo(now);
+    state = {
+      year: currentWeekInfo.year,
+      weekNumber: currentWeekInfo.weekNumber
+    };
   }
   
   // CRITICAL: Update URL FIRST (before window vars) so attachWeekParameterToNavLinks reads correct values
@@ -803,8 +760,16 @@ async function loadWeek(year, weekNumber) {
     if (el) el.addEventListener('change', () => {
       updateFilterVisuals();
       // Reload current week (filters don't change the week, just visibility)
-      const currentYear = parseInt(localStorage.getItem('calendar-week-view-year') || currentWeekInfo.year);
-      const currentWeek = parseInt(localStorage.getItem('calendar-week-view-week') || currentWeekInfo.weekNumber);
+      // SINGLE SOURCE OF TRUTH: Get from URL only
+      let currentYear, currentWeek;
+      if (window.WeekContext) {
+        const weekContext = window.WeekContext.getWeekContextWithDefault();
+        currentYear = weekContext.year;
+        currentWeek = weekContext.week;
+      } else {
+        currentYear = currentWeekInfo.year;
+        currentWeek = currentWeekInfo.weekNumber;
+      }
       loadWeek(currentYear, currentWeek);
     });
   };

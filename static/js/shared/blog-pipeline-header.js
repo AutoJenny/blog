@@ -45,31 +45,6 @@ class BlogPipelineHeader {
         
         document.addEventListener('DOMContentLoaded', () => {
             console.log('[Blog Pipeline Header] DOM ready, loading post data...');
-            // Ensure window vars are set from URL early (UNIFIED PERSISTENCE)
-            if (!window.year || !window.weekNumber) {
-                const urlParams = new URLSearchParams(window.location.search);
-                const urlYear = urlParams.get('year');
-                const urlWeek = urlParams.get('week');
-                if (urlYear && urlWeek) {
-                    window.year = parseInt(urlYear);
-                    window.weekNumber = parseInt(urlWeek);
-                    localStorage.setItem('calendar-week-view-year', urlYear);
-                    localStorage.setItem('calendar-week-view-week', urlWeek);
-                } else {
-                    // Fallback to localStorage if URL doesn't have params
-                    const savedYear = localStorage.getItem('calendar-week-view-year');
-                    const savedWeek = localStorage.getItem('calendar-week-view-week');
-                    if (savedYear && savedWeek) {
-                        window.year = parseInt(savedYear);
-                        window.weekNumber = parseInt(savedWeek);
-                        // Update URL to reflect saved week (make URL canonical)
-                        const url = new URL(window.location.href);
-                        url.searchParams.set('year', window.year);
-                        url.searchParams.set('week', window.weekNumber);
-                        window.history.replaceState({}, '', url);
-                    }
-                }
-            }
             
             // Try to attach immediately
             attachWeekParams();
@@ -213,19 +188,12 @@ class BlogPipelineHeader {
             return;
         }
 
-        // UNIFIED PERSISTENCE: Check if viewed week matches post's scheduled week
-        // Get current viewed week (from URL or window vars)
+        // SINGLE SOURCE OF TRUTH: Get viewed week from URL only
+        const weekContext = window.WeekContext ? window.WeekContext.getWeekContext() : null;
         let viewedYear, viewedWeek;
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlYear = urlParams.get('year');
-        const urlWeek = urlParams.get('week');
-        
-        if (urlYear && urlWeek) {
-            viewedYear = parseInt(urlYear);
-            viewedWeek = parseInt(urlWeek);
-        } else if (window.year && window.weekNumber) {
-            viewedYear = window.year;
-            viewedWeek = window.weekNumber;
+        if (weekContext) {
+            viewedYear = weekContext.year;
+            viewedWeek = weekContext.week;
         }
 
         try {
@@ -329,58 +297,11 @@ class BlogPipelineHeader {
         
         let year, weekNumber, selectedTheme;
         
-        // UNIFIED PERSISTENCE: Single priority order
-        // PRIORITY 1: URL parameters (canonical source)
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlYear = urlParams.get('year');
-        const urlWeek = urlParams.get('week');
-        
-        if (urlYear && urlWeek) {
-            year = parseInt(urlYear);
-            weekNumber = parseInt(urlWeek);
-            // Ensure window vars match URL (source of truth)
-            window.year = year;
-            window.weekNumber = weekNumber;
-            localStorage.setItem('calendar-week-view-year', urlYear);
-            localStorage.setItem('calendar-week-view-week', urlWeek);
-        } else if (window.year && window.weekNumber) {
-            // PRIORITY 2: Window variables (set by templates from URL)
-            year = window.year;
-            weekNumber = window.weekNumber;
-        } else {
-            // PRIORITY 3: Fallback to localStorage
-            const savedYear = localStorage.getItem('calendar-week-view-year');
-            const savedWeek = localStorage.getItem('calendar-week-view-week');
-            if (savedYear && savedWeek) {
-                year = parseInt(savedYear);
-                weekNumber = parseInt(savedWeek);
-                // Update URL to reflect saved week (make URL canonical)
-                const url = new URL(window.location.href);
-                url.searchParams.set('year', year);
-                url.searchParams.set('week', weekNumber);
-                window.history.replaceState({}, '', url);
-                window.year = year;
-                window.weekNumber = weekNumber;
-            } else {
-                // PRIORITY 4: Check week-view page DOM elements (for week-view page only)
-                const weekYearEl = document.getElementById('week-year');
-                const weekNumberEl = document.getElementById('week-number');
-                if (weekYearEl && weekNumberEl && weekYearEl.textContent && weekNumberEl.textContent.trim()) {
-                    const yearStr = weekYearEl.textContent.trim();
-                    const weekStr = weekNumberEl.textContent.trim();
-                    if (yearStr && weekStr) {
-                        year = parseInt(yearStr);
-                        weekNumber = parseInt(weekStr);
-                        // Update URL to reflect displayed week
-                        const url = new URL(window.location.href);
-                        url.searchParams.set('year', year);
-                        url.searchParams.set('week', weekNumber);
-                        window.history.replaceState({}, '', url);
-                        window.year = year;
-                        window.weekNumber = weekNumber;
-                    }
-                }
-            }
+        // SINGLE SOURCE OF TRUTH: URL query parameters only
+        const weekContext = window.WeekContext ? window.WeekContext.getWeekContext() : null;
+        if (weekContext) {
+            year = weekContext.year;
+            weekNumber = weekContext.week;
         }
         
         // PRIORITY 2: If we have viewed week, fetch theme for that week (not post schedule)
@@ -565,17 +486,11 @@ class BlogPipelineHeader {
                     console.warn('[Blog Pipeline Header] Error fetching schedule:', e);
                 }
             } else {
-                // Week-based: get from localStorage, window variables, or URL params
-                const savedYear = localStorage.getItem('calendar-week-view-year');
-                const savedWeek = localStorage.getItem('calendar-week-view-week');
-                
-                // Also check window variables (set by templates)
-                if (window.year && window.weekNumber) {
-                    year = window.year;
-                    weekNumber = window.weekNumber;
-                } else if (savedYear && savedWeek) {
-                    year = parseInt(savedYear);
-                    weekNumber = parseInt(savedWeek);
+                // Week-based: get from URL only
+                const weekContext = window.WeekContext ? window.WeekContext.getWeekContext() : null;
+                if (weekContext) {
+                    year = weekContext.year;
+                    weekNumber = weekContext.week;
                 }
                 
                 if (year && weekNumber) {
@@ -680,21 +595,18 @@ class BlogPipelineHeader {
     }
     
     attachWeekParameterToNavLinks() {
-        // CRITICAL FIX: Read ONLY from CURRENT URL parameters (canonical source)
-        // Always read fresh from window.location.search to avoid stale data
-        const currentUrl = window.location.href;
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlYear = urlParams.get('year');
-        const urlWeek = urlParams.get('week');
+        // SINGLE SOURCE OF TRUTH: Read ONLY from URL query parameters
+        const weekContext = window.WeekContext ? window.WeekContext.getWeekContext() : null;
         
-        // If URL has no week params, don't modify links (preserve existing behavior)
-        if (!urlYear || !urlWeek) {
+        // If URL has no week params, don't modify links
+        if (!weekContext) {
             console.log('[Blog Pipeline Header] No week params in URL, skipping link update');
             return;
         }
         
-        const year = parseInt(urlYear);
-        const weekNumber = parseInt(urlWeek);
+        const year = weekContext.year;
+        const weekNumber = weekContext.week;
+        const currentUrl = window.location.href;
         
         // Check if links exist - if not, this function was called too early
         const navLinks = document.querySelectorAll('.stage-btn, .sub-stage-btn');
@@ -758,12 +670,10 @@ class BlogPipelineHeader {
                 href = href.replace(/\/posts\/0\//g, `/posts/${validPostId}/`);
             }
             
-            // Always update with URL's year/week (canonical source)
-            // CRITICAL: Create new URL object each time to avoid stale references
-            const urlObj = new URL(href, window.location.origin);
-            urlObj.searchParams.set('year', year);
-            urlObj.searchParams.set('week', weekNumber);
-            const newHref = urlObj.pathname + urlObj.search;
+            // Use WeekContext helper to attach week params
+            const newHref = window.WeekContext 
+                ? window.WeekContext.attachWeekToUrl(href, year, weekNumber)
+                : href;
             
             link.setAttribute('href', newHref);
             
