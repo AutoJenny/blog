@@ -73,29 +73,38 @@ Recurring Info: {recurring_info if recurring_info else '(none)'}
 Location: {location if location else '(none)'}
 Description: {description[:200] if description else '(none)'}
 
+CRITICAL RULE: If the title contains the word "Festival" (e.g., "Jazz Festival", "Book Festival", "Folk Festival", "Storytelling Festival", "Music Festival"), it is almost certainly ANNUAL. Festivals in Scotland are recurring annual events.
+
 ANNUALLY RECURRING means:
 - The event happens every year around the same time (e.g., Edinburgh's Hogmanay, Royal Highland Show)
-- Well-established festivals that recur annually (e.g., Celtic Connections, Wigtown Book Festival)
+- Well-established festivals that recur annually (e.g., Celtic Connections, Wigtown Book Festival, Edinburgh Jazz Festival)
 - Traditional annual celebrations (e.g., Up Helly Aa, Highland Games)
+- Any event with "Festival" in the name is almost always ANNUAL
 - Even if dates vary slightly, if it's clearly an annual tradition → ANNUAL
 
 ONE-OFF OCCASION means:
 - Special exhibitions with specific dates that won't repeat (e.g., "Maps: Memories from the Second World War")
 - Temporary museum exhibitions (e.g., "Decoding the Jewels", "Seeds of Time: Scottish Gardens")
 - One-time events, launches, or special occasions
-- Walking tours or activities that are not annual traditions
+- Walking tours or activities that are not annual traditions (e.g., "Ring of Brodgar Walk")
 - Events tied to specific anniversaries or commemorations that won't repeat
+- Member events or workshops (e.g., "Member Event: Decoding the Jewels", "Make a Mini Castle")
 
 Examples:
 - "Celtic Connections" → ANNUAL (annual music festival)
 - "Edinburgh's Hogmanay" → ANNUAL (annual New Year celebration)
 - "Royal Highland Show" → ANNUAL (annual agricultural show)
 - "Wigtown Book Festival" → ANNUAL (annual book festival)
+- "Edinburgh Jazz and Blues Festival" → ANNUAL (has "Festival" in name)
+- "Edinburgh International Storytelling Festival" → ANNUAL (has "Festival" in name)
+- "Shetland Folk Festival" → ANNUAL (has "Festival" in name)
+- "World Pipe Band Championships" → ANNUAL (annual competition)
 - "Up Helly Aa" → ANNUAL (annual Shetland fire festival)
 - "Maps: Memories from the Second World War" → ONE_OFF (specific exhibition)
 - "Decoding the Jewels" → ONE_OFF (temporary exhibition)
 - "Ring of Brodgar Walk" → ONE_OFF (walking tour, not annual festival)
 - "The Eagle and the Unicorn" → ONE_OFF (special exhibition)
+- "Make a Mini Castle" → ONE_OFF (workshop/activity)
 
 Return ONLY a single word: either "annual" or "one_off". No explanations, no JSON, just the word."""
 
@@ -136,13 +145,19 @@ def _classify_heuristic(event_data: Dict[str, Any]) -> str:
     title = event_data.get('title', '').lower()
     recurring_info = event_data.get('recurring_info', '').lower() if event_data.get('recurring_info') else ''
     
-    # Annual indicators
+    # Annual indicators - ANYTHING with "festival" is annual
     annual_patterns = [
-        'festival', 'highland games', 'gathering', 'tattoo',
+        'festival',  # Most important - any festival is annual
+        'highland games', 'gathering', 'tattoo',
         'hogmanay', 'up helly aa', 'royal highland show',
         'book festival', 'folk festival', 'music festival', 'celtic',
-        'connections', 'highland show', 'military tattoo'
+        'connections', 'highland show', 'military tattoo',
+        'pipe band championships', 'whisky festival'
     ]
+    
+    # If title contains "festival", it's definitely annual
+    if 'festival' in title:
+        return 'annual'
     
     # One-off indicators
     one_off_patterns = [

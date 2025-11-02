@@ -546,6 +546,51 @@ def event_detail(event_id: int):
         return render_template('newsletter/event_detail.html', error=str(e)), 500
 
 
+@bp.route('/newsletter/events/<int:event_id>/recurrence-type', methods=['POST'])
+def update_event_recurrence_type(event_id: int):
+    """Update event recurrence type (manual override)."""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        data = request.get_json()
+        recurrence_type = data.get('recurrence_type')
+        
+        if recurrence_type not in ('annual', 'one_off'):
+            return jsonify({'success': False, 'error': 'Invalid recurrence_type. Must be "annual" or "one_off"'}), 400
+        
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cur:
+                # Check event exists
+                cur.execute("""
+                    SELECT id FROM newsletter_source_item
+                    WHERE id = %s AND category = 'event'
+                """, (event_id,))
+                
+                if not cur.fetchone():
+                    return jsonify({'success': False, 'error': 'Event not found'}), 404
+                
+                # Update recurrence type
+                cur.execute("""
+                    UPDATE newsletter_source_item
+                    SET event_recurrence_type = %s
+                    WHERE id = %s
+                """, (recurrence_type, event_id))
+                
+                conn.commit()
+                
+                logger.info(f"Updated event {event_id} recurrence type to {recurrence_type}")
+                
+                return jsonify({
+                    'success': True,
+                    'message': f'Event classified as {recurrence_type}',
+                    'recurrence_type': recurrence_type
+                })
+    except Exception as e:
+        logger.error(f"Error updating event recurrence type: {e}", exc_info=True)
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @bp.route('/newsletter/news/reanalyze', methods=['POST'])
 def reanalyze_news():
     """Re-analyze existing news items with synopsis service."""

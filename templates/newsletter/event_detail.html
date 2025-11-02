@@ -136,6 +136,26 @@
                     {% endif %}
                     
                     <div style="border-top: 1px solid #2d3246; padding-top: 24px; margin-top: 24px;">
+                        <h2 style="color: #a5b4fc; font-size: 20px; font-weight: 600; margin-bottom: 12px;">Event Classification</h2>
+                        <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 24px;">
+                            <div>
+                                <label style="color: #9ca3af; font-size: 13px; font-weight: 600; margin-right: 8px;">Type:</label>
+                                <span id="recurrence-badge" style="padding: 6px 12px; background: {{ '#10b981' if event.event_recurrence_type == 'annual' else ('#f59e0b' if event.event_recurrence_type == 'one_off' else '#6b7280') }}; color: #fff; border-radius: 4px; font-size: 13px; font-weight: 600;">
+                                    {{ event.event_recurrence_type or 'Unclassified' }}
+                                </span>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="updateRecurrenceType({{ event.id }}, 'annual')" class="btn-secondary" style="{{ 'background: #10b981; color: #fff; border-color: #10b981;' if event.event_recurrence_type == 'annual' else '' }}">
+                                    Mark as Annual
+                                </button>
+                                <button onclick="updateRecurrenceType({{ event.id }}, 'one_off')" class="btn-secondary" style="{{ 'background: #f59e0b; color: #fff; border-color: #f59e0b;' if event.event_recurrence_type == 'one_off' else '' }}">
+                                    Mark as One-off
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="border-top: 1px solid #2d3246; padding-top: 24px; margin-top: 24px;">
                         <div style="color: #9ca3af; font-size: 13px;">
                             <p>Event ID: {{ event.id }}</p>
                             {% if event.cached_at %}
@@ -152,5 +172,44 @@
         </div>
     </div>
 </div>
+
+<script>
+async function updateRecurrenceType(eventId, recurrenceType) {
+    try {
+        const response = await fetch(`/newsletter/events/${eventId}/recurrence-type`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ recurrence_type: recurrenceType })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Update badge
+            const badge = document.getElementById('recurrence-badge');
+            badge.textContent = recurrenceType === 'annual' ? 'Annual' : 'Special';
+            badge.style.background = recurrenceType === 'annual' ? '#10b981' : '#f59e0b';
+            
+            // Update button states
+            document.querySelectorAll('button[onclick*="updateRecurrenceType"]').forEach(btn => {
+                btn.style.background = '';
+                btn.style.color = '';
+                btn.style.borderColor = '';
+            });
+            
+            const activeBtn = event.target;
+            activeBtn.style.background = recurrenceType === 'annual' ? '#10b981' : '#f59e0b';
+            activeBtn.style.color = '#fff';
+            activeBtn.style.borderColor = recurrenceType === 'annual' ? '#10b981' : '#f59e0b';
+        } else {
+            alert('Error updating classification: ' + (result.error || 'Unknown error'));
+        }
+    } catch (error) {
+        alert('Error updating classification: ' + error.message);
+    }
+}
+</script>
 {% endblock %}
 
