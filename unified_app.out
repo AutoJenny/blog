@@ -72,3 +72,15 @@ LINE 10:                                 AND is_selected = TRUE
 2025-11-02 08:19:38,288 - config.database - INFO - Database connection established
 2025-11-02 08:19:38,290 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:19:38] "GET /planning/api/posts/78/expanded-idea?year=2025&week=45 HTTP/1.1" 200 -
 2025-11-02 08:19:38,573 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:19:38] "GET /planning/posts/78/calendar/ideas?year=2025&week=45 HTTP/1.1" 200 -
+2025-11-02 08:20:21,677 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/content_analysis_service.py', reloading
+2025-11-02 08:20:21,723 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:20:22,094 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:20:22,101 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:20:25,427 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_api_post_specific.py', reloading
+2025-11-02 08:20:25,471 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:20:25,809 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:20:25,815 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:20:27,141 - config.database - INFO - Database connection established
+2025-11-02 08:20:27,150 - blueprints.planning_api_post_specific - WARNING - No expanded idea found for week 2025/45 with theme
+2025-11-02 08:20:27,156 - config.database - INFO - Database connection established
+2025-11-02 08:20:27,159 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:20:27] "GET /planning/api/posts/78/expanded-idea?year=2025&week=45 HTTP/1.1" 200 -
