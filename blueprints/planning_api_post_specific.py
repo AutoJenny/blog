@@ -13,6 +13,35 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
+def get_post_by_theme(theme_idea_id):
+    """Get a post that has a specific theme idea_id in its schedule"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT cs.post_id
+                FROM calendar_schedule cs
+                WHERE cs.idea_id = %s
+                  AND cs.post_id IS NOT NULL
+                ORDER BY cs.created_at DESC
+                LIMIT 1
+            """, (theme_idea_id,))
+            
+            result = cursor.fetchone()
+            
+            if result and result['post_id']:
+                return jsonify({
+                    'success': True,
+                    'post_id': result['post_id']
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'No post found with this theme'
+                }), 404
+    except Exception as e:
+        logger.error(f"Error finding post by theme: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 def api_posts_expanded_idea(post_id):
     """Get or create expanded idea for a post"""
     if request.method == 'GET':
