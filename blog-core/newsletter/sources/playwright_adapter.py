@@ -86,6 +86,27 @@ class PlaywrightAdapter(SourceAdapter):
         domain = parsed.netloc.replace('www.', '')
         self.site_config = self.SITE_CONFIGS.get(domain, {})
     
+    def __init__(self, source_name: str, base_url: str, category: str, rate_limit_minutes: int = 240):
+        """Initialize Playwright adapter.
+        
+        Args:
+            source_name: Name of source
+            base_url: Base URL to scrape
+            category: Content category (typically "event")
+            rate_limit_minutes: Minutes between fetches
+        """
+        super().__init__(source_name, rate_limit_minutes)
+        self.base_url = base_url
+        self.category = category
+        self._intercepted_responses = []  # Store intercepted responses
+        
+        if not PLAYWRIGHT_AVAILABLE:
+            raise ImportError("Playwright not available. Install with: pip install playwright && playwright install chromium")
+        
+        parsed = urlparse(base_url)
+        domain = parsed.netloc.replace('www.', '')
+        self.site_config = self.SITE_CONFIGS.get(domain, {})
+    
     def _handle_cookie_consent(self, page: Page) -> bool:
         """Attempt to accept cookie consent. Returns True if handled."""
         selectors = self.site_config.get('cookie_consent_selectors', [
@@ -107,27 +128,6 @@ class PlaywrightAdapter(SourceAdapter):
                 logger.debug(f"Cookie consent selector '{selector}' not found: {e}")
                 continue
         return False
-    
-    def __init__(self, source_name: str, base_url: str, category: str, rate_limit_minutes: int = 240):
-        """Initialize Playwright adapter.
-        
-        Args:
-            source_name: Name of source
-            base_url: Base URL to scrape
-            category: Content category (typically "event")
-            rate_limit_minutes: Minutes between fetches
-        """
-        super().__init__(source_name, rate_limit_minutes)
-        self.base_url = base_url
-        self.category = category
-        self._intercepted_responses = []  # Store intercepted responses
-        
-        if not PLAYWRIGHT_AVAILABLE:
-            raise ImportError("Playwright not available. Install with: pip install playwright && playwright install chromium")
-        
-        parsed = urlparse(base_url)
-        domain = parsed.netloc.replace('www.', '')
-        self.site_config = self.SITE_CONFIGS.get(domain, {})
     
     def _setup_xhr_interception(self, page: Page) -> None:
         """Set up XHR/JSON response interception."""
