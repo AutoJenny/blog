@@ -489,8 +489,8 @@ def events_summary():
     try:
         from newsletter.services.events_summary_service import generate_events_summary
         
-        days_back = request.args.get('days_back', 30, type=int)
-        days_ahead = request.args.get('days_ahead', 90, type=int)
+        days_back = request.args.get('days_back', 365, type=int)  # Default to 1 year back
+        days_ahead = request.args.get('days_ahead', 365, type=int)  # Default to 1 year ahead
         source_name = request.args.get('source', None, type=str)
         location = request.args.get('location', None, type=str)
         

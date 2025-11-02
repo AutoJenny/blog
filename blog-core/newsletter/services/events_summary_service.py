@@ -12,7 +12,7 @@ from psycopg.rows import dict_row
 logger = logging.getLogger(__name__)
 
 
-def get_event_items(days_back: int = 30, days_ahead: int = 90, source_name: Optional[str] = None, location: Optional[str] = None, include_all_without_dates: bool = True) -> List[Dict[str, Any]]:
+def get_event_items(days_back: int = 365, days_ahead: int = 365, source_name: Optional[str] = None, location: Optional[str] = None, include_all_without_dates: bool = True) -> List[Dict[str, Any]]:
     """Get event items from database for specified date range.
     
     Args:
@@ -88,7 +88,7 @@ def get_event_items(days_back: int = 30, days_ahead: int = 90, source_name: Opti
             return [dict(r) for r in rows]
 
 
-def generate_events_summary(days_back: int = 30, days_ahead: int = 90, source_name: Optional[str] = None, location: Optional[str] = None) -> Dict[str, Any]:
+def generate_events_summary(days_back: int = 365, days_ahead: int = 365, source_name: Optional[str] = None, location: Optional[str] = None) -> Dict[str, Any]:
     """Generate events summary from database.
     
     Args:
