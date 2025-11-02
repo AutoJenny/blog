@@ -37,22 +37,23 @@ PAGE_HEADING_PATTERNS = [
 ]
 
 # URL patterns that suggest page navigation rather than specific events
+# Must match as standalone paths or with word boundaries
 NAVIGATION_URL_PATTERNS = [
-    r'/events/?$',
-    r'/whats-on/?$',
-    r'/what[\'s\s]*-?on/?$',
-    r'/about',
-    r'/home',
-    r'/contact',
+    r'/events/?$',  # Exact /events or /events/
+    r'/whats-on/?$',  # Exact /whats-on or /whats-on/
+    r'/what[\'s\s]*-?on/?$',  # Exact what's-on variants
+    r'/about/?$',  # Exact /about or /about/
+    r'/home/?$',
+    r'/contact/?$',
     r'/news/?$',
-    r'/exhibitions?/?$',
+    r'/exhibitions?/?$',  # Exact /exhibition(s) or /exhibition(s)/
     r'/collections?/?$',
-    r'/visit',
-    r'/plan',
-    r'/access',
-    r'/shop',
-    r'/support',
-    r'/learn',
+    r'/visit/?$',  # Only exact /visit, not /visit-* or /festivals/visit-*
+    r'/plan/?$',  # Only exact /plan
+    r'/access/?$',
+    r'/shop/?$',
+    r'/support/?$',
+    r'/learn/?$',
 ]
 
     # Generic navigation phrases that should not be events
@@ -123,7 +124,8 @@ def is_page_heading(title: str, url: Optional[str] = None) -> bool:
         path = parsed.path.lower()
         
         for pattern in NAVIGATION_URL_PATTERNS:
-            if re.search(pattern, path):
+            # Use match instead of search to ensure pattern matches the full path segment
+            if re.match(pattern, path):
                 # If title is also generic, definitely a page heading
                 if len(normalized.split()) <= 3:
                     logger.debug(f"Matched navigation URL pattern '{pattern}' with generic title: {title}")
