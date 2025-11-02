@@ -20,8 +20,15 @@ def planning_post_overview(post_id):
 
 def planning_concept(post_id):
     """Concept development page - redirects to Idea Generation (first planning substage)"""
-    from flask import redirect, url_for
-    return redirect(url_for('planning.planning_calendar_ideas', post_id=post_id))
+    from flask import redirect, url_for, request
+    # CRITICAL: Preserve year/week query parameters from URL (canonical source)
+    year = request.args.get('year', type=int)
+    week = request.args.get('week', type=int)
+    
+    url = url_for('planning.planning_calendar_ideas', post_id=post_id)
+    if year and week:
+        url += f'?year={year}&week={week}'
+    return redirect(url)
 
 def planning_calendar(post_id):
     """Calendar page"""
