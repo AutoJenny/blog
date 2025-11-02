@@ -60,16 +60,58 @@
             {% elif event %}
                 <div class="section-card">
                     <div style="margin-bottom: 24px;">
-                        <h1 style="color: #a5b4fc; font-size: 28px; font-weight: 700; margin-bottom: 16px;">{{ event.title }}</h1>
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                            <h1 id="event-title-display" style="color: #a5b4fc; font-size: 28px; font-weight: 700; flex: 1; cursor: pointer;" onclick="editField('title')">{{ event.title }}</h1>
+                            <button onclick="editField('title')" class="btn-secondary" style="padding: 6px 10px; font-size: 12px;">
+                                <i class="fa-solid fa-edit"></i> Edit
+                            </button>
+                        </div>
+                        <div id="event-title-edit" style="display: none; margin-bottom: 16px;">
+                            <input type="text" id="title-input" value="{{ event.title }}" style="width: 100%; padding: 10px; background: #1b2138; border: 1px solid #2d3246; border-radius: 6px; color: #e6e8ef; font-size: 16px; font-weight: 600;">
+                            <div style="display: flex; gap: 8px; margin-top: 8px;">
+                                <button onclick="saveField('title')" class="btn-secondary" style="background: #10b981; color: #fff; border-color: #10b981;">
+                                    <i class="fa-solid fa-check"></i> Save
+                                </button>
+                                <button onclick="cancelEdit('title')" class="btn-secondary">
+                                    <i class="fa-solid fa-times"></i> Cancel
+                                </button>
+                            </div>
+                        </div>
                         
                         <div style="display: flex; align-items: center; gap: 16px; color: #9ca3af; flex-wrap: wrap;">
-                            {% if event.event_date %}
-                                <span><i class="fa-solid fa-calendar"></i> {{ event.event_date[:10] }}</span>
-                            {% endif %}
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-calendar"></i>
+                                <span id="event-date-display">{% if event.event_date %}{{ event.event_date[:10] }}{% else %}Not set{% endif %}</span>
+                                <button onclick="editField('event_date')" class="btn-secondary" style="padding: 4px 8px; font-size: 11px; margin-left: 8px;">
+                                    <i class="fa-solid fa-edit"></i>
+                                </button>
+                            </div>
+                            <div id="event-date-edit" style="display: none; margin-left: 8px;">
+                                <input type="date" id="event-date-input" value="{% if event.event_date %}{{ event.event_date[:10] }}{% endif %}" style="padding: 6px; background: #1b2138; border: 1px solid #2d3246; border-radius: 4px; color: #e6e8ef;">
+                                <button onclick="saveField('event_date')" class="btn-secondary" style="background: #10b981; color: #fff; border-color: #10b981; padding: 6px 10px; margin-left: 4px;">
+                                    <i class="fa-solid fa-check"></i>
+                                </button>
+                                <button onclick="cancelEdit('event_date')" class="btn-secondary" style="padding: 6px 10px; margin-left: 4px;">
+                                    <i class="fa-solid fa-times"></i>
+                                </button>
+                            </div>
                             
-                            {% if event.location %}
-                                <span><i class="fa-solid fa-location-dot"></i> {{ event.location }}</span>
-                            {% endif %}
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-location-dot"></i>
+                                <span id="event-location-display">{% if event.location %}{{ event.location }}{% else %}Not set{% endif %}</span>
+                                <button onclick="editField('location')" class="btn-secondary" style="padding: 4px 8px; font-size: 11px; margin-left: 8px;">
+                                    <i class="fa-solid fa-edit"></i>
+                                </button>
+                            </div>
+                            <div id="event-location-edit" style="display: none; margin-left: 8px;">
+                                <input type="text" id="location-input" value="{{ event.location or '' }}" style="padding: 6px; background: #1b2138; border: 1px solid #2d3246; border-radius: 4px; color: #e6e8ef; min-width: 200px;">
+                                <button onclick="saveField('location')" class="btn-secondary" style="background: #10b981; color: #fff; border-color: #10b981; padding: 6px 10px; margin-left: 4px;">
+                                    <i class="fa-solid fa-check"></i>
+                                </button>
+                                <button onclick="cancelEdit('location')" class="btn-secondary" style="padding: 6px 10px; margin-left: 4px;">
+                                    <i class="fa-solid fa-times"></i>
+                                </button>
+                            </div>
                             
                             <span><i class="fa-solid fa-source"></i> {{ event.source_name }}</span>
                             
@@ -81,17 +123,51 @@
                         </div>
                     </div>
                     
-                    {% if event.description %}
-                        <div style="margin-bottom: 24px;">
-                            <h2 style="color: #a5b4fc; font-size: 20px; font-weight: 600; margin-bottom: 12px;">Description</h2>
-                            <p style="color: #c9cedc; line-height: 1.6;">{{ event.description }}</p>
+                    <div style="margin-bottom: 24px;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <h2 style="color: #a5b4fc; font-size: 20px; font-weight: 600; margin: 0;">Description</h2>
+                            <button onclick="editField('description')" class="btn-secondary" style="padding: 6px 10px; font-size: 12px;">
+                                <i class="fa-solid fa-edit"></i> Edit
+                            </button>
                         </div>
-                    {% endif %}
+                        <div id="event-description-display">
+                            <p id="description-display-text" style="color: #c9cedc; line-height: 1.6; margin: 0; min-height: 20px;">{{ event.description or 'No description' }}</p>
+                        </div>
+                        <div id="event-description-edit" style="display: none;">
+                            <textarea id="description-input" rows="6" style="width: 100%; padding: 10px; background: #1b2138; border: 1px solid #2d3246; border-radius: 6px; color: #e6e8ef; font-size: 14px; font-family: inherit; resize: vertical;">{{ event.description or '' }}</textarea>
+                            <div style="display: flex; gap: 8px; margin-top: 8px;">
+                                <button onclick="saveField('description')" class="btn-secondary" style="background: #10b981; color: #fff; border-color: #10b981;">
+                                    <i class="fa-solid fa-check"></i> Save
+                                </button>
+                                <button onclick="cancelEdit('description')" class="btn-secondary">
+                                    <i class="fa-solid fa-times"></i> Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     
                     {% if event.date_text %}
                         <div style="margin-bottom: 24px;">
-                            <h2 style="color: #a5b4fc; font-size: 20px; font-weight: 600; margin-bottom: 12px;">Event Dates</h2>
-                            <p style="color: #c9cedc;">{{ event.date_text }}</p>
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <h2 style="color: #a5b4fc; font-size: 20px; font-weight: 600; margin: 0;">Event Dates (Raw Text)</h2>
+                                <button onclick="editField('date_text')" class="btn-secondary" style="padding: 6px 10px; font-size: 12px;">
+                                    <i class="fa-solid fa-edit"></i> Edit
+                                </button>
+                            </div>
+                            <div id="event-date-text-display">
+                                <p id="date-text-display-text" style="color: #c9cedc; margin: 0;">{{ event.date_text }}</p>
+                            </div>
+                            <div id="event-date-text-edit" style="display: none;">
+                                <input type="text" id="date-text-input" value="{{ event.date_text }}" style="width: 100%; padding: 10px; background: #1b2138; border: 1px solid #2d3246; border-radius: 6px; color: #e6e8ef;">
+                                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                                    <button onclick="saveField('date_text')" class="btn-secondary" style="background: #10b981; color: #fff; border-color: #10b981;">
+                                        <i class="fa-solid fa-check"></i> Save
+                                    </button>
+                                    <button onclick="cancelEdit('date_text')" class="btn-secondary">
+                                        <i class="fa-solid fa-times"></i> Cancel
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     {% endif %}
                     
@@ -155,13 +231,16 @@
                         </div>
                     </div>
                     
-                    <div style="border-top: 1px solid #2d3246; padding-top: 24px; margin-top: 24px;">
+                    <div style="border-top: 1px solid #2d3246; padding-top: 24px; margin-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
                         <div style="color: #9ca3af; font-size: 13px;">
-                            <p>Event ID: {{ event.id }}</p>
+                            <p style="margin: 0;">Event ID: {{ event.id }}</p>
                             {% if event.cached_at %}
-                                <p>Cached: {{ event.cached_at[:19] }}</p>
+                                <p style="margin: 4px 0 0 0;">Cached: {{ event.cached_at[:19] }}</p>
                             {% endif %}
                         </div>
+                        <button onclick="deleteEvent({{ event.id }})" class="btn-secondary" style="background: #ef4444; color: #fff; border-color: #ef4444; padding: 10px 16px;">
+                            <i class="fa-solid fa-trash"></i> Delete Event
+                        </button>
                     </div>
                 </div>
             {% else %}
@@ -174,6 +253,9 @@
 </div>
 
 <script>
+const eventId = {{ event.id }};
+let originalValues = {};
+
 async function updateRecurrenceType(eventId, recurrenceType, buttonElement) {
     try {
         const response = await fetch(`/newsletter/events/${eventId}/recurrence-type`, {
@@ -209,6 +291,149 @@ async function updateRecurrenceType(eventId, recurrenceType, buttonElement) {
         }
     } catch (error) {
         alert('Error updating classification: ' + error.message);
+    }
+}
+
+function editField(fieldName) {
+    // Store original value
+    const fieldMap = {
+        'title': { display: 'event-title-display', edit: 'event-title-edit', input: 'title-input' },
+        'description': { display: 'event-description-display', edit: 'event-description-edit', input: 'description-input' },
+        'date_text': { display: 'event-date-text-display', edit: 'event-date-text-edit', input: 'date-text-input' },
+        'event_date': { display: 'event-date-display', edit: 'event-date-edit', input: 'event-date-input' },
+        'location': { display: 'event-location-display', edit: 'event-location-edit', input: 'location-input' }
+    };
+    
+    const field = fieldMap[fieldName];
+    if (!field) return;
+    
+    // Store original value
+    if (fieldName === 'event_date' || fieldName === 'location') {
+        originalValues[fieldName] = document.getElementById(field.display).textContent.trim();
+    } else {
+        originalValues[fieldName] = document.getElementById(field.input).value;
+    }
+    
+    // Show edit mode
+    if (fieldName === 'event_date' || fieldName === 'location') {
+        // For inline fields, hide display span and show edit div
+        document.getElementById(field.display).style.display = 'none';
+        document.getElementById(field.edit).style.display = 'inline-flex';
+        document.getElementById(field.edit).style.alignItems = 'center';
+        document.getElementById(field.edit).style.gap = '8px';
+    } else {
+        document.getElementById(field.display).style.display = 'none';
+        document.getElementById(field.edit).style.display = 'block';
+    }
+}
+
+function cancelEdit(fieldName) {
+    const fieldMap = {
+        'title': { display: 'event-title-display', edit: 'event-title-edit' },
+        'description': { display: 'event-description-display', edit: 'event-description-edit' },
+        'date_text': { display: 'event-date-text-display', edit: 'event-date-text-edit' },
+        'event_date': { display: 'event-date-display', edit: 'event-date-edit' },
+        'location': { display: 'event-location-display', edit: 'event-location-edit' }
+    };
+    
+    const field = fieldMap[fieldName];
+    if (!field) return;
+    
+    // Restore original value
+    if (originalValues[fieldName] !== undefined) {
+        if (fieldName === 'title') {
+            document.getElementById('title-input').value = originalValues[fieldName];
+        } else if (fieldName === 'description') {
+            document.getElementById('description-input').value = originalValues[fieldName];
+        } else if (fieldName === 'date_text') {
+            document.getElementById('date-text-input').value = originalValues[fieldName];
+        }
+    }
+    
+    // Hide edit mode
+    if (fieldName === 'event_date' || fieldName === 'location') {
+        document.getElementById(field.edit).style.display = 'none';
+        document.getElementById(field.display).style.display = 'inline';
+    } else {
+        document.getElementById(field.edit).style.display = 'none';
+        document.getElementById(field.display).style.display = 'block';
+    }
+}
+
+async function saveField(fieldName) {
+    const fieldMap = {
+        'title': { input: 'title-input', display: 'event-title-display', displayText: 'title' },
+        'description': { input: 'description-input', display: 'description-display-text', displayText: 'text' },
+        'date_text': { input: 'date-text-input', display: 'date-text-display-text', displayText: 'text' },
+        'event_date': { input: 'event-date-input', display: 'event-date-display', displayText: 'text' },
+        'location': { input: 'location-input', display: 'event-location-display', displayText: 'text' }
+    };
+    
+    const field = fieldMap[fieldName];
+    if (!field) return;
+    
+    const inputElement = document.getElementById(field.input);
+    const newValue = inputElement.value.trim();
+    
+    try {
+        const updateData = { field: fieldName, value: newValue };
+        const response = await fetch(`/newsletter/events/${eventId}/update`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updateData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Update display
+            if (fieldName === 'event_date') {
+                document.getElementById(field.display).textContent = newValue || 'Not set';
+            } else if (fieldName === 'location') {
+                document.getElementById(field.display).textContent = newValue || 'Not set';
+            } else if (fieldName === 'title') {
+                document.getElementById(field.display).textContent = newValue;
+            } else if (fieldName === 'description') {
+                document.getElementById(field.display).textContent = newValue || 'No description';
+            } else if (fieldName === 'date_text') {
+                document.getElementById(field.display).textContent = newValue;
+            }
+            
+            // Hide edit mode
+            cancelEdit(fieldName);
+        } else {
+            alert('Error updating field: ' + (result.error || 'Unknown error'));
+        }
+    } catch (error) {
+        alert('Error updating field: ' + error.message);
+    }
+}
+
+async function deleteEvent(eventId) {
+    if (!confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/newsletter/events/${eventId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Event deleted successfully.');
+            window.location.href = '/newsletter/events';
+        } else {
+            alert('Error deleting event: ' + (result.error || 'Unknown error'));
+        }
+    } catch (error) {
+        alert('Error deleting event: ' + error.message);
     }
 }
 </script>

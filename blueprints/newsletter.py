@@ -591,6 +591,165 @@ def update_event_recurrence_type(event_id: int):
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@bp.route('/newsletter/events/<int:event_id>/update', methods=['POST'])
+def update_event_field(event_id: int):
+    """Update a specific field of an event."""
+    import logging
+    from datetime import datetime
+    from psycopg.types.json import Json
+    
+    logger = logging.getLogger(__name__)
+    
+    try:
+        data = request.get_json()
+        field = data.get('field')
+        value = data.get('value')
+        
+        if not field:
+            return jsonify({'success': False, 'error': 'Field name required'}), 400
+        
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cur:
+                # Check event exists and get current raw_data
+                cur.execute("""
+                    SELECT id, raw_data FROM newsletter_source_item
+                    WHERE id = %s AND category = 'event'
+                """, (event_id,))
+                
+                row = cur.fetchone()
+                if not row:
+                    return jsonify({'success': False, 'error': 'Event not found'}), 404
+                
+                event_id_db, raw_data = row
+                if not raw_data:
+                    raw_data = {}
+                
+                # Update based on field type
+                if field == 'title':
+                    cur.execute("""
+                        UPDATE newsletter_source_item
+                        SET title = %s
+                        WHERE id = %s
+                    """, (value, event_id))
+                    raw_data['title'] = value
+                
+                elif field == 'description':
+                    raw_data['description'] = value
+                    raw_data['summary'] = value  # Also update summary
+                    cur.execute("""
+                        UPDATE newsletter_source_item
+                        SET raw_data = %s
+                        WHERE id = %s
+                    """, (Json(raw_data), event_id))
+                
+                elif field == 'date_text':
+                    raw_data['date_text'] = value
+                    raw_data['date_text_preserved'] = value
+                    cur.execute("""
+                        UPDATE newsletter_source_item
+                        SET raw_data = %s
+                        WHERE id = %s
+                    """, (Json(raw_data), event_id))
+                
+                elif field == 'event_date':
+                    # Parse date string and update both event_date and raw_data
+                    event_date = None
+                    if value:
+                        try:
+                            event_date = datetime.strptime(value, '%Y-%m-%d').date()
+                        except ValueError:
+                            return jsonify({'success': False, 'error': 'Invalid date format'}), 400
+                    
+                    raw_data['event_date'] = value if value else None
+                    cur.execute("""
+                        UPDATE newsletter_source_item
+                        SET event_date = %s, raw_data = %s
+                        WHERE id = %s
+                    """, (event_date, Json(raw_data), event_id))
+                
+                elif field == 'location':
+                    cur.execute("""
+                        UPDATE newsletter_source_item
+                        SET location = %s
+                        WHERE id = %s
+                    """, (value if value else None, event_id))
+                    raw_data['location'] = value if value else None
+                    cur.execute("""
+                        UPDATE newsletter_source_item
+                        SET raw_data = %s
+                        WHERE id = %s
+                    """, (Json(raw_data), event_id))
+                
+                else:
+                    return jsonify({'success': False, 'error': f'Unknown field: {field}'}), 400
+                
+                conn.commit()
+                
+                logger.info(f"Updated event {event_id} field {field}")
+                
+                return jsonify({
+                    'success': True,
+                    'message': f'Field {field} updated',
+                    'value': value
+                })
+    except Exception as e:
+        logger.error(f"Error updating event field: {e}", exc_info=True)
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@bp.route('/newsletter/events/<int:event_id>', methods=['DELETE'])
+def delete_event(event_id: int):
+    """Delete an event (soft delete by marking as deleted)."""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cur:
+                # Check event exists
+                cur.execute("""
+                    SELECT id FROM newsletter_source_item
+                    WHERE id = %s AND category = 'event'
+                """, (event_id,))
+                
+                if not cur.fetchone():
+                    return jsonify({'success': False, 'error': 'Event not found'}), 404
+                
+                # Soft delete - mark as deleted
+                # Assuming we have a deleted column, otherwise we'll need to add it
+                # For now, let's check if deleted column exists, if not, actually delete
+                cur.execute("""
+                    SELECT column_name FROM information_schema.columns
+                    WHERE table_name = 'newsletter_source_item' AND column_name = 'deleted'
+                """)
+                
+                if cur.fetchone():
+                    # Soft delete
+                    cur.execute("""
+                        UPDATE newsletter_source_item
+                        SET deleted = TRUE
+                        WHERE id = %s
+                    """, (event_id,))
+                else:
+                    # Hard delete (if no deleted column)
+                    cur.execute("""
+                        DELETE FROM newsletter_source_item
+                        WHERE id = %s
+                    """, (event_id,))
+                
+                conn.commit()
+                
+                logger.info(f"Deleted event {event_id}")
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Event deleted successfully'
+                })
+    except Exception as e:
+        logger.error(f"Error deleting event: {e}", exc_info=True)
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @bp.route('/newsletter/news/reanalyze', methods=['POST'])
 def reanalyze_news():
     """Re-analyze existing news items with synopsis service."""
