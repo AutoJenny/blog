@@ -186,3 +186,11 @@ LINE 10:                                 AND is_selected = TRUE
 2025-11-02 08:46:38,558 - werkzeug - INFO -  * Restarting with stat
 2025-11-02 08:46:38,905 - werkzeug - WARNING -  * Debugger is active!
 2025-11-02 08:46:38,911 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:47:01,742 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/sources/playwright_adapter.py', reloading
+2025-11-02 08:47:01,794 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:47:02,147 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:47:02,153 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:47:05,474 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/sources/playwright_adapter.py', reloading
+2025-11-02 08:47:05,526 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:47:05,870 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:47:05,878 - werkzeug - INFO -  * Debugger PIN: 263-852-041
