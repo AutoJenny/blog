@@ -24,12 +24,8 @@
     // SINGLE SOURCE OF TRUTH: URL query parameters only
     // Week context is read from URL via WeekContext module (no window vars needed)
 </script>
-<!-- Ensure specialized scripts load after the asset stack -->
-{% if illustration_method == 'Photo-harvesting' %}
-<script src="{{ url_for('static', filename='js/authoring/photo-harvesting-output-panel.js') }}"></script>
-{% else %}
-<script src="{{ url_for('static', filename='js/authoring/image-concepts-output-panel.js') }}"></script>
-{% endif %}
+<!-- Load the appropriate output script based on panel configuration -->
+<script src="{{ url_for('static', filename=panel_config.output_script) }}"></script>
 {% endblock %}
 
 {% block title %}Image Concepts - Section Authoring{% endblock %}
@@ -102,32 +98,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 <span>Illustration Route: <strong>{{ illustration_method }}</strong></span>
             </div>
             
-            {% if illustration_method == 'Photo-harvesting' %}
-            <!-- Photo Settings Panel -->
-            {% include 'authoring/includes/photo_settings_panel.html' %}
+            <!-- Dynamically render panels from configuration (sorted by order) -->
+            {% for panel in panel_config.panels|sort(attribute='order') %}
+                {% include panel.include %}
+            {% endfor %}
             
-            <!-- Photo Prompts Panel -->
-            {% include 'authoring/includes/photo_prompts_panel.html' %}
-            {% else %}
-            <!-- LLM Settings Panel -->
-            {% include 'authoring/includes/llm_settings_panel.html' %}
-            
-            <!-- LLM Prompts Panel -->
-            {% include 'authoring/includes/llm_prompts_panel.html' %}
-            {% endif %}
-            
-            <!-- Context Panel (shared) -->
-            {% include 'authoring/includes/context_panel.html' %}
-            
-            <!-- Batch Progress Panel (shared) -->
-            {% include 'authoring/includes/batch_progress_panel.html' %}
-            
-            <!-- Output Panel -->
-            {% if illustration_method == 'Photo-harvesting' %}
-            {% include 'authoring/includes/output_panel_photo_harvesting.html' %}
-            {% else %}
-            {% include 'authoring/includes/output_panel_image_concepts.html' %}
-            {% endif %}
+            <!-- Output Panel from configuration -->
+            {% include panel_config.output_panel %}
         </div>
     </div>
 </div>

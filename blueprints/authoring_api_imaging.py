@@ -1,6 +1,7 @@
 # Authoring Imaging API Blueprint
 from flask import Blueprint, render_template, jsonify, request
 from config.database import db_manager
+from config.authoring_panel_configs import get_panel_config
 import logging
 import json
 import os
@@ -80,6 +81,9 @@ def authoring_sections_image_concepts(post_id):
             # Get illustration_method from taxonomy (default to 'LLM-creation' if null/not found)
             illustration_method = post.get('illustration_method') or 'LLM-creation'
             
+            # Get panel configuration for this illustration method
+            panel_config = get_panel_config(illustration_method)
+            
             # Log which post and illustration method are being used
             if target_post_id != post_id:
                 logger.info(f"Illustration method determined from post {target_post_id}: {illustration_method} (URL had post_id {post_id})")
@@ -89,7 +93,8 @@ def authoring_sections_image_concepts(post_id):
                                  post=post,
                                  page_title="Image Concepts",
                                  blueprint_name='authoring',
-                                 illustration_method=illustration_method)
+                                 illustration_method=illustration_method,
+                                 panel_config=panel_config)
             
     except Exception as e:
         logger.error(f"Error in authoring_sections_image_concepts: {e}")
