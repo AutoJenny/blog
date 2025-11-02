@@ -601,6 +601,8 @@ def update_event_field(event_id: int):
     logger = logging.getLogger(__name__)
     
     try:
+        from config.database import db_manager
+        
         data = request.get_json()
         field = data.get('field')
         value = data.get('value')
