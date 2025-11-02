@@ -182,11 +182,26 @@ def api_calendar_events(year, week_number):
                 # Only events in this week
                 where_clause = "(ce.year = %s AND ce.week_number = %s)"
             
+            # Check if newsletter_source_item table exists and has event_recurrence_type column
+            cursor.execute("""
+                SELECT column_name FROM information_schema.columns 
+                WHERE table_name = 'newsletter_source_item' AND column_name = 'event_recurrence_type'
+            """)
+            has_recurrence_type = cursor.fetchone() is not None
+            
+            # Join with newsletter_source_item to get recurrence_type
+            recurrence_join = ""
+            recurrence_field = "NULL::varchar as event_recurrence_type"
+            if has_recurrence_type:
+                recurrence_join = "LEFT JOIN newsletter_source_item nsi ON ce.id = nsi.calendar_event_id"
+                recurrence_field = "nsi.event_recurrence_type"
+            
             cursor.execute(f"""
                 SELECT ce.id, ce.event_title, ce.event_description, ce.start_date, ce.end_date,
                        ce.is_recurring, ce.priority, ce.tags, ce.content_type, ce.year,
                        {advance_notice_field}, {event_important_notes_field}, ce.created_at, ce.updated_at,
                        EXTRACT(ISODOW FROM ce.start_date)::integer as weekday,
+                       {recurrence_field},
                        COALESCE(
                            json_agg(
                                json_build_object(
@@ -201,10 +216,11 @@ def api_calendar_events(year, week_number):
                 FROM calendar_events ce
                 LEFT JOIN calendar_event_categories cec ON ce.id = cec.event_id
                 LEFT JOIN calendar_categories cc ON cec.category_id = cc.id
+                {recurrence_join}
                 WHERE {where_clause}
                 GROUP BY ce.id, ce.event_title, ce.event_description, ce.start_date, ce.end_date,
                          ce.is_recurring, ce.priority, ce.tags, ce.content_type, ce.year,
-                         ce.created_at, ce.updated_at, EXTRACT(ISODOW FROM ce.start_date)""" + (", ce.advance_notice" if has_advance_notice else "") + (", ce.important_notes" if has_event_important_notes else "") + """
+                         ce.created_at, ce.updated_at, EXTRACT(ISODOW FROM ce.start_date)""" + (", ce.advance_notice" if has_advance_notice else "") + (", ce.important_notes" if has_event_important_notes else "") + (", " + recurrence_field if has_recurrence_type else "") + """
                 ORDER BY ce.start_date, ce.priority
             """, tuple(params))
             

@@ -98,15 +98,23 @@
                 <div class="week-themes" id="week-themes"></div>
             </div>
 
-            <!-- Events row: header + 7 aligned cells -->
+            <!-- Annual Events row: header + 7 aligned cells -->
             <div class="row-section" data-filter="events">
                 <div class="row-header">
-                    <span>Events</span>
+                    <span>Annual Events</span>
                     <button class="row-add-btn" onclick="getIdeaModal().openNew('event')" title="Add New Event">
                         <i class="fas fa-plus"></i> Add New
                     </button>
                 </div>
-                <div class="row-grid" id="events-row"></div>
+                <div class="row-grid" id="annual-events-row"></div>
+            </div>
+
+            <!-- Special Events row: header + 7 aligned cells -->
+            <div class="row-section" data-filter="events">
+                <div class="row-header">
+                    <span>Special Events</span>
+                </div>
+                <div class="row-grid" id="special-events-row"></div>
             </div>
 
             <!-- Ideas row: header + 7 aligned cells -->
@@ -223,7 +231,11 @@
 .section-label { font-size:.75rem; color:#94a3b8; text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px; }
 .item { padding:6px 8px; border-radius:6px; font-size:.8rem; color:#e2e8f0; }
 .item.idea { background:#7c3aed; color:#fff; cursor:pointer; }
-.item.event { background:#1d4ed8; }
+.item.event { background:#1d4ed8; color:#fff; }
+/* Annual events: blue background with blue outline */
+.item.event.annual { background:#1d4ed8; border:2px solid #3b82f6; }
+/* Special events: blue background with green outline */
+.item.event.special { background:#1d4ed8; border:2px solid #10b981; }
 /* Advance notice indicators for events */
 .item.advance-notice { 
   font-size: 0.7rem; 
