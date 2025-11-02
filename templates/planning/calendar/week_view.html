@@ -49,7 +49,8 @@
 
         <div class="week-filters">
             <label class="filter-pill filter-themes active"><input type="checkbox" id="toggle-themes" checked> Themes</label>
-            <label class="filter-pill filter-events active"><input type="checkbox" id="toggle-events" checked> Events</label>
+            <label class="filter-pill filter-annual-events active"><input type="checkbox" id="toggle-annual-events" checked> Annual Events</label>
+            <label class="filter-pill filter-special-events active"><input type="checkbox" id="toggle-special-events" checked> Special Events</label>
             <label class="filter-pill filter-ideas active"><input type="checkbox" id="toggle-ideas" checked> Ideas</label>
             <label class="filter-pill filter-syndication active"><input type="checkbox" id="toggle-syndication" checked> Syndication</label>
         </div>
@@ -99,7 +100,7 @@
             </div>
 
             <!-- Annual Events row: header + 7 aligned cells -->
-            <div class="row-section" data-filter="events">
+            <div class="row-section" data-filter="annual-events">
                 <div class="row-header">
                     <span>Annual Events</span>
                     <button class="row-add-btn" onclick="getIdeaModal().openNew('event')" title="Add New Event">
@@ -110,7 +111,7 @@
             </div>
 
             <!-- Special Events row: header + 7 aligned cells -->
-            <div class="row-section" data-filter="events">
+            <div class="row-section" data-filter="special-events">
                 <div class="row-header">
                     <span>Special Events</span>
                 </div>
@@ -170,9 +171,12 @@
 /* Ideas: purple background */
 .filter-ideas { background:#6d28d9; border-color:#7c3aed; color:#fff; }
 .filter-ideas.active { background:#8b5cf6; border-color:#a78bfa; color:#fff; }
-/* Events: blue background */
-.filter-events { background:#1d4ed8; border-color:#2563eb; color:#fff; }
-.filter-events.active { background:#1d4ed8; border-color:#3b82f6; color:#fff; }
+/* Annual Events: blue background */
+.filter-annual-events { background:#1d4ed8; border-color:#2563eb; color:#fff; }
+.filter-annual-events.active { background:#1d4ed8; border-color:#3b82f6; color:#fff; }
+/* Special Events: blue background with green accent */
+.filter-special-events { background:#1d4ed8; border-color:#2563eb; color:#fff; }
+.filter-special-events.active { background:#1d4ed8; border-color:#10b981; color:#fff; }
 /* Syndication: outlined blue, no fill */
 .filter-syndication { background:transparent; border-color:#3b82f6; color:#93c5fd; }
 .filter-syndication.active { background:rgba(59,130,246,0.08); border-color:#60a5fa; color:#bfdbfe; }
