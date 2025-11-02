@@ -51,7 +51,7 @@ class PlaywrightAdapter(SourceAdapter):
         },
         'nms.ac.uk': {
             'wait_selector': 'main, body',
-            'wait_timeout': 15000,
+            'wait_timeout': 20000,  # Longer wait for JS-loaded content
             'cookie_consent_selectors': [
                 'button[class*="accept"]',
                 'button[class*="cookie"]',
@@ -63,9 +63,10 @@ class PlaywrightAdapter(SourceAdapter):
                 r'/api/.*whats-on',
                 r'/api/.*activities?',
             ],
-            'item_selector': 'a[href*="/whats-on/"]',
-            'skip_text': ['what\'s on', 'whats on', 'home', 'exhibitions', 'events', 'view all'],
-            'min_text_length': 15,  # Minimum text length for event links
+            # National Museums uses /events/ URLs for individual events
+            'item_selector': 'a[href*="/events/"]',
+            'skip_text': ['what\'s on', 'whats on', 'home', 'exhibitions', 'events', 'view all', 'all events'],
+            'min_text_length': 10,
         },
         'visitscotland.com': {
             'wait_selector': 'main, article, [class*="event"]',
@@ -305,9 +306,30 @@ class PlaywrightAdapter(SourceAdapter):
                         text = link.inner_text().strip()
                         href = link.get_attribute('href') or ''
                         
-                        # Skip if href is the base page or navigation
-                        if not href or href in ['/whats-on/', '/whats-on', 'https://www.nms.ac.uk/whats-on/', 'https://www.nms.ac.uk/whats-on']:
+                        # Skip navigation URLs (but allow specific event pages)
+                        if not href:
                             continue
+                        
+                        # For NMS: skip if it's just "/events/" but allow "/events/specific-event"
+                        if '/events/' in href:
+                            # Extract the event slug after /events/
+                            parts = href.split('/events/')
+                            if len(parts) > 1 and parts[1]:
+                                event_slug = parts[1].split('/')[0].split('?')[0]
+                                # Allow if it has an actual event slug
+                                if event_slug and len(event_slug) > 3:
+                                    pass  # This is a valid event URL
+                                else:
+                                    continue  # Just "/events/" - skip
+                            else:
+                                continue  # No event slug - skip
+                        elif '/whats-on/' in href or '/activities/' in href:
+                            # Similar check for whats-on and activities
+                            continue  # Skip base category pages
+                        
+                        # Build full URL
+                        if not href.startswith('http'):
+                            href = urljoin(self.base_url, href)
                         
                         # Skip navigation/header links
                         if not text:
