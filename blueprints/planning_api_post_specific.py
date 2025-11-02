@@ -24,18 +24,18 @@ def api_posts_expanded_idea(post_id):
             # If week context is provided, fetch expanded idea for that week's selected theme/post
             if url_year and url_week:
                 with db_manager.get_cursor() as cursor:
-                    # Find the post associated with the selected theme for this week
-                    # The selected theme is the one with item_classification='theme' for this week
-                    # CRITICAL: We want ANY post that has this week's theme, not just the requested post_id
+                    # CRITICAL: Find the post that is ACTUALLY scheduled for this week with a theme
+                    # The schedule entry's year/week MUST match the requested year/week
+                    # This ensures we get the correct post for the week being viewed
                     cursor.execute("""
-                        SELECT cs.post_id, pd.expanded_idea
+                        SELECT cs.post_id, pd.expanded_idea, ci.idea_title
                         FROM calendar_schedule cs
                         LEFT JOIN post_development pd ON cs.post_id = pd.post_id
                         LEFT JOIN calendar_ideas ci ON cs.idea_id = ci.id
                         WHERE cs.year = %s 
                           AND cs.week_number = %s
-                          AND ci.item_classification = 'theme'
                           AND cs.post_id IS NOT NULL
+                          AND ci.item_classification = 'theme'
                           AND pd.expanded_idea IS NOT NULL
                           AND pd.expanded_idea != ''
                         ORDER BY cs.created_at DESC
@@ -45,10 +45,13 @@ def api_posts_expanded_idea(post_id):
                     week_result = cursor.fetchone()
                     
                     if week_result and week_result['expanded_idea']:
+                        logger.info(f"Found expanded idea for week {url_year}/{url_week}: post {week_result['post_id']}, theme: {week_result['idea_title']}")
                         return jsonify({
                             'success': True,
                             'expanded_idea': week_result['expanded_idea']
                         })
+                    else:
+                        logger.warn(f"No expanded idea found for week {url_year}/{url_week} with theme")
             
             # Fallback: fetch expanded idea for the requested post_id (original behavior)
             with db_manager.get_cursor() as cursor:

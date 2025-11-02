@@ -92,15 +92,19 @@ EXAMPLES TO GUIDE YOU:
 - "Local council decision" → Historical=5, Cultural=10, Quirky=15, Economic=20, Political=35 (average=17 → score 2.3)
 - "Woman charged after patient records accessed in NHS data breach" → Historical=5, Cultural=5, Quirky=5, Economic=10, Political=15 (average=8 → score 1.7) - CRIME/LOCAL ONLY, very low relevance
 - "Man arrested after woman found dead following flat fire" → Historical=5, Cultural=5, Quirky=5, Economic=5, Political=5 (average=5 → score 1.4) - CRIME, minimal diaspora interest
+- "Scotland player ratings in USA drubbing as two men land 10s" → Historical=5, Cultural=10, Quirky=15, Economic=5, Political=5 (average=8 → score 1.7) - SPORTS REPORT, routine match coverage
+- "Yeol Eum Son hits a high with the Scottish National Orchestra" → Historical=5, Cultural=30, Quirky=15, Economic=10, Political=5 (average=13 → score 2.0) - PERFORMANCE REVIEW, ephemeral entertainment
 - "Archaeological discovery at Scottish castle" → Historical=90, Cultural=70, Quirky=60, Economic=50, Political=20 (average=58 → score 5.6)
 - "Scottish language revival program" → Historical=60, Cultural=95, Quirky=50, Economic=40, Political=50 (average=59 → score 5.7)
 
 SPECIAL INSTRUCTIONS:
 - CRIME STORIES (arrests, charges, murders, fires, etc.): Score ALL dimensions 1-10. These are of minimal interest to diaspora unless they involve historical/cultural significance. Average should be 5-10 → final score 1.4-2.0.
+- SPORTS REPORTS (match reports, player ratings, game coverage, team news): Score ALL dimensions 1-15. These are ephemeral and of no interest to diaspora unless they involve historical/cultural significance (e.g., historic achievement). Average should be 5-10 → final score 1.4-2.0.
+- PERFORMANCE REVIEWS (concert reviews, theatre reviews, film reviews, art exhibitions): Score most dimensions 5-20 unless they involve major cultural/historical significance (e.g., premier of work about Scottish history). These are ephemeral entertainment that doesn't matter to diaspora. Average should be 10-15 → final score 1.8-2.3.
 - LOCAL-ONLY STORIES (council decisions, local infrastructure, neighborhood news): Score most dimensions 5-20 unless they have broader Scottish significance. These are routine governance that doesn't matter to diaspora.
-- ROUTINE BREAKING NEWS (sports scores, daily politics, weather reports): Score 10-30 on most dimensions unless culturally/historically significant.
+- ROUTINE BREAKING NEWS (daily politics, weather reports): Score 10-30 on most dimensions unless culturally/historically significant.
 
-MOST daily news stories should have MOST dimensions in the 10-40 range. Be strict! Crime and local-only stories should score 1-2.
+MOST daily news stories should have MOST dimensions in the 10-40 range. Be strict! Crime, sports, and performance reviews should score 1-2.
 
 Provide your assessment in JSON format:
 {{
