@@ -301,7 +301,11 @@ window.currentStage = 'calendar';
 window.currentSubstage = 'week-view';
 </script>
 <script type="module" src="/static/js/planning/calendar-week-view.js"></script>
-<script src="{{ url_for('static', filename='js/planning/idea-modal.js') }}"></script>
+<script src="{{ url_for('static', filename='js/planning/idea-modal-renderers.js') }}"></script>
+<script src="{{ url_for('static', filename='js/planning/idea-modal-forms.js') }}"></script>
+<script src="{{ url_for('static', filename='js/planning/idea-modal-api.js') }}"></script>
+<script src="{{ url_for('static', filename='js/planning/idea-modal-conversions.js') }}"></script>
+<script src="{{ url_for('static', filename='js/planning/idea-modal-core.js') }}"></script>
 
 <script>
 // Utility function for escaping HTML

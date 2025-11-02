@@ -367,40 +367,38 @@ class BlogPipelineHeader {
             weekNumber = this.postData.schedule.week_number;
             selectedTheme = this.postData.schedule.selected_theme_title;
             
-            // If schedule doesn't have theme but has idea_id, fetch it
-            if (!selectedTheme && this.postData.schedule.idea_id) {
-                try {
-                    const ideaResp = await fetch(`/planning/api/calendar/ideas/${this.postData.schedule.idea_id}`);
-                    if (ideaResp.ok) {
-                        const ideaData = await ideaResp.json();
-                        const idea = ideaData.idea || ideaData;
-                        if (idea && idea.idea_title) {
-                            selectedTheme = idea.idea_title;
-                        }
-                    }
-                } catch (e) {
-                    console.warn('[Blog Pipeline Header] Error fetching theme from idea_id:', e);
-                }
-            }
+            // CRITICAL: Do NOT fetch ideas and display them as themes! Ideas are NOT themes!
+            // If schedule doesn't have theme_id, it simply has no theme - do not fallback to idea_id
             
-            // If still no theme and we have week info, check week schedule
+            // If still no theme and we have week info, check week schedule (ONLY for theme_id, NOT idea_id)
             if (!selectedTheme && year && weekNumber) {
                 try {
                     const weekResp = await fetch(`/planning/api/calendar/schedule/${year}/${weekNumber}`);
                     if (weekResp.ok) {
                         const weekData = await weekResp.json();
                         if (weekData.schedule && Array.isArray(weekData.schedule) && weekData.schedule.length > 0) {
-                            const scheduleWithIdea = weekData.schedule.find(s => s.idea_id);
-                            if (scheduleWithIdea && scheduleWithIdea.idea_id) {
-                                const ideaResp = await fetch(`/planning/api/calendar/ideas/${scheduleWithIdea.idea_id}`);
-                                if (ideaResp.ok) {
-                                    const ideaData = await ideaResp.json();
-                                    const idea = ideaData.idea || ideaData;
-                                    if (idea && idea.idea_title) {
-                                        selectedTheme = idea.idea_title;
+                            // CRITICAL: Only check for theme_id - NEVER use idea_id as theme
+                            const scheduleWithTheme = weekData.schedule.find(s => s.theme_id || s.calendar_theme_id || s.theme_title);
+                            if (scheduleWithTheme && (scheduleWithTheme.theme_id || scheduleWithTheme.calendar_theme_id)) {
+                                if (scheduleWithTheme.theme_title) {
+                                    selectedTheme = scheduleWithTheme.theme_title;
+                                } else {
+                                    const themeId = scheduleWithTheme.theme_id || scheduleWithTheme.calendar_theme_id;
+                                    try {
+                                        const themeResp = await fetch(`/planning/api/calendar/themes/${themeId}`);
+                                        if (themeResp.ok) {
+                                            const themeData = await themeResp.json();
+                                            const theme = themeData.theme || themeData;
+                                            if (theme && theme.theme_title) {
+                                                selectedTheme = theme.theme_title;
+                                            }
+                                        }
+                                    } catch (e) {
+                                        console.warn('[Blog Pipeline Header] Error fetching week theme:', e);
                                     }
                                 }
                             }
+                            // NOTE: We do NOT check idea_id - ideas are NOT themes!
                         }
                     }
                     
@@ -462,23 +460,34 @@ class BlogPipelineHeader {
                             }
                             selectedTheme = data.schedule.selected_theme_title;
                             
-                            // If no theme from post schedule but we have week info, check week schedule
+                            // If no theme from post schedule but we have week info, check week schedule (ONLY for theme_id)
                             if (!selectedTheme && year && weekNumber) {
                                 const weekResp = await fetch(`/planning/api/calendar/schedule/${year}/${weekNumber}`);
                                 if (weekResp.ok) {
                                     const weekData = await weekResp.json();
                                     if (weekData.schedule && Array.isArray(weekData.schedule) && weekData.schedule.length > 0) {
-                                        const scheduleWithIdea = weekData.schedule.find(s => s.idea_id);
-                                        if (scheduleWithIdea && scheduleWithIdea.idea_id) {
-                                            const ideaResp = await fetch(`/planning/api/calendar/ideas/${scheduleWithIdea.idea_id}`);
-                                            if (ideaResp.ok) {
-                                                const ideaData = await ideaResp.json();
-                                                const idea = ideaData.idea || ideaData;
-                                                if (idea && idea.idea_title) {
-                                                    selectedTheme = idea.idea_title;
+                                        // CRITICAL: Only check for theme_id - NEVER use idea_id as theme
+                                        const scheduleWithTheme = weekData.schedule.find(s => s.theme_id || s.calendar_theme_id || s.theme_title);
+                                        if (scheduleWithTheme && (scheduleWithTheme.theme_id || scheduleWithTheme.calendar_theme_id)) {
+                                            if (scheduleWithTheme.theme_title) {
+                                                selectedTheme = scheduleWithTheme.theme_title;
+                                            } else {
+                                                const themeId = scheduleWithTheme.theme_id || scheduleWithTheme.calendar_theme_id;
+                                                try {
+                                                    const themeResp = await fetch(`/planning/api/calendar/themes/${themeId}`);
+                                                    if (themeResp.ok) {
+                                                        const themeData = await themeResp.json();
+                                                        const theme = themeData.theme || themeData;
+                                                        if (theme && theme.theme_title) {
+                                                            selectedTheme = theme.theme_title;
+                                                        }
+                                                    }
+                                                } catch (e) {
+                                                    console.warn('[Blog Pipeline Header] Error fetching week theme:', e);
                                                 }
                                             }
                                         }
+                                        // NOTE: We do NOT check idea_id - ideas are NOT themes!
                                     }
                                 }
                             }
@@ -502,20 +511,28 @@ class BlogPipelineHeader {
                         if (resp.ok) {
                             const data = await resp.json();
                             if (data.schedule && Array.isArray(data.schedule) && data.schedule.length > 0) {
-                                // Find schedule entry with idea_id (selected theme)
-                                const scheduleWithIdea = data.schedule.find(s => s.idea_id);
-                                if (scheduleWithIdea && scheduleWithIdea.idea_id) {
-                                    // Fetch the idea details to get the title
-                                    const ideaResp = await fetch(`/planning/api/calendar/ideas/${scheduleWithIdea.idea_id}`);
-                                    if (ideaResp.ok) {
-                                        const ideaData = await ideaResp.json();
-                                        // Handle both {idea: {...}} and direct {...} response formats
-                                        const idea = ideaData.idea || ideaData;
-                                        if (idea && idea.idea_title) {
-                                            selectedTheme = idea.idea_title;
+                                // CRITICAL: Only check for theme_id - NEVER use idea_id as theme
+                                const scheduleWithTheme = data.schedule.find(s => s.theme_id || s.calendar_theme_id || s.theme_title);
+                                if (scheduleWithTheme && (scheduleWithTheme.theme_id || scheduleWithTheme.calendar_theme_id)) {
+                                    if (scheduleWithTheme.theme_title) {
+                                        selectedTheme = scheduleWithTheme.theme_title;
+                                    } else {
+                                        const themeId = scheduleWithTheme.theme_id || scheduleWithTheme.calendar_theme_id;
+                                        try {
+                                            const themeResp = await fetch(`/planning/api/calendar/themes/${themeId}`);
+                                            if (themeResp.ok) {
+                                                const themeData = await themeResp.json();
+                                                const theme = themeData.theme || themeData;
+                                                if (theme && theme.theme_title) {
+                                                    selectedTheme = theme.theme_title;
+                                                }
+                                            }
+                                        } catch (e) {
+                                            console.warn('[Blog Pipeline Header] Error fetching theme:', e);
                                         }
                                     }
                                 }
+                                // NOTE: We do NOT check idea_id - ideas are NOT themes!
                             }
                         }
                         
