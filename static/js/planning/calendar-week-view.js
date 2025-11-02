@@ -263,6 +263,7 @@ async function loadWeek(year, weekNumber) {
     window.WeekContext.setWeekContext(year, weekNumber);
   }
   
+  
   // Clear the linksUpdated flag when week changes so links get re-updated
   if (typeof blogPipelineHeader !== 'undefined') {
     blogPipelineHeader.linksUpdated = false;
@@ -377,33 +378,87 @@ async function loadWeek(year, weekNumber) {
   const ideasCells = ensureRowCells('ideas-row');
   const syndicationCells = ensureRowCells('syndication-row');
 
-  // Classify items by their proper type using item_classification field
+  // Load themes from schedule (themes scheduled for this week)
   const themes = [];
-  const regularIdeas = [];
-  ideas.forEach(i => {
-    // Use item_classification field: 'theme' or 'idea' (defaults to 'idea' if not set)
-    const classification = (i.item_classification || 'idea').toLowerCase();
-    if (classification === 'theme') {
-      // Check if theme is selected (appears in schedule)
-      // Primary check: if idea_id matches in schedule
-      const selectedIdeaIds = new Set((schedule || []).map(sc => sc.idea_id).filter(Boolean));
-      const isSelectedById = selectedIdeaIds.has(i.id);
+  const scheduledThemeIds = new Set();
+  
+  if (schedule && Array.isArray(schedule)) {
+    schedule.forEach(s => {
+      // Check if schedule entry has a theme (theme_id or theme_title from calendar_themes join)
+      if (s.theme_id || s.calendar_theme_id || s.theme_title) {
+        const themeId = s.theme_id || s.calendar_theme_id;
+        if (themeId && !scheduledThemeIds.has(themeId)) {
+          scheduledThemeIds.add(themeId);
+          themes.push({
+            id: themeId,
+            theme_title: s.theme_title || s.post_idea_seed || 'Unknown Theme',
+            _selected: true,
+            _fromSchedule: true
+          });
+        }
+      }
+    });
+  }
+  
+  // Also fetch perpetual themes for this week from calendar_themes API
+  let perpetualThemesPromise = null;
+  try {
+    perpetualThemesPromise = fetchJSON(`/planning/api/calendar/themes/week/${weekNumber}`);
+  } catch (e) {
+    console.warn('Themes API not available yet:', e);
+  }
+  
+  let perpetualThemes = [];
+  if (perpetualThemesPromise) {
+    try {
+      const perpetualRes = await perpetualThemesPromise;
+      const perpetualData = perpetualRes?.themes || [];
+      perpetualThemes = Array.isArray(perpetualData) ? perpetualData : [];
       
-      // Fallback: check title matching (for legacy posts created before idea_id was stored)
-      const normalize = (s) => (s || '').toLowerCase().trim();
-      const selectedSeeds = new Set((schedule || []).map(sc => normalize(sc.post_idea_seed)).filter(Boolean));
-      const selectedTitles = new Set((schedule || []).map(sc => normalize(sc.post_title)).filter(Boolean));
-      const ideaTitle = normalize(i.idea_title);
-      const isSelectedByTitle = selectedSeeds.has(ideaTitle) ||
-        selectedTitles.has(ideaTitle) ||
-        Array.from(selectedTitles).some(st => st.includes(ideaTitle) || ideaTitle.includes(st));
-      
-      themes.push({ ...i, _selected: isSelectedById || isSelectedByTitle });
-    } else {
-      // Regular idea (not a theme)
-      regularIdeas.push(i);
+      // Add perpetual themes that aren't already in scheduled themes
+      perpetualThemes.forEach(pt => {
+        if (!scheduledThemeIds.has(pt.id)) {
+          themes.push({
+            ...pt,
+            _selected: false,
+            _fromSchedule: false
+          });
+        }
+      });
+    } catch (e) {
+      console.warn('Error loading perpetual themes:', e);
     }
-  });
+  }
+  
+  // All ideas are regular ideas (no more theme classification)
+  const regularIdeas = Array.isArray(ideas) ? ideas : [];
+  
+  // Also include ideas scheduled for this specific week (year/week) from calendar_schedule
+  // These are ideas that were assigned to this week but may have a different perpetual week_number
+  if (schedule && Array.isArray(schedule)) {
+    const scheduledIdeaIds = new Set();
+    regularIdeas.forEach(idea => scheduledIdeaIds.add(idea.id));
+    
+    // Fetch scheduled ideas synchronously
+    const scheduledIdeasPromises = schedule
+      .filter(s => s.idea_id && !scheduledIdeaIds.has(s.idea_id))
+      .map(s => fetchJSON(`/planning/api/calendar/ideas/${s.idea_id}`).catch(err => {
+        console.warn('Error loading scheduled idea:', err);
+        return null;
+      }));
+    
+    if (scheduledIdeasPromises.length > 0) {
+      const scheduledIdeasResults = await Promise.allSettled(scheduledIdeasPromises);
+      scheduledIdeasResults.forEach((result, idx) => {
+        if (result.status === 'fulfilled' && result.value) {
+          const scheduledIdea = result.value.idea || result.value;
+          if (scheduledIdea && !regularIdeas.find(idea => idea.id === scheduledIdea.id)) {
+            regularIdeas.push(scheduledIdea);
+          }
+        }
+      });
+    }
+  }
 
   // Toggle row visibility based on filters
   const themesSections = document.querySelectorAll('[data-filter="themes"]');
@@ -423,7 +478,45 @@ async function loadWeek(year, weekNumber) {
   if (weekThemesContainer) {
     weekThemesContainer.innerHTML = '';
     if (showThemes && themes.length) {
-      renderItems(weekThemesContainer, themes, 'idea');
+      themes.forEach(theme => {
+        const div = document.createElement('div');
+        div.className = `item idea ${theme._selected ? 'selected' : ''}`;
+        div.textContent = theme.theme_title || theme.idea_title || 'Unknown Theme';
+        if (theme.id) {
+          div.dataset.themeId = theme.id;
+          div.title = 'Click to edit theme';
+          div.style.cursor = 'pointer';
+          
+          // Add click handler to open theme in modal
+          div.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const ideaModal = window.getIdeaModal ? window.getIdeaModal() : null;
+            if (ideaModal) {
+              // Fetch theme data and open in modal
+              try {
+                const response = await fetch(`/planning/api/calendar/themes/${theme.id}`);
+                if (response.ok) {
+                  const data = await response.json();
+                  if (data.success && data.theme) {
+                    // Open modal with theme data, marking it as a theme
+                    ideaModal.openTheme(theme.id, data.theme);
+                  } else {
+                    console.error('Failed to load theme data');
+                  }
+                } else {
+                  console.error('Error fetching theme:', response.status);
+                }
+              } catch (error) {
+                console.error('Error loading theme:', error);
+                alert('Error loading theme: ' + error.message);
+              }
+            }
+          });
+        }
+        weekThemesContainer.appendChild(div);
+      });
     }
   }
 
@@ -622,14 +715,18 @@ async function loadWeek(year, weekNumber) {
   }, 50);
 
   document.getElementById('prev-week').addEventListener('click', () => {
-    const start = getWeekStartDate(state.year, state.weekNumber);
+    // SINGLE SOURCE OF TRUTH: Get current week from WeekContext
+    const currentWeek = window.WeekContext ? window.WeekContext.getWeekContextWithDefault() : { year: state.year, week: state.weekNumber };
+    const start = getWeekStartDate(currentWeek.year, currentWeek.week);
     start.setUTCDate(start.getUTCDate() - 7);
     const info = getISOWeekInfo(start);
     loadWeek(info.year, info.weekNumber);
   });
 
   document.getElementById('next-week').addEventListener('click', () => {
-    const start = getWeekStartDate(state.year, state.weekNumber);
+    // SINGLE SOURCE OF TRUTH: Get current week from WeekContext
+    const currentWeek = window.WeekContext ? window.WeekContext.getWeekContextWithDefault() : { year: state.year, week: state.weekNumber };
+    const start = getWeekStartDate(currentWeek.year, currentWeek.week);
     start.setUTCDate(start.getUTCDate() + 7);
     const info = getISOWeekInfo(start);
     loadWeek(info.year, info.weekNumber);

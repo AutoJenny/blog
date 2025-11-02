@@ -35,34 +35,33 @@ def authoring_sections_image_concepts(post_id):
             with db_manager.get_cursor() as cursor:
                 # Find the theme for this week
                 cursor.execute("""
-                    SELECT cs.idea_id
+                    SELECT cs.theme_id
                     FROM calendar_schedule cs
-                    JOIN calendar_ideas ci ON cs.idea_id = ci.id
                     WHERE cs.year = %s 
                       AND cs.week_number = %s
-                      AND ci.item_classification = 'theme'
+                      AND cs.theme_id IS NOT NULL
                     ORDER BY cs.created_at DESC
                     LIMIT 1
                 """, (url_year, url_week))
                 
                 week_theme = cursor.fetchone()
                 
-                if week_theme and week_theme['idea_id']:
-                    # Find the post associated with this theme's idea_id
+                if week_theme and week_theme['theme_id']:
+                    # Find the post associated with this theme
                     cursor.execute("""
                         SELECT cs2.post_id
                         FROM calendar_schedule cs2
-                        WHERE cs2.idea_id = %s
+                        WHERE cs2.theme_id = %s
                           AND cs2.post_id IS NOT NULL
                         ORDER BY cs2.created_at DESC
                         LIMIT 1
-                    """, (week_theme['idea_id'],))
+                    """, (week_theme['theme_id'],))
                     
                     theme_post = cursor.fetchone()
                     
                     if theme_post and theme_post['post_id']:
                         target_post_id = theme_post['post_id']
-                        logger.info(f"Week {url_year}/{url_week} has theme idea_id {week_theme['idea_id']}, using post {target_post_id} (instead of URL post_id {post_id}) for illustration_method")
+                        logger.info(f"Week {url_year}/{url_week} has theme_id {week_theme['theme_id']}, using post {target_post_id} (instead of URL post_id {post_id}) for illustration_method")
         
         with db_manager.get_cursor() as cursor:
             # Get post details with taxonomy illustration_method using the correct post_id

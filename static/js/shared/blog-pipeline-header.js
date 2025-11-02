@@ -312,37 +312,44 @@ class BlogPipelineHeader {
                 if (weekResp.ok) {
                     const weekData = await weekResp.json();
                     if (weekData.schedule && Array.isArray(weekData.schedule) && weekData.schedule.length > 0) {
-                        const scheduleWithIdea = weekData.schedule.find(s => s.idea_id);
-                        if (scheduleWithIdea && scheduleWithIdea.idea_id) {
-                            const ideaResp = await fetch(`/planning/api/calendar/ideas/${scheduleWithIdea.idea_id}`);
-                            if (ideaResp.ok) {
-                                const ideaData = await ideaResp.json();
-                                const idea = ideaData.idea || ideaData;
-                                if (idea && idea.idea_title) {
-                                    selectedTheme = idea.idea_title;
+                        // Check for theme_id (from calendar_themes) first
+                        const scheduleWithTheme = weekData.schedule.find(s => s.theme_id || s.calendar_theme_id || s.theme_title);
+                        if (scheduleWithTheme && (scheduleWithTheme.theme_id || scheduleWithTheme.calendar_theme_id)) {
+                            // Use theme_title from schedule join if available
+                            if (scheduleWithTheme.theme_title) {
+                                selectedTheme = scheduleWithTheme.theme_title;
+                            } else {
+                                // Fallback: fetch theme by ID
+                                const themeId = scheduleWithTheme.theme_id || scheduleWithTheme.calendar_theme_id;
+                                try {
+                                    const themeResp = await fetch(`/planning/api/calendar/themes/${themeId}`);
+                                    if (themeResp.ok) {
+                                        const themeData = await themeResp.json();
+                                        const theme = themeData.theme || themeData;
+                                        if (theme && theme.theme_title) {
+                                            selectedTheme = theme.theme_title;
+                                        }
+                                    }
+                                } catch (e) {
+                                    console.warn('[Blog Pipeline Header] Error fetching theme by ID:', e);
                                 }
                             }
                         }
                     }
                 }
                 
-                // If no theme selected yet, check if themes exist for this week and auto-select first one
+                // If no theme selected yet, check perpetual themes for this week
                 if (!selectedTheme && weekNumber && year) {
                     try {
-                        const ideasResp = await fetch(`/planning/api/calendar/ideas/week/${weekNumber}`);
-                        if (ideasResp.ok) {
-                            const ideasData = await ideasResp.json();
-                            const ideas = Array.isArray(ideasData) ? ideasData : (ideasData?.ideas || []);
-                            
-                            // Find themes (item_classification === 'theme')
-                            const themes = ideas.filter(i => 
-                                (i.item_classification || 'idea').toLowerCase() === 'theme'
-                            );
+                        const themesResp = await fetch(`/planning/api/calendar/themes/week/${weekNumber}`);
+                        if (themesResp.ok) {
+                            const themesData = await themesResp.json();
+                            const themes = Array.isArray(themesData.themes) ? themesData.themes : [];
                             
                             if (themes.length > 0) {
                                 // Auto-select first theme (already sorted by priority from API)
                                 const firstTheme = themes[0];
-                                selectedTheme = firstTheme.idea_title;
+                                selectedTheme = firstTheme.theme_title;
                             }
                         }
                     } catch (e) {
@@ -400,20 +407,15 @@ class BlogPipelineHeader {
                     // If still no theme selected, auto-select first available theme for this week
                     if (!selectedTheme && weekNumber) {
                         try {
-                            const ideasResp = await fetch(`/planning/api/calendar/ideas/week/${weekNumber}`);
-                            if (ideasResp.ok) {
-                                const ideasData = await ideasResp.json();
-                                const ideas = Array.isArray(ideasData) ? ideasData : (ideasData?.ideas || []);
-                                
-                                // Find themes (item_classification === 'theme')
-                                const themes = ideas.filter(i => 
-                                    (i.item_classification || 'idea').toLowerCase() === 'theme'
-                                );
+                            const themesResp = await fetch(`/planning/api/calendar/themes/week/${weekNumber}`);
+                            if (themesResp.ok) {
+                                const themesData = await themesResp.json();
+                                const themes = Array.isArray(themesData.themes) ? themesData.themes : [];
                                 
                                 if (themes.length > 0) {
                                     // Auto-select first theme (already sorted by priority from API)
                                     const firstTheme = themes[0];
-                                    selectedTheme = firstTheme.idea_title;
+                                    selectedTheme = firstTheme.theme_title;
                                     
                                     // Auto-select this theme in the schedule
                                     try {
@@ -421,7 +423,7 @@ class BlogPipelineHeader {
                                             method: 'POST',
                                             headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify({
-                                                idea_id: firstTheme.id,
+                                                theme_id: firstTheme.id,
                                                 year: year,
                                                 week_number: weekNumber
                                             })
@@ -520,20 +522,15 @@ class BlogPipelineHeader {
                         // If no theme selected yet, check if themes exist for this week and auto-select first one
                         if (!selectedTheme && weekNumber && year) {
                             try {
-                                const ideasResp = await fetch(`/planning/api/calendar/ideas/week/${weekNumber}`);
-                                if (ideasResp.ok) {
-                                    const ideasData = await ideasResp.json();
-                                    const ideas = Array.isArray(ideasData) ? ideasData : (ideasData?.ideas || []);
-                                    
-                                    // Find themes (item_classification === 'theme')
-                                    const themes = ideas.filter(i => 
-                                        (i.item_classification || 'idea').toLowerCase() === 'theme'
-                                    );
+                                const themesResp = await fetch(`/planning/api/calendar/themes/week/${weekNumber}`);
+                                if (themesResp.ok) {
+                                    const themesData = await themesResp.json();
+                                    const themes = Array.isArray(themesData.themes) ? themesData.themes : [];
                                     
                                     if (themes.length > 0) {
                                         // Auto-select first theme (already sorted by priority from API)
                                         const firstTheme = themes[0];
-                                        selectedTheme = firstTheme.idea_title;
+                                        selectedTheme = firstTheme.theme_title;
                                         
                                         // Auto-select this theme in the schedule
                                         try {
@@ -541,7 +538,7 @@ class BlogPipelineHeader {
                                                 method: 'POST',
                                                 headers: { 'Content-Type': 'application/json' },
                                                 body: JSON.stringify({
-                                                    idea_id: firstTheme.id,
+                                                    theme_id: firstTheme.id,
                                                     year: year,
                                                     week_number: weekNumber
                                                 })

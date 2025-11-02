@@ -8,6 +8,7 @@ class IdeaModal {
         this.currentIdeaId = null;
         this.currentEventId = null;
         this.currentType = 'idea'; // 'theme', 'idea', or 'event'
+        this.originalType = null; // Track original type before any switching
         this.categories = [];
         this.init();
     }
@@ -231,6 +232,126 @@ class IdeaModal {
         }
     }
 
+    async openTheme(themeId, themeData = null) {
+        // Load theme data if not provided
+        if (!themeData && themeId) {
+            try {
+                const response = await fetch(`/planning/api/calendar/themes/${themeId}`);
+                if (!response.ok) throw new Error('Failed to load theme');
+                const data = await response.json();
+                themeData = data.theme || data;
+            } catch (error) {
+                console.error('Error loading theme:', error);
+                alert('Failed to load theme: ' + error.message);
+                return;
+            }
+        }
+        
+        // Reset form
+        this.resetForm();
+        
+        // Set current theme ID
+        this.currentIdeaId = themeId;
+        this.currentEventId = null;
+        this.currentType = 'theme';
+        this.originalType = 'theme'; // Track that we started with a theme
+        
+        // Set radio button
+        document.getElementById('type-theme').checked = true;
+        document.getElementById('type-idea').checked = false;
+        document.getElementById('type-event').checked = false;
+        
+        // Show delete button for existing themes
+        const deleteBtn = document.getElementById('idea-modal-delete');
+        if (deleteBtn) {
+            deleteBtn.style.display = 'block';
+        }
+        
+        // Apply type-specific field visibility
+        this.switchType('theme');
+        
+        // Populate form with theme data
+        if (themeData) {
+            this.loadThemeData(themeData);
+        }
+        
+        // Open modal
+        const modal = document.getElementById('idea-modal');
+        const loading = document.getElementById('idea-modal-loading');
+        const form = document.getElementById('idea-modal-form');
+        
+        if (modal) {
+            modal.style.display = 'flex';
+            loading.style.display = 'none';
+            form.style.display = 'block';
+        }
+    }
+    
+    loadThemeData(theme) {
+        // Map theme fields to form fields
+        if (theme.theme_title) {
+            const titleInput = document.getElementById('idea-title');
+            if (titleInput) titleInput.value = theme.theme_title;
+        }
+        
+        if (theme.theme_description) {
+            const descInput = document.getElementById('idea-description');
+            if (descInput) descInput.value = theme.theme_description;
+        }
+        
+        if (theme.week_number) {
+            const weekInput = document.getElementById('idea-week-number');
+            if (weekInput) weekInput.value = theme.week_number;
+        }
+        
+        if (theme.seasonal_context) {
+            const seasonalInput = document.getElementById('idea-seasonal-context');
+            if (seasonalInput) seasonalInput.value = theme.seasonal_context;
+        }
+        
+        if (theme.priority) {
+            const priorityInput = document.getElementById('idea-priority');
+            if (priorityInput) priorityInput.value = theme.priority;
+        }
+        
+        // Handle tags (JSONB array)
+        if (theme.tags) {
+            const tagsInput = document.getElementById('idea-tags');
+            if (tagsInput) {
+                if (Array.isArray(theme.tags)) {
+                    tagsInput.value = theme.tags.join(', ');
+                } else {
+                    tagsInput.value = theme.tags;
+                }
+            }
+        }
+        
+        // Handle evergreen fields
+        if (theme.is_evergreen !== undefined) {
+            const evergreenCheckbox = document.getElementById('idea-is-evergreen');
+            if (evergreenCheckbox) evergreenCheckbox.checked = theme.is_evergreen;
+        }
+        
+        if (theme.evergreen_frequency) {
+            const freqInput = document.getElementById('idea-evergreen-frequency');
+            if (freqInput) freqInput.value = theme.evergreen_frequency;
+        }
+        
+        if (theme.evergreen_notes) {
+            const notesInput = document.getElementById('idea-evergreen-notes');
+            if (notesInput) notesInput.value = theme.evergreen_notes;
+        }
+        
+        // Handle sources and important_notes (JSONB arrays)
+        if (theme.sources && Array.isArray(theme.sources)) {
+            // Sources handling would go here if there's a UI for it
+        }
+        
+        if (theme.important_notes && Array.isArray(theme.important_notes)) {
+            // Important notes handling would go here if there's a UI for it
+        }
+    }
+
     async open(ideaId = null, eventData = null) {
         this.currentIdeaId = ideaId;
         this.currentEventId = eventData?.id || null;
@@ -245,6 +366,7 @@ class IdeaModal {
         if (eventData) {
             // Load event data directly
             this.currentType = 'event';
+            this.originalType = 'event';
             document.getElementById('type-event').checked = true;
             document.getElementById('type-idea').checked = false;
             await this.loadEvent(eventData);
@@ -252,6 +374,7 @@ class IdeaModal {
             // Load existing idea (will determine if it's theme or idea in loadIdea)
             // Default to idea, but loadIdea will check item_classification
             this.currentType = 'idea';
+            this.originalType = 'idea'; // Will be updated if loadIdea finds it's a theme
             document.getElementById('type-idea').checked = true;
             document.getElementById('type-event').checked = false;
             document.getElementById('type-theme').checked = false;
@@ -259,6 +382,7 @@ class IdeaModal {
         } else {
             // New item - default to idea
             this.currentType = 'idea';
+            this.originalType = 'idea';
             document.getElementById('type-idea').checked = true;
             document.getElementById('type-event').checked = false;
             this.resetForm();
@@ -287,6 +411,7 @@ class IdeaModal {
         
         // Set the type
         this.currentType = type;
+        this.originalType = type; // Track original type
         this.currentIdeaId = null;
         this.currentEventId = null;
         
@@ -548,12 +673,13 @@ class IdeaModal {
             const data = await response.json();
             const idea = data.idea || data;
 
-            // Determine if it's a theme or regular idea
-            const classification = (idea.item_classification || 'idea').toLowerCase();
-            const isTheme = classification === 'theme';
+            // Themes and ideas are separate - check if this is from calendar_themes or calendar_ideas
+            // If idea has theme_title, it's from calendar_themes
+            const isTheme = idea.theme_title !== undefined || (idea.id && await this.isThemeId(idea.id));
             
             // Set the appropriate type
             this.currentType = isTheme ? 'theme' : 'idea';
+            this.originalType = isTheme ? 'theme' : 'idea'; // Track original type for conversion detection
             document.getElementById('type-theme').checked = isTheme;
             document.getElementById('type-idea').checked = !isTheme;
             document.getElementById('type-event').checked = false;
@@ -1088,13 +1214,10 @@ class IdeaModal {
             formData.important_notes = notes;
         }
 
-        // Set item_classification for themes and ideas (only for ideas/themes, not events)
+        // Themes and ideas are separate tables - no item_classification needed
+        // The API endpoint will determine which table to insert into based on type
         if (!isEvent) {
-            if (isTheme) {
-                formData.item_classification = 'theme';
-            } else if (isIdea) {
-                formData.item_classification = 'idea';
-            }
+            // No item_classification field - themes and ideas are in separate tables
             
             // Only include evergreen fields if is_evergreen
             if (formData.is_evergreen) {
@@ -1137,6 +1260,22 @@ class IdeaModal {
         }
 
         try {
+            // Check current type from radio buttons
+            const isTheme = document.getElementById('type-theme')?.checked || false;
+            
+            // Check if we started with a theme (use originalType, not currentType which gets updated by switchType)
+            const wasTheme = this.originalType === 'theme' && this.currentIdeaId;
+            const isConvertingThemeToIdea = !isTheme && wasTheme;
+            
+            // Debug logging for conversion detection
+            console.log('[IdeaModal] Conversion check:', {
+                isTheme,
+                originalType: this.originalType,
+                currentIdeaId: this.currentIdeaId,
+                wasTheme,
+                isConvertingThemeToIdea
+            });
+            
             // Check if we're converting an event to an idea
             // We started with an event (currentEventId exists) but now saving as an idea (type is "idea", not "event")
             // Also check if ideaId matches currentEventId (event ID was put in idea-id field when loading event)
@@ -1203,6 +1342,115 @@ class IdeaModal {
                     window.location.reload();
                 }
                 return;
+            } else if (isConvertingThemeToIdea) {
+                console.log('[IdeaModal] Converting theme to idea', {
+                    themeId: this.currentIdeaId,
+                    formData
+                });
+                
+                // Converting theme to idea: create new idea with theme data, update schedule, delete theme
+                url = '/planning/api/calendar/ideas';
+                method = 'POST';
+                
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) {
+                    let message = 'Failed to create idea';
+                    try {
+                        const error = await response.json();
+                        message = error.error || message;
+                        console.error('[IdeaModal] Failed to create idea:', error);
+                    } catch (_) {
+                        message = `Failed to create idea: ${response.statusText}`;
+                    }
+                    throw new Error(message);
+                }
+
+                const result = await response.json();
+                const newIdeaId = result.idea?.id || result.id;
+                console.log('[IdeaModal] Created new idea:', newIdeaId);
+
+                // Update schedule entries: set idea_id to newIdeaId where theme_id matches old theme
+                if (this.currentIdeaId && newIdeaId) {
+                    try {
+                        // Update schedule entries manually
+                        console.log('[IdeaModal] Updating schedule entries...');
+                        const updateScheduleResp = await fetch(`/planning/api/calendar/schedule/update-theme-to-idea`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ theme_id: this.currentIdeaId, idea_id: newIdeaId })
+                        });
+                        
+                        if (!updateScheduleResp.ok) {
+                            const errorText = await updateScheduleResp.text();
+                            console.error('[IdeaModal] Failed to update schedule:', errorText);
+                            throw new Error('Failed to update schedule references');
+                        }
+                        
+                        const updateResult = await updateScheduleResp.json();
+                        console.log('[IdeaModal] Schedule updated:', updateResult);
+                    } catch (e) {
+                        console.error('[IdeaModal] Error updating schedule references:', e);
+                        alert('Idea created but failed to update schedule references: ' + e.message);
+                    }
+                    
+                    // Delete the original theme
+                    try {
+                        console.log('[IdeaModal] Deleting original theme...');
+                        const deleteResponse = await fetch(`/planning/api/calendar/themes/${this.currentIdeaId}`, {
+                            method: 'DELETE'
+                        });
+                        if (!deleteResponse.ok) {
+                            const errorText = await deleteResponse.text();
+                            console.error('[IdeaModal] Failed to delete theme:', errorText);
+                            throw new Error('Failed to delete original theme');
+                        }
+                        console.log('[IdeaModal] Theme deleted successfully');
+                    } catch (e) {
+                        console.error('[IdeaModal] Error deleting theme:', e);
+                        alert('Idea created but failed to delete original theme: ' + e.message);
+                    }
+                }
+
+                alert('Theme converted to idea successfully');
+                this.close();
+                if (window.location.pathname.includes('/calendar')) {
+                    window.location.reload();
+                }
+                return;
+            } else if (isTheme) {
+                // Handle themes separately
+                if (this.currentIdeaId && wasTheme) {
+                    // Updating an existing theme
+                    url = `/planning/api/calendar/themes/${this.currentIdeaId}`;
+                    method = 'PUT';
+                    // Map idea_title to theme_title
+                    if (formData.idea_title) {
+                        formData.theme_title = formData.idea_title;
+                        delete formData.idea_title;
+                    }
+                    if (formData.idea_description) {
+                        formData.theme_description = formData.idea_description;
+                        delete formData.idea_description;
+                    }
+                } else {
+                    // Creating a new theme
+                    url = '/planning/api/calendar/themes';
+                    method = 'POST';
+                    // Map idea_title to theme_title
+                    if (formData.idea_title) {
+                        formData.theme_title = formData.idea_title;
+                        delete formData.idea_title;
+                    }
+                    if (formData.idea_description) {
+                        formData.theme_description = formData.idea_description;
+                        delete formData.idea_description;
+                    }
+                }
             } else if (isEvent) {
                 // Handle events separately
                 // For events, use currentEventId (ignore ideaId which might contain the event ID)
@@ -1255,6 +1503,16 @@ class IdeaModal {
         }
     }
 
+    async isThemeId(id) {
+        // Check if an ID belongs to a theme by trying to fetch it from themes API
+        try {
+            const response = await fetch(`/planning/api/calendar/themes/${id}`);
+            return response.ok;
+        } catch {
+            return false;
+        }
+    }
+    
     async delete() {
         if (!this.currentIdeaId && !this.currentEventId) {
             return;
@@ -1266,9 +1524,15 @@ class IdeaModal {
         
         try {
             let url, itemType;
+            // Check if it's a theme (currentType is theme)
+            const isTheme = this.currentType === 'theme';
+            
             if (this.currentEventId) {
                 url = `/planning/api/calendar/events/${this.currentEventId}`;
                 itemType = 'event';
+            } else if (isTheme && this.currentIdeaId) {
+                url = `/planning/api/calendar/themes/${this.currentIdeaId}`;
+                itemType = 'theme';
             } else if (this.currentIdeaId) {
                 url = `/planning/api/calendar/ideas/${this.currentIdeaId}`;
                 itemType = 'idea';

@@ -58,11 +58,11 @@ def api_posts_expanded_idea(post_id):
                         SELECT cs.post_id, pd.expanded_idea, ci.idea_title, ci.id as theme_id
                         FROM calendar_schedule cs
                         LEFT JOIN post_development pd ON cs.post_id = pd.post_id
-                        LEFT JOIN calendar_ideas ci ON cs.idea_id = ci.id
+                        LEFT JOIN calendar_themes ct ON cs.theme_id = ct.id
                         WHERE cs.year = %s 
                           AND cs.week_number = %s
                           AND cs.post_id IS NOT NULL
-                          AND ci.item_classification = 'theme'
+                          AND cs.theme_id IS NOT NULL
                           AND pd.expanded_idea IS NOT NULL
                           AND pd.expanded_idea != ''
                         ORDER BY cs.created_at DESC
@@ -72,7 +72,7 @@ def api_posts_expanded_idea(post_id):
                     week_result = cursor.fetchone()
                     
                     if week_result and week_result['expanded_idea']:
-                        logger.info(f"Found expanded idea for week {url_year}/{url_week}: post {week_result['post_id']}, theme: {week_result['idea_title']}")
+                        logger.info(f"Found expanded idea for week {url_year}/{url_week}: post {week_result['post_id']}, theme: {week_result.get('theme_title', 'Unknown')}")
                         return jsonify({
                             'success': True,
                             'expanded_idea': week_result['expanded_idea']
@@ -80,12 +80,12 @@ def api_posts_expanded_idea(post_id):
                     
                     # STEP 2: If no post scheduled for this week, find the theme for this week and look for ANY post with that theme
                     cursor.execute("""
-                        SELECT ci.id as theme_id, ci.idea_title as theme_title
+                        SELECT ct.id as theme_id, ct.theme_title
                         FROM calendar_schedule cs
-                        JOIN calendar_ideas ci ON cs.idea_id = ci.id
+                        JOIN calendar_themes ct ON cs.theme_id = ct.id
                         WHERE cs.year = %s 
                           AND cs.week_number = %s
-                          AND ci.item_classification = 'theme'
+                          AND cs.theme_id IS NOT NULL
                         ORDER BY cs.created_at DESC
                         LIMIT 1
                     """, (url_year, url_week))
@@ -97,11 +97,11 @@ def api_posts_expanded_idea(post_id):
                         
                         # Now find any post that has this theme scheduled (regardless of which week) and has an expanded_idea
                         cursor.execute("""
-                            SELECT cs2.post_id, pd.expanded_idea, ci2.idea_title
+                            SELECT cs2.post_id, pd.expanded_idea, ct2.theme_title
                             FROM calendar_schedule cs2
                             LEFT JOIN post_development pd ON cs2.post_id = pd.post_id
-                            LEFT JOIN calendar_ideas ci2 ON cs2.idea_id = ci2.id
-                            WHERE cs2.idea_id = %s
+                            LEFT JOIN calendar_themes ct2 ON cs2.theme_id = ct2.id
+                            WHERE cs2.theme_id = %s
                               AND cs2.post_id IS NOT NULL
                               AND pd.expanded_idea IS NOT NULL
                               AND pd.expanded_idea != ''

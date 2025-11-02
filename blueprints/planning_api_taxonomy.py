@@ -144,18 +144,18 @@ def generate_taxonomy():
                 week_theme = cursor.fetchone()
                 
                 if week_theme:
-                    theme_idea_id = week_theme['idea_id']
-                    logger.info(f"Week {year}/{week_number} has theme idea_id {theme_idea_id}")
+                    theme_id = week_theme['theme_id']
+                    logger.info(f"Week {year}/{week_number} has theme_id {theme_id}")
                     
                     # Find any post that has this theme (regardless of which week)
                     cursor.execute("""
                         SELECT cs2.post_id
                         FROM calendar_schedule cs2
-                        WHERE cs2.idea_id = %s
+                        WHERE cs2.theme_id = %s
                           AND cs2.post_id IS NOT NULL
                         ORDER BY cs2.created_at DESC
                         LIMIT 1
-                    """, (theme_idea_id,))
+                    """, (theme_id,))
                     
                     theme_post = cursor.fetchone()
                     
@@ -164,9 +164,9 @@ def generate_taxonomy():
                         # If so, use the theme's post instead of the URL's post_id
                         old_post_id = post_id
                         post_id = theme_post['post_id']
-                        logger.info(f"Found post {post_id} with theme idea_id {theme_idea_id} (instead of URL post_id {old_post_id})")
+                        logger.info(f"Found post {post_id} with theme_id {theme_id} (instead of URL post_id {old_post_id})")
                     else:
-                        logger.warn(f"No post found with theme idea_id {theme_idea_id}, using provided post_id {post_id}")
+                        logger.warn(f"No post found with theme_id {theme_id}, using provided post_id {post_id}")
         
         # Fetch all taxonomy items from database
         with db_manager.get_cursor() as cursor:
@@ -482,11 +482,9 @@ Return only the JSON object, no other text."""
             with db_manager.get_cursor() as cursor:
                 # Check if the post_id being used has a different theme than what we generated
                 cursor.execute("""
-                    SELECT p.theme_id, cs.idea_id as schedule_idea_id,
-                           ci.item_classification
+                    SELECT p.theme_id, cs.theme_id as schedule_theme_id
                     FROM post p
                     LEFT JOIN calendar_schedule cs ON p.id = cs.post_id
-                    LEFT JOIN calendar_ideas ci ON cs.idea_id = ci.id
                     WHERE p.id = %s
                     ORDER BY cs.created_at DESC
                     LIMIT 1
@@ -496,12 +494,11 @@ Return only the JSON object, no other text."""
                 
                 # Find the week's theme
                 cursor.execute("""
-                    SELECT cs.idea_id
+                    SELECT cs.theme_id
                     FROM calendar_schedule cs
-                    JOIN calendar_ideas ci ON cs.idea_id = ci.id
                     WHERE cs.year = %s 
                       AND cs.week_number = %s
-                      AND ci.item_classification = 'theme'
+                      AND cs.theme_id IS NOT NULL
                     ORDER BY cs.created_at DESC
                     LIMIT 1
                 """, (year, week_number))
@@ -510,18 +507,18 @@ Return only the JSON object, no other text."""
                 
                 # If post's schedule theme doesn't match week's theme, find the correct post
                 if week_theme_check and post_check:
-                    if post_check['schedule_idea_id'] != week_theme_check['idea_id']:
-                        logger.warn(f"Post {post_id} theme mismatch: post has idea_id {post_check['schedule_idea_id']}, week has {week_theme_check['idea_id']}")
+                    if post_check.get('schedule_theme_id') != week_theme_check['theme_id']:
+                        logger.warn(f"Post {post_id} theme mismatch: post has theme_id {post_check.get('schedule_theme_id')}, week has {week_theme_check['theme_id']}")
                         
                         # Find post with the week's theme
                         cursor.execute("""
                             SELECT cs2.post_id
                             FROM calendar_schedule cs2
-                            WHERE cs2.idea_id = %s
+                            WHERE cs2.theme_id = %s
                               AND cs2.post_id IS NOT NULL
                             ORDER BY cs2.created_at DESC
                             LIMIT 1
-                        """, (week_theme_check['idea_id'],))
+                        """, (week_theme_check['theme_id'],))
                         
                         correct_post = cursor.fetchone()
                         
