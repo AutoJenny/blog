@@ -11,29 +11,29 @@ logger = logging.getLogger(__name__)
 
 # Generic page heading patterns that indicate navigation, not events
 PAGE_HEADING_PATTERNS = [
-    r'^what[\'s\s]*on',
-    r'^events?$',
+    r'^what[\'s\s]*on$',  # Exact "What's on", "Whats on", etc.
+    r'^events?$',  # Exact "Event" or "Events"
     r'^calendar$',
     r'^schedule$',
     r'^programme?$',
     r'^tickets?$',
-    r'^visit',
-    r'^about',
+    r'^visit\s+(us|our)$',  # Only "Visit us" or "Visit our", not "Visit Scotland"
+    r'^about$',  # Exact "About"
     r'^home$',
     r'^news$',
-    r'^contact',
+    r'^contact$',  # Exact "Contact"
     r'^gallery$',
     r'^exhibitions?$',
     r'^collections?$',
     r'^explore$',
     r'^discover$',
-    r'^learn',
-    r'^shop',
-    r'^support',
-    r'^plan\s+your\s+visit',
-    r'^getting\s+here',
-    r'^opening\s+hours',
-    r'^accessibility',
+    r'^learn\s+(more|about)$',  # Only "Learn more" or "Learn about"
+    r'^shop$',
+    r'^support$',
+    r'^plan\s+your\s+visit$',
+    r'^getting\s+here$',
+    r'^opening\s+hours$',
+    r'^accessibility$',
 ]
 
 # URL patterns that suggest page navigation rather than specific events
