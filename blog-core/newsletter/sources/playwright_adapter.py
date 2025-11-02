@@ -385,6 +385,93 @@ class PlaywrightAdapter(SourceAdapter):
             html = page.content()
             soup = BeautifulSoup(html, 'html.parser')
             
+            # For National Museums: try to find /events/ links in the DOM first
+            if 'nms.ac.uk' in self.base_url:
+                event_links = soup.select('a[href*="/events/"]')
+                logger.debug(f"Found {len(event_links)} /events/ links in DOM")
+                
+                seen = set()
+                skip_text = ['events', 'what\'s on', 'whats on', 'home', 'view all', 'all events']
+                
+                for link in event_links:
+                    href = link.get('href', '')
+                    if not href:
+                        continue
+                    
+                    # Build full URL
+                    if not href.startswith('http'):
+                        href = urljoin(self.base_url, href)
+                    
+                    if href in seen:
+                        continue
+                    
+                    # Validate event slug
+                    if '/events/' in href:
+                        parts = href.split('/events/')
+                        if len(parts) > 1 and parts[1]:
+                            slug = parts[1].split('/')[0].split('?')[0]
+                            if slug and len(slug) > 3:
+                                # Extract text - try link first, then parent
+                                text = link.get_text(strip=True)
+                                
+                                # Clean text: remove "Events" prefix, extract title
+                                # Format is often "EventsEvent TitleDate info"
+                                import re
+                                # Remove "Events" at start
+                                text = re.sub(r'^events\s*', '', text, flags=re.IGNORECASE)
+                                
+                                # Try to extract just the title (before date pattern)
+                                # Dates often start with day name or number
+                                date_pattern = r'\s*(Mon|Tue|Wed|Thu|Fri|Sat|Sun|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|\d{1,2}\s+\w+\s+-)'
+                                match = re.search(date_pattern, text)
+                                if match:
+                                    text = text[:match.start()].strip()
+                                
+                                # If still messy, get parent text and extract first meaningful line
+                                if not text or len(text) < 10 or any(skip in text.lower() for skip in skip_text):
+                                    parent = link.find_parent(['div', 'article', 'li', 'section', 'h2', 'h3'])
+                                    if parent:
+                                        parent_text = parent.get_text(strip=True)
+                                        # Try to get the title line (usually first or second line)
+                                        lines = [l.strip() for l in parent_text.split('\n') if l.strip()]
+                                        for line in lines[:3]:
+                                            # Skip date-only lines
+                                            if re.match(r'^\d+', line) and ('-' in line or len(line) < 30):
+                                                continue
+                                            if len(line) > 15 and not any(skip in line.lower() for skip in skip_text):
+                                                text = line[:100]
+                                                break
+                                
+                                # Final cleanup
+                                text = re.sub(r'\s+', ' ', text).strip()
+                                text = text.strip(' –-')
+                                
+                                if text and len(text) > 10 and len(text) < 150:
+                                    if not any(skip in text.lower() for skip in skip_text):
+                                        # Extract date from parent if available
+                                        date_text = ''
+                                        parent = link.find_parent(['div', 'article', 'li', 'section'])
+                                        if parent:
+                                            parent_text = parent.get_text()
+                                            # Look for date patterns
+                                            date_match = re.search(r'(\d+\s+\w+\s+-?\s*\d*\s*\w*\s*\d{4})', parent_text)
+                                            if date_match:
+                                                date_text = date_match.group(1)
+                                        
+                                        items.append({
+                                            'title': text,
+                                            'url': href,
+                                            'date_text': date_text,
+                                            'location': '',
+                                            'description': '',
+                                        })
+                                        seen.add(href)
+                
+                if items:
+                    logger.info(f"Extracted {len(items)} items from DOM /events/ links")
+                    return items
+            
+            # Generic DOM extraction for other sites
             # Use site-specific or generic selectors
             wait_selector = self.site_config.get('wait_selector', 'article, .event, .exhibition, [class*="event"], [class*="exhibition"]')
             elements = soup.select(wait_selector)
@@ -396,6 +483,16 @@ class PlaywrightAdapter(SourceAdapter):
             for elem in elements[:20]:  # Limit to 20 items
                 event_data = self._parse_event_element(elem)
                 if event_data:
+                    # Skip cookie consent and error messages
+                    title_lower = event_data.get('title', '').lower()
+                    if any(word in title_lower for word in ['cookie', 'cookiebot', 'accept', 'hmm, it seems', 'error', 'quicklinks']):
+                        continue
+                    
+                    # Skip if URL points to cookie consent or error pages
+                    url = event_data.get('url', '')
+                    if 'cookiebot' in url.lower() or 'error' in url.lower():
+                        continue
+                    
                     items.append(event_data)
             
             logger.info(f"Extracted {len(items)} items from DOM")
