@@ -171,7 +171,8 @@ async function loadEventsSummary(filters = {}) {
             days_back: filters.days_back || 365,
             days_ahead: filters.days_ahead || 365,
             ...(filters.source ? { source: filters.source } : {}),
-            ...(filters.location ? { location: filters.location } : {})
+            ...(filters.location ? { location: filters.location } : {}),
+            ...(filters.recurrence_type ? { recurrence_type: filters.recurrence_type } : {})
         });
         
         const url = `/newsletter/events/summary?${params.toString()}`;
@@ -300,6 +301,9 @@ async function loadEventsSummary(filters = {}) {
                                                 ${eventDate ? `<span><i class="fa-solid fa-calendar"></i> ${eventDate}</span>` : ''}
                                                 ${event.location ? `<span><i class="fa-solid fa-location-dot"></i> ${event.location}</span>` : ''}
                                                 <span><i class="fa-solid fa-source"></i> ${event.source}</span>
+                                                ${event.event_recurrence_type ? `<span style="margin-left: 12px; padding: 2px 8px; background: ${event.event_recurrence_type === 'annual' ? '#10b981' : '#f59e0b'}; color: #fff; border-radius: 4px; font-size: 11px; font-weight: 600;">
+                                                    ${event.event_recurrence_type === 'annual' ? 'Annual' : 'Special'}
+                                                </span>` : ''}
                                             </div>
                                         </div>
                                         <div style="display: flex; align-items: center; gap: 8px;">
@@ -422,10 +426,11 @@ function populateSourceFilter(sources) {
 
 function applyFilters() {
     currentFilters = {
-        days_back: parseInt(document.getElementById('days-back').value) || 30,
-        days_ahead: parseInt(document.getElementById('days-ahead').value) || 90,
+        days_back: parseInt(document.getElementById('days-back').value) || 365,
+        days_ahead: parseInt(document.getElementById('days-ahead').value) || 365,
         source: document.getElementById('source-filter').value || '',
-        location: document.getElementById('location-filter').value || ''
+        location: document.getElementById('location-filter').value || '',
+        recurrence_type: document.getElementById('recurrence-filter').value || ''
     };
     loadEventsSummary(currentFilters);
 }
