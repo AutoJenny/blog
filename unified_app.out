@@ -1136,3 +1136,84 @@ LINE 10:                                 AND is_selected = TRUE
 2025-11-02 09:33:28,638 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:33:28] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
 2025-11-02 09:33:28,661 - config.database - INFO - Database connection established
 2025-11-02 09:33:28,672 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:33:28] "GET /newsletter/events/summary?days_back=30&days_ahead=90 HTTP/1.1" 200 -
+2025-11-02 09:34:03,837 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:34:03] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-11-02 09:34:03,838 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:34:03] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-11-02 09:34:03,840 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:34:03] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-02 09:34:03,840 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:34:03] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
+2025-11-02 09:34:03,841 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:34:03] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
+2025-11-02 09:34:03,842 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:34:03] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
+2025-11-02 09:36:56,980 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/events_summary_service.py', reloading
+2025-11-02 09:36:57,043 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 09:36:57,399 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 09:36:57,404 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 09:37:22,432 - config.database - INFO - Database connection established
+2025-11-02 09:37:22,439 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:22] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 09:37:27,278 - config.database - INFO - Database connection established
+2025-11-02 09:37:27,302 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "GET /planning/posts/78/calendar/taxonomy?year=2025&week=45 HTTP/1.1" 200 -
+2025-11-02 09:37:27,336 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-02 09:37:27,338 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-02 09:37:27,338 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-02 09:37:27,339 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-02 09:37:27,339 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-02 09:37:27,340 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-02 09:37:27,341 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "GET /static/js/planning/taxonomy-assignment.js HTTP/1.1" 200 -
+2025-11-02 09:37:27,341 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-11-02 09:37:27,343 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-02 09:37:27,343 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-02 09:37:27,345 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-02 09:37:27,345 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-11-02 09:37:27,346 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-11-02 09:37:27,362 - config.database - INFO - Database connection established
+2025-11-02 09:37:27,362 - config.database - INFO - Database connection established
+2025-11-02 09:37:27,367 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "GET /api/taxonomy/items?tier=theme HTTP/1.1" 200 -
+2025-11-02 09:37:27,373 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "GET /planning/api/posts/78 HTTP/1.1" 200 -
+2025-11-02 09:37:27,389 - config.database - INFO - Database connection established
+2025-11-02 09:37:27,389 - config.database - INFO - Database connection established
+2025-11-02 09:37:27,393 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "GET /api/taxonomy/items?tier=format HTTP/1.1" 200 -
+2025-11-02 09:37:27,394 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "GET /planning/api/calendar/schedule/2025/45 HTTP/1.1" 200 -
+2025-11-02 09:37:27,403 - config.database - INFO - Database connection established
+2025-11-02 09:37:27,404 - config.database - INFO - Database connection established
+2025-11-02 09:37:27,407 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "GET /planning/api/posts/78/taxonomy HTTP/1.1" 200 -
+2025-11-02 09:37:27,415 - config.database - INFO - Database connection established
+2025-11-02 09:37:27,417 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "GET /api/taxonomy/content-types?theme_id=1 HTTP/1.1" 200 -
+2025-11-02 09:37:27,418 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "GET /planning/api/calendar/ideas/132 HTTP/1.1" 200 -
+2025-11-02 09:37:27,427 - config.database - INFO - Database connection established
+2025-11-02 09:37:27,431 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "GET /planning/api/calendar/schedule/2025/45 HTTP/1.1" 200 -
+2025-11-02 09:37:27,438 - config.database - INFO - Database connection established
+2025-11-02 09:37:27,445 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "GET /planning/api/calendar/ideas/132 HTTP/1.1" 200 -
+2025-11-02 09:37:27,453 - config.database - INFO - Database connection established
+2025-11-02 09:37:27,457 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:27] "GET /planning/api/posts/78 HTTP/1.1" 200 -
+2025-11-02 09:37:32,419 - config.database - INFO - Database connection established
+2025-11-02 09:37:32,426 - blueprints.planning_api_post_specific - WARNING - No expanded idea found for week 2025/45 with theme
+2025-11-02 09:37:32,434 - config.database - INFO - Database connection established
+2025-11-02 09:37:32,436 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:32] "GET /planning/api/posts/78/expanded-idea?year=2025&week=45 HTTP/1.1" 200 -
+2025-11-02 09:37:32,448 - config.database - INFO - Database connection established
+2025-11-02 09:37:32,455 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:32] "GET /planning/api/calendar/schedule/2025/45 HTTP/1.1" 200 -
+2025-11-02 09:37:32,468 - config.database - INFO - Database connection established
+2025-11-02 09:37:32,478 - config.database - INFO - Database connection established
+2025-11-02 09:37:32,487 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-11-02 09:37:34,685 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 533
+2025-11-02 09:37:34,686 - blueprints.planning_api_taxonomy - INFO - LLM raw response: {
+  "theme_id": 1,
+  "content_type_id": 4,
+  "format_id": 11,
+  "reasoning": "This blog post focuses on Scottish heritage and history, telling a deep cultural story through myths, traditions, and ancestral customs."
+}
+2025-11-02 09:37:34,687 - blueprints.planning_api_taxonomy - INFO - Successfully parsed JSON: {'theme_id': 1, 'content_type_id': 4, 'format_id': 11, 'reasoning': 'This blog post focuses on Scottish heritage and history, telling a deep cultural story through myths, traditions, and ancestral customs.'}
+2025-11-02 09:37:34,698 - config.database - INFO - Database connection established
+2025-11-02 09:37:34,707 - config.database - INFO - Database connection established
+2025-11-02 09:37:34,728 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:34] "POST /planning/api/taxonomy/generate HTTP/1.1" 200 -
+2025-11-02 09:37:34,749 - config.database - INFO - Database connection established
+2025-11-02 09:37:34,756 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:34] "GET /api/taxonomy/content-types?theme_id=1 HTTP/1.1" 200 -
+2025-11-02 09:37:34,770 - config.database - INFO - Database connection established
+2025-11-02 09:37:34,775 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:34] "GET /api/taxonomy/items/4 HTTP/1.1" 200 -
+2025-11-02 09:37:34,788 - config.database - INFO - Database connection established
+2025-11-02 09:37:34,793 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:34] "GET /planning/api/posts/78/taxonomy HTTP/1.1" 200 -
+2025-11-02 09:37:34,805 - config.database - INFO - Database connection established
+2025-11-02 09:37:34,809 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:37:34] "GET /api/taxonomy/content-types?theme_id=1 HTTP/1.1" 200 -
+2025-11-02 09:38:53,366 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:38:53] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-11-02 09:38:53,367 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:38:53] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-11-02 09:38:53,367 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:38:53] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-02 09:38:53,370 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:38:53] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
+2025-11-02 09:38:53,371 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:38:53] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
+2025-11-02 09:38:53,371 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:38:53] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -

@@ -1,50 +1,153 @@
 {% extends 'base.html' %}
 
+{% block head %}
+<style>
+    .filter-bar {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 16px;
+        padding: 12px;
+        background: #151a2e;
+        border: 1px solid #2d3246;
+        border-radius: 8px;
+        flex-wrap: wrap;
+    }
+    .filter-bar input, .filter-bar select {
+        background: #0f172a !important;
+        color: #e6e8ef !important;
+        border: 1px solid #2d3246 !important;
+        padding: 8px 12px !important;
+        border-radius: 6px !important;
+    }
+    .filter-bar select option {
+        background: #0f172a !important;
+        color: #e6e8ef !important;
+    }
+    .btn-primary {
+        background: #4e6bff;
+        color: #fff;
+        border: none;
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+    .btn-primary:hover {
+        background: #3d5ae5;
+    }
+    .section-card {
+        background: #151a2e;
+        border: 1px solid #2d3246;
+        border-radius: 8px;
+        padding: 24px;
+        margin-bottom: 20px;
+    }
+    .stat-box {
+        padding: 16px;
+        background: #0f172a;
+        border: 1px solid #2d3246;
+        border-radius: 6px;
+    }
+    .stat-label {
+        color: #9ca3af;
+        font-size: 12px;
+        margin-bottom: 4px;
+    }
+    .stat-value {
+        color: #e6e8ef;
+        font-size: 24px;
+        font-weight: 700;
+    }
+    .event-card {
+        background: #151a2e;
+        border: 1px solid #2d3246;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+        cursor: pointer;
+    }
+    .event-card:hover {
+        border-color: #4e6bff;
+    }
+    .event-title {
+        color: #e6e8ef;
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    .event-meta {
+        color: #9ca3af;
+        font-size: 13px;
+        margin-bottom: 12px;
+    }
+    .event-meta span {
+        margin-right: 16px;
+    }
+    .event-description {
+        color: #c9cedc;
+        line-height: 1.6;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #2d3246;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <div class="mb-6">
-        <div class="flex items-center justify-between mb-4">
+<div class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="mb-6 flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold text-white mb-2">Events Synopsis</h1>
-                <p class="text-gray-400">Scottish events and cultural happenings</p>
+                <h1 class="text-2xl font-bold" style="color: #a5b4fc;">
+                    <i class="fa-solid fa-calendar-days"></i> Events Synopsis
+                </h1>
+                <p style="color: #9ca3af; margin-top: 4px;">Scottish events and cultural happenings</p>
             </div>
+            <a href="/newsletter" class="btn-secondary" style="background: transparent; color: #a5b4fc; border: 1px solid #2d3246; padding: 8px 14px; border-radius: 6px; font-weight: 700; text-decoration: none; display: inline-block;">
+                <i class="fa-solid fa-arrow-left"></i> Back to Newsletter
+            </a>
         </div>
         
         <!-- Filter controls -->
-        <div class="bg-[#0f172a] border border-[#2d3246] rounded-lg p-4 flex items-center gap-4 flex-wrap">
-            <label class="text-gray-400 text-sm font-semibold">Days back:</label>
-            <input type="number" id="days-back" value="30" min="0" max="365" class="bg-[#1e293b] border border-[#2d3246] text-white px-3 py-2 rounded-lg text-sm w-20 focus:outline-none focus:border-[#7b8dff]">
+        <div class="filter-bar">
+            <label style="color: #9ca3af; font-size: 13px; font-weight: 600;">Days back:</label>
+            <input type="number" id="days-back" value="30" min="0" max="365" style="width: 80px;">
             
-            <label class="text-gray-400 text-sm font-semibold">Days ahead:</label>
-            <input type="number" id="days-ahead" value="90" min="0" max="365" class="bg-[#1e293b] border border-[#2d3246] text-white px-3 py-2 rounded-lg text-sm w-20 focus:outline-none focus:border-[#7b8dff]">
+            <label style="color: #9ca3af; font-size: 13px; font-weight: 600;">Days ahead:</label>
+            <input type="number" id="days-ahead" value="90" min="0" max="365" style="width: 80px;">
             
-            <label class="text-gray-400 text-sm font-semibold">Source:</label>
-            <select id="source-filter" class="bg-[#1e293b] border border-[#2d3246] text-white px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#7b8dff]">
+            <label style="color: #9ca3af; font-size: 13px; font-weight: 600;">Source:</label>
+            <select id="source-filter" style="min-width: 200px;">
                 <option value="">All Sources</option>
             </select>
             
-            <label class="text-gray-400 text-sm font-semibold">Location:</label>
-            <input type="text" id="location-filter" placeholder="Filter by location" class="bg-[#1e293b] border border-[#2d3246] text-white px-3 py-2 rounded-lg text-sm w-40 focus:outline-none focus:border-[#7b8dff]">
+            <label style="color: #9ca3af; font-size: 13px; font-weight: 600;">Location:</label>
+            <input type="text" id="location-filter" placeholder="Filter by location" style="width: 200px;">
             
-            <button onclick="applyFilters()" class="bg-[#4e6bff] hover:bg-[#3d5ae5] text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 transition shadow">
+            <button onclick="applyFilters()" class="btn-primary">
                 <i class="fa-solid fa-filter"></i> Apply Filters
             </button>
             
-            <span class="text-gray-500 text-sm ml-auto" id="event-count">Loading...</span>
+            <span style="color: #9ca3af; font-size: 13px; margin-left: auto;" id="event-count">Loading...</span>
         </div>
-    </div>
 
-    <div id="events-summary-container">
-        <div class="bg-[#0f172a] border border-[#2d3246] rounded-lg p-6 mb-6">
-            <div class="flex items-center justify-center py-12">
-                <div class="text-center">
-                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#7b8dff] mb-4"></div>
-                    <p class="text-gray-400">Loading events summary...</p>
+        <div id="events-summary-container">
+            <div class="section-card">
+                <div style="text-align: center; padding: 48px;">
+                    <div style="display: inline-block; width: 32px; height: 32px; border: 3px solid #4e6bff; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 16px;"></div>
+                    <p style="color: #9ca3af;">Loading events summary...</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+</style>
 
 <script>
 let currentFilters = {
@@ -90,12 +193,11 @@ async function loadEventsSummary(filters = {}) {
         // Summary section
         if (data.summary_text) {
             html += `
-                <div class="bg-gradient-to-r from-[#1e293b] to-[#0f172a] border border-[#2d3246] rounded-lg p-6 mb-6">
-                    <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
-                        <i class="fa-solid fa-calendar-days mr-2 text-[#7b8dff]"></i>
-                        Events Overview
+                <div class="section-card" style="background: linear-gradient(to right, #1b2138, #151a2e);">
+                    <h2 style="color: #a5b4fc; font-size: 20px; font-weight: 600; margin-bottom: 16px;">
+                        <i class="fa-solid fa-calendar-days"></i> Events Overview
                     </h2>
-                    <div class="text-lg text-gray-200 leading-relaxed">${data.summary_text}</div>
+                    <div style="color: #e6e8ef; font-size: 16px; line-height: 1.6;">${data.summary_text}</div>
                 </div>
             `;
         }
@@ -103,36 +205,35 @@ async function loadEventsSummary(filters = {}) {
         // Stats
         if (data.total_events > 0) {
             html += `
-                <div class="bg-[#0f172a] border border-[#2d3246] rounded-lg p-6 mb-6">
-                    <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
-                        <i class="fa-solid fa-chart-bar mr-2 text-[#7b8dff]"></i>
-                        Overview
+                <div class="section-card">
+                    <h2 style="color: #a5b4fc; font-size: 20px; font-weight: 600; margin-bottom: 16px;">
+                        <i class="fa-solid fa-chart-bar"></i> Overview
                     </h2>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div class="bg-[#1e293b] rounded p-4">
-                            <div class="text-gray-400 text-sm mb-1">Total Events</div>
-                            <div class="text-2xl font-bold text-white">${data.total_events}</div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 16px;">
+                        <div class="stat-box">
+                            <div class="stat-label">Total Events</div>
+                            <div class="stat-value">${data.total_events}</div>
                         </div>
-                        <div class="bg-[#1e293b] rounded p-4">
-                            <div class="text-gray-400 text-sm mb-1">Upcoming</div>
-                            <div class="text-2xl font-bold text-[#6ee7b7]">${data.upcoming_count}</div>
+                        <div class="stat-box">
+                            <div class="stat-label">Upcoming</div>
+                            <div class="stat-value" style="color: #6ee7b7;">${data.upcoming_count}</div>
                         </div>
-                        <div class="bg-[#1e293b] rounded p-4">
-                            <div class="text-gray-400 text-sm mb-1">Past</div>
-                            <div class="text-2xl font-bold text-gray-400">${data.past_count}</div>
+                        <div class="stat-box">
+                            <div class="stat-label">Past</div>
+                            <div class="stat-value" style="color: #9ca3af;">${data.past_count}</div>
                         </div>
-                        <div class="bg-[#1e293b] rounded p-4">
-                            <div class="text-gray-400 text-sm mb-1">Sources</div>
-                            <div class="text-2xl font-bold text-white">${Object.keys(data.sources || {}).length}</div>
+                        <div class="stat-box">
+                            <div class="stat-label">Sources</div>
+                            <div class="stat-value">${Object.keys(data.sources || {}).length}</div>
                         </div>
                     </div>
                     
                     ${data.sources && Object.keys(data.sources).length > 0 ? `
-                        <div class="mt-4 pt-4 border-t border-[#2d3246]">
-                            <div class="text-gray-400 text-sm mb-2">Events by Source:</div>
-                            <div class="flex flex-wrap gap-2">
+                        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #2d3246;">
+                            <div style="color: #9ca3af; font-size: 13px; margin-bottom: 8px;">Events by Source:</div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                                 ${Object.entries(data.sources).map(([name, count]) => `
-                                    <span class="px-3 py-1 bg-[#1e293b] text-gray-200 rounded text-sm">
+                                    <span style="padding: 6px 12px; background: #1b2138; color: #e6e8ef; border-radius: 4px; font-size: 13px;">
                                         ${name}: ${count}
                                     </span>
                                 `).join('')}
@@ -141,11 +242,11 @@ async function loadEventsSummary(filters = {}) {
                     ` : ''}
                     
                     ${data.locations && Object.keys(data.locations).length > 0 ? `
-                        <div class="mt-4 pt-4 border-t border-[#2d3246]">
-                            <div class="text-gray-400 text-sm mb-2">Events by Location:</div>
-                            <div class="flex flex-wrap gap-2">
+                        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #2d3246;">
+                            <div style="color: #9ca3af; font-size: 13px; margin-bottom: 8px;">Events by Location:</div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                                 ${Object.entries(data.locations).map(([loc, count]) => `
-                                    <span class="px-3 py-1 bg-[#1e293b] text-gray-200 rounded text-sm">
+                                    <span style="padding: 6px 12px; background: #1b2138; color: #e6e8ef; border-radius: 4px; font-size: 13px;">
                                         ${loc}: ${count}
                                     </span>
                                 `).join('')}
@@ -159,12 +260,11 @@ async function loadEventsSummary(filters = {}) {
         // Upcoming events
         if (data.upcoming_events && data.upcoming_events.length > 0) {
             html += `
-                <div class="bg-[#0f172a] border border-[#2d3246] rounded-lg p-6 mb-6">
-                    <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
-                        <i class="fa-solid fa-calendar-check mr-2 text-[#7b8dff]"></i>
-                        Upcoming Events (${data.upcoming_events.length})
+                <div class="section-card">
+                    <h2 style="color: #a5b4fc; font-size: 20px; font-weight: 600; margin-bottom: 16px;">
+                        <i class="fa-solid fa-calendar-check"></i> Upcoming Events (${data.upcoming_events.length})
                     </h2>
-                    <div class="space-y-4">
+                    <div>
                         ${data.upcoming_events.map((event, idx) => {
                             let eventDate = '';
                             try {
@@ -184,44 +284,31 @@ async function loadEventsSummary(filters = {}) {
                             }
                             
                             return `
-                                <div class="bg-[#1e293b] border border-[#2d3246] rounded-lg p-5 hover:border-[#7b8dff] transition cursor-pointer" onclick="viewEventDetail(${event.id})">
-                                    <div class="flex items-start justify-between mb-3">
-                                        <div class="flex-1">
-                                            <div class="flex items-center gap-2 mb-2">
-                                                <h3 class="text-lg font-semibold text-white">
-                                                    ${event.title}
-                                                </h3>
-                                            </div>
-                                            <div class="flex items-center gap-3 text-sm text-gray-400 mb-2 flex-wrap">
-                                                ${eventDate ? `<span class="flex items-center gap-1">
-                                                    <i class="fa-solid fa-calendar"></i>
-                                                    ${eventDate}
-                                                </span>` : ''}
-                                                ${event.location ? `<span class="flex items-center gap-1">
-                                                    <i class="fa-solid fa-location-dot"></i>
-                                                    ${event.location}
-                                                </span>` : ''}
-                                                <span class="flex items-center gap-1">
-                                                    <i class="fa-solid fa-source"></i>
-                                                    ${event.source}
-                                                </span>
+                                <div class="event-card" onclick="viewEventDetail(${event.id})">
+                                    <div style="display: flex; align-items: start; justify-content: space-between; gap: 16px; margin-bottom: 12px;">
+                                        <div style="flex: 1;">
+                                            <h3 class="event-title">${event.title}</h3>
+                                            <div class="event-meta">
+                                                ${eventDate ? `<span><i class="fa-solid fa-calendar"></i> ${eventDate}</span>` : ''}
+                                                ${event.location ? `<span><i class="fa-solid fa-location-dot"></i> ${event.location}</span>` : ''}
+                                                <span><i class="fa-solid fa-source"></i> ${event.source}</span>
                                             </div>
                                         </div>
-                                        <div class="flex items-center gap-2">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
                                             ${event.url ? `
-                                                <a href="${event.url}" target="_blank" class="px-3 py-1 bg-[#7b8dff] text-white rounded hover:bg-[#6a7dee] transition text-sm" onclick="event.stopPropagation()">
+                                                <a href="${event.url}" target="_blank" class="btn-primary" style="font-size: 13px; padding: 8px 12px;" onclick="event.stopPropagation()">
                                                     <i class="fa-solid fa-external-link"></i> Source
                                                 </a>
                                             ` : ''}
-                                            <button class="px-3 py-1 bg-[#4e6bff] text-white rounded hover:bg-[#3d5ae5] transition text-sm" onclick="event.stopPropagation(); viewEventDetail(${event.id})">
+                                            <button class="btn-primary" style="font-size: 13px; padding: 8px 12px;" onclick="event.stopPropagation(); viewEventDetail(${event.id})">
                                                 <i class="fa-solid fa-eye"></i> Details
                                             </button>
                                         </div>
                                     </div>
                                     ${event.description || event.date_text ? `
-                                        <div class="mt-3 pt-3 border-t border-[#2d3246]">
-                                            ${event.description ? `<p class="text-gray-300 leading-relaxed mb-2">${event.description}</p>` : ''}
-                                            ${event.date_text ? `<p class="text-gray-400 text-sm">${event.date_text}</p>` : ''}
+                                        <div class="event-description">
+                                            ${event.description ? `<p style="margin-bottom: 8px;">${event.description}</p>` : ''}
+                                            ${event.date_text ? `<p style="color: #9ca3af; font-size: 13px;">${event.date_text}</p>` : ''}
                                         </div>
                                     ` : ''}
                                 </div>
@@ -235,12 +322,11 @@ async function loadEventsSummary(filters = {}) {
         // Past events (limited)
         if (data.past_events && data.past_events.length > 0) {
             html += `
-                <div class="bg-[#0f172a] border border-[#2d3246] rounded-lg p-6">
-                    <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
-                        <i class="fa-solid fa-clock-rotate-left mr-2 text-[#7b8dff]"></i>
-                        Recent Past Events (${data.past_events.length})
+                <div class="section-card">
+                    <h2 style="color: #a5b4fc; font-size: 20px; font-weight: 600; margin-bottom: 16px;">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Recent Past Events (${data.past_events.length})
                     </h2>
-                    <div class="space-y-3">
+                    <div>
                         ${data.past_events.map((event) => {
                             let eventDate = '';
                             try {
@@ -257,17 +343,17 @@ async function loadEventsSummary(filters = {}) {
                             } catch (e) {}
                             
                             return `
-                                <div class="bg-[#1e293b] border border-[#2d3246] rounded-lg p-4 hover:border-[#7b8dff] transition cursor-pointer" onclick="viewEventDetail(${event.id})">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex-1">
-                                            <h3 class="text-white font-semibold mb-1">${event.title}</h3>
-                                            <div class="flex items-center gap-3 text-sm text-gray-400">
-                                                ${eventDate ? `<span>${eventDate}</span>` : ''}
-                                                ${event.location ? `<span><i class="fa-solid fa-location-dot"></i> ${event.location}</span>` : ''}
+                                <div class="event-card" onclick="viewEventDetail(${event.id})">
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <div style="flex: 1;">
+                                            <h3 style="color: #e6e8ef; font-weight: 600; margin-bottom: 4px;">${event.title}</h3>
+                                            <div style="color: #9ca3af; font-size: 13px;">
+                                                ${eventDate ? `<span style="margin-right: 12px;">${eventDate}</span>` : ''}
+                                                ${event.location ? `<span style="margin-right: 12px;"><i class="fa-solid fa-location-dot"></i> ${event.location}</span>` : ''}
                                                 <span>${event.source}</span>
                                             </div>
                                         </div>
-                                        <button class="ml-4 px-3 py-1 bg-[#4e6bff] text-white rounded hover:bg-[#3d5ae5] transition text-sm" onclick="event.stopPropagation(); viewEventDetail(${event.id})">
+                                        <button class="btn-primary" style="font-size: 13px; padding: 8px 12px;" onclick="event.stopPropagation(); viewEventDetail(${event.id})">
                                             <i class="fa-solid fa-eye"></i>
                                         </button>
                                     </div>
@@ -282,11 +368,11 @@ async function loadEventsSummary(filters = {}) {
         // No data message
         if (data.total_events === 0) {
             html = `
-                <div class="bg-[#0f172a] border border-[#2d3246] rounded-lg p-8 text-center">
-                    <i class="fa-solid fa-calendar-xmark text-4xl text-gray-500 mb-4"></i>
-                    <h3 class="text-xl font-semibold text-white mb-2">No Events Found</h3>
-                    <p class="text-gray-400 mb-4">No events found for the selected date range and filters.</p>
-                    <a href="/newsletter/sources" class="inline-block px-4 py-2 bg-[#7b8dff] text-white rounded hover:bg-[#6a7dee] transition">
+                <div class="section-card" style="text-align: center; padding: 48px;">
+                    <i class="fa-solid fa-calendar-xmark" style="font-size: 48px; color: #9ca3af; margin-bottom: 16px;"></i>
+                    <h3 style="color: #e6e8ef; font-size: 20px; font-weight: 600; margin-bottom: 8px;">No Events Found</h3>
+                    <p style="color: #9ca3af; margin-bottom: 16px;">No events found for the selected date range and filters.</p>
+                    <a href="/newsletter/sources" class="btn-primary">
                         Manage Sources
                     </a>
                 </div>
@@ -301,8 +387,8 @@ async function loadEventsSummary(filters = {}) {
     } catch (error) {
         console.error('Error loading events summary:', error);
         document.getElementById('events-summary-container').innerHTML = `
-            <div class="bg-red-900/20 border border-red-500 rounded-lg p-6">
-                <p class="text-red-400">Error loading events: ${error.message}</p>
+            <div class="section-card" style="border-color: #ef4444; background: rgba(239, 68, 68, 0.1);">
+                <p style="color: #ef4444;">Error loading events: ${error.message}</p>
             </div>
         `;
     }
