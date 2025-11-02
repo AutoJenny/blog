@@ -231,6 +231,8 @@ class BlogPipelineHeader {
         try {
             // First check if post's scheduled week matches viewed week
             let weekMismatch = false;
+            let targetPostId = postId;
+            
             if (viewedYear && viewedWeek) {
                 const scheduleResp = await fetch(`/planning/api/posts/${postId}`);
                 if (scheduleResp.ok) {
@@ -240,18 +242,60 @@ class BlogPipelineHeader {
                         const scheduledWeek = postData.schedule.week_number;
                         if (scheduledYear !== viewedYear || scheduledWeek !== viewedWeek) {
                             weekMismatch = true;
+                            
+                            // CRITICAL: Find the post that has the viewed week's theme
+                            try {
+                                // Get the week's schedule to find the theme
+                                const weekScheduleResp = await fetch(`/planning/api/calendar/schedule/${viewedYear}/${viewedWeek}`);
+                                if (weekScheduleResp.ok) {
+                                    const weekScheduleData = await weekScheduleResp.json();
+                                    if (weekScheduleData.schedule && Array.isArray(weekScheduleData.schedule)) {
+                                        // Find the theme for this week
+                                        const weekThemeEntry = weekScheduleData.schedule.find(s => s.idea_id);
+                                        
+                                        if (weekThemeEntry && weekThemeEntry.idea_id) {
+                                            // Find a post that has this theme (any week)
+                                            const allSchedulesResp = await fetch(`/planning/api/calendar/schedule/${viewedYear}/${viewedWeek}`);
+                                            // Actually, we need to search differently - find posts by theme idea_id
+                                            // Let's try to find it from the schedule entries
+                                            const postWithTheme = weekScheduleData.schedule.find(s => s.post_id && s.idea_id === weekThemeEntry.idea_id);
+                                            
+                                            if (postWithTheme && postWithTheme.post_id) {
+                                                targetPostId = postWithTheme.post_id;
+                                                console.log(`[Blog Pipeline Header] Week mismatch detected. Found post ${targetPostId} with week ${viewedYear}/${viewedWeek} theme`);
+                                            } else {
+                                                // No post scheduled for this week, but find ANY post with this theme
+                                                // Query all posts and find one with this theme in schedule
+                                                const postsResp = await fetch('/api/posts');
+                                                if (postsResp.ok) {
+                                                    const postsData = await postsResp.json();
+                                                    // Check each post's schedule for the theme
+                                                    for (const post of (postsData.posts || [])) {
+                                                        const postDetailResp = await fetch(`/planning/api/posts/${post.id}`);
+                                                        if (postDetailResp.ok) {
+                                                            const postDetail = await postDetailResp.json();
+                                                            if (postDetail.schedule && postDetail.schedule.idea_id === weekThemeEntry.idea_id) {
+                                                                targetPostId = post.id;
+                                                                console.log(`[Blog Pipeline Header] Found post ${targetPostId} with theme idea_id ${weekThemeEntry.idea_id}`);
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            } catch (e) {
+                                console.warn('[Blog Pipeline Header] Error finding post with week theme:', e);
+                            }
                         }
                     }
                 }
             }
 
-            // If week mismatch, don't show taxonomy (viewing a different week than post is scheduled for)
-            if (weekMismatch) {
-                taxonomyEl.textContent = '';
-                return;
-            }
-
-            const response = await fetch(`/planning/api/posts/${postId}/taxonomy`);
+            // Fetch taxonomy for the target post (either original or week's theme post)
+            const response = await fetch(`/planning/api/posts/${targetPostId}/taxonomy`);
             if (!response.ok) {
                 taxonomyEl.textContent = '';
                 return;
