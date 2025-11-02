@@ -480,6 +480,69 @@ def news_summary_page():
     return render_template('newsletter/news_summary.html')
 
 
+@bp.route('/newsletter/events/summary')
+def events_summary():
+    """Get events summary."""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        from newsletter.services.events_summary_service import generate_events_summary
+        
+        days_back = request.args.get('days_back', 30, type=int)
+        days_ahead = request.args.get('days_ahead', 90, type=int)
+        source_name = request.args.get('source', None, type=str)
+        location = request.args.get('location', None, type=str)
+        
+        summary = generate_events_summary(
+            days_back=days_back,
+            days_ahead=days_ahead,
+            source_name=source_name,
+            location=location
+        )
+        
+        # If requested as HTML page
+        if request.args.get('view') == 'page':
+            return render_template('newsletter/events_summary.html', summary=summary)
+        
+        # Otherwise return JSON
+        return jsonify({
+            'status': 'success',
+            'data': summary
+        })
+    except Exception as e:
+        logger.error(f"Error generating events summary: {e}", exc_info=True)
+        if request.args.get('view') == 'page':
+            return render_template('newsletter/events_summary.html', error=str(e))
+        return jsonify({'error': str(e)}), 500
+
+
+@bp.route('/newsletter/events')
+def events_summary_page():
+    """Events summary page UI."""
+    return render_template('newsletter/events_summary.html')
+
+
+@bp.route('/newsletter/events/<int:event_id>')
+def event_detail(event_id: int):
+    """Get detailed view of a single event."""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        from newsletter.services.events_summary_service import get_event_detail
+        
+        event = get_event_detail(event_id)
+        
+        if not event:
+            return render_template('newsletter/event_detail.html', error='Event not found'), 404
+        
+        return render_template('newsletter/event_detail.html', event=event)
+    except Exception as e:
+        logger.error(f"Error fetching event detail: {e}", exc_info=True)
+        return render_template('newsletter/event_detail.html', error=str(e)), 500
+
+
 @bp.route('/newsletter/news/reanalyze', methods=['POST'])
 def reanalyze_news():
     """Re-analyze existing news items with synopsis service."""
