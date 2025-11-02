@@ -251,16 +251,24 @@ document.addEventListener('DOMContentLoaded', function() {
             generateBtn.disabled = true;
             saveBtn.disabled = true;
             
-            // Call LLM generation API
+            // Call LLM generation API - pass year/week so backend can find correct post
+            const requestBody = {
+                post_id: targetPostId,  // Use the correct post_id for the week (or fallback)
+                expanded_idea: expandedIdeaData.expanded_idea
+            };
+            
+            // CRITICAL: Pass year/week parameters so backend can override post_id if wrong
+            if (year && week) {
+                requestBody.year = parseInt(year);
+                requestBody.week_number = parseInt(week);
+            }
+            
             const response = await fetch('/planning/api/taxonomy/generate', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    post_id: targetPostId,  // Use the correct post_id for the week
-                    expanded_idea: expandedIdeaData.expanded_idea
-                })
+                body: JSON.stringify(requestBody)
             });
             
             const data = await response.json();
