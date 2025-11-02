@@ -60,71 +60,59 @@ def parse_event_with_llm(event_data: Dict[str, Any]) -> Dict[str, Any]:
     description = event_data.get('description', '')
     url = event_data.get('url', '')
     
-    prompt = f"""You are parsing event information from a Scottish tourism website (VisitScotland). Extract structured data from this event entry.
+    prompt = f"""You are a JSON extraction tool. Your ONLY job is to extract structured data from this event entry and return it as valid JSON. Do NOT write code, explanations, or markdown. Return ONLY the JSON object.
 
 Event Title: {title}
 Date Text (from page): {date_text}
 Description: {description[:300] if description else '(none)'}
 URL: {url if url else '(none)'}
 
-Your task is to extract and parse:
+Extract and return this data as JSON:
 
-1. EVENT TITLE: Clean title without any date information. Remove date ranges, "every second week" type text, etc. Just the event name.
-   Example: "Genesis Scottish Open - 9 - 12 July 2026" → "Genesis Scottish Open"
-   Example: "Relaxed Morning: National Museum of FlightEvery second" → "Relaxed Morning: National Museum of Flight"
+1. TITLE: Clean event title without date information or recurring patterns.
+   - Remove: "9 - 12 July 2026", "Every second week", concatenated text like "FlightEvery"
+   - Keep: Just the event name
+   - Example: "Genesis Scottish Open - 9 - 12 July 2026" → "Genesis Scottish Open"
+   - Example: "Relaxed Morning: National Museum of FlightEvery second" → "Relaxed Morning: National Museum of Flight"
 
-2. START DATE: Parse the start date if available. Can be:
-   - Single date: "9 July 2026" → 2026-07-09
-   - Date range start: "9 - 12 July 2026" → 2026-07-09
-   - Month only: "August 2026" → 2026-08-01 (first of month)
-   - Month range: "July - August 2026" → 2026-07-01
-   - Today's year assumed if year missing
-   Return as YYYY-MM-DD or null if cannot be determined
+2. EVENT_DATE: Start date as YYYY-MM-DD or null
+   - "9 July 2026" → "2026-07-09"
+   - "9 - 12 July 2026" → "2026-07-09"
+   - "August 2026" → "2026-08-01"
+   - "July - August 2026" → "2026-07-01"
+   - Return null if cannot determine
 
-3. END DATE: Parse the end date if it's a date range.
-   - "9 - 12 July 2026" → 2026-07-12
-   - "15 - 18 July 2026" → 2026-07-18
-   - "July - August 2026" → 2026-08-31 (last day of month)
-   Return as YYYY-MM-DD or null if not a range or cannot be determined
+3. END_DATE: End date as YYYY-MM-DD or null (only for date ranges)
+   - "9 - 12 July 2026" → "2026-07-12"
+   - "July - August 2026" → "2026-08-31"
+   - Return null if not a range
 
-4. LOCATION: Extract location/venue if mentioned. Examples:
-   - "Renaissance Club in East Lothian" → "East Lothian" or "Renaissance Club, East Lothian"
-   - "Lews Castle on the stunning island of Lewis" → "Lewis" or "Lews Castle, Lewis"
-   - "Edinburgh Castle" → "Edinburgh"
-   - "Glasgow Green" → "Glasgow"
-   Return location string or null if not found
+4. LOCATION: Location/venue string or null
+   - Extract from description or title if mentioned
 
-5. RECURRING INFO: If the event is recurring (e.g., "every second week", "every Tuesday"), extract that pattern.
-   Examples:
+5. RECURRING_INFO: Recurring pattern string or null
    - "Every second Saturday" → "Every second Saturday"
    - "Every second week" → "Every second week"
-   - "Relaxed Morning... Every second" → "Every second week" (likely pattern)
-   Return recurring pattern string or null if one-time event
+   - Return null for one-time events
 
-6. SUMMARY: Combine all descriptive text (description + any details from title/date_text) into a single summary field.
-   Preserve all useful information but make it concise (2-3 sentences max).
+6. SUMMARY: 2-3 sentence summary combining description and details
 
-7. DATE TEXT PRESERVED: Keep the original date_text exactly as extracted from page (for reference).
+7. DATE_TEXT_PRESERVED: Original date_text exactly as provided
 
-IMPORTANT:
-- If title contains date info (like "9 - 12 July 2026"), extract it and remove from cleaned title
-- Handle complex formats: "World Pipe Band Championships - August 2026" (month only, no specific dates)
-- If year is missing, assume current year (2025) or next year if month has passed
-- Be intelligent about date ranges - "9 - 12 July" means July 9th to 12th
-- "July - August 2026" means the event spans both months
+8. PARSING_NOTES: Brief notes on parsing uncertainties or null
 
-Provide your response in JSON format:
+CRITICAL: Return ONLY valid JSON. No markdown code blocks, no explanations, no Python code. Just the JSON object starting with {{ and ending with }}.
+
 {{
-    "title": "<cleaned event title>",
-    "event_date": "<YYYY-MM-DD or null>",
-    "end_date": "<YYYY-MM-DD or null>",
-    "location": "<location string or null>",
-    "recurring_info": "<recurring pattern or null>",
-    "summary": "<2-3 sentence summary combining all descriptive text>",
-    "date_text_preserved": "<original date_text>",
-    "parsing_notes": "<brief notes about what was parsed and any uncertainties>"
-}}
-"""
+    "title": "",
+    "event_date": null,
+    "end_date": null,
+    "location": null,
+    "recurring_info": null,
+    "summary": "",
+    "date_text_preserved": "",
+    "parsing_notes": null
+}}"""
     
     try:
         # Use available model
@@ -141,18 +129,52 @@ Provide your response in JSON format:
             raise ValueError("LLM returned empty response for event parsing - cannot proceed without LLM")
         
         # Parse JSON from response
-        # Try to extract JSON, handling markdown code blocks and comments
-        # First, try to find JSON in code block
+        # Try multiple strategies to extract JSON
+        json_text = None
+        
+        # Strategy 1: Try to find JSON in markdown code block
         json_block_match = re.search(r'```json\s*(\{.*?\})\s*```', response, re.DOTALL)
         if json_block_match:
             json_text = json_block_match.group(1)
-        else:
-            # Try to find JSON object directly
-            json_match = re.search(r'\{[^}]+\}', response, re.DOTALL)
+        
+        # Strategy 2: Try to find JSON object directly (may be incomplete, try to fix)
+        if not json_text:
+            json_match = re.search(r'\{.*', response, re.DOTALL)
             if json_match:
                 json_text = json_match.group(0)
-            else:
-                raise ValueError(f"LLM response did not contain valid JSON. Response: {response[:500]}")
+                # Try to find the matching closing brace
+                brace_count = json_text.count('{') - json_text.count('}')
+                if brace_count > 0:
+                    # Missing closing braces, try to find them in the rest of the response
+                    remaining = response[json_match.end():]
+                    # Count how many more braces we need
+                    for i, char in enumerate(remaining):
+                        if char == '}':
+                            brace_count -= 1
+                            if brace_count == 0:
+                                json_text += remaining[:i+1]
+                                break
+                elif brace_count < 0:
+                    # Too many closing braces, trim from end
+                    closing_braces = abs(brace_count)
+                    for _ in range(closing_braces):
+                        last_brace = json_text.rfind('}')
+                        if last_brace > 0:
+                            json_text = json_text[:last_brace]
+        
+        # Strategy 3: Try to find JSON that starts the response (common pattern)
+        if not json_text:
+            if response.strip().startswith('{'):
+                json_text = response.strip()
+                # Try to balance braces
+                brace_count = json_text.count('{') - json_text.count('}')
+                if brace_count > 0:
+                    json_text += '}' * brace_count
+                elif brace_count < 0:
+                    json_text = json_text.rstrip('}')
+        
+        if not json_text:
+            raise ValueError(f"LLM response did not contain valid JSON. Response: {response[:500]}")
         
         # Remove JSON comments (// comments and /* */ comments) which break JSON parsing
         # This is a simple approach - remove // comments on lines
