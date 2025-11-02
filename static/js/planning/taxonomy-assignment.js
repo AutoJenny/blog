@@ -64,7 +64,45 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load current taxonomy assignment for post
     async function loadCurrentTaxonomy() {
         try {
-            const response = await fetch(`/planning/api/posts/${postId}/taxonomy`);
+            // SINGLE SOURCE OF TRUTH: Get the correct post_id for the viewed week
+            let targetPostId = postId;
+            
+            // Get week context from URL
+            let year, week;
+            if (window.WeekContext) {
+                const weekContext = window.WeekContext.getWeekContext();
+                if (weekContext) {
+                    year = weekContext.year;
+                    week = weekContext.week;
+                }
+            }
+            
+            // If we have week context, find the post for that week's theme
+            if (year && week) {
+                try {
+                    const scheduleResponse = await fetch(`/planning/api/calendar/schedule/${year}/${week}`);
+                    const scheduleData = await scheduleResponse.json();
+                    if (scheduleData.schedule && Array.isArray(scheduleData.schedule) && scheduleData.schedule.length > 0) {
+                        // Find the theme for this week
+                        const weekThemeSchedule = scheduleData.schedule.find(s => s.idea_id && s.item_classification === 'theme');
+                        if (weekThemeSchedule && weekThemeSchedule.idea_id) {
+                            // Use backend endpoint to find post by theme idea_id
+                            const postByThemeResp = await fetch(`/planning/api/posts/by-theme/${weekThemeSchedule.idea_id}`);
+                            if (postByThemeResp.ok) {
+                                const postByThemeData = await postByThemeResp.json();
+                                if (postByThemeData.success && postByThemeData.post_id) {
+                                    targetPostId = postByThemeData.post_id;
+                                    console.log(`[Taxonomy Display] Using post ${targetPostId} for week ${year}/${week} theme`);
+                                }
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Could not find post for week, using provided post_id:', e);
+                }
+            }
+            
+            const response = await fetch(`/planning/api/posts/${targetPostId}/taxonomy`);
             const data = await response.json();
             
             if (data.success && data.taxonomy.theme_id) {

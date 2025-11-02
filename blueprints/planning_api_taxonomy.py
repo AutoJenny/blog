@@ -284,7 +284,7 @@ Return only the JSON object, no other text."""
         
         # Parse JSON from response
         content = response['content'].strip()
-        logger.info(f"LLM raw response: {content[:1000]}")
+        logger.info(f"LLM raw response (first 2000 chars): {content[:2000]}")
         
         # Remove markdown code blocks if present
         if '```' in content:
@@ -296,10 +296,56 @@ Return only the JSON object, no other text."""
         
         # Extract JSON object (find first { to last })
         json_start = content.find('{')
-        json_end = content.rfind('}') + 1
+        json_end = content.rfind('}')
         
-        if json_start == -1 or json_end <= json_start:
-            logger.error(f"Could not find JSON in response. Full content: {content}")
+        # If no closing brace found, try to find it by counting braces
+        if json_end == -1 and json_start != -1:
+            # Count opening and closing braces to find where it should end
+            brace_count = 0
+            json_end = len(content)
+            for i in range(json_start, len(content)):
+                if content[i] == '{':
+                    brace_count += 1
+                elif content[i] == '}':
+                    brace_count -= 1
+                    if brace_count == 0:
+                        json_end = i + 1
+                        break
+        
+        if json_start == -1:
+            # No opening brace - try extracting IDs directly
+            logger.warn(f"No opening brace found. Trying direct ID extraction.")
+            theme_match = re.search(r'"theme_id":\s*(\d+)', content)
+            content_type_match = re.search(r'"content_type_id":\s*(\d+)', content)
+            format_match = re.search(r'"format_id":\s*(\d+)', content)
+            
+            if theme_match and content_type_match and format_match:
+                # Extract IDs directly and skip JSON parsing
+                reasoning_match = re.search(r'"reasoning":\s*"([^"]*)', content)
+                reasoning_text = reasoning_match.group(1) if reasoning_match else 'Auto-extracted (no JSON structure)'
+                
+                result = {
+                    'theme_id': int(theme_match.group(1)),
+                    'content_type_id': int(content_type_match.group(1)),
+                    'format_id': int(format_match.group(1)),
+                    'reasoning': reasoning_text
+                }
+                logger.info(f"Successfully extracted IDs without JSON structure: {result}")
+                # Skip to validation
+                json_content = None  # Signal that we already have result
+            else:
+                logger.error(f"Could not find JSON in response. Full content: {content}")
+                return jsonify({
+                    'success': False, 
+                    'error': 'Could not parse JSON from LLM response',
+                    'debug_info': {
+                        'response_preview': content[:500],
+                        'has_opening_brace': '{' in content,
+                        'has_closing_brace': '}' in content
+                    }
+                }), 500
+        elif json_end <= json_start:
+            logger.error(f"Invalid JSON structure. json_start={json_start}, json_end={json_end}. Full content: {content}")
             return jsonify({
                 'success': False, 
                 'error': 'Could not parse JSON from LLM response',
@@ -309,64 +355,98 @@ Return only the JSON object, no other text."""
                     'has_closing_brace': '}' in content
                 }
             }), 500
+        else:
+            json_content = content[json_start:json_end]
+            logger.info(f"Extracted JSON content: {json_content}")
         
-        json_content = content[json_start:json_end]
-        
-        # Try to clean up common JSON issues
-        # Remove trailing commas before closing braces/brackets
-        json_content = re.sub(r',(\s*[}\]])', r'\1', json_content)
-        
-        # If JSON appears truncated, try to fix common truncation issues
-        # Check if the last field (reasoning) might be incomplete
-        if not json_content.strip().endswith('}'):
-            # Try to close incomplete reasoning string and object
-            if '"reasoning":' in json_content and json_content.count('"') % 2 != 0:
-                # Reasoning string is incomplete, close it and the object
-                # Find the start of the reasoning value
-                reasoning_start = json_content.rfind('"reasoning":') + len('"reasoning":')
-                reasoning_value_start = json_content.find('"', reasoning_start) + 1
-                if reasoning_value_start > 0:
-                    # Close the string and object
-                    json_content = json_content[:reasoning_value_start] + json_content[reasoning_value_start:].rstrip().rstrip('"')
-                    json_content = json_content.rstrip().rstrip(',') + '"}'
-                    logger.info(f"Attempted to fix truncated JSON: {json_content[-100:]}")
-        
-        try:
-            result = json.loads(json_content)
-            logger.info(f"Successfully parsed JSON: {result}")
-        except json.JSONDecodeError as e:
-            logger.error(f"JSON parse error: {e}")
-            logger.error(f"Attempted to parse: {json_content}")
-            logger.error(f"Full LLM response: {content}")
+        # Only try to parse if we haven't already extracted result directly
+        if json_content is not None:
+            # Try to clean up common JSON issues
+            # Remove trailing commas before closing braces/brackets
+            json_content = re.sub(r',(\s*[}\]])', r'\1', json_content)
             
-            # Try one more time with even more aggressive fixes
-            # If reasoning is the problem, try extracting just the required fields
-            try:
-                # Try to extract just the IDs if present
+            # Remove any trailing newlines or whitespace
+            json_content = json_content.strip()
+            
+            # If JSON appears truncated (doesn't end with }), try to fix it OR extract IDs
+            if not json_content.endswith('}'):
+                # First try to extract IDs directly (more reliable than trying to fix truncated JSON)
                 theme_match = re.search(r'"theme_id":\s*(\d+)', json_content)
                 content_type_match = re.search(r'"content_type_id":\s*(\d+)', json_content)
                 format_match = re.search(r'"format_id":\s*(\d+)', json_content)
                 
                 if theme_match and content_type_match and format_match:
+                    # Extract IDs and reasoning directly - skip JSON parsing
+                    reasoning_match = re.search(r'"reasoning":\s*"([^"]*)', json_content)
+                    reasoning_text = reasoning_match.group(1) if reasoning_match else 'Auto-extracted from truncated response'
+                    
                     result = {
                         'theme_id': int(theme_match.group(1)),
                         'content_type_id': int(content_type_match.group(1)),
                         'format_id': int(format_match.group(1)),
-                        'reasoning': 'Auto-extracted from truncated response'
+                        'reasoning': reasoning_text
                     }
                     logger.info(f"Successfully extracted IDs from truncated JSON: {result}")
+                    json_content = None  # Skip JSON parsing
                 else:
-                    raise ValueError("Could not extract required IDs")
-            except Exception as extract_error:
-                return jsonify({
-                    'success': False, 
-                    'error': f'Invalid JSON from LLM: {str(e)}',
-                    'debug_info': {
-                        'json_content': json_content,
-                        'parse_error': str(e),
-                        'full_response_preview': content[:1000]
-                    }
-                }), 500
+                    # Try to fix incomplete reasoning string
+                    if '"reasoning":' in json_content:
+                        # Find the start of the reasoning value string
+                        reasoning_match = re.search(r'"reasoning":\s*"([^"]*)$', json_content)
+                        if reasoning_match:
+                            # The reasoning string is incomplete - try to close it properly
+                            # Find where the reasoning value starts
+                            reasoning_start_idx = json_content.rfind('"reasoning":')
+                            if reasoning_start_idx >= 0:
+                                # Find the opening quote after "reasoning":
+                                quote_start = json_content.find('"', reasoning_start_idx + len('"reasoning":'))
+                                if quote_start >= 0:
+                                    # Extract what we have, remove incomplete trailing quote/content, close properly
+                                    json_content = json_content[:quote_start + 1] + json_content[quote_start + 1:].rstrip().rstrip('"').rstrip()
+                                    json_content = json_content.rstrip().rstrip(',') + '"}'
+                                    logger.info(f"Attempted to fix incomplete reasoning: {json_content[-150:]}")
+            
+            # Try parsing the cleaned JSON (if we haven't already extracted result)
+            if json_content is not None:
+                try:
+                    result = json.loads(json_content)
+                    logger.info(f"Successfully parsed JSON: {result}")
+                except json.JSONDecodeError as e:
+                    logger.warn(f"JSON parse error: {e}")
+                    logger.warn(f"Attempted to parse: {json_content}")
+                    
+                    # CRITICAL: If parsing fails, try extracting IDs directly (most important data)
+                    # This handles truncated responses where reasoning string is incomplete
+                    theme_match = re.search(r'"theme_id":\s*(\d+)', json_content)
+                    content_type_match = re.search(r'"content_type_id":\s*(\d+)', json_content)
+                    format_match = re.search(r'"format_id":\s*(\d+)', json_content)
+                    
+                    if theme_match and content_type_match and format_match:
+                        # Extract reasoning if possible (even if incomplete)
+                        reasoning_match = re.search(r'"reasoning":\s*"([^"]*)', json_content)
+                        reasoning_text = reasoning_match.group(1) if reasoning_match else 'Auto-extracted from truncated response'
+                        
+                        result = {
+                            'theme_id': int(theme_match.group(1)),
+                            'content_type_id': int(content_type_match.group(1)),
+                            'format_id': int(format_match.group(1)),
+                            'reasoning': reasoning_text
+                        }
+                        logger.info(f"Successfully extracted IDs from truncated/invalid JSON: {result}")
+                    else:
+                        logger.error(f"Could not extract required IDs. Full LLM response: {content}")
+                        return jsonify({
+                            'success': False, 
+                            'error': f'Invalid JSON from LLM: {str(e)}',
+                            'debug_info': {
+                                'json_content': json_content,
+                                'parse_error': str(e),
+                                'full_response_preview': content[:1000],
+                                'has_theme_id': bool(theme_match),
+                                'has_content_type_id': bool(content_type_match),
+                                'has_format_id': bool(format_match)
+                            }
+                        }), 500
         
         # Validate the result
         theme_id = result.get('theme_id')
