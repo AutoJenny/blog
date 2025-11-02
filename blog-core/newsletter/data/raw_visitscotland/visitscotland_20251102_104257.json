@@ -1,0 +1,168 @@
+{
+  "source": "VisitScotland - Scottish Culture Events",
+  "base_url": "https://www.visitscotland.com/things-to-do/events/scottish-culture",
+  "extracted_at": "2025-11-02T10:42:57.856890",
+  "event_count": 20,
+  "events": [
+    {
+      "title": "Wigtown Book Festival",
+      "url": "https://www.wigtownbookfestival.com/",
+      "date_text": "26 September - 5 October 2025",
+      "description": "celebrate Scottish literature in our National Book Town this autumn, with events, workshops, theatre and more.",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/scottish-culture",
+      "extracted_at": "2025-11-02T10:42:57.818661"
+    },
+    {
+      "title": "Royal National Mòd",
+      "url": "http://www.ancomunn.co.uk/",
+      "date_text": "10 - 18 October 2025",
+      "description": "Scotland's main Gaelic cultural festival brings together a huge range of traditions, including music performances, singing, Highland dancing and even the sport of shinty. It's in Lochaber this year.",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/scottish-culture",
+      "extracted_at": "2025-11-02T10:42:57.818697"
+    },
+    {
+      "title": "Scottish Storytelling Festival",
+      "url": "https://www.sisf.org.uk/",
+      "date_text": "22 October - 1 November 2025",
+      "description": "with a huge range of live storytelling events, there are plenty of tales to get swept up in during this 18 day festival in Edinburgh. Settle in and listen as storytellers from Scotland and beyond weave their tales around you.",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/scottish-culture",
+      "extracted_at": "2025-11-02T10:42:57.818718"
+    },
+    {
+      "title": "Celtic Connections",
+      "url": "http://www.celticconnections.com/Pages/default.aspx",
+      "date_text": "15 January - 1 February 2026",
+      "description": "the UK's premier celebration of Celtic music. Hear folk, roots and world music from more than 2,000 musicians in Glasgow.",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/scottish-culture",
+      "extracted_at": "2025-11-02T10:42:57.818923"
+    },
+    {
+      "title": "Fort William Mountain Festival",
+      "url": "http://www.mountainfestival.co.uk/",
+      "date_text": "Festival- February 2026",
+      "description": "hear stories of epic adventures and survival from world-class speakers, plus amazing films and much more.",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/scottish-culture",
+      "extracted_at": "2025-11-02T10:42:57.819075"
+    },
+    {
+      "title": "Spirit of Speyside Whisky Festival",
+      "url": "https://www.spiritofspeyside.com/",
+      "date_text": "29 April - 4 May 2026",
+      "description": "a five day whisky extravaganza in the renowned whisky region of Speyside, located east of Inverness. Events include special whisky tastings, exclusive tours of distilleries, music performances and whisky dinners.",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/scottish-culture",
+      "extracted_at": "2025-11-02T10:42:57.819115"
+    },
+    {
+      "title": "Shetland Folk Festival",
+      "url": "https://www.shetlandfolkfestival.com/",
+      "date_text": "30 April - 3 May 2026",
+      "description": "Don't miss the next installment of this legendary event, the UK's most northerly folk festival, which brings eclectic and innovative line ups of performers to the isles from traditional folk to Americana music.",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/scottish-culture",
+      "extracted_at": "2025-11-02T10:42:57.819134"
+    },
+    {
+      "title": "Edinburgh Tartan Parade",
+      "url": "https://www.eventbrite.co.uk/e/edinburgh-tartan-parade-tickets-1602609350709",
+      "date_text": "9 May 2026",
+      "description": "watch the amazing procession of kilts, pipe bands, dancers and more as they parade down the historic Royal Mile in celebration of Edinburgh's 900th anniversary.",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/scottish-culture",
+      "extracted_at": "2025-11-02T10:42:57.819158"
+    },
+    {
+      "title": "Orkney Nature Festival",
+      "url": "https://www.orkneycommunities.co.uk/orkneynaturefestival/2025festival.asp",
+      "date_text": "11 - 17 May 2026",
+      "description": "Join the celebrations and enjoy the best of wild Orkney. Take part in activities such as cruises around some of the largest cliffs in Britain, nature photography classes with local experts, guided walks amongst choruses of birdsong, and maybe even discover an island you’ve not visited before.",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/scottish-culture",
+      "extracted_at": "2025-11-02T10:42:57.819171"
+    },
+    {
+      "title": "Melrose Rugby Sevens",
+      "url": "https://melrose7s.co.uk/",
+      "date_text": "Sevens- May 2026",
+      "description": "the premier event of the Rugby Sevens calendar, see teams competing in this fast and furious competition in the town where it all began.",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/scottish-culture",
+      "extracted_at": "2025-11-02T10:42:57.819197"
+    },
+    {
+      "title": "Orkney Folk Festival",
+      "url": "https://orkneyfolkfestival.com/",
+      "date_text": "Festival- May 2026",
+      "description": "bringing together local and visiting acts, this celebration of music, culture and tradition has been a staple on Orkney since the 80's and is a must do!",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/scottish-culture",
+      "extracted_at": "2025-11-02T10:42:57.819218"
+    },
+    {
+      "title": "Scottish Traditional Boat Festival",
+      "url": "https://www.stbfportsoy.org/",
+      "date_text": "Festival- June 2026",
+      "description": "soak up the charm of this quirky traditional boat festival. See large historic boats and tuck into tasty food and drink, all set against the backdrop of Portsoy village on the beautiful Banffshire coast.",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/scottish-culture",
+      "extracted_at": "2025-11-02T10:42:57.819284"
+    },
+    {
+      "title": "Royal Highland Show",
+      "url": "https://www.royalhighlandshow.org/",
+      "date_text": "18 - 21 June 2026",
+      "description": "Scotland's largest farming and countryside showcase, located just outside Edinburgh. See horse and cattle showing, try mouth-watering local produce, browse arts and crafts and more.",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/scottish-culture",
+      "extracted_at": "2025-11-02T10:42:57.819294"
+    },
+    {
+      "title": "Genesis Scottish Open",
+      "url": "https://www.europeantour.com/dpworld-tour/genesis-scottish-open-2025/",
+      "date_text": "9 - 12 July 2026",
+      "description": "see top golfers competing at the Renaissance Club in East Lothian for the sixth consecutive year.",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/scottish-culture",
+      "extracted_at": "2025-11-02T10:42:57.819324"
+    },
+    {
+      "title": "Hebridean Celtic Festival",
+      "url": "https://www.hebceltfest.com/",
+      "date_text": "15 - 18 July 2026",
+      "description": "an enchanting music festival, held in the grounds of Lews Castle on the stunning island of Lewis. Hear music celebrating Celtic cultures, tinged with contemporary, rock and indie-folk influences.",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/scottish-culture",
+      "extracted_at": "2025-11-02T10:42:57.819341"
+    },
+    {
+      "title": "Royal Edinburgh Military Tattoo",
+      "url": "https://www.edintattoo.co.uk/",
+      "date_text": "1 - 23 August 2026",
+      "description": "a spectacular show of military bands, dancing and piping performances, set against the unforgettable backdrop of Edinburgh Castle. The Tattoo is one of Edinburgh's sevensummer festivalstaking place in June, July and August.",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/scottish-culture",
+      "extracted_at": "2025-11-02T10:42:57.819353"
+    },
+    {
+      "title": "World Pipe Band Championships",
+      "url": "http://www.theworlds.co.uk/Pages/home.aspx",
+      "date_text": "Championships- August 2026",
+      "description": "enjoy the sight and sound of hundreds of pipers competing in the world's top piping tournament on Glasgow Green. Don't miss the grand finale, when all the pipers on site perform together in unison.",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/scottish-culture",
+      "extracted_at": "2025-11-02T10:42:57.819373"
+    },
+    {
+      "title": "Piping Live!",
+      "url": "http://www.pipinglive.co.uk/",
+      "date_text": "August 2026",
+      "description": "based in Glasgow, this unique festival celebrates all things piping. See the Masters Solo Piping Competition, try piping yourself at The National Piping Centre and sample fine local produce at the Pipers' Market.",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/scottish-culture",
+      "extracted_at": "2025-11-02T10:42:57.819416"
+    },
+    {
+      "title": "Cowal Highland Gathering",
+      "url": "http://www.cowalgathering.com/",
+      "date_text": "Gathering- August 2026",
+      "description": "held on Scotland's beautiful west coast in Dunoon, Argyll, the Cowal Highland Gathering is billed as the largestHighland gamesin the world and dates back to 1894. See some of the country's best pipers, Highland dancers, heavy events and much more.",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/scottish-culture",
+      "extracted_at": "2025-11-02T10:42:57.819439"
+    },
+    {
+      "title": "Largs Viking Festival",
+      "url": "https://largsvikingfestival.co.uk/",
+      "date_text": "Festival- September 2026",
+      "description": "a Viking themed festival that commemorates the Battle of Largs in 1263, between the Scottish King Alexander III and Norwegian King Håkon IV. Explore the living history Viking Village, see owl demonstrations and watch the famous battle re-enactment, burning of the long ship and fireworks display.",
+      "source_url": "https://www.visitscotland.com/things-to-do/events/scottish-culture",
+      "extracted_at": "2025-11-02T10:42:57.819464"
+    }
+  ]
+}

@@ -140,10 +140,36 @@ Provide your response in JSON format:
             raise ValueError("LLM returned empty response for event parsing - cannot proceed without LLM")
         
         # Parse JSON from response
-        json_match = re.search(r'\{[^}]+\}', response, re.DOTALL)
-        if json_match:
+        # Try to extract JSON, handling markdown code blocks and comments
+        # First, try to find JSON in code block
+        json_block_match = re.search(r'```json\s*(\{.*?\})\s*```', response, re.DOTALL)
+        if json_block_match:
+            json_text = json_block_match.group(1)
+        else:
+            # Try to find JSON object directly
+            json_match = re.search(r'\{[^}]+\}', response, re.DOTALL)
+            if json_match:
+                json_text = json_match.group(0)
+            else:
+                raise ValueError(f"LLM response did not contain valid JSON. Response: {response[:500]}")
+        
+        # Remove JSON comments (// comments and /* */ comments) which break JSON parsing
+        # This is a simple approach - remove // comments on lines
+        lines = json_text.split('\n')
+        cleaned_lines = []
+        for line in lines:
+            # Remove // comments but preserve // in URLs
+            if '//' in line and 'http' not in line.lower():
+                line = line.split('//')[0].rstrip()
+            cleaned_lines.append(line)
+        json_text = '\n'.join(cleaned_lines)
+        
+        # Remove /* */ block comments
+        json_text = re.sub(r'/\*.*?\*/', '', json_text, flags=re.DOTALL)
+        
+        if json_text:
             try:
-                parsed = json.loads(json_match.group(0))
+                parsed = json.loads(json_text)
                 
                 # Convert date strings to date objects
                 event_date = None
