@@ -653,11 +653,25 @@ class BlogPipelineHeader {
             return;
         }
         
-        // Check if we've already updated links for this week/year combination
-        // Use a cache key based on URL to avoid redundant updates
-        const cacheKey = `navLinksUpdated_${year}_${weekNumber}_${currentUrl}`;
-        if (this.linksUpdated && sessionStorage.getItem(cacheKey) === 'true') {
-            console.log('[Blog Pipeline Header] Links already updated for this week, skipping');
+        // CRITICAL: Clear the flag if URL week/year has changed
+        // This ensures we update links when week changes
+        const lastUpdatedUrl = sessionStorage.getItem('lastNavLinksUrl');
+        if (lastUpdatedUrl && lastUpdatedUrl !== currentUrl) {
+            console.log('[Blog Pipeline Header] URL changed, clearing update flag');
+            this.linksUpdated = false;
+            // Clear old cache entries
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                if (key && key.startsWith('navLinksUpdated_')) {
+                    sessionStorage.removeItem(key);
+                }
+            }
+        }
+        
+        // Check if we've already updated links for THIS exact URL
+        // This prevents redundant updates but allows updates when URL changes
+        if (this.linksUpdated && lastUpdatedUrl === currentUrl) {
+            console.log('[Blog Pipeline Header] Links already updated for this URL, skipping');
             return;
         }
         
@@ -709,8 +723,8 @@ class BlogPipelineHeader {
             }
         });
         
-        // Mark as updated for this URL/week combination
-        sessionStorage.setItem(cacheKey, 'true');
+        // Mark as updated for this URL
+        sessionStorage.setItem('lastNavLinksUrl', currentUrl);
         this.linksUpdated = true;
         
         console.log(`[Blog Pipeline Header] Updated ${updatedCount} of ${navLinks.length} links`);
