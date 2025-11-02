@@ -234,15 +234,19 @@ Your task:
    - "Local council decision" → Historical=5, Cultural=10, Quirky=15, Economic=20, Political=35 (average=17 → score 2.3)
    - "Woman charged after patient records accessed in NHS data breach" → Historical=5, Cultural=5, Quirky=5, Economic=10, Political=15 (average=8 → score 1.7) - CRIME/LOCAL ONLY, very low relevance
    - "Man arrested after woman found dead following flat fire" → Historical=5, Cultural=5, Quirky=5, Economic=5, Political=5 (average=5 → score 1.4) - CRIME, minimal diaspora interest
+   - "Scotland player ratings in USA drubbing as two men land 10s" → Historical=5, Cultural=10, Quirky=15, Economic=5, Political=5 (average=8 → score 1.7) - SPORTS REPORT, routine match coverage
+   - "Yeol Eum Son hits a high with the Scottish National Orchestra" → Historical=5, Cultural=30, Quirky=15, Economic=10, Political=5 (average=13 → score 2.0) - PERFORMANCE REVIEW, ephemeral entertainment
    - "Archaeological discovery at Scottish castle" → Historical=90, Cultural=70, Quirky=60, Economic=50, Political=20 (average=58 → score 5.6)
    - "Scottish language revival program" → Historical=60, Cultural=95, Quirky=50, Economic=40, Political=50 (average=59 → score 5.7)
 
    SPECIAL INSTRUCTIONS:
    - CRIME STORIES (arrests, charges, murders, fires, etc.): Score ALL dimensions 1-10. These are of minimal interest to diaspora unless they involve historical/cultural significance. Average should be 5-10 → final score 1.4-2.0.
+   - SPORTS REPORTS (match reports, player ratings, game coverage, team news): Score ALL dimensions 1-15. These are ephemeral and of no interest to diaspora unless they involve historical/cultural significance (e.g., historic achievement). Average should be 5-10 → final score 1.4-2.0.
+   - PERFORMANCE REVIEWS (concert reviews, theatre reviews, film reviews, art exhibitions): Score most dimensions 5-20 unless they involve major cultural/historical significance (e.g., premier of work about Scottish history). These are ephemeral entertainment that doesn't matter to diaspora. Average should be 10-15 → final score 1.8-2.3.
    - LOCAL-ONLY STORIES (council decisions, local infrastructure, neighborhood news): Score most dimensions 5-20 unless they have broader Scottish significance. These are routine governance that doesn't matter to diaspora.
-   - ROUTINE BREAKING NEWS (sports scores, daily politics, weather reports): Score 10-30 on most dimensions unless culturally/historically significant.
+   - ROUTINE BREAKING NEWS (daily politics, weather reports): Score 10-30 on most dimensions unless culturally/historically significant.
 
-   MOST daily news stories should have MOST dimensions in the 10-40 range. Be strict and use LOW scores! Crime and local-only stories should score 1-2.
+   MOST daily news stories should have MOST dimensions in the 10-40 range. Be strict and use LOW scores! Crime, sports, and performance reviews should score 1-2.
 
 2. Generate a brief synopsis (2-3 sentences) summarizing the key points relevant to Scottish heritage/culture from a diaspora perspective.
 
@@ -374,20 +378,37 @@ def process_news_with_synopsis(item: Dict[str, Any], cache_results: bool = True)
     logger.info(f"Generating synopsis for: {title}")
     result = generate_article_synopsis(title, article_content, url)
     
-    # Post-process: Detect crime/local-only keywords and cap score if needed
+    # Post-process: Detect crime/sports/performance keywords and cap score if needed
     # This is a safety net in case LLM doesn't follow instructions perfectly
     title_lower = title.lower()
     crime_keywords = ['arrested', 'arrest', 'charged', 'charge', 'murder', 'killed', 'death', 'dead', 
                      'fire', 'crime', 'assault', 'attack', 'stabbing', 'shooting', 'robbery', 'theft',
                      'breach', 'data breach', 'hack', 'hacking', 'violence', 'incident']
+    sports_keywords = ['player ratings', 'match report', 'game coverage', 'vs ', ' v ', 'beat ', 'defeat', 
+                      'league', 'cup final', 'championship', 'premiership', 'football', 'rugby', 'cricket',
+                      'scored', 'goal', 'try', 'win', 'loss', 'draw']
+    performance_keywords = ['review', 'concert review', 'theatre review', 'film review', 'art review',
+                           'hits a high', 'performance', 'premiere', 'première', 'exhibition review']
     
     is_crime_story = any(kw in title_lower for kw in crime_keywords)
+    is_sports_report = any(kw in title_lower for kw in sports_keywords)
+    is_performance_review = any(kw in title_lower for kw in performance_keywords)
     
     if is_crime_story and result['suitability_score'] > 2.0:
         # Force crime stories to max 2.0 regardless of LLM score
         logger.info(f"Capping crime story score from {result['suitability_score']} to 2.0: {title[:50]}")
         result['suitability_score'] = min(2.0, result['suitability_score'])
         result['suitability_notes'] = f"{result['suitability_notes']} [Auto-capped: crime story detected]"
+    elif is_sports_report and result['suitability_score'] > 2.0:
+        # Force sports reports to max 2.0 regardless of LLM score
+        logger.info(f"Capping sports report score from {result['suitability_score']} to 2.0: {title[:50]}")
+        result['suitability_score'] = min(2.0, result['suitability_score'])
+        result['suitability_notes'] = f"{result['suitability_notes']} [Auto-capped: sports report detected]"
+    elif is_performance_review and result['suitability_score'] > 2.3:
+        # Force performance reviews to max 2.3 regardless of LLM score
+        logger.info(f"Capping performance review score from {result['suitability_score']} to 2.3: {title[:50]}")
+        result['suitability_score'] = min(2.3, result['suitability_score'])
+        result['suitability_notes'] = f"{result['suitability_notes']} [Auto-capped: performance review detected]"
     
     # Note: We return the item even if below threshold - let caller decide what to do with it
     # This allows re-analysis to update ALL scores, not just those above threshold
@@ -512,11 +533,12 @@ def get_news_items(days_back: int = 7) -> List[Dict[str, Any]]:
             suitability_score >= 3.0
             OR suitability_score IS NULL
           )
-          -- Exclude crime stories that scored too high (likely analyzed with old system)
+          -- Exclude crime stories, sports reports, and performance reviews that scored too high
           -- Use position() instead of LIKE to avoid placeholder issues
           AND NOT (
             suitability_score > 2.0
             AND (
+              -- Crime keywords
               POSITION('arrested' IN LOWER(title)) > 0
               OR POSITION('arrest' IN LOWER(title)) > 0
               OR POSITION('charged' IN LOWER(title)) > 0
@@ -526,6 +548,26 @@ def get_news_items(days_back: int = 7) -> List[Dict[str, Any]]:
               OR POSITION('death' IN LOWER(title)) > 0
               OR (POSITION('fire' IN LOWER(title)) > 0 AND POSITION('found' IN LOWER(title)) > 0)
               OR POSITION('breach' IN LOWER(title)) > 0
+              -- Sports keywords
+              OR POSITION('player ratings' IN LOWER(title)) > 0
+              OR POSITION('match report' IN LOWER(title)) > 0
+              OR (POSITION(' vs ' IN LOWER(title)) > 0)
+              OR (POSITION(' v ' IN LOWER(title)) > 0 AND POSITION('beat' IN LOWER(title)) > 0)
+              OR POSITION('cup final' IN LOWER(title)) > 0
+              OR POSITION('championship' IN LOWER(title)) > 0
+              -- Performance review keywords
+              OR (POSITION('review' IN LOWER(title)) > 0 AND (POSITION('concert' IN LOWER(title)) > 0 OR POSITION('theatre' IN LOWER(title)) > 0 OR POSITION('film' IN LOWER(title)) > 0 OR POSITION('art' IN LOWER(title)) > 0))
+              OR (POSITION('hits a high' IN LOWER(title)) > 0)
+            )
+          )
+          -- Also exclude performance reviews scoring above 2.3
+          AND NOT (
+            suitability_score > 2.3
+            AND (
+              POSITION('review' IN LOWER(title)) > 0
+              OR POSITION('performance' IN LOWER(title)) > 0
+              OR POSITION('premiere' IN LOWER(title)) > 0
+              OR POSITION('première' IN LOWER(title)) > 0
             )
           )
         ORDER BY 
