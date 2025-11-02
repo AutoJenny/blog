@@ -118,9 +118,55 @@ def generate_taxonomy():
         data = request.get_json()
         expanded_idea = data.get('expanded_idea')
         post_id = data.get('post_id')
+        # CRITICAL: Accept year/week parameters to find the correct post for assignment
+        year = data.get('year')
+        week_number = data.get('week_number')
         
         if not expanded_idea:
             return jsonify({'success': False, 'error': 'expanded_idea is required'}), 400
+        
+        # CRITICAL: If year/week provided, find the correct post_id for that week's theme
+        # This ensures taxonomy is assigned to the right post, not the URL's post_id
+        if year and week_number and post_id:
+            with db_manager.get_cursor() as cursor:
+                # Find the theme for this week
+                cursor.execute("""
+                    SELECT cs.idea_id
+                    FROM calendar_schedule cs
+                    JOIN calendar_ideas ci ON cs.idea_id = ci.id
+                    WHERE cs.year = %s 
+                      AND cs.week_number = %s
+                      AND ci.item_classification = 'theme'
+                    ORDER BY cs.created_at DESC
+                    LIMIT 1
+                """, (year, week_number))
+                
+                week_theme = cursor.fetchone()
+                
+                if week_theme:
+                    theme_idea_id = week_theme['idea_id']
+                    logger.info(f"Week {year}/{week_number} has theme idea_id {theme_idea_id}")
+                    
+                    # Find any post that has this theme (regardless of which week)
+                    cursor.execute("""
+                        SELECT cs2.post_id
+                        FROM calendar_schedule cs2
+                        WHERE cs2.idea_id = %s
+                          AND cs2.post_id IS NOT NULL
+                        ORDER BY cs2.created_at DESC
+                        LIMIT 1
+                    """, (theme_idea_id,))
+                    
+                    theme_post = cursor.fetchone()
+                    
+                    if theme_post and theme_post['post_id']:
+                        # Check if the found post has a different theme_id than what the LLM will generate
+                        # If so, use the theme's post instead of the URL's post_id
+                        old_post_id = post_id
+                        post_id = theme_post['post_id']
+                        logger.info(f"Found post {post_id} with theme idea_id {theme_idea_id} (instead of URL post_id {old_post_id})")
+                    else:
+                        logger.warn(f"No post found with theme idea_id {theme_idea_id}, using provided post_id {post_id}")
         
         # Fetch all taxonomy items from database
         with db_manager.get_cursor() as cursor:
@@ -350,6 +396,59 @@ Return only the JSON object, no other text."""
                     'error': f'Content type {content_type_id} does not belong to theme {theme_id}'
                 }), 400
         
+        # CRITICAL: If year/week provided, validate that post_id matches the week's theme
+        # This prevents assigning wrong taxonomy when viewing a different week
+        if post_id and year and week_number:
+            with db_manager.get_cursor() as cursor:
+                # Check if the post_id being used has a different theme than what we generated
+                cursor.execute("""
+                    SELECT p.theme_id, cs.idea_id as schedule_idea_id,
+                           ci.item_classification
+                    FROM post p
+                    LEFT JOIN calendar_schedule cs ON p.id = cs.post_id
+                    LEFT JOIN calendar_ideas ci ON cs.idea_id = ci.id
+                    WHERE p.id = %s
+                    ORDER BY cs.created_at DESC
+                    LIMIT 1
+                """, (post_id,))
+                
+                post_check = cursor.fetchone()
+                
+                # Find the week's theme
+                cursor.execute("""
+                    SELECT cs.idea_id
+                    FROM calendar_schedule cs
+                    JOIN calendar_ideas ci ON cs.idea_id = ci.id
+                    WHERE cs.year = %s 
+                      AND cs.week_number = %s
+                      AND ci.item_classification = 'theme'
+                    ORDER BY cs.created_at DESC
+                    LIMIT 1
+                """, (year, week_number))
+                
+                week_theme_check = cursor.fetchone()
+                
+                # If post's schedule theme doesn't match week's theme, find the correct post
+                if week_theme_check and post_check:
+                    if post_check['schedule_idea_id'] != week_theme_check['idea_id']:
+                        logger.warn(f"Post {post_id} theme mismatch: post has idea_id {post_check['schedule_idea_id']}, week has {week_theme_check['idea_id']}")
+                        
+                        # Find post with the week's theme
+                        cursor.execute("""
+                            SELECT cs2.post_id
+                            FROM calendar_schedule cs2
+                            WHERE cs2.idea_id = %s
+                              AND cs2.post_id IS NOT NULL
+                            ORDER BY cs2.created_at DESC
+                            LIMIT 1
+                        """, (week_theme_check['idea_id'],))
+                        
+                        correct_post = cursor.fetchone()
+                        
+                        if correct_post and correct_post['post_id']:
+                            logger.info(f"Redirecting taxonomy assignment from post {post_id} to post {correct_post['post_id']} (matches week {year}/{week_number} theme)")
+                            post_id = correct_post['post_id']
+        
         # If post_id provided, automatically assign the taxonomy
         if post_id:
             try:
@@ -359,6 +458,7 @@ Return only the JSON object, no other text."""
                         SET theme_id = %s, content_type_id = %s, format_id = %s, updated_at = NOW()
                         WHERE id = %s
                     """, (theme_id, content_type_id, format_id, post_id))
+                    logger.info(f"Assigned taxonomy to post {post_id}: theme={theme_id}, content_type={content_type_id}, format={format_id}")
             except Exception as e:
                 logger.error(f"Error auto-assigning taxonomy to post: {e}")
                 # Don't fail the request, just log the error
