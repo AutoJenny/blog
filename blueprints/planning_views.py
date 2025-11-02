@@ -44,7 +44,5 @@ def planning_research(post_id):
     return render_template('planning/research/index.html', 
                           post_id=post_id, blueprint_name='planning')
 
-def planning_old_interface(post_id):
-    """Old interface page"""
-    return render_template('planning/old_interface.html', 
-                          post_id=post_id, blueprint_name='planning')
+# ARCHIVED: planning_old_interface function removed - old interface system has been archived
+# See ARCHIVED_OLD_WORKFLOW/ for archived code

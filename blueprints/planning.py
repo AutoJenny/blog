@@ -14,7 +14,7 @@ import re
 logger = logging.getLogger(__name__)
 
 # Import functions from new modules
-from blueprints.planning_views import planning_dashboard as dashboard_func, planning_post_overview as post_overview_func, planning_concept as concept_func, categories_manage as categories_func, planning_research as research_func, planning_old_interface as old_interface_func
+from blueprints.planning_views import planning_dashboard as dashboard_func, planning_post_overview as post_overview_func, planning_concept as concept_func, categories_manage as categories_func, planning_research as research_func
 from blueprints.planning_calendar_clean import planning_calendar as calendar_func, planning_calendar_view as calendar_view_func, planning_calendar_week_view as calendar_week_view_func, planning_calendar_ideas as ideas_func, planning_calendar_ideas_week as ideas_week_func
 from blueprints.planning_calendar import planning_calendar_taxonomy as taxonomy_func
 from blueprints.planning_concept import planning_concept_brainstorm as brainstorm_func, planning_concept_section_structure as section_structure_func, planning_concept_topic_allocation as topic_allocation_func, planning_concept_titling as titling_func, planning_concept_outline as outline_func, planning_research_sources as sources_func, planning_research_visuals as visuals_func, planning_research_prompts as prompts_func, planning_research_verification as verification_func
@@ -68,10 +68,8 @@ def planning_research(post_id):
     """Planning research"""
     return research_func(post_id)
 
-@bp.route('/posts/<int:post_id>/old-interface')
-def planning_old_interface(post_id):
-    """Planning old interface"""
-    return old_interface_func(post_id)
+# ARCHIVED: planning_old_interface route removed - old interface system has been archived
+# See ARCHIVED_OLD_WORKFLOW/ for archived code
 
 # ============================================================================
 # CALENDAR FUNCTIONS (imported from planning_calendar.py)
