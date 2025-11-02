@@ -24,11 +24,9 @@ def api_posts_expanded_idea(post_id):
             # If week context is provided, fetch expanded idea for that week's selected theme/post
             if url_year and url_week:
                 with db_manager.get_cursor() as cursor:
-                    # CRITICAL: Find the post that is ACTUALLY scheduled for this week with a theme
-                    # The schedule entry's year/week MUST match the requested year/week
-                    # This ensures we get the correct post for the week being viewed
+                    # STEP 1: Try to find a post directly scheduled for this week with a theme
                     cursor.execute("""
-                        SELECT cs.post_id, pd.expanded_idea, ci.idea_title
+                        SELECT cs.post_id, pd.expanded_idea, ci.idea_title, ci.id as theme_id
                         FROM calendar_schedule cs
                         LEFT JOIN post_development pd ON cs.post_id = pd.post_id
                         LEFT JOIN calendar_ideas ci ON cs.idea_id = ci.id
@@ -50,8 +48,48 @@ def api_posts_expanded_idea(post_id):
                             'success': True,
                             'expanded_idea': week_result['expanded_idea']
                         })
-                    else:
-                        logger.warn(f"No expanded idea found for week {url_year}/{url_week} with theme")
+                    
+                    # STEP 2: If no post scheduled for this week, find the theme for this week and look for ANY post with that theme
+                    cursor.execute("""
+                        SELECT ci.id as theme_id, ci.idea_title as theme_title
+                        FROM calendar_schedule cs
+                        JOIN calendar_ideas ci ON cs.idea_id = ci.id
+                        WHERE cs.year = %s 
+                          AND cs.week_number = %s
+                          AND ci.item_classification = 'theme'
+                        ORDER BY cs.created_at DESC
+                        LIMIT 1
+                    """, (url_year, url_week))
+                    
+                    week_theme = cursor.fetchone()
+                    
+                    if week_theme:
+                        logger.info(f"Week {url_year}/{url_week} has theme: {week_theme['theme_title']} (ID: {week_theme['theme_id']})")
+                        
+                        # Now find any post that has this theme scheduled (regardless of which week) and has an expanded_idea
+                        cursor.execute("""
+                            SELECT cs2.post_id, pd.expanded_idea, ci2.idea_title
+                            FROM calendar_schedule cs2
+                            LEFT JOIN post_development pd ON cs2.post_id = pd.post_id
+                            LEFT JOIN calendar_ideas ci2 ON cs2.idea_id = ci2.id
+                            WHERE cs2.idea_id = %s
+                              AND cs2.post_id IS NOT NULL
+                              AND pd.expanded_idea IS NOT NULL
+                              AND pd.expanded_idea != ''
+                            ORDER BY cs2.created_at DESC
+                            LIMIT 1
+                        """, (week_theme['theme_id'],))
+                        
+                        theme_post_result = cursor.fetchone()
+                        
+                        if theme_post_result and theme_post_result['expanded_idea']:
+                            logger.info(f"Found expanded idea for theme '{week_theme['theme_title']}': post {theme_post_result['post_id']}")
+                            return jsonify({
+                                'success': True,
+                                'expanded_idea': theme_post_result['expanded_idea']
+                            })
+                    
+                    logger.warn(f"No expanded idea found for week {url_year}/{url_week}")
             
             # Fallback: fetch expanded idea for the requested post_id (original behavior)
             with db_manager.get_cursor() as cursor:

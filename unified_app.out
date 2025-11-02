@@ -1217,3 +1217,54 @@ LINE 10:                                 AND is_selected = TRUE
 2025-11-02 09:38:53,370 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:38:53] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
 2025-11-02 09:38:53,371 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:38:53] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
 2025-11-02 09:38:53,371 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:38:53] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
+2025-11-02 09:40:06,839 - config.database - INFO - Database connection established
+2025-11-02 09:40:06,844 - blueprints.planning_api_post_specific - WARNING - No expanded idea found for week 2025/45 with theme
+2025-11-02 09:40:06,849 - config.database - INFO - Database connection established
+2025-11-02 09:40:06,851 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:40:06] "GET /planning/api/posts/78/expanded-idea?year=2025&week=45 HTTP/1.1" 200 -
+2025-11-02 09:40:17,688 - config.database - INFO - Database connection established
+2025-11-02 09:40:17,696 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:40:17] "GET /planning/api/calendar/schedule/2025/45 HTTP/1.1" 200 -
+2025-11-02 09:40:31,687 - config.database - INFO - Database connection established
+2025-11-02 09:40:31,694 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:40:31] "GET /planning/api/posts/81 HTTP/1.1" 200 -
+2025-11-02 09:40:32,987 - config.database - INFO - Database connection established
+2025-11-02 09:40:32,989 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:40:32] "GET /planning/api/posts/81/expanded-idea HTTP/1.1" 200 -
+2025-11-02 09:40:52,011 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_api_post_specific.py', reloading
+2025-11-02 09:40:52,063 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 09:40:52,417 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 09:40:52,423 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 09:40:54,845 - config.database - INFO - Database connection established
+2025-11-02 09:40:54,851 - blueprints.planning_api_post_specific - INFO - Week 2025/45 has theme: Autumn Landscapes (ID: 132)
+2025-11-02 09:40:54,852 - blueprints.planning_api_post_specific - INFO - Found expanded idea for theme 'Autumn Landscapes': post 81
+2025-11-02 09:40:54,853 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:40:54] "GET /planning/api/posts/78/expanded-idea?year=2025&week=45 HTTP/1.1" 200 -
+2025-11-02 09:41:05,189 - config.database - INFO - Database connection established
+2025-11-02 09:41:05,195 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:41:05] "GET /planning/api/posts/78/taxonomy HTTP/1.1" 200 -
+2025-11-02 09:41:06,201 - config.database - INFO - Database connection established
+2025-11-02 09:41:06,206 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:41:06] "GET /planning/api/posts/81/taxonomy HTTP/1.1" 200 -
+2025-11-02 09:41:17,913 - config.database - INFO - Database connection established
+2025-11-02 09:41:17,918 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:41:17] "GET /planning/api/calendar/schedule/2025/45 HTTP/1.1" 200 -
+2025-11-02 09:41:45,431 - config.database - INFO - Database connection established
+2025-11-02 09:41:45,434 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:41:45] "GET /api/taxonomy/items?theme_id=3 HTTP/1.1" 200 -
+2025-11-02 09:41:47,003 - config.database - INFO - Database connection established
+2025-11-02 09:41:47,008 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:41:47] "GET /api/taxonomy/items?theme_id=1 HTTP/1.1" 200 -
+2025-11-02 09:42:10,880 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_api_taxonomy.py', reloading
+2025-11-02 09:42:10,932 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 09:42:11,268 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 09:42:11,274 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 09:42:29,575 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_api_taxonomy.py', reloading
+2025-11-02 09:42:29,642 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 09:42:29,998 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 09:42:30,005 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 09:42:37,087 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:42:37] "GET /newsletter/events HTTP/1.1" 200 -
+2025-11-02 09:42:37,108 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:42:37] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-02 09:42:37,108 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:42:37] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-02 09:42:37,109 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:42:37] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-02 09:42:37,110 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:42:37] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-02 09:42:37,110 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:42:37] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-02 09:42:37,110 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:42:37] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-02 09:42:37,111 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:42:37] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-02 09:42:37,111 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:42:37] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-02 09:42:37,141 - config.database - INFO - Database connection established
+2025-11-02 09:42:37,150 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:42:37] "GET /newsletter/events/summary?days_back=30&days_ahead=90 HTTP/1.1" 200 -
+2025-11-02 09:42:38,743 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_api_taxonomy.py', reloading
+2025-11-02 09:42:38,796 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 09:42:39,138 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 09:42:39,143 - werkzeug - INFO -  * Debugger PIN: 263-852-041

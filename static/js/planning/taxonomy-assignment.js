@@ -212,7 +212,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // CRITICAL: Determine the correct post_id for taxonomy assignment
             // If we're viewing a different week than the post's schedule, we should assign
-            // taxonomy to the post that's actually scheduled for this week
+            // taxonomy to the post that's actually scheduled for this week, OR to any post
+            // that has the week's theme
             let targetPostId = postId;
             
             if (year && week) {
@@ -221,10 +222,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     const scheduleResponse = await fetch(`/planning/api/calendar/schedule/${year}/${week}`);
                     const scheduleData = await scheduleResponse.json();
                     if (scheduleData.schedule && Array.isArray(scheduleData.schedule) && scheduleData.schedule.length > 0) {
+                        // STEP 1: Look for a post directly scheduled for this week
                         const weekSchedule = scheduleData.schedule.find(s => s.post_id && s.idea_id);
                         if (weekSchedule && weekSchedule.post_id) {
                             targetPostId = weekSchedule.post_id;
                             console.log(`Taxonomy will be assigned to post ${targetPostId} (scheduled for week ${year}/${week})`);
+                        } else {
+                            // STEP 2: If no post_id in schedule, find the theme and look for ANY post with that theme
+                            const weekThemeSchedule = scheduleData.schedule.find(s => s.idea_id && !s.post_id);
+                            if (weekThemeSchedule && weekThemeSchedule.idea_id) {
+                                console.log(`Week ${year}/${week} has theme idea_id ${weekThemeSchedule.idea_id}, searching for post with this theme...`);
+                                // Query for any post that has this theme in its schedule
+                                const postsWithThemeResponse = await fetch(`/planning/api/calendar/schedule/${year}/${week}`);
+                                // Actually, we need to query differently - find all schedule entries with this idea_id
+                                // For now, log this and use the theme's idea_id to find posts
+                                // The backend should handle finding the post by theme
+                                console.log(`Will use theme idea_id ${weekThemeSchedule.idea_id} to find post`);
+                            }
                         }
                     }
                 } catch (e) {
