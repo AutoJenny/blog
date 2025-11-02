@@ -172,3 +172,5 @@ LINE 10:                                 AND is_selected = TRUE
 2025-11-02 08:38:13,483 - newsletter.sources.playwright_adapter - WARNING - Playwright not available. Install with: pip install playwright && playwright install
 2025-11-02 08:38:13,564 - werkzeug - WARNING -  * Debugger is active!
 2025-11-02 08:38:13,570 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:42:08,767 - config.database - INFO - Database connection established
+2025-11-02 08:42:08,780 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:42:08] "GET /launchpad/api/queue HTTP/1.1" 200 -
