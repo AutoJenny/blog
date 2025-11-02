@@ -8701,3 +8701,16 @@ psycopg.ProgrammingError: incomplete placeholder: '%'; if you want to use '%' as
 2025-11-02 08:06:23,742 - werkzeug - INFO -  * Restarting with stat
 2025-11-02 08:06:24,060 - werkzeug - WARNING -  * Debugger is active!
 2025-11-02 08:06:24,065 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:06:32,741 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/news_synopsis_service.py', reloading
+2025-11-02 08:06:32,787 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:06:33,116 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:06:33,122 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:06:41,084 - config.database - INFO - Database connection established
+2025-11-02 08:06:41,094 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:06:41] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 08:06:59,299 - config.database - INFO - Database connection established
+2025-11-02 08:06:59,308 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:06:59] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 08:07:14,072 - config.database - INFO - Database connection established
+2025-11-02 08:07:14,082 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:07:14] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 08:08:14,657 - config.database - INFO - Database connection established
+2025-11-02 08:08:14,667 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:08:14] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 08:09:00,498 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:09:00] "GET /planning/posts/78/calendar/week-view?year=2025&week=44 HTTP/1.1" 200 -

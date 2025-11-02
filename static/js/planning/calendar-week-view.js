@@ -259,10 +259,18 @@ async function loadWeek(year, weekNumber) {
   window.year = year;
   window.weekNumber = weekNumber;
   
-  // CRITICAL: Immediately update nav links with new week params from URL
-  if (typeof blogPipelineHeader !== 'undefined' && blogPipelineHeader.attachWeekParameterToNavLinks) {
-    blogPipelineHeader.attachWeekParameterToNavLinks();
+  // CRITICAL: Clear the linksUpdated flag when week changes so links get re-updated
+  if (typeof blogPipelineHeader !== 'undefined') {
+    blogPipelineHeader.linksUpdated = false;
   }
+  
+  // CRITICAL: Update nav links AFTER URL is updated and flag is cleared
+  // Small delay to ensure header script sees the new URL
+  setTimeout(() => {
+    if (typeof blogPipelineHeader !== 'undefined' && blogPipelineHeader.attachWeekParameterToNavLinks) {
+      blogPipelineHeader.attachWeekParameterToNavLinks();
+    }
+  }, 50);
   
   // Update header week info and theme
   if (typeof blogPipelineHeader !== 'undefined' && blogPipelineHeader.updateWeekAndTheme) {
@@ -580,16 +588,23 @@ async function loadWeek(year, weekNumber) {
   window.year = state.year;
   window.weekNumber = state.weekNumber;
   
-  // CRITICAL: Immediately update nav links with week params from URL (now canonical)
-  // Do this BEFORE any other updates to ensure links are correct
-  if (typeof blogPipelineHeader !== 'undefined' && blogPipelineHeader.attachWeekParameterToNavLinks) {
-    blogPipelineHeader.attachWeekParameterToNavLinks();
+  // CRITICAL: Clear the linksUpdated flag when week changes so links get re-updated
+  if (typeof blogPipelineHeader !== 'undefined') {
+    blogPipelineHeader.linksUpdated = false;
   }
   
   // Trigger header update immediately after setting window vars
   if (typeof blogPipelineHeader !== 'undefined' && blogPipelineHeader.updateWeekAndTheme) {
     blogPipelineHeader.updateWeekAndTheme();
   }
+  
+  // CRITICAL: Update nav links AFTER URL is set and flag is cleared
+  // Small delay to ensure header script sees the new URL
+  setTimeout(() => {
+    if (typeof blogPipelineHeader !== 'undefined' && blogPipelineHeader.attachWeekParameterToNavLinks) {
+      blogPipelineHeader.attachWeekParameterToNavLinks();
+    }
+  }, 50);
 
   document.getElementById('prev-week').addEventListener('click', () => {
     const start = getWeekStartDate(state.year, state.weekNumber);
