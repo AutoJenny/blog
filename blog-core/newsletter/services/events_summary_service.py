@@ -251,7 +251,8 @@ def get_event_detail(event_id: int) -> Optional[Dict[str, Any]]:
         SELECT 
             id, source_name, title, url, published_at, event_date, location, category,
             raw_data, signal_score, freshness_score, combined_score, cached_at,
-            suitability_score, suitability_notes, is_event, calendar_event_id
+            suitability_score, suitability_notes, is_event, calendar_event_id,
+            event_recurrence_type
         FROM newsletter_source_item
         WHERE id = %s AND category = 'event'
         LIMIT 1
@@ -297,6 +298,7 @@ def get_event_detail(event_id: int) -> Optional[Dict[str, Any]]:
                 'suitability_notes': item.get('suitability_notes'),
                 'cached_at': item.get('cached_at').isoformat() if item.get('cached_at') else None,
                 'is_event': item.get('is_event', False),
+                'event_recurrence_type': item.get('event_recurrence_type'),
                 'calendar_event': calendar_event,
             }
 
