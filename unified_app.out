@@ -1268,3 +1268,34 @@ LINE 10:                                 AND is_selected = TRUE
 2025-11-02 09:42:38,796 - werkzeug - INFO -  * Restarting with stat
 2025-11-02 09:42:39,138 - werkzeug - WARNING -  * Debugger is active!
 2025-11-02 09:42:39,143 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 09:42:53,003 - config.database - INFO - Database connection established
+2025-11-02 09:42:53,014 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:42:53] "GET /newsletter/events/summary?days_back=30&days_ahead=90&source=Historic+Environment+Scotland+-+What's+On HTTP/1.1" 200 -
+2025-11-02 09:43:01,695 - config.database - INFO - Database connection established
+2025-11-02 09:43:01,728 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:01] "GET /newsletter/events/37 HTTP/1.1" 200 -
+2025-11-02 09:43:01,750 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:01] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-02 09:43:01,750 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:01] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-02 09:43:01,751 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:01] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-02 09:43:01,752 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:01] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-02 09:43:01,753 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:01] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-02 09:43:01,754 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:01] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-02 09:43:01,754 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:01] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-02 09:43:01,755 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:01] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-02 09:43:18,844 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:18] "GET /newsletter/events HTTP/1.1" 200 -
+2025-11-02 09:43:18,847 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:18] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-02 09:43:18,849 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:18] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-02 09:43:18,849 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:18] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-02 09:43:18,850 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:18] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-02 09:43:18,850 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:18] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-02 09:43:18,852 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:18] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-02 09:43:18,853 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:18] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-02 09:43:18,855 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:18] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-02 09:43:18,868 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:18] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-02 09:43:18,870 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:18] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-02 09:43:18,872 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:18] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-02 09:43:18,872 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:18] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-02 09:43:18,873 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:18] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-02 09:43:18,873 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:18] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-02 09:43:18,873 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:18] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-02 09:43:18,875 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:18] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-02 09:43:18,890 - config.database - INFO - Database connection established
+2025-11-02 09:43:18,897 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:18] "GET /newsletter/events/summary?days_back=30&days_ahead=90 HTTP/1.1" 200 -
