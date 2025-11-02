@@ -174,7 +174,7 @@
 </div>
 
 <script>
-async function updateRecurrenceType(eventId, recurrenceType) {
+async function updateRecurrenceType(eventId, recurrenceType, buttonElement) {
     try {
         const response = await fetch(`/newsletter/events/${eventId}/recurrence-type`, {
             method: 'POST',
@@ -192,17 +192,18 @@ async function updateRecurrenceType(eventId, recurrenceType) {
             badge.textContent = recurrenceType === 'annual' ? 'Annual' : 'Special';
             badge.style.background = recurrenceType === 'annual' ? '#10b981' : '#f59e0b';
             
-            // Update button states
-            document.querySelectorAll('button[onclick*="updateRecurrenceType"]').forEach(btn => {
-                btn.style.background = '';
-                btn.style.color = '';
-                btn.style.borderColor = '';
-            });
+            // Update button states - clear both
+            document.getElementById('btn-annual').style.background = '';
+            document.getElementById('btn-annual').style.color = '';
+            document.getElementById('btn-annual').style.borderColor = '';
+            document.getElementById('btn-oneoff').style.background = '';
+            document.getElementById('btn-oneoff').style.color = '';
+            document.getElementById('btn-oneoff').style.borderColor = '';
             
-            const activeBtn = event.target;
-            activeBtn.style.background = recurrenceType === 'annual' ? '#10b981' : '#f59e0b';
-            activeBtn.style.color = '#fff';
-            activeBtn.style.borderColor = recurrenceType === 'annual' ? '#10b981' : '#f59e0b';
+            // Set active button
+            buttonElement.style.background = recurrenceType === 'annual' ? '#10b981' : '#f59e0b';
+            buttonElement.style.color = '#fff';
+            buttonElement.style.borderColor = recurrenceType === 'annual' ? '#10b981' : '#f59e0b';
         } else {
             alert('Error updating classification: ' + (result.error || 'Unknown error'));
         }

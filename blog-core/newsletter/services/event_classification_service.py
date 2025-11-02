@@ -42,7 +42,13 @@ def classify_event_recurrence(event_data: Dict[str, Any]) -> str:
     description = event_data.get('description', '') or event_data.get('summary', '')
     location = event_data.get('location', '')
     
-    # Quick heuristic checks first (can bypass LLM in clear cases)
+    title_lower = title.lower()
+    
+    # STRICT RULE: If title contains "festival", it's definitely annual
+    if 'festival' in title_lower:
+        return 'annual'
+    
+    # Quick heuristic checks (can bypass LLM in clear cases)
     # If we have explicit recurring_info, it's likely annual
     if recurring_info and recurring_info.lower() not in ('null', 'none', ''):
         # But check if it's actually annual (not "every second week" which is different)
@@ -52,17 +58,20 @@ def classify_event_recurrence(event_data: Dict[str, Any]) -> str:
             # These are not annual - they're more frequent
             return 'one_off'  # Weekly patterns are special occurrences, not annual festivals
     
-    # Check title for obvious annual festival indicators
-    title_lower = title.lower()
+    # Check title for obvious annual event indicators (known annual events)
     annual_keywords = [
-        'festival', 'festival', 'highland games', 'gathering', 'tattoo',
-        'book festival', 'folk festival', 'music festival', 'celtic festival',
-        'hogmanay', 'up helly aa', 'royal', 'highland show'
+        'hogmanay',  # Always annual
+        'up helly aa',  # Always annual
+        'royal highland show',  # Always annual
+        'celtic connections',  # Always annual
+        'pipe band championships',  # Always annual
+        'military tattoo',  # Always annual
+        'highland games',  # Usually annual
+        'gathering',  # Usually annual if it's a named gathering
     ]
     
     if any(keyword in title_lower for keyword in annual_keywords):
-        # Most festivals are annual, but use LLM for nuanced cases
-        pass  # Continue to LLM for final decision
+        return 'annual'  # Known annual events, skip LLM
     
     # Build prompt for LLM classification
     prompt = f"""Classify this Scottish event as either ANNUALLY RECURRING or ONE-OFF OCCASION.
