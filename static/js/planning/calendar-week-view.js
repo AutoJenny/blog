@@ -534,29 +534,22 @@ async function loadWeek(year, weekNumber) {
     };
   }
   
-  // CRITICAL: Update URL FIRST (before window vars) so attachWeekParameterToNavLinks reads correct values
-  // This ensures the URL is the canonical source before any script reads it
-  const url = new URL(window.location.href);
-  url.searchParams.set('year', state.year);
-  url.searchParams.set('week', state.weekNumber);
-  window.history.replaceState({ year: state.year, weekNumber: state.weekNumber }, '', url);
+  // SINGLE SOURCE OF TRUTH: Update URL using WeekContext
+  if (window.WeekContext) {
+    window.WeekContext.setWeekContext(state.year, state.weekNumber);
+  }
   
-  // Then set window vars
-  window.year = state.year;
-  window.weekNumber = state.weekNumber;
-  
-  // CRITICAL: Clear the linksUpdated flag when week changes so links get re-updated
+  // Clear the linksUpdated flag when week changes so links get re-updated
   if (typeof blogPipelineHeader !== 'undefined') {
     blogPipelineHeader.linksUpdated = false;
   }
   
-  // Trigger header update immediately after setting window vars
+  // Trigger header update
   if (typeof blogPipelineHeader !== 'undefined' && blogPipelineHeader.updateWeekAndTheme) {
     blogPipelineHeader.updateWeekAndTheme();
   }
-  
-  // CRITICAL: Update nav links AFTER URL is set and flag is cleared
-  // Small delay to ensure header script sees the new URL
+
+  // Update nav links AFTER URL is set and flag is cleared
   setTimeout(() => {
     if (typeof blogPipelineHeader !== 'undefined' && blogPipelineHeader.attachWeekParameterToNavLinks) {
       blogPipelineHeader.attachWeekParameterToNavLinks();
@@ -567,19 +560,19 @@ async function loadWeek(year, weekNumber) {
     const start = getWeekStartDate(state.year, state.weekNumber);
     start.setUTCDate(start.getUTCDate() - 7);
     const info = getISOWeekInfo(start);
-    loadWeekAndSave(info.year, info.weekNumber);
+    loadWeek(info.year, info.weekNumber);
   });
 
   document.getElementById('next-week').addEventListener('click', () => {
     const start = getWeekStartDate(state.year, state.weekNumber);
     start.setUTCDate(start.getUTCDate() + 7);
     const info = getISOWeekInfo(start);
-    loadWeekAndSave(info.year, info.weekNumber);
+    loadWeek(info.year, info.weekNumber);
   });
 
   // "This week" button
   document.getElementById('this-week-btn').addEventListener('click', () => {
-    loadWeekAndSave(currentWeekInfo.year, currentWeekInfo.weekNumber);
+    loadWeek(currentWeekInfo.year, currentWeekInfo.weekNumber);
   });
 
   // Week picker - month/week list interface
@@ -689,7 +682,7 @@ async function loadWeek(year, weekNumber) {
         }
         
         weekBtn.addEventListener('click', () => {
-          loadWeekAndSave(weekYear, week);
+          loadWeek(weekYear, week);
           pickerPopup.style.display = 'none';
         });
         

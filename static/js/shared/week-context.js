@@ -93,17 +93,16 @@ function attachWeekToUrl(href, year = null, week = null) {
 /**
  * Get ISO week info for a date
  * Helper function for calculating current week
+ * Uses ISO 8601 standard (week starts Monday, first week contains Jan 4)
  */
 function getISOWeekInfo(date) {
-    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-    const dayNum = d.getUTCDay() || 7;
-    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    const weekNum = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-    return {
-        year: d.getUTCFullYear(),
-        weekNumber: weekNum
-    };
+    const target = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNr = (target.getUTCDay() + 6) % 7; // Monday=0
+    target.setUTCDate(target.getUTCDate() - dayNr + 3);
+    const firstThursday = new Date(Date.UTC(target.getUTCFullYear(), 0, 4));
+    const weekNumber = 1 + Math.round(((target - firstThursday) / 86400000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7);
+    const year = target.getUTCFullYear();
+    return { year, weekNumber };
 }
 
 // Export functions for use in other scripts

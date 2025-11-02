@@ -187,8 +187,15 @@ Provide your response in JSON format:
                     except (ValueError, TypeError):
                         logger.warning(f"Could not parse end_date: {parsed.get('end_date')}")
                 
+                # Ensure title is cleaned - remove any trailing recurring patterns that might have been concatenated
+                cleaned_title = parsed.get('title', title)
+                # Additional cleanup: remove trailing "Every" patterns that might be concatenated
+                cleaned_title = re.sub(r'\s*every\s+(second|week|month|year|saturday|tuesday).*$', '', cleaned_title, flags=re.IGNORECASE).strip()
+                # Remove title parts that got concatenated without spaces
+                cleaned_title = re.sub(r'([a-z])([A-Z])', r'\1 \2', cleaned_title)  # Add space between camelCase
+                
                 return {
-                    'title': parsed.get('title', title),
+                    'title': cleaned_title,
                     'url': url,
                     'event_date': event_date,
                     'end_date': end_date,
