@@ -8,6 +8,7 @@ from newsletter.sources.rss_adapter import RSSAdapter
 from newsletter.sources.reddit_adapter import RedditAdapter
 from newsletter.sources.html_adapter import HTMLAdapter
 from newsletter.sources.weather_adapter import WeatherHTMLAdapter
+from newsletter.sources.playwright_adapter import PlaywrightAdapter, PLAYWRIGHT_AVAILABLE
 
 
 def get_enabled_sources() -> List[Dict[str, Any]]:
@@ -26,7 +27,7 @@ def get_enabled_sources() -> List[Dict[str, Any]]:
             return [dict(r) for r in rows]
 
 
-def create_adapter_from_source(source: Dict[str, Any]) -> RSSAdapter | RedditAdapter | HTMLAdapter | WeatherHTMLAdapter | None:
+def create_adapter_from_source(source: Dict[str, Any]) -> RSSAdapter | RedditAdapter | HTMLAdapter | WeatherHTMLAdapter | PlaywrightAdapter | None:
     """Create appropriate adapter based on source type.
     
     Source types map:
@@ -70,9 +71,49 @@ def create_adapter_from_source(source: Dict[str, Any]) -> RSSAdapter | RedditAda
             category='weather'
         )
     
+    elif source_type == 'playwright':
+        # Playwright adapter for JavaScript-rendered pages
+        if not PLAYWRIGHT_AVAILABLE:
+            import logging
+            logging.getLogger(__name__).warning(f"Playwright not available for {name}")
+            return None
+        
+        # Determine category
+        name_lower = name.lower()
+        category = 'event'  # default for galleries/museums
+        if 'news' in name_lower:
+            category = 'news'
+        
+        return PlaywrightAdapter(
+            source_name=name,
+            base_url=base_url,
+            category=category
+        )
+    
     elif source_type in ('html', 'event', 'museum'):
         # HTML scraper for "What's On" pages
-        # Default selector targets common event listing patterns
+        # Check if source needs Playwright (JS-loaded sites)
+        name_lower = name.lower()
+        base_url_lower = base_url.lower()
+        
+        # Sites that need Playwright
+        playwright_sites = [
+            'nationalgalleries.org',
+            'nms.ac.uk',
+            'national museums',
+        ]
+        
+        needs_playwright = any(site in name_lower or site in base_url_lower for site in playwright_sites)
+        
+        if needs_playwright and PLAYWRIGHT_AVAILABLE:
+            category = 'event'
+            return PlaywrightAdapter(
+                source_name=name,
+                base_url=base_url,
+                category=category
+            )
+        
+        # Default HTML scraper
         selector = 'article, .event-item, .event, [class*="event"]'
         return HTMLAdapter(
             source_name=name,

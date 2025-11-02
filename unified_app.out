@@ -108,3 +108,57 @@ LINE 10:                                 AND is_selected = TRUE
 2025-11-02 08:29:06,245 - werkzeug - INFO -  * Restarting with stat
 2025-11-02 08:29:06,604 - werkzeug - WARNING -  * Debugger is active!
 2025-11-02 08:29:06,612 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:29:23,949 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/sources/html_adapter.py', reloading
+2025-11-02 08:29:23,999 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:29:24,336 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:29:24,343 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:30:19,323 - config.database - INFO - Database connection established
+2025-11-02 08:30:19,337 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:30:19] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 08:32:38,960 - config.database - INFO - Database connection established
+2025-11-02 08:32:38,972 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:32:38] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 08:37:18,828 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/sources/playwright_adapter.py', reloading
+2025-11-02 08:37:18,876 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:37:19,219 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:37:19,226 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:37:21,486 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/sources/manager.py', reloading
+2025-11-02 08:37:21,531 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:37:21,780 - newsletter.sources.playwright_adapter - WARNING - Playwright not available. Install with: pip install playwright && playwright install
+2025-11-02 08:37:21,862 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:37:21,869 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:37:24,128 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/sources/manager.py', reloading
+2025-11-02 08:37:24,176 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:37:24,431 - newsletter.sources.playwright_adapter - WARNING - Playwright not available. Install with: pip install playwright && playwright install
+2025-11-02 08:37:24,517 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:37:24,523 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:37:28,916 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/sources/manager.py', reloading
+2025-11-02 08:37:28,968 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:37:29,214 - newsletter.sources.playwright_adapter - WARNING - Playwright not available. Install with: pip install playwright && playwright install
+2025-11-02 08:37:29,295 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:37:29,301 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:37:36,905 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/sources/playwright_adapter.py', reloading
+2025-11-02 08:37:36,951 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:37:37,198 - newsletter.sources.playwright_adapter - WARNING - Playwright not available. Install with: pip install playwright && playwright install
+2025-11-02 08:37:37,278 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:37:37,284 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:37:52,406 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/sources/playwright_adapter.py', reloading
+2025-11-02 08:37:52,459 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:37:52,716 - newsletter.sources.playwright_adapter - WARNING - Playwright not available. Install with: pip install playwright && playwright install
+2025-11-02 08:37:52,803 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:37:52,809 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:37:55,074 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/sources/playwright_adapter.py', reloading
+2025-11-02 08:37:55,120 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:37:55,367 - newsletter.sources.playwright_adapter - WARNING - Playwright not available. Install with: pip install playwright && playwright install
+2025-11-02 08:37:55,449 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:37:55,456 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:37:57,708 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/sources/playwright_adapter.py', reloading
+2025-11-02 08:37:57,756 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:37:58,012 - newsletter.sources.playwright_adapter - WARNING - Playwright not available. Install with: pip install playwright && playwright install
+2025-11-02 08:37:58,093 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:37:58,100 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:37:58,935 - config.database - INFO - Database connection established
+2025-11-02 08:37:58,945 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:37:58] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 08:38:00,357 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/sources/playwright_adapter.py', reloading
+2025-11-02 08:38:00,403 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:38:00,663 - newsletter.sources.playwright_adapter - WARNING - Playwright not available. Install with: pip install playwright && playwright install
+2025-11-02 08:38:00,745 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:38:00,752 - werkzeug - INFO -  * Debugger PIN: 263-852-041
