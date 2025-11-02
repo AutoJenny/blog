@@ -6,14 +6,11 @@ import logging
 import sys
 from typing import List, Dict, Any
 
-# Add project root to path
-sys.path.insert(0, '.')
-
-import sys
-import os
-
 # Add blog-core to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
+import os
+script_dir = os.path.dirname(os.path.abspath(__file__))
+blog_core_dir = os.path.join(script_dir, '../..')
+sys.path.insert(0, os.path.abspath(blog_core_dir))
 
 from config.database import db_manager
 from newsletter.services.event_deduplication_service import find_all_duplicates, normalize_title, calculate_title_similarity
