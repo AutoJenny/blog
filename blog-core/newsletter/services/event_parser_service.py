@@ -229,18 +229,29 @@ CRITICAL: Return ONLY valid JSON. No markdown code blocks, no explanations, no P
                 # Final cleanup: remove trailing dashes, colons, or spaces
                 cleaned_title = re.sub(r'[\s\-:]+$', '', cleaned_title).strip()
                 
+                # Also clean location if it has recurring patterns
+                cleaned_location = parsed.get('location')
+                if cleaned_location:
+                    # Apply same cleaning to location (remove recurring patterns)
+                    cleaned_location = re.sub(r'([a-z])([A-Z])', r'\1 \2', cleaned_location)
+                    cleaned_location = re.sub(r'\s*every\s+(second|week|month|year|saturday|sunday|tuesday|wednesday|thursday|friday).*$', '', cleaned_location, flags=re.IGNORECASE).strip()
+                    cleaned_location = re.sub(r'\s+every\s*$', '', cleaned_location, flags=re.IGNORECASE).strip()
+                    if cleaned_location.lower().endswith(' every'):
+                        cleaned_location = cleaned_location[:-6].strip()
+                    cleaned_location = re.sub(r'[\s\-:]+$', '', cleaned_location).strip()
+                
                 return {
                     'title': cleaned_title,
                     'url': url,
                     'event_date': event_date,
                     'end_date': end_date,
                     'date_text': parsed.get('date_text_preserved', date_text),
-                    'location': parsed.get('location'),
+                    'location': cleaned_location,
                     'description': parsed.get('summary', description),
                     'recurring_info': parsed.get('recurring_info'),
                     'summary': parsed.get('summary', description),
                     'parsing_notes': parsed.get('parsing_notes', ''),
-                    'raw_data': event_data,  # Preserve all original data
+                    'raw_data': raw_data_copy,  # Preserve original data + parsed fields (all JSON-serializable)
                 }
                 
             except (json.JSONDecodeError, ValueError, KeyError) as e:
