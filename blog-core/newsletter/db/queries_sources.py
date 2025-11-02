@@ -8,27 +8,56 @@ from psycopg.types.json import Json
 from config.database import db_manager
 
 
-def store_source_items(items: List[Dict[str, Any]]) -> int:
+def store_source_items(items: List[Dict[str, Any]], update_duplicates: bool = True) -> int:
     """Store normalized source items in newsletter_source_item table.
     
-    Returns count of items stored.
+    Uses enhanced deduplication for event items: checks for similar titles and either
+    skips duplicates or updates existing records with new information.
+    
+    Args:
+        items: List of normalized items to store
+        update_duplicates: If True, update existing duplicates with new data; if False, skip
+    
+    Returns:
+        Count of items stored or updated
     """
     if not items:
         return 0
     
     import hashlib
     
+    # Import deduplication service
+    from newsletter.services.event_deduplication_service import find_and_merge_duplicate
+    
     stored = 0
+    updated = 0
+    skipped = 0
+    
     with db_manager.get_connection() as conn:
         with conn.cursor() as cur:
             for item in items:
                 try:
                     url = item.get('url', '')
                     title = item.get('title', '')
+                    category = item.get('category', 'other')
+                    
+                    # For event items, use enhanced fuzzy deduplication
+                    if category == 'event':
+                        existing_id, was_updated = find_and_merge_duplicate(
+                            new_item=item,
+                            update_existing=update_duplicates
+                        )
+                        
+                        if existing_id:
+                            if was_updated:
+                                updated += 1
+                            else:
+                                skipped += 1
+                            continue  # Skip insertion, already handled by deduplication
+                    
+                    # For non-event items, use original URL-based deduplication
                     url_hash = hashlib.sha256(url.encode('utf-8')).hexdigest() if url else None
                     
-                    # Check if URL hash already exists to avoid duplicates
-                    # For content-extracted items (same URL, different titles), use title+URL hash
                     if url_hash:
                         # Check if exact duplicate (same URL + title from same source)
                         cur.execute(
@@ -43,11 +72,11 @@ def store_source_items(items: List[Dict[str, Any]]) -> int:
                         )
                         if cur.fetchone():
                             # Skip exact duplicate (same URL + title + source)
+                            skipped += 1
                             continue
                         
                         # For content-extracted items: if same URL but different title, allow it
                         # (This handles VisitScotland category pages with multiple events)
-                        # But check if this exact title+URL combination exists
                         if title:
                             # Use a combined hash for title+URL to dedupe same event on same page
                             combined = f"{title}|{url}"
@@ -61,49 +90,59 @@ def store_source_items(items: List[Dict[str, Any]]) -> int:
                                 """,
                                 (combined_hash, item.get('source_name'))
                             )
-                            # Don't skip - allow same URL with different titles
+                            if cur.fetchone():
+                                skipped += 1
+                                continue
                     
-                        # For content-extracted items with same URL, use title+URL hash
-                        # Otherwise use URL hash
+                    # For content-extracted items with same URL, use title+URL hash
+                    # Otherwise use URL hash
+                    final_hash = url_hash
+                    if title and url:
+                        # Create hash from title+URL for better deduplication of content-extracted items
+                        combined = f"{title}|{url}"
+                        final_hash = hashlib.sha256(combined.encode('utf-8')).hexdigest()
+                    elif url_hash:
                         final_hash = url_hash
-                        if title and url:
-                            # Create hash from title+URL for better deduplication of content-extracted items
-                            combined = f"{title}|{url}"
-                            final_hash = hashlib.sha256(combined.encode('utf-8')).hexdigest()
-                        
-                        cur.execute(
-                            """
-                            INSERT INTO newsletter_source_item 
-                            (source_name, title, url, published_at, event_date, location, category, 
-                             raw_data, signal_score, freshness_score, source_url_hash, 
-                             suitability_score, suitability_notes, is_event, calendar_event_id)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                            """,
-                            (
-                                item.get('source_name'),
-                                item.get('title'),
-                                url,
-                                item.get('published_at'),
-                                item.get('event_date'),
-                                item.get('location'),
-                                item.get('category', 'other'),
-                                Json(item.get('raw_data', {})),
-                                item.get('signal_score', 0.0),
-                                item.get('freshness_score', 0.0),
-                                final_hash,
-                                item.get('suitability_score'),
-                                item.get('suitability_notes'),
-                                item.get('is_event', False),
-                                item.get('calendar_event_id'),
-                            ),
-                        )
+                    
+                    cur.execute(
+                        """
+                        INSERT INTO newsletter_source_item 
+                        (source_name, title, url, published_at, event_date, location, category, 
+                         raw_data, signal_score, freshness_score, source_url_hash, 
+                         suitability_score, suitability_notes, is_event, calendar_event_id)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        """,
+                        (
+                            item.get('source_name'),
+                            item.get('title'),
+                            url,
+                            item.get('published_at'),
+                            item.get('event_date'),
+                            item.get('location'),
+                            category,
+                            Json(item.get('raw_data', {})),
+                            item.get('signal_score', 0.0),
+                            item.get('freshness_score', 0.0),
+                            final_hash,
+                            item.get('suitability_score'),
+                            item.get('suitability_notes'),
+                            item.get('is_event', False),
+                            item.get('calendar_event_id'),
+                        ),
+                    )
                     stored += 1
                 except Exception as e:
                     import logging
                     logging.warning(f"Failed to store source item: {e}")
                     continue
             conn.commit()
-    return stored
+    
+    import logging
+    logger = logging.getLogger(__name__)
+    if updated > 0 or skipped > 0:
+        logger.info(f"Stored {stored} new, updated {updated} existing, skipped {skipped} duplicates")
+    
+    return stored + updated
 
 
 def get_cached_items(*, category: str | None = None, days_back: int = 14, limit: int = 100) -> List[Dict[str, Any]]:

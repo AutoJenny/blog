@@ -1299,3 +1299,15 @@ LINE 10:                                 AND is_selected = TRUE
 2025-11-02 09:43:18,875 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:18] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
 2025-11-02 09:43:18,890 - config.database - INFO - Database connection established
 2025-11-02 09:43:18,897 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:43:18] "GET /newsletter/events/summary?days_back=30&days_ahead=90 HTTP/1.1" 200 -
+2025-11-02 09:45:10,165 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_api_taxonomy.py', reloading
+2025-11-02 09:45:10,209 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 09:45:10,528 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 09:45:10,533 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 09:46:46,509 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/db/queries_sources.py', reloading
+2025-11-02 09:46:46,569 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 09:46:46,934 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 09:46:46,941 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 09:47:03,118 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/jobs/cleanup_duplicate_events.py', reloading
+2025-11-02 09:47:03,167 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 09:47:03,513 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 09:47:03,518 - werkzeug - INFO -  * Debugger PIN: 263-852-041
