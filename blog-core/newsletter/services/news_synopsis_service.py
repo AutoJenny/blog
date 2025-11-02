@@ -513,19 +513,19 @@ def get_news_items(days_back: int = 7) -> List[Dict[str, Any]]:
             OR suitability_score IS NULL
           )
           -- Exclude crime stories that scored too high (likely analyzed with old system)
-          -- Note: %% is escaped % for psycopg3
+          -- Use position() instead of LIKE to avoid % placeholder issues
           AND NOT (
             suitability_score > 2.0
             AND (
-              LOWER(title) LIKE '%%arrested%%' 
-              OR LOWER(title) LIKE '%%arrest%%'
-              OR LOWER(title) LIKE '%%charged%%'
-              OR LOWER(title) LIKE '%%murder%%'
-              OR LOWER(title) LIKE '%%killed%%'
-              OR LOWER(title) LIKE '%%dead%%'
-              OR LOWER(title) LIKE '%%death%%'
-              OR (LOWER(title) LIKE '%%fire%%' AND LOWER(title) LIKE '%%found%%')
-              OR LOWER(title) LIKE '%%breach%%'
+              POSITION('arrested' IN LOWER(title)) > 0
+              OR POSITION('arrest' IN LOWER(title)) > 0
+              OR POSITION('charged' IN LOWER(title)) > 0
+              OR POSITION('murder' IN LOWER(title)) > 0
+              OR POSITION('killed' IN LOWER(title)) > 0
+              OR POSITION('dead' IN LOWER(title)) > 0
+              OR POSITION('death' IN LOWER(title)) > 0
+              OR (POSITION('fire' IN LOWER(title)) > 0 AND POSITION('found' IN LOWER(title)) > 0)
+              OR POSITION('breach' IN LOWER(title)) > 0
             )
           )
         ORDER BY 
