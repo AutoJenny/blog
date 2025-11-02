@@ -154,8 +154,9 @@ def process_visitscotland_events() -> Dict[str, Any]:
                 else:
                     skipped_count += 1
                     logger.debug(f"Skipped duplicate: {item['title']}")
+                # Don't add to items_to_store - deduplication handled it
             else:
-                # New event, add to list
+                # New event, add to list for storage
                 items_to_store.append(item)
         
         except Exception as e:

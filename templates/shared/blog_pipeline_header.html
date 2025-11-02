@@ -1,5 +1,7 @@
 <!-- Unified Blog Pipeline Header - Used across ALL stages (self-contained) -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared/blog-pipeline-header.css') }}">
+<!-- Week Context Module - MUST load before blog-pipeline-header.js -->
+<script src="{{ url_for('static', filename='js/shared/week-context.js') }}"></script>
 <div class="blog-pipeline-header">
     <!-- Main Title Line -->
     <div class="main-title-line">
@@ -343,42 +345,29 @@ function getCurrentISOWeek() {
     return weekNum;
 }
 
-// Set Week Ideas link to the week being viewed (from URL params, window vars, or current week)
+// Set Week Ideas link to the week being viewed (from URL only)
 function setWeekIdeasLink() {
     const weekIdeasLink = document.getElementById('week-ideas-link');
     if (weekIdeasLink) {
-        // UNIFIED PERSISTENCE: Use same priority order
-        // PRIORITY 1: URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlYear = urlParams.get('year');
-        const urlWeek = urlParams.get('week');
-        
+        // SINGLE SOURCE OF TRUTH: URL query parameters only
         let weekToUse;
         let yearToUse;
         
-        if (urlWeek) {
-            weekToUse = parseInt(urlWeek);
-            yearToUse = urlYear ? parseInt(urlYear) : new Date().getFullYear();
-        } else if (window.weekNumber) {
-            // PRIORITY 2: Window variables
-            weekToUse = window.weekNumber;
-            yearToUse = window.year || new Date().getFullYear();
+        if (window.WeekContext) {
+            const weekContext = window.WeekContext.getWeekContextWithDefault();
+            weekToUse = weekContext.week;
+            yearToUse = weekContext.year;
         } else {
-            // PRIORITY 3: localStorage or current week
-            const savedWeek = localStorage.getItem('calendar-week-view-week');
-            if (savedWeek) {
-                weekToUse = parseInt(savedWeek);
-                const savedYear = localStorage.getItem('calendar-week-view-year');
-                yearToUse = savedYear ? parseInt(savedYear) : new Date().getFullYear();
-            } else {
-                weekToUse = getCurrentISOWeek();
-                yearToUse = new Date().getFullYear();
-            }
+            // Fallback if WeekContext not loaded
+            weekToUse = getCurrentISOWeek();
+            yearToUse = new Date().getFullYear();
         }
         
-        // Include year and week in URL if we have them
+        // Use WeekContext helper to attach week params
         let href = `/planning/calendar/ideas/week/${weekToUse}`;
-        if (yearToUse && weekToUse) {
+        if (window.WeekContext) {
+            href = window.WeekContext.attachWeekToUrl(href, yearToUse, weekToUse);
+        } else {
             href += `?year=${yearToUse}&week=${weekToUse}`;
         }
         weekIdeasLink.href = href;
