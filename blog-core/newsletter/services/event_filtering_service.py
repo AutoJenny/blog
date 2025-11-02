@@ -79,6 +79,22 @@ NAVIGATION_PHRASES = [
     'quick links',
 ]
 
+# Error message patterns that indicate broken links or error pages
+ERROR_MESSAGE_PATTERNS = [
+    r'.*wall.*',  # "come up against a wall"
+    r'.*doesn\'t exist.*',
+    r'.*does not exist.*',
+    r'.*not found.*',
+    r'.*404.*',
+    r'.*page not found.*',
+    r'.*error.*',
+    r'.*something went wrong.*',
+    r'.*oops.*',
+    r'.*try again.*',
+    r'.*broken.*link.*',
+    r'.*cannot.*find.*',
+]
+
 
 def normalize_title(title: str) -> str:
     """Normalize title for pattern matching."""
@@ -101,6 +117,12 @@ def is_page_heading(title: str, url: Optional[str] = None) -> bool:
         return True  # Empty titles are not events
     
     normalized = normalize_title(title)
+    
+    # Check for error messages first (these are never events)
+    for pattern in ERROR_MESSAGE_PATTERNS:
+        if re.search(pattern, normalized, re.IGNORECASE):
+            logger.debug(f"Matched error message pattern '{pattern}': {title}")
+            return True
     
     # Very short titles are suspicious (but not if they're proper event names)
     # Single words < 8 chars are likely navigation, but multi-word titles can be events
