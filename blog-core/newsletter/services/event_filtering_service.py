@@ -111,9 +111,9 @@ def is_page_heading(title: str, url: Optional[str] = None) -> bool:
             logger.debug(f"Matched page heading pattern '{pattern}': {title}")
             return True
     
-    # Check against navigation phrases
+    # Check against navigation phrases (exact match only)
     for phrase in NAVIGATION_PHRASES:
-        if normalized == phrase or normalized.startswith(phrase + ' '):
+        if normalized == phrase:
             logger.debug(f"Matched navigation phrase '{phrase}': {title}")
             return True
     
@@ -196,10 +196,11 @@ def is_likely_false_positive(item: Dict[str, Any]) -> tuple[bool, str]:
             # No URL and looks like just a venue name
             return (True, 'venue_name_no_info')
     
-    # Generic phrases that are clearly navigation
+    # Generic phrases that are clearly navigation (exact matches)
     generic_nav_phrases = [
         'multiple venues', 'various locations', 'across scotland',
-        'scotland\'s calendar', 'events & festivals', 'events and festivals'
+        'scotland\'s calendar', 'scotland\'s calendar of events',
+        'events & festivals', 'events and festivals', 'events & festivals in scotland'
     ]
     if normalized in [p.lower() for p in generic_nav_phrases]:
         return (True, 'generic_navigation_phrase')
