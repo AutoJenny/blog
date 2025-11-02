@@ -238,7 +238,7 @@ def is_likely_false_positive(item: Dict[str, Any]) -> tuple[bool, str]:
                     return (True, 'venue_page_not_event')
         # If no URL at all, be conservative - don't filter (might be a real event without URL yet)
     
-    # Generic phrases that are clearly navigation (exact matches)
+    # Generic phrases that are clearly navigation (exact matches or contains)
     generic_nav_phrases = [
         'multiple venues', 'various locations', 'across scotland',
         'scotland\'s calendar', 'scotland\'s calendar of events',
@@ -246,6 +246,38 @@ def is_likely_false_positive(item: Dict[str, Any]) -> tuple[bool, str]:
     ]
     if normalized in [p.lower() for p in generic_nav_phrases]:
         return (True, 'generic_navigation_phrase')
+    
+    # Newsletter/signup patterns (not events)
+    if any(phrase in normalized for phrase in ['sign up', 'signup', 'newsletter', 'subscribe']):
+        return (True, 'newsletter_signup')
+    
+    # Accommodation/booking patterns (not events)
+    if any(phrase in normalized for phrase in ['accommodation', 'booking', 'hotel', 'where to stay']):
+        return (True, 'accommodation_booking')
+    
+    # Title contains "Every" patterns that aren't event names (likely recurring info in title)
+    # Check if title ends with "every" patterns (this is recurring info, not event name)
+    if 'every' in normalized:
+        # If title ends with "every" or "every second" etc, it's recurring pattern, not event name
+        if normalized.endswith(('every', 'every second', 'every week', 'every month', 'every year', 'every saturday', 'every tuesday')):
+            return (True, 'recurring_pattern_in_title')
+        
+        # Check if title ends with camelCase where "Every" is concatenated (e.g., "FlightEvery second")
+        # Pattern: word ending with lowercase letter followed by "Every" or "every"
+        if re.search(r'[a-z][A-Z]every|flightevery|morningevery', normalized):
+            return (True, 'recurring_pattern_in_title')
+        
+        # Also check if it's a short title with "every" and no event keywords
+        if len(normalized.split()) <= 4 and not any(keyword in normalized for keyword in ['festival', 'show', 'event', 'gathering', 'concert', 'morning', 'exhibition']):
+            return (True, 'recurring_pattern_in_title')
+    
+    # Titles that end with text like "Every second" (recurring pattern appended to title)
+    # Pattern: title ends with word+word where second word suggests recurring pattern
+    words = normalized.split()
+    if len(words) >= 2:
+        last_two = ' '.join(words[-2:]).lower()
+        if last_two in ['every second', 'every week', 'every month', 'every year', 'every saturday', 'every tuesday']:
+            return (True, 'recurring_pattern_in_title')
     
     # Check raw_data for clues
     if isinstance(raw_data, dict):

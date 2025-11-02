@@ -35,36 +35,16 @@ def planning_calendar_ideas(post_id):
         from flask import request
         from datetime import datetime
         
-        # PRIORITY 1: Read from URL query parameters (canonical source)
+        # SINGLE SOURCE OF TRUTH: Read ONLY from URL query parameters
         url_year = request.args.get('year', type=int)
         url_week = request.args.get('week', type=int)
         
-        year = None
-        week_number = None
-        
+        # If URL params missing, default to current week (only for initial page load)
         if url_year and url_week:
-            # Use URL parameters as primary source
             year = url_year
             week_number = url_week
         else:
-            # PRIORITY 2: Fall back to post's schedule from database
-            with db_manager.get_cursor() as cursor:
-                cursor.execute("""
-                    SELECT cs.year, cs.week_number, cs.scheduled_date
-                    FROM calendar_schedule cs
-                    WHERE cs.post_id = %s
-                    ORDER BY cs.created_at DESC
-                    LIMIT 1
-                """, (post_id,))
-                
-                schedule = cursor.fetchone()
-                
-                if schedule:
-                    year = schedule['year']
-                    week_number = schedule['week_number']
-        
-        # PRIORITY 3: Final fallback to current week if nothing found
-        if not year or not week_number:
+            # Default to current week if URL doesn't have params
             now = datetime.now()
             year = now.year
             week_number = now.isocalendar()[1]

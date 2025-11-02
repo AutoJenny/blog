@@ -19,29 +19,60 @@ logger = logging.getLogger(__name__)
 
 
 def process_events(items: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """Process event-type items: filter false positives, deduplicate and import to calendar."""
+    """Process event-type items: filter false positives, parse with LLM, deduplicate and import to calendar."""
     from newsletter.services.event_filtering_service import filter_false_positives
+    from newsletter.services.event_parser_service import parse_events_batch
     
     event_items = [item for item in items if item.get('category') == 'event']
     
     if not event_items:
         return {'processed': 0, 'imported': 0, 'skipped': 0, 'filtered': 0}
     
-    # Filter out false positives (page headings, navigation elements)
+    # Step 1: Filter out false positives (page headings, navigation elements)
     valid_events, filtered = filter_false_positives(event_items)
     filtered_count = len(filtered)
     
     if filtered_count > 0:
         logger.info(f"Filtered {filtered_count} false positive events (page headings/navigation)")
     
-    # Check for duplicates before processing
+    # Step 2: Parse events with LLM for intelligent date/location/title extraction
+    # This ensures ALL events get properly parsed, not just VisitScotland
+    logger.info(f"Parsing {len(valid_events)} valid events with LLM...")
+    parsed_events = []
+    try:
+        parsed_events = parse_events_batch(valid_events)
+        logger.info(f"Successfully parsed {len(parsed_events)} events")
+    except Exception as e:
+        logger.error(f"Error parsing events with LLM: {e}", exc_info=True)
+        # Continue with unparsed events if LLM fails (degraded mode)
+        logger.warning("Continuing with unparsed events due to LLM failure")
+        parsed_events = valid_events
+    
+    # Step 3: Check for duplicates before processing
     deduplicated = []
     skipped_count = 0
     
-    for item in valid_events:
+    for item in parsed_events:
+        # Convert parsed event format to expected format (if it came from LLM parsing)
+        # LLM parsed events have different structure than raw events
+        if 'raw_data' in item and isinstance(item.get('raw_data'), dict):
+            # This is a parsed event, use the parsed fields
+            processed_item = {
+                'title': item.get('title', 'Unknown'),
+                'url': item.get('url', ''),
+                'event_date': item.get('event_date'),
+                'location': item.get('location'),
+                'description': item.get('description', '') or item.get('summary', ''),
+                'category': 'event',
+                'source_name': item.get('raw_data', {}).get('source_name', ''),
+                'raw_data': item.get('raw_data', {}),
+            }
+        else:
+            # This is a raw event (LLM parsing failed), use as-is
+            processed_item = item
         # Check if item should be skipped using should_skip_item helper
         skip_result = should_skip_item(
-            item,
+            processed_item,
             check_calendar=True,
             check_source_items=True
         )
@@ -49,15 +80,25 @@ def process_events(items: List[Dict[str, Any]]) -> Dict[str, Any]:
         if skip_result and skip_result.get('skip'):
             skipped_count += 1
             reason = skip_result.get('reason', 'unknown')
-            logger.debug(f"Skipping duplicate event: {item.get('title', 'Unknown')[:50]} ({reason})")
+            logger.debug(f"Skipping duplicate event: {processed_item.get('title', 'Unknown')[:50]} ({reason})")
             continue
         
-        deduplicated.append(item)
+        deduplicated.append(processed_item)
     
-    # Import events to calendar
+    # Step 4: Store events in newsletter_source_item (with parsed data)
+    # Store all deduplicated events so they're available for newsletter
+    stored_count = 0
+    if deduplicated:
+        try:
+            stored_count = store_source_items(deduplicated, update_duplicates=True)
+            logger.info(f"Stored {stored_count} events in newsletter_source_item")
+        except Exception as e:
+            logger.error(f"Error storing events: {e}", exc_info=True)
+    
+    # Step 5: Import events to calendar (optional, for calendar integration)
     import_result = import_events_from_items(deduplicated, skip_duplicates=True)
     
-    logger.info(f"Event processing: {len(valid_events)} valid, {filtered_count} filtered, {len(deduplicated)} deduplicated")
+    logger.info(f"Event processing: {len(valid_events)} valid, {filtered_count} filtered, {len(deduplicated)} deduplicated, {stored_count} stored")
     
     # Mark imported events in source items
     for item, result in zip(deduplicated, import_result.get('results', [])):
@@ -67,6 +108,7 @@ def process_events(items: List[Dict[str, Any]]) -> Dict[str, Any]:
     
     return {
         'processed': len(deduplicated),
+        'stored': stored_count,
         'imported': import_result.get('imported', 0),
         'skipped': skipped_count + import_result.get('skipped', 0),
         'filtered': filtered_count,

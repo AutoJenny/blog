@@ -119,8 +119,13 @@ def api_posts_expanded_idea(post_id):
                             })
                     
                     logger.warn(f"No expanded idea found for week {url_year}/{url_week}")
+                    # If week context provided but no expanded idea found, return null (don't fall back to post)
+                    return jsonify({
+                        'success': True,
+                        'expanded_idea': None
+                    })
             
-            # Fallback: fetch expanded idea for the requested post_id (original behavior)
+            # If no week context in URL, fetch expanded idea for the requested post_id
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
                     SELECT expanded_idea

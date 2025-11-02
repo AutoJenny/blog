@@ -425,7 +425,8 @@ document.addEventListener('DOMContentLoaded', function() {
         window.postId = urlPostId || 0;
     }
     
-    window.weekNumber = {{ week_number }};
+    // SINGLE SOURCE OF TRUTH: Week context is read from URL via WeekContext module
+    // No window.weekNumber assignment needed
     
     // Initialize LLM module (expanded idea generation)
     llmModule = initializeLLMModule('ideas', window.postId);
@@ -537,12 +538,17 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-async function loadExpandedIdea() {
-    try {
-        // CRITICAL: Pass year/week parameters so API can fetch expanded idea for the CORRECT week
-        const urlParams = new URLSearchParams(window.location.search);
-        const year = urlParams.get('year') || window.year;
-        const week = urlParams.get('week') || window.weekNumber;
+    async function loadExpandedIdea() {
+        try {
+            // SINGLE SOURCE OF TRUTH: Read year/week from URL only
+            let year, week;
+            if (window.WeekContext) {
+                const weekContext = window.WeekContext.getWeekContext();
+                if (weekContext) {
+                    year = weekContext.year;
+                    week = weekContext.week;
+                }
+            }
         
         let url = `/planning/api/posts/${window.postId}/expanded-idea`;
         if (year && week) {

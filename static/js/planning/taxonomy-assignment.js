@@ -190,12 +190,17 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Generate taxonomy using LLM
     async function generateTaxonomy() {
-        // CRITICAL: Get expanded idea for the CORRECT week, not just the post_id
+            // CRITICAL: Get expanded idea for the CORRECT week, not just the post_id
         try {
-            // Read year/week from URL parameters (canonical source)
-            const urlParams = new URLSearchParams(window.location.search);
-            const year = urlParams.get('year') || window.year;
-            const week = urlParams.get('week') || window.weekNumber;
+            // SINGLE SOURCE OF TRUTH: Read year/week from URL only
+            let year, week;
+            if (window.WeekContext) {
+                const weekContext = window.WeekContext.getWeekContext();
+                if (weekContext) {
+                    year = weekContext.year;
+                    week = weekContext.week;
+                }
+            }
             
             let expandedIdeaUrl = `/planning/api/posts/${postId}/expanded-idea`;
             if (year && week) {
