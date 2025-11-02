@@ -50,7 +50,7 @@ class PlaywrightAdapter(SourceAdapter):
             ],
         },
         'nms.ac.uk': {
-            'wait_selector': 'main [class*="event"], main [class*="activity"], main article',
+            'wait_selector': 'main, body',
             'wait_timeout': 15000,
             'cookie_consent_selectors': [
                 'button[class*="accept"]',
@@ -63,6 +63,8 @@ class PlaywrightAdapter(SourceAdapter):
                 r'/api/.*whats-on',
                 r'/api/.*activities?',
             ],
+            'item_selector': 'a[href*="/whats-on/"]:not([href="/whats-on/"]):not([href="https://www.nms.ac.uk/whats-on/"])',
+            'skip_text': ['what\'s on', 'whats on', 'home', 'exhibitions', 'events'],
         },
     }
     
@@ -193,7 +195,47 @@ class PlaywrightAdapter(SourceAdapter):
         items = []
         
         try:
-            # Get page HTML after JavaScript rendering
+            # Use site-specific item selector if available (for link-based extraction)
+            item_selector = self.site_config.get('item_selector')
+            skip_text = self.site_config.get('skip_text', [])
+            
+            if item_selector:
+                # Extract directly via Playwright (better for dynamic content)
+                try:
+                    links = page.query_selector_all(item_selector)
+                    logger.debug(f"Found {len(links)} links matching item selector")
+                    
+                    for link in links[:20]:  # Limit to 20 items
+                        text = link.inner_text().strip()
+                        href = link.get_attribute('href') or ''
+                        
+                        # Skip navigation/header links
+                        if not text or any(skip in text.lower() for skip in skip_text):
+                            continue
+                        
+                        if len(text) < 5:  # Skip very short text
+                            continue
+                        
+                        # Build full URL
+                        if href and not href.startswith('http'):
+                            from urllib.parse import urljoin
+                            href = urljoin(self.base_url, href)
+                        
+                        items.append({
+                            'title': text,
+                            'url': href or self.base_url,
+                            'date_text': '',
+                            'location': '',
+                            'description': '',
+                        })
+                    
+                    if items:
+                        logger.info(f"Extracted {len(items)} items from links")
+                        return items
+                except Exception as e:
+                    logger.debug(f"Link-based extraction failed: {e}, falling back to DOM")
+            
+            # Fallback: Use BeautifulSoup for DOM parsing
             html = page.content()
             soup = BeautifulSoup(html, 'html.parser')
             
@@ -390,7 +432,14 @@ class PlaywrightAdapter(SourceAdapter):
                 
                 # Navigate to page
                 logger.info(f"Loading {self.base_url} with Playwright...")
-                page.goto(self.base_url, wait_until='networkidle', timeout=30000)
+                try:
+                    page.goto(self.base_url, wait_until='domcontentloaded', timeout=30000)
+                except Exception:
+                    # If domcontentloaded times out, try load
+                    try:
+                        page.goto(self.base_url, wait_until='load', timeout=30000)
+                    except Exception as e:
+                        logger.warning(f"Navigation timeout, continuing anyway: {e}")
                 
                 # Handle cookie consent
                 self._handle_cookie_consent(page)
