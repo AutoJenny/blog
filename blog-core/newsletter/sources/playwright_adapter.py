@@ -63,8 +63,9 @@ class PlaywrightAdapter(SourceAdapter):
                 r'/api/.*whats-on',
                 r'/api/.*activities?',
             ],
-            'item_selector': 'a[href*="/whats-on/"]:not([href="/whats-on/"]):not([href="https://www.nms.ac.uk/whats-on/"])',
-            'skip_text': ['what\'s on', 'whats on', 'home', 'exhibitions', 'events'],
+            'item_selector': 'a[href*="/whats-on/"]',
+            'skip_text': ['what\'s on', 'whats on', 'home', 'exhibitions', 'events', 'view all'],
+            'min_text_length': 15,  # Minimum text length for event links
         },
     }
     
@@ -205,16 +206,39 @@ class PlaywrightAdapter(SourceAdapter):
                     links = page.query_selector_all(item_selector)
                     logger.debug(f"Found {len(links)} links matching item selector")
                     
-                    for link in links[:20]:  # Limit to 20 items
+                    min_length = self.site_config.get('min_text_length', 10)
+                    
+                    for link in links[:50]:  # Check more links
                         text = link.inner_text().strip()
                         href = link.get_attribute('href') or ''
                         
-                        # Skip navigation/header links
-                        if not text or any(skip in text.lower() for skip in skip_text):
+                        # Skip if href is the base page or navigation
+                        if not href or href in ['/whats-on/', '/whats-on', 'https://www.nms.ac.uk/whats-on/', 'https://www.nms.ac.uk/whats-on']:
                             continue
                         
-                        if len(text) < 5:  # Skip very short text
+                        # Skip navigation/header links
+                        if not text:
                             continue
+                        
+                        if any(skip in text.lower() for skip in skip_text):
+                            continue
+                        
+                        # Enforce minimum text length
+                        if len(text) < min_length:
+                            continue
+                        
+                        # Skip if it's not an actual event page (should have more path after /whats-on/)
+                        if '/whats-on/' in href:
+                            # Extract path after /whats-on/
+                            parts = href.split('/whats-on/')
+                            if len(parts) > 1:
+                                after_path = parts[1].split('/')[0].split('?')[0]
+                            else:
+                                after_path = ''
+                            
+                            # If after_path is empty or just navigation, skip
+                            if not after_path or after_path in ['', '#']:
+                                continue
                         
                         # Build full URL
                         if href and not href.startswith('http'):
