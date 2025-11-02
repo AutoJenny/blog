@@ -1435,3 +1435,13 @@ LINE 10:                                 AND is_selected = TRUE
 2025-11-02 09:54:12,978 - werkzeug - INFO -  * Restarting with stat
 2025-11-02 09:54:13,319 - werkzeug - WARNING -  * Debugger is active!
 2025-11-02 09:54:13,325 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 09:55:22,892 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/event_filtering_service.py', reloading
+2025-11-02 09:55:22,958 - werkzeug - INFO -  * Restarting with stat
+Traceback (most recent call last):
+  File "/Users/autojenny/Documents/projects/blog/unified_app.py", line 225, in <module>
+    app = create_app()
+  File "/Users/autojenny/Documents/projects/blog/unified_app.py", line 94, in create_app
+    from blueprints.planning import bp as planning_bp
+  File "/Users/autojenny/Documents/projects/blog/blueprints/planning.py", line 24, in <module>
+    from blueprints.planning_api_post_specific import api_posts_expanded_idea as expanded_idea_api_func, api_posts_idea_seed as idea_seed_api_func, api_check_topic as check_topic_api_func, api_create_new_post as create_new_api_func, api_posts_idea_scope as idea_scope_api_func, get_post_by_theme as get_post_by_theme_func
+ImportError: cannot import name 'get_post_by_theme' from 'blueprints.planning_api_post_specific' (/Users/autojenny/Documents/projects/blog/blueprints/planning_api_post_specific.py)
