@@ -101,22 +101,13 @@ Return ONLY a single word: either "annual" or "one_off". No explanations, no JSO
 
     try:
         model_name = os.environ.get('DEFAULT_LLM_MODEL', 'llama3.2:latest')
-        # LLMService uses 'generate' method, but check if it exists
-        if hasattr(llm_service, 'generate'):
-            response = llm_service.generate(
-                prompt=prompt,
-                model_name=model_name,
-                temperature=0.1,  # Very low temperature for consistent classification
-                max_tokens=10
-            )
-        else:
-            # Try alternative method name
-            response = llm_service.call(
-                prompt=prompt,
-                model=model_name,
-                temperature=0.1,
-                max_tokens=10
-            )
+        # LLMService uses 'generate' method
+        response = llm_service.generate(
+            prompt=prompt,
+            model_name=model_name,
+            temperature=0.1,  # Very low temperature for consistent classification
+            max_tokens=10
+        )
         
         if not response:
             # Fallback: use heuristic

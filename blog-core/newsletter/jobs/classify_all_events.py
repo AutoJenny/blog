@@ -4,8 +4,12 @@ import sys
 import os
 from pathlib import Path
 
-# Add blog-core to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+# Add project root to path (go up from blog-core/newsletter/jobs/ to project root)
+script_dir = Path(__file__).parent
+blog_core_dir = script_dir.parent.parent
+project_root = blog_core_dir.parent
+sys.path.insert(0, str(blog_core_dir))
+sys.path.insert(0, str(project_root))
 
 from config.database import db_manager
 from psycopg.rows import dict_row
