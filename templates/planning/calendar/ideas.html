@@ -567,7 +567,17 @@ function escapeHtml(text) {
 
 async function loadExpandedIdea() {
     try {
-        const response = await fetch(`/planning/api/posts/${window.postId}/expanded-idea`);
+        // CRITICAL: Pass year/week parameters so API can fetch expanded idea for the CORRECT week
+        const urlParams = new URLSearchParams(window.location.search);
+        const year = urlParams.get('year') || window.year;
+        const week = urlParams.get('week') || window.weekNumber;
+        
+        let url = `/planning/api/posts/${window.postId}/expanded-idea`;
+        if (year && week) {
+            url += `?year=${year}&week=${week}`;
+        }
+        
+        const response = await fetch(url);
         const data = await response.json();
         
         if (data.success) {

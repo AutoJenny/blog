@@ -25,3 +25,50 @@ psycopg.ProgrammingError: incomplete placeholder: '%'; if you want to use '%' as
 2025-11-02 08:14:38,864 - werkzeug - INFO -  * Restarting with stat
 2025-11-02 08:14:39,187 - werkzeug - WARNING -  * Debugger is active!
 2025-11-02 08:14:39,192 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:14:47,943 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/news_synopsis_service.py', reloading
+2025-11-02 08:14:47,987 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:14:48,294 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:14:48,300 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:15:32,895 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:15:32] "GET /planning/posts/78/calendar/ideas?year=2025&week=45 HTTP/1.1" 200 -
+2025-11-02 08:15:50,922 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:15:50] "GET /newsletter/news HTTP/1.1" 200 -
+2025-11-02 08:15:50,947 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:15:50] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-02 08:15:50,949 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:15:50] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-02 08:15:50,949 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:15:50] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-02 08:15:50,950 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:15:50] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-02 08:15:50,950 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:15:50] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-02 08:15:50,950 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:15:50] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-02 08:15:50,951 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:15:50] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-02 08:15:50,953 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:15:50] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-02 08:15:50,983 - config.database - INFO - Database connection established
+2025-11-02 08:15:50,991 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:15:50] "GET /newsletter/news/summary?days_back=7&limit=100&sort_by=combined_score HTTP/1.1" 200 -
+2025-11-02 08:16:19,304 - config.database - INFO - Database connection established
+2025-11-02 08:16:19,318 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:16:19] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 08:16:31,656 - config.database - INFO - Database connection established
+2025-11-02 08:16:31,661 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:16:31] "GET /newsletter/news/summary?days_back=7&limit=100&sort_by=suitability_score HTTP/1.1" 200 -
+2025-11-02 08:18:35,902 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_api_post_specific.py', reloading
+2025-11-02 08:18:35,945 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:18:36,263 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:18:36,270 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:18:46,827 - config.database - INFO - Database connection established
+2025-11-02 08:18:46,829 - blueprints.planning_api_post_specific - ERROR - Error fetching expanded idea: column "is_selected" does not exist
+LINE 10:                                 AND is_selected = TRUE
+                                             ^
+2025-11-02 08:18:46,830 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:18:46] "[35m[1mGET /planning/api/posts/78/expanded-idea?year=2025&week=45 HTTP/1.1[0m" 500 -
+2025-11-02 08:19:03,188 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_api_post_specific.py', reloading
+2025-11-02 08:19:03,230 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:19:03,548 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:19:03,554 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:19:10,455 - config.database - INFO - Database connection established
+2025-11-02 08:19:10,464 - config.database - INFO - Database connection established
+2025-11-02 08:19:10,467 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:19:10] "GET /planning/api/posts/78/expanded-idea?year=2025&week=45 HTTP/1.1" 200 -
+2025-11-02 08:19:24,311 - config.database - INFO - Database connection established
+2025-11-02 08:19:24,321 - config.database - INFO - Database connection established
+2025-11-02 08:19:24,322 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:19:24] "GET /planning/api/posts/78/expanded-idea?year=2025&week=45 HTTP/1.1" 200 -
+2025-11-02 08:19:35,986 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_api_post_specific.py', reloading
+2025-11-02 08:19:36,040 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:19:36,367 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:19:36,373 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:19:38,279 - config.database - INFO - Database connection established
+2025-11-02 08:19:38,288 - config.database - INFO - Database connection established
+2025-11-02 08:19:38,290 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:19:38] "GET /planning/api/posts/78/expanded-idea?year=2025&week=45 HTTP/1.1" 200 -
+2025-11-02 08:19:38,573 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:19:38] "GET /planning/posts/78/calendar/ideas?year=2025&week=45 HTTP/1.1" 200 -

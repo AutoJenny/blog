@@ -17,6 +17,40 @@ def api_posts_expanded_idea(post_id):
     """Get or create expanded idea for a post"""
     if request.method == 'GET':
         try:
+            # CRITICAL: Read year/week from query parameters to get expanded idea for the CORRECT week
+            url_year = request.args.get('year', type=int)
+            url_week = request.args.get('week', type=int)
+            
+            # If week context is provided, fetch expanded idea for that week's selected theme/post
+            if url_year and url_week:
+                with db_manager.get_cursor() as cursor:
+                    # Find the post associated with the selected theme for this week
+                    # The selected theme is the one with item_classification='theme' for this week
+                    # CRITICAL: We want ANY post that has this week's theme, not just the requested post_id
+                    cursor.execute("""
+                        SELECT cs.post_id, pd.expanded_idea
+                        FROM calendar_schedule cs
+                        LEFT JOIN post_development pd ON cs.post_id = pd.post_id
+                        LEFT JOIN calendar_ideas ci ON cs.idea_id = ci.id
+                        WHERE cs.year = %s 
+                          AND cs.week_number = %s
+                          AND ci.item_classification = 'theme'
+                          AND cs.post_id IS NOT NULL
+                          AND pd.expanded_idea IS NOT NULL
+                          AND pd.expanded_idea != ''
+                        ORDER BY cs.created_at DESC
+                        LIMIT 1
+                    """, (url_year, url_week))
+                    
+                    week_result = cursor.fetchone()
+                    
+                    if week_result and week_result['expanded_idea']:
+                        return jsonify({
+                            'success': True,
+                            'expanded_idea': week_result['expanded_idea']
+                        })
+            
+            # Fallback: fetch expanded idea for the requested post_id (original behavior)
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
                     SELECT expanded_idea
