@@ -272,3 +272,9 @@ LINE 10:                                 AND is_selected = TRUE
 2025-11-02 09:07:04,153 - werkzeug - INFO -  * Restarting with stat
 2025-11-02 09:07:04,503 - werkzeug - WARNING -  * Debugger is active!
 2025-11-02 09:07:04,510 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 09:10:52,185 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/sources/playwright_adapter.py', reloading
+2025-11-02 09:10:52,242 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 09:10:52,596 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 09:10:52,602 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 09:11:09,138 - config.database - INFO - Database connection established
+2025-11-02 09:11:09,148 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:11:09] "GET /launchpad/api/queue HTTP/1.1" 200 -
