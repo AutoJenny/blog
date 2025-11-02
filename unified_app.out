@@ -7411,3 +7411,53 @@ Reasoning: The story is mundane and lacks a unique angle, making it not particul
 2025-11-02 07:46:33,449 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 07:46:33] "GET /launchpad/api/queue HTTP/1.1" 200 -
 2025-11-02 07:47:03,432 - config.database - INFO - Database connection established
 2025-11-02 07:47:03,439 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 07:47:03] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 07:47:33,431 - config.database - INFO - Database connection established
+2025-11-02 07:47:33,437 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 07:47:33] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 07:48:03,434 - config.database - INFO - Database connection established
+2025-11-02 07:48:03,440 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 07:48:03] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 07:48:19,161 - config.database - INFO - Database connection established
+2025-11-02 07:48:19,164 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 07:48:19] "GET /llm-actions/?post_id=78 HTTP/1.1" 200 -
+2025-11-02 07:48:19,272 - config.database - INFO - Database connection established
+2025-11-02 07:48:19,283 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 07:48:19] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 07:48:33,434 - config.database - INFO - Database connection established
+2025-11-02 07:48:33,442 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 07:48:33] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 07:49:03,436 - config.database - INFO - Database connection established
+2025-11-02 07:49:03,443 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 07:49:03] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 07:49:33,438 - config.database - INFO - Database connection established
+2025-11-02 07:49:33,449 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 07:49:33] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 07:49:53,018 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-11-02 07:49:53,068 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 07:49:53,413 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 07:49:53,420 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 07:50:01,013 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning.py', reloading
+2025-11-02 07:50:01,061 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 07:50:01,405 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 07:50:01,412 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 07:50:03,449 - config.database - INFO - Database connection established
+2025-11-02 07:50:03,457 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 07:50:03] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 07:50:07,930 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_views.py', reloading
+2025-11-02 07:50:07,980 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 07:50:08,320 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 07:50:08,326 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 07:50:33,454 - config.database - INFO - Database connection established
+2025-11-02 07:50:33,465 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 07:50:33] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 07:51:03,440 - config.database - INFO - Database connection established
+2025-11-02 07:51:03,448 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 07:51:03] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 07:51:33,437 - config.database - INFO - Database connection established
+2025-11-02 07:51:33,444 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 07:51:33] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 07:52:03,439 - config.database - INFO - Database connection established
+2025-11-02 07:52:03,447 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 07:52:03] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 07:52:33,440 - config.database - INFO - Database connection established
+2025-11-02 07:52:33,446 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 07:52:33] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 07:52:59,369 - config.database - INFO - Database connection established
+2025-11-02 07:52:59,376 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 07:52:59] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 07:53:03,441 - config.database - INFO - Database connection established
+2025-11-02 07:53:03,449 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 07:53:03] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 07:53:06,033 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 07:53:06] "GET /planning/posts/78/calendar/week-view?year=2025&week=45 HTTP/1.1" 200 -
+2025-11-02 07:53:23,614 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/core.py', reloading
+2025-11-02 07:53:23,667 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 07:53:23,986 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 07:53:23,991 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 07:53:33,460 - config.database - INFO - Database connection established
+2025-11-02 07:53:33,470 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 07:53:33] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 07:53:43,923 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 07:53:43] "GET /planning/posts/78/calendar/week-view?year=2025&week=45 HTTP/1.1" 200 -
