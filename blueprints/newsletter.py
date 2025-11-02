@@ -704,6 +704,8 @@ def delete_event(event_id: int):
     logger = logging.getLogger(__name__)
     
     try:
+        from config.database import db_manager
+        
         with db_manager.get_connection() as conn:
             with conn.cursor() as cur:
                 # Check event exists
