@@ -72,6 +72,13 @@ function renderItems(container, items, type) {
       div.dataset.eventId = item.id || item._eventId;
       div.style.cursor = 'pointer';
       div.title = 'Click to view/edit event';
+      // Add class based on recurrence type
+      if (item.event_recurrence_type === 'one_off') {
+        div.classList.add('special');
+      } else {
+        // Default to annual for null/undefined or explicit 'annual'
+        div.classList.add('annual');
+      }
     }
     if (type === 'scheduled' && item._syndication) {
       // Syndication display: Platform icon + Operation — Time
@@ -163,7 +170,9 @@ function renderAdvanceNotice(event, weekDates, year, weekNumber) {
     
     // Check if this day is in the advance notice period (before event date, on or after advance start)
     if (dayDate.getTime() >= advanceStart.getTime() && dayDate.getTime() <= advanceEnd.getTime()) {
-      const target = document.getElementById(`events-row-day-${dayOfWeek}`);
+      // Determine which row to render advance notice in based on event recurrence type
+      const rowPrefix = event.event_recurrence_type === 'one_off' ? 'special-events-row' : 'annual-events-row';
+      const target = document.getElementById(`${rowPrefix}-day-${dayOfWeek}`);
       if (!target) return;
       
       // Determine if this is the "start" button day
@@ -362,7 +371,8 @@ async function loadWeek(year, weekNumber) {
     return cells;
   };
 
-  const eventsCells = ensureRowCells('events-row');
+  const annualEventsCells = ensureRowCells('annual-events-row');
+  const specialEventsCells = ensureRowCells('special-events-row');
   const ideasCells = ensureRowCells('ideas-row');
   const syndicationCells = ensureRowCells('syndication-row');
 
@@ -424,11 +434,26 @@ async function loadWeek(year, weekNumber) {
     });
   }
 
-  // Render events per day into Events row
-  if (showEvents && eventsCells) {
-    // Store events globally for click handler access
-    window.currentWeekEvents = events;
-    events.forEach((ev) => {
+  // Split events into annual and special based on event_recurrence_type
+  const annualEvents = [];
+  const specialEvents = [];
+  events.forEach((ev) => {
+    // event_recurrence_type: 'annual' = annual, 'one_off' = special, null/undefined = annual (default/legacy)
+    const recurrenceType = ev.event_recurrence_type;
+    if (recurrenceType === 'one_off') {
+      specialEvents.push(ev);
+    } else {
+      // Default to annual for null/undefined or explicit 'annual'
+      annualEvents.push(ev);
+    }
+  });
+
+  // Store events globally for click handler access
+  window.currentWeekEvents = events;
+
+  // Render annual events per day into Annual Events row
+  if (showEvents && annualEventsCells) {
+    annualEvents.forEach((ev) => {
       // Only render the main event icon if the event's actual date is in this week
       const eventStartDate = ev.start_date ? new Date(ev.start_date) : null;
       if (eventStartDate) {
@@ -445,13 +470,50 @@ async function loadWeek(year, weekNumber) {
         if (eventInThisWeek) {
           // Only render the main event icon if the event date is actually in this week
           const dayIdx = ev.weekday || ev.day || 1; // 1..7
-          const target = document.getElementById(`events-row-day-${Math.min(Math.max(dayIdx, 1), 7)}`);
+          const target = document.getElementById(`annual-events-row-day-${Math.min(Math.max(dayIdx, 1), 7)}`);
           renderItems(target, [ev], 'event');
         }
       } else {
         // Fallback: render if no start_date (shouldn't happen, but handle gracefully)
         const dayIdx = ev.weekday || ev.day || 1; // 1..7
-        const target = document.getElementById(`events-row-day-${Math.min(Math.max(dayIdx, 1), 7)}`);
+        const target = document.getElementById(`annual-events-row-day-${Math.min(Math.max(dayIdx, 1), 7)}`);
+        renderItems(target, [ev], 'event');
+      }
+      
+      // Always render advance notice period if the event has one
+      // (this will only show indicators for days in the advance period, not the main event)
+      if (ev.advance_notice && ev.start_date) {
+        renderAdvanceNotice(ev, dates, year, weekNumber);
+      }
+    });
+  }
+
+  // Render special events per day into Special Events row
+  if (showEvents && specialEventsCells) {
+    specialEvents.forEach((ev) => {
+      // Only render the main event icon if the event's actual date is in this week
+      const eventStartDate = ev.start_date ? new Date(ev.start_date) : null;
+      if (eventStartDate) {
+        eventStartDate.setUTCHours(0, 0, 0, 0);
+        const weekStartDate = new Date(dates[0]);
+        weekStartDate.setUTCHours(0, 0, 0, 0);
+        const weekEndDate = new Date(dates[6]);
+        weekEndDate.setUTCHours(23, 59, 59, 999);
+        
+        // Check if the event's actual date falls within this week
+        const eventInThisWeek = eventStartDate.getTime() >= weekStartDate.getTime() && 
+                                eventStartDate.getTime() <= weekEndDate.getTime();
+        
+        if (eventInThisWeek) {
+          // Only render the main event icon if the event date is actually in this week
+          const dayIdx = ev.weekday || ev.day || 1; // 1..7
+          const target = document.getElementById(`special-events-row-day-${Math.min(Math.max(dayIdx, 1), 7)}`);
+          renderItems(target, [ev], 'event');
+        }
+      } else {
+        // Fallback: render if no start_date (shouldn't happen, but handle gracefully)
+        const dayIdx = ev.weekday || ev.day || 1; // 1..7
+        const target = document.getElementById(`special-events-row-day-${Math.min(Math.max(dayIdx, 1), 7)}`);
         renderItems(target, [ev], 'event');
       }
       
@@ -773,6 +835,7 @@ async function loadWeek(year, weekNumber) {
 
   function updateFilterVisuals() {
     const map = [
+      { id: 'toggle-themes', cls: 'filter-themes' },
       { id: 'toggle-ideas', cls: 'filter-ideas' },
       { id: 'toggle-events', cls: 'filter-events' },
       { id: 'toggle-syndication', cls: 'filter-syndication' },
