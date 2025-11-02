@@ -12,7 +12,7 @@ from psycopg.rows import dict_row
 logger = logging.getLogger(__name__)
 
 
-def get_event_items(days_back: int = 365, days_ahead: int = 365, source_name: Optional[str] = None, location: Optional[str] = None, include_all_without_dates: bool = True) -> List[Dict[str, Any]]:
+def get_event_items(days_back: int = 365, days_ahead: int = 365, source_name: Optional[str] = None, location: Optional[str] = None, include_all_without_dates: bool = True, recurrence_type: Optional[str] = None) -> List[Dict[str, Any]]:
     """Get event items from database for specified date range.
     
     Args:
@@ -65,11 +65,17 @@ def get_event_items(days_back: int = 365, days_ahead: int = 365, source_name: Op
         where_clauses.append("(location ILIKE %s OR raw_data->>'location' ILIKE %s)")
         params.extend([f'%{location}%', f'%{location}%'])
     
+    if recurrence_type:
+        if recurrence_type in ('annual', 'one_off'):
+            where_clauses.append("event_recurrence_type = %s")
+            params.append(recurrence_type)
+    
     sql = f"""
         SELECT 
             id, source_name, title, url, published_at, event_date, location, category,
             raw_data, signal_score, freshness_score, combined_score, cached_at,
-            suitability_score, suitability_notes, is_event, calendar_event_id
+            suitability_score, suitability_notes, is_event, calendar_event_id,
+            event_recurrence_type
         FROM newsletter_source_item
         WHERE {' AND '.join(where_clauses)}
         ORDER BY 
