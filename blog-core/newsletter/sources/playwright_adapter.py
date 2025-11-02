@@ -400,6 +400,7 @@ class PlaywrightAdapter(SourceAdapter):
                     
                     # Build full URL
                     if not href.startswith('http'):
+                        from urllib.parse import urljoin
                         href = urljoin(self.base_url, href)
                     
                     if href in seen:
