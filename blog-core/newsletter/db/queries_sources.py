@@ -41,8 +41,17 @@ def store_source_items(items: List[Dict[str, Any]], update_duplicates: bool = Tr
                     title = item.get('title', '')
                     category = item.get('category', 'other')
                     
-                    # For event items, use enhanced fuzzy deduplication
+                    # For event items, filter false positives first, then use enhanced fuzzy deduplication
                     if category == 'event':
+                        from newsletter.services.event_filtering_service import is_likely_false_positive
+                        
+                        is_false, reason = is_likely_false_positive(item)
+                        if is_false:
+                            import logging
+                            logging.debug(f"Skipping false positive event: {title[:50]} ({reason})")
+                            skipped += 1
+                            continue
+                        
                         existing_id, was_updated = find_and_merge_duplicate(
                             new_item=item,
                             update_existing=update_duplicates

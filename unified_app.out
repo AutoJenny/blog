@@ -1315,3 +1315,115 @@ LINE 10:                                 AND is_selected = TRUE
 2025-11-02 09:47:13,403 - werkzeug - INFO -  * Restarting with stat
 2025-11-02 09:47:13,764 - werkzeug - WARNING -  * Debugger is active!
 2025-11-02 09:47:13,771 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 09:50:11,655 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:50:11] "GET /newsletter/events HTTP/1.1" 200 -
+2025-11-02 09:50:11,674 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:50:11] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-02 09:50:11,675 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:50:11] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-02 09:50:11,675 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:50:11] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-02 09:50:11,676 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:50:11] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-02 09:50:11,677 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:50:11] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-02 09:50:11,678 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:50:11] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-02 09:50:11,678 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:50:11] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-02 09:50:11,679 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:50:11] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-02 09:50:11,704 - config.database - INFO - Database connection established
+2025-11-02 09:50:11,711 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:50:11] "GET /newsletter/events/summary?days_back=30&days_ahead=90 HTTP/1.1" 200 -
+2025-11-02 09:51:51,765 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:51:51] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-11-02 09:51:51,766 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:51:51] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-11-02 09:51:51,766 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:51:51] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-02 09:51:51,767 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:51:51] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
+2025-11-02 09:51:51,768 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:51:51] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
+2025-11-02 09:51:51,768 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:51:51] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
+2025-11-02 09:53:28,268 - config.database - INFO - Database connection established
+2025-11-02 09:53:28,282 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "GET /planning/posts/78/calendar/taxonomy?year=2025&week=45 HTTP/1.1" 200 -
+2025-11-02 09:53:28,321 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-02 09:53:28,323 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-02 09:53:28,325 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-11-02 09:53:28,325 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-02 09:53:28,325 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-02 09:53:28,326 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-02 09:53:28,326 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-02 09:53:28,327 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-02 09:53:28,329 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-11-02 09:53:28,330 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "GET /static/js/planning/taxonomy-assignment.js HTTP/1.1" 200 -
+2025-11-02 09:53:28,332 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-02 09:53:28,333 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-02 09:53:28,333 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-11-02 09:53:28,351 - config.database - INFO - Database connection established
+2025-11-02 09:53:28,353 - config.database - INFO - Database connection established
+2025-11-02 09:53:28,356 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "GET /api/taxonomy/items?tier=theme HTTP/1.1" 200 -
+2025-11-02 09:53:28,363 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "GET /planning/api/posts/78 HTTP/1.1" 200 -
+2025-11-02 09:53:28,365 - config.database - INFO - Database connection established
+2025-11-02 09:53:28,369 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "GET /api/taxonomy/items?tier=format HTTP/1.1" 200 -
+2025-11-02 09:53:28,374 - config.database - INFO - Database connection established
+2025-11-02 09:53:28,378 - config.database - INFO - Database connection established
+2025-11-02 09:53:28,380 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "GET /planning/api/calendar/schedule/2025/45 HTTP/1.1" 200 -
+2025-11-02 09:53:28,382 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "GET /planning/api/posts/78/taxonomy HTTP/1.1" 200 -
+2025-11-02 09:53:28,389 - config.database - INFO - Database connection established
+2025-11-02 09:53:28,390 - config.database - INFO - Database connection established
+2025-11-02 09:53:28,393 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "GET /api/taxonomy/content-types?theme_id=1 HTTP/1.1" 200 -
+2025-11-02 09:53:28,400 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "GET /planning/api/calendar/ideas/132 HTTP/1.1" 200 -
+2025-11-02 09:53:28,408 - config.database - INFO - Database connection established
+2025-11-02 09:53:28,410 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "GET /planning/api/calendar/schedule/2025/45 HTTP/1.1" 200 -
+2025-11-02 09:53:28,417 - config.database - INFO - Database connection established
+2025-11-02 09:53:28,424 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "GET /planning/api/calendar/ideas/132 HTTP/1.1" 200 -
+2025-11-02 09:53:28,435 - config.database - INFO - Database connection established
+2025-11-02 09:53:28,444 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:28] "GET /planning/api/posts/78 HTTP/1.1" 200 -
+2025-11-02 09:53:30,744 - config.database - INFO - Database connection established
+2025-11-02 09:53:30,752 - blueprints.planning_api_post_specific - INFO - Week 2025/45 has theme: Autumn Landscapes (ID: 132)
+2025-11-02 09:53:30,753 - blueprints.planning_api_post_specific - INFO - Found expanded idea for theme 'Autumn Landscapes': post 81
+2025-11-02 09:53:30,753 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:30] "GET /planning/api/posts/78/expanded-idea?year=2025&week=45 HTTP/1.1" 200 -
+2025-11-02 09:53:30,768 - config.database - INFO - Database connection established
+2025-11-02 09:53:30,772 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:30] "GET /planning/api/calendar/schedule/2025/45 HTTP/1.1" 200 -
+2025-11-02 09:53:30,786 - config.database - INFO - Database connection established
+2025-11-02 09:53:30,792 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:30] "GET /planning/api/calendar/schedule/2025/45 HTTP/1.1" 200 -
+2025-11-02 09:53:30,805 - config.database - INFO - Database connection established
+2025-11-02 09:53:30,808 - blueprints.planning_api_taxonomy - INFO - Week 2025/45 has theme idea_id 132
+2025-11-02 09:53:30,808 - blueprints.planning_api_taxonomy - INFO - Found post 81 with theme idea_id 132 (instead of URL post_id 78)
+2025-11-02 09:53:30,815 - config.database - INFO - Database connection established
+2025-11-02 09:53:30,840 - config.database - INFO - Database connection established
+2025-11-02 09:53:30,844 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-11-02 09:53:32,747 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 514
+2025-11-02 09:53:32,747 - blueprints.planning_api_taxonomy - INFO - LLM raw response: {{ 
+  "theme_id": 3,
+  "content_type_id": 9,
+  "format_id": 11,
+  "reasoning": "Autumn Landscapes in Scotland best fits the theme of Scotland & Nature, with a focus on landscapes and seasons"
+}}
+2025-11-02 09:53:32,747 - blueprints.planning_api_taxonomy - ERROR - JSON parse error: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+2025-11-02 09:53:32,747 - blueprints.planning_api_taxonomy - ERROR - Attempted to parse: {{ 
+  "theme_id": 3,
+  "content_type_id": 9,
+  "format_id": 11,
+  "reasoning": "Autumn Landscapes in Scotland best fits the theme of Scotland & Nature, with a focus on landscapes and seasons"
+}}
+2025-11-02 09:53:32,747 - blueprints.planning_api_taxonomy - ERROR - Full LLM response: {{ 
+  "theme_id": 3,
+  "content_type_id": 9,
+  "format_id": 11,
+  "reasoning": "Autumn Landscapes in Scotland best fits the theme of Scotland & Nature, with a focus on landscapes and seasons"
+}}
+2025-11-02 09:53:32,748 - blueprints.planning_api_taxonomy - INFO - Successfully extracted IDs from truncated JSON: {'theme_id': 3, 'content_type_id': 9, 'format_id': 11, 'reasoning': 'Auto-extracted from truncated response'}
+2025-11-02 09:53:32,753 - config.database - INFO - Database connection established
+2025-11-02 09:53:32,759 - config.database - INFO - Database connection established
+2025-11-02 09:53:32,772 - config.database - INFO - Database connection established
+2025-11-02 09:53:32,777 - blueprints.planning_api_taxonomy - INFO - Assigned taxonomy to post 81: theme=3, content_type=9, format=11
+2025-11-02 09:53:32,777 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:32] "POST /planning/api/taxonomy/generate HTTP/1.1" 200 -
+2025-11-02 09:53:32,790 - config.database - INFO - Database connection established
+2025-11-02 09:53:32,792 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:32] "GET /api/taxonomy/content-types?theme_id=3 HTTP/1.1" 200 -
+2025-11-02 09:53:32,803 - config.database - INFO - Database connection established
+2025-11-02 09:53:32,805 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:32] "GET /api/taxonomy/items/9 HTTP/1.1" 200 -
+2025-11-02 09:53:32,813 - config.database - INFO - Database connection established
+2025-11-02 09:53:32,816 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:32] "GET /planning/api/posts/78/taxonomy HTTP/1.1" 200 -
+2025-11-02 09:53:32,825 - config.database - INFO - Database connection established
+2025-11-02 09:53:32,827 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 09:53:32] "GET /api/taxonomy/content-types?theme_id=1 HTTP/1.1" 200 -
+2025-11-02 09:53:43,434 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/db/queries_sources.py', reloading
+2025-11-02 09:53:43,482 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 09:53:43,828 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 09:53:43,835 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 09:53:50,404 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/jobs/prefetch_sources.py', reloading
+2025-11-02 09:53:50,456 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 09:53:50,808 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 09:53:50,815 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 09:53:52,018 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/jobs/prefetch_sources.py', reloading
+2025-11-02 09:53:52,062 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 09:53:52,406 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 09:53:52,412 - werkzeug - INFO -  * Debugger PIN: 263-852-041

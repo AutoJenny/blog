@@ -19,17 +19,26 @@ logger = logging.getLogger(__name__)
 
 
 def process_events(items: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """Process event-type items: deduplicate and import to calendar."""
+    """Process event-type items: filter false positives, deduplicate and import to calendar."""
+    from newsletter.services.event_filtering_service import filter_false_positives
+    
     event_items = [item for item in items if item.get('category') == 'event']
     
     if not event_items:
-        return {'processed': 0, 'imported': 0, 'skipped': 0}
+        return {'processed': 0, 'imported': 0, 'skipped': 0, 'filtered': 0}
+    
+    # Filter out false positives (page headings, navigation elements)
+    valid_events, filtered = filter_false_positives(event_items)
+    filtered_count = len(filtered)
+    
+    if filtered_count > 0:
+        logger.info(f"Filtered {filtered_count} false positive events (page headings/navigation)")
     
     # Check for duplicates before processing
     deduplicated = []
     skipped_count = 0
     
-    for item in event_items:
+    for item in valid_events:
         # Check if item should be skipped using should_skip_item helper
         skip_result = should_skip_item(
             item,
@@ -47,6 +56,8 @@ def process_events(items: List[Dict[str, Any]]) -> Dict[str, Any]:
     
     # Import events to calendar
     import_result = import_events_from_items(deduplicated, skip_duplicates=True)
+    
+    logger.info(f"Event processing: {len(valid_events)} valid, {filtered_count} filtered, {len(deduplicated)} deduplicated")
     
     # Mark imported events in source items
     for item, result in zip(deduplicated, import_result.get('results', [])):
