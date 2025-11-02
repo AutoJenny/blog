@@ -21,7 +21,7 @@ from blueprints.planning_concept import planning_concept_brainstorm as brainstor
 from blueprints.planning_api_calendar import api_calendar_categories as categories_api_func, api_calendar_weeks as weeks_api_func, api_calendar_ideas as ideas_api_func, api_calendar_events as events_api_func, api_calendar_schedule as schedule_api_func, api_calendar_ideas_for_week as ideas_week_api_func, api_add_calendar_idea as add_idea_api_func, api_update_calendar_idea as update_idea_api_func, api_delete_calendar_idea as delete_idea_api_func, api_calendar_idea_status as idea_status_api_func, api_get_calendar_idea as get_idea_api_func, api_convert_event_to_idea as convert_event_to_idea_api_func, api_add_calendar_event as add_event_api_func, api_update_calendar_event as update_event_api_func, api_delete_calendar_event as delete_event_api_func, api_select_theme_idea as select_theme_idea_api_func, api_weekly_social_focus as social_focus_api_func, api_weekly_social_focus_day as social_focus_day_api_func, api_add_weekly_social_focus as add_social_focus_api_func, api_update_weekly_social_focus as update_social_focus_api_func, api_delete_weekly_social_focus as delete_social_focus_api_func
 from blueprints.planning_api_posts import api_posts as posts_api_func
 from blueprints.planning_api_posts import confirm_calendar_idea as confirm_calendar_idea_func
-from blueprints.planning_api_post_specific import api_posts_expanded_idea as expanded_idea_api_func, api_posts_idea_seed as idea_seed_api_func, api_check_topic as check_topic_api_func, api_create_new_post as create_new_api_func, api_posts_idea_scope as idea_scope_api_func
+from blueprints.planning_api_post_specific import api_posts_expanded_idea as expanded_idea_api_func, api_posts_idea_seed as idea_seed_api_func, api_check_topic as check_topic_api_func, api_create_new_post as create_new_api_func, api_posts_idea_scope as idea_scope_api_func, get_post_by_theme as get_post_by_theme_func
 from blueprints.planning_api_brainstorm import api_generate_brainstorm_topics as brainstorm_topics_api_func
 from blueprints.planning_api_prompts import api_get_prompt as prompt_api_func
 from blueprints.planning_sections import api_sections_title as sections_title_api_func, api_save_sections as sections_save_api_func, api_design_section_structure as sections_design_api_func
@@ -271,6 +271,11 @@ def api_posts(post_id):
 def api_calendar_confirm_idea():
     """Confirm calendar idea and produce/reuse post"""
     return confirm_calendar_idea_func()
+
+@bp.route('/api/posts/by-theme/<int:theme_idea_id>', methods=['GET'])
+def api_get_post_by_theme(theme_idea_id):
+    """Get a post that has a specific theme idea_id in its schedule"""
+    return get_post_by_theme_func(theme_idea_id)
 
 @bp.route('/api/posts/<int:post_id>/expanded-idea', methods=['GET', 'POST'])
 def api_posts_expanded_idea(post_id):
