@@ -352,7 +352,8 @@ async function loadWeek(year, weekNumber) {
   // Get filter toggles
   const showThemes = document.getElementById('toggle-themes')?.checked !== false;
   const showIdeas = document.getElementById('toggle-ideas')?.checked !== false;
-  const showEvents = document.getElementById('toggle-events')?.checked !== false;
+  const showAnnualEvents = document.getElementById('toggle-annual-events')?.checked !== false;
+  const showSpecialEvents = document.getElementById('toggle-special-events')?.checked !== false;
   const showSyndication = document.getElementById('toggle-syndication')?.checked !== false;
 
   // Build row grids cells for rows container
@@ -405,14 +406,15 @@ async function loadWeek(year, weekNumber) {
   });
 
   // Toggle row visibility based on filters
-  // Note: Both annual and special event rows have data-filter="events", so querySelectorAll
   const themesSections = document.querySelectorAll('[data-filter="themes"]');
-  const eventsSections = document.querySelectorAll('[data-filter="events"]');
+  const annualEventsSections = document.querySelectorAll('[data-filter="annual-events"]');
+  const specialEventsSections = document.querySelectorAll('[data-filter="special-events"]');
   const ideasSections = document.querySelectorAll('[data-filter="ideas"]');
   const syndicationSections = document.querySelectorAll('[data-filter="syndication"]');
   
   themesSections.forEach(section => section.classList.toggle('hidden', !showThemes));
-  eventsSections.forEach(section => section.classList.toggle('hidden', !showEvents));
+  annualEventsSections.forEach(section => section.classList.toggle('hidden', !showAnnualEvents));
+  specialEventsSections.forEach(section => section.classList.toggle('hidden', !showSpecialEvents));
   ideasSections.forEach(section => section.classList.toggle('hidden', !showIdeas));
   syndicationSections.forEach(section => section.classList.toggle('hidden', !showSyndication));
 
@@ -453,7 +455,7 @@ async function loadWeek(year, weekNumber) {
   window.currentWeekEvents = events;
 
   // Render annual events per day into Annual Events row
-  if (showEvents && annualEventsCells) {
+  if (showAnnualEvents && annualEventsCells) {
     annualEvents.forEach((ev) => {
       // Only render the main event icon if the event's actual date is in this week
       const eventStartDate = ev.start_date ? new Date(ev.start_date) : null;
@@ -490,7 +492,7 @@ async function loadWeek(year, weekNumber) {
   }
 
   // Render special events per day into Special Events row
-  if (showEvents && specialEventsCells) {
+  if (showSpecialEvents && specialEventsCells) {
     specialEvents.forEach((ev) => {
       // Only render the main event icon if the event's actual date is in this week
       const eventStartDate = ev.start_date ? new Date(ev.start_date) : null;
@@ -831,14 +833,16 @@ async function loadWeek(year, weekNumber) {
   };
   attach('toggle-themes');
   attach('toggle-ideas');
-  attach('toggle-events');
+  attach('toggle-annual-events');
+  attach('toggle-special-events');
   attach('toggle-syndication');
 
   function updateFilterVisuals() {
     const map = [
       { id: 'toggle-themes', cls: 'filter-themes' },
       { id: 'toggle-ideas', cls: 'filter-ideas' },
-      { id: 'toggle-events', cls: 'filter-events' },
+      { id: 'toggle-annual-events', cls: 'filter-annual-events' },
+      { id: 'toggle-special-events', cls: 'filter-special-events' },
       { id: 'toggle-syndication', cls: 'filter-syndication' },
     ];
     map.forEach(({ id, cls }) => {
