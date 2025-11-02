@@ -626,23 +626,30 @@ class BlogPipelineHeader {
         }
         
         // Get valid post_id (handle post_id=0 by using saved post or finding scheduled post for week)
+        // CRITICAL: We MUST preserve the current URL's year/week, not the post's schedule!
         const currentPostId = this.getPostId();
         let validPostId = currentPostId;
         
+        // CRITICAL FIX: Always use the CURRENT URL's year/week (from URL params, window vars, or localStorage)
+        // NOT the post's scheduled year/week. This ensures week context is preserved.
+        const currentYear = year;  // Already determined from URL/window/localStorage above
+        const currentWeek = weekNumber;  // Already determined from URL/window/localStorage above
+        
         if (!validPostId || validPostId === '0' || parseInt(validPostId) === 0) {
-            // Try localStorage
+            // Try localStorage for post_id
             const savedPostId = localStorage.getItem('blogForgeSelectedPostId');
             if (savedPostId && parseInt(savedPostId) > 0) {
                 validPostId = savedPostId;
-            } else if (year && weekNumber) {
-                // Try to find a post scheduled for this week (async, will update links when ready)
-                fetch(`/planning/api/calendar/schedule/${year}/${weekNumber}`)
+            } else if (currentYear && currentWeek) {
+                // Try to find a post scheduled for the CURRENT VIEWED week (async, will update links when ready)
+                fetch(`/planning/api/calendar/schedule/${currentYear}/${currentWeek}`)
                     .then(resp => resp.json())
                     .then(data => {
                         if (data.schedule && Array.isArray(data.schedule) && data.schedule.length > 0) {
                             const scheduleWithPost = data.schedule.find(s => s.post_id);
                             if (scheduleWithPost && scheduleWithPost.post_id) {
-                                this.updateNavLinksWithPostId(scheduleWithPost.post_id, year, weekNumber);
+                                // CRITICAL: Use CURRENT year/week, NOT the post's schedule year/week
+                                this.updateNavLinksWithPostId(scheduleWithPost.post_id, currentYear, currentWeek);
                             }
                         }
                     })
@@ -651,7 +658,8 @@ class BlogPipelineHeader {
         }
         
         // If we have week info, attach it to all navigation links
-        if (year && weekNumber) {
+        // CRITICAL: Use currentYear/currentWeek (from URL), NOT post's schedule
+        if (currentYear && currentWeek) {
             // Get all navigation links (stage buttons and sub-stage buttons)
             const navLinks = document.querySelectorAll('.stage-btn, .sub-stage-btn');
             navLinks.forEach(link => {
@@ -665,10 +673,12 @@ class BlogPipelineHeader {
                 }
                 
                 // Add query parameters if not already present
-                if (!href.includes('?year=') && !href.includes('?week=')) {
-                    const separator = href.includes('?') ? '&' : '?';
-                    link.setAttribute('href', `${href}${separator}year=${year}&week=${weekNumber}`);
-                }
+                // CRITICAL: Use currentYear/currentWeek from URL, not post schedule
+                const urlObj = new URL(href, window.location.origin);
+                // Always update with current viewed week (from URL), even if params exist
+                urlObj.searchParams.set('year', currentYear);
+                urlObj.searchParams.set('week', currentWeek);
+                link.setAttribute('href', urlObj.pathname + urlObj.search);
             });
         }
     }
