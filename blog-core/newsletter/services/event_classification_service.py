@@ -149,7 +149,8 @@ def _classify_heuristic(event_data: Dict[str, Any]) -> str:
     annual_patterns = [
         'festival', 'highland games', 'gathering', 'tattoo',
         'hogmanay', 'up helly aa', 'royal highland show',
-        'book festival', 'folk festival', 'music festival', 'celtic festival'
+        'book festival', 'folk festival', 'music festival', 'celtic',
+        'connections', 'highland show', 'military tattoo'
     ]
     
     # One-off indicators

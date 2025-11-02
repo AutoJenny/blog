@@ -94,7 +94,7 @@ def get_event_items(days_back: int = 365, days_ahead: int = 365, source_name: Op
             return [dict(r) for r in rows]
 
 
-def generate_events_summary(days_back: int = 365, days_ahead: int = 365, source_name: Optional[str] = None, location: Optional[str] = None) -> Dict[str, Any]:
+def generate_events_summary(days_back: int = 365, days_ahead: int = 365, source_name: Optional[str] = None, location: Optional[str] = None, recurrence_type: Optional[str] = None) -> Dict[str, Any]:
     """Generate events summary from database.
     
     Args:
@@ -102,6 +102,7 @@ def generate_events_summary(days_back: int = 365, days_ahead: int = 365, source_
         days_ahead: Days to look ahead (for events with dates)
         source_name: Optional source filter
         location: Optional location filter
+        recurrence_type: Optional recurrence type filter ('annual' or 'one_off')
         
     Returns:
         Dict with summary and event lists
@@ -112,6 +113,7 @@ def generate_events_summary(days_back: int = 365, days_ahead: int = 365, source_
         days_ahead=days_ahead, 
         source_name=source_name, 
         location=location,
+        recurrence_type=recurrence_type,
         include_all_without_dates=True  # Show all events, not just those in date range
     )
     
