@@ -31,9 +31,19 @@ def get_event_items(days_back: int = 30, days_ahead: int = 90, source_name: Opti
     where_clauses = ["category = 'event'"]
     params: List[Any] = []
     
-    # Date range filter
-    where_clauses.append("(event_date IS NULL OR event_date::date BETWEEN %s AND %s OR published_at::date BETWEEN %s AND %s)")
-    params.extend([start_date, end_date, start_date, end_date])
+    # Date range filter - be more inclusive
+    # Include events without dates (they're still valid, just no date info yet)
+    # Also include events with dates in range OR events cached recently
+    where_clauses.append("""
+        (
+            event_date IS NULL 
+            OR event_date::date BETWEEN %s AND %s 
+            OR published_at::date BETWEEN %s AND %s
+            OR (event_date IS NULL AND published_at IS NULL AND cached_at >= %s)
+        )
+    """)
+    cutoff_recent = today - timedelta(days=90)  # Include recently cached events without dates
+    params.extend([start_date, end_date, start_date, end_date, cutoff_recent])
     
     # Optional filters
     if source_name:

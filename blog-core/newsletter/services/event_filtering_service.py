@@ -213,24 +213,30 @@ def is_likely_false_positive(item: Dict[str, Any]) -> tuple[bool, str]:
         return (True, 'page_heading')
     
     # Additional checks for suspicious content
+    # NOTE: Be conservative - only filter clearly non-event content
+    # Many valid events may not have dates yet but are still real events
     
-    # Very short titles without dates are likely navigation
-    if len(normalized) < 10 and not event_date:
-        return (True, 'too_short_no_date')
+    # Very short single-word titles without dates might be navigation
+    words = normalized.split()
+    if len(words) == 1 and len(normalized) < 10 and not event_date:
+        # But allow if it's a proper name (capitalized in original)
+        # This is a conservative check - only filter obvious single-word nav terms
+        if normalized in ['events', 'home', 'about', 'contact', 'news', 'shop']:
+            return (True, 'single_word_nav_term')
     
-    # Generic venue/location names without dates or descriptions
-    # Common venue patterns
+    # Generic venue/location names without dates - but only if URL suggests venue page
+    # Don't filter venue names if they have actual event URLs
     venue_patterns = ['castle', 'house', 'park', 'museum', 'gallery', 'cathedral', 'abbey']
     is_venue_name = any(pattern in normalized for pattern in venue_patterns) and len(normalized.split()) <= 3
     
     if is_venue_name and not event_date:
-        # Check if URL suggests it's a venue page, not an event
+        # Only filter if URL clearly indicates it's a venue/about page, not an event page
         if url:
-            if any(path in url.lower() for path in ['/places/', '/venues/', '/visit-a-place/']):
-                return (True, 'venue_page_not_event')
-        else:
-            # No URL and looks like just a venue name
-            return (True, 'venue_name_no_info')
+            if any(path in url.lower() for path in ['/places/', '/venues/', '/visit-a-place/', '/about/']):
+                # Check if URL also has /event/ or /events/ - if so, it might be an event
+                if '/event' not in url.lower():
+                    return (True, 'venue_page_not_event')
+        # If no URL at all, be conservative - don't filter (might be a real event without URL yet)
     
     # Generic phrases that are clearly navigation (exact matches)
     generic_nav_phrases = [
