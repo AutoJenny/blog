@@ -55,7 +55,8 @@ NAVIGATION_URL_PATTERNS = [
     r'/learn',
 ]
 
-# Generic navigation phrases that should not be events
+    # Generic navigation phrases that should not be events
+    # Must be exact matches or clearly generic
 NAVIGATION_PHRASES = [
     'what\'s on',
     'whats on',
@@ -63,6 +64,7 @@ NAVIGATION_PHRASES = [
     'upcoming events',
     'current exhibitions',
     'visit us',
+    'visit our',
     'get in touch',
     'find us',
     'opening hours',
@@ -72,6 +74,8 @@ NAVIGATION_PHRASES = [
     'tickets and booking',
     'school visits',
     'group visits',
+    'quicklinks',
+    'quick links',
 ]
 
 

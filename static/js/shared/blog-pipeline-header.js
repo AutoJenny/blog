@@ -265,21 +265,13 @@ class BlogPipelineHeader {
                                                 console.log(`[Blog Pipeline Header] Week mismatch detected. Found post ${targetPostId} with week ${viewedYear}/${viewedWeek} theme`);
                                             } else {
                                                 // No post scheduled for this week, but find ANY post with this theme
-                                                // Query all posts and find one with this theme in schedule
-                                                const postsResp = await fetch('/api/posts');
-                                                if (postsResp.ok) {
-                                                    const postsData = await postsResp.json();
-                                                    // Check each post's schedule for the theme
-                                                    for (const post of (postsData.posts || [])) {
-                                                        const postDetailResp = await fetch(`/planning/api/posts/${post.id}`);
-                                                        if (postDetailResp.ok) {
-                                                            const postDetail = await postDetailResp.json();
-                                                            if (postDetail.schedule && postDetail.schedule.idea_id === weekThemeEntry.idea_id) {
-                                                                targetPostId = post.id;
-                                                                console.log(`[Blog Pipeline Header] Found post ${targetPostId} with theme idea_id ${weekThemeEntry.idea_id}`);
-                                                                break;
-                                                            }
-                                                        }
+                                                // Use backend endpoint to find post by theme idea_id
+                                                const postByThemeResp = await fetch(`/planning/api/posts/by-theme/${weekThemeEntry.idea_id}`);
+                                                if (postByThemeResp.ok) {
+                                                    const postByThemeData = await postByThemeResp.json();
+                                                    if (postByThemeData.success && postByThemeData.post_id) {
+                                                        targetPostId = postByThemeData.post_id;
+                                                        console.log(`[Blog Pipeline Header] Found post ${targetPostId} with theme idea_id ${weekThemeEntry.idea_id}`);
                                                     }
                                                 }
                                             }
