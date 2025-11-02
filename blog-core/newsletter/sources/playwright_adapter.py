@@ -34,8 +34,8 @@ class PlaywrightAdapter(SourceAdapter):
     # Site-specific configurations
     SITE_CONFIGS = {
         'nationalgalleries.org': {
-            'wait_selector': 'article, .exhibition, [class*="exhibition"]',
-            'wait_timeout': 10000,
+            'wait_selector': 'main, body',
+            'wait_timeout': 30000,  # Longer wait for slow-loading page
             'cookie_consent_selectors': [
                 'button[class*="accept"]',
                 'button[class*="cookie"]',
@@ -48,6 +48,9 @@ class PlaywrightAdapter(SourceAdapter):
                 r'/api/.*events?',
                 r'/api/.*whats-on',
             ],
+            # Try to extract from links or content
+            'item_selector': 'a[href*="exhibition"], a[href*="/whats-on/"]',
+            'min_text_length': 10,
         },
         'nms.ac.uk': {
             'wait_selector': 'main, body',
@@ -297,10 +300,14 @@ class PlaywrightAdapter(SourceAdapter):
             if item_selector:
                 # Extract directly via Playwright (better for dynamic content)
                 try:
+                    # Wait a bit more for dynamic content to load
+                    page.wait_for_timeout(3000)
+                    
                     links = page.query_selector_all(item_selector)
                     logger.debug(f"Found {len(links)} links matching item selector")
                     
                     min_length = self.site_config.get('min_text_length', 10)
+                    seen_urls = set()
                     
                     for link in links[:50]:  # Check more links
                         text = link.inner_text().strip()
@@ -571,14 +578,26 @@ class PlaywrightAdapter(SourceAdapter):
                 
                 # Navigate to page
                 logger.info(f"Loading {self.base_url} with Playwright...")
-                try:
-                    page.goto(self.base_url, wait_until='domcontentloaded', timeout=30000)
-                except Exception:
-                    # If domcontentloaded times out, try load
+                wait_timeout = self.site_config.get('wait_timeout', 30000)
+                
+                # For slow sites like National Galleries, use longer timeout and networkidle
+                if 'nationalgalleries.org' in self.base_url:
                     try:
-                        page.goto(self.base_url, wait_until='load', timeout=30000)
-                    except Exception as e:
-                        logger.warning(f"Navigation timeout, continuing anyway: {e}")
+                        page.goto(self.base_url, wait_until='networkidle', timeout=60000)
+                    except Exception:
+                        try:
+                            page.goto(self.base_url, wait_until='load', timeout=60000)
+                        except Exception as e:
+                            logger.warning(f"Navigation timeout for {self.base_url}, continuing anyway: {e}")
+                else:
+                    try:
+                        page.goto(self.base_url, wait_until='domcontentloaded', timeout=wait_timeout)
+                    except Exception:
+                        # If domcontentloaded times out, try load
+                        try:
+                            page.goto(self.base_url, wait_until='load', timeout=wait_timeout)
+                        except Exception as e:
+                            logger.warning(f"Navigation timeout, continuing anyway: {e}")
                 
                 # Handle cookie consent
                 self._handle_cookie_consent(page)
@@ -592,8 +611,10 @@ class PlaywrightAdapter(SourceAdapter):
                 except Exception:
                     logger.debug(f"Wait selector '{wait_selector}' not found, continuing...")
                 
-                # Give extra time for XHR requests
-                page.wait_for_timeout(2000)
+                # Give extra time for XHR requests and JS rendering
+                # Longer wait for slow sites
+                extra_wait = 10000 if 'nationalgalleries.org' in self.base_url else 5000
+                page.wait_for_timeout(extra_wait)
                 
                 # Extract JSON-LD if configured
                 if self.site_config.get('json_ld_extract', False):
