@@ -67,6 +67,27 @@ class PlaywrightAdapter(SourceAdapter):
             'skip_text': ['what\'s on', 'whats on', 'home', 'exhibitions', 'events', 'view all'],
             'min_text_length': 15,  # Minimum text length for event links
         },
+        'visitscotland.com': {
+            'wait_selector': 'main, article, [class*="event"]',
+            'wait_timeout': 15000,
+            'cookie_consent_selectors': [
+                'button[class*="accept"]',
+                'button[class*="cookie"]',
+                '#accept-cookies',
+            ],
+            'json_ld_extract': True,
+            'xhr_patterns': [
+                r'/api/.*events?',
+            ],
+            # VisitScotland lists events directly on category pages (not linked)
+            # Extract from page content - events are listed with dates
+            'extract_from_content': True,
+            'content_patterns': [
+                r'^([A-Z][^–-]{10,60}?)\s*[–-]\s*(\d+\s+\w+\s+[–-]\s*\d+\s+\w+\s+\d{4})',  # Name – Date range (start of line)
+                r'^([A-Z][^–-]{10,60}?)\s*[–-]\s*(\d+\s+\w+\s+\d{4})',  # Name – Single date (start of line)
+                r'^([A-Z][^–-]{10,60}?)\s*[–-]\s*(\w+\s+[–-]\s*\w+)',  # Name – Month range (start of line)
+            ],
+        },
     }
     
     def __init__(self, source_name: str, base_url: str, category: str, rate_limit_minutes: int = 240):
@@ -191,11 +212,83 @@ class PlaywrightAdapter(SourceAdapter):
         
         return json_ld_items
     
+    def _extract_from_content(self, page: Page) -> List[Dict[str, Any]]:
+        """Extract events from page content using regex patterns (for sites that list events inline)."""
+        items = []
+        
+        try:
+            extract_from_content = self.site_config.get('extract_from_content', False)
+            if not extract_from_content:
+                return []
+            
+            # Get page text content - split by lines for better pattern matching
+            page_text = page.inner_text('main, article, body')
+            lines = page_text.split('\n')
+            
+            # Try patterns to extract event names and dates
+            import re
+            patterns = self.site_config.get('content_patterns', [])
+            
+            seen_titles = set()
+            
+            for line in lines:
+                line = line.strip()
+                if not line or len(line) < 15:
+                    continue
+                
+                # Try each pattern on this line
+                for pattern in patterns:
+                    match = re.match(pattern, line, re.MULTILINE)
+                    if match:
+                        name = match.group(1).strip()
+                        date_text = match.group(2).strip() if len(match.groups()) > 1 else ''
+                        
+                        # Clean name (remove extra whitespace, trailing dashes)
+                        name = re.sub(r'\s+', ' ', name).strip(' –-')
+                        
+                        # Skip if too short or generic
+                        if len(name) < 10 or len(name) > 100:
+                            continue
+                        
+                        # Skip common non-event text
+                        skip_keywords = ['toggle', 'caption', 'share', 'home', 'things to do', 'events', 'categories', 
+                                       'october, november', 'january, february', 'april, may', 'july, august']
+                        if any(kw in name.lower() for kw in skip_keywords):
+                            continue
+                        
+                        # Skip if already seen (deduplicate)
+                        name_lower = name.lower()
+                        if name_lower in seen_titles:
+                            continue
+                        seen_titles.add(name_lower)
+                        
+                        items.append({
+                            'title': name,
+                            'url': self.base_url,  # Category page URL
+                            'date_text': date_text,
+                            'location': '',
+                            'description': '',
+                        })
+                        break  # Found match, move to next line
+            
+            if items:
+                logger.info(f"Extracted {len(items)} items from page content")
+            
+        except Exception as e:
+            logger.debug(f"Content extraction failed: {e}")
+        
+        return items
+    
     def _extract_from_dom(self, page: Page) -> List[Dict[str, Any]]:
         """Extract event data from rendered DOM."""
         items = []
         
         try:
+            # First try content-based extraction (for sites like VisitScotland that list events inline)
+            content_items = self._extract_from_content(page)
+            if content_items:
+                return content_items
+            
             # Use site-specific item selector if available (for link-based extraction)
             item_selector = self.site_config.get('item_selector')
             skip_text = self.site_config.get('skip_text', [])

@@ -194,3 +194,33 @@ LINE 10:                                 AND is_selected = TRUE
 2025-11-02 08:47:05,526 - werkzeug - INFO -  * Restarting with stat
 2025-11-02 08:47:05,870 - werkzeug - WARNING -  * Debugger is active!
 2025-11-02 08:47:05,878 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:47:48,774 - config.database - INFO - Database connection established
+2025-11-02 08:47:48,787 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:47:48] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 08:53:28,741 - config.database - INFO - Database connection established
+2025-11-02 08:53:28,755 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:53:28] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 08:54:11,495 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/sources/playwright_adapter.py', reloading
+2025-11-02 08:54:11,538 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:54:11,884 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:54:11,891 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:54:16,295 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/sources/playwright_adapter.py', reloading
+2025-11-02 08:54:16,348 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:54:16,700 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:54:16,705 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:54:59,182 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/sources/playwright_adapter.py', reloading
+2025-11-02 08:54:59,230 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:54:59,570 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:54:59,576 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:55:07,160 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/sources/playwright_adapter.py', reloading
+2025-11-02 08:55:07,212 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:55:07,549 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:55:07,554 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:55:30,388 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/sources/playwright_adapter.py', reloading
+2025-11-02 08:55:30,447 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:55:30,790 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:55:30,797 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:55:39,476 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/sources/playwright_adapter.py', reloading
+2025-11-02 08:55:39,531 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:55:39,875 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:55:39,881 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:56:09,122 - config.database - INFO - Database connection established
+2025-11-02 08:56:09,132 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:56:09] "GET /launchpad/api/queue HTTP/1.1" 200 -
