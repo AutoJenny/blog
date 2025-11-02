@@ -530,6 +530,7 @@ Return only the JSON object, no other text."""
                             post_id = correct_post['post_id']
         
         # If post_id provided, automatically assign the taxonomy
+        assigned_post_id = post_id
         if post_id:
             try:
                 with db_manager.get_cursor() as cursor:
@@ -539,6 +540,7 @@ Return only the JSON object, no other text."""
                         WHERE id = %s
                     """, (theme_id, content_type_id, format_id, post_id))
                     logger.info(f"Assigned taxonomy to post {post_id}: theme={theme_id}, content_type={content_type_id}, format={format_id}")
+                    assigned_post_id = post_id
             except Exception as e:
                 logger.error(f"Error auto-assigning taxonomy to post: {e}")
                 # Don't fail the request, just log the error
@@ -550,7 +552,8 @@ Return only the JSON object, no other text."""
                 'content_type_id': content_type_id,
                 'format_id': format_id,
                 'reasoning': reasoning
-            }
+            },
+            'assigned_post_id': assigned_post_id  # CRITICAL: Return the post_id that was actually assigned to
         })
         
     except Exception as e:

@@ -5,6 +5,7 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     const postId = window.postId;
+    let assignedPostId = postId; // Track the post_id that taxonomy is actually assigned to
     
     // DOM elements
     const themeSelect = document.getElementById('theme-select');
@@ -64,41 +65,45 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load current taxonomy assignment for post
     async function loadCurrentTaxonomy() {
         try {
-            // SINGLE SOURCE OF TRUTH: Get the correct post_id for the viewed week
-            let targetPostId = postId;
+            // CRITICAL: Use assignedPostId if available (from previous generation), otherwise find correct post
+            let targetPostId = assignedPostId || postId;
             
-            // Get week context from URL
-            let year, week;
-            if (window.WeekContext) {
-                const weekContext = window.WeekContext.getWeekContext();
-                if (weekContext) {
-                    year = weekContext.year;
-                    week = weekContext.week;
+            // If we don't have an assignedPostId, find the correct post for the viewed week
+            if (!assignedPostId) {
+                // Get week context from URL
+                let year, week;
+                if (window.WeekContext) {
+                    const weekContext = window.WeekContext.getWeekContext();
+                    if (weekContext) {
+                        year = weekContext.year;
+                        week = weekContext.week;
+                    }
                 }
-            }
-            
-            // If we have week context, find the post for that week's theme
-            if (year && week) {
-                try {
-                    const scheduleResponse = await fetch(`/planning/api/calendar/schedule/${year}/${week}`);
-                    const scheduleData = await scheduleResponse.json();
-                    if (scheduleData.schedule && Array.isArray(scheduleData.schedule) && scheduleData.schedule.length > 0) {
-                        // Find the theme for this week
-                        const weekThemeSchedule = scheduleData.schedule.find(s => s.idea_id && s.item_classification === 'theme');
-                        if (weekThemeSchedule && weekThemeSchedule.idea_id) {
-                            // Use backend endpoint to find post by theme idea_id
-                            const postByThemeResp = await fetch(`/planning/api/posts/by-theme/${weekThemeSchedule.idea_id}`);
-                            if (postByThemeResp.ok) {
-                                const postByThemeData = await postByThemeResp.json();
-                                if (postByThemeData.success && postByThemeData.post_id) {
-                                    targetPostId = postByThemeData.post_id;
-                                    console.log(`[Taxonomy Display] Using post ${targetPostId} for week ${year}/${week} theme`);
+                
+                // If we have week context, find the post for that week's theme
+                if (year && week) {
+                    try {
+                        const scheduleResponse = await fetch(`/planning/api/calendar/schedule/${year}/${week}`);
+                        const scheduleData = await scheduleResponse.json();
+                        if (scheduleData.schedule && Array.isArray(scheduleData.schedule) && scheduleData.schedule.length > 0) {
+                            // Find the theme for this week
+                            const weekThemeSchedule = scheduleData.schedule.find(s => s.idea_id && s.item_classification === 'theme');
+                            if (weekThemeSchedule && weekThemeSchedule.idea_id) {
+                                // Use backend endpoint to find post by theme idea_id
+                                const postByThemeResp = await fetch(`/planning/api/posts/by-theme/${weekThemeSchedule.idea_id}`);
+                                if (postByThemeResp.ok) {
+                                    const postByThemeData = await postByThemeResp.json();
+                                    if (postByThemeData.success && postByThemeData.post_id) {
+                                        targetPostId = postByThemeData.post_id;
+                                        assignedPostId = targetPostId; // Remember it for future operations
+                                        console.log(`[Taxonomy Display] Using post ${targetPostId} for week ${year}/${week} theme`);
+                                    }
                                 }
                             }
                         }
+                    } catch (e) {
+                        console.warn('Could not find post for week, using provided post_id:', e);
                     }
-                } catch (e) {
-                    console.warn('Could not find post for week, using provided post_id:', e);
                 }
             }
             
@@ -317,6 +322,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
             
             if (data.success) {
+                // CRITICAL: Update assignedPostId to the post that actually received the taxonomy
+                if (data.assigned_post_id) {
+                    assignedPostId = data.assigned_post_id;
+                    console.log(`[Taxonomy] Taxonomy assigned to post ${assignedPostId} (was ${postId})`);
+                }
+                
                 // Populate form with generated taxonomy
                 themeSelect.value = data.taxonomy.theme_id;
                 await loadContentTypesForTheme(data.taxonomy.theme_id);
@@ -339,7 +350,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Update save button state
                 updateSaveButtonState();
                 
-                // Reload current taxonomy display
+                // Reload current taxonomy display (will use correct post_id)
                 await loadCurrentTaxonomy();
             } else {
                 // Show detailed error message
@@ -384,7 +395,11 @@ document.addEventListener('DOMContentLoaded', function() {
             saveBtn.disabled = true;
             saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
             
-            const response = await fetch(`/planning/api/posts/${postId}/taxonomy`, {
+            // CRITICAL: Use assignedPostId (the correct post) instead of postId from URL
+            const savePostId = assignedPostId || postId;
+            console.log(`[Taxonomy] Saving taxonomy to post ${savePostId}`);
+            
+            const response = await fetch(`/planning/api/posts/${savePostId}/taxonomy`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
