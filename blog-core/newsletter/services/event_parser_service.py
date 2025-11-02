@@ -211,10 +211,23 @@ CRITICAL: Return ONLY valid JSON. No markdown code blocks, no explanations, no P
                 
                 # Ensure title is cleaned - remove any trailing recurring patterns that might have been concatenated
                 cleaned_title = parsed.get('title', title)
-                # Additional cleanup: remove trailing "Every" patterns that might be concatenated
-                cleaned_title = re.sub(r'\s*every\s+(second|week|month|year|saturday|tuesday).*$', '', cleaned_title, flags=re.IGNORECASE).strip()
-                # Remove title parts that got concatenated without spaces
-                cleaned_title = re.sub(r'([a-z])([A-Z])', r'\1 \2', cleaned_title)  # Add space between camelCase
+                
+                # Aggressive cleanup for concatenated patterns like "FlightEvery" or "FlightEvery second"
+                # First, fix camelCase concatenation (add space between lowercase and uppercase)
+                cleaned_title = re.sub(r'([a-z])([A-Z])', r'\1 \2', cleaned_title)
+                
+                # Remove "Every" patterns at the end (with or without space before)
+                cleaned_title = re.sub(r'\s*every\s+(second|week|month|year|saturday|sunday|tuesday|wednesday|thursday|friday).*$', '', cleaned_title, flags=re.IGNORECASE).strip()
+                
+                # Remove standalone "Every" at the end
+                cleaned_title = re.sub(r'\s+every\s*$', '', cleaned_title, flags=re.IGNORECASE).strip()
+                
+                # Fix patterns like "Flight Every" → "Flight" (if "Every" is a separate word at end)
+                if cleaned_title.lower().endswith(' every'):
+                    cleaned_title = cleaned_title[:-6].strip()
+                
+                # Final cleanup: remove trailing dashes, colons, or spaces
+                cleaned_title = re.sub(r'[\s\-:]+$', '', cleaned_title).strip()
                 
                 return {
                     'title': cleaned_title,
