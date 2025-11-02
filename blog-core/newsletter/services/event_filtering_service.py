@@ -102,8 +102,10 @@ def is_page_heading(title: str, url: Optional[str] = None) -> bool:
     
     normalized = normalize_title(title)
     
-    # Very short titles are suspicious
-    if len(normalized) < 8:
+    # Very short titles are suspicious (but not if they're proper event names)
+    # Single words < 8 chars are likely navigation, but multi-word titles can be events
+    words = normalized.split()
+    if len(normalized) < 8 and len(words) == 1:
         return True
     
     # Check against generic page heading patterns
@@ -148,10 +150,20 @@ def is_page_heading(title: str, url: Optional[str] = None) -> bool:
         return True
     
     # Titles with very few words and no date-like content
+    # But allow common event patterns (festivals, shows, connections, etc.)
     words = normalized.split()
     if len(words) <= 2 and not any(char.isdigit() for char in normalized):
-        # Check if it's not a proper event name
-        if normalized not in ['highland games', 'tartan week']:  # Known valid short names
+        # Check if it's a proper event name (contains event keywords)
+        event_keywords = ['festival', 'show', 'connections', 'gathering', 'games', 
+                         'parade', 'celebration', 'event', 'fringe', 'hogmanay',
+                         'tattoo', 'mod', 'open', 'week', 'day']
+        has_event_keyword = any(keyword in normalized for keyword in event_keywords)
+        
+        # Also check known valid short names
+        known_valid = ['highland games', 'tartan week', 'celtic connections', 
+                      'edinburgh\'s hogmanay', "edinburgh's hogmanay"]
+        
+        if not has_event_keyword and normalized not in known_valid:
             logger.debug(f"Too few words and no dates: {title}")
             return True
     
