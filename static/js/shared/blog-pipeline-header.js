@@ -13,28 +13,34 @@ class BlogPipelineHeader {
     init() {
         console.log('[Blog Pipeline Header] Initializing...');
         
-        // CRITICAL FIX: Attach week params ONLY when links exist in DOM
-        // Use a function that waits for links to exist, then runs once
-        const attachWhenReady = () => {
-            // Check if links exist
+        // CRITICAL FIX: Use MutationObserver to catch links when they're added to DOM
+        // This ensures we catch links even if they're added dynamically
+        const attachWeekParams = () => {
             const navLinks = document.querySelectorAll('.stage-btn, .sub-stage-btn');
-            if (navLinks.length === 0) {
-                // Links don't exist yet - wait a bit and try again (max 20 attempts = 1 second)
-                const attempts = attachWhenReady.attempts || 0;
-                if (attempts < 20) {
-                    attachWhenReady.attempts = attempts + 1;
-                    console.log(`[Blog Pipeline Header] Nav links not found yet, waiting... (attempt ${attempts + 1}/20)`);
-                    setTimeout(attachWhenReady, 50);
-                } else {
-                    console.warn('[Blog Pipeline Header] Nav links not found after 20 attempts, giving up');
-                }
-                return;
+            if (navLinks.length > 0) {
+                console.log('[Blog Pipeline Header] Links found, attempting to attach week params...');
+                this.attachWeekParameterToNavLinks();
             }
-            
-            // Links exist - attach week params ONCE
-            console.log('[Blog Pipeline Header] Nav links found, attaching week params...');
-            attachWhenReady.attempts = 0; // Reset for next call
-            this.attachWeekParameterToNavLinks();
+        };
+        
+        // Set up MutationObserver to watch for link additions
+        const observer = new MutationObserver((mutations) => {
+            attachWeekParams();
+        });
+        
+        const startObserver = () => {
+            const headerContainer = document.querySelector('.blog-pipeline-header');
+            if (headerContainer) {
+                observer.observe(headerContainer, { 
+                    childList: true, 
+                    subtree: true,
+                    attributes: true,
+                    attributeFilter: ['href']
+                });
+                console.log('[Blog Pipeline Header] MutationObserver started');
+            } else {
+                console.warn('[Blog Pipeline Header] Header container not found for observer');
+            }
         };
         
         document.addEventListener('DOMContentLoaded', () => {
@@ -65,14 +71,22 @@ class BlogPipelineHeader {
                 }
             }
             
-            // Wait for links to exist, then attach week params ONCE
-            attachWhenReady();
+            // Try to attach immediately
+            attachWeekParams();
+            
+            // Start observer to catch any links added later
+            startObserver();
+            
+            // Also try after a short delay as backup
+            setTimeout(attachWeekParams, 200);
+            
             this.loadPostData();
         });
         
         // If DOM already loaded when script loads, try immediately
         if (document.readyState === 'complete' || document.readyState === 'interactive') {
-            attachWhenReady();
+            attachWeekParams();
+            startObserver();
         }
 
         // Also load when data tab is clicked
