@@ -24,15 +24,54 @@ except ImportError:
 def authoring_sections_image_concepts(post_id):
     """Image concepts step - Step 53"""
     try:
+        # CRITICAL: Check for week context in URL params to determine correct post
+        url_year = request.args.get('year', type=int)
+        url_week = request.args.get('week', type=int)
+        
+        # If week context provided, find the post associated with that week's theme
+        target_post_id = post_id
+        if url_year and url_week:
+            with db_manager.get_cursor() as cursor:
+                # Find the theme for this week
+                cursor.execute("""
+                    SELECT cs.idea_id
+                    FROM calendar_schedule cs
+                    JOIN calendar_ideas ci ON cs.idea_id = ci.id
+                    WHERE cs.year = %s 
+                      AND cs.week_number = %s
+                      AND ci.item_classification = 'theme'
+                    ORDER BY cs.created_at DESC
+                    LIMIT 1
+                """, (url_year, url_week))
+                
+                week_theme = cursor.fetchone()
+                
+                if week_theme and week_theme['idea_id']:
+                    # Find the post associated with this theme's idea_id
+                    cursor.execute("""
+                        SELECT cs2.post_id
+                        FROM calendar_schedule cs2
+                        WHERE cs2.idea_id = %s
+                          AND cs2.post_id IS NOT NULL
+                        ORDER BY cs2.created_at DESC
+                        LIMIT 1
+                    """, (week_theme['idea_id'],))
+                    
+                    theme_post = cursor.fetchone()
+                    
+                    if theme_post and theme_post['post_id']:
+                        target_post_id = theme_post['post_id']
+                        logger.info(f"Week {url_year}/{url_week} has theme idea_id {week_theme['idea_id']}, using post {target_post_id} (instead of URL post_id {post_id}) for illustration_method")
+        
         with db_manager.get_cursor() as cursor:
-            # Get post details with taxonomy illustration_method
+            # Get post details with taxonomy illustration_method using the correct post_id
             cursor.execute("""
                 SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
                        p.content_type_id, content_type.illustration_method
                 FROM post p
                 LEFT JOIN taxonomy_item content_type ON p.content_type_id = content_type.id
                 WHERE p.id = %s
-            """, (post_id,))
+            """, (target_post_id,))
             post = cursor.fetchone()
             
             if not post:
@@ -41,8 +80,12 @@ def authoring_sections_image_concepts(post_id):
             # Get illustration_method from taxonomy (default to 'LLM-creation' if null/not found)
             illustration_method = post.get('illustration_method') or 'LLM-creation'
             
+            # Log which post and illustration method are being used
+            if target_post_id != post_id:
+                logger.info(f"Illustration method determined from post {target_post_id}: {illustration_method} (URL had post_id {post_id})")
+            
             return render_template('authoring/sections/image_concepts.html', 
-                                 post_id=post_id,
+                                 post_id=post_id,  # Keep original post_id for URL consistency
                                  post=post,
                                  page_title="Image Concepts",
                                  blueprint_name='authoring',
