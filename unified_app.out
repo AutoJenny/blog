@@ -84,3 +84,21 @@ LINE 10:                                 AND is_selected = TRUE
 2025-11-02 08:20:27,150 - blueprints.planning_api_post_specific - WARNING - No expanded idea found for week 2025/45 with theme
 2025-11-02 08:20:27,156 - config.database - INFO - Database connection established
 2025-11-02 08:20:27,159 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:20:27] "GET /planning/api/posts/78/expanded-idea?year=2025&week=45 HTTP/1.1" 200 -
+2025-11-02 08:20:35,552 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/news_synopsis_service.py', reloading
+2025-11-02 08:20:35,594 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:20:35,930 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:20:35,936 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:20:38,192 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_api_post_specific.py', reloading
+2025-11-02 08:20:38,246 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:20:38,585 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:20:38,591 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:20:49,384 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/news_synopsis_service.py', reloading
+2025-11-02 08:20:49,428 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:20:49,764 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:20:49,770 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:20:59,318 - config.database - INFO - Database connection established
+2025-11-02 08:20:59,326 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:20:59] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 08:20:59,522 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/news_synopsis_service.py', reloading
+2025-11-02 08:20:59,569 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:20:59,904 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:20:59,910 - werkzeug - INFO -  * Debugger PIN: 263-852-041
