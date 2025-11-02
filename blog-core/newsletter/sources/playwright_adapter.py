@@ -34,8 +34,8 @@ class PlaywrightAdapter(SourceAdapter):
     # Site-specific configurations
     SITE_CONFIGS = {
         'nationalgalleries.org': {
-            'wait_selector': 'main, body',
-            'wait_timeout': 30000,  # Longer wait for slow-loading page
+            'wait_selector': 'body',
+            'wait_timeout': 60000,  # Very long wait for slow-loading page
             'cookie_consent_selectors': [
                 'button[class*="accept"]',
                 'button[class*="cookie"]',
@@ -51,6 +51,7 @@ class PlaywrightAdapter(SourceAdapter):
             # Try to extract from links or content
             'item_selector': 'a[href*="exhibition"], a[href*="/whats-on/"]',
             'min_text_length': 10,
+            'skip_text': ['what\'s on', 'whats on', 'home', 'exhibitions', 'quicklinks'],
         },
         'nms.ac.uk': {
             'wait_selector': 'main, body',
@@ -472,6 +473,52 @@ class PlaywrightAdapter(SourceAdapter):
                     logger.info(f"Extracted {len(items)} items from DOM /events/ links")
                     return items
             
+            # For National Galleries: try to extract exhibition links
+            if 'nationalgalleries.org' in self.base_url:
+                # Look for links to specific exhibitions
+                exhibition_links = soup.select('a[href*="exhibition"], a[href*="/whats-on/"]')
+                logger.debug(f"Found {len(exhibition_links)} exhibition links in DOM")
+                
+                skip_text = self.site_config.get('skip_text', ['what\'s on', 'whats on', 'home', 'exhibitions'])
+                seen = set()
+                
+                for link in exhibition_links:
+                    href = link.get('href', '')
+                    if not href:
+                        continue
+                    
+                    # Build full URL
+                    if not href.startswith('http'):
+                        from urllib.parse import urljoin
+                        href = urljoin(self.base_url, href)
+                    
+                    if href in seen:
+                        continue
+                    
+                    # Validate - should be a specific exhibition page, not category
+                    if '/whats-on/' in href:
+                        parts = href.split('/whats-on/')
+                        if len(parts) > 1 and parts[1]:
+                            page_slug = parts[1].split('/')[0].split('?')[0]
+                            if page_slug and page_slug not in ['', 'exhibitions', '#'] and len(page_slug) > 3:
+                                text = link.get_text(strip=True)
+                                
+                                # Clean text
+                                if text and len(text) > 10:
+                                    if not any(skip in text.lower() for skip in skip_text):
+                                        items.append({
+                                            'title': text[:150],
+                                            'url': href,
+                                            'date_text': '',
+                                            'location': '',
+                                            'description': '',
+                                        })
+                                        seen.add(href)
+                
+                if items:
+                    logger.info(f"Extracted {len(items)} items from National Galleries links")
+                    return items
+            
             # Generic DOM extraction for other sites
             # Use site-specific or generic selectors
             wait_selector = self.site_config.get('wait_selector', 'article, .event, .exhibition, [class*="event"], [class*="exhibition"]')
@@ -678,13 +725,15 @@ class PlaywrightAdapter(SourceAdapter):
                 logger.info(f"Loading {self.base_url} with Playwright...")
                 wait_timeout = self.site_config.get('wait_timeout', 30000)
                 
-                # For slow sites like National Galleries, use longer timeout and networkidle
+                # For slow sites like National Galleries, use load instead of networkidle
                 if 'nationalgalleries.org' in self.base_url:
                     try:
-                        page.goto(self.base_url, wait_until='networkidle', timeout=60000)
+                        # Use 'load' which is less strict than 'networkidle'
+                        page.goto(self.base_url, wait_until='load', timeout=120000)
                     except Exception:
                         try:
-                            page.goto(self.base_url, wait_until='load', timeout=60000)
+                            # Fallback to domcontentloaded
+                            page.goto(self.base_url, wait_until='domcontentloaded', timeout=120000)
                         except Exception as e:
                             logger.warning(f"Navigation timeout for {self.base_url}, continuing anyway: {e}")
                 else:
@@ -711,7 +760,7 @@ class PlaywrightAdapter(SourceAdapter):
                 
                 # Give extra time for XHR requests and JS rendering
                 # Longer wait for slow sites
-                extra_wait = 10000 if 'nationalgalleries.org' in self.base_url else 5000
+                extra_wait = 20000 if 'nationalgalleries.org' in self.base_url else 5000
                 page.wait_for_timeout(extra_wait)
                 
                 # Extract JSON-LD if configured
