@@ -405,15 +405,16 @@ async function loadWeek(year, weekNumber) {
   });
 
   // Toggle row visibility based on filters
-  const themesSection = document.querySelector('[data-filter="themes"]');
-  const eventsSection = document.querySelector('[data-filter="events"]');
-  const ideasSection = document.querySelector('[data-filter="ideas"]');
-  const syndicationSection = document.querySelector('[data-filter="syndication"]');
+  // Note: Both annual and special event rows have data-filter="events", so querySelectorAll
+  const themesSections = document.querySelectorAll('[data-filter="themes"]');
+  const eventsSections = document.querySelectorAll('[data-filter="events"]');
+  const ideasSections = document.querySelectorAll('[data-filter="ideas"]');
+  const syndicationSections = document.querySelectorAll('[data-filter="syndication"]');
   
-  if (themesSection) themesSection.classList.toggle('hidden', !showThemes);
-  if (eventsSection) eventsSection.classList.toggle('hidden', !showEvents);
-  if (ideasSection) ideasSection.classList.toggle('hidden', !showIdeas);
-  if (syndicationSection) syndicationSection.classList.toggle('hidden', !showSyndication);
+  themesSections.forEach(section => section.classList.toggle('hidden', !showThemes));
+  eventsSections.forEach(section => section.classList.toggle('hidden', !showEvents));
+  ideasSections.forEach(section => section.classList.toggle('hidden', !showIdeas));
+  syndicationSections.forEach(section => section.classList.toggle('hidden', !showSyndication));
 
   // Render Themes as week-wide themes: single row spanning the week
   const weekThemesContainer = document.getElementById('week-themes');
@@ -842,10 +843,13 @@ async function loadWeek(year, weekNumber) {
     ];
     map.forEach(({ id, cls }) => {
       const input = document.getElementById(id);
-      const label = input ? input.closest('.' + cls) : null;
+      if (!input) return;
+      
+      // Find the label that contains this checkbox
+      const label = input.closest('label');
       if (label) {
-        if (input.checked) label.classList.add('active');
-        else label.classList.remove('active');
+        // Toggle 'active' class based on checkbox state
+        label.classList.toggle('active', input.checked);
       }
     });
   }
