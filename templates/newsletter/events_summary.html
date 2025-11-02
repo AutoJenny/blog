@@ -125,6 +125,14 @@
             <label style="color: #9ca3af; font-size: 13px; font-weight: 600;">Location:</label>
             <input type="text" id="location-filter" placeholder="Filter by location" style="width: 200px;">
             
+            <label style="color: #9ca3af; font-size: 13px; font-weight: 600;">Type:</label>
+            <select id="recurrence-filter" style="min-width: 150px;">
+                <option value="">All Types</option>
+                <option value="annual">Annual Events</option>
+                <option value="one_off">Special Events</option>
+                <option value="unclassified">Unclassified</option>
+            </select>
+            
             <button onclick="applyFilters()" class="btn-primary">
                 <i class="fa-solid fa-filter"></i> Apply Filters
             </button>
