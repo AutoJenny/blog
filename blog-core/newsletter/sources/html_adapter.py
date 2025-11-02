@@ -27,12 +27,12 @@ class HTMLAdapter(SourceAdapter):
             'link': 'a.event-link, a[href*="event"], a[href*="whats-on"]',
         },
         'nms.ac.uk': {
-            'item': 'article, .event, .event-item, [class*="event"]',
-            'title': 'h2, h3, .title',
-            'date': 'time, .date, [datetime]',
-            'location': '.location, .venue',
-            'description': 'p, .description',
-            'link': 'a',
+            'item': 'main a[href*="/whats-on/"], main article, main [class*="card"], main [class*="teaser"], main [class*="item"]',
+            'title': 'h1, h2, h3, h4, [class*="title"], [class*="heading"]',
+            'date': 'time, [datetime], [class*="date"]',
+            'location': '[class*="location"], [class*="venue"], [class*="place"]',
+            'description': 'p, [class*="description"], [class*="summary"]',
+            'link': 'a[href*="/whats-on/"], a',
         },
         'nationalgalleries.org': {
             'item': 'article.exhibition, .exhibition-card, [class*="exhibition"]',
