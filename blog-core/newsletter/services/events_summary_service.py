@@ -12,14 +12,15 @@ from psycopg.rows import dict_row
 logger = logging.getLogger(__name__)
 
 
-def get_event_items(days_back: int = 30, days_ahead: int = 90, source_name: Optional[str] = None, location: Optional[str] = None) -> List[Dict[str, Any]]:
+def get_event_items(days_back: int = 30, days_ahead: int = 90, source_name: Optional[str] = None, location: Optional[str] = None, include_all_without_dates: bool = True) -> List[Dict[str, Any]]:
     """Get event items from database for specified date range.
     
     Args:
-        days_back: Number of days in the past to include
-        days_ahead: Number of days in the future to include
+        days_back: Number of days in the past to include (for events WITH dates)
+        days_ahead: Number of days in the future to include (for events WITH dates)
         source_name: Optional filter by source
         location: Optional filter by location
+        include_all_without_dates: If True, include ALL events without dates regardless of range
     
     Returns:
         List of event items
@@ -31,19 +32,28 @@ def get_event_items(days_back: int = 30, days_ahead: int = 90, source_name: Opti
     where_clauses = ["category = 'event'"]
     params: List[Any] = []
     
-    # Date range filter - be inclusive of all events
+    # Date range filter - be inclusive
     # Include:
-    # 1. Events with dates in the specified range
-    # 2. Events without dates (they're still valid, just no date info extracted yet)
+    # 1. ALL events without dates (they're still valid events, just no date info extracted yet)
+    # 2. Events with dates in the specified range
     # 3. Events with published_at in range
-    # 4. Events that have been cached (they're likely upcoming/relevant)
-    where_clauses.append("""
-        (
-            event_date IS NULL 
-            OR event_date::date BETWEEN %s AND %s 
-            OR published_at::date BETWEEN %s AND %s
-        )
-    """)
+    if include_all_without_dates:
+        # Include all events without dates PLUS events with dates in range
+        where_clauses.append("""
+            (
+                event_date IS NULL 
+                OR event_date::date BETWEEN %s AND %s 
+                OR published_at::date BETWEEN %s AND %s
+            )
+        """)
+    else:
+        # Strict date range filtering
+        where_clauses.append("""
+            (
+                event_date::date BETWEEN %s AND %s 
+                OR published_at::date BETWEEN %s AND %s
+            )
+        """)
     params.extend([start_date, end_date, start_date, end_date])
     
     # Optional filters
@@ -82,15 +92,22 @@ def generate_events_summary(days_back: int = 30, days_ahead: int = 90, source_na
     """Generate events summary from database.
     
     Args:
-        days_back: Days to look back
-        days_ahead: Days to look ahead
+        days_back: Days to look back (for events with dates)
+        days_ahead: Days to look ahead (for events with dates)
         source_name: Optional source filter
         location: Optional location filter
         
     Returns:
         Dict with summary and event lists
     """
-    items = get_event_items(days_back=days_back, days_ahead=days_ahead, source_name=source_name, location=location)
+    # Include all events without dates, plus events with dates in range
+    items = get_event_items(
+        days_back=days_back, 
+        days_ahead=days_ahead, 
+        source_name=source_name, 
+        location=location,
+        include_all_without_dates=True  # Show all events, not just those in date range
+    )
     
     if not items:
         return {
