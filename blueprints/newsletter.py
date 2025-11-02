@@ -494,11 +494,14 @@ def events_summary():
         source_name = request.args.get('source', None, type=str)
         location = request.args.get('location', None, type=str)
         
+        recurrence_type = request.args.get('recurrence_type', None, type=str)
+        
         summary = generate_events_summary(
             days_back=days_back,
             days_ahead=days_ahead,
             source_name=source_name,
-            location=location
+            location=location,
+            recurrence_type=recurrence_type
         )
         
         # If requested as HTML page
