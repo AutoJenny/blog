@@ -24,48 +24,79 @@ def store_source_items(items: List[Dict[str, Any]]) -> int:
             for item in items:
                 try:
                     url = item.get('url', '')
+                    title = item.get('title', '')
                     url_hash = hashlib.sha256(url.encode('utf-8')).hexdigest() if url else None
                     
                     # Check if URL hash already exists to avoid duplicates
+                    # For content-extracted items (same URL, different titles), use title+URL hash
                     if url_hash:
+                        # Check if exact duplicate (same URL + title from same source)
                         cur.execute(
                             """
                             SELECT id FROM newsletter_source_item 
                             WHERE source_url_hash = %s 
+                            AND source_name = %s
+                            AND title = %s
                             LIMIT 1
                             """,
-                            (url_hash,)
+                            (url_hash, item.get('source_name'), title)
                         )
                         if cur.fetchone():
-                            # Skip duplicate
+                            # Skip exact duplicate (same URL + title + source)
                             continue
+                        
+                        # For content-extracted items: if same URL but different title, allow it
+                        # (This handles VisitScotland category pages with multiple events)
+                        # But check if this exact title+URL combination exists
+                        if title:
+                            # Use a combined hash for title+URL to dedupe same event on same page
+                            combined = f"{title}|{url}"
+                            combined_hash = hashlib.sha256(combined.encode('utf-8')).hexdigest()
+                            cur.execute(
+                                """
+                                SELECT id FROM newsletter_source_item 
+                                WHERE source_url_hash = %s 
+                                AND source_name = %s
+                                LIMIT 1
+                                """,
+                                (combined_hash, item.get('source_name'))
+                            )
+                            # Don't skip - allow same URL with different titles
                     
-                    cur.execute(
-                        """
-                        INSERT INTO newsletter_source_item 
-                        (source_name, title, url, published_at, event_date, location, category, 
-                         raw_data, signal_score, freshness_score, source_url_hash, 
-                         suitability_score, suitability_notes, is_event, calendar_event_id)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                        """,
-                        (
-                            item.get('source_name'),
-                            item.get('title'),
-                            url,
-                            item.get('published_at'),
-                            item.get('event_date'),
-                            item.get('location'),
-                            item.get('category', 'other'),
-                            Json(item.get('raw_data', {})),
-                            item.get('signal_score', 0.0),
-                            item.get('freshness_score', 0.0),
-                            url_hash,
-                            item.get('suitability_score'),
-                            item.get('suitability_notes'),
-                            item.get('is_event', False),
-                            item.get('calendar_event_id'),
-                        ),
-                    )
+                        # For content-extracted items with same URL, use title+URL hash
+                        # Otherwise use URL hash
+                        final_hash = url_hash
+                        if title and url:
+                            # Create hash from title+URL for better deduplication of content-extracted items
+                            combined = f"{title}|{url}"
+                            final_hash = hashlib.sha256(combined.encode('utf-8')).hexdigest()
+                        
+                        cur.execute(
+                            """
+                            INSERT INTO newsletter_source_item 
+                            (source_name, title, url, published_at, event_date, location, category, 
+                             raw_data, signal_score, freshness_score, source_url_hash, 
+                             suitability_score, suitability_notes, is_event, calendar_event_id)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                            """,
+                            (
+                                item.get('source_name'),
+                                item.get('title'),
+                                url,
+                                item.get('published_at'),
+                                item.get('event_date'),
+                                item.get('location'),
+                                item.get('category', 'other'),
+                                Json(item.get('raw_data', {})),
+                                item.get('signal_score', 0.0),
+                                item.get('freshness_score', 0.0),
+                                final_hash,
+                                item.get('suitability_score'),
+                                item.get('suitability_notes'),
+                                item.get('is_event', False),
+                                item.get('calendar_event_id'),
+                            ),
+                        )
                     stored += 1
                 except Exception as e:
                     import logging

@@ -224,3 +224,23 @@ LINE 10:                                 AND is_selected = TRUE
 2025-11-02 08:55:39,881 - werkzeug - INFO -  * Debugger PIN: 263-852-041
 2025-11-02 08:56:09,122 - config.database - INFO - Database connection established
 2025-11-02 08:56:09,132 - werkzeug - INFO - 127.0.0.1 - - [02/Nov/2025 08:56:09] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-02 08:57:12,080 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/sources/playwright_adapter.py', reloading
+2025-11-02 08:57:12,132 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:57:12,458 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:57:12,463 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:57:17,924 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/sources/playwright_adapter.py', reloading
+2025-11-02 08:57:17,970 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:57:18,304 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:57:18,312 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:57:38,903 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/db/queries_sources.py', reloading
+2025-11-02 08:57:38,950 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:57:39,269 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:57:39,274 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:57:45,779 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/db/queries_sources.py', reloading
+2025-11-02 08:57:45,832 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:57:46,156 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:57:46,161 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-02 08:57:52,698 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/sources/playwright_adapter.py', reloading
+2025-11-02 08:57:52,742 - werkzeug - INFO -  * Restarting with stat
+2025-11-02 08:57:53,072 - werkzeug - WARNING -  * Debugger is active!
+2025-11-02 08:57:53,078 - werkzeug - INFO -  * Debugger PIN: 263-852-041
