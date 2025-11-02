@@ -166,27 +166,53 @@ def is_likely_false_positive(item: Dict[str, Any]) -> tuple[bool, str]:
     event_date = item.get('event_date')
     location = item.get('location')
     raw_data = item.get('raw_data', {})
+    normalized = normalize_title(title)
     
-    # Check if it's a page heading
+    # Primary check: is it a page heading?
     if is_page_heading(title, url):
         return (True, 'page_heading')
     
     # Additional checks for suspicious content
     
-    # Missing critical event information
-    if not event_date and not location:
-        # If title is also generic, likely false positive
-        if len(normalize_title(title).split()) <= 3:
-            return (True, 'missing_info_generic')
+    # Very short titles without dates are likely navigation
+    if len(normalized) < 10 and not event_date:
+        return (True, 'too_short_no_date')
+    
+    # Generic venue/location names without dates or descriptions
+    # Common venue patterns
+    venue_patterns = ['castle', 'house', 'park', 'museum', 'gallery', 'cathedral', 'abbey']
+    is_venue_name = any(pattern in normalized for pattern in venue_patterns) and len(normalized.split()) <= 3
+    
+    if is_venue_name and not event_date:
+        # Check if URL suggests it's a venue page, not an event
+        if url:
+            if any(path in url.lower() for path in ['/places/', '/venues/', '/visit-a-place/']):
+                return (True, 'venue_page_not_event')
+        else:
+            # No URL and looks like just a venue name
+            return (True, 'venue_name_no_info')
+    
+    # Generic phrases that are clearly navigation
+    generic_nav_phrases = [
+        'multiple venues', 'various locations', 'across scotland',
+        'scotland\'s calendar', 'events & festivals', 'events and festivals'
+    ]
+    if normalized in [p.lower() for p in generic_nav_phrases]:
+        return (True, 'generic_navigation_phrase')
     
     # Check raw_data for clues
     if isinstance(raw_data, dict):
         description = raw_data.get('description', '')
         if description:
             desc_lower = description.lower()
-            # Generic descriptions that suggest navigation
-            if any(phrase in desc_lower for phrase in ['click here', 'see our', 'visit our', 'learn more about', 'find out about']):
-                if len(normalize_title(title).split()) <= 4:
+            # Generic descriptions that suggest navigation pages
+            navigation_indicators = [
+                'click here', 'see our', 'visit our', 'learn more about', 
+                'find out about', 'discover more', 'explore our'
+            ]
+            if any(phrase in desc_lower for phrase in navigation_indicators):
+                # If title is also short/generic, likely navigation
+                if len(normalized.split()) <= 4:
                     return (True, 'generic_description')
     
     return (False, '')
