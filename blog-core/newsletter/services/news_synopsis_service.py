@@ -513,7 +513,7 @@ def get_news_items(days_back: int = 7) -> List[Dict[str, Any]]:
             OR suitability_score IS NULL
           )
           -- Exclude crime stories that scored too high (likely analyzed with old system)
-          -- Use position() instead of LIKE to avoid % placeholder issues
+          -- Use position() instead of LIKE to avoid placeholder issues
           AND NOT (
             suitability_score > 2.0
             AND (
