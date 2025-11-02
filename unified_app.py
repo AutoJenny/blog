@@ -101,6 +101,9 @@ def create_app(config_name=None):
     from blueprints.planning_api_taxonomy import bp as planning_taxonomy_api_bp
     app.register_blueprint(planning_taxonomy_api_bp)
     
+    from blueprints.planning_api_themes import bp as planning_themes_api_bp
+    app.register_blueprint(planning_themes_api_bp)
+    
     from blueprints.authoring_api_photography import bp as authoring_photography_bp
     app.register_blueprint(authoring_photography_bp)
     

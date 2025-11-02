@@ -113,6 +113,9 @@ def api_calendar_ideas(week_number):
                 LEFT JOIN calendar_idea_categories cic ON ci.id = cic.idea_id
                 LEFT JOIN calendar_categories cc ON cic.category_id = cc.id
                 WHERE ci.week_number = %s
+                  AND NOT EXISTS (
+                      SELECT 1 FROM calendar_themes ct WHERE ct.id = ci.id
+                  )
                 GROUP BY {group_by_fields}
                 ORDER BY 
                     CASE ci.priority 
@@ -241,17 +244,44 @@ def api_calendar_schedule(year, week_number):
     """Get schedule for a specific year and week"""
     try:
         with db_manager.get_cursor() as cursor:
+            # Check if calendar_themes table exists
             cursor.execute("""
-                SELECT cs.id, cs.post_id, cs.idea_id, cs.year, cs.week_number, cs.scheduled_date,
-                       cs.created_at, cs.updated_at,
-                       p.title as post_title, p.status as post_status,
-                       pd.idea_seed as post_idea_seed
-                FROM calendar_schedule cs
-                LEFT JOIN post p ON cs.post_id = p.id
-                LEFT JOIN post_development pd ON p.id = pd.post_id
-                WHERE cs.year = %s AND cs.week_number = %s
-                ORDER BY cs.scheduled_date
-            """, (year, week_number))
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'calendar_themes'
+                )
+            """)
+            has_themes_table = cursor.fetchone()['exists']
+            
+            # Include theme_id and theme data if themes table exists
+            if has_themes_table:
+                cursor.execute("""
+                    SELECT cs.id, cs.post_id, cs.idea_id, cs.theme_id, cs.year, cs.week_number, cs.scheduled_date,
+                           cs.created_at, cs.updated_at,
+                           p.title as post_title, p.status as post_status,
+                           pd.idea_seed as post_idea_seed,
+                           ct.theme_title, ct.id as calendar_theme_id
+                    FROM calendar_schedule cs
+                    LEFT JOIN post p ON cs.post_id = p.id
+                    LEFT JOIN post_development pd ON p.id = pd.post_id
+                    LEFT JOIN calendar_themes ct ON cs.theme_id = ct.id
+                    WHERE cs.year = %s AND cs.week_number = %s
+                    ORDER BY cs.scheduled_date
+                """, (year, week_number))
+            else:
+                # Fallback if themes table doesn't exist yet
+                cursor.execute("""
+                    SELECT cs.id, cs.post_id, cs.idea_id, cs.year, cs.week_number, cs.scheduled_date,
+                           cs.created_at, cs.updated_at,
+                           p.title as post_title, p.status as post_status,
+                           pd.idea_seed as post_idea_seed
+                    FROM calendar_schedule cs
+                    LEFT JOIN post p ON cs.post_id = p.id
+                    LEFT JOIN post_development pd ON p.id = pd.post_id
+                    WHERE cs.year = %s AND cs.week_number = %s
+                    ORDER BY cs.scheduled_date
+                """, (year, week_number))
             
             schedule = cursor.fetchall()
             
@@ -1224,3 +1254,30 @@ def api_update_calendar_event(event_id: int):
 def api_calendar_ideas_for_week(week_number):
     """Get ideas for a specific week (alias for api_calendar_ideas)"""
     return api_calendar_ideas(week_number)
+
+def api_schedule_update_theme_to_idea():
+    """Update schedule entries to convert theme_id to idea_id"""
+    try:
+        data = request.get_json() or {}
+        theme_id = data.get('theme_id')
+        idea_id = data.get('idea_id')
+        
+        if not theme_id or not idea_id:
+            return jsonify({'success': False, 'error': 'Missing theme_id or idea_id'}), 400
+        
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cursor:
+                # Update schedule entries: set idea_id and clear theme_id
+                cursor.execute("""
+                    UPDATE calendar_schedule
+                    SET idea_id = %s, theme_id = NULL, updated_at = NOW()
+                    WHERE theme_id = %s
+                """, (idea_id, theme_id))
+                
+                updated_count = cursor.rowcount
+                conn.commit()
+                
+        return jsonify({'success': True, 'updated_count': updated_count})
+    except Exception as e:
+        logger.error(f"Error updating schedule theme to idea: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500

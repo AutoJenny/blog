@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% from 'macros/static_assets.html' import css_assets, js_assets %}
+
+{% block css_assets %}
+{{ super() }}
+{{ css_assets('imaging') }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/photo-selection.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/data-tab.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/imaging-workspace.css') }}">
+{% endblock %}
+
+{% block js_assets %}
+{{ js_assets('imaging') }}
+<script src="{{ url_for('static', filename='js/imaging/imaging-workspace.js') }}"></script>
+<script src="{{ url_for('static', filename='js/imaging/sections-panel.js') }}"></script>
+<script src="{{ url_for('static', filename='js/imaging/photo-search-panel.js') }}"></script>
+<script src="{{ url_for('static', filename='js/imaging/photo-results-panel.js') }}"></script>
+<script src="{{ url_for('static', filename='js/imaging/photo-selection-panel.js') }}"></script>
+<script>
+    window.currentStage = 'imaging';
+    window.currentSubstage = 'photo-selection';
+    window.postId = {{ post_id|default(0) }};
+    window.imagingStage = true;
+    window.imagingSubstage = 'photo-selection';
+    window.illustrationMethod = '{{ illustration_method|default("Photo-harvesting") }}';
+</script>
+{% endblock %}
+
+{% block title %}Photo Selection - Imaging Workflow{% endblock %}
+
+{% block content %}
+{% include 'shared/blog_pipeline_header.html' %}
+
+<div class="imaging-workspace">
+    <div class="workspace-container">
+        {% include 'shared/sections_panel.html' %}
+        <div class="editor-panel">
+            <!-- Route Indicator -->
+            <div class="route-indicator" style="background: #1e40af; color: white; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-camera" style="font-size: 1.1rem;"></i>
+                <span>Illustration Route: <strong>Photo-harvesting</strong></span>
+            </div>
+            
+            <!-- Photo Search Panel -->
+            <div class="photo-search-container">
+                {% include 'imaging/includes/photo_search_panel.html' %}
+            </div>
+            
+            <!-- Photo Results Panel -->
+            <div class="photo-results-container">
+                {% include 'imaging/includes/photo_results_panel.html' %}
+            </div>
+            
+            <!-- Photo Selection Panel -->
+            <div class="photo-selection-container">
+                {% include 'imaging/includes/photo_selection_panel.html' %}
+            </div>
+            
+            <!-- Context Panel -->
+            <div class="context-container">
+                {% include 'authoring/includes/context_panel.html' %}
+            </div>
+            
+            <!-- Output Panel -->
+            {% include 'imaging/right/output_panel_photo_selection.html' %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+

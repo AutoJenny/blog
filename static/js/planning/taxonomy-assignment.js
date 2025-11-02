@@ -87,10 +87,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         const scheduleData = await scheduleResponse.json();
                         if (scheduleData.schedule && Array.isArray(scheduleData.schedule) && scheduleData.schedule.length > 0) {
                             // Find the theme for this week
-                            const weekThemeSchedule = scheduleData.schedule.find(s => s.idea_id && s.item_classification === 'theme');
-                            if (weekThemeSchedule && weekThemeSchedule.idea_id) {
-                                // Use backend endpoint to find post by theme idea_id
-                                const postByThemeResp = await fetch(`/planning/api/posts/by-theme/${weekThemeSchedule.idea_id}`);
+                            const weekThemeSchedule = scheduleData.schedule.find(s => s.theme_id || s.calendar_theme_id);
+                            if (weekThemeSchedule && (weekThemeSchedule.theme_id || weekThemeSchedule.calendar_theme_id)) {
+                                // Use backend endpoint to find post by theme_id
+                                const themeId = weekThemeSchedule.theme_id || weekThemeSchedule.calendar_theme_id;
+                                const postByThemeResp = await fetch(`/planning/api/posts/by-theme/${themeId}`);
                                 if (postByThemeResp.ok) {
                                     const postByThemeData = await postByThemeResp.json();
                                     if (postByThemeData.success && postByThemeData.post_id) {

@@ -19,6 +19,7 @@ from blueprints.planning_calendar_clean import planning_calendar as calendar_fun
 from blueprints.planning_calendar import planning_calendar_taxonomy as taxonomy_func
 from blueprints.planning_concept import planning_concept_brainstorm as brainstorm_func, planning_concept_section_structure as section_structure_func, planning_concept_topic_allocation as topic_allocation_func, planning_concept_titling as titling_func, planning_concept_outline as outline_func, planning_research_sources as sources_func, planning_research_visuals as visuals_func, planning_research_prompts as prompts_func, planning_research_verification as verification_func
 from blueprints.planning_api_calendar import api_calendar_categories as categories_api_func, api_calendar_weeks as weeks_api_func, api_calendar_ideas as ideas_api_func, api_calendar_events as events_api_func, api_calendar_schedule as schedule_api_func, api_calendar_ideas_for_week as ideas_week_api_func, api_add_calendar_idea as add_idea_api_func, api_update_calendar_idea as update_idea_api_func, api_delete_calendar_idea as delete_idea_api_func, api_calendar_idea_status as idea_status_api_func, api_get_calendar_idea as get_idea_api_func, api_convert_event_to_idea as convert_event_to_idea_api_func, api_add_calendar_event as add_event_api_func, api_update_calendar_event as update_event_api_func, api_delete_calendar_event as delete_event_api_func, api_select_theme_idea as select_theme_idea_api_func, api_weekly_social_focus as social_focus_api_func, api_weekly_social_focus_day as social_focus_day_api_func, api_add_weekly_social_focus as add_social_focus_api_func, api_update_weekly_social_focus as update_social_focus_api_func, api_delete_weekly_social_focus as delete_social_focus_api_func
+from blueprints.planning_api_themes import api_calendar_themes as themes_api_func, api_get_calendar_theme as get_theme_api_func, api_add_calendar_theme, api_update_calendar_theme, api_delete_calendar_theme
 from blueprints.planning_api_posts import api_posts as posts_api_func
 from blueprints.planning_api_posts import confirm_calendar_idea as confirm_calendar_idea_func
 from blueprints.planning_api_post_specific import api_posts_expanded_idea as expanded_idea_api_func, api_posts_idea_seed as idea_seed_api_func, api_check_topic as check_topic_api_func, api_create_new_post as create_new_api_func, api_posts_idea_scope as idea_scope_api_func, get_post_by_theme as get_post_by_theme_func
@@ -186,6 +187,26 @@ def api_calendar_ideas(week_number):
     """Get perpetual ideas for a specific week number"""
     return ideas_api_func(week_number)
 
+@bp.route('/api/calendar/themes/week/<int:week_number>', methods=['GET'])
+def api_calendar_themes(week_number):
+    """Get perpetual themes for a specific week number"""
+    return themes_api_func(week_number)
+
+@bp.route('/api/calendar/themes/<int:theme_id>', methods=['GET', 'PUT', 'DELETE'])
+def api_calendar_theme(theme_id):
+    """Get, update, or delete a single calendar theme"""
+    if request.method == 'GET':
+        return get_theme_api_func(theme_id)
+    elif request.method == 'PUT':
+        return api_update_calendar_theme(theme_id)
+    elif request.method == 'DELETE':
+        return api_delete_calendar_theme(theme_id)
+
+@bp.route('/api/calendar/themes', methods=['POST'])
+def api_add_calendar_theme_route():
+    """Create a new calendar theme"""
+    return api_add_calendar_theme()
+
 @bp.route('/api/calendar/events/<int:year>/<int:week_number>', methods=['GET'])
 def api_calendar_events(year, week_number):
     """Get events for a specific year and week"""
@@ -195,6 +216,12 @@ def api_calendar_events(year, week_number):
 def api_calendar_schedule(year, week_number):
     """Get schedule for a specific year and week"""
     return schedule_api_func(year, week_number)
+
+@bp.route('/api/calendar/schedule/update-theme-to-idea', methods=['POST'])
+def api_schedule_update_theme_to_idea():
+    """Update schedule entries to convert theme_id to idea_id"""
+    from blueprints.planning_api_calendar import api_schedule_update_theme_to_idea
+    return api_schedule_update_theme_to_idea()
 
 @bp.route('/api/calendar/ideas', methods=['POST'])
 def api_calendar_add_idea():
