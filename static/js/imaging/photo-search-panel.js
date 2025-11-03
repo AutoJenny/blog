@@ -75,6 +75,8 @@ class PhotoSearchPanel {
         
         const provider = document.getElementById('photo-search-provider').value;
         const perPage = parseInt(document.getElementById('photo-search-per-page').value);
+        const orientationEl = document.getElementById('photo-search-orientation');
+        const orientation = orientationEl ? orientationEl.value.trim() : '';
         
         const searchBtn = document.getElementById('photo-search-btn');
         const statusDiv = document.getElementById('photo-search-status');
@@ -85,17 +87,23 @@ class PhotoSearchPanel {
         statusDiv.style.display = 'block';
         statusDiv.innerHTML = '<span class="text-info">Searching for photos...</span>';
         
+        // Build request body (only include orientation if a value is selected)
+        const requestBody = {
+            search_term: searchTerm,
+            provider: provider,
+            per_page: perPage
+        };
+        if (orientation) {
+            requestBody.orientation = orientation;
+        }
+        
         try {
             const response = await fetch(`/imaging/api/photo-search/posts/${this.postId}/sections/${this.currentSectionId}/search`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    search_term: searchTerm,
-                    provider: provider,
-                    per_page: perPage
-                })
+                body: JSON.stringify(requestBody)
             });
             
             const data = await response.json();

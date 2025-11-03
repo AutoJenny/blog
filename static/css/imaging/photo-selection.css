@@ -1,5 +1,46 @@
 /* Photo Selection Styles */
 
+.photo-results-grid-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.orientation-section {
+    margin-bottom: 2rem;
+}
+
+.orientation-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.orientation-header .count-badge {
+    margin-left: auto;
+    background: #e2e8f0;
+    color: #475569;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.photo-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+    align-items: flex-start;
+}
+
+.landscape-grid { /* no template columns to avoid constraining intrinsic sizes */ }
+.portrait-grid { /* no template columns to avoid constraining intrinsic sizes */ }
+
 .photo-results-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -10,9 +51,19 @@
 .photo-card {
     border: 2px solid #e2e8f0;
     border-radius: 8px;
-    overflow: hidden;
+    overflow: visible;
     transition: all 0.2s ease;
     background: white;
+    display: inline-flex;
+    flex-direction: column;
+    width: auto;
+    min-width: 0;
+}
+
+.photo-card.landscape-card,
+.photo-card.portrait-card {
+    /* Images displayed in their actual dimensions - no width constraints */
+    width: auto;
 }
 
 .photo-card:hover {
@@ -23,6 +74,22 @@
 .photo-card.selected {
     border-color: #10b981;
     box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
+}
+
+.photo-image-container {
+    position: relative;
+    background: transparent; /* do not visually box the image */
+    overflow: visible;
+    display: inline-block;
+    line-height: 0;
+    width: auto;
+    height: auto;
+}
+
+.photo-image {
+    display: block;
+    object-fit: contain;
+    /* Let width/height attributes control the size */
 }
 
 .photo-thumbnail-container {
@@ -48,17 +115,29 @@
     right: 0.5rem;
     background: rgba(16, 185, 129, 0.9);
     color: white;
-    border-radius: 50%;
-    width: 2rem;
-    height: 2rem;
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.selected-overlay i {
     font-size: 1rem;
 }
 
 .photo-info {
     padding: 0.75rem;
+    flex-grow: 1;
+}
+
+.photo-dimensions {
+    color: #64748b;
+    font-size: 0.75rem;
+    margin: 0.25rem 0;
 }
 
 .photo-provider {
@@ -92,6 +171,7 @@
     width: 100%;
     margin-top: 0.5rem;
     border-radius: 0 0 6px 6px;
+    flex-shrink: 0;
 }
 
 .photo-card .select-photo-btn:disabled {

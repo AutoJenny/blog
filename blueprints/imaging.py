@@ -1,5 +1,6 @@
 # Imaging Blueprint - Standalone image generation workflow
 from flask import Blueprint, render_template, jsonify, request, redirect, url_for
+from datetime import datetime
 from config.database import db_manager
 import logging
 import json
@@ -1797,6 +1798,7 @@ def api_photo_search(post_id, section_id):
         search_term = data.get('search_term', '').strip()
         provider = data.get('provider', 'both')
         per_page = int(data.get('per_page', 20))
+        orientation = data.get('orientation')  # Optional: 'landscape', 'portrait', 'square'/'squarish'
         
         if not search_term:
             return jsonify({'success': False, 'error': 'search_term is required'}), 400
@@ -1809,11 +1811,19 @@ def api_photo_search(post_id, section_id):
         # Get API keys from environment
         pexels_key = os.getenv('PEXELS_API_KEY')
         unsplash_key = os.getenv('UNSPLASH_ACCESS_KEY')
+
+        # Validate provider + keys so we don't silently return 0 results
+        if provider == 'pexels' and not pexels_key:
+            return jsonify({'success': False, 'error': 'PEXELS_API_KEY is not configured'}), 400
+        if provider == 'unsplash' and not unsplash_key:
+            return jsonify({'success': False, 'error': 'UNSPLASH_ACCESS_KEY is not configured'}), 400
+        if provider == 'both' and (not pexels_key and not unsplash_key):
+            return jsonify({'success': False, 'error': 'No photo provider API keys configured (PEXELS_API_KEY / UNSPLASH_ACCESS_KEY)'}), 400
         
-        # Run provider searches via adapter
-        results = run_photo_search(provider, pexels_key, unsplash_key, search_term, per_page)
+        # Run provider searches via adapter (with orientation filter if provided)
+        results = run_photo_search(provider, pexels_key, unsplash_key, search_term, per_page, orientation)
         
-        # Store results in database via utility
+        # Store results in database (for backward compatibility)
         with db_manager.get_connection() as conn:
             try:
                 store_photo_search_results(conn,
@@ -1822,14 +1832,23 @@ def api_photo_search(post_id, section_id):
                                            results=results,
                                            search_term=search_term)
             except Exception as persist_err:
-                return jsonify({'success': False, 'error': str(persist_err)}), 500
+                logger.warning(f"Failed to store results in DB: {persist_err}")
+        
+        # Also store as JSON files for Photo-harvesting route
+        try:
+            from utils.photo_harvesting_storage import store_search_results as store_file_results
+            filepath = store_file_results(post_id, section_id, results, search_term)
+            logger.info(f"Stored photo search results to file: {filepath}")
+        except Exception as file_err:
+            logger.warning(f"Failed to store results to file: {file_err}")
         
         return jsonify({
             'success': True,
             'results': results,
             'count': len(results),
             'search_term': search_term,
-            'provider': provider
+            'provider': provider,
+            'orientation': orientation
         })
         
     except Exception as e:
@@ -1838,9 +1857,47 @@ def api_photo_search(post_id, section_id):
 
 @bp.route('/api/photo-search/posts/<int:post_id>/sections/<int:section_id>/results', methods=['GET'])
 def api_photo_results(post_id, section_id):
-    """Get stored photo search results for a section"""
+    """Get stored photo search results for a section
+    
+    For Photo-harvesting route, loads from JSON files in raw/ directory.
+    Falls back to database if files don't exist.
+    """
     try:
-        # Verify section belongs to post
+        # Try loading from file first (Photo-harvesting route)
+        try:
+            from utils.photo_harvesting_storage import load_search_results
+            file_results = load_search_results(post_id, section_id)
+            if file_results and file_results.get('results'):
+                # Also load selected photos to mark them
+                from utils.photo_harvesting_storage import load_selected_photos
+                selected = load_selected_photos(post_id, section_id)
+                
+                results = file_results['results']
+                # Mark selected photos
+                for photo in results:
+                    photo['selected_landscape'] = False
+                    photo['selected_portrait'] = False
+                    if selected.get('landscape') and selected['landscape'].get('photo'):
+                        sel_photo = selected['landscape']['photo']
+                        if (sel_photo.get('provider') == photo.get('provider') and 
+                            str(sel_photo.get('image_id')) == str(photo.get('image_id'))):
+                            photo['selected_landscape'] = True
+                    if selected.get('portrait') and selected['portrait'].get('photo'):
+                        sel_photo = selected['portrait']['photo']
+                        if (sel_photo.get('provider') == photo.get('provider') and 
+                            str(sel_photo.get('image_id')) == str(photo.get('image_id'))):
+                            photo['selected_portrait'] = True
+                
+                return jsonify({
+                    'success': True,
+                    'results': results,
+                    'count': len(results),
+                    'source': 'file'
+                })
+        except Exception as file_err:
+            logger.debug(f"Could not load from file, trying database: {file_err}")
+        
+        # Fallback to database
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 SELECT photo_search_results
@@ -1861,7 +1918,8 @@ def api_photo_results(post_id, section_id):
             return jsonify({
                 'success': True,
                 'results': results,
-                'count': len(results) if isinstance(results, list) else 0
+                'count': len(results) if isinstance(results, list) else 0,
+                'source': 'database'
             })
             
     except Exception as e:
@@ -1870,15 +1928,22 @@ def api_photo_results(post_id, section_id):
 
 @bp.route('/api/photo-search/posts/<int:post_id>/sections/<int:section_id>/select', methods=['POST'])
 def api_photo_select(post_id, section_id):
-    """Select a photo from search results"""
+    """Select a photo from search results (for Photo-harvesting route)
+    
+    Supports selecting landscape and portrait photos separately.
+    """
     try:
         # Get request data
         data = request.get_json() or {}
         provider = data.get('provider')
         image_id = data.get('image_id')
+        orientation = data.get('orientation')  # 'landscape' or 'portrait'
         
         if not provider or not image_id:
             return jsonify({'success': False, 'error': 'provider and image_id are required'}), 400
+        
+        if orientation and orientation not in ('landscape', 'portrait'):
+            return jsonify({'success': False, 'error': 'orientation must be "landscape" or "portrait"'}), 400
         
         # Verify section belongs to post and get current results
         with db_manager.get_connection() as conn:
@@ -1902,42 +1967,71 @@ def api_photo_select(post_id, section_id):
                 if not isinstance(results, list):
                     results = []
                 
-                # Find and update selected photo
+                # Find selected photo
                 selected_photo = None
-                updated_results = []
-                
                 for photo in results:
                     if photo.get('provider') == provider and str(photo.get('image_id')) == str(image_id):
-                        # Mark as selected
-                        photo['selected'] = True
-                        photo['selected_at'] = datetime.now().isoformat()
                         selected_photo = photo
-                    else:
-                        # Unselect all others
-                        photo['selected'] = False
-                        photo.pop('selected_at', None)
-                    updated_results.append(photo)
+                        break
                 
                 if not selected_photo:
                     return jsonify({'success': False, 'error': 'Photo not found in search results'}), 404
                 
-                # Save updated results
+                # Determine actual orientation from photo dimensions
+                photo_width = selected_photo.get('width', 0)
+                photo_height = selected_photo.get('height', 0)
+                if not orientation:
+                    # Auto-detect orientation
+                    if photo_width > photo_height:
+                        orientation = 'landscape'
+                    elif photo_height > photo_width:
+                        orientation = 'portrait'
+                    else:
+                        orientation = 'landscape'  # Default for square
+                
+                # For Unsplash, trigger download event per API guidelines
+                if selected_photo.get('provider') == 'unsplash':
+                    import os, urllib.parse, urllib.request
+                    access_key = os.getenv('UNSPLASH_ACCESS_KEY')
+                    download_loc = selected_photo.get('download_location') or (selected_photo.get('api_response') or {}).get('links', {}).get('download_location')
+                    if access_key and download_loc:
+                        url = download_loc
+                        # Append client_id if not present
+                        parsed = urllib.parse.urlparse(url)
+                        qs = urllib.parse.parse_qs(parsed.query)
+                        if 'client_id' not in qs:
+                            sep = '&' if parsed.query else '?'
+                            url = f"{url}{sep}client_id={access_key}"
+                        # Fire-and-forget
+                        try:
+                            urllib.request.urlopen(url, timeout=3)
+                        except Exception:
+                            pass
+
+                # Store selected photo as JSON file in optimized/ directory (Photo-harvesting route)
+                try:
+                    from utils.photo_harvesting_storage import store_selected_photo as store_file_selection
+                    filepath = store_file_selection(post_id, section_id, selected_photo, orientation)
+                    logger.info(f"Stored selected {orientation} photo to file: {filepath}")
+                except Exception as file_err:
+                    logger.warning(f"Failed to store selection to file: {file_err}")
+
+                # Also update database results (for backward compatibility)
+                # Note: In Photo-harvesting route, we don't track "selected" in DB results,
+                # but we keep this for compatibility with existing code
                 cursor.execute("""
                     UPDATE post_section
-                    SET photo_search_results = %s::jsonb,
-                        updated_at = NOW()
+                    SET photo_search_results = %s::jsonb
                     WHERE id = %s AND post_id = %s
                     RETURNING id
-                """, (json.dumps(updated_results), section_id, post_id))
-                
-                if not cursor.fetchone():
-                    return jsonify({'success': False, 'error': 'Failed to save selection'}), 500
+                """, (json.dumps(results), section_id, post_id))
                 
                 conn.commit()
                 
                 return jsonify({
                     'success': True,
-                    'selected_photo': selected_photo
+                    'selected_photo': selected_photo,
+                    'orientation': orientation
                 })
                 
     except Exception as e:
@@ -1946,9 +2040,26 @@ def api_photo_select(post_id, section_id):
 
 @bp.route('/api/photo-search/posts/<int:post_id>/sections/<int:section_id>/selected', methods=['GET'])
 def api_photo_selected(post_id, section_id):
-    """Get currently selected photo for a section"""
+    """Get currently selected photos (landscape and portrait) for a section
+    
+    For Photo-harvesting route, loads from JSON files in optimized/ directory.
+    """
     try:
-        # Verify section belongs to post and get results
+        # Try loading from file first (Photo-harvesting route)
+        try:
+            from utils.photo_harvesting_storage import load_selected_photos
+            selected = load_selected_photos(post_id, section_id)
+            
+            return jsonify({
+                'success': True,
+                'selected_landscape': selected.get('landscape'),
+                'selected_portrait': selected.get('portrait'),
+                'source': 'file'
+            })
+        except Exception as file_err:
+            logger.debug(f"Could not load from file, trying database: {file_err}")
+        
+        # Fallback to database (legacy)
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 SELECT photo_search_results
@@ -1969,7 +2080,7 @@ def api_photo_selected(post_id, section_id):
             if not isinstance(results, list):
                 results = []
             
-            # Find selected photo
+            # Find selected photo (legacy single selection)
             selected_photo = None
             for photo in results:
                 if photo.get('selected') is True:
@@ -1978,11 +2089,12 @@ def api_photo_selected(post_id, section_id):
             
             return jsonify({
                 'success': True,
-                'selected_photo': selected_photo
+                'selected_photo': selected_photo,
+                'source': 'database'
             })
             
     except Exception as e:
-        logger.error(f"Error fetching selected photo: {e}")
+        logger.error(f"Error fetching selected photos: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @bp.route('/api/posts/<int:post_id>/sections/<section_id>/image')

@@ -15,6 +15,14 @@ export PYTHONUNBUFFERED=1
 export FLASK_ENV=development
 export PYTHONPATH="$ROOT_DIR:$ROOT_DIR/blog-core:${PYTHONPATH:-}"
 
+# Load environment variables from .env if present
+if [ -f "$ROOT_DIR/.env" ]; then
+  set -a
+  # shellcheck disable=SC1091
+  . "$ROOT_DIR/.env"
+  set +a
+fi
+
 # Stop existing server (port policy: always 5000)
 pkill -f unified_app.py || true
 sleep 1

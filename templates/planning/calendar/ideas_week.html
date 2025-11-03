@@ -704,6 +704,12 @@ async function confirmSelection() {
         const postId = confirmData.post_id;
         const action = 'created or reused post';
         
+        // Fire-and-forget: trigger weekly clan cache sync (idempotent, background)
+        try {
+            fetch('/api/clan/cache/refresh/incremental-basic', { method: 'POST' })
+                .catch(() => {});
+        } catch (e) { /* ignore */ }
+
         // Update status display
         const statusDisplay = document.getElementById('post-creation-status');
         statusDisplay.innerHTML = `
