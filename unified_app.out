@@ -1,10 +1,69 @@
  * Serving Flask app 'unified_app'
  * Debug mode: on
-2025-11-03 08:16:26,878 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-11-03 09:19:52,153 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on http://127.0.0.1:5000
-2025-11-03 08:16:26,878 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
-2025-11-03 08:16:26,879 - werkzeug - INFO -  * Restarting with stat
-2025-11-03 08:16:27,221 - werkzeug - WARNING -  * Debugger is active!
-2025-11-03 08:16:27,226 - werkzeug - INFO -  * Debugger PIN: 263-852-041
-2025-11-03 08:16:27,303 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 08:16:27] "GET /health HTTP/1.1" 200 -
-2025-11-03 08:16:30,954 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 08:16:30] "GET /health HTTP/1.1" 200 -
+2025-11-03 09:19:52,153 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-03 09:19:52,154 - werkzeug - INFO -  * Restarting with stat
+2025-11-03 09:19:52,513 - werkzeug - WARNING -  * Debugger is active!
+2025-11-03 09:19:52,519 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-03 09:19:52,598 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:19:52] "GET /health HTTP/1.1" 200 -
+2025-11-03 09:19:53,645 - config.database - INFO - Database connection established
+2025-11-03 09:19:53,652 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:19:53] "GET /authoring/api/posts/81/sections/831 HTTP/1.1" 200 -
+2025-11-03 09:20:12,052 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/imaging.py', reloading
+2025-11-03 09:20:12,100 - werkzeug - INFO -  * Restarting with stat
+2025-11-03 09:20:12,460 - werkzeug - WARNING -  * Debugger is active!
+2025-11-03 09:20:12,466 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-03 09:20:14,294 - config.database - INFO - Database connection established
+2025-11-03 09:20:14,303 - utils.week_post_resolver - DEBUG - Resolved post_id 81 for week 2025/45
+2025-11-03 09:20:14,303 - blueprints.imaging - INFO - Week 2025/45 resolved to post_id 81 (instead of URL post_id 81)
+2025-11-03 09:20:14,308 - config.database - INFO - Database connection established
+2025-11-03 09:20:14,343 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "GET /imaging/posts/81/sections/photo-selection?year=2025&week=45 HTTP/1.1" 200 -
+2025-11-03 09:20:14,378 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,380 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,380 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/css/imaging/main.css HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,381 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/css/imaging/navigation.css HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,381 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/css/imaging/imaging.css HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,381 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/css/imaging/photo-selection.css HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,383 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/css/imaging/data-tab.css HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,383 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/css/imaging/imaging-workspace.css HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,384 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,385 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,387 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,387 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,388 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,389 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/css/authoring/sections-panel.css HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,389 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/js/authoring/sections-panel.js HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,390 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,391 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,392 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/js/authoring/context-panel.js HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,393 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/css/authoring/context-panel.css HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,395 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/js/imaging/image-generation-handler.js HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,395 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/js/imaging/imaging-workspace.js HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,395 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/js/imaging/imaging-ui.js HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,397 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/js/imaging/imaging-core.js HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,397 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/js/imaging/sections-panel.js HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,398 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "GET /static/js/imaging/photo-search-panel.js HTTP/1.1" 200 -
+2025-11-03 09:20:14,399 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/js/imaging/photo-results-panel.js HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,400 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "[36mGET /static/js/imaging/photo-selection-panel.js HTTP/1.1[0m" 304 -
+2025-11-03 09:20:14,415 - config.database - INFO - Database connection established
+2025-11-03 09:20:14,416 - config.database - INFO - Database connection established
+2025-11-03 09:20:14,417 - config.database - INFO - Database connection established
+2025-11-03 09:20:14,419 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "GET /imaging/api/posts/81/sections HTTP/1.1" 200 -
+2025-11-03 09:20:14,419 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "GET /imaging/api/posts/81/sections HTTP/1.1" 200 -
+2025-11-03 09:20:14,426 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "GET /planning/api/posts/81 HTTP/1.1" 200 -
+2025-11-03 09:20:14,436 - config.database - INFO - Database connection established
+2025-11-03 09:20:14,446 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "GET /planning/api/calendar/schedule/2025/45 HTTP/1.1" 200 -
+2025-11-03 09:20:14,455 - config.database - INFO - Database connection established
+2025-11-03 09:20:14,465 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "GET /planning/api/calendar/schedule/2025/45 HTTP/1.1" 200 -
+2025-11-03 09:20:14,474 - config.database - INFO - Database connection established
+2025-11-03 09:20:14,484 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "GET /planning/api/posts/81 HTTP/1.1" 200 -
+2025-11-03 09:20:14,493 - config.database - INFO - Database connection established
+2025-11-03 09:20:14,502 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "GET /planning/api/calendar/schedule/2025/45 HTTP/1.1" 200 -
+2025-11-03 09:20:14,510 - config.database - INFO - Database connection established
+2025-11-03 09:20:14,510 - config.database - INFO - Database connection established
+2025-11-03 09:20:14,513 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "GET /planning/api/posts/81/taxonomy HTTP/1.1" 200 -
+2025-11-03 09:20:14,517 - werkzeug - INFO - 127.0.0.1 - - [03/Nov/2025 09:20:14] "GET /planning/api/posts/81 HTTP/1.1" 200 -
+2025-11-03 09:21:51,427 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/authoring_api_prompts.py', reloading
+2025-11-03 09:21:51,476 - werkzeug - INFO -  * Restarting with stat
+2025-11-03 09:21:51,827 - werkzeug - WARNING -  * Debugger is active!
+2025-11-03 09:21:51,832 - werkzeug - INFO -  * Debugger PIN: 263-852-041

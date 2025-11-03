@@ -758,7 +758,7 @@ def imaging_sections_photo_selection(post_id):
             post_updated = post['updated_at'].strftime('%Y-%m-%d %H:%M') if post['updated_at'] else 'Unknown'
             
         return render_template('imaging/sections/photo_selection.html',
-                             post_id=post_id,
+                             post_id=target_post_id,
                              page_title='Photo Selection',
                              post_title=post['title'],
                              post_status=post['status'],

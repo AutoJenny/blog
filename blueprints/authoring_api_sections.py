@@ -146,6 +146,7 @@ def api_get_sections(post_id):
         logger.error(f"Error fetching sections: {e}")
         return jsonify({'error': str(e)}), 500
 
+@bp.route('/api/posts/<int:post_id>/sections/<section_id>', methods=['GET'])
 def api_get_section(post_id, section_id):
     """Get a specific section for a post from post_section table, with fallback to post_development.sections"""
     try:
