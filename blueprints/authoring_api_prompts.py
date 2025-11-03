@@ -446,14 +446,15 @@ def api_generate_image_prompt_from_builder():
                 style_text = '\n'.join(style_parts)
                 logger.info(f"[DEBUG] Style text: {style_text}")
             
-            # Replace [data:style] placeholder with actual style information
+            # Replace [data:style] placeholder with actual style information (or empty for Photo-harvesting)
             if '[data:style]' in prompt_text:
                 if style_text:
                     prompt_text = prompt_text.replace('[data:style]', style_text)
                 else:
+                    # For Photo-harvesting, remove the placeholder completely
                     prompt_text = prompt_text.replace('[data:style]', '')
             else:
-                # If placeholder not found, append style information to prompt
+                # If placeholder not found, append style information to prompt (only for LLM-creation)
                 if style_text:
                     prompt_text += f"\n\nStyle Guidelines:\n{style_text}"
             
