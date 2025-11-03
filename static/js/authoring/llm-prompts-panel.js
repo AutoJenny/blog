@@ -18,6 +18,7 @@ class LLMPromptsPanel {
         
         // Detect page type and get configuration
         this.pageType = this.detectPageType();
+        console.log('[LLM Prompts Panel] Detected pageType:', this.pageType, 'from substage:', window.currentSubstage);
         this.config = this.getPageConfig();
         
         // If config is null (e.g., on optimise page), don't proceed
@@ -28,7 +29,8 @@ class LLMPromptsPanel {
         console.log('[LLM Prompts Panel] Initialized:', {
             pageType: this.pageType,
             promptEndpoint: this.config.promptEndpoint,
-            resultsTitle: this.config.resultsTitle
+            resultsTitle: this.config.resultsTitle,
+            illustrationMethod: window.illustrationMethod
         });
         this.storageKey = `${this.pageType}-llm-prompts`; // legacy key (will not be used)
         this.currentPrompt = { system_prompt: '', prompt_text: '' }; // in-memory source of truth
@@ -147,9 +149,17 @@ class LLMPromptsPanel {
             if ((url.includes('/image-concepts') || url.includes('/image-prompts')) && window.illustrationMethod) {
                 const separator = url.includes('?') ? '&' : '?';
                 url = `${url}${separator}illustration_method=${encodeURIComponent(window.illustrationMethod)}`;
+                console.log('[LLM Prompts Panel] Added illustration_method to URL:', window.illustrationMethod, 'URL:', url);
             }
 
+            console.log('[LLM Prompts Panel] Loading prompt from:', url);
             const response = await fetch(url);
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}: ${response.statusText}` }));
+                throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+            }
+            
             const data = await response.json();
             
             if (data.success && data.prompt) {
@@ -185,14 +195,16 @@ class LLMPromptsPanel {
                 this.updatePromptTitle(prompt.name || this.config.resultsTitle);
                 this.callbacks.onPromptLoad(prompt);
             } else {
-                console.warn(`[LLM Prompts Panel] No prompt found for ${this.pageType}`);
-                this.updatePromptDisplay('', '');
-                this.updatePromptTitle(this.config.resultsTitle);
+                const errorMsg = data.error || `Prompt not found for ${this.pageType}`;
+                console.warn(`[LLM Prompts Panel] ${errorMsg}`);
+                this.updatePromptDisplay('', errorMsg);
+                this.updatePromptTitle(errorMsg);
             }
         } catch (error) {
             console.error(`[LLM Prompts Panel] Error loading prompt for ${this.pageType}:`, error);
-            this.updatePromptDisplay('', '');
-            this.updatePromptTitle(this.config.resultsTitle);
+            const errorMsg = `Error: ${error.message || 'Failed to load prompt'}`;
+            this.updatePromptDisplay('', errorMsg);
+            this.updatePromptTitle(errorMsg);
         }
     }
 
