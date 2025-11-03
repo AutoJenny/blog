@@ -45,6 +45,7 @@ class ClanCache:
                     url TEXT,
                     description TEXT,
                     category_ids JSONB,
+                    first_seen_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
@@ -70,6 +71,22 @@ class ClanCache:
                 )
             ''')
             
+            # Ensure new columns exist on existing installations
+            cursor.execute('''
+                ALTER TABLE clan_products
+                ADD COLUMN IF NOT EXISTS first_seen_at TIMESTAMP
+            ''')
+            cursor.execute('''
+                ALTER TABLE clan_products
+                ADD COLUMN IF NOT EXISTS last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ''')
+
+            # Backfill first_seen_at from last_updated where missing
+            cursor.execute('''
+                UPDATE clan_products
+                SET first_seen_at = COALESCE(first_seen_at, last_updated)
+            ''')
+
             conn.commit()
     
     def is_cache_fresh(self, cache_type: str, max_age_hours: int = 24) -> bool:
@@ -102,18 +119,26 @@ class ClanCache:
             conn.commit()
     
     def store_products(self, products: List[Dict]):
-        """Store products in PostgreSQL cache"""
+        """Upsert products into PostgreSQL cache without deleting existing rows.
+        Preserves first_seen_at; updates last_updated on change.
+        """
         with self.get_db_conn() as conn:
             cursor = conn.cursor()
-            
-            # Clear existing products
-            cursor.execute('DELETE FROM clan_products')
-            
-            # Insert new products
+
             for product in products:
+                product_id = product.get('product_id') or product.get('id')
+                name = product.get('title') or product.get('name')
+                sku = product.get('sku')
+                price = product.get('price')
+                image_url = product.get('image') or product.get('image_url')
+                url = product.get('product_url') or product.get('url')
+                description = product.get('description')
+                category_ids = json.dumps(product.get('category_ids', []))
+                printable_design_type = product.get('printable_design_type')
+
                 cursor.execute('''
-                    INSERT INTO clan_products (id, name, sku, price, image_url, url, description, category_ids, printable_design_type)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    INSERT INTO clan_products (id, name, sku, price, image_url, url, description, category_ids)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                     ON CONFLICT (id) DO UPDATE SET
                         name = EXCLUDED.name,
                         sku = EXCLUDED.sku,
@@ -122,36 +147,37 @@ class ClanCache:
                         url = EXCLUDED.url,
                         description = EXCLUDED.description,
                         category_ids = EXCLUDED.category_ids,
-                        printable_design_type = EXCLUDED.printable_design_type
+                        last_updated = CURRENT_TIMESTAMP
                 ''', (
-                    product.get('product_id') or product.get('id'),  # Handle both new and old API formats
-                    product.get('title') or product.get('name'),     # Handle both new and old API formats
-                    product.get('sku'),
-                    product.get('price'),
-                    product.get('image') or product.get('image_url'),  # Handle both new and old API formats
-                    product.get('product_url') or product.get('url'),  # Handle both new and old API formats
-                    product.get('description'),
-                    json.dumps(product.get('category_ids', [])),
-                    product.get('printable_design_type')
+                    product_id,
+                    name,
+                    sku,
+                    price,
+                    image_url,
+                    url,
+                    description,
+                    category_ids
                 ))
-            
+
             conn.commit()
             self.update_cache_timestamp('products')
-            logger.info(f"Stored {len(products)} products in PostgreSQL cache")
+            logger.info(f"Upserted {len(products)} products into PostgreSQL cache")
     
     def store_categories(self, categories: List[Dict]):
-        """Store categories in PostgreSQL cache"""
+        """Upsert categories into PostgreSQL cache without deleting existing rows."""
         with self.get_db_conn() as conn:
             cursor = conn.cursor()
-            
-            # Clear existing categories
-            cursor.execute('DELETE FROM clan_categories')
-            
-            # Insert new categories
+
             for category in categories:
                 cursor.execute('''
                     INSERT INTO clan_categories (id, name, description, level, parent_id)
                     VALUES (%s, %s, %s, %s, %s)
+                    ON CONFLICT (id) DO UPDATE SET
+                        name = EXCLUDED.name,
+                        description = EXCLUDED.description,
+                        level = EXCLUDED.level,
+                        parent_id = EXCLUDED.parent_id,
+                        last_updated = CURRENT_TIMESTAMP
                 ''', (
                     category.get('id'),
                     category.get('name'),
@@ -159,10 +185,10 @@ class ClanCache:
                     category.get('level', 0),
                     category.get('parent_id')
                 ))
-            
+
             conn.commit()
             self.update_cache_timestamp('categories')
-            logger.info(f"Stored {len(categories)} categories in PostgreSQL cache")
+            logger.info(f"Upserted {len(categories)} categories into PostgreSQL cache")
     
     def get_products(self, limit: Optional[int] = None, query: str = '') -> List[Dict]:
         """Get products from PostgreSQL cache"""
@@ -445,7 +471,8 @@ class ClanCache:
                     image_url = EXCLUDED.image_url,
                     price = EXCLUDED.price,
                     description = EXCLUDED.description,
-                    has_detailed_data = EXCLUDED.has_detailed_data
+                    has_detailed_data = EXCLUDED.has_detailed_data,
+                    last_updated = CURRENT_TIMESTAMP
             """, (product_id, name, sku, url, image_url, price, description, has_detailed_data))
             
             conn.commit()

@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class ClanAPIClient:
     """Client for interacting with the blog-clan-api microservice."""
     
-    def __init__(self, base_url: str = 'http://localhost:5007'):
+    def __init__(self, base_url: str = 'http://localhost:5000'):
         self.base_url = base_url
         self.timeout = 30  # Increased timeout for large product fetches
     

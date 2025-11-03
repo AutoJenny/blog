@@ -18,7 +18,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # Enable CORS for all routes
-CORS(app, origins=["http://localhost:5000", "http://localhost:5001", "http://localhost:5002", "http://localhost:5003", "http://localhost:5004"])
+CORS(app, origins=["http://localhost:5000", "http://localhost:5002", "http://localhost:5003", "http://localhost:5004"])
 
 # Configuration
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key')

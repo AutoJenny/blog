@@ -152,7 +152,7 @@ function renderSectionImage(section, index, totalSections) {
             // Found actual image
             imageContent = `
                 <div style="text-align: center; margin: 1rem 0;">
-                    <img src="http://localhost:5001${section.image.path}" 
+                    <img src="http://localhost:5000${section.image.path}" 
                          alt="${escapeHtml(section.image.alt_text || 'Section image')}" 
                          style="max-width: 100%; max-height: 200px; border-radius: 0.5rem; border: 2px solid #10b981;"
                          onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">

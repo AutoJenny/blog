@@ -808,7 +808,7 @@ def services_status():
     # Docs is now integrated directly
     status['docs'] = {
         'status': 'integrated',
-        'url': 'http://localhost:5001/docs/'
+        'url': 'http://localhost:5000/docs/'
     }
     
     # Settings is now integrated directly
