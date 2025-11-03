@@ -314,8 +314,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize Settings Panel based on illustration method
     const illustrationMethod = window.illustrationMethod || 'LLM-creation';
     
-    if (illustrationMethod === 'Photo-harvesting') {
-        // Initialize Photo Settings Panel for Photo-harvesting
+    // CRITICAL: image-prompts page ALWAYS uses LLMPromptsPanel (for both Photo-harvesting and LLM-creation)
+    // because the template includes llm-prompts-panel.html, not photo-prompts-panel.html
+    const isImagePromptsPage = window.currentSubstage === 'image-prompts';
+    
+    if (illustrationMethod === 'Photo-harvesting' && !isImagePromptsPage) {
+        // Initialize Photo Settings Panel for Photo-harvesting (only for image-concepts, not image-prompts)
         if (typeof PhotoSettingsPanel !== 'undefined') {
             const photoSettingsPanel = new PhotoSettingsPanel({
                 storageKey: 'photo-settings',
@@ -328,7 +332,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.warn('[Authoring Workspace] PhotoSettingsPanel not available');
         }
         
-        // Initialize Photo Prompts Panel for Photo-harvesting
+        // Initialize Photo Prompts Panel for Photo-harvesting (only for image-concepts, not image-prompts)
         let photoPromptsPanel = null;
         try {
             if (typeof PhotoPromptsPanel !== 'undefined') {
@@ -351,8 +355,10 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('[Authoring Workspace] Error initializing Photo Prompts Panel:', error);
         }
-    } else {
-        // Initialize LLM Settings Panel for LLM-creation
+    }
+    
+    // Initialize LLM Settings Panel for LLM-creation OR for image-prompts page (both routes)
+    if (illustrationMethod === 'LLM-creation' || isImagePromptsPage) {
         if (typeof LLMSettingsPanel !== 'undefined') {
             const llmSettingsPanel = new LLMSettingsPanel({
                 storageKey: 'section-drafting-llm-settings',
@@ -373,21 +379,24 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             console.warn('[Authoring Workspace] LLMSettingsPanel not available');
         }
-        
-        // Initialize LLM Prompts Panel for LLM-creation
+    }
+    
+    // Initialize LLM Prompts Panel for LLM-creation OR for image-prompts page (both routes)
+    // image-prompts page template includes llm-prompts-panel.html, so we MUST initialize it
+    if (illustrationMethod === 'LLM-creation' || isImagePromptsPage) {
         let llmPromptsPanel = null;
         try {
             if (typeof LLMPromptsPanel !== 'undefined') {
                 llmPromptsPanel = new LLMPromptsPanel({
                     postId: window.postId,
                     onPromptChange: (prompt) => {
-                        console.log('[Drafting] LLM Prompt changed:', prompt);
+                        console.log('[LLM Prompts] Prompt changed:', prompt);
                     },
                     onPromptLoad: (prompt) => {
-                        console.log('[Drafting] Prompt loaded:', prompt);
+                        console.log('[LLM Prompts] Prompt loaded:', prompt);
                     },
                     onPromptSave: (promptData) => {
-                        console.log('[Drafting] Prompt saved:', promptData);
+                        console.log('[LLM Prompts] Prompt saved:', promptData);
                     }
                 });
                 window.llmPromptsPanel = llmPromptsPanel;
