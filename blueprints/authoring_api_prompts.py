@@ -244,43 +244,46 @@ def api_generate_image_prompt_from_builder():
             if not section:
                 return jsonify({'error': 'Section not found'}), 404
             
-            # Get active image style
-            cursor.execute("""
-                SELECT extra_settings
-                FROM post
-                WHERE id = %s
-            """, (post_id,))
-            post_row = cursor.fetchone()
-            
+            # Get active image style - ONLY for LLM-creation route (NOT for Photo-harvesting)
             active_style = None
-            if post_row and post_row['extra_settings']:
-                extra_settings = post_row['extra_settings']
-                if isinstance(extra_settings, str):
-                    extra_settings = json.loads(extra_settings)
+            if illustration_method != 'Photo-harvesting':
+                cursor.execute("""
+                    SELECT extra_settings
+                    FROM post
+                    WHERE id = %s
+                """, (target_post_id,))
+                post_row = cursor.fetchone()
                 
-                imaging = extra_settings.get('imaging', {})
-                styles = imaging.get('styles', [])
-                active_index = imaging.get('activeIndex', 0)
-                
-                if styles and 0 <= active_index < len(styles):
-                    active_style = styles[active_index]
+                if post_row and post_row['extra_settings']:
+                    extra_settings = post_row['extra_settings']
+                    if isinstance(extra_settings, str):
+                        extra_settings = json.loads(extra_settings)
+                    
+                    imaging = extra_settings.get('imaging', {})
+                    styles = imaging.get('styles', [])
+                    active_index = imaging.get('activeIndex', 0)
+                    
+                    if styles and 0 <= active_index < len(styles):
+                        active_style = styles[active_index]
 
-            # If still no active style, use the permanent system default (do NOT persist)
-            if not active_style:
-                active_style = {
-                    'name': 'Watercolour and Pen & Ink',
-                    'style_json': {
-                        'medium': 'watercolour and pen and ink',
-                        'technique': 'brushstrokes fading out by ending towards the edges of the image',
-                        'palette': ['ochres', 'siennas', 'umbers', 'celestial blues', 'golds'],
-                        'composition': 'rule-of-thirds with negative space',
-                        'lighting': 'soft, ethereal, golden hour',
-                        'constraints': ['no text', 'no watermark in frame', 'edges fade to white'],
-                        'negatives': ['hyperrealism', 'sharp edges', 'solid borders']
+                # If still no active style, use the permanent system default (do NOT persist)
+                if not active_style:
+                    active_style = {
+                        'name': 'Watercolour and Pen & Ink',
+                        'style_json': {
+                            'medium': 'watercolour and pen and ink',
+                            'technique': 'brushstrokes fading out by ending towards the edges of the image',
+                            'palette': ['ochres', 'siennas', 'umbers', 'celestial blues', 'golds'],
+                            'composition': 'rule-of-thirds with negative space',
+                            'lighting': 'soft, ethereal, golden hour',
+                            'constraints': ['no text', 'no watermark in frame', 'edges fade to white'],
+                            'negatives': ['hyperrealism', 'sharp edges', 'solid borders']
+                        }
                     }
-                }
-            
-            logger.info(f"[DEBUG] Active style: {active_style['name'] if active_style else 'None'}")
+                
+                logger.info(f"[DEBUG] Active style: {active_style['name'] if active_style else 'None'}")
+            else:
+                logger.info(f"[DEBUG] Photo-harvesting route - skipping style information (not applicable for photo search)")
             
             # Set topics to empty for now (topic allocation system removed)
             topics = []
@@ -335,13 +338,13 @@ def api_generate_image_prompt_from_builder():
                 try:
                     image_concepts_data = json.loads(section['image_concepts']) if isinstance(section['image_concepts'], str) else section['image_concepts']
                 except (json.JSONDecodeError, TypeError) as e:
-                    logger.warning(f"Error parsing image_concepts from post_section for section {section_id}: {e}")
+                            logger.warning(f"Error parsing image_concepts from post_section for section {section_id}: {e}")
             
-            # Fallback to post_development.sections if not found in post_section
+            # Fallback to post_development.sections if not found in post_section - use target_post_id
             if not image_concepts_data:
                 cursor.execute("""
                     SELECT sections FROM post_development WHERE post_id = %s
-                """, (post_id,))
+                """, (target_post_id,))
                 dev_result = cursor.fetchone()
                 if dev_result and dev_result.get('sections'):
                     try:
@@ -413,9 +416,9 @@ def api_generate_image_prompt_from_builder():
             topics_text = '\n'.join([f'- {topic}' for topic in topics])
             prompt_text = prompt_text.replace('[data:topics]', topics_text)
             
-            # Add style information to prompt
+            # Add style information to prompt - ONLY for LLM-creation route (NOT for Photo-harvesting)
             style_text = ""
-            if active_style:
+            if illustration_method != 'Photo-harvesting' and active_style:
                 style_name = active_style.get('name', '')
                 style_json = active_style.get('style_json', {})
                 
@@ -555,11 +558,11 @@ def api_generate_image_prompt_from_builder():
                     'base_concept': compiled_prompt
                 })
                 
-                cursor.execute("""
-                    UPDATE post_section 
-                    SET image_prompts = %s 
-                    WHERE post_id = %s AND id = %s
-                """, (image_prompts_json, post_id, section_id))
+                    cursor.execute("""
+                        UPDATE post_section 
+                        SET image_prompts = %s 
+                        WHERE post_id = %s AND id = %s
+                    """, (image_prompts_json, target_post_id, section_id))
                     
             except Exception as e:
                 logger.error(f"Error updating post_section for image prompts: {e}")
