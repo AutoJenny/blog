@@ -318,18 +318,6 @@ def api_image_concepts_prompt():
                 """, (prompt_name,))
                 prompt_data = cursor.fetchone()
                 
-                # Fallback to default if photo-harvesting prompt doesn't exist
-                if not prompt_data and illustration_method == 'Photo-harvesting':
-                    logger.warn(f"Photo-harvesting prompt not found, falling back to default")
-                    cursor.execute("""
-                        SELECT name, prompt_text, system_prompt, updated_at
-                        FROM llm_prompt 
-                        WHERE name = 'Image Concepts Generation'
-                        ORDER BY updated_at DESC 
-                        LIMIT 1
-                    """)
-                    prompt_data = cursor.fetchone()
-                
                 if not prompt_data:
                     return jsonify({'error': f'Image Concepts prompt "{prompt_name}" not found'}), 404
                 
@@ -400,9 +388,19 @@ def api_section_drafting_prompt():
 
 @bp.route('/api/llm/prompts/image-prompts', methods=['GET', 'PUT'])
 def api_image_prompts_prompt():
-    """Get or update the Image Prompts prompt"""
+    """
+    Get or update Image Prompts prompt.
+    
+    Supports illustration_method query parameter:
+    - 'Photo-harvesting' → 'Image Prompts Generation (Photo-harvesting)' (for image searching)
+    - 'LLM-creation' or default → 'Image Prompts Generation' (for image generation)
+    """
     try:
         with db_manager.get_cursor() as cursor:
+            # Determine which prompt to use based on illustration_method
+            illustration_method = request.args.get('illustration_method', 'LLM-creation')
+            prompt_name = 'Image Prompts Generation (Photo-harvesting)' if illustration_method == 'Photo-harvesting' else 'Image Prompts Generation'
+            
             if request.method == 'PUT':
                 # Update the prompt
                 data = request.get_json()
@@ -417,28 +415,28 @@ def api_image_prompts_prompt():
                 cursor.execute("""
                     UPDATE llm_prompt 
                     SET system_prompt_template = %s, system_prompt = %s, prompt_text = %s
-                    WHERE name = 'Image Prompts Generation'
-                """, (system_prompt_template, system_prompt_complete, prompt_text))
+                    WHERE name = %s
+                """, (system_prompt_template, system_prompt_complete, prompt_text, prompt_name))
                 
                 cursor.connection.commit()
                 
                 return jsonify({
                     'success': True,
-                    'message': 'Prompt updated successfully'
+                    'message': f'Prompt "{prompt_name}" updated successfully'
                 })
             else:
                 # Get the prompt
                 cursor.execute("""
                     SELECT name, prompt_text, system_prompt, system_prompt_template, updated_at
                     FROM llm_prompt 
-                    WHERE name = 'Image Prompts Generation'
+                    WHERE name = %s
                     ORDER BY updated_at DESC 
                     LIMIT 1
-                """)
+                """, (prompt_name,))
                 prompt_data = cursor.fetchone()
-                
+
                 if not prompt_data:
-                    return jsonify({'error': 'Image Prompts prompt not found'}), 404
+                    return jsonify({'error': f'Image Prompts prompt "{prompt_name}" not found'}), 404
                 
                 # Use template version for LLM Prompts Panel display
                 system_prompt_for_display = prompt_data['system_prompt_template'] or prompt_data['system_prompt']

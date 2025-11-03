@@ -142,7 +142,14 @@ class LLMPromptsPanel {
 
     async loadPromptFromAPI() {
         try {
-            const response = await fetch(this.config.promptEndpoint);
+            // Append illustration_method to endpoint if available and endpoint is for image-concepts or image-prompts
+            let url = this.config.promptEndpoint;
+            if ((url.includes('/image-concepts') || url.includes('/image-prompts')) && window.illustrationMethod) {
+                const separator = url.includes('?') ? '&' : '?';
+                url = `${url}${separator}illustration_method=${encodeURIComponent(window.illustrationMethod)}`;
+            }
+
+            const response = await fetch(url);
             const data = await response.json();
             
             if (data.success && data.prompt) {
@@ -167,7 +174,7 @@ class LLMPromptsPanel {
                 };
 
                 console.log('[LLM Prompts Panel] API Response:', {
-                    endpoint: this.config.promptEndpoint,
+                    endpoint: url,
                     promptName: prompt.name,
                     systemPromptPreview: this.currentPrompt.system_prompt.substring(0, 50),
                     userPromptPreview: this.currentPrompt.prompt_text.substring(0, 50)

@@ -224,21 +224,45 @@ class ImagePromptsOutputPanel {
             const compiledPrompt = compiledPromptTextarea.value.trim();
             console.log('[ImagePromptsOutputPanel] Using compiled prompt from Prompt Builder Panel');
             
+            // Get week context from URL params or WeekContext module
+            let weekContext = null;
+            if (window.WeekContext) {
+                weekContext = window.WeekContext.getWeekContext();
+            }
+            
+            if (!weekContext) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const year = urlParams.get('year');
+                const week = urlParams.get('week');
+                if (year && week) {
+                    weekContext = { year: parseInt(year), week: parseInt(week) };
+                }
+            }
+            
+            const requestBody = {
+                post_id: window.postId,
+                section_id: this.currentSection.id,
+                compiled_prompt: compiledPrompt,
+                enable_compression: true,
+                enable_expansion: false,
+                llm_provider: 'Ollama',
+                llm_model: 'llama3.2:latest'
+            };
+            
+            // Add week context if available
+            if (weekContext) {
+                requestBody.year = weekContext.year;
+                requestBody.week = weekContext.week;
+                console.log('[ImagePromptsOutputPanel] Adding week context to request:', weekContext);
+            }
+            
             // Send fresh prompt generation request
             const response = await fetch('/authoring/api/generate-image-prompt-from-builder-v2', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    post_id: window.postId,
-                    section_id: this.currentSection.id,
-                    compiled_prompt: compiledPrompt,
-                    enable_compression: true,
-                    enable_expansion: false,
-                    llm_provider: 'Ollama',
-                    llm_model: 'llama3.2:latest'
-                })
+                body: JSON.stringify(requestBody)
             });
             
             if (!response.ok) {

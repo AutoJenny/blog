@@ -80,50 +80,53 @@ def authoring_sections_image_concepts(post_id):
 def authoring_sections_image_prompts(post_id):
     """Image prompts step - Step 54"""
     try:
+        # CRITICAL: Check for week context in URL params to determine correct post
+        url_year = request.args.get('year', type=int)
+        url_week = request.args.get('week', type=int)
+        logger.info(f"[IMAGE_PROMPTS] Week context from URL: year={url_year}, week={url_week}")
+        
+        # SINGLE SOURCE OF TRUTH: Use approved utility for week/post resolution
+        target_post_id = post_id
+        if url_year and url_week:
+            from utils.week_post_resolver import resolve_post_for_week
+            resolved_post_id = resolve_post_for_week(url_year, url_week)
+            if resolved_post_id:
+                target_post_id = resolved_post_id
+                logger.info(f"[IMAGE_PROMPTS] Week {url_year}/{url_week} resolved to post_id {target_post_id} (instead of URL post_id {post_id})")
+            else:
+                logger.warning(f"[IMAGE_PROMPTS] Week {url_year}/{url_week} has no scheduled post - using URL post_id {post_id}")
+        else:
+            logger.warning(f"[IMAGE_PROMPTS] No week context provided - using URL post_id {post_id}")
+        
+        logger.info(f"[IMAGE_PROMPTS] Using target_post_id={target_post_id} for taxonomy lookup")
+        
         with db_manager.get_cursor() as cursor:
-            # Get post taxonomy to determine workflow
+            # Get post details with taxonomy illustration_method using the correct post_id
             cursor.execute("""
                 SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
-                       p.content_type_id, ti.common_assets
+                       p.content_type_id, content_type.illustration_method
                 FROM post p
-                LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                LEFT JOIN taxonomy_item content_type ON p.content_type_id = content_type.id
                 WHERE p.id = %s
-            """, (post_id,))
+            """, (target_post_id,))
             post = cursor.fetchone()
             
             if not post:
                 return "Post not found", 404
             
-            # Check if this content type uses photography workflow
-            uses_photography = False
-            if post.get('common_assets'):
-                assets = post['common_assets']
-                if isinstance(assets, str):
-                    try:
-                        assets = json.loads(assets)
-                    except:
-                        assets = []
-                if isinstance(assets, list):
-                    asset_text = ' '.join(assets).lower()
-                    uses_photography = 'photography' in asset_text or 'landscape photography' in asset_text
+            # Get illustration_method from taxonomy (default to 'LLM-creation' if null/not found)
+            illustration_method = post.get('illustration_method') or 'LLM-creation'
             
-            # Get the image prompts prompt from database
-            cursor.execute("""
-                SELECT name, prompt_text, system_prompt
-                FROM llm_prompt 
-                WHERE name = 'Image Prompts Generation'
-                ORDER BY updated_at DESC 
-                LIMIT 1
-            """)
-            prompt_data = cursor.fetchone()
+            # Log which post and illustration method are being used
+            if target_post_id != post_id:
+                logger.info(f"Illustration method determined from post {target_post_id}: {illustration_method} (URL had post_id {post_id})")
             
             return render_template('authoring/sections/image_prompts.html', 
-                                 post_id=post_id,
+                                 post_id=post_id,  # Keep original post_id for URL consistency
                                  post=post,
                                  page_title="Image Prompts",
                                  blueprint_name='authoring',
-                                 prompt_data=prompt_data,
-                                 uses_photography=uses_photography)
+                                 illustration_method=illustration_method)
             
     except Exception as e:
         logger.error(f"Error in authoring_sections_image_prompts: {e}")
