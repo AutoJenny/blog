@@ -425,15 +425,15 @@ Use the following test data for API testing:
 
 ```bash
 # Get next section
-curl "http://localhost:5001/api/syndication/next-section?platform_id=1&channel_type_id=1"
+curl "http://localhost:5000/api/syndication/next-section?platform_id=1&channel_type_id=1"
 
 # Mark as processing
-curl -X POST "http://localhost:5001/api/syndication/mark-processing" \
+curl -X POST "http://localhost:5000/api/syndication/mark-processing" \
   -H "Content-Type: application/json" \
   -d '{"post_id": 1, "section_id": 1, "platform_id": 1, "channel_type_id": 1}'
 
 # Get progress summary
-curl "http://localhost:5001/api/syndication/progress-summary"
+curl "http://localhost:5000/api/syndication/progress-summary"
 ```
 
 ---

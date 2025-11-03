@@ -177,7 +177,7 @@ def incremental_product_download():
                             # We'll need to call the blog-launchpad's clan_cache to save
                             import requests
                             save_response = requests.post(
-                                'http://localhost:5001/api/clan/cache/save-product',
+                                'http://localhost:5000/api/clan/cache/save-product',
                                 json=transformed_product,
                                 timeout=10
                             )
@@ -272,7 +272,7 @@ def download_all_basic_products():
                     # Save to database immediately
                     import requests
                     save_response = requests.post(
-                        'http://localhost:5001/api/clan/cache/save-product',
+                        'http://localhost:5000/api/clan/cache/save-product',
                         json=basic_product_data,
                         timeout=10
                     )
@@ -326,7 +326,7 @@ def populate_product_details():
         
         # Get products that need detailed data from blog-launchpad
         try:
-            response = requests.get('http://localhost:5001/api/clan/products?limit=2000', timeout=30)
+            response = requests.get('http://localhost:5000/api/clan/products?limit=2000', timeout=30)
             if response.status_code != 200:
                 return jsonify({
                     'success': False,
@@ -403,7 +403,7 @@ def populate_product_details():
                     
                     # Send updated product to blog-launchpad
                     save_response = requests.post(
-                        'http://localhost:5001/api/clan/cache/save-product',
+                        'http://localhost:5000/api/clan/cache/save-product',
                         json=updated_product,
                         timeout=10
                     )

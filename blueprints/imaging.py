@@ -1801,58 +1801,28 @@ def api_photo_search(post_id, section_id):
         if not search_term:
             return jsonify({'success': False, 'error': 'search_term is required'}), 400
         
-        # Import photo API utilities
-        from utils.photo_apis import search_pexels, search_unsplash, merge_search_results
+        # Import photo search adapters
         import os
-        from datetime import datetime
+        from utils.photo_apis_adapter import run_photo_search
+        from utils.photo_search_store import store_photo_search_results
         
         # Get API keys from environment
         pexels_key = os.getenv('PEXELS_API_KEY')
         unsplash_key = os.getenv('UNSPLASH_ACCESS_KEY')
         
-        results = []
-        pexels_results = []
-        unsplash_results = []
+        # Run provider searches via adapter
+        results = run_photo_search(provider, pexels_key, unsplash_key, search_term, per_page)
         
-        # Search Pexels if requested
-        if provider in ('pexels', 'both') and pexels_key:
-            pexels_results = search_pexels(pexels_key, search_term, per_page)
-        
-        # Search Unsplash if requested
-        if provider in ('unsplash', 'both') and unsplash_key:
-            unsplash_results = search_unsplash(unsplash_key, search_term, per_page)
-        
-        # Combine results based on provider
-        if provider == 'both':
-            results = merge_search_results(pexels_results, unsplash_results)
-        elif provider == 'pexels':
-            results = pexels_results
-        elif provider == 'unsplash':
-            results = unsplash_results
-        
-        # Store results in database
+        # Store results in database via utility
         with db_manager.get_connection() as conn:
-            with conn.cursor() as cursor:
-                # Update photo_search_results (replace existing)
-                cursor.execute("""
-                    UPDATE post_section
-                    SET photo_search_results = %s::jsonb,
-                        image_search_terms = COALESCE(
-                            CASE 
-                                WHEN image_search_terms IS NULL THEN '[]'::jsonb
-                                ELSE image_search_terms
-                            END || %s::jsonb,
-                            '[]'::jsonb || %s::jsonb
-                        ),
-                        updated_at = NOW()
-                    WHERE id = %s AND post_id = %s
-                    RETURNING id
-                """, (json.dumps(results), json.dumps([search_term]), json.dumps([search_term]), section_id, post_id))
-                
-                if not cursor.fetchone():
-                    return jsonify({'success': False, 'error': 'Failed to save search results'}), 500
-                
-                conn.commit()
+            try:
+                store_photo_search_results(conn,
+                                           post_id=post_id,
+                                           section_id=section_id,
+                                           results=results,
+                                           search_term=search_term)
+            except Exception as persist_err:
+                return jsonify({'success': False, 'error': str(persist_err)}), 500
         
         return jsonify({
             'success': True,

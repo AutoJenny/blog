@@ -122,6 +122,36 @@ CREATE TABLE product_selections (
 );
 ```
 
+#### Cache for Clan.com catalogue (implementation detail)
+```sql
+-- Local cache used for fast product/category lookups
+CREATE TABLE clan_products (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    sku TEXT UNIQUE NOT NULL,
+    price TEXT,
+    image_url TEXT,
+    url TEXT,
+    description TEXT,
+    category_ids JSONB,
+    first_seen_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- first time we saw this product
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP   -- when we last updated local copy
+);
+
+CREATE TABLE clan_categories (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT,
+    level INTEGER DEFAULT 0,
+    parent_id INTEGER,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+Notes:
+- Incremental-only writes: bulk DELETE+INSERT is no longer used; all updates are UPSERTs.
+- `first_seen_at` never changes after insert; `last_updated` updates on each UPSERT.
+
 #### **2. Product Content Templates**
 ```sql
 -- Product content generation templates

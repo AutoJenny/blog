@@ -285,7 +285,7 @@
         
         try {
             // Try to load from blog-workflow service
-            const response = await fetch(`http://localhost:5001/workflow/posts/53/${stage}/${substage}?step=${step}`, {
+            const response = await fetch(`http://localhost:5000/workflow/posts/53/${stage}/${substage}?step=${step}`, {
                 method: 'GET',
                 headers: {
                     'Accept': 'text/html',
@@ -307,7 +307,7 @@
                 <h5>Step: ${step.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</h5>
                 <p>This content would be loaded from the blog-workflow service (port 5001).</p>
                 <p><strong>Error:</strong> ${error.message}</p>
-                <p><strong>Expected URL:</strong> http://localhost:5001/workflow/posts/53/${stage}/${substage}?step=${step}</p>
+                <p><strong>Expected URL:</strong> http://localhost:5000/workflow/posts/53/${stage}/${substage}?step=${step}</p>
             `;
             updateStatus(`Error loading content: ${error.message}`, 'error');
         }
@@ -322,7 +322,7 @@
             const coreStatus = coreResponse.ok ? '✅ Running' : '❌ Error';
             
             // Check blog-workflow
-            const workflowResponse = await fetch('http://localhost:5001/health');
+            const workflowResponse = await fetch('http://localhost:5000/health');
             const workflowStatus = workflowResponse.ok ? '✅ Running' : '❌ Error';
             
             updateStatus(`Blog Core (5001): ${coreStatus} | Blog Workflow (5001): ${workflowStatus}`, 'success');
@@ -333,7 +333,7 @@
     
     async function loadWorkflowHome() {
         try {
-            const response = await fetch('http://localhost:5001/workflow/');
+            const response = await fetch('http://localhost:5000/workflow/');
             if (response.ok) {
                 const content = await response.text();
                 document.getElementById('workflow-content').innerHTML = content;
