@@ -15,8 +15,20 @@ def planning_dashboard():
 
 def planning_post_overview(post_id):
     """Post overview page"""
+    from flask import request
+    from utils.week_post_resolver import resolve_post_for_week
+    
+    year = request.args.get('year', type=int)
+    week = request.args.get('week', type=int)
+    
+    resolved_post_id = post_id
+    if year and week:
+        resolved = resolve_post_for_week(year, week)
+        if resolved:
+            resolved_post_id = resolved
+    
     return render_template('planning/posts/overview.html', 
-                          post_id=post_id, blueprint_name='planning')
+                          post_id=resolved_post_id, year=year, week=week, blueprint_name='planning')
 
 def planning_concept(post_id):
     """Concept development page - redirects to Idea Generation (first planning substage)"""
@@ -32,8 +44,20 @@ def planning_concept(post_id):
 
 def planning_calendar(post_id):
     """Calendar page"""
+    from flask import request
+    from utils.week_post_resolver import resolve_post_for_week
+    
+    year = request.args.get('year', type=int)
+    week = request.args.get('week', type=int)
+    
+    resolved_post_id = post_id
+    if year and week:
+        resolved = resolve_post_for_week(year, week)
+        if resolved:
+            resolved_post_id = resolved
+    
     return render_template('planning/calendar/index.html', 
-                          post_id=post_id, blueprint_name='planning')
+                          post_id=resolved_post_id, year=year, week=week, blueprint_name='planning')
 
 def categories_manage():
     """Manage calendar categories"""
@@ -41,8 +65,20 @@ def categories_manage():
 
 def planning_research(post_id):
     """Research page"""
+    from flask import request
+    from utils.week_post_resolver import resolve_post_for_week
+    
+    year = request.args.get('year', type=int)
+    week = request.args.get('week', type=int)
+    
+    resolved_post_id = post_id
+    if year and week:
+        resolved = resolve_post_for_week(year, week)
+        if resolved:
+            resolved_post_id = resolved
+    
     return render_template('planning/research/index.html', 
-                          post_id=post_id, blueprint_name='planning')
+                          post_id=resolved_post_id, year=year, week=week, blueprint_name='planning')
 
 # ARCHIVED: planning_old_interface function removed - old interface system has been archived
 # See ARCHIVED_OLD_WORKFLOW/ for archived code

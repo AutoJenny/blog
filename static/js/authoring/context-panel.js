@@ -109,10 +109,15 @@ class ContextPanel {
                     sectionTopicsDisplay.textContent = topicsText;
                 }
                 
-                // Load avoid headings (all other sections' titles and subtitles)
+                // Load avoid headings (all other sections' titles from section_structure and descriptions)
                 const avoidHeadingsDisplay = document.getElementById('avoid-headings-display');
                 if (avoidHeadingsDisplay) {
                     try {
+                        // First, get post data to access section_structure
+                        const postResponse = await fetch(`/planning/api/posts/${this.postId}`);
+                        const postData = await postResponse.json();
+                        
+                        // Get all sections
                         const allSectionsResponse = await fetch(`/authoring/api/posts/${this.postId}/sections`);
                         const allSectionsData = await allSectionsResponse.json();
                         
@@ -120,11 +125,45 @@ class ContextPanel {
                             const otherSections = allSectionsData.sections.filter(s => s.id != sectionId);
                             
                             if (otherSections.length > 0) {
+                                // Get section_structure for factual titles
+                                let sectionStructure = null;
+                                if (postData && postData.post && postData.post.section_structure) {
+                                    sectionStructure = postData.post.section_structure;
+                                    if (typeof sectionStructure === 'string') {
+                                        try {
+                                            sectionStructure = JSON.parse(sectionStructure);
+                                        } catch (e) {
+                                            sectionStructure = null;
+                                        }
+                                    }
+                                }
+                                
                                 const headingsList = otherSections.map(s => {
-                                    const title = s.section_heading || s.title || '';
-                                    const subtitle = s.section_description || s.description || '';
-                                    return title + (subtitle ? ': ' + subtitle : '');
-                                }).filter(h => h).join('\n');
+                                    // Use factual title from section_structure if available, fallback to lyrical title
+                                    let title = '';
+                                    const sectionOrder = s.section_order || s.order || s.id;
+                                    
+                                    // Try to find matching section in section_structure
+                                    if (sectionStructure && sectionStructure.sections) {
+                                        const structureSection = sectionStructure.sections.find(ss => {
+                                            const structureId = ss.id || ss.section_code;
+                                            // Match by id (might be numeric or string like "S01")
+                                            return String(structureId) === String(sectionOrder) || 
+                                                   String(structureId).replace(/^S0*/, '') === String(sectionOrder) ||
+                                                   String(structureId) === `S${String(sectionOrder).padStart(2, '0')}`;
+                                        });
+                                        if (structureSection && structureSection.title) {
+                                            title = structureSection.title;
+                                        }
+                                    }
+                                    
+                                    // Fallback to section_heading or title if no section_structure title found
+                                    if (!title) {
+                                        title = s.section_heading || s.title || '';
+                                    }
+                                    
+                                    return title;
+                                }).filter(h => h).join(', ');
                                 
                                 avoidHeadingsDisplay.textContent = headingsList || 'No other sections';
                             } else {

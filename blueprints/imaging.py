@@ -601,17 +601,44 @@ bp = Blueprint('imaging', __name__, url_prefix='/imaging')
 def imaging_sections_image_generation(post_id):
     """Image Generation page - standalone imaging workflow"""
     try:
+        # CRITICAL: Check for week context in URL params to determine correct post
+        url_year = request.args.get('year', type=int)
+        url_week = request.args.get('week', type=int)
+        
+        # SINGLE SOURCE OF TRUTH: Use approved utility for week/post resolution
+        target_post_id = post_id
+        if url_year and url_week:
+            from utils.week_post_resolver import resolve_post_for_week
+            resolved_post_id = resolve_post_for_week(url_year, url_week)
+            if resolved_post_id:
+                target_post_id = resolved_post_id
+                logger.info(f"Week {url_year}/{url_week} resolved to post_id {target_post_id} (instead of URL post_id {post_id})")
+            else:
+                logger.warning(f"Week {url_year}/{url_week} has no scheduled post - using URL post_id {post_id}")
+        
         with db_manager.get_cursor() as cursor:
-            # Get post data for header
+            # Get post data with taxonomy illustration_method using the correct post_id
             cursor.execute("""
-                SELECT id, title, status, created_at, updated_at
-                FROM post
-                WHERE id = %s
-            """, (post_id,))
+                SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                       p.content_type_id, content_type.illustration_method
+                FROM post p
+                LEFT JOIN taxonomy_item content_type ON p.content_type_id = content_type.id
+                WHERE p.id = %s
+            """, (target_post_id,))
             
             post = cursor.fetchone()
             if not post:
-                return f"Post {post_id} not found", 404
+                return f"Post {target_post_id} not found", 404
+            
+            # Get illustration_method from taxonomy (default to 'LLM-creation' if null/not found)
+            illustration_method = post.get('illustration_method') or 'LLM-creation'
+            
+            # If Photo-harvesting, redirect to photo-selection route
+            if illustration_method == 'Photo-harvesting':
+                redirect_url = url_for('imaging.imaging_sections_photo_selection', post_id=post_id)
+                if url_year and url_week:
+                    redirect_url += f'?year={url_year}&week={url_week}'
+                return redirect(redirect_url)
             
             # Format dates for display
             post_created = post['created_at'].strftime('%Y-%m-%d %H:%M') if post['created_at'] else 'Unknown'
@@ -625,7 +652,8 @@ def imaging_sections_image_generation(post_id):
                              post_created=post_created,
                              post_updated=post_updated,
                              currentStage='imaging',
-                             currentSubstage='image-generation')
+                             currentSubstage='image-generation',
+                             illustration_method=illustration_method)
     except Exception as e:
         logger.error(f"Error rendering image generation page: {str(e)}")
         return f"Error: {str(e)}", 500
@@ -634,15 +662,36 @@ def imaging_sections_image_generation(post_id):
 def imaging_sections_optimise(post_id):
     """Optimise page - imaging workflow substage"""
     try:
+        # CRITICAL: Check for week context in URL params to determine correct post
+        url_year = request.args.get('year', type=int)
+        url_week = request.args.get('week', type=int)
+        
+        # SINGLE SOURCE OF TRUTH: Use approved utility for week/post resolution
+        target_post_id = post_id
+        if url_year and url_week:
+            from utils.week_post_resolver import resolve_post_for_week
+            resolved_post_id = resolve_post_for_week(url_year, url_week)
+            if resolved_post_id:
+                target_post_id = resolved_post_id
+                logger.info(f"Week {url_year}/{url_week} resolved to post_id {target_post_id} (instead of URL post_id {post_id})")
+            else:
+                logger.warning(f"Week {url_year}/{url_week} has no scheduled post - using URL post_id {post_id}")
+        
         with db_manager.get_cursor() as cursor:
+            # Get post data with taxonomy illustration_method using the correct post_id
             cursor.execute("""
-                SELECT id, title, status, created_at, updated_at
-                FROM post
-                WHERE id = %s
-            """, (post_id,))
+                SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                       p.content_type_id, content_type.illustration_method
+                FROM post p
+                LEFT JOIN taxonomy_item content_type ON p.content_type_id = content_type.id
+                WHERE p.id = %s
+            """, (target_post_id,))
             post = cursor.fetchone()
             if not post:
-                return f"Post {post_id} not found", 404
+                return f"Post {target_post_id} not found", 404
+
+            # Get illustration_method from taxonomy (default to 'LLM-creation' if null/not found)
+            illustration_method = post.get('illustration_method') or 'LLM-creation'
 
             post_created = post['created_at'].strftime('%Y-%m-%d %H:%M') if post['created_at'] else 'Unknown'
             post_updated = post['updated_at'].strftime('%Y-%m-%d %H:%M') if post['updated_at'] else 'Unknown'
@@ -655,9 +704,71 @@ def imaging_sections_optimise(post_id):
                                post_created=post_created,
                                post_updated=post_updated,
                                currentStage='imaging',
-                               currentSubstage='optimise')
+                               currentSubstage='optimise',
+                               illustration_method=illustration_method)
     except Exception as e:
         logger.error(f"Error rendering optimise page: {str(e)}")
+        return f"Error: {str(e)}", 500
+
+@bp.route('/posts/<int:post_id>/sections/photo-selection')
+def imaging_sections_photo_selection(post_id):
+    """Photo Selection page - for Photo-harvesting illustration method"""
+    try:
+        # CRITICAL: Check for week context in URL params to determine correct post
+        url_year = request.args.get('year', type=int)
+        url_week = request.args.get('week', type=int)
+        
+        # SINGLE SOURCE OF TRUTH: Use approved utility for week/post resolution
+        target_post_id = post_id
+        if url_year and url_week:
+            from utils.week_post_resolver import resolve_post_for_week
+            resolved_post_id = resolve_post_for_week(url_year, url_week)
+            if resolved_post_id:
+                target_post_id = resolved_post_id
+                logger.info(f"Week {url_year}/{url_week} resolved to post_id {target_post_id} (instead of URL post_id {post_id})")
+            else:
+                logger.warning(f"Week {url_year}/{url_week} has no scheduled post - using URL post_id {post_id}")
+        
+        with db_manager.get_cursor() as cursor:
+            # Get post data with taxonomy illustration_method using the correct post_id
+            cursor.execute("""
+                SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                       p.content_type_id, content_type.illustration_method
+                FROM post p
+                LEFT JOIN taxonomy_item content_type ON p.content_type_id = content_type.id
+                WHERE p.id = %s
+            """, (target_post_id,))
+            
+            post = cursor.fetchone()
+            if not post:
+                return f"Post {target_post_id} not found", 404
+            
+            # Get illustration_method from taxonomy (default to 'LLM-creation' if null/not found)
+            illustration_method = post.get('illustration_method') or 'LLM-creation'
+            
+            # If not Photo-harvesting, redirect to image-generation route
+            if illustration_method != 'Photo-harvesting':
+                redirect_url = url_for('imaging.imaging_sections_image_generation', post_id=post_id)
+                if url_year and url_week:
+                    redirect_url += f'?year={url_year}&week={url_week}'
+                return redirect(redirect_url)
+            
+            # Format dates for display
+            post_created = post['created_at'].strftime('%Y-%m-%d %H:%M') if post['created_at'] else 'Unknown'
+            post_updated = post['updated_at'].strftime('%Y-%m-%d %H:%M') if post['updated_at'] else 'Unknown'
+            
+        return render_template('imaging/sections/photo_selection.html',
+                             post_id=post_id,
+                             page_title='Photo Selection',
+                             post_title=post['title'],
+                             post_status=post['status'],
+                             post_created=post_created,
+                             post_updated=post_updated,
+                             currentStage='imaging',
+                             currentSubstage='photo-selection',
+                             illustration_method=illustration_method)
+    except Exception as e:
+        logger.error(f"Error rendering photo selection page: {str(e)}")
         return f"Error: {str(e)}", 500
 
 @bp.route('/api/posts/<int:post_id>')
@@ -1666,6 +1777,243 @@ def imaging_get_raw_image(post_id, section_id):
     except Exception as e:
         logger.error(f"Error getting raw image: {str(e)}")
         return jsonify({'success': False, 'error': str(e)})
+
+@bp.route('/api/photo-search/posts/<int:post_id>/sections/<int:section_id>/search', methods=['POST'])
+def api_photo_search(post_id, section_id):
+    """Search for photos from Pexels/Unsplash"""
+    try:
+        # Verify section belongs to post
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id FROM post_section
+                WHERE id = %s AND post_id = %s
+            """, (section_id, post_id))
+            section = cursor.fetchone()
+            if not section:
+                return jsonify({'success': False, 'error': 'Section not found'}), 404
+        
+        # Get request data
+        data = request.get_json() or {}
+        search_term = data.get('search_term', '').strip()
+        provider = data.get('provider', 'both')
+        per_page = int(data.get('per_page', 20))
+        
+        if not search_term:
+            return jsonify({'success': False, 'error': 'search_term is required'}), 400
+        
+        # Import photo API utilities
+        from utils.photo_apis import search_pexels, search_unsplash, merge_search_results
+        import os
+        from datetime import datetime
+        
+        # Get API keys from environment
+        pexels_key = os.getenv('PEXELS_API_KEY')
+        unsplash_key = os.getenv('UNSPLASH_ACCESS_KEY')
+        
+        results = []
+        pexels_results = []
+        unsplash_results = []
+        
+        # Search Pexels if requested
+        if provider in ('pexels', 'both') and pexels_key:
+            pexels_results = search_pexels(pexels_key, search_term, per_page)
+        
+        # Search Unsplash if requested
+        if provider in ('unsplash', 'both') and unsplash_key:
+            unsplash_results = search_unsplash(unsplash_key, search_term, per_page)
+        
+        # Combine results based on provider
+        if provider == 'both':
+            results = merge_search_results(pexels_results, unsplash_results)
+        elif provider == 'pexels':
+            results = pexels_results
+        elif provider == 'unsplash':
+            results = unsplash_results
+        
+        # Store results in database
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cursor:
+                # Update photo_search_results (replace existing)
+                cursor.execute("""
+                    UPDATE post_section
+                    SET photo_search_results = %s::jsonb,
+                        image_search_terms = COALESCE(
+                            CASE 
+                                WHEN image_search_terms IS NULL THEN '[]'::jsonb
+                                ELSE image_search_terms
+                            END || %s::jsonb,
+                            '[]'::jsonb || %s::jsonb
+                        ),
+                        updated_at = NOW()
+                    WHERE id = %s AND post_id = %s
+                    RETURNING id
+                """, (json.dumps(results), json.dumps([search_term]), json.dumps([search_term]), section_id, post_id))
+                
+                if not cursor.fetchone():
+                    return jsonify({'success': False, 'error': 'Failed to save search results'}), 500
+                
+                conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'results': results,
+            'count': len(results),
+            'search_term': search_term,
+            'provider': provider
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in photo search: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@bp.route('/api/photo-search/posts/<int:post_id>/sections/<int:section_id>/results', methods=['GET'])
+def api_photo_results(post_id, section_id):
+    """Get stored photo search results for a section"""
+    try:
+        # Verify section belongs to post
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT photo_search_results
+                FROM post_section
+                WHERE id = %s AND post_id = %s
+            """, (section_id, post_id))
+            section = cursor.fetchone()
+            if not section:
+                return jsonify({'success': False, 'error': 'Section not found'}), 404
+            
+            # Get results (default to empty array)
+            results = section['photo_search_results']
+            if results is None:
+                results = []
+            elif isinstance(results, str):
+                results = json.loads(results)
+            
+            return jsonify({
+                'success': True,
+                'results': results,
+                'count': len(results) if isinstance(results, list) else 0
+            })
+            
+    except Exception as e:
+        logger.error(f"Error fetching photo results: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@bp.route('/api/photo-search/posts/<int:post_id>/sections/<int:section_id>/select', methods=['POST'])
+def api_photo_select(post_id, section_id):
+    """Select a photo from search results"""
+    try:
+        # Get request data
+        data = request.get_json() or {}
+        provider = data.get('provider')
+        image_id = data.get('image_id')
+        
+        if not provider or not image_id:
+            return jsonify({'success': False, 'error': 'provider and image_id are required'}), 400
+        
+        # Verify section belongs to post and get current results
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("""
+                    SELECT photo_search_results
+                    FROM post_section
+                    WHERE id = %s AND post_id = %s
+                """, (section_id, post_id))
+                section = cursor.fetchone()
+                if not section:
+                    return jsonify({'success': False, 'error': 'Section not found'}), 404
+                
+                # Get current results
+                results = section['photo_search_results']
+                if results is None:
+                    results = []
+                elif isinstance(results, str):
+                    results = json.loads(results)
+                
+                if not isinstance(results, list):
+                    results = []
+                
+                # Find and update selected photo
+                selected_photo = None
+                updated_results = []
+                
+                for photo in results:
+                    if photo.get('provider') == provider and str(photo.get('image_id')) == str(image_id):
+                        # Mark as selected
+                        photo['selected'] = True
+                        photo['selected_at'] = datetime.now().isoformat()
+                        selected_photo = photo
+                    else:
+                        # Unselect all others
+                        photo['selected'] = False
+                        photo.pop('selected_at', None)
+                    updated_results.append(photo)
+                
+                if not selected_photo:
+                    return jsonify({'success': False, 'error': 'Photo not found in search results'}), 404
+                
+                # Save updated results
+                cursor.execute("""
+                    UPDATE post_section
+                    SET photo_search_results = %s::jsonb,
+                        updated_at = NOW()
+                    WHERE id = %s AND post_id = %s
+                    RETURNING id
+                """, (json.dumps(updated_results), section_id, post_id))
+                
+                if not cursor.fetchone():
+                    return jsonify({'success': False, 'error': 'Failed to save selection'}), 500
+                
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'selected_photo': selected_photo
+                })
+                
+    except Exception as e:
+        logger.error(f"Error selecting photo: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@bp.route('/api/photo-search/posts/<int:post_id>/sections/<int:section_id>/selected', methods=['GET'])
+def api_photo_selected(post_id, section_id):
+    """Get currently selected photo for a section"""
+    try:
+        # Verify section belongs to post and get results
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT photo_search_results
+                FROM post_section
+                WHERE id = %s AND post_id = %s
+            """, (section_id, post_id))
+            section = cursor.fetchone()
+            if not section:
+                return jsonify({'success': False, 'error': 'Section not found'}), 404
+            
+            # Get results and find selected photo
+            results = section['photo_search_results']
+            if results is None:
+                results = []
+            elif isinstance(results, str):
+                results = json.loads(results)
+            
+            if not isinstance(results, list):
+                results = []
+            
+            # Find selected photo
+            selected_photo = None
+            for photo in results:
+                if photo.get('selected') is True:
+                    selected_photo = photo
+                    break
+            
+            return jsonify({
+                'success': True,
+                'selected_photo': selected_photo
+            })
+            
+    except Exception as e:
+        logger.error(f"Error fetching selected photo: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @bp.route('/api/posts/<int:post_id>/sections/<section_id>/image')
 def imaging_get_section_image(post_id, section_id):

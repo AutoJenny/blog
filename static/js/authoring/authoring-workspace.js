@@ -245,7 +245,18 @@ document.addEventListener('DOMContentLoaded', function() {
         onSectionSelect: async (data) => {
             // Load section into appropriate output panel
             if (window.currentSubstage === 'image-concepts') {
-                if (window.imageConceptsOutputPanel) {
+                const illustrationMethod = window.illustrationMethod || 'LLM-creation';
+                if (illustrationMethod === 'Photo-harvesting' && window.photoHarvestingOutputPanel) {
+                    window.photoHarvestingOutputPanel.show({
+                        id: data.sectionId,
+                        title: data.section.title,
+                        subtitle: data.section.subtitle,
+                        order: data.section.order,
+                        topics: data.section.topics,
+                        image_concepts: data.section.image_concepts || '',
+                        selected_image_concept: data.section.selected_image_concept || ''
+                    });
+                } else if (window.imageConceptsOutputPanel) {
                     window.imageConceptsOutputPanel.show({
                         id: data.sectionId,
                         title: data.section.title,
@@ -300,51 +311,92 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Initialize LLM Settings Panel with callbacks
-    const llmSettingsPanel = new LLMSettingsPanel({
-        storageKey: 'section-drafting-llm-settings',
-        onSettingsChange: (settings) => {
-            console.log('[Drafting] LLM Settings changed:', settings);
-            // Settings can be used by other panels (LLM Prompts, Output)
-        },
-        onProviderChange: (settings) => {
-            console.log('[Drafting] Provider changed:', settings.provider);
-            // Could trigger model-specific behavior
-        },
-        onModelChange: (settings) => {
-            console.log('[Drafting] Model changed:', settings.model);
-            // Could update prompts or generation behavior
-        },
-        onParameterChange: (settings) => {
-            console.log('[Drafting] Parameters changed:', settings);
-            // Could affect generation quality/temperature
-        }
-    });
+    // Initialize Settings Panel based on illustration method
+    const illustrationMethod = window.illustrationMethod || 'LLM-creation';
     
-    // Initialize LLM Prompts Panel with callbacks
-    let llmPromptsPanel = null;
-    try {
-        if (typeof LLMPromptsPanel !== 'undefined') {
-            llmPromptsPanel = new LLMPromptsPanel({
-                postId: window.postId,
-                onPromptChange: (prompt) => {
-                    console.log('[Drafting] LLM Prompt changed:', prompt);
-                    // Prompt changes can trigger other panel updates
-                },
-                onPromptLoad: (prompt) => {
-                    console.log('[Drafting] Prompt loaded:', prompt);
-                    // Prompt loaded successfully
-                },
-                onPromptSave: (promptData) => {
-                    console.log('[Drafting] Prompt saved:', promptData);
-                    // Prompt saved successfully
+    if (illustrationMethod === 'Photo-harvesting') {
+        // Initialize Photo Settings Panel for Photo-harvesting
+        if (typeof PhotoSettingsPanel !== 'undefined') {
+            const photoSettingsPanel = new PhotoSettingsPanel({
+                storageKey: 'photo-settings',
+                onSettingsChange: (settings) => {
+                    console.log('[Photo Harvesting] Settings changed:', settings);
                 }
             });
+            window.photoSettingsPanel = photoSettingsPanel;
         } else {
-            console.warn('[Authoring Workspace] LLMPromptsPanel not available');
+            console.warn('[Authoring Workspace] PhotoSettingsPanel not available');
         }
-    } catch (error) {
-        console.error('[Authoring Workspace] Error initializing LLM Prompts Panel:', error);
+        
+        // Initialize Photo Prompts Panel for Photo-harvesting
+        let photoPromptsPanel = null;
+        try {
+            if (typeof PhotoPromptsPanel !== 'undefined') {
+                photoPromptsPanel = new PhotoPromptsPanel({
+                    postId: window.postId,
+                    onPromptChange: (prompt) => {
+                        console.log('[Photo Harvesting] Prompt changed:', prompt);
+                    },
+                    onPromptLoad: (prompt) => {
+                        console.log('[Photo Harvesting] Prompt loaded:', prompt);
+                    },
+                    onPromptSave: (promptData) => {
+                        console.log('[Photo Harvesting] Prompt saved:', promptData);
+                    }
+                });
+                window.photoPromptsPanel = photoPromptsPanel;
+            } else {
+                console.warn('[Authoring Workspace] PhotoPromptsPanel not available');
+            }
+        } catch (error) {
+            console.error('[Authoring Workspace] Error initializing Photo Prompts Panel:', error);
+        }
+    } else {
+        // Initialize LLM Settings Panel for LLM-creation
+        if (typeof LLMSettingsPanel !== 'undefined') {
+            const llmSettingsPanel = new LLMSettingsPanel({
+                storageKey: 'section-drafting-llm-settings',
+                onSettingsChange: (settings) => {
+                    console.log('[Drafting] LLM Settings changed:', settings);
+                },
+                onProviderChange: (settings) => {
+                    console.log('[Drafting] Provider changed:', settings.provider);
+                },
+                onModelChange: (settings) => {
+                    console.log('[Drafting] Model changed:', settings.model);
+                },
+                onParameterChange: (settings) => {
+                    console.log('[Drafting] Parameters changed:', settings);
+                }
+            });
+            window.llmSettingsPanel = llmSettingsPanel;
+        } else {
+            console.warn('[Authoring Workspace] LLMSettingsPanel not available');
+        }
+        
+        // Initialize LLM Prompts Panel for LLM-creation
+        let llmPromptsPanel = null;
+        try {
+            if (typeof LLMPromptsPanel !== 'undefined') {
+                llmPromptsPanel = new LLMPromptsPanel({
+                    postId: window.postId,
+                    onPromptChange: (prompt) => {
+                        console.log('[Drafting] LLM Prompt changed:', prompt);
+                    },
+                    onPromptLoad: (prompt) => {
+                        console.log('[Drafting] Prompt loaded:', prompt);
+                    },
+                    onPromptSave: (promptData) => {
+                        console.log('[Drafting] Prompt saved:', promptData);
+                    }
+                });
+                window.llmPromptsPanel = llmPromptsPanel;
+            } else {
+                console.warn('[Authoring Workspace] LLMPromptsPanel not available');
+            }
+        } catch (error) {
+            console.error('[Authoring Workspace] Error initializing LLM Prompts Panel:', error);
+        }
     }
     
     // Initialize Context Panel with callbacks
@@ -378,7 +430,26 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Make batchProgressPanel globally available for PhotoHarvestingOutputPanel
+    window.batchProgressPanel = batchProgressPanel;
+    
     // Initialize Output Panel with callbacks
+    // Initialize photo-harvesting output panel if needed
+    if (window.currentSubstage === 'image-concepts' && illustrationMethod === 'Photo-harvesting') {
+        if (typeof PhotoHarvestingOutputPanel !== 'undefined' && !window.photoHarvestingOutputPanel) {
+            console.log('[DEBUG] AuthoringWorkspace: Initializing PhotoHarvestingOutputPanel');
+            window.photoHarvestingOutputPanel = new PhotoHarvestingOutputPanel({
+                postId: window.postId
+            });
+            console.log('[DEBUG] AuthoringWorkspace: PhotoHarvestingOutputPanel initialized:', window.photoHarvestingOutputPanel);
+        } else {
+            console.log('[DEBUG] AuthoringWorkspace: PhotoHarvestingOutputPanel already exists or not available', {
+                exists: typeof PhotoHarvestingOutputPanel !== 'undefined',
+                windowPanel: !!window.photoHarvestingOutputPanel
+            });
+        }
+    }
+    
     // Skip generic OutputPanel on image-concepts, image-prompts, and image-captions (specialized panels are used)
     if (window.currentSubstage !== 'image-concepts' && window.currentSubstage !== 'image-prompts' && window.currentSubstage !== 'image-captions') {
     const outputPanel = new OutputPanel({

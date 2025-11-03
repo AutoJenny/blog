@@ -4,52 +4,76 @@ Planning Concept Module
 Contains concept development route functions extracted from planning.py
 """
 
-from flask import render_template
+from flask import render_template, request
 import logging
 
 logger = logging.getLogger(__name__)
 
+def _resolve_post_and_get_week_context(post_id):
+    """Helper to resolve post and get week context from URL"""
+    from utils.week_post_resolver import resolve_post_for_week
+    
+    year = request.args.get('year', type=int)
+    week = request.args.get('week', type=int)
+    
+    resolved_post_id = post_id
+    if year and week:
+        resolved = resolve_post_for_week(year, week)
+        if resolved:
+            resolved_post_id = resolved
+    
+    return resolved_post_id, year, week
+
 def planning_concept_brainstorm(post_id):
     """Brainstorm page"""
+    resolved_post_id, year, week = _resolve_post_and_get_week_context(post_id)
     return render_template('planning/concept/brainstorm.html', 
-                          post_id=post_id, blueprint_name='planning')
+                          post_id=resolved_post_id, year=year, week=week, blueprint_name='planning')
 
 def planning_concept_section_structure(post_id):
     """Section structure page"""
+    resolved_post_id, year, week = _resolve_post_and_get_week_context(post_id)
     return render_template('planning/concept/section_structure.html', 
-                          post_id=post_id, blueprint_name='planning')
+                          post_id=resolved_post_id, year=year, week=week, blueprint_name='planning')
 
 def planning_concept_topic_allocation(post_id):
     """Topic allocation page"""
+    resolved_post_id, year, week = _resolve_post_and_get_week_context(post_id)
     return render_template('planning/concept/topic_allocation.html', 
-                          post_id=post_id, blueprint_name='planning')
+                          post_id=resolved_post_id, year=year, week=week, blueprint_name='planning')
 
 def planning_concept_titling(post_id):
     """Titling page"""
+    resolved_post_id, year, week = _resolve_post_and_get_week_context(post_id)
     return render_template('planning/concept/titling.html', 
-                          post_id=post_id, blueprint_name='planning')
+                          post_id=resolved_post_id, year=year, week=week, blueprint_name='planning')
 
 def planning_concept_outline(post_id):
     """Outline page"""
+    resolved_post_id, year, week = _resolve_post_and_get_week_context(post_id)
     return render_template('planning/concept/outline.html', 
-                          post_id=post_id, blueprint_name='planning')
+                          post_id=resolved_post_id, year=year, week=week, blueprint_name='planning')
 
 def planning_research_sources(post_id):
     """Research sources page"""
+    resolved_post_id, year, week = _resolve_post_and_get_week_context(post_id)
     return render_template('planning/research/sources.html', 
-                          post_id=post_id, blueprint_name='planning')
+                          post_id=resolved_post_id, year=year, week=week, blueprint_name='planning')
 
 def planning_research_visuals(post_id):
     """Research visuals page"""
+    resolved_post_id, year, week = _resolve_post_and_get_week_context(post_id)
     return render_template('planning/research/visuals.html', 
-                          post_id=post_id, blueprint_name='planning')
+                          post_id=resolved_post_id, year=year, week=week, blueprint_name='planning')
 
 def planning_research_prompts(post_id):
     """Research prompts page"""
+    resolved_post_id, year, week = _resolve_post_and_get_week_context(post_id)
     return render_template('planning/research/prompts.html', 
-                          post_id=post_id, blueprint_name='planning')
+                          post_id=resolved_post_id, year=year, week=week, blueprint_name='planning')
 
 def planning_research_verification(post_id):
     """Research verification page"""
+    resolved_post_id, year, week = _resolve_post_and_get_week_context(post_id)
     return render_template('planning/research/verification.html', 
-                          post_id=post_id, blueprint_name='planning')
+                          post_id=resolved_post_id, year=year, week=week, blueprint_name='planning')

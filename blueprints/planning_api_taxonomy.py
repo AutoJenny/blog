@@ -125,48 +125,94 @@ def generate_taxonomy():
         if not expanded_idea:
             return jsonify({'success': False, 'error': 'expanded_idea is required'}), 400
         
-        # CRITICAL: If year/week provided, find the correct post_id for that week's theme
+        # CRITICAL: If year/week provided, find the correct post_id for that week
         # This ensures taxonomy is assigned to the right post, not the URL's post_id
         if year and week_number and post_id:
             with db_manager.get_cursor() as cursor:
-                # Find the theme for this week
+                # Check if new tables exist
                 cursor.execute("""
-                    SELECT cs.idea_id
-                    FROM calendar_schedule cs
-                    JOIN calendar_ideas ci ON cs.idea_id = ci.id
-                    WHERE cs.year = %s 
-                      AND cs.week_number = %s
-                      AND ci.item_classification = 'theme'
-                    ORDER BY cs.created_at DESC
-                    LIMIT 1
-                """, (year, week_number))
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.tables 
+                        WHERE table_schema = 'public' 
+                        AND table_name = 'calendar_week_selection'
+                    ) as has_selection,
+                    EXISTS (
+                        SELECT FROM information_schema.tables 
+                        WHERE table_schema = 'public' 
+                        AND table_name = 'calendar_week_posts'
+                    ) as has_posts
+                """)
+                table_check = cursor.fetchone()
+                has_new_tables = table_check['has_selection'] and table_check['has_posts']
                 
-                week_theme = cursor.fetchone()
-                
-                if week_theme:
-                    theme_id = week_theme['theme_id']
-                    logger.info(f"Week {year}/{week_number} has theme_id {theme_id}")
-                    
-                    # Find any post that has this theme (regardless of which week)
+                if has_new_tables:
+                    # Use new V2 architecture - get selected theme and post from same week
+                    # Get selected theme for this week
                     cursor.execute("""
-                        SELECT cs2.post_id
-                        FROM calendar_schedule cs2
-                        WHERE cs2.theme_id = %s
-                          AND cs2.post_id IS NOT NULL
-                        ORDER BY cs2.created_at DESC
+                        SELECT selected_theme_id
+                        FROM calendar_week_selection
+                        WHERE year = %s AND week_number = %s
+                    """, (year, week_number))
+                    week_selection = cursor.fetchone()
+                    
+                    if week_selection:
+                        theme_id = week_selection['selected_theme_id']
+                        logger.info(f"Week {year}/{week_number} has selected theme_id {theme_id}")
+                        
+                        # Get post from same week (first post if multiple)
+                        cursor.execute("""
+                            SELECT cwp.post_id
+                            FROM calendar_week_posts cwp
+                            WHERE cwp.year = %s AND cwp.week_number = %s
+                            ORDER BY cwp.created_at DESC
+                            LIMIT 1
+                        """, (year, week_number))
+                        
+                        week_post = cursor.fetchone()
+                        
+                        if week_post and week_post['post_id']:
+                            # Use the post from this week (not cross-week matching)
+                            old_post_id = post_id
+                            post_id = week_post['post_id']
+                            logger.info(f"Found post {post_id} for week {year}/{week_number} (instead of URL post_id {old_post_id})")
+                        else:
+                            logger.warn(f"No post found for week {year}/{week_number}, using provided post_id {post_id}")
+                else:
+                    # Fallback to old calendar_schedule table
+                    cursor.execute("""
+                        SELECT cs.theme_id
+                        FROM calendar_schedule cs
+                        WHERE cs.year = %s 
+                          AND cs.week_number = %s
+                          AND cs.theme_id IS NOT NULL
+                        ORDER BY cs.created_at DESC
                         LIMIT 1
-                    """, (theme_id,))
+                    """, (year, week_number))
                     
-                    theme_post = cursor.fetchone()
+                    week_theme = cursor.fetchone()
                     
-                    if theme_post and theme_post['post_id']:
-                        # Check if the found post has a different theme_id than what the LLM will generate
-                        # If so, use the theme's post instead of the URL's post_id
-                        old_post_id = post_id
-                        post_id = theme_post['post_id']
-                        logger.info(f"Found post {post_id} with theme_id {theme_id} (instead of URL post_id {old_post_id})")
-                    else:
-                        logger.warn(f"No post found with theme_id {theme_id}, using provided post_id {post_id}")
+                    if week_theme:
+                        theme_id = week_theme['theme_id']
+                        logger.info(f"Week {year}/{week_number} has theme_id {theme_id}")
+                        
+                        # Find post from same week
+                        cursor.execute("""
+                            SELECT cs2.post_id
+                            FROM calendar_schedule cs2
+                            WHERE cs2.year = %s AND cs2.week_number = %s
+                              AND cs2.post_id IS NOT NULL
+                            ORDER BY cs2.created_at DESC
+                            LIMIT 1
+                        """, (year, week_number))
+                        
+                        theme_post = cursor.fetchone()
+                        
+                        if theme_post and theme_post['post_id']:
+                            old_post_id = post_id
+                            post_id = theme_post['post_id']
+                            logger.info(f"Found post {post_id} for week {year}/{week_number} (instead of URL post_id {old_post_id})")
+                        else:
+                            logger.warn(f"No post found for week {year}/{week_number}, using provided post_id {post_id}")
         
         # Fetch all taxonomy items from database
         with db_manager.get_cursor() as cursor:

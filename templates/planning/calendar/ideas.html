@@ -450,9 +450,21 @@ document.addEventListener('DOMContentLoaded', function() {
             resultsDisplay.innerHTML = '<div class="loading">Generating expanded idea from selected theme...</div>';
             
             try {
+                // SINGLE SOURCE OF TRUTH: URL query parameters ONLY - NO FALLBACKS
+                const urlParams = new URLSearchParams(window.location.search);
+                const year = urlParams.get('year') ? parseInt(urlParams.get('year')) : null;
+                const week = urlParams.get('week') ? parseInt(urlParams.get('week')) : null;
+                
+                if (!year || !week) {
+                    displayExpandedIdeaError('Missing year and week parameters in URL');
+                    return;
+                }
+                
+                const url = `/planning/api/posts/${window.postId}/expanded-idea?year=${year}&week=${week}`;
+                
                 // API fetches selected theme automatically from calendar_schedule
                 // It uses the theme's Title, Description, and Important Notes
-                const response = await fetch(`/planning/api/posts/${window.postId}/expanded-idea`, {
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -540,20 +552,19 @@ function escapeHtml(text) {
 
     async function loadExpandedIdea() {
         try {
-            // SINGLE SOURCE OF TRUTH: Read year/week from URL only
-            let year, week;
-            if (window.WeekContext) {
-                const weekContext = window.WeekContext.getWeekContext();
-                if (weekContext) {
-                    year = weekContext.year;
-                    week = weekContext.week;
-                }
-            }
+            // SINGLE SOURCE OF TRUTH: URL query parameters ONLY - NO FALLBACKS
+            const urlParams = new URLSearchParams(window.location.search);
+            const year = urlParams.get('year') ? parseInt(urlParams.get('year')) : null;
+            const week = urlParams.get('week') ? parseInt(urlParams.get('week')) : null;
         
-        let url = `/planning/api/posts/${window.postId}/expanded-idea`;
-        if (year && week) {
-            url += `?year=${year}&week=${week}`;
+        if (!year || !week) {
+            console.warn(`[loadExpandedIdea] Missing year/week parameters in URL - cannot load expanded idea`);
+            displayExpandedIdeaError('Missing year and week parameters in URL');
+            return;
         }
+        
+        const url = `/planning/api/posts/${window.postId}/expanded-idea?year=${year}&week=${week}`;
+        console.log(`[loadExpandedIdea] Loading with year=${year}, week=${week}`);
         
         const response = await fetch(url);
         const data = await response.json();

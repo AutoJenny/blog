@@ -31,18 +31,50 @@ def api_posts(post_id):
                 return jsonify({'error': 'Post not found'}), 404
             
             # Get calendar schedule with selected theme
+            # Check if new tables exist
             cursor.execute("""
-                SELECT cs.id, cs.year, cs.week_number, cs.scheduled_date, cs.idea_id, 
-                       cs.created_at, cs.updated_at,
-                       ci.idea_title as selected_theme_title
-                FROM calendar_schedule cs
-                LEFT JOIN calendar_ideas ci ON cs.idea_id = ci.id
-                WHERE cs.post_id = %s
-                ORDER BY cs.created_at DESC
-                LIMIT 1
-            """, (post_id,))
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'calendar_week_selection'
+                ) as has_selection,
+                EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'calendar_week_posts'
+                ) as has_posts
+            """)
+            table_check = cursor.fetchone()
+            has_new_tables = table_check['has_selection'] and table_check['has_posts']
             
-            schedule = cursor.fetchone()
+            schedule = None
+            if has_new_tables:
+                # Use new V2 architecture - get schedule from calendar_week_posts
+                cursor.execute("""
+                    SELECT cwp.year, cwp.week_number, cwp.scheduled_date, cwp.created_at, cwp.updated_at,
+                           cws.selected_theme_id,
+                           ct.theme_title as selected_theme_title
+                    FROM calendar_week_posts cwp
+                    LEFT JOIN calendar_week_selection cws ON cwp.year = cws.year AND cwp.week_number = cws.week_number
+                    LEFT JOIN calendar_themes ct ON cws.selected_theme_id = ct.id
+                    WHERE cwp.post_id = %s
+                    ORDER BY cwp.created_at DESC
+                    LIMIT 1
+                """, (post_id,))
+                schedule = cursor.fetchone()
+            else:
+                # Fallback to old calendar_schedule table
+                cursor.execute("""
+                    SELECT cs.id, cs.year, cs.week_number, cs.scheduled_date, cs.idea_id, 
+                           cs.created_at, cs.updated_at,
+                           ci.idea_title as selected_theme_title
+                    FROM calendar_schedule cs
+                    LEFT JOIN calendar_ideas ci ON cs.idea_id = ci.id
+                    WHERE cs.post_id = %s
+                    ORDER BY cs.created_at DESC
+                    LIMIT 1
+                """, (post_id,))
+                schedule = cursor.fetchone()
             
             # Get post sections from post_section table
             cursor.execute("""
@@ -140,22 +172,54 @@ def confirm_calendar_idea():
                 """, (topic, slug))
                 post_id = cursor.fetchone()['id']
 
-            # Upsert calendar_schedule (latest wins)
+            # Check if selected theme exists for this week (required)
             cursor.execute("""
-                INSERT INTO calendar_schedule (post_id, year, week_number, scheduled_date, created_at, updated_at)
-                VALUES (%s, %s, %s, NULL, NOW(), NOW())
-                ON CONFLICT (id) DO NOTHING
-            """, (post_id, year, week_number))
-
-            # Ensure only one schedule row per post/year/week: cleanup duplicates if schema allows multiples
-            cursor.execute("""
-                DELETE FROM calendar_schedule cs
-                USING calendar_schedule cs2
-                WHERE cs.id > cs2.id
-                  AND cs.post_id = cs2.post_id
-                  AND cs.year = cs2.year
-                  AND cs.week_number = cs2.week_number
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'calendar_week_selection'
+                )
             """)
+            has_new_table = cursor.fetchone()['exists']
+            
+            if has_new_table:
+                # Check if selected theme exists (REQUIRED)
+                cursor.execute("""
+                    SELECT selected_theme_id
+                    FROM calendar_week_selection
+                    WHERE year = %s AND week_number = %s
+                """, (year, week_number))
+                theme_selection = cursor.fetchone()
+                
+                if not theme_selection:
+                    return jsonify({
+                        'success': False,
+                        'error': f'No theme selected for week {year}/{week_number}. Please select a theme first.'
+                    }), 400
+                
+                # Assign post to week using calendar_week_posts
+                cursor.execute("""
+                    INSERT INTO calendar_week_posts (year, week_number, post_id, scheduled_date, created_at, updated_at)
+                    VALUES (%s, %s, %s, NULL, NOW(), NOW())
+                    ON CONFLICT (year, week_number, post_id) DO NOTHING
+                """, (year, week_number, post_id))
+            else:
+                # Fallback to old calendar_schedule table during migration
+                cursor.execute("""
+                    INSERT INTO calendar_schedule (post_id, year, week_number, scheduled_date, created_at, updated_at)
+                    VALUES (%s, %s, %s, NULL, NOW(), NOW())
+                    ON CONFLICT (id) DO NOTHING
+                """, (post_id, year, week_number))
+
+                # Ensure only one schedule row per post/year/week: cleanup duplicates if schema allows multiples
+                cursor.execute("""
+                    DELETE FROM calendar_schedule cs
+                    USING calendar_schedule cs2
+                    WHERE cs.id > cs2.id
+                      AND cs.post_id = cs2.post_id
+                      AND cs.year = cs2.year
+                      AND cs.week_number = cs2.week_number
+                """)
 
             # Upsert post_development.idea_seed
             cursor.execute("""

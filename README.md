@@ -40,6 +40,12 @@ The application will be available at `http://localhost:5000`
 - **[API Reference](docs/temp/api_reference.md)** - Complete API documentation
 - **[Quick Reference Guide](docs/temp/quick_reference.md)** - Quick start and troubleshooting
 
+### Data Persistence & Calendar System
+- **[Week Persistence V2](README_WEEK_PERSISTENCE.md)** - Complete week persistence system documentation
+  - [Quick Reference](docs/WEEK_PERSISTENCE_V2_QUICK_REFERENCE.md) - Quick start guide
+  - [API Reference](docs/WEEK_PERSISTENCE_V2_API_REFERENCE.md) - Complete API documentation
+  - [System Documentation](docs/WEEK_PERSISTENCE_V2_SYSTEM.md) - Full system guide with migration steps
+
 ### Implementation Documentation
 - **[Unified Server Implementation Plan](docs/temp/unified_server_implementation_plan.md)** - Complete migration overview
 - **[Phase-by-Phase Implementation](docs/temp/)** - Detailed implementation phases
@@ -145,6 +151,7 @@ curl -X POST http://localhost:5000/launchpad/api/auto-replenish-all
 - **[System Overview](docs/system-overview.md)** - Complete system architecture and features
 - **[Quick Reference Guide](docs/quick-reference.md)** - Quick start and troubleshooting
 - **[Auto-Replenish System Guide](docs/auto-replenish-system.md)** - Detailed auto-replenish documentation
+- **[Week Persistence System](README_WEEK_PERSISTENCE.md)** - Calendar week persistence and data management
 
 ## 🔧 Troubleshooting
 

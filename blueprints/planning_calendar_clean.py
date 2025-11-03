@@ -25,8 +25,24 @@ def planning_calendar_view(post_id):
 
 def planning_calendar_week_view(post_id):
     """Calendar Week View sub-stage (week-per-view)"""
+    from flask import request
+    from utils.week_post_resolver import resolve_post_for_week
+    
+    # Read week context from URL (required for week view)
+    year = request.args.get('year', type=int)
+    week = request.args.get('week', type=int)
+    
+    # Resolve post if week context provided
+    resolved_post_id = post_id
+    if year and week:
+        resolved = resolve_post_for_week(year, week)
+        if resolved:
+            resolved_post_id = resolved
+    
     return render_template('planning/calendar/week_view.html',
-                          post_id=post_id,
+                          post_id=resolved_post_id,
+                          year=year,
+                          week=week,
                           blueprint_name='planning')
 
 def planning_calendar_ideas(post_id):
@@ -73,13 +89,51 @@ def planning_calendar_ideas_week(week_number):
         # Get optional post_id from query parameter for context (from one-click blog selection)
         post_id = request.args.get('post_id', type=int, default=0)
         
-        year = datetime.now().year
+        # SINGLE SOURCE OF TRUTH: Read year from URL query parameters
+        url_year = request.args.get('year', type=int)
+        if url_year:
+            year = url_year
+        else:
+            year = datetime.now().year
+        
         with db_manager.get_cursor() as cursor:
+            # Check if calendar_themes table exists
+            cursor.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'calendar_themes'
+                )
+            """)
+            has_themes_table = cursor.fetchone()['exists']
+            
+            # Load themes from calendar_themes table
+            themes = []
+            if has_themes_table:
+                cursor.execute("""
+                    SELECT id, week_number, theme_title, theme_description, seasonal_context, 
+                           priority, tags, is_recurring
+                    FROM calendar_themes 
+                    WHERE week_number = %s
+                    ORDER BY 
+                        CASE priority 
+                            WHEN 'mandatory' THEN 1 
+                            WHEN 'random' THEN 2 
+                            ELSE 3 
+                        END,
+                        id
+                """, (week_number,))
+                themes = cursor.fetchall()
+            
+            # Load ideas from calendar_ideas (excluding themes)
             cursor.execute("""
                 SELECT id, idea_title, idea_description, seasonal_context, 
                        content_type, priority, tags, is_recurring
                 FROM calendar_ideas 
                 WHERE week_number = %s
+                  AND NOT EXISTS (
+                      SELECT 1 FROM calendar_themes WHERE calendar_themes.id = calendar_ideas.id
+                  )
                 ORDER BY 
                     CASE priority 
                         WHEN 'mandatory' THEN 1 
@@ -89,19 +143,27 @@ def planning_calendar_ideas_week(week_number):
                     id
             """, (week_number,))
             ideas = cursor.fetchall()
+            
         return render_template('planning/calendar/ideas_week.html', 
                               week_number=week_number,
                               year=year,
+                              themes=themes,
                               ideas=ideas,
                               post_id=post_id,
                               blueprint_name='planning')
     except Exception as e:
         logger.error(f"Error in planning_calendar_ideas_week: {e}")
         post_id = request.args.get('post_id', type=int, default=0)
-        year = datetime.now().year
+        # SINGLE SOURCE OF TRUTH: Read year from URL query parameters
+        url_year = request.args.get('year', type=int)
+        if url_year:
+            year = url_year
+        else:
+            year = datetime.now().year
         return render_template('planning/calendar/ideas_week.html', 
                               week_number=week_number,
                               year=year,
+                              themes=[],
                               ideas=[],
                               post_id=post_id,
                               blueprint_name='planning')

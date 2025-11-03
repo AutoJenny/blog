@@ -274,7 +274,12 @@ def api_generate_section_draft(post_id, section_id):
 
 @bp.route('/api/llm/prompts/image-concepts', methods=['GET', 'PUT'])
 def api_image_concepts_prompt():
-    """Get or update the Image Concepts prompt"""
+    """Get or update the Image Concepts prompt
+    
+    Supports illustration_method query parameter:
+    - 'Photo-harvesting' → 'Image Concepts Generation (Photo-harvesting)'
+    - 'LLM-creation' or default → 'Image Concepts Generation'
+    """
     try:
         with db_manager.get_cursor() as cursor:
             if request.method == 'PUT':
@@ -283,31 +288,50 @@ def api_image_concepts_prompt():
                 system_prompt = data.get('system_prompt', '')
                 prompt_text = data.get('prompt_text', '')
                 
+                # Determine which prompt to update based on illustration_method
+                illustration_method = request.args.get('illustration_method', 'LLM-creation')
+                prompt_name = 'Image Concepts Generation (Photo-harvesting)' if illustration_method == 'Photo-harvesting' else 'Image Concepts Generation'
+                
                 cursor.execute("""
                     UPDATE llm_prompt 
                     SET system_prompt = %s, prompt_text = %s
-                    WHERE name = 'Image Concepts Generation'
-                """, (system_prompt, prompt_text))
+                    WHERE name = %s
+                """, (system_prompt, prompt_text, prompt_name))
                 
                 cursor.connection.commit()
                 
                 return jsonify({
                     'success': True,
-                    'message': 'Prompt updated successfully'
+                    'message': f'Prompt "{prompt_name}" updated successfully'
                 })
             else:
-                # Get the prompt
+                # Get the prompt - check illustration_method query parameter
+                illustration_method = request.args.get('illustration_method', 'LLM-creation')
+                prompt_name = 'Image Concepts Generation (Photo-harvesting)' if illustration_method == 'Photo-harvesting' else 'Image Concepts Generation'
+                
                 cursor.execute("""
                     SELECT name, prompt_text, system_prompt, updated_at
                     FROM llm_prompt 
-                    WHERE name = 'Image Concepts Generation'
+                    WHERE name = %s
                     ORDER BY updated_at DESC 
                     LIMIT 1
-                """)
+                """, (prompt_name,))
                 prompt_data = cursor.fetchone()
                 
+                # Fallback to default if photo-harvesting prompt doesn't exist
+                if not prompt_data and illustration_method == 'Photo-harvesting':
+                    logger.warn(f"Photo-harvesting prompt not found, falling back to default")
+                    cursor.execute("""
+                        SELECT name, prompt_text, system_prompt, updated_at
+                        FROM llm_prompt 
+                        WHERE name = 'Image Concepts Generation'
+                        ORDER BY updated_at DESC 
+                        LIMIT 1
+                    """)
+                    prompt_data = cursor.fetchone()
+                
                 if not prompt_data:
-                    return jsonify({'error': 'Image Concepts prompt not found'}), 404
+                    return jsonify({'error': f'Image Concepts prompt "{prompt_name}" not found'}), 404
                 
                 return jsonify({
                     'success': True,

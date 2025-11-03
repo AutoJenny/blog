@@ -44,11 +44,19 @@
                 <i class="fas fa-pen-nib"></i>
                 Authoring
             </a>
+            {% if illustration_method|default('LLM-creation') == 'Photo-harvesting' %}
+            <a href="{{ url_for('imaging.imaging_sections_photo_selection', post_id=post_id) }}" 
+               class="stage-btn" data-stage="imaging">
+                <i class="fas fa-camera"></i>
+                Imaging
+            </a>
+            {% else %}
             <a href="{{ url_for('imaging.imaging_sections_image_generation', post_id=post_id) }}" 
                class="stage-btn" data-stage="imaging">
                 <i class="fas fa-magic"></i>
                 Imaging
             </a>
+            {% endif %}
             <a href="{{ url_for('header.header_title_summary', post_id=post_id) }}" 
                class="stage-btn" data-stage="header">
                 <i class="fas fa-heading"></i>
@@ -81,10 +89,10 @@
                     Week View
                 </a>
                 <a href="#" 
-                   id="week-ideas-link"
+                   id="week-themes-link"
                    class="sub-stage-btn" 
                    data-substage="ideas-week">
-                    Week Ideas
+                    Week Themes
                 </a>
             </div>
             
@@ -138,10 +146,17 @@
             
             <!-- Imaging sub-stages -->
             <div class="sub-stage-group" data-stage="imaging">
+                {% if illustration_method|default('LLM-creation') == 'Photo-harvesting' %}
+                <a href="{{ url_for('imaging.imaging_sections_photo_selection', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="photo-selection">
+                    Photo Selection
+                </a>
+                {% else %}
                 <a href="{{ url_for('imaging.imaging_sections_image_generation', post_id=post_id) }}" 
                    class="sub-stage-btn" data-substage="image-generation">
                     Image Generation
                 </a>
+                {% endif %}
                 <a href="{{ url_for('imaging.imaging_sections_optimise', post_id=post_id) }}" 
                    class="sub-stage-btn" data-substage="optimise">
                     Optimise
@@ -345,10 +360,10 @@ function getCurrentISOWeek() {
     return weekNum;
 }
 
-// Set Week Ideas link to the week being viewed (from URL only)
-function setWeekIdeasLink() {
-    const weekIdeasLink = document.getElementById('week-ideas-link');
-    if (weekIdeasLink) {
+// Set Week Themes link to the week being viewed (from URL only)
+function setWeekThemesLink() {
+    const weekThemesLink = document.getElementById('week-themes-link');
+    if (weekThemesLink) {
         // SINGLE SOURCE OF TRUTH: URL query parameters only
         let weekToUse;
         let yearToUse;
@@ -370,7 +385,7 @@ function setWeekIdeasLink() {
         } else {
             href += `?year=${yearToUse}&week=${weekToUse}`;
         }
-        weekIdeasLink.href = href;
+        weekThemesLink.href = href;
     }
 }
 
@@ -378,13 +393,13 @@ function setWeekIdeasLink() {
 document.addEventListener('DOMContentLoaded', function() {
     updateNavigationHighlighting();
     initializeTabs();
-    setWeekIdeasLink();
+    setWeekThemesLink();
 });
 
 // Also run after a short delay to catch pages that set window.currentStage after DOM ready
 setTimeout(function() {
     updateNavigationHighlighting();
-    setWeekIdeasLink();
+    setWeekThemesLink();
 }, 100);
 </script>
 
