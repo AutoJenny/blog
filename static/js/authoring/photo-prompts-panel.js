@@ -142,9 +142,9 @@ class PhotoPromptsPanel {
 
     async loadPromptFromAPI() {
         try {
-            // Append illustration_method to endpoint if available and endpoint is for image-concepts
+            // Append illustration_method to endpoint if available and endpoint is for image-concepts or image-prompts
             let url = this.config.promptEndpoint;
-            if (url.includes('/image-concepts') && window.illustrationMethod) {
+            if ((url.includes('/image-concepts') || url.includes('/image-prompts')) && window.illustrationMethod) {
                 const separator = url.includes('?') ? '&' : '?';
                 url = `${url}${separator}illustration_method=${encodeURIComponent(window.illustrationMethod)}`;
             }

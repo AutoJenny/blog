@@ -139,6 +139,26 @@ def api_generate_image_prompt_from_builder():
         post_id = data.get('post_id')
         section_id = data.get('section_id')
         
+        # CRITICAL: Check for week context in request data or URL params
+        url_year = request.args.get('year', type=int) or data.get('year')
+        url_week = request.args.get('week', type=int) or data.get('week')
+        logger.info(f"[IMAGE_PROMPTS] Week context from request: year={url_year}, week={url_week}")
+        
+        # SINGLE SOURCE OF TRUTH: Use approved utility for week/post resolution
+        target_post_id = post_id
+        if url_year and url_week:
+            from utils.week_post_resolver import resolve_post_for_week
+            resolved_post_id = resolve_post_for_week(url_year, url_week)
+            if resolved_post_id:
+                target_post_id = resolved_post_id
+                logger.info(f"[IMAGE_PROMPTS] Week {url_year}/{url_week} resolved to post_id {target_post_id} (instead of URL post_id {post_id})")
+            else:
+                logger.warning(f"[IMAGE_PROMPTS] Week {url_year}/{url_week} has no scheduled post - using URL post_id {post_id}")
+        else:
+            logger.warning(f"[IMAGE_PROMPTS] No week context provided - using URL post_id {post_id}")
+        
+        logger.info(f"[IMAGE_PROMPTS] Using target_post_id={target_post_id} for generation")
+        
         # Get concept data from frontend
         concept_content = data.get('concept_content')
         selected_concept = data.get('selected_concept')
@@ -153,8 +173,8 @@ def api_generate_image_prompt_from_builder():
         # Track all LLM calls for transparency
         pipeline_steps = []
         
-        logger.info(f"[DEBUG] API received: post_id={post_id}, section_id={section_id}")
-        logger.info(f"[DEBUG] Compiled prompt: {compiled_prompt[:100]}...")
+        logger.info(f"[DEBUG] API received: post_id={post_id}, section_id={section_id}, target_post_id={target_post_id}")
+        logger.info(f"[DEBUG] Compiled prompt: {compiled_prompt[:100] if compiled_prompt else 'None'}...")
         
         if not compiled_prompt:
             return jsonify({'error': 'Missing compiled_prompt'}), 400
@@ -164,10 +184,14 @@ def api_generate_image_prompt_from_builder():
         
         # Get section data from post_section table
         with db_manager.get_cursor() as cursor:
-            # Get post data for context
+            # Get post data for context - use target_post_id for lookup
             cursor.execute("""
-                SELECT title, subtitle, summary FROM post WHERE id = %s
-            """, (post_id,))
+                SELECT p.id, p.title, p.subtitle, p.summary, 
+                       content_type.illustration_method
+                FROM post p
+                LEFT JOIN taxonomy_item content_type ON p.content_type_id = content_type.id
+                WHERE p.id = %s
+            """, (target_post_id,))
             post_data = cursor.fetchone()
             
             if not post_data:
@@ -202,7 +226,11 @@ def api_generate_image_prompt_from_builder():
             
             logger.info(f"[DEBUG] Imaging model: {imaging_model_key}, max_chars: {max_chars}")
             
-            # Get section data
+            # Get illustration_method from post data
+            illustration_method = post_data.get('illustration_method') or 'LLM-creation'
+            logger.info(f"[IMAGE_PROMPTS] Illustration method: {illustration_method}")
+            
+            # Get section data - use target_post_id for lookup
             cursor.execute("""
                 SELECT id, section_order, section_heading, section_description, 
                        status, draft, polished, ideas_to_include, facts_to_include,
@@ -210,7 +238,7 @@ def api_generate_image_prompt_from_builder():
                        image_alt_text, selected_image_concept
                 FROM post_section
                 WHERE post_id = %s AND id = %s
-            """, (post_id, section_id))
+            """, (target_post_id, section_id))
             section = cursor.fetchone()
             
             if not section:
@@ -257,18 +285,22 @@ def api_generate_image_prompt_from_builder():
             # Set topics to empty for now (topic allocation system removed)
             topics = []
             
-            # Get the user-configured image prompts prompt (not hardcoded)
+            # Get the user-configured image prompts prompt based on illustration_method
+            prompt_name = 'Image Prompts Generation (Photo-harvesting)' if illustration_method == 'Photo-harvesting' else 'Image Prompts Generation'
+            logger.info(f"[IMAGE_PROMPTS] Using prompt: {prompt_name}")
+            
             cursor.execute("""
                 SELECT prompt_text, system_prompt
                 FROM llm_prompt 
-                WHERE name = 'Image Prompts Generation'
+                WHERE name = %s
                 ORDER BY updated_at DESC 
                 LIMIT 1
-            """)
+            """, (prompt_name,))
             
             prompt_data = cursor.fetchone()
+
             if not prompt_data:
-                return jsonify({'error': 'User-configured Image Prompts prompt not found. Please configure prompts in the LLM Prompts panel first.'}), 404
+                return jsonify({'error': f'User-configured Image Prompts prompt "{prompt_name}" not found. Please configure prompts in the LLM Prompts panel first.'}), 404
             
             # Build the prompt with actual data
             prompt_text = prompt_data['prompt_text']
@@ -440,9 +472,9 @@ def api_generate_image_prompt_from_builder():
             generated_prompt = None
             
             for attempt in range(max_retries):
-                # Add intercept context for message capture
+                # Add intercept context for message capture - use target_post_id
                 intercept_context = {
-                    'post_id': post_id,
+                    'post_id': target_post_id,
                     'section_id': section_id
                 }
                 result = llm_service.execute_llm_request(llm_provider.lower(), llm_model, messages, intercept_context=intercept_context)

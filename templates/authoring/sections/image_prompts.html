@@ -16,8 +16,9 @@
 {{ js_assets('authoring') }}
 <script>
     window.currentStage = 'authoring';
-                window.currentSubstage = 'image-prompts';
-  window.postId = {{ post_id|default(0) }};
+    window.currentSubstage = 'image-prompts';
+    window.postId = {{ post_id|default(0) }};
+    window.illustrationMethod = '{{ illustration_method|default("LLM-creation") }}';
   
     // SINGLE SOURCE OF TRUTH: URL query parameters only
     // Week context is read from URL via WeekContext module (no window vars needed)
@@ -91,6 +92,12 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="workspace-container">
         {% include 'shared/sections_panel.html' %}
         <div class="editor-panel">
+            <!-- Route Indicator -->
+            <div class="route-indicator" style="background: {% if illustration_method == 'Photo-harvesting' %}#1e40af{% else %}#7c3aed{% endif %}; color: white; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas {% if illustration_method == 'Photo-harvesting' %}fa-camera{% else %}fa-magic{% endif %}" style="font-size: 1.1rem;"></i>
+                <span>Illustration Route: <strong>{{ illustration_method }}</strong></span>
+            </div>
+            
             <!-- Context Panel -->
             {% include 'authoring/includes/context_panel.html' %}
             
@@ -100,17 +107,19 @@ document.addEventListener('DOMContentLoaded', function() {
             <!-- LLM Prompts Panel -->
             {% include 'authoring/includes/llm_prompts_panel.html' %}
             
-            <!-- Imaging Model Selection Panel -->
+            {% if illustration_method != 'Photo-harvesting' %}
+            <!-- Imaging Model Selection Panel (LLM-creation only) -->
             {% include 'imaging/includes/model_selection_panel.html' %}
             
-            <!-- Styles Panel (post-wide styles management) -->
+            <!-- Styles Panel (post-wide styles management) (LLM-creation only) -->
             {% include 'authoring/includes/styles_panel.html' %}
             
-            <!-- Prompt Builder Panel -->
+            <!-- Prompt Builder Panel (LLM-creation only) -->
             {% include 'authoring/includes/prompt_builder_panel_image_prompts.html' %}
             
-            <!-- LLM Message Intercept Panel -->
+            <!-- LLM Message Intercept Panel (Complete LLM Input) (LLM-creation only) -->
             {% include 'authoring/includes/llm_message_intercept_panel.html' %}
+            {% endif %}
             
             <!-- Batch Progress Panel -->
             {% include 'authoring/includes/batch_progress_panel.html' %}
