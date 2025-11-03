@@ -197,12 +197,16 @@ def api_generate_image_prompt_from_builder():
             if not post_data:
                 return jsonify({'error': 'Post not found'}), 404
             
-            # Get imaging model selection and character limit
+            # Get illustration_method from post data
+            illustration_method = post_data.get('illustration_method') or 'LLM-creation'
+            logger.info(f"[IMAGE_PROMPTS] Illustration method: {illustration_method}")
+            
+            # Get imaging model selection and character limit - use target_post_id
             cursor.execute("""
                 SELECT imaging_model_selection
                 FROM post_development
                 WHERE post_id = %s
-            """, (post_id,))
+            """, (target_post_id,))
             
             imaging_model_row = cursor.fetchone()
             imaging_model_key = imaging_model_row['imaging_model_selection'] if imaging_model_row else 'sdxl-lora'
@@ -225,10 +229,6 @@ def api_generate_image_prompt_from_builder():
                     max_chars = api_params_dict.get('max_prompt_chars')
             
             logger.info(f"[DEBUG] Imaging model: {imaging_model_key}, max_chars: {max_chars}")
-            
-            # Get illustration_method from post data
-            illustration_method = post_data.get('illustration_method') or 'LLM-creation'
-            logger.info(f"[IMAGE_PROMPTS] Illustration method: {illustration_method}")
             
             # Get section data - use target_post_id for lookup
             cursor.execute("""
