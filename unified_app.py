@@ -169,6 +169,10 @@ def create_app(config_name=None):
     from blueprints.clan_api import bp as clan_api_bp
     app.register_blueprint(clan_api_bp, url_prefix='/clan-api')
 
+    # Clan cache endpoints (save product, stats, list)
+    from blueprints.clan_cache import bp as clan_cache_bp
+    app.register_blueprint(clan_cache_bp)
+
     # Register side projects blueprint
     from blueprints.side_projects import bp as side_projects_bp
     app.register_blueprint(side_projects_bp)

@@ -13,7 +13,7 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 
-def search_pexels(api_key: str, query: str, per_page: int = 10) -> List[Dict]:
+def search_pexels(api_key: str, query: str, per_page: int = 10, orientation: Optional[str] = None) -> List[Dict]:
     """
     Search Pexels API for photos.
     
@@ -21,6 +21,7 @@ def search_pexels(api_key: str, query: str, per_page: int = 10) -> List[Dict]:
         api_key: Pexels API key
         query: Search query string
         per_page: Number of results per page (max 80)
+        orientation: Optional orientation filter: "landscape", "portrait", or "square"
     
     Returns:
         List of standardized photo objects
@@ -34,6 +35,9 @@ def search_pexels(api_key: str, query: str, per_page: int = 10) -> List[Dict]:
             "query": query,
             "per_page": min(per_page, 80)  # Pexels max is 80
         }
+        # Add orientation if provided (Pexels supports: landscape, portrait, square)
+        if orientation and orientation in ("landscape", "portrait", "square"):
+            params["orientation"] = orientation
         
         response = requests.get(url, headers=headers, params=params, timeout=10)
         response.raise_for_status()
@@ -72,7 +76,7 @@ def search_pexels(api_key: str, query: str, per_page: int = 10) -> List[Dict]:
         return []
 
 
-def search_unsplash(api_key: str, query: str, per_page: int = 10) -> List[Dict]:
+def search_unsplash(api_key: str, query: str, per_page: int = 10, orientation: Optional[str] = None) -> List[Dict]:
     """
     Search Unsplash API for photos.
     
@@ -80,6 +84,7 @@ def search_unsplash(api_key: str, query: str, per_page: int = 10) -> List[Dict]:
         api_key: Unsplash Access Key
         query: Search query string
         per_page: Number of results per page (max 30)
+        orientation: Optional orientation filter: "landscape", "portrait", or "squarish"
     
     Returns:
         List of standardized photo objects
@@ -93,6 +98,9 @@ def search_unsplash(api_key: str, query: str, per_page: int = 10) -> List[Dict]:
             "query": query,
             "per_page": min(per_page, 30)  # Unsplash max is 30
         }
+        # Add orientation if provided (Unsplash supports: landscape, portrait, squarish)
+        if orientation and orientation in ("landscape", "portrait", "squarish"):
+            params["orientation"] = orientation
         
         response = requests.get(url, headers=headers, params=params, timeout=10)
         response.raise_for_status()
