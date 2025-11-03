@@ -19,6 +19,10 @@ class IdeaModalForms {
             title.textContent = 'Manage Theme';
         } else if (type === 'idea') {
             title.textContent = 'Manage Idea';
+        } else if (type === 'annual_event') {
+            title.textContent = 'Manage Annual Event';
+        } else if (type === 'special_event') {
+            title.textContent = 'Manage Special Event';
         } else {
             title.textContent = 'Manage Event';
         }
@@ -63,8 +67,8 @@ class IdeaModalForms {
             if (startDateGroup) startDateGroup.style.display = 'none';
             if (endDateGroup) endDateGroup.style.display = 'none';
             if (yearGroup) yearGroup.style.display = 'none';
-        } else {
-            // Show event-specific fields
+        } else if (type === 'annual_event' || type === 'special_event') {
+            // Show event-specific fields (both annual and special use same fields)
             this.ensureEventFieldsExist();
             
             if (startDateGroup) startDateGroup.style.display = 'block';
@@ -184,7 +188,8 @@ class IdeaModalForms {
         this.modal.currentType = 'idea';
         document.getElementById('type-idea').checked = true;
         document.getElementById('type-theme').checked = false;
-        document.getElementById('type-event').checked = false;
+        document.getElementById('type-annual-event').checked = false;
+        document.getElementById('type-special-event').checked = false;
         document.getElementById('idea-modal-title').textContent = 'Manage Idea';
         
         // Auto-fill week number with current week (for ideas/themes, not events)
@@ -223,7 +228,9 @@ class IdeaModalForms {
 
         // Determine type based on type selector
         const isTheme = document.getElementById('type-theme')?.checked || false;
-        const isEvent = document.getElementById('type-event')?.checked || false;
+        const isAnnualEvent = document.getElementById('type-annual-event')?.checked || false;
+        const isSpecialEvent = document.getElementById('type-special-event')?.checked || false;
+        const isEvent = isAnnualEvent || isSpecialEvent;
         
         // Get week number - default to current week if not set (for ideas/themes)
         let week_number = document.getElementById('idea-week-number').value;
@@ -291,6 +298,13 @@ class IdeaModalForms {
 
         // Add event-specific fields if it's an event
         if (isEvent) {
+            // Set event_recurrence_type based on which event type is selected
+            if (isSpecialEvent) {
+                formData.event_recurrence_type = 'one_off';
+            } else if (isAnnualEvent) {
+                formData.event_recurrence_type = 'annual';
+            }
+            
             const startDateInput = document.getElementById('event-start-date');
             const endDateInput = document.getElementById('event-end-date');
             const yearInput = document.getElementById('event-year');

@@ -102,11 +102,129 @@ def api_calendar_events(year, week_number):
             
             events = cursor.fetchall()
             
+            # Also fetch one-off special events from newsletter_source_item that fall within this week
+            special_events = []
+            if has_recurrence_type:
+                # Check if additional columns exist
+                cursor.execute("""
+                    SELECT column_name FROM information_schema.columns 
+                    WHERE table_name = 'newsletter_source_item' 
+                    AND column_name IN ('end_date', 'date_qualifier')
+                """)
+                nsi_columns = {row['column_name'] for row in cursor.fetchall()}
+                
+                # Build date filter for newsletter events
+                nsi_where = """
+                    category = 'event'
+                    AND (
+                        event_recurrence_type = 'one_off'
+                        OR (event_recurrence_type IS NULL AND calendar_event_id IS NULL)
+                    )
+                    AND (
+                        (event_date IS NOT NULL AND event_date::date BETWEEN %s AND %s)
+                        OR (end_date IS NOT NULL AND end_date::date BETWEEN %s AND %s)
+                        OR (event_date IS NOT NULL AND end_date IS NOT NULL 
+                            AND event_date::date <= %s AND end_date::date >= %s)
+                        OR (date_qualifier = 'end_only' AND end_date IS NOT NULL AND end_date::date BETWEEN %s AND %s)
+                        OR (date_qualifier = 'start_only' AND event_date IS NOT NULL AND event_date::date BETWEEN %s AND %s)
+                        OR (event_date IS NULL AND end_date IS NULL AND published_at IS NOT NULL 
+                            AND published_at::date BETWEEN %s AND %s)
+                    )
+                    AND (calendar_event_id IS NULL OR calendar_event_id = 0)
+                """
+                
+                nsi_params = [
+                    week_start_date, week_end_date,  # event_date range
+                    week_start_date, week_end_date,  # end_date range
+                    week_end_date, week_start_date,  # spans week
+                    week_start_date, week_end_date,  # end_only
+                    week_start_date, week_end_date,  # start_only
+                    week_start_date, week_end_date,  # fallback to published_at
+                ]
+                
+                # Select fields - handle missing columns gracefully
+                end_date_field = "end_date" if "end_date" in nsi_columns else "NULL::date as end_date"
+                
+                cursor.execute(f"""
+                    SELECT 
+                        nsi.id,
+                        nsi.title as event_title,
+                        COALESCE(nsi.raw_data->>'description', nsi.raw_data->>'summary', '') as event_description,
+                        COALESCE(nsi.event_date, {end_date_field}, nsi.published_at)::date as start_date,
+                        COALESCE({end_date_field}, nsi.event_date, nsi.published_at)::date as end_date,
+                        FALSE as is_recurring,
+                        1 as priority,
+                        -- Include source info for special events
+                        json_build_object(
+                            'source_name', nsi.source_name,
+                            'url', nsi.url,
+                            'location', nsi.location,
+                            'newsletter_event_id', nsi.id
+                        ) as tags,
+                        'event' as content_type,
+                        EXTRACT(YEAR FROM COALESCE(nsi.event_date, {end_date_field}, nsi.published_at))::integer as year,
+                        NULL::integer as advance_notice,
+                        '[]'::jsonb as important_notes,
+                        nsi.cached_at as created_at,
+                        nsi.cached_at as updated_at,
+                        EXTRACT(ISODOW FROM COALESCE(nsi.event_date, {end_date_field}, nsi.published_at))::integer as weekday,
+                        'one_off' as event_recurrence_type,
+                        '[]'::json as categories
+                    FROM newsletter_source_item nsi
+                    WHERE {nsi_where}
+                    ORDER BY COALESCE(nsi.event_date, {end_date_field}, nsi.published_at), nsi.combined_score DESC NULLS LAST
+                """, tuple(nsi_params))
+                
+                special_events = cursor.fetchall()
+            
+            # Filter out calendar events that have corresponding newsletter_source_item entries for this week
+            # (to avoid showing duplicates - newsletter version should take precedence)
+            if has_recurrence_type and events and special_events:
+                # Build set of (title, start_date) tuples from special events to match against
+                special_event_keys = set()
+                for se in special_events:
+                    title = se.get('event_title', '').strip().lower()
+                    start_date = se.get('start_date')
+                    if title and start_date:
+                        special_event_keys.add((title, str(start_date)))
+                
+                # Filter calendar events - exclude if matching title+date exists in special events
+                filtered_calendar_events = []
+                for ev in events:
+                    ev_title = (ev.get('event_title') or '').strip().lower()
+                    ev_start = ev.get('start_date')
+                    ev_key = (ev_title, str(ev_start)) if ev_title and ev_start else None
+                    
+                    # Also check if calendar event is linked to a newsletter item
+                    ev_id = ev.get('id')
+                    is_linked = False
+                    if ev_id:
+                        cursor.execute("""
+                            SELECT id FROM newsletter_source_item
+                            WHERE calendar_event_id = %s
+                            AND category = 'event'
+                            LIMIT 1
+                        """, (ev_id,))
+                        is_linked = cursor.fetchone() is not None
+                    
+                    # Exclude if: (1) matches special event by title+date, OR (2) is linked to newsletter item
+                    if ev_key and ev_key in special_event_keys:
+                        continue  # Skip - has newsletter version
+                    elif is_linked:
+                        continue  # Skip - is linked to newsletter item
+                    else:
+                        filtered_calendar_events.append(ev)
+                
+                events = filtered_calendar_events
+            
+            # Combine calendar events with special events
+            all_events = list(events) + list(special_events)
+            
             return jsonify({
                 'success': True,
                 'year': year,
                 'week_number': week_number,
-                'events': events
+                'events': all_events
             })
             
     except Exception as e:

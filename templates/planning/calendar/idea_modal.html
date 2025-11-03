@@ -21,8 +21,12 @@
                     <span>Idea</span>
                 </label>
                 <label class="idea-type-option">
-                    <input type="radio" name="item-type" value="event" id="type-event" />
-                    <span>Event</span>
+                    <input type="radio" name="item-type" value="annual_event" id="type-annual-event" />
+                    <span>Annual Event</span>
+                </label>
+                <label class="idea-type-option">
+                    <input type="radio" name="item-type" value="special_event" id="type-special-event" />
+                    <span>Special Event</span>
                 </label>
             </div>
         </div>
@@ -198,6 +202,17 @@
                     </div>
                     <input type="text" id="idea-tags-input" class="idea-input idea-tags-input" 
                            placeholder="Type a tag and press Enter..." />
+                </section>
+
+                <!-- Source Information Section (for Special Events only) -->
+                <section class="idea-section" id="special-event-source-section" style="display: none;">
+                    <h3 class="idea-section-title">
+                        <i class="fas fa-link"></i>
+                        Source Information
+                    </h3>
+                    <div id="special-event-source-container" class="idea-source-info-container">
+                        <!-- Source info will be dynamically populated here -->
+                    </div>
                 </section>
 
                 <!-- Hidden ID field -->
