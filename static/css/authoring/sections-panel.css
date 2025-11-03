@@ -201,6 +201,20 @@
     gap: 0.5rem;
 }
 
+/* Default collapsed details in Sanctions panel */
+.sections-panel .section-item .section-subtitle,
+.sections-panel .section-item .section-topics,
+.sections-panel .section-item .section-progress {
+    display: none;
+}
+
+/* Show details when section is selected */
+.sections-panel .section-item.selected .section-subtitle,
+.sections-panel .section-item.selected .section-topics,
+.sections-panel .section-item.selected .section-progress {
+    display: block;
+}
+
 .progress-bar {
     flex: 1;
     height: 4px;
