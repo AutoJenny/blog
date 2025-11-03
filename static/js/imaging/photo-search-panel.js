@@ -26,8 +26,8 @@ class PhotoSearchPanel {
             });
         }
         
-        // Listen for section selection changes
-        document.addEventListener('section-selected', (e) => {
+        // Listen for section selection changes (imaging core dispatches 'sectionSelected')
+        document.addEventListener('sectionSelected', (e) => {
             this.currentSectionId = e.detail.sectionId;
             this.loadExistingSearchTerm();
         });
@@ -41,10 +41,18 @@ class PhotoSearchPanel {
             if (response.ok) {
                 const data = await response.json();
                 if (data.success && data.section) {
-                    const searchTerms = data.section.image_search_terms;
-                    if (searchTerms && Array.isArray(searchTerms) && searchTerms.length > 0) {
-                        // Use the most recent search term
-                        document.getElementById('photo-search-term').value = searchTerms[searchTerms.length - 1];
+                    // Prefer image_prompts.image_prompt from the section record
+                    const ip = data.section.image_prompts;
+                    let promptText = '';
+                    if (ip) {
+                        if (typeof ip === 'string') {
+                            try { const parsed = JSON.parse(ip); promptText = parsed.image_prompt || ''; } catch { promptText = ip; }
+                        } else if (typeof ip === 'object') {
+                            promptText = ip.image_prompt || '';
+                        }
+                    }
+                    if (promptText) {
+                        document.getElementById('photo-search-term').value = promptText;
                     }
                 }
             }

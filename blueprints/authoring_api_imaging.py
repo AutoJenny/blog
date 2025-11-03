@@ -725,14 +725,16 @@ def api_generate_image_concepts(post_id, section_id):
                 except Exception as e:
                     logger.error(f"Error parsing topic_allocation: {e}")
             
+            # Determine prompt by illustration_method (no fallbacks)
+            concepts_prompt_name = 'Image Concepts Generation (Photo-harvesting)' if (post_data.get('illustration_method') == 'Photo-harvesting') else 'Image Concepts Generation'
             # Get the image concepts prompt
             cursor.execute("""
                 SELECT prompt_text, system_prompt
                 FROM llm_prompt 
-                WHERE name = 'Image Concepts Generation'
+                WHERE name = %s
                 ORDER BY updated_at DESC 
                 LIMIT 1
-            """)
+            """, (concepts_prompt_name,))
             
             prompt_data = cursor.fetchone()
             if not prompt_data:
@@ -747,14 +749,25 @@ def api_generate_image_concepts(post_id, section_id):
             logger.info(f"[DEBUG] *** SYSTEM PROMPT DEBUG ***")
             
             # Replace placeholders with actual data
-            prompt_text = prompt_text.replace('[data:idea_seed]', post_data['idea_seed'] or '')
-            prompt_text = prompt_text.replace('[data:expanded_idea]', post_data['expanded_idea'] or '')
-            prompt_text = prompt_text.replace('[data:title]', section['section_heading'] or '')
-            prompt_text = prompt_text.replace('[data:subtitle]', section['section_description'] or '')
-            prompt_text = prompt_text.replace('[data:section_text]', section['polished'] or section['draft'] or '')
-            prompt_text = prompt_text.replace('[data:selected_concept]', '')
-            topics_text = '\n'.join([f'- {topic}' for topic in topics])
-            prompt_text = prompt_text.replace('[data:topics]', topics_text)
+            if post_data.get('illustration_method') == 'Photo-harvesting':
+                # STRICT: Use only section_description; zero out all other inputs
+                only_desc = section['section_description'] or ''
+                prompt_text = prompt_text.replace('[data:idea_seed]', '')
+                prompt_text = prompt_text.replace('[data:expanded_idea]', '')
+                prompt_text = prompt_text.replace('[data:title]', '')
+                prompt_text = prompt_text.replace('[data:subtitle]', only_desc)
+                prompt_text = prompt_text.replace('[data:section_text]', '')
+                prompt_text = prompt_text.replace('[data:selected_concept]', '')
+                prompt_text = prompt_text.replace('[data:topics]', '')
+            else:
+                prompt_text = prompt_text.replace('[data:idea_seed]', post_data['idea_seed'] or '')
+                prompt_text = prompt_text.replace('[data:expanded_idea]', post_data['expanded_idea'] or '')
+                prompt_text = prompt_text.replace('[data:title]', section['section_heading'] or '')
+                prompt_text = prompt_text.replace('[data:subtitle]', section['section_description'] or '')
+                prompt_text = prompt_text.replace('[data:section_text]', section['polished'] or section['draft'] or '')
+                prompt_text = prompt_text.replace('[data:selected_concept]', '')
+                topics_text = '\n'.join([f'- {topic}' for topic in topics])
+                prompt_text = prompt_text.replace('[data:topics]', topics_text)
             
             # Prepare messages for LLM
             messages = []
