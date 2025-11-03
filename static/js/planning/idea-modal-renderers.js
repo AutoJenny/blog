@@ -323,6 +323,21 @@ class IdeaModalRenderers {
         
         container.innerHTML = '';
 
+        // Ensure tags is an array
+        if (!tags) {
+            tags = [];
+        } else if (!Array.isArray(tags)) {
+            // If tags is an object, convert to array of strings
+            if (typeof tags === 'object') {
+                tags = Object.keys(tags).map(key => {
+                    const value = tags[key];
+                    return value ? `${key}: ${value}` : key;
+                });
+            } else {
+                tags = [];
+            }
+        }
+
         tags.forEach(tag => {
             const tagDiv = document.createElement('div');
             tagDiv.className = 'idea-tag';

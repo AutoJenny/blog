@@ -7,7 +7,7 @@ class IdeaModal {
     constructor() {
         this.currentIdeaId = null;
         this.currentEventId = null;
-        this.currentType = 'idea'; // 'theme', 'idea', or 'event'
+        this.currentType = 'idea'; // 'theme', 'idea', 'annual_event', or 'special_event'
         this.originalType = null; // Track original type before any switching
         this.categories = [];
         this._notesData = [];
@@ -52,10 +52,11 @@ class IdeaModal {
         // Add note button
         document.getElementById('idea-add-note')?.addEventListener('click', () => this.renderers.addNote());
 
-        // Type selector (Theme/Idea/Event) toggle
+        // Type selector (Theme/Idea/Annual Event/Special Event) toggle
         document.getElementById('type-theme')?.addEventListener('change', () => this.forms.switchType('theme'));
         document.getElementById('type-idea')?.addEventListener('change', () => this.forms.switchType('idea'));
-        document.getElementById('type-event')?.addEventListener('change', () => this.forms.switchType('event'));
+        document.getElementById('type-annual-event')?.addEventListener('change', () => this.forms.switchType('annual_event'));
+        document.getElementById('type-special-event')?.addEventListener('change', () => this.forms.switchType('special_event'));
 
         // Evergreen checkbox toggle
         document.getElementById('idea-is-evergreen')?.addEventListener('change', (e) => {
@@ -153,18 +154,17 @@ class IdeaModal {
         form.style.display = 'none';
 
         if (eventData) {
-            // Load event data directly
-            this.currentType = 'event';
-            this.originalType = 'event';
-            document.getElementById('type-event').checked = true;
+            // Load event data directly - loadEvent will determine annual vs special
             document.getElementById('type-idea').checked = false;
+            document.getElementById('type-theme').checked = false;
             await this.api.loadEvent(eventData);
         } else if (ideaId) {
             // Load existing idea (will determine if it's theme or idea in loadIdea)
             this.currentType = 'idea';
             this.originalType = 'idea'; // Will be updated if loadIdea finds it's a theme
             document.getElementById('type-idea').checked = true;
-            document.getElementById('type-event').checked = false;
+            document.getElementById('type-annual-event').checked = false;
+            document.getElementById('type-special-event').checked = false;
             document.getElementById('type-theme').checked = false;
             await this.api.loadIdea(ideaId);
         } else {
@@ -172,7 +172,8 @@ class IdeaModal {
             this.currentType = 'idea';
             this.originalType = 'idea';
             document.getElementById('type-idea').checked = true;
-            document.getElementById('type-event').checked = false;
+            document.getElementById('type-annual-event').checked = false;
+            document.getElementById('type-special-event').checked = false;
             this.forms.resetForm();
         }
         

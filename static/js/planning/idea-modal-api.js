@@ -56,7 +56,8 @@ class IdeaModalAPI {
             this.modal.originalType = isTheme ? 'theme' : 'idea'; // Track original type for conversion detection
             document.getElementById('type-theme').checked = isTheme;
             document.getElementById('type-idea').checked = !isTheme;
-            document.getElementById('type-event').checked = false;
+            document.getElementById('type-annual-event').checked = false;
+            document.getElementById('type-special-event').checked = false;
             
             // Update modal title and apply type switching
             this.modal.forms.switchType(isTheme ? 'theme' : 'idea');
@@ -116,8 +117,26 @@ class IdeaModalAPI {
 
     async loadEvent(eventData) {
         try {
-            // Update modal title
-            document.getElementById('idea-modal-title').textContent = 'Manage Event';
+            // Determine if this is an annual or special event based on event_recurrence_type
+            const isSpecialEvent = eventData.event_recurrence_type === 'one_off';
+            const eventType = isSpecialEvent ? 'special_event' : 'annual_event';
+            
+            // Update modal title and type selector
+            if (isSpecialEvent) {
+                document.getElementById('idea-modal-title').textContent = 'Manage Special Event';
+                document.getElementById('type-special-event').checked = true;
+                document.getElementById('type-annual-event').checked = false;
+            } else {
+                document.getElementById('idea-modal-title').textContent = 'Manage Annual Event';
+                document.getElementById('type-annual-event').checked = true;
+                document.getElementById('type-special-event').checked = false;
+            }
+            document.getElementById('type-theme').checked = false;
+            document.getElementById('type-idea').checked = false;
+            
+            // Update modal currentType
+            this.modal.currentType = eventType;
+            this.modal.originalType = eventType;
             
             // Hide week number and seasonal context (events use dates instead)
             const weekGroup = document.querySelector('[for="idea-week-number"]')?.closest('.idea-form-group');
@@ -187,11 +206,31 @@ class IdeaModalAPI {
             // Load categories (events have categories too)
             this.modal.renderers.renderCategories(eventData.categories || []);
             
-            // Load tags
-            this.modal.renderers.renderTags(eventData.tags || []);
+            // For special events, tags contains source info object - extract it before rendering
+            let sourceInfo = null;
+            let tagsToRender = eventData.tags || [];
+            
+            if (isSpecialEvent && eventData.tags && typeof eventData.tags === 'object' && !Array.isArray(eventData.tags)) {
+                // Extract source info from tags object
+                sourceInfo = eventData.tags;
+                // Don't render source info as tags - render empty array instead
+                tagsToRender = [];
+            }
+            
+            // Load tags (skip source info for special events)
+            this.modal.renderers.renderTags(tagsToRender);
             
             // Load important notes
             this.modal.renderers.renderNotes(eventData.important_notes || []);
+            
+            // Show source information for special events
+            if (isSpecialEvent && sourceInfo) {
+                this.renderSpecialEventSource(sourceInfo);
+            } else {
+                // Hide source section for annual events
+                const sourceSection = document.getElementById('special-event-source-section');
+                if (sourceSection) sourceSection.style.display = 'none';
+            }
             
             // Events don't have sources or evergreen fields - hide only evergreen section, keep sources visible but empty
             const sourcesSection = Array.from(document.querySelectorAll('.idea-section')).find(s => 
@@ -211,6 +250,85 @@ class IdeaModalAPI {
             console.error('Error loading event:', error);
             alert('Failed to load event: ' + error.message);
         }
+    }
+
+    renderSpecialEventSource(sourceInfo) {
+        // sourceInfo is either an object (from tags) or we need to extract it
+        let sourceData = null;
+        
+        // If tags is an object with source info
+        if (sourceInfo && typeof sourceInfo === 'object' && !Array.isArray(sourceInfo)) {
+            sourceData = sourceInfo;
+        }
+        
+        const container = document.getElementById('special-event-source-container');
+        const section = document.getElementById('special-event-source-section');
+        
+        if (!container || !section) return;
+        
+        if (sourceData && (sourceData.source_name || sourceData.newsletter_event_id)) {
+            section.style.display = 'block';
+            
+            let html = '<div class="idea-source-info" style="display: flex; flex-direction: column; gap: 12px;">';
+            
+            if (sourceData.source_name) {
+                html += `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-newspaper" style="color: #64748b;"></i>
+                        <span style="font-weight: 600; color: #1e293b;">Source:</span>
+                        <span style="color: #475569;">${this.escapeHtml(sourceData.source_name)}</span>
+                    </div>
+                `;
+            }
+            
+            if (sourceData.location) {
+                html += `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-map-marker-alt" style="color: #64748b;"></i>
+                        <span style="font-weight: 600; color: #1e293b;">Location:</span>
+                        <span style="color: #475569;">${this.escapeHtml(sourceData.location)}</span>
+                    </div>
+                `;
+            }
+            
+            if (sourceData.url) {
+                html += `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-external-link-alt" style="color: #64748b;"></i>
+                        <span style="font-weight: 600; color: #1e293b;">Original URL:</span>
+                        <a href="${this.escapeHtml(sourceData.url)}" target="_blank" rel="noopener noreferrer" 
+                           style="color: #3b82f6; text-decoration: none; max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            ${this.escapeHtml(sourceData.url)}
+                        </a>
+                    </div>
+                `;
+            }
+            
+            if (sourceData.newsletter_event_id) {
+                const detailUrl = `/newsletter/events/${sourceData.newsletter_event_id}`;
+                html += `
+                    <div style="margin-top: 8px; padding-top: 12px; border-top: 1px solid #e2e8f0;">
+                        <a href="${detailUrl}" target="_blank" rel="noopener noreferrer" 
+                           class="idea-btn idea-btn-secondary" 
+                           style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+                            <i class="fas fa-eye"></i>
+                            View Full Details in Newsletter Events
+                        </a>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+        } else {
+            section.style.display = 'none';
+        }
+    }
+    
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     loadThemeData(theme) {
