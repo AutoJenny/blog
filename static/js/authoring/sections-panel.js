@@ -203,6 +203,20 @@ class SectionsPanel {
             // For image-prompts substage, use the same logic as individual Generate button
             if (window.currentSubstage === 'image-prompts') {
                 await this.batchGenerateImagePrompts(selectedIds);
+            } else if (window.currentSubstage === 'image-concepts') {
+                // For image-concepts, dispatch event so output panel can handle it
+                // Don't re-enable button here - output panel will handle it
+                console.log('[DEBUG] SectionsPanel: Dispatching sections:batch-generate event for image-concepts with IDs:', selectedIds);
+                const event = new CustomEvent('sections:batch-generate', {
+                    detail: { ids: selectedIds },
+                    bubbles: true
+                });
+                // Dispatch on both window and document to ensure listeners catch it
+                window.dispatchEvent(event);
+                document.dispatchEvent(event);
+                console.log('[DEBUG] SectionsPanel: Event dispatched on both window and document, waiting for output panel to handle');
+                // Wait for batch completion - output panel will re-enable button
+                return; // Exit early, button will be re-enabled by output panel
             } else {
                 // For other substages, use the original batch generation logic
                 await this.batchGenerateOther(selectedIds);

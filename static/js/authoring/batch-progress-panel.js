@@ -233,9 +233,27 @@ class BatchProgressPanel {
         const duration = sectionData.endTime ? 
             this.formatDuration(sectionData.endTime - sectionData.startTime) : '';
         
+        // Try to get section title from sections panel or sections data
+        let sectionTitle = `Section ${sectionId}`;
+        try {
+            // Check if sections panel has section data
+            if (window.sectionsPanel && window.sectionsPanel.sections) {
+                const section = window.sectionsPanel.sections.find(s => String(s.id) === String(sectionId));
+                if (section && (section.title || section.section_heading)) {
+                    sectionTitle = section.title || section.section_heading || sectionTitle;
+                    // Truncate if too long
+                    if (sectionTitle.length > 40) {
+                        sectionTitle = sectionTitle.substring(0, 37) + '...';
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('[BatchProgressPanel] Could not get section title:', e);
+        }
+        
         div.innerHTML = `
             <div class="section-result-info">
-                <div class="section-result-title">Section ${sectionId}</div>
+                <div class="section-result-title">${sectionTitle}</div>
                 <div class="section-result-status ${sectionData.status}">
                     ${statusText} ${duration ? `(${duration})` : ''}
                 </div>

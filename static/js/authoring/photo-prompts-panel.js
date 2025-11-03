@@ -142,7 +142,14 @@ class PhotoPromptsPanel {
 
     async loadPromptFromAPI() {
         try {
-            const response = await fetch(this.config.promptEndpoint);
+            // Append illustration_method to endpoint if available and endpoint is for image-concepts
+            let url = this.config.promptEndpoint;
+            if (url.includes('/image-concepts') && window.illustrationMethod) {
+                const separator = url.includes('?') ? '&' : '?';
+                url = `${url}${separator}illustration_method=${encodeURIComponent(window.illustrationMethod)}`;
+            }
+            
+            const response = await fetch(url);
             const data = await response.json();
             
             if (data.success && data.prompt) {
@@ -250,8 +257,15 @@ class PhotoPromptsPanel {
         const userPrompt = this.userPromptEdit?.value || '';
         
         try {
+            // Append illustration_method to endpoint if available and endpoint is for image-concepts
+            let url = this.config.promptEndpoint;
+            if (url.includes('/image-concepts') && window.illustrationMethod) {
+                const separator = url.includes('?') ? '&' : '?';
+                url = `${url}${separator}illustration_method=${encodeURIComponent(window.illustrationMethod)}`;
+            }
+            
             // Save to API (DB only)
-            const response = await fetch(this.config.promptEndpoint, {
+            const response = await fetch(url, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

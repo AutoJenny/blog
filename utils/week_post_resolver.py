@@ -42,16 +42,38 @@ def resolve_post_for_week(year, week_number, cursor=None):
 
 def _resolve_with_cursor(cursor, year, week_number):
     """Internal implementation using provided cursor"""
-    # SINGLE SOURCE OF TRUTH: Only check calendar_schedule for this specific week
+    # SINGLE SOURCE OF TRUTH: Query calendar_week_posts for this specific week
+    # Check if new table exists first (for migration period)
     cursor.execute("""
-        SELECT post_id
-        FROM calendar_schedule
-        WHERE year = %s 
-          AND week_number = %s
-          AND post_id IS NOT NULL
-        ORDER BY created_at DESC
-        LIMIT 1
-    """, (year, week_number))
+        SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_name = 'calendar_week_posts'
+        )
+    """)
+    has_new_table = cursor.fetchone()['exists']
+    
+    if has_new_table:
+        # Use new calendar_week_posts table
+        cursor.execute("""
+            SELECT post_id
+            FROM calendar_week_posts
+            WHERE year = %s 
+              AND week_number = %s
+            ORDER BY created_at DESC
+            LIMIT 1
+        """, (year, week_number))
+    else:
+        # Fallback to old calendar_schedule table during migration
+        cursor.execute("""
+            SELECT post_id
+            FROM calendar_schedule
+            WHERE year = %s 
+              AND week_number = %s
+              AND post_id IS NOT NULL
+            ORDER BY created_at DESC
+            LIMIT 1
+        """, (year, week_number))
     
     result = cursor.fetchone()
     

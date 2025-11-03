@@ -814,6 +814,7 @@ class BlogPipelineHeader {
         if (path.includes('/image_prompts')) return 'image-prompts';
         if (path.includes('/image_captions')) return 'image-captions';
         if (path.includes('/image-generation')) return 'image-generation';
+        if (path.includes('/photo-selection')) return 'photo-selection';
         if (path.includes('/title-summary')) return 'title-summary';
         if (path.includes('/header-image')) return 'header-image';
         if (path.includes('/seo-meta')) return 'seo-meta';
@@ -843,6 +844,7 @@ class BlogPipelineHeader {
             },
             'imaging': {
                 'image-generation': 'Generate high-quality images using AI based on your prompts.',
+                'photo-selection': 'Search and select photos from Pexels and Unsplash for your sections.',
                 'optimise': 'Resize, compress, and watermark images generated in the prior step.'
             },
             'header': {

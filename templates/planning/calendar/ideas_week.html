@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/llm-module.css') }}">
 {% endblock %}
 
-{% block title %}Idea Generation - Week {{ week_number }} - Content Calendar - Planning - BlogForge{% endblock %}
+{% block title %}Theme Selection - Week {{ week_number }} - Content Calendar - Planning - BlogForge{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -18,8 +18,8 @@
     <!-- Week-based header -->
     <div class="week-header">
         <div class="week-info">
-            <h1>Idea Generation - Week {{ week_number }}, {{ year }}</h1>
-            <p class="week-description">Select an idea to create a new blog post for this week</p>
+            <h1>Theme Selection - Week {{ week_number }}, {{ year }}</h1>
+            <p class="week-description">Select a theme to create a new blog post for this week</p>
         </div>
         <div class="week-navigation">
             <a href="{{ url_for('planning.planning_calendar_ideas_week', week_number=week_number-1) }}" 
@@ -41,8 +41,8 @@
                 <div class="available-ideas">
                     <div class="available-ideas-header">
                         <h4>Available</h4>
-                        <button class="btn btn-secondary" onclick="getIdeaModal().openNew('idea', window.weekNumber)">
-                            <i class="fas fa-plus"></i> New Idea
+                        <button class="btn btn-secondary" onclick="getIdeaModal().openNew('theme', window.weekNumber)">
+                            <i class="fas fa-plus"></i> New Theme
                         </button>
                         <button class="btn btn-secondary" onclick="getIdeaModal().openNew('theme', window.weekNumber)" style="margin-left: 0.5rem;">
                             <i class="fas fa-plus"></i> New Theme
@@ -59,7 +59,7 @@
                 <div class="selected-idea">
                     <h4>Selected</h4>
                     <div id="selected-idea-display" class="selected-idea-content">
-                        <div class="no-selection">No idea selected</div>
+                        <div class="no-selection">No theme selected</div>
                     </div>
                     <div class="selected-idea-actions">
                         <button class="btn btn-success" onclick="confirmSelection()" id="confirm-btn" disabled>
@@ -74,14 +74,14 @@
                 <div id="post-creation-status" class="idea-seed-display">
                     <div class="status-message">
                         <i class="fas fa-info-circle"></i>
-                        Select an idea above to create a new blog post for Week {{ week_number }}
+                        Select a theme above to create a new blog post for Week {{ week_number }}
                     </div>
                 </div>
                 
                 <div class="expanded-idea-section">
-                    <h3>Expanded Idea</h3>
+                    <h3>Expanded Theme</h3>
                     <div id="expanded-idea-display" class="expanded-idea-content">
-                        <div class="no-expanded-idea">No expanded idea yet</div>
+                        <div class="no-expanded-idea">No expanded theme yet</div>
                     </div>
                 </div>
             </div>
@@ -470,110 +470,115 @@ window.postId = null;
 window.currentStage = 'calendar';
 window.currentSubstage = 'ideas-week';
 
-// Available ideas data
-let availableIdeas = {{ ideas | tojson }};
-let selectedIdea = null;
+// Available themes data - ONLY THEMES, NO IDEAS
+let availableThemes = {{ themes | tojson }} || [];
+let selectedTheme = null;
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('Week-based ideas page loaded for week', window.weekNumber);
+        console.log('Week-based themes page loaded for week', window.weekNumber);
     
     // Update header week and theme, with auto-selection if needed
     if (typeof blogPipelineHeader !== 'undefined' && blogPipelineHeader.updateWeekAndTheme) {
         await blogPipelineHeader.updateWeekAndTheme();
     }
     
-    loadIdeasForWeek();
+    loadThemesForWeek();
     updatePostCreationStatus();
 });
 
-async function loadIdeasForWeek() {
+async function loadThemesForWeek() {
     try {
-        console.log('Loading ideas for week', window.weekNumber);
-        // Always refresh from API so it matches calendar week view
-        const resp = await fetch(`/planning/api/calendar/ideas/week/${window.weekNumber}`);
-        const data = await resp.json();
-        if (resp.ok) {
-            // API returns {ideas: [...], success: true, week_number: X} or just an array
-            availableIdeas = Array.isArray(data) ? data : (data.ideas || []);
+        console.log('Loading themes for week', window.weekNumber);
+        
+        // Load themes from themes API FIRST (await to ensure completion)
+        try {
+            const themesResp = await fetch(`/planning/api/calendar/themes/week/${window.weekNumber}`);
+            if (themesResp.ok) {
+                const themesData = await themesResp.json();
+                if (themesData.success && Array.isArray(themesData.themes)) {
+                    availableThemes = themesData.themes;
+                } else if (themesData.success && !Array.isArray(themesData.themes)) {
+                    console.warn('API returned themes but it is not an array:', themesData.themes);
+                    availableThemes = availableThemes || [];
+                }
+            }
+        } catch (e) {
+            console.warn('Error loading themes from API:', e);
+            // Keep original themes from template
+            availableThemes = availableThemes || [];
         }
         
-        // Check for existing selection in calendar_schedule
-        let existingSelection = null;
+        // Load saved theme selection from database (calendar_schedule) - AFTER themes loaded
+        let savedThemeId = null;
         try {
             const scheduleResp = await fetch(`/planning/api/calendar/schedule/${window.year}/${window.weekNumber}`);
             if (scheduleResp.ok) {
                 const scheduleData = await scheduleResp.json();
                 if (scheduleData.schedule && scheduleData.schedule.length > 0) {
-                    // Find first schedule entry with an idea_id
-                    const scheduleWithIdea = scheduleData.schedule.find(s => s.idea_id);
-                    if (scheduleWithIdea && scheduleWithIdea.idea_id) {
-                        existingSelection = availableIdeas.find(i => i.id === scheduleWithIdea.idea_id);
+                    const scheduleWithTheme = scheduleData.schedule.find(s => s.theme_id);
+                    if (scheduleWithTheme) {
+                        savedThemeId = scheduleWithTheme.theme_id;
                     }
                 }
             }
         } catch (e) {
-            console.warn('Error checking schedule:', e);
+            console.warn('Error loading saved selection:', e);
         }
         
-        if (availableIdeas && availableIdeas.length > 0) {
-            // Restore existing selection if found
-            if (existingSelection) {
-                selectedIdea = existingSelection;
-            } else if (selectedIdea) {
-                // Preserve previous selection by id if present
-                const found = availableIdeas.find(i => i.id === selectedIdea.id);
-                if (found) {
-                    selectedIdea = found;
+        // Select theme: saved from database first, then first available
+        if (Array.isArray(availableThemes) && availableThemes.length > 0) {
+            if (savedThemeId) {
+                const savedTheme = availableThemes.find(t => Number(t.id) === Number(savedThemeId));
+                if (savedTheme) {
+                    selectedTheme = savedTheme;
                 } else {
-                    selectedIdea = null;
+                    selectedTheme = availableThemes[0];
                 }
-            }
-            // Always render the list first
-            displayAvailableIdeas();
-            // Then auto-select if needed
-            if (!selectedIdea) {
-                autoSelectIdea();
             } else {
-                displaySelectedIdea();
-                document.getElementById('confirm-btn').disabled = false;
-                updateSelectedStatus();
+                selectedTheme = availableThemes[0];
             }
+            
+            displayAvailableIdeas();
+            displaySelectedIdea();
+            document.getElementById('confirm-btn').disabled = false;
+            updateSelectedStatus();
         } else {
-            displayNoIdeas();
+            displayNoThemes();
         }
     } catch (error) {
-        console.error('Error loading ideas:', error);
-        displayNoIdeas();
+        console.error('Error loading themes:', error);
+        displayNoThemes();
     }
 }
 
 function displayAvailableIdeas() {
     const ideasList = document.getElementById('available-ideas-list');
+    if (!ideasList) {
+        console.error('available-ideas-list element not found');
+        return;
+    }
     ideasList.innerHTML = '';
     
-    if (availableIdeas.length === 0) {
-        ideasList.innerHTML = '<div class="no-ideas">No ideas available for this week</div>';
+    // ONLY DISPLAY THEMES - NO IDEAS
+    if (!Array.isArray(availableThemes) || availableThemes.length === 0) {
+        ideasList.innerHTML = '<div class="no-ideas">No themes available for this week</div>';
         return;
     }
     
-    const items = availableIdeas.filter(i => !selectedIdea || i.id !== selectedIdea.id);
-    if (items.length === 0) {
-        ideasList.innerHTML = '<div class="no-ideas">All ideas selected</div>';
-        return;
-    }
-    items.forEach((idea) => {
-        const ideaItem = document.createElement('div');
-        ideaItem.className = 'idea-item';
-        ideaItem.innerHTML = `
+    // Show ALL themes, but mark the selected one
+    availableThemes.forEach((theme) => {
+        const isSelected = selectedTheme && selectedTheme.id === theme.id;
+        const themeItem = document.createElement('div');
+        themeItem.className = `idea-item ${isSelected ? 'selected' : ''}`;
+        themeItem.innerHTML = `
             <div class="idea-header">
-                <div class="idea-title">${escapeHtml(idea.idea_title)}</div>
-                <div class="idea-priority priority-${idea.priority}">${idea.priority}</div>
+                <div class="idea-title">${escapeHtml(theme.theme_title)} ${isSelected ? '<i class="fas fa-check-circle" style="color: #10b981; margin-left: 0.5rem;"></i>' : ''}</div>
+                <div class="idea-priority priority-${theme.priority}">${theme.priority}</div>
             </div>
-            <div class="idea-description">${escapeHtml(idea.idea_description || 'No description available')}</div>
+            <div class="idea-description">${escapeHtml(theme.theme_description || 'No description available')}</div>
             <div class="idea-meta">
-                <span><i class="fas fa-tag"></i> ${idea.content_type}</span>
-                <span><i class="fas fa-calendar"></i> Week ${idea.week_number}</span>
+                <span><i class="fas fa-calendar"></i> Week ${theme.week_number}</span>
             </div>
             <div class="idea-actions">
                 <button class="btn-icon" data-action="edit"><i class="fas fa-edit"></i> Edit</button>
@@ -581,21 +586,21 @@ function displayAvailableIdeas() {
             </div>
         `;
         
-        ideaItem.addEventListener('click', () => selectIdea(idea));
-        ideaItem.querySelector('[data-action="edit"]').addEventListener('click', async (ev) => {
+        themeItem.addEventListener('click', () => selectIdea(theme));
+        themeItem.querySelector('[data-action="edit"]').addEventListener('click', async (ev) => {
             ev.stopPropagation();
-            await editIdea(idea);
+            await editIdea(theme);
         });
-        ideaItem.querySelector('[data-action="delete"]').addEventListener('click', async (ev) => {
+        themeItem.querySelector('[data-action="delete"]').addEventListener('click', async (ev) => {
             ev.stopPropagation();
-            await deleteIdea(idea);
+            await deleteIdea(theme);
         });
-        ideasList.appendChild(ideaItem);
+        ideasList.appendChild(themeItem);
     });
 }
 
 async function selectIdea(idea) {
-    selectedIdea = idea;
+    selectedTheme = idea;
     displaySelectedIdea();
     document.getElementById('confirm-btn').disabled = false;
     
@@ -608,7 +613,7 @@ async function selectIdea(idea) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                idea_id: idea.id,
+                theme_id: idea.id,
                 year: window.year,
                 week_number: window.weekNumber
             })
@@ -621,41 +626,41 @@ async function selectIdea(idea) {
         console.warn('Error saving theme selection:', e);
     }
     
-    // Update status for the selected idea
+    // Update status for the selected theme
     updateSelectedStatus();
 }
 
 function displaySelectedIdea() {
     const selectedDisplay = document.getElementById('selected-idea-display');
     
-    if (!selectedIdea) {
-        selectedDisplay.innerHTML = '<div class="no-selection">No idea selected</div>';
+    if (!selectedTheme) {
+        selectedDisplay.innerHTML = '<div class="no-selection">No theme selected</div>';
         return;
     }
     
     selectedDisplay.innerHTML = `
         <div class="idea-header">
-            <div class="idea-title">${escapeHtml(selectedIdea.idea_title)}</div>
-            <div class="idea-priority priority-${selectedIdea.priority}">${selectedIdea.priority}</div>
+            <div class="idea-title">${escapeHtml(selectedTheme.theme_title || 'Unknown Theme')}</div>
+            <div class="idea-priority priority-${selectedTheme.priority || 'random'}">${selectedTheme.priority || 'random'}</div>
         </div>
-        <div class="idea-description">${escapeHtml(selectedIdea.idea_description || 'No description available')}</div>
+        <div class="idea-description">${escapeHtml(selectedTheme.theme_description || 'No description available')}</div>
         <div class="idea-meta">
-            <span><i class="fas fa-tag"></i> ${selectedIdea.content_type}</span>
-            <span><i class="fas fa-calendar"></i> Week ${selectedIdea.week_number}</span>
+            <span><i class="fas fa-calendar"></i> Week ${selectedTheme.week_number}</span>
         </div>
     `;
     updateSelectedStatus();
 }
 
 function autoSelectIdea() {
-    if (availableIdeas.length > 0) {
-        selectIdea(availableIdeas[0]);
+    // ONLY USE THEMES - NO IDEAS
+    if (availableThemes.length > 0) {
+        selectIdea(availableThemes[0]);
     }
 }
 
-function displayNoIdeas() {
+function displayNoThemes() {
     const ideasList = document.getElementById('available-ideas-list');
-    ideasList.innerHTML = '<div class="no-ideas">No ideas available for this week</div>';
+    ideasList.innerHTML = '<div class="no-ideas">No themes available for this week</div>';
 }
 
 function updatePostCreationStatus() {
@@ -669,13 +674,13 @@ function updatePostCreationStatus() {
 }
 
 async function confirmSelection() {
-    if (!selectedIdea) {
-        alert('Please select an idea first');
+    if (!selectedTheme) {
+        alert('Please select a theme first');
         return;
     }
     
     try {
-        console.log('Creating post for idea:', selectedIdea.idea_title);
+        console.log('Creating post for theme:', selectedTheme.theme_title);
         
         // Show loading state
         const confirmBtn = document.getElementById('confirm-btn');
@@ -687,14 +692,14 @@ async function confirmSelection() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                topic: selectedIdea.idea_title,
+                topic: selectedTheme.theme_title,
                 week_number: window.weekNumber,
                 year: window.year
             })
         });
         const confirmData = await confirmResp.json();
         if (!confirmResp.ok || !confirmData.success) {
-            throw new Error(confirmData.error || 'Failed to confirm idea');
+            throw new Error(confirmData.error || 'Failed to confirm theme');
         }
         const postId = confirmData.post_id;
         const action = 'created or reused post';
@@ -704,7 +709,7 @@ async function confirmSelection() {
         statusDisplay.innerHTML = `
             <div class="status-message" style="background: #059669; color: white;">
                 <i class="fas fa-check-circle"></i>
-                Successfully ${action} (ID: ${postId}) for "${selectedIdea.idea_title}"
+                Successfully ${action} (ID: ${postId}) for "${selectedTheme.theme_title}"
             </div>
         `;
         updateSelectedStatus();
@@ -734,53 +739,53 @@ async function confirmSelection() {
 }
 
 // Old dialog handlers removed - now using unified modal
-// Listen for idea-saved event from modal to refresh the ideas list
+// Listen for theme-saved event from modal to refresh the themes list
 window.addEventListener('idea-saved', (event) => {
-    // Reload ideas list after save
-    loadAvailableIdeas();
-    if (event.detail && event.detail.idea) {
-        selectIdea(event.detail.idea);
+    // Reload themes list after save
+    loadThemesForWeek();
+    if (event.detail && event.detail.theme) {
+        selectIdea(event.detail.theme);
     }
 });
 
 async function editIdea(idea) {
-    const title = prompt('Edit idea title:', idea.idea_title);
+    const title = prompt('Edit theme title:', idea.theme_title);
     if (title === null) return;
-    const description = prompt('Edit description:', idea.idea_description || '');
+    const description = prompt('Edit description:', idea.theme_description || '');
     if (description === null) return;
     try {
-        const resp = await fetch(`/planning/api/calendar/ideas/${idea.id}`, {
+        const resp = await fetch(`/planning/api/calendar/themes/${idea.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ idea_title: title, idea_description: description })
+            body: JSON.stringify({ theme_title: title, theme_description: description })
         });
         const result = await resp.json();
-        if (!resp.ok || !result.success) throw new Error(result.error || 'Failed to update idea');
+        if (!resp.ok || !result.success) throw new Error(result.error || 'Failed to update theme');
         // Update local list
-        const idx = availableIdeas.findIndex(i => i.id === idea.id);
-        if (idx !== -1) availableIdeas[idx] = result.idea;
-        if (selectedIdea && selectedIdea.id === idea.id) selectedIdea = result.idea;
+        const idx = availableThemes.findIndex(t => t.id === idea.id);
+        if (idx !== -1) availableThemes[idx] = result.theme;
+        if (selectedTheme && selectedTheme.id === idea.id) selectedTheme = result.theme;
         displayAvailableIdeas();
         displaySelectedIdea();
         updateSelectedStatus();
     } catch (e) {
-        alert('Error updating idea: ' + e.message);
+        alert('Error updating theme: ' + e.message);
     }
 }
 
 async function deleteIdea(idea) {
-    if (!confirm('Delete this idea?')) return;
+    if (!confirm('Delete this theme?')) return;
     try {
-        const resp = await fetch(`/planning/api/calendar/ideas/${idea.id}`, { method: 'DELETE' });
+        const resp = await fetch(`/planning/api/calendar/themes/${idea.id}`, { method: 'DELETE' });
         const result = await resp.json();
-        if (!resp.ok || !result.success) throw new Error(result.error || 'Failed to delete idea');
-        availableIdeas = availableIdeas.filter(i => i.id !== idea.id);
-        if (selectedIdea && selectedIdea.id === idea.id) {
-            selectedIdea = null;
+        if (!resp.ok || !result.success) throw new Error(result.error || 'Failed to delete theme');
+        availableThemes = availableThemes.filter(t => t.id !== idea.id);
+        if (selectedTheme && selectedTheme.id === idea.id) {
+            selectedTheme = null;
             document.getElementById('confirm-btn').disabled = true;
         }
         displayAvailableIdeas();
-        if (selectedIdea) {
+        if (selectedTheme) {
             displaySelectedIdea();
         } else {
             updatePostCreationStatus();
@@ -792,12 +797,13 @@ async function deleteIdea(idea) {
 
 async function updateSelectedStatus() {
     const panel = document.getElementById('post-creation-status');
-    if (!selectedIdea) { 
+    if (!selectedTheme) { 
         updatePostCreationStatus(); 
         return; 
     }
     try {
-        const url = `/planning/api/calendar/ideas/${selectedIdea.id}/status?year=${window.year}&week_number=${window.weekNumber}`;
+        // Use ideas endpoint (it now handles themes too)
+        const url = `/planning/api/calendar/ideas/${selectedTheme.id}/status?year=${window.year}&week_number=${window.weekNumber}`;
         const resp = await fetch(url);
         const data = await resp.json();
         if (!resp.ok || !data.success) throw new Error(data.error || 'Failed to load status');

@@ -29,39 +29,16 @@ def authoring_sections_image_concepts(post_id):
         url_year = request.args.get('year', type=int)
         url_week = request.args.get('week', type=int)
         
-        # If week context provided, find the post associated with that week's theme
+        # SINGLE SOURCE OF TRUTH: Use approved utility for week/post resolution
         target_post_id = post_id
         if url_year and url_week:
-            with db_manager.get_cursor() as cursor:
-                # Find the theme for this week
-                cursor.execute("""
-                    SELECT cs.theme_id
-                    FROM calendar_schedule cs
-                    WHERE cs.year = %s 
-                      AND cs.week_number = %s
-                      AND cs.theme_id IS NOT NULL
-                    ORDER BY cs.created_at DESC
-                    LIMIT 1
-                """, (url_year, url_week))
-                
-                week_theme = cursor.fetchone()
-                
-                if week_theme and week_theme['theme_id']:
-                    # Find the post associated with this theme
-                    cursor.execute("""
-                        SELECT cs2.post_id
-                        FROM calendar_schedule cs2
-                        WHERE cs2.theme_id = %s
-                          AND cs2.post_id IS NOT NULL
-                        ORDER BY cs2.created_at DESC
-                        LIMIT 1
-                    """, (week_theme['theme_id'],))
-                    
-                    theme_post = cursor.fetchone()
-                    
-                    if theme_post and theme_post['post_id']:
-                        target_post_id = theme_post['post_id']
-                        logger.info(f"Week {url_year}/{url_week} has theme_id {week_theme['theme_id']}, using post {target_post_id} (instead of URL post_id {post_id}) for illustration_method")
+            from utils.week_post_resolver import resolve_post_for_week
+            resolved_post_id = resolve_post_for_week(url_year, url_week)
+            if resolved_post_id:
+                target_post_id = resolved_post_id
+                logger.info(f"Week {url_year}/{url_week} resolved to post_id {target_post_id} (instead of URL post_id {post_id})")
+            else:
+                logger.warning(f"Week {url_year}/{url_week} has no scheduled post - using URL post_id {post_id}")
         
         with db_manager.get_cursor() as cursor:
             # Get post details with taxonomy illustration_method using the correct post_id
@@ -580,6 +557,28 @@ def api_select_concept(post_id, section_id):
 def api_generate_image_concepts(post_id, section_id):
     """Generate image concepts for a specific section"""
     try:
+        logger.info(f"[IMAGE_CONCEPTS] Starting generation for post_id={post_id}, section_id={section_id}")
+        
+        # CRITICAL: Check for week context in URL params to determine correct post
+        url_year = request.args.get('year', type=int)
+        url_week = request.args.get('week', type=int)
+        logger.info(f"[IMAGE_CONCEPTS] Week context from URL: year={url_year}, week={url_week}")
+        
+        # SINGLE SOURCE OF TRUTH: Use approved utility for week/post resolution
+        target_post_id = post_id
+        if url_year and url_week:
+            from utils.week_post_resolver import resolve_post_for_week
+            resolved_post_id = resolve_post_for_week(url_year, url_week)
+            if resolved_post_id:
+                target_post_id = resolved_post_id
+                logger.info(f"[IMAGE_CONCEPTS] Week {url_year}/{url_week} resolved to post_id {target_post_id} (instead of URL post_id {post_id})")
+            else:
+                logger.warning(f"[IMAGE_CONCEPTS] Week {url_year}/{url_week} has no scheduled post - using URL post_id {post_id}")
+        else:
+            logger.warning(f"[IMAGE_CONCEPTS] No week context provided - using URL post_id {post_id}")
+        
+        logger.info(f"[IMAGE_CONCEPTS] Using target_post_id={target_post_id} for section lookup")
+        
         with db_manager.get_cursor() as cursor:
             # Get section data using the same logic as api_get_section
             section = None
@@ -593,7 +592,7 @@ def api_generate_image_concepts(post_id, section_id):
                            image_alt_text, selected_image_concept
                     FROM post_section
                     WHERE post_id = %s AND id = %s
-                """, (post_id, int(section_id)))
+                """, (target_post_id, int(section_id)))
                 section = cursor.fetchone()
             
             # If not found in post_section or section_id is not numeric, try post_development
@@ -601,7 +600,7 @@ def api_generate_image_concepts(post_id, section_id):
                 cursor.execute("""
                     SELECT sections FROM post_development 
                     WHERE post_id = %s AND sections IS NOT NULL
-                """, (post_id,))
+                """, (target_post_id,))
                 result = cursor.fetchone()
                 
                 if result and result['sections']:
@@ -630,19 +629,33 @@ def api_generate_image_concepts(post_id, section_id):
                             if section_matches:
                                 section_order = section_data.get('order', i+1)
                                 
-                                # Get section content from post_section table
+                                # Get section content from post_section table (including section_heading which has titles from titling step)
                                 cursor.execute("""
-                                    SELECT draft, polished, status
+                                    SELECT draft, polished, status, section_heading, section_description
                                     FROM post_section
                                     WHERE post_id = %s AND section_order = %s
-                                """, (post_id, section_order))
+                                """, (target_post_id, section_order))
                                 post_section_data = cursor.fetchone()
+                                
+                                # Prioritize section_heading from post_section (synced from titling) over title from JSON
+                                section_heading = None
+                                if post_section_data and post_section_data.get('section_heading'):
+                                    section_heading = post_section_data['section_heading']
+                                else:
+                                    section_heading = section_data.get('title', f'Section {i+1}')
+                                
+                                # Prioritize section_description from post_section over original from JSON
+                                section_description = None
+                                if post_section_data and post_section_data.get('section_description'):
+                                    section_description = post_section_data['section_description']
+                                else:
+                                    section_description = section_data.get('original', '')
                                 
                                 section = {
                                     'id': section_id_from_data,
                                     'section_order': section_order,
-                                    'section_heading': section_data.get('title', f'Section {i+1}'),
-                                    'section_description': section_data.get('original', ''),
+                                    'section_heading': section_heading,
+                                    'section_description': section_description,
                                     'status': post_section_data['status'] if post_section_data else 'draft',
                                     'draft': post_section_data['draft'] if post_section_data else None,
                                     'polished': post_section_data['polished'] if post_section_data else None,
@@ -660,7 +673,10 @@ def api_generate_image_concepts(post_id, section_id):
                         logger.warning(f"Failed to parse sections from post_development: {e}")
             
             if not section:
-                return jsonify({'error': 'Section not found'}), 404
+                logger.error(f"[IMAGE_CONCEPTS] Section not found: post_id={target_post_id}, section_id={section_id}")
+                return jsonify({'error': f'Section {section_id} not found for post {target_post_id}'}), 404
+            
+            logger.info(f"[IMAGE_CONCEPTS] Found section: id={section.get('id')}, order={section.get('section_order')}, heading={section.get('section_heading', '')[:50]}")
             
             # Get post data for context
             cursor.execute("""
@@ -668,17 +684,17 @@ def api_generate_image_concepts(post_id, section_id):
                 FROM post p
                 LEFT JOIN post_development pd ON p.id = pd.post_id
                 WHERE p.id = %s
-            """, (post_id,))
+            """, (target_post_id,))
             
             post_data = cursor.fetchone()
             if not post_data:
                 return jsonify({'error': 'Post not found'}), 404
             
-            # Get topic allocation for this section
+            # Get topic allocation for this section (use target_post_id, not URL post_id)
             cursor.execute("""
                 SELECT topic_allocation FROM post_development 
                 WHERE post_id = %s AND topic_allocation IS NOT NULL
-            """, (post_id,))
+            """, (target_post_id,))
             topic_result = cursor.fetchone()
             
             topics = []
@@ -691,9 +707,17 @@ def api_generate_image_concepts(post_id, section_id):
                     
                     # Get topics for this section
                     allocations = topic_allocation.get('allocations', [])
+                    section_order_for_matching = section.get('section_order') if section else None
+                    
                     for allocation in allocations:
-                        if allocation.get('section_id') == section_id:
+                        # Try multiple matching strategies since section_id format varies
+                        allocation_section_id = allocation.get('section_id')
+                        if (allocation_section_id == section_id or 
+                            str(allocation_section_id) == str(section_id) or
+                            (section_order_for_matching and allocation_section_id == section_order_for_matching) or
+                            (section_order_for_matching and str(allocation_section_id) == str(section_order_for_matching))):
                             topics = allocation.get('topics', [])
+                            logger.info(f"Found topics for section {section_id}: {len(topics)} topics")
                             break
                 except Exception as e:
                     logger.error(f"Error parsing topic_allocation: {e}")
@@ -738,19 +762,30 @@ def api_generate_image_concepts(post_id, section_id):
             logger.info(f"[DEBUG] Messages prepared: {len(messages)} messages")
             logger.info(f"[DEBUG] System message included: {any(m['role'] == 'system' for m in messages)}")
             
+            # Check if LLM service is available
+            if not llm_service:
+                logger.error("[IMAGE_CONCEPTS] LLM service not available")
+                return jsonify({'error': 'LLM service not available'}), 500
+            
             # Execute LLM request with retry logic for valid JSON
             max_retries = 3
             image_concepts = None
             
+            logger.info(f"[IMAGE_CONCEPTS] Starting LLM generation with {max_retries} retries")
+            
             for attempt in range(max_retries):
-                # Add intercept context for message capture
+                # Add intercept context for message capture (use target_post_id, not URL post_id)
                 intercept_context = {
-                    'post_id': post_id,
+                    'post_id': target_post_id,
                     'section_id': section_id
                 }
+                logger.info(f"[IMAGE_CONCEPTS] Attempt {attempt + 1}/{max_retries}: Calling LLM service")
                 result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages, intercept_context=intercept_context)
                 
+                logger.info(f"[IMAGE_CONCEPTS] LLM response received: has_content={bool(result.get('content'))}, has_error={bool(result.get('error'))}")
+                
                 if 'error' in result:
+                    logger.error(f"[IMAGE_CONCEPTS] LLM error on attempt {attempt + 1}: {result['error']}")
                     if attempt == max_retries - 1:  # Last attempt
                         return jsonify({'error': f'LLM generation failed: {result["error"]}'}), 500
                     continue
@@ -815,15 +850,15 @@ def api_generate_image_concepts(post_id, section_id):
                             UPDATE post_section 
                             SET image_concepts = %s, selected_image_concept = %s
                             WHERE post_id = %s AND id = %s
-                        """, (image_concepts, selected_concept_id, post_id, int(section_id)))
-                        logger.info(f"[DEBUG] Saved image_concepts and selected_image_concept to post_section table for section {section_id}")
+                        """, (image_concepts, selected_concept_id, target_post_id, int(section_id)))
+                        logger.info(f"[DEBUG] Saved image_concepts and selected_image_concept to post_section table for section {section_id} (post_id {target_post_id})")
                     else:
                         cursor.execute("""
                             UPDATE post_section 
                             SET image_concepts = %s
                             WHERE post_id = %s AND id = %s
-                        """, (image_concepts, post_id, int(section_id)))
-                        logger.info(f"[DEBUG] Saved image_concepts to post_section table for section {section_id}")
+                        """, (image_concepts, target_post_id, int(section_id)))
+                        logger.info(f"[DEBUG] Saved image_concepts to post_section table for section {section_id} (post_id {target_post_id})")
                     section_saved_to_table = True
                 except Exception as e:
                     logger.error(f"Error saving to post_section table for section {section_id}: {e}")
@@ -834,7 +869,7 @@ def api_generate_image_concepts(post_id, section_id):
             cursor.execute("""
                 SELECT sections FROM post_development 
                 WHERE post_id = %s AND sections IS NOT NULL
-            """, (post_id,))
+            """, (target_post_id,))
             result = cursor.fetchone()
             
             if result and result['sections']:
@@ -877,7 +912,7 @@ def api_generate_image_concepts(post_id, section_id):
                             UPDATE post_development 
                             SET sections = %s
                             WHERE post_id = %s
-                        """, (json.dumps(sections_data), post_id))
+                        """, (json.dumps(sections_data), target_post_id))
                         logger.info(f"[DEBUG] Also updated image_concepts in post_development.sections JSON for section {section_id}")
                 except (json.JSONDecodeError, TypeError) as e:
                     logger.warning(f"Error updating sections JSON (non-critical): {e}")

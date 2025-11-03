@@ -15,8 +15,28 @@ async function postJSON(url, body) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body || {})
   });
-  if (!res.ok) throw new Error(`POST ${url} failed: ${res.status}`);
-  return await res.json();
+  
+  // Try to parse JSON even if status is not ok to get error message
+  let jsonData;
+  try {
+    jsonData = await res.json();
+  } catch (e) {
+    // If JSON parsing fails, return error object
+    if (!res.ok) {
+      throw new Error(`POST ${url} failed: ${res.status} ${res.statusText}`);
+    }
+    throw new Error('Invalid JSON response');
+  }
+  
+  // If response is not ok, return error object with message
+  if (!res.ok) {
+    return {
+      success: false,
+      error: jsonData.error || `HTTP ${res.status}: ${res.statusText}`
+    };
+  }
+  
+  return jsonData;
 }
 
 async function saveSelectedConcept(postId, sectionId, conceptId) {
@@ -473,11 +493,50 @@ class ImageConceptsOutputPanel {
 
     try {
       console.log('[DEBUG] Making API call to generate concepts for section:', id);
-      const res = await postJSON(`/authoring/api/posts/${this.postId}/sections/${id}/generate-image-concepts`, {});
+      // Include week context if available (from WeekContext module or URL params)
+      let apiUrl = `/authoring/api/posts/${this.postId}/sections/${id}/generate-image-concepts`;
+      
+      // Try to get week context from WeekContext module
+      let weekContext = null;
+      if (window.WeekContext) {
+        weekContext = window.WeekContext.getWeekContext();
+      }
+      
+      // Fallback to URL parameters if WeekContext not available
+      if (!weekContext) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const year = urlParams.get('year');
+        const week = urlParams.get('week');
+        if (year && week) {
+          weekContext = { year: parseInt(year), week: parseInt(week) };
+        }
+      }
+      
+      // Add week context to API URL if available
+      if (weekContext) {
+        const separator = apiUrl.includes('?') ? '&' : '?';
+        apiUrl = `${apiUrl}${separator}year=${weekContext.year}&week=${weekContext.week}`;
+        console.log('[DEBUG] Added week context to API URL:', weekContext);
+      } else {
+        console.warn('[DEBUG] No week context available for image concepts generation');
+      }
+      
+      console.log('[DEBUG] Calling API:', apiUrl);
+      const res = await postJSON(apiUrl, {});
       console.log('[DEBUG] API response received:', res);
       console.log('[DEBUG] Response success:', res.success);
+      console.log('[DEBUG] Response error:', res.error);
       console.log('[DEBUG] Response image_concepts type:', typeof res.image_concepts);
       console.log('[DEBUG] Response image_concepts length:', res.image_concepts?.length);
+      
+      // Check for error in response
+      if (res.error) {
+        console.error('[DEBUG] API returned error:', res.error);
+        if (conceptsContainer) {
+          conceptsContainer.innerHTML = '<p style="color: #ef4444; padding: 1rem;">Error: ' + res.error + '</p>';
+        }
+        return;
+      }
       
       if (res.success && res.image_concepts) {
         // Update the current section data

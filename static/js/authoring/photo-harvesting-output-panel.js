@@ -15,8 +15,28 @@ async function postJSON(url, body) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body || {})
   });
-  if (!res.ok) throw new Error(`POST ${url} failed: ${res.status}`);
-  return await res.json();
+  
+  // Try to parse JSON even if status is not ok to get error message
+  let jsonData;
+  try {
+    jsonData = await res.json();
+  } catch (e) {
+    // If JSON parsing fails, return error object
+    if (!res.ok) {
+      throw new Error(`POST ${url} failed: ${res.status} ${res.statusText}`);
+    }
+    throw new Error('Invalid JSON response');
+  }
+  
+  // If response is not ok, return error object with message
+  if (!res.ok) {
+    return {
+      success: false,
+      error: jsonData.error || `HTTP ${res.status}: ${res.statusText}`
+    };
+  }
+  
+  return jsonData;
 }
 
 async function saveSelectedConcept(postId, sectionId, conceptId) {
@@ -25,12 +45,15 @@ async function saveSelectedConcept(postId, sectionId, conceptId) {
 
 class PhotoHarvestingOutputPanel {
   constructor({ postId }) {
+    console.log('[DEBUG] PhotoHarvestingOutputPanel: Constructor called with postId:', postId);
     this.postId = postId;
     this.current = null;
     this.cache = new Map();
     this.postData = null;
+    this._batchEventListenerBound = false;
     this.bind();
     this.loadPostData();
+    console.log('[DEBUG] PhotoHarvestingOutputPanel: Initialization complete');
   }
 
   async loadPostData() {
@@ -59,34 +82,81 @@ class PhotoHarvestingOutputPanel {
   }
 
   bind() {
+    console.log('[DEBUG] PhotoHarvestingOutputPanel: bind() called');
     const editor = document.getElementById('content-editor');
     editor?.addEventListener('input', () => this.updateWordCount());
     document.getElementById('photo-regenerate-btn')?.addEventListener('click', () => this.regenerate());
     document.getElementById('photo-generate-concepts-btn')?.addEventListener('click', () => this.generateImageConcepts());
 
-    window.addEventListener('sections:batch-generate', async (e) => {
-      const ids = e.detail?.ids || [];
-      console.log('[DEBUG] Batch generation started for sections:', ids);
-      for (let i = 0; i < ids.length; i++) {
-        const id = ids[i];
-        console.log('[DEBUG] Generating concepts for section:', id);
+    // Only bind event listener once (use a global flag to prevent duplicates)
+    if (!window._photoHarvestingBatchListenerBound) {
+      window._photoHarvestingBatchListenerBound = true;
+      console.log('[DEBUG] PhotoHarvestingOutputPanel: Binding batch event listener');
+      const batchHandler = async (e) => {
+        // Prevent duplicate processing
+        if (this._batchProcessing) {
+          console.log('[DEBUG] PhotoHarvestingOutputPanel: Batch already processing, ignoring duplicate event');
+          return;
+        }
         
-        // Update progress modal
-        this.updateBatchProgress(id, 'Generating...', (i + 1) / ids.length * 100);
+        this._batchProcessing = true;
+        const ids = e.detail?.ids || [];
+        console.log('[DEBUG] PhotoHarvestingOutputPanel: Batch generation event received for sections:', ids);
         
-        await this.generateImageConcepts(id); 
-        console.log('[DEBUG] Completed generation for section:', id);
+        if (!ids || ids.length === 0) {
+          console.warn('[DEBUG] PhotoHarvestingOutputPanel: No section IDs provided');
+          this._batchProcessing = false;
+          return;
+        }
         
-        // Update progress modal
-        this.updateBatchProgress(id, 'Complete', (i + 1) / ids.length * 100);
-      }
-      console.log('[DEBUG] Batch generation completed for all sections');
+        try {
+          for (let i = 0; i < ids.length; i++) {
+            const id = ids[i];
+            const sectionNum = i + 1;
+            const totalSections = ids.length;
+            const progressPercent = (sectionNum / totalSections) * 100;
+            
+            console.log(`[DEBUG] PhotoHarvestingOutputPanel: Generating concepts for section ${sectionNum}/${totalSections}:`, id);
+            
+            // Update progress - start generating
+            this.updateBatchProgress(id, 'Generating...', progressPercent);
+            
+            try {
+              // Add timeout to prevent hanging
+              const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Generation timeout after 60 seconds')), 60000)
+              );
+              
+              await Promise.race([
+                this.generateImageConcepts(id),
+                timeoutPromise
+              ]);
+              
+              console.log(`[DEBUG] PhotoHarvestingOutputPanel: Completed generation for section ${id}`);
+              
+              // Update progress - mark as complete
+              this.updateBatchProgress(id, 'Complete', progressPercent);
+            } catch (error) {
+              console.error(`[DEBUG] PhotoHarvestingOutputPanel: Error generating concepts for section ${id}:`, error);
+              this.updateBatchProgress(id, `Error: ${error.message}`, progressPercent);
+            }
+          }
+          
+          console.log('[DEBUG] PhotoHarvestingOutputPanel: Batch generation completed for all sections');
+        } finally {
+          this._batchProcessing = false;
+          // Close progress modal after a short delay
+          setTimeout(() => {
+            this.closeBatchProgress();
+          }, 1000);
+        }
+      };
       
-      // Close progress modal after a short delay
-      setTimeout(() => {
-        this.closeBatchProgress();
-      }, 1000);
-    });
+      window.addEventListener('sections:batch-generate', batchHandler);
+      console.log('[DEBUG] PhotoHarvestingOutputPanel: Batch event listener bound');
+    } else {
+      console.log('[DEBUG] PhotoHarvestingOutputPanel: Batch event listener already bound (global flag)');
+    }
 
     // Global selection handler
     global.selectConcept = async (conceptId, sectionId) => {
@@ -413,24 +483,36 @@ class PhotoHarvestingOutputPanel {
   }
 
   updateBatchProgress(sectionId, status, percentage) {
-    // Update section status in progress modal
-    const sectionItem = document.querySelector(`#batch-progress-modal .section-item[data-section-id="${sectionId}"]`);
-    if (sectionItem) {
-      const statusElement = sectionItem.querySelector('.section-status');
-      if (statusElement) {
-        statusElement.textContent = status;
-        statusElement.className = `section-status ${status.toLowerCase().replace(' ', '-')}`;
+    // Update via BatchProgressPanel if available
+    if (window.batchProgressPanel && typeof window.batchProgressPanel.updateSectionProgress === 'function') {
+      const statusMap = {
+        'Generating...': 'processing',
+        'Complete': 'completed',
+        'Error': 'error'
+      };
+      const normalizedStatus = statusMap[status] || status.toLowerCase();
+      window.batchProgressPanel.updateSectionProgress(sectionId, percentage, normalizedStatus);
+      console.log(`[DEBUG] PhotoHarvestingOutputPanel: Updated batch progress for section ${sectionId}: ${status} (${percentage}%)`);
+    } else {
+      // Fallback: Update progress bar directly if BatchProgressPanel not available
+      const progressFill = document.getElementById('progress-fill');
+      const progressPercent = document.getElementById('progress-percent');
+      if (progressFill) {
+        progressFill.style.width = `${percentage}%`;
       }
-    }
-    
-    // Update progress bar
-    const progressFill = document.getElementById('progress-fill');
-    const progressPercent = document.getElementById('progress-percent');
-    if (progressFill) {
-      progressFill.style.width = `${percentage}%`;
-    }
-    if (progressPercent) {
-      progressPercent.textContent = `${Math.round(percentage)}%`;
+      if (progressPercent) {
+        progressPercent.textContent = `${Math.round(percentage)}%`;
+      }
+      
+      // Also try to update section items in batch progress modal if it exists
+      const sectionItem = document.querySelector(`#batch-progress-modal .section-item[data-section-id="${sectionId}"]`);
+      if (sectionItem) {
+        const statusElement = sectionItem.querySelector('.section-status');
+        if (statusElement) {
+          statusElement.textContent = status;
+          statusElement.className = `section-status ${status.toLowerCase().replace(' ', '-')}`;
+        }
+      }
     }
   }
   
@@ -473,11 +555,92 @@ class PhotoHarvestingOutputPanel {
 
     try {
       console.log('[DEBUG] Making API call to generate concepts for section:', id);
-      const res = await postJSON(`/authoring/api/posts/${this.postId}/sections/${id}/generate-image-concepts`, {});
+      // Include week context if available (from WeekContext module or URL params)
+      let apiUrl = `/authoring/api/posts/${this.postId}/sections/${id}/generate-image-concepts`;
+      
+      // Try to get week context from WeekContext module
+      let weekContext = null;
+      if (window.WeekContext) {
+        weekContext = window.WeekContext.getWeekContext();
+      }
+      
+      // Fallback to URL parameters if WeekContext not available
+      if (!weekContext) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const year = urlParams.get('year');
+        const week = urlParams.get('week');
+        if (year && week) {
+          weekContext = { year: parseInt(year), week: parseInt(week) };
+        }
+      }
+      
+      // Add week context to API URL if available
+      if (weekContext) {
+        const separator = apiUrl.includes('?') ? '&' : '?';
+        apiUrl = `${apiUrl}${separator}year=${weekContext.year}&week=${weekContext.week}`;
+        console.log('[DEBUG] Added week context to API URL:', weekContext);
+      } else {
+        console.warn('[DEBUG] No week context available for image concepts generation');
+      }
+      
+      console.log('[DEBUG] Calling API:', apiUrl);
+      
+      // Add timeout to fetch request
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+      
+      let res;
+      try {
+        const fetchRes = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        // Parse response
+        let jsonData;
+        try {
+          jsonData = await fetchRes.json();
+        } catch (e) {
+          if (!fetchRes.ok) {
+            throw new Error(`POST ${apiUrl} failed: ${fetchRes.status} ${fetchRes.statusText}`);
+          }
+          throw new Error('Invalid JSON response');
+        }
+        
+        if (!fetchRes.ok) {
+          res = {
+            success: false,
+            error: jsonData.error || `HTTP ${fetchRes.status}: ${fetchRes.statusText}`
+          };
+        } else {
+          res = jsonData;
+        }
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+          throw new Error('Request timeout: API call took too long');
+        }
+        throw error;
+      }
+      
       console.log('[DEBUG] API response received:', res);
       console.log('[DEBUG] Response success:', res.success);
+      console.log('[DEBUG] Response error:', res.error);
       console.log('[DEBUG] Response image_concepts type:', typeof res.image_concepts);
       console.log('[DEBUG] Response image_concepts length:', res.image_concepts?.length);
+      
+      // Check for error in response
+      if (res.error) {
+        console.error('[DEBUG] API returned error:', res.error);
+        if (conceptsContainer) {
+          conceptsContainer.innerHTML = '<p style="color: #ef4444; padding: 1rem;">Error: ' + res.error + '</p>';
+        }
+        return;
+      }
       
       if (res.success && res.image_concepts) {
         // Update the current section data
@@ -551,5 +714,18 @@ function togglePhotoOutputAccordion() {
 
 // Expose globally
 window.togglePhotoOutputAccordion = togglePhotoOutputAccordion;
+window.PhotoHarvestingOutputPanel = PhotoHarvestingOutputPanel;
+
+// Auto-initialize if on image-concepts page
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.currentSubstage === 'image-concepts' && 
+        (window.illustrationMethod === 'Photo-harvesting') &&
+        typeof window.photoHarvestingOutputPanel === 'undefined') {
+        const postId = window.postId;
+        if (postId) {
+            window.photoHarvestingOutputPanel = new PhotoHarvestingOutputPanel({ postId });
+        }
+    }
+});
 
 })(window);

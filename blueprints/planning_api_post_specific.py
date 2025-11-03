@@ -13,18 +13,50 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-def get_post_by_theme(theme_idea_id):
-    """Get a post that has a specific theme idea_id in its schedule"""
+def get_post_by_theme(theme_id):
+    """Get a post assigned to a week that has this theme selected.
+    DEPRECATED: Parameter name kept as theme_idea_id for backwards compatibility, but only theme_id is supported.
+    Uses new calendar_week_selection and calendar_week_posts tables.
+    """
     try:
         with db_manager.get_cursor() as cursor:
+            # Check if new tables exist
             cursor.execute("""
-                SELECT cs.post_id
-                FROM calendar_schedule cs
-                WHERE cs.idea_id = %s
-                  AND cs.post_id IS NOT NULL
-                ORDER BY cs.created_at DESC
-                LIMIT 1
-            """, (theme_idea_id,))
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'calendar_week_selection'
+                ) as has_selection,
+                EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'calendar_week_posts'
+                ) as has_posts
+            """)
+            table_check = cursor.fetchone()
+            has_new_tables = table_check['has_selection'] and table_check['has_posts']
+            
+            if has_new_tables:
+                # Use new V2 architecture - find post in week with selected theme matching theme_id
+                cursor.execute("""
+                    SELECT cwp.post_id
+                    FROM calendar_week_selection cws
+                    JOIN calendar_week_posts cwp ON cws.year = cwp.year AND cws.week_number = cwp.week_number
+                    WHERE cws.selected_theme_id = %s
+                      AND cwp.post_id IS NOT NULL
+                    ORDER BY cwp.created_at DESC
+                    LIMIT 1
+                """, (theme_id,))
+            else:
+                # Fallback to old calendar_schedule table
+                cursor.execute("""
+                    SELECT cs.post_id
+                    FROM calendar_schedule cs
+                    WHERE cs.theme_id = %s
+                      AND cs.post_id IS NOT NULL
+                    ORDER BY cs.created_at DESC
+                    LIMIT 1
+                """, (theme_id,))
             
             result = cursor.fetchone()
             
@@ -50,24 +82,50 @@ def api_posts_expanded_idea(post_id):
             url_year = request.args.get('year', type=int)
             url_week = request.args.get('week', type=int)
             
-            # If week context is provided, fetch expanded idea for that week's selected theme/post
+            # If week context is provided, fetch expanded idea for that week's post (week-specific only)
             if url_year and url_week:
                 with db_manager.get_cursor() as cursor:
-                    # STEP 1: Try to find a post directly scheduled for this week with a theme
+                    # Check if new tables exist
                     cursor.execute("""
-                        SELECT cs.post_id, pd.expanded_idea, ci.idea_title, ci.id as theme_id
-                        FROM calendar_schedule cs
-                        LEFT JOIN post_development pd ON cs.post_id = pd.post_id
-                        LEFT JOIN calendar_themes ct ON cs.theme_id = ct.id
-                        WHERE cs.year = %s 
-                          AND cs.week_number = %s
-                          AND cs.post_id IS NOT NULL
-                          AND cs.theme_id IS NOT NULL
-                          AND pd.expanded_idea IS NOT NULL
-                          AND pd.expanded_idea != ''
-                        ORDER BY cs.created_at DESC
-                        LIMIT 1
-                    """, (url_year, url_week))
+                        SELECT EXISTS (
+                            SELECT FROM information_schema.tables 
+                            WHERE table_schema = 'public' 
+                            AND table_name = 'calendar_week_posts'
+                        )
+                    """)
+                    has_new_table = cursor.fetchone()['exists']
+                    
+                    if has_new_table:
+                        # Use new V2 architecture - find post in THIS week only (no cross-week matching)
+                        cursor.execute("""
+                            SELECT cwp.post_id, pd.expanded_idea, 
+                                   cws.selected_theme_id, ct.theme_title
+                            FROM calendar_week_posts cwp
+                            LEFT JOIN post_development pd ON cwp.post_id = pd.post_id
+                            LEFT JOIN calendar_week_selection cws ON cwp.year = cws.year AND cwp.week_number = cws.week_number
+                            LEFT JOIN calendar_themes ct ON cws.selected_theme_id = ct.id
+                            WHERE cwp.year = %s 
+                              AND cwp.week_number = %s
+                              AND pd.expanded_idea IS NOT NULL
+                              AND pd.expanded_idea != ''
+                            ORDER BY cwp.created_at DESC
+                            LIMIT 1
+                        """, (url_year, url_week))
+                    else:
+                        # Fallback to old calendar_schedule table
+                        cursor.execute("""
+                            SELECT cs.post_id, pd.expanded_idea, ct.theme_title, ct.id as theme_id
+                            FROM calendar_schedule cs
+                            LEFT JOIN post_development pd ON cs.post_id = pd.post_id
+                            LEFT JOIN calendar_themes ct ON cs.theme_id = ct.id
+                            WHERE cs.year = %s 
+                              AND cs.week_number = %s
+                              AND cs.post_id IS NOT NULL
+                              AND pd.expanded_idea IS NOT NULL
+                              AND pd.expanded_idea != ''
+                            ORDER BY cs.created_at DESC
+                            LIMIT 1
+                        """, (url_year, url_week))
                     
                     week_result = cursor.fetchone()
                     
@@ -78,48 +136,8 @@ def api_posts_expanded_idea(post_id):
                             'expanded_idea': week_result['expanded_idea']
                         })
                     
-                    # STEP 2: If no post scheduled for this week, find the theme for this week and look for ANY post with that theme
-                    cursor.execute("""
-                        SELECT ct.id as theme_id, ct.theme_title
-                        FROM calendar_schedule cs
-                        JOIN calendar_themes ct ON cs.theme_id = ct.id
-                        WHERE cs.year = %s 
-                          AND cs.week_number = %s
-                          AND cs.theme_id IS NOT NULL
-                        ORDER BY cs.created_at DESC
-                        LIMIT 1
-                    """, (url_year, url_week))
-                    
-                    week_theme = cursor.fetchone()
-                    
-                    if week_theme:
-                        logger.info(f"Week {url_year}/{url_week} has theme: {week_theme['theme_title']} (ID: {week_theme['theme_id']})")
-                        
-                        # Now find any post that has this theme scheduled (regardless of which week) and has an expanded_idea
-                        cursor.execute("""
-                            SELECT cs2.post_id, pd.expanded_idea, ct2.theme_title
-                            FROM calendar_schedule cs2
-                            LEFT JOIN post_development pd ON cs2.post_id = pd.post_id
-                            LEFT JOIN calendar_themes ct2 ON cs2.theme_id = ct2.id
-                            WHERE cs2.theme_id = %s
-                              AND cs2.post_id IS NOT NULL
-                              AND pd.expanded_idea IS NOT NULL
-                              AND pd.expanded_idea != ''
-                            ORDER BY cs2.created_at DESC
-                            LIMIT 1
-                        """, (week_theme['theme_id'],))
-                        
-                        theme_post_result = cursor.fetchone()
-                        
-                        if theme_post_result and theme_post_result['expanded_idea']:
-                            logger.info(f"Found expanded idea for theme '{week_theme['theme_title']}': post {theme_post_result['post_id']}")
-                            return jsonify({
-                                'success': True,
-                                'expanded_idea': theme_post_result['expanded_idea']
-                            })
-                    
                     logger.warn(f"No expanded idea found for week {url_year}/{url_week}")
-                    # If week context provided but no expanded idea found, return null (don't fall back to post)
+                    # If week context provided but no expanded idea found, return null
                     return jsonify({
                         'success': True,
                         'expanded_idea': None
@@ -152,89 +170,138 @@ def api_posts_expanded_idea(post_id):
     
     elif request.method == 'POST':
         try:
-            # Get selected theme with full details (Title, Description, Important Notes)
+            # REQUIRED: Get year/week from request body or query params
+            data = request.get_json() or {}
+            url_year = request.args.get('year', type=int) or data.get('year')
+            url_week = request.args.get('week', type=int) or data.get('week')
+            
+            if not url_year or not url_week:
+                return jsonify({
+                    'error': 'year and week are required. Please provide week context to get the selected theme.'
+                }), 400
+            
+            # Get selected theme with full details from calendar_week_selection
             selected_theme = None
             with db_manager.get_cursor() as cursor:
-                # Try to get schedule by post_id first
+                # Check if new tables exist
                 cursor.execute("""
-                    SELECT cs.idea_id, cs.year, cs.week_number
-                    FROM calendar_schedule cs
-                    WHERE cs.post_id = %s
-                    ORDER BY cs.created_at DESC
-                    LIMIT 1
-                """, (post_id,))
-                schedule = cursor.fetchone()
-                
-                # If no schedule found by post_id with idea_id, try to get post's year/week
-                # and look up schedule by year/week instead (theme might be selected before post is created)
-                if not schedule or not schedule.get('idea_id'):
-                    # Get post's scheduled week/year from calendar_schedule
-                    cursor.execute("""
-                        SELECT year, week_number
-                        FROM calendar_schedule
-                        WHERE post_id = %s
-                        LIMIT 1
-                    """, (post_id,))
-                    post_schedule = cursor.fetchone()
-                    
-                    if post_schedule and post_schedule.get('year') and post_schedule.get('week_number'):
-                        # Look up schedule by year/week (any schedule entry for that week with an idea_id)
-                        cursor.execute("""
-                            SELECT cs.idea_id, cs.year, cs.week_number
-                            FROM calendar_schedule cs
-                            WHERE cs.year = %s AND cs.week_number = %s AND cs.idea_id IS NOT NULL
-                            ORDER BY cs.created_at DESC
-                            LIMIT 1
-                        """, (post_schedule['year'], post_schedule['week_number']))
-                        week_schedule = cursor.fetchone()
-                        
-                        if week_schedule and week_schedule.get('idea_id'):
-                            # Found theme for this week - update the post's schedule entry to link them
-                            cursor.execute("""
-                                UPDATE calendar_schedule
-                                SET idea_id = %s, updated_at = NOW()
-                                WHERE post_id = %s AND year = %s AND week_number = %s
-                            """, (week_schedule['idea_id'], post_id, post_schedule['year'], post_schedule['week_number']))
-                            schedule = week_schedule
-                
-                if not schedule or not schedule.get('idea_id'):
-                    return jsonify({'error': 'No selected theme found for this post. Please select a theme in the calendar week view.'}), 400
-                
-                idea_id = schedule['idea_id']
-                
-                # Check if important_notes column exists
-                cursor.execute("""
-                    SELECT column_name 
-                    FROM information_schema.columns 
-                    WHERE table_name = 'calendar_ideas' AND column_name = 'important_notes'
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.tables 
+                        WHERE table_schema = 'public' 
+                        AND table_name = 'calendar_week_selection'
+                    )
                 """)
-                has_important_notes = cursor.fetchone() is not None
+                has_new_table = cursor.fetchone()['exists']
                 
-                # Fetch full theme data
-                important_notes_field = 'ci.important_notes' if has_important_notes else "'[]'::jsonb as important_notes"
-                cursor.execute(f"""
-                    SELECT ci.idea_title, ci.idea_description, {important_notes_field}
-                    FROM calendar_ideas ci
-                    WHERE ci.id = %s
-                """, (idea_id,))
-                theme_data = cursor.fetchone()
+                theme_id = None
                 
-                if not theme_data:
+                if has_new_table:
+                    # Use new V2 architecture - get selected theme from calendar_week_selection
+                    cursor.execute("""
+                        SELECT selected_theme_id
+                        FROM calendar_week_selection
+                        WHERE year = %s AND week_number = %s
+                    """, (url_year, url_week))
+                    week_selection = cursor.fetchone()
+                    
+                    if not week_selection or not week_selection.get('selected_theme_id'):
+                        return jsonify({
+                            'error': f'No theme selected for week {url_year}/{url_week}. Please select a theme in the calendar week view.'
+                        }), 400
+                    
+                    theme_id = week_selection['selected_theme_id']
+                    
+                    # Verify post is assigned to this week (if provided)
+                    if post_id:
+                        cursor.execute("""
+                            SELECT post_id FROM calendar_week_posts
+                            WHERE year = %s AND week_number = %s AND post_id = %s
+                        """, (url_year, url_week, post_id))
+                        post_assignment = cursor.fetchone()
+                        
+                        if not post_assignment:
+                            # Assign post to week if not already assigned
+                            cursor.execute("""
+                                INSERT INTO calendar_week_posts (year, week_number, post_id, created_at, updated_at)
+                                VALUES (%s, %s, %s, NOW(), NOW())
+                                ON CONFLICT (year, week_number, post_id) DO NOTHING
+                            """, (url_year, url_week, post_id))
+                else:
+                    # Fallback to old calendar_schedule table
+                    cursor.execute("""
+                        SELECT cs.theme_id, cs.idea_id, cs.year, cs.week_number
+                        FROM calendar_schedule cs
+                        WHERE cs.year = %s AND cs.week_number = %s 
+                          AND (cs.theme_id IS NOT NULL OR cs.idea_id IS NOT NULL)
+                        ORDER BY 
+                            CASE WHEN cs.theme_id IS NOT NULL THEN 1 ELSE 2 END,
+                            cs.created_at DESC
+                        LIMIT 1
+                    """, (url_year, url_week))
+                    schedule = cursor.fetchone()
+                    
+                    if not schedule or (not schedule.get('theme_id') and not schedule.get('idea_id')):
+                        return jsonify({
+                            'error': f'No selected theme found for week {url_year}/{url_week}. Please select a theme in the calendar week view.'
+                        }), 400
+                    
+                    theme_id = schedule.get('theme_id')
+                    idea_id = schedule.get('idea_id')  # Fallback for backwards compatibility only
+                
+                theme_data = None
+                
+                # Try to fetch from calendar_themes first (if theme_id exists)
+                if theme_id:
+                    cursor.execute("""
+                        SELECT ct.theme_title, ct.theme_description, ct.important_notes
+                        FROM calendar_themes ct
+                        WHERE ct.id = %s
+                    """, (theme_id,))
+                    theme_data = cursor.fetchone()
+                    
+                    if theme_data:
+                        selected_theme = {
+                            'title': theme_data.get('theme_title') or '',
+                            'description': theme_data.get('theme_description') or '',
+                            'important_notes': theme_data.get('important_notes') or []
+                        }
+                
+                # Fallback to calendar_ideas if theme_id didn't work (backwards compatibility)
+                if not theme_data and idea_id:
+                    # Check if important_notes column exists
+                    cursor.execute("""
+                        SELECT column_name 
+                        FROM information_schema.columns 
+                        WHERE table_name = 'calendar_ideas' AND column_name = 'important_notes'
+                    """)
+                    has_important_notes = cursor.fetchone() is not None
+                    
+                    # Fetch full idea data (for backwards compatibility)
+                    important_notes_field = 'ci.important_notes' if has_important_notes else "'[]'::jsonb as important_notes"
+                    cursor.execute(f"""
+                        SELECT ci.idea_title, ci.idea_description, {important_notes_field}
+                        FROM calendar_ideas ci
+                        WHERE ci.id = %s
+                    """, (idea_id,))
+                    theme_data = cursor.fetchone()
+                    
+                    if theme_data:
+                        selected_theme = {
+                            'title': theme_data.get('idea_title') or '',
+                            'description': theme_data.get('idea_description') or '',
+                            'important_notes': []
+                        }
+                        
+                        if has_important_notes and theme_data.get('important_notes'):
+                            import json
+                            notes_data = theme_data['important_notes']
+                            if isinstance(notes_data, (list, dict)):
+                                selected_theme['important_notes'] = notes_data if isinstance(notes_data, list) else [notes_data]
+                            elif isinstance(notes_data, str):
+                                selected_theme['important_notes'] = json.loads(notes_data)
+                
+                if not selected_theme:
                     return jsonify({'error': 'Selected theme not found in database'}), 404
-                
-                selected_theme = {
-                    'title': theme_data.get('idea_title') or '',
-                    'description': theme_data.get('idea_description') or '',
-                    'important_notes': []
-                }
-                
-                if has_important_notes and theme_data.get('important_notes'):
-                    import json
-                    notes_data = theme_data['important_notes']
-                    if isinstance(notes_data, (list, dict)):
-                        selected_theme['important_notes'] = notes_data if isinstance(notes_data, list) else [notes_data]
-                    elif isinstance(notes_data, str):
-                        selected_theme['important_notes'] = json.loads(notes_data)
             
             # Generate expanded idea using LLM
             llm_service = LLMService()
