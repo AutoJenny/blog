@@ -559,11 +559,11 @@ def api_generate_image_prompt_from_builder():
                     'base_concept': compiled_prompt
                 })
                 
-                    cursor.execute("""
-                        UPDATE post_section 
-                        SET image_prompts = %s 
-                        WHERE post_id = %s AND id = %s
-                    """, (image_prompts_json, target_post_id, section_id))
+                cursor.execute("""
+                    UPDATE post_section 
+                    SET image_prompts = %s 
+                    WHERE post_id = %s AND id = %s
+                """, (image_prompts_json, target_post_id, section_id))
                     
             except Exception as e:
                 logger.error(f"Error updating post_section for image prompts: {e}")
