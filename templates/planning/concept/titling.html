@@ -14,6 +14,16 @@
     
     {% block process_content %}
     <div class="titling-main">
+        <!-- Category Indicator Banner -->
+        {% if content_type_name %}
+        <div class="route-indicator" style="background: #059669; color: white; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-tag" style="font-size: 1.1rem;"></i>
+            <span>Content Category: <strong>{{ content_type_name }}</strong></span>
+            {% if year and week %}
+            <span style="margin-left: auto; font-weight: 500; opacity: 0.85;">Week {{ week }}, {{ year }}</span>
+            {% endif %}
+        </div>
+        {% endif %}
         
         <div class="titling-content">
             <div class="titling-input">
@@ -301,7 +311,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize LLM Prompts Panel for full editing functionality
     if (typeof LLMPromptsPanel !== 'undefined') {
         window.llmPromptsPanel = new LLMPromptsPanel({
-            postId: window.postId
+            postId: window.postId,
+            pageType: 'titling',
+            promptEndpoint: `/planning/api/posts/${window.postId}/section-titling-prompt`,
+            promptSelectionEndpoint: `/planning/api/posts/${window.postId}/section-titling-prompt-selection`
+        });
+        
+        // Load prompt selection from database first (not localStorage/sessionStorage)
+        window.llmPromptsPanel.loadPromptSelection().then(() => {
+            // Then load the actual prompt content from database
+            window.llmPromptsPanel.loadPromptFromAPI();
         });
     }
     
@@ -436,8 +455,28 @@ async function startTitling() {
         return;
     }
     
+    // Validate generatedGroups format
+    if (!Array.isArray(generatedGroups)) {
+        console.error('generatedGroups is not an array:', typeof generatedGroups, generatedGroups);
+        alert('Error: Invalid data format. Please refresh the page and try again.');
+        return;
+    }
+    
+    // Validate each group has required fields
+    for (let i = 0; i < generatedGroups.length; i++) {
+        const group = generatedGroups[i];
+        if (!group || typeof group !== 'object') {
+            console.error(`Group ${i} is invalid:`, group);
+            alert(`Error: Invalid section data at index ${i}. Please go back to Section Ideas to regenerate topics.`);
+            return;
+        }
+        if (!group.section_theme && !group.section_title) {
+            console.warn(`Group ${i} missing section_theme:`, group);
+        }
+    }
+    
     console.log('Topic allocation data found:', generatedGroups.length, 'groups');
-    console.log('generatedGroups content:', generatedGroups);
+    console.log('generatedGroups content:', JSON.stringify(generatedGroups, null, 2));
     console.log('About to send to API:', {
         topic_allocation: generatedGroups,
         expanded_idea: 'will be fetched',
@@ -487,6 +526,23 @@ async function startTitling() {
         // Get expanded idea for context
         const expandedIdea = await getExpandedIdea();
         
+        if (!expandedIdea) {
+            console.warn('No expanded idea found, but continuing anyway');
+        }
+        
+        // Validate we have valid data before making API call
+        const requestData = {
+            topic_allocation: generatedGroups,
+            expanded_idea: expandedIdea || '',
+            post_id: window.postId
+        };
+        
+        console.log('Sending request data:', {
+            topic_allocation_count: requestData.topic_allocation.length,
+            expanded_idea_length: requestData.expanded_idea.length,
+            post_id: requestData.post_id
+        });
+        
         // Call the titling API with retry mechanism
         let attempts = 0;
         const maxAttempts = 3;
@@ -501,12 +557,20 @@ async function startTitling() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    topic_allocation: generatedGroups, // This is now topic allocation data
-                    expanded_idea: expandedIdea,
-                    post_id: window.postId
-                })
+                body: JSON.stringify(requestData)
             });
+            
+            // Check if response is OK before parsing JSON
+            if (!response.ok) {
+                let errorText = '';
+                try {
+                    errorText = await response.text();
+                    const errorData = JSON.parse(errorText);
+                    throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+                } catch (parseError) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText.substring(0, 200)}`);
+                }
+            }
             
             data = await response.json();
             

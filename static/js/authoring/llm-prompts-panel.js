@@ -213,7 +213,12 @@ class LLMPromptsPanel {
                 // Extract category name from prompt name
                 // Handle both "Expanded Idea Generation (History)" and "Topic Brainstorming (History)" formats
                 const match = prompt.name.match(/(?:Expanded Idea Generation|Topic Brainstorming|Section Structure Design|Topic Allocation|Section Titling|Section Drafting) \(([^)]+)\)/);
-                option.textContent = match ? match[1] : prompt.name;
+                if (match) {
+                    option.textContent = match[1];
+                } else {
+                    // Fallback: use the prompt name as-is
+                    option.textContent = prompt.name;
+                }
             }
             if (prompt.name === this.currentPromptName) {
                 option.selected = true;
@@ -475,17 +480,19 @@ class LLMPromptsPanel {
                 ? '/planning/api/ui/preferences' 
                 : '/authoring/api/ui/preferences';
             const resp = await fetch(`${apiBase}/${encodeURIComponent(key)}`);
-            if (resp.ok) {
-                const data = await resp.json();
-                const state = data && data.value ? (typeof data.value === 'string' ? data.value : (data.value.state||'')) : '';
-                if (state === 'open') {
-                    const content = document.getElementById('prompts-accordion-content');
-                    const icon = document.getElementById('prompts-accordion-icon');
-                    if (content && icon) {
-                        content.style.display = 'block';
-                        icon.classList.remove('fa-chevron-up');
-                        icon.classList.add('fa-chevron-down');
-                    }
+            if (!resp.ok) {
+                // Silently fail if API endpoint doesn't exist (404) or other errors
+                return;
+            }
+            const data = await resp.json();
+            const state = data && data.value ? (typeof data.value === 'string' ? data.value : (data.value.state||'')) : '';
+            if (state === 'open') {
+                const content = document.getElementById('prompts-accordion-content');
+                const icon = document.getElementById('prompts-accordion-icon');
+                if (content && icon) {
+                    content.style.display = 'block';
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
                 }
             }
         } catch(_) {}

@@ -70,14 +70,44 @@ def planning_concept_section_structure(post_id):
 def planning_concept_topic_allocation(post_id):
     """Topic allocation page"""
     resolved_post_id, year, week = _resolve_post_and_get_week_context(post_id)
+    
+    # Get content type name for category banner
+    content_type_name = None
+    with db_manager.get_cursor() as cursor:
+        cursor.execute("""
+            SELECT ti.display_name as content_type_name
+            FROM post p
+            LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+            WHERE p.id = %s
+        """, (resolved_post_id,))
+        result = cursor.fetchone()
+        if result:
+            content_type_name = result.get('content_type_name')
+    
     return render_template('planning/concept/topic_allocation.html', 
-                          post_id=resolved_post_id, year=year, week=week, blueprint_name='planning')
+                          post_id=resolved_post_id, year=year, week=week, blueprint_name='planning',
+                          content_type_name=content_type_name)
 
 def planning_concept_titling(post_id):
     """Titling page"""
     resolved_post_id, year, week = _resolve_post_and_get_week_context(post_id)
+    
+    # Get content type name for category banner
+    content_type_name = None
+    with db_manager.get_cursor() as cursor:
+        cursor.execute("""
+            SELECT ti.display_name as content_type_name
+            FROM post p
+            LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+            WHERE p.id = %s
+        """, (resolved_post_id,))
+        result = cursor.fetchone()
+        if result:
+            content_type_name = result.get('content_type_name')
+    
     return render_template('planning/concept/titling.html', 
-                          post_id=resolved_post_id, year=year, week=week, blueprint_name='planning')
+                          post_id=resolved_post_id, year=year, week=week, blueprint_name='planning',
+                          content_type_name=content_type_name)
 
 def planning_concept_outline(post_id):
     """Outline page"""

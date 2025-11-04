@@ -26,7 +26,7 @@ const LLM_CONFIGS = {
         allowEdit: true
     },
     'titling': {
-        promptEndpoint: '/planning/api/llm/prompts/section-titling', // Updated to use new prompt
+        promptEndpoint: '/planning/api/posts/{id}/section-titling-prompt',
         generateEndpoint: '/planning/api/sections/title',
         resultsField: 'sections',
         resultsTitle: 'Generated Sections',
@@ -54,7 +54,7 @@ const LLM_CONFIGS = {
         allowEdit: true
     },
     'topic_allocation': { // New config for topic allocation
-        promptEndpoint: '/planning/api/llm/prompts/topic-allocation',
+        promptEndpoint: '/planning/api/posts/{id}/topic-allocation-prompt',
         generateEndpoint: '/planning/api/sections/allocate-topics',
         resultsField: 'results',
         resultsTitle: 'Generated Topic Allocation',

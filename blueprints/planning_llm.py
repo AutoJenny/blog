@@ -41,7 +41,7 @@ class LLMService:
             logger.error(f"Error getting models for {provider}: {e}")
             return []
     
-    def execute_llm_request(self, provider, model, messages, api_key=None, max_tokens=2000):
+    def execute_llm_request(self, provider, model, messages, api_key=None, max_tokens=2000, temperature=0.7):
         """Execute LLM request."""
         try:
             if provider == 'openai':
@@ -52,7 +52,7 @@ class LLMService:
                 data = {
                     'model': model,
                     'messages': messages,
-                    'temperature': 0.7,
+                    'temperature': temperature,
                     'max_tokens': max_tokens
                 }
                 response = requests.post(
@@ -67,7 +67,8 @@ class LLMService:
                     'messages': messages,
                     'stream': False,
                     'options': {
-                        'num_predict': max_tokens
+                        'num_predict': max_tokens,
+                        'temperature': temperature
                     }
                 }
                 response = requests.post(

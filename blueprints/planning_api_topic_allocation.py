@@ -218,6 +218,49 @@ def api_generate_section_specific_topics():
         
         logger.info(f"Generating section-specific topics for {len(sections_data)} sections")
         
+        # Load Topic Allocation prompt from database using explicit selection (once before loop)
+        prompt_name = None
+        system_prompt = None
+        with db_manager.get_cursor() as cursor:
+            # Get selected prompt name from post settings
+            if post_id:
+                cursor.execute("""
+                    SELECT extra_settings FROM post WHERE id = %s
+                """, (post_id,))
+                post_result = cursor.fetchone()
+                
+                if post_result and post_result.get('extra_settings'):
+                    settings = post_result['extra_settings']
+                    prompt_name = settings.get('topic_allocation_prompt_name')
+            
+            # LEGACY: If no selection exists, use default
+            if not prompt_name:
+                prompt_name = 'Topic Allocation'
+            
+            # Get the selected prompt - NO FALLBACKS
+            cursor.execute("""
+                SELECT system_prompt
+                FROM llm_prompt 
+                WHERE name = %s
+                ORDER BY updated_at DESC 
+                LIMIT 1
+            """, (prompt_name,))
+            prompt_data = cursor.fetchone()
+            
+            # FAIL CLEARLY if prompt not found
+            if not prompt_data:
+                logger.error(f'Selected prompt "{prompt_name}" not found for post {post_id}')
+                return jsonify({
+                    'success': False,
+                    'error': f'Selected prompt "{prompt_name}" not found. Please select a valid prompt in the prompt panel.'
+                }), 404
+            
+            system_prompt = prompt_data['system_prompt']
+        
+        # Use default system prompt if database lookup failed (shouldn't happen, but safety fallback)
+        if not system_prompt:
+            system_prompt = 'You are a strict content strategist for section-specific topic generation. Your task is to generate exactly 6 topics that fit EXCLUSIVELY within ONE specified section based on its title and description. You will be given ONE target section and MULTIPLE forbidden sections. Topics that could belong to ANY forbidden section MUST be rejected. Each topic must be thematically aligned ONLY with the target section and cannot overlap with themes from ANY other section. If a topic relates to historical origins but the target section is about modern impact, REJECT it. If a topic relates to modern applications but the target section is about ancient foundations, REJECT it.'
+        
         # Generate topics for each section
         all_section_topics = {}
         total_topics = 0
@@ -251,7 +294,7 @@ def api_generate_section_specific_topics():
             logger.debug(f"Section {section_id} prompt preview (first 500 chars): {section_prompt[:500]}...")
             
             brainstorming_messages = [
-                {'role': 'system', 'content': 'You are a strict content strategist for section-specific topic generation. Your task is to generate exactly 6 topics that fit EXCLUSIVELY within ONE specified section based on its title and description. You will be given ONE target section and MULTIPLE forbidden sections. Topics that could belong to ANY forbidden section MUST be rejected. Each topic must be thematically aligned ONLY with the target section and cannot overlap with themes from ANY other section. If a topic relates to historical origins but the target section is about modern impact, REJECT it. If a topic relates to modern applications but the target section is about ancient foundations, REJECT it.'},
+                {'role': 'system', 'content': system_prompt},
                 {'role': 'user', 'content': section_prompt}
             ]
             

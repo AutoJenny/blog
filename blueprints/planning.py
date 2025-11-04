@@ -370,6 +370,54 @@ def api_update_section_structure_prompt(post_id):
     from blueprints.planning_api_post_specific import api_update_section_structure_prompt as update_func
     return update_func(post_id)
 
+@bp.route('/api/posts/<int:post_id>/topic-allocation-prompt-selection', methods=['GET'])
+def api_get_topic_allocation_prompt_selection(post_id):
+    """Get available prompt options and current selection for topic allocation"""
+    from blueprints.planning_api_post_specific import api_get_topic_allocation_prompt_selection as selection_func
+    return selection_func(post_id)
+
+@bp.route('/api/posts/<int:post_id>/topic-allocation-prompt-selection', methods=['POST'])
+def api_set_topic_allocation_prompt_selection(post_id):
+    """Set the selected prompt for topic allocation"""
+    from blueprints.planning_api_post_specific import api_set_topic_allocation_prompt_selection as set_selection_func
+    return set_selection_func(post_id)
+
+@bp.route('/api/posts/<int:post_id>/topic-allocation-prompt', methods=['GET'])
+def api_get_topic_allocation_prompt(post_id):
+    """Get the topic allocation prompt for a post, optionally filtered by prompt_name"""
+    from blueprints.planning_api_post_specific import api_get_topic_allocation_prompt as prompt_func
+    return prompt_func(post_id)
+
+@bp.route('/api/posts/<int:post_id>/topic-allocation-prompt', methods=['PUT'])
+def api_update_topic_allocation_prompt(post_id):
+    """Update the topic allocation prompt for a post"""
+    from blueprints.planning_api_post_specific import api_update_topic_allocation_prompt as update_func
+    return update_func(post_id)
+
+@bp.route('/api/posts/<int:post_id>/section-titling-prompt-selection', methods=['GET'])
+def api_get_section_titling_prompt_selection(post_id):
+    """Get available prompt options and current selection for section titling"""
+    from blueprints.planning_api_post_specific import api_get_section_titling_prompt_selection as selection_func
+    return selection_func(post_id)
+
+@bp.route('/api/posts/<int:post_id>/section-titling-prompt-selection', methods=['POST'])
+def api_set_section_titling_prompt_selection(post_id):
+    """Set the selected prompt for section titling"""
+    from blueprints.planning_api_post_specific import api_set_section_titling_prompt_selection as set_selection_func
+    return set_selection_func(post_id)
+
+@bp.route('/api/posts/<int:post_id>/section-titling-prompt', methods=['GET'])
+def api_get_section_titling_prompt(post_id):
+    """Get the section titling prompt for a post, optionally filtered by prompt_name"""
+    from blueprints.planning_api_post_specific import api_get_section_titling_prompt as prompt_func
+    return prompt_func(post_id)
+
+@bp.route('/api/posts/<int:post_id>/section-titling-prompt', methods=['PUT'])
+def api_update_section_titling_prompt(post_id):
+    """Update the section titling prompt for a post"""
+    from blueprints.planning_api_post_specific import api_update_section_titling_prompt as update_func
+    return update_func(post_id)
+
 @bp.route('/api/posts/<int:post_id>/expanded-idea', methods=['GET', 'POST'])
 def api_posts_expanded_idea(post_id):
     """Get or create expanded idea for a post"""
