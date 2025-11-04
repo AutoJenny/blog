@@ -22,24 +22,106 @@ def api_generate_brainstorm_topics():
         if not expanded_idea:
             return jsonify({'error': 'Expanded idea is required'}), 400
         
-        # Load prompt from database
+        # Get year/week from request for theme lookup
+        url_year = request.args.get('year', type=int) or data.get('year')
+        url_week = request.args.get('week', type=int) or data.get('week')
+        
+        # Load prompt from database using explicit selection
+        post_id = data.get('post_id')
+        prompt_name = None
+        theme_data = None
+        
         with db_manager.get_cursor() as cursor:
+            # Get selected prompt name from post settings if post_id provided
+            if post_id:
+                cursor.execute("""
+                    SELECT extra_settings FROM post WHERE id = %s
+                """, (post_id,))
+                post_result = cursor.fetchone()
+                
+                if post_result and post_result.get('extra_settings'):
+                    settings = post_result['extra_settings']
+                    prompt_name = settings.get('brainstorm_prompt_name')
+            
+            # LEGACY: If no selection exists, use default
+            if not prompt_name:
+                prompt_name = 'brainstorm_topics'  # Try old name first
+                cursor.execute("""
+                    SELECT id FROM llm_prompt WHERE name = %s
+                """, (prompt_name,))
+                if not cursor.fetchone():
+                    prompt_name = 'Topic Brainstorming'  # Try new name
+            
+            # Get the selected prompt - NO FALLBACKS
             cursor.execute("""
                 SELECT system_prompt, prompt_text
                 FROM llm_prompt 
-                WHERE name = 'brainstorm_topics'
-                ORDER BY id DESC
+                WHERE name = %s
+                ORDER BY updated_at DESC 
                 LIMIT 1
-            """)
+            """, (prompt_name,))
             prompt_data = cursor.fetchone()
             
+            # FAIL CLEARLY if prompt not found
             if not prompt_data:
                 return jsonify({
-                    'error': 'No brainstorm_topics prompt found in database. Please add a proper prompt with JSON format specification.'
-                }), 500
+                    'error': f'Selected prompt "{prompt_name}" not found. Please select a valid prompt in the prompt panel.'
+                }), 404
             
             system_prompt = prompt_data['system_prompt']
             prompt_text = prompt_data['prompt_text']
+            
+            # Get theme name and description from week context (if year/week provided)
+            if url_year and url_week:
+                # Check if new tables exist
+                cursor.execute("""
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.tables 
+                        WHERE table_schema = 'public' 
+                        AND table_name = 'calendar_week_selection'
+                    )
+                """)
+                has_new_table = cursor.fetchone()['exists']
+                
+                if has_new_table:
+                    # Use new V2 architecture
+                    cursor.execute("""
+                        SELECT cws.selected_theme_id
+                        FROM calendar_week_selection cws
+                        WHERE cws.year = %s AND cws.week_number = %s
+                    """, (url_year, url_week))
+                    week_selection = cursor.fetchone()
+                    
+                    if week_selection and week_selection.get('selected_theme_id'):
+                        theme_id = week_selection['selected_theme_id']
+                        cursor.execute("""
+                            SELECT ct.theme_title, ct.theme_description
+                            FROM calendar_themes ct
+                            WHERE ct.id = %s
+                        """, (theme_id,))
+                        theme_result = cursor.fetchone()
+                        if theme_result:
+                            theme_data = {
+                                'title': theme_result.get('theme_title') or '',
+                                'description': theme_result.get('theme_description') or ''
+                            }
+                else:
+                    # Fallback to old calendar_schedule table
+                    cursor.execute("""
+                        SELECT ct.theme_title, ct.theme_description
+                        FROM calendar_schedule cs
+                        LEFT JOIN calendar_themes ct ON cs.theme_id = ct.id
+                        WHERE cs.year = %s AND cs.week_number = %s
+                          AND cs.theme_id IS NOT NULL
+                        ORDER BY cs.created_at DESC
+                        LIMIT 1
+                    """, (url_year, url_week))
+                    theme_result = cursor.fetchone()
+                    if theme_result:
+                        theme_data = {
+                            'title': theme_result.get('theme_title') or '',
+                            'description': theme_result.get('theme_description') or ''
+                        }
         
         # Generate topics using LLM
         llm_service = LLMService()
@@ -54,11 +136,20 @@ def api_generate_brainstorm_topics():
         else:
             topic_count = 25  # Default
         
+        # Build theme content string (similar to expanded idea prompt)
+        theme_content = ''
+        if theme_data and (theme_data.get('title') or theme_data.get('description')):
+            if theme_data.get('title'):
+                theme_content = f"Title: {theme_data['title']}\n\n"
+            if theme_data.get('description'):
+                theme_content += f"Description: {theme_data['description']}\n\n"
+        
         # Replace topic count in prompt if specified, otherwise use format as-is
         # Handle both {brainstorm_type} and explicit count requirements
         if '{topic_count}' in prompt_text:
             user_content = prompt_text.format(
                 brainstorm_type=brainstorm_type,
+                theme_data=theme_content,
                 expanded_idea=expanded_idea,
                 topic_count=topic_count
             )
@@ -71,11 +162,13 @@ def api_generate_brainstorm_topics():
             user_content = re.sub(r'\b(25|50)\s+topics?\b', f'{topic_count} topics', user_content, flags=re.IGNORECASE)
             user_content = user_content.format(
                 brainstorm_type=brainstorm_type,
+                theme_data=theme_content,
                 expanded_idea=expanded_idea
             )
         else:
             user_content = prompt_text.format(
                 brainstorm_type=brainstorm_type,
+                theme_data=theme_content,
                 expanded_idea=expanded_idea
             )
         

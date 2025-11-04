@@ -12,7 +12,7 @@ const LLM_CONFIGS = {
         allowEdit: true
     },
     'brainstorm': {
-        promptEndpoint: '/planning/api/llm/prompts/topic-brainstorming',
+        promptEndpoint: '/planning/api/posts/{id}/brainstorm-prompt',
         generateEndpoint: '/planning/api/brainstorm/topics',
         resultsField: 'idea_scope',
         resultsTitle: 'Generated Topics',
@@ -47,7 +47,7 @@ const LLM_CONFIGS = {
         allowEdit: true
     },
     'section_structure': { // New config for section structure design
-        promptEndpoint: '/planning/api/llm/prompts/section-structure',
+        promptEndpoint: '/planning/api/posts/{id}/section-structure-prompt',
         generateEndpoint: '/planning/api/sections/design-structure',
         resultsField: 'section_structure',
         resultsTitle: 'Generated Section Structure',
