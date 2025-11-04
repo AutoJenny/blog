@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-11-04T09:24:55.869894",
+  "post_id": 81,
+  "section_id": 835,
+  "orientation": "landscape",
+  "photo": {
+    "provider": "pexels",
+    "image_id": "6752213",
+    "url": "https://images.pexels.com/photos/6752213/pexels-photo-6752213.jpeg",
+    "thumbnail_url": "https://images.pexels.com/photos/6752213/pexels-photo-6752213.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "width": 3500,
+    "height": 2333,
+    "orientation": "landscape",
+    "photographer": "cottonbro studio",
+    "photographer_url": "https://www.pexels.com/@cottonbro",
+    "credits": "Photo by cottonbro studio on Pexels",
+    "search_term": "vintage, 19th century, Victorian era, mourning veil, female, funeral procession, black dress, lace, mourning jewelry, daguerreotype, antique photography",
+    "selected": false,
+    "selected_at": "2025-11-04T09:24:55.869890",
+    "provider_data": {
+      "pexels_id": "6752213",
+      "pexels_url": "https://www.pexels.com/photo/noble-ladies-near-window-6752213/",
+      "photographer_id": 1437723
+    },
+    "selection_orientation": "landscape"
+  }
+}

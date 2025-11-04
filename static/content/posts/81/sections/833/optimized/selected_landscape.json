@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-11-04T09:24:50.965319",
+  "post_id": 81,
+  "section_id": 833,
+  "orientation": "landscape",
+  "photo": {
+    "provider": "pexels",
+    "image_id": "22270204",
+    "url": "https://images.pexels.com/photos/22270204/pexels-photo-22270204.jpeg",
+    "thumbnail_url": "https://images.pexels.com/photos/22270204/pexels-photo-22270204.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "width": 6240,
+    "height": 4160,
+    "orientation": "landscape",
+    "photographer": "Gera Cejas",
+    "photographer_url": "https://www.pexels.com/@gera-cejas-3616330",
+    "credits": "Photo by Gera Cejas on Pexels",
+    "search_term": "1920s flapper girl dancing, vintage jazz club, New Orleans, Louisiana, USA, black and white, nighttime, crowded dance floor, beaded dress, feather headband",
+    "selected": false,
+    "selected_at": "2025-11-04T09:24:50.965311",
+    "provider_data": {
+      "pexels_id": "22270204",
+      "pexels_url": "https://www.pexels.com/photo/vintage-style-models-in-black-and-white-22270204/",
+      "photographer_id": 3616330
+    },
+    "selection_orientation": "landscape"
+  }
+}

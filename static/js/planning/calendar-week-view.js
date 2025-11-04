@@ -732,8 +732,10 @@ async function loadWeek(year, weekNumber) {
     loadWeek(info.year, info.weekNumber);
   });
 
-  // "This week" button
+  // "This week" button - recalculate current week from today's date
   document.getElementById('this-week-btn').addEventListener('click', () => {
+    const now = new Date();
+    const currentWeekInfo = getISOWeekInfo(now);
     loadWeek(currentWeekInfo.year, currentWeekInfo.weekNumber);
   });
 
@@ -922,6 +924,9 @@ async function loadWeek(year, weekNumber) {
         currentYear = weekContext.year;
         currentWeek = weekContext.week;
       } else {
+        // Fallback: calculate current week from today's date
+        const now = new Date();
+        const currentWeekInfo = getISOWeekInfo(now);
         currentYear = currentWeekInfo.year;
         currentWeek = currentWeekInfo.weekNumber;
       }

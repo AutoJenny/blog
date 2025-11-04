@@ -36,7 +36,25 @@
     }
     
     // Make API call
-    fetch(`/header/api/posts/${postId}/generate-subtitle`, {
+    // Check if week has a post scheduled
+    if (!window.weekHasPost) {
+      alert('Cannot generate subtitle: No post is scheduled for this week. Please schedule a post first.');
+      return;
+    }
+    
+    // Get year/week from URL or window context
+    const urlParams = new URLSearchParams(window.location.search);
+    const year = urlParams.get('year') || (window.weekYear && window.weekYear.year);
+    const week = urlParams.get('week') || (window.weekYear && window.weekYear.week);
+    
+    if (!year || !week) {
+      alert('Cannot generate subtitle: Week context (year and week) is required.');
+      return;
+    }
+    
+    // Make API call with week context required
+    const url = `/header/api/posts/${postId}/generate-subtitle?year=${year}&week=${week}`;
+    fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

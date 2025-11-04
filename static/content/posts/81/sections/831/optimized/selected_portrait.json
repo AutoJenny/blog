@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-11-04T09:24:46.768148",
+  "post_id": 81,
+  "section_id": 831,
+  "orientation": "portrait",
+  "photo": {
+    "provider": "pexels",
+    "image_id": "3510161",
+    "url": "https://images.pexels.com/photos/3510161/pexels-photo-3510161.jpeg",
+    "thumbnail_url": "https://images.pexels.com/photos/3510161/pexels-photo-3510161.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "width": 2583,
+    "height": 3874,
+    "orientation": "portrait",
+    "photographer": "Mario Cuadros",
+    "photographer_url": "https://www.pexels.com/@mario-cuadros-1166886",
+    "credits": "Photo by Mario Cuadros on Pexels",
+    "search_term": "Victorian era, London street scene, foggy evening, gas lamps, old wooden buildings, cobblestone pavement, 19th century cityscape, monochrome photography, no text overlay",
+    "selected": false,
+    "selected_at": "2025-11-04T09:24:46.768143",
+    "provider_data": {
+      "pexels_id": "3510161",
+      "pexels_url": "https://www.pexels.com/photo/black-car-on-the-road-3510161/",
+      "photographer_id": 1166886
+    },
+    "selection_orientation": "portrait"
+  }
+}

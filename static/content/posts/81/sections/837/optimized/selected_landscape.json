@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-11-04T09:25:00.211672",
+  "post_id": 81,
+  "section_id": 837,
+  "orientation": "landscape",
+  "photo": {
+    "provider": "pexels",
+    "image_id": "16550443",
+    "url": "https://images.pexels.com/photos/16550443/pexels-photo-16550443.jpeg",
+    "thumbnail_url": "https://images.pexels.com/photos/16550443/pexels-photo-16550443.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "width": 8191,
+    "height": 5463,
+    "orientation": "landscape",
+    "photographer": "Guy  Seela",
+    "photographer_url": "https://www.pexels.com/@guy-seela-320382141",
+    "credits": "Photo by Guy  Seela on Pexels",
+    "search_term": "1940s, wartime, female aviator, cockpit interior, leather seat, vintage aircraft, World War II, propeller, flight helmet",
+    "selected": false,
+    "selected_at": "2025-11-04T09:25:00.211668",
+    "provider_data": {
+      "pexels_id": "16550443",
+      "pexels_url": "https://www.pexels.com/photo/soldier-sitting-in-military-aircraft-16550443/",
+      "photographer_id": 320382141
+    },
+    "selection_orientation": "landscape"
+  }
+}

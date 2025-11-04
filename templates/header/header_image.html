@@ -7,6 +7,9 @@
     window.currentStage = 'header';
     window.currentSubstage = 'header-image';
     window.postId = {{ post_id }};
+    window.year = {{ year | default('null') }};
+    window.week = {{ week | default('null') }};
+    window.illustrationMethod = "{{ illustration_method | default('LLM-creation') }}";
 </script>
 
 {% include 'shared/blog_pipeline_header.html' %}
@@ -28,27 +31,107 @@ document.addEventListener('DOMContentLoaded', function() {
         
         <!-- Right Panel: Content -->
         <div class="editor-panel">
-            <!-- Model Selection Panel -->
-            {% include 'header/includes/model_selection_panel.html' %}
+            <!-- Route Indicator -->
+            <div class="route-indicator" style="background:#1e40af;color:#fff;padding:0.6rem 0.9rem;border-radius:8px;margin-bottom:1rem;font-weight:600;display:flex;align-items:center;gap:0.5rem;">
+                <i class="fas fa-camera"></i>
+                <span>Illustration Route: <strong>{{ illustration_method | default('LLM-creation') }}</strong></span>
+                {% if year and week %}
+                <span style="margin-left:auto;font-weight:500;opacity:0.85;">Week {{ week }}, {{ year }}</span>
+                {% endif %}
+            </div>
             
-            <!-- Image Prompt Builder Panel -->
-            {% include 'header/includes/prompt_builder_panel_image_prompts.html' %}
-            
-            <!-- Image Generation Panel -->
-            {% include 'header/includes/image_generation_panel.html' %}
-            
-            <!-- Image Details Panel -->
-            {% include 'header/includes/image_details_panel.html' %}
-            
-            <!-- Image Optimization Panel -->
-            {% include 'header/includes/image_optimization_panel.html' %}
+            {% if illustration_method and illustration_method == 'Photo-harvesting' %}
+                <!-- Photo-harvesting Route: Show selected header photos -->
+                <div class="panel" style="background: #f8f9fa; border: 2px solid #1e40af; margin-bottom: 1.5rem;">
+                    <div class="panel-content" style="padding: 1.5rem;">
+                        <h3 style="margin-top: 0; margin-bottom: 1rem; color: #1e40af;">
+                            <i class="fas fa-image"></i> Selected Header Images
+                        </h3>
+                        <p style="margin-bottom: 1rem; color: #64748b;">
+                            Header images were selected during the Title & Summary stage. View and manage your selected landscape and portrait images below.
+                        </p>
+                        
+                        <!-- Selected Photos Display -->
+                        <div id="header-selected-photos-display">
+                            <div class="selected-photos-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                                <!-- Landscape Photo -->
+                                <div class="selected-photo-card" id="header-landscape-photo-card" style="border: 2px solid #e2e8f0; border-radius: 8px; padding: 1rem; background: #fff;">
+                                    <h4 style="margin-top: 0; color: #1e40af;">
+                                        <i class="fas fa-image"></i> Landscape Image
+                                    </h4>
+                                    <div id="header-landscape-photo-display" style="min-height: 200px; display: flex; align-items: center; justify-content: center; background: #f1f5f9; border-radius: 4px; margin-bottom: 1rem;">
+                                        <p class="text-muted" id="header-landscape-placeholder">No landscape image selected</p>
+                                    </div>
+                                    <div id="header-landscape-photo-info" style="display: none;">
+                                        <p><strong>Provider:</strong> <span id="header-landscape-provider"></span></p>
+                                        <p><strong>Photographer:</strong> <a id="header-landscape-photographer-link" href="" target="_blank"><span id="header-landscape-photographer"></span></a></p>
+                                        <p><strong>Dimensions:</strong> <span id="header-landscape-dimensions"></span></p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Portrait Photo -->
+                                <div class="selected-photo-card" id="header-portrait-photo-card" style="border: 2px solid #e2e8f0; border-radius: 8px; padding: 1rem; background: #fff;">
+                                    <h4 style="margin-top: 0; color: #1e40af;">
+                                        <i class="fas fa-mobile-alt"></i> Portrait Image
+                                    </h4>
+                                    <div id="header-portrait-photo-display" style="min-height: 200px; display: flex; align-items: center; justify-content: center; background: #f1f5f9; border-radius: 4px; margin-bottom: 1rem;">
+                                        <p class="text-muted" id="header-portrait-placeholder">No portrait image selected</p>
+                                    </div>
+                                    <div id="header-portrait-photo-info" style="display: none;">
+                                        <p><strong>Provider:</strong> <span id="header-portrait-provider"></span></p>
+                                        <p><strong>Photographer:</strong> <a id="header-portrait-photographer-link" href="" target="_blank"><span id="header-portrait-photographer"></span></a></p>
+                                        <p><strong>Dimensions:</strong> <span id="header-portrait-dimensions"></span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3" style="text-align: center;">
+                                <a href="/header/posts/{{ post_id }}/title-summary?year={{ year }}&week={{ week }}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Return to Title & Summary to Change Selection
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Image Details Panel (for Photo-harvesting: captions, alt text) -->
+                {% include 'header/includes/image_details_panel.html' %}
+                
+                <!-- Image Optimization Panel -->
+                {% include 'header/includes/image_optimization_panel.html' %}
+                
+            {% else %}
+                <!-- LLM-creation Route: Show prompt builder and generation panels -->
+                <!-- Model Selection Panel -->
+                {% include 'header/includes/model_selection_panel.html' %}
+                
+                <!-- Image Prompt Builder Panel -->
+                {% include 'header/includes/prompt_builder_panel_image_prompts.html' %}
+                
+                <!-- Image Generation Panel -->
+                {% include 'header/includes/image_generation_panel.html' %}
+                
+                <!-- Image Details Panel -->
+                {% include 'header/includes/image_details_panel.html' %}
+                
+                <!-- Image Optimization Panel -->
+                {% include 'header/includes/image_optimization_panel.html' %}
+            {% endif %}
             
         </div>
     </div>
 </div>
 
-<!-- JavaScript for Prompt Builder Panel -->
+{% if illustration_method and illustration_method != 'Photo-harvesting' %}
+<!-- JavaScript for Prompt Builder Panel (LLM-creation only) -->
 <script src="{{ url_for('static', filename='js/header/prompt-builder-panel-image-prompts.js') }}?v={{ range(1000, 9999) | random }}"></script>
+{% endif %}
+
+{% if illustration_method and illustration_method == 'Photo-harvesting' %}
+<!-- Header Photo-harvesting functionality -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/photo-selection.css') }}">
+<script src="{{ url_for('static', filename='js/header/header-image-photo-harvesting.js') }}"></script>
+{% endif %}
 
 <script src="{{ url_for('static', filename='js/header/header-workspace.js') }}"></script>
 {% endblock %}

@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-11-04T09:24:55.899434",
+  "post_id": 81,
+  "section_id": 835,
+  "orientation": "portrait",
+  "photo": {
+    "provider": "pexels",
+    "image_id": "34428437",
+    "url": "https://images.pexels.com/photos/34428437/pexels-photo-34428437.jpeg",
+    "thumbnail_url": "https://images.pexels.com/photos/34428437/pexels-photo-34428437.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "width": 3350,
+    "height": 5026,
+    "orientation": "portrait",
+    "photographer": "elif s.",
+    "photographer_url": "https://www.pexels.com/@elif-s-986907269",
+    "credits": "Photo by elif s. on Pexels",
+    "search_term": "vintage, 19th century, Victorian era, mourning veil, female, funeral procession, black dress, lace, mourning jewelry, daguerreotype, antique photography",
+    "selected": false,
+    "selected_at": "2025-11-04T09:24:55.899430",
+    "provider_data": {
+      "pexels_id": "34428437",
+      "pexels_url": "https://www.pexels.com/photo/mysterious-woman-holding-candle-in-cemetery-34428437/",
+      "photographer_id": 986907269
+    },
+    "selection_orientation": "portrait"
+  }
+}

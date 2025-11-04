@@ -34,6 +34,9 @@
     window.currentStage = 'header';
     window.currentSubstage = 'seo-meta';
     window.postId = {{ post_id }};
+    window.year = {{ year | default('null') }};
+    window.week = {{ week | default('null') }};
+    window.weekHasPost = {{ 'true' if week_has_post else 'false' }};
 </script>
 
 {% include 'shared/blog_pipeline_header.html' %}
@@ -55,9 +58,17 @@ document.addEventListener('DOMContentLoaded', function() {
         
         <!-- Right Panel: Content -->
         <div class="editor-panel">
+            {% if not week_has_post %}
+            <!-- Warning: No post scheduled for this week -->
+            <div class="alert alert-warning" style="margin-bottom: 1.5rem; padding: 1rem; background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px;">
+                <strong><i class="fas fa-exclamation-triangle"></i> Cannot Generate SEO Meta:</strong> 
+                <p style="margin: 0.5rem 0 0 0;">Week {{ week }}, {{ year }} has no post scheduled. Please schedule a post for this week before generating SEO metadata.</p>
+            </div>
+            {% endif %}
+            
             <!-- Generate All Button -->
             <div class="generate-all-section">
-                <button class="btn-primary btn-large" id="generate-all-meta-btn">
+                <button class="btn-primary btn-large" id="generate-all-meta-btn" {% if not week_has_post %}disabled title="No post scheduled for this week"{% endif %}>
                     <i class="fas fa-magic"></i> Generate Meta Data
                 </button>
             </div>

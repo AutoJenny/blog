@@ -21,8 +21,25 @@
       });
     }
     
-    // Make API call with Development tab content
-    fetch(`/header/api/posts/${window.postId}/generate-titles`, {
+    // Check if week has a post scheduled
+    if (!window.weekHasPost) {
+      alert('Cannot generate titles: No post is scheduled for this week. Please schedule a post first.');
+      return;
+    }
+    
+    // Get year/week from URL or window context
+    const urlParams = new URLSearchParams(window.location.search);
+    const year = urlParams.get('year') || (window.weekYear && window.weekYear.year);
+    const week = urlParams.get('week') || (window.weekYear && window.weekYear.week);
+    
+    if (!year || !week) {
+      alert('Cannot generate titles: Week context (year and week) is required.');
+      return;
+    }
+    
+    // Make API call with Development tab content (with week context required)
+    const url = `/header/api/posts/${window.postId}/generate-titles?year=${year}&week=${week}`;
+    fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

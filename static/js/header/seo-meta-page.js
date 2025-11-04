@@ -21,11 +21,30 @@ class SEOMetaPage {
     }
     
     async generateMetaData() {
+        // Check if week has a post scheduled
+        if (!window.weekHasPost) {
+            alert('Cannot generate SEO meta: No post is scheduled for this week. Please schedule a post first.');
+            return;
+        }
+        
+        // Validate week context
+        const urlParams = new URLSearchParams(window.location.search);
+        const year = urlParams.get('year') || (window.year && window.year);
+        const week = urlParams.get('week') || (window.week && window.week);
+        
+        if (!year || !week) {
+            alert('Cannot generate SEO meta: Week context (year and week) is required.');
+            return;
+        }
+        
         try {
             this.generateBtn.disabled = true;
             this.generateBtn.textContent = 'Generating...';
             
-            const response = await fetch(`/header/api/posts/${this.postId}/generate-seo-meta`, {
+            // Build URL with week context (required)
+            const url = `/header/api/posts/${this.postId}/generate-seo-meta?year=${year}&week=${week}`;
+            
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

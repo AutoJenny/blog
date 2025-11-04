@@ -509,16 +509,26 @@ async function loadThemesForWeek() {
             availableThemes = availableThemes || [];
         }
         
-        // Load saved theme selection from database (calendar_schedule) - AFTER themes loaded
+        // Load saved theme selection from database (calendar_week_selection) - AFTER themes loaded
         let savedThemeId = null;
         try {
             const scheduleResp = await fetch(`/planning/api/calendar/schedule/${window.year}/${window.weekNumber}`);
             if (scheduleResp.ok) {
                 const scheduleData = await scheduleResp.json();
-                if (scheduleData.schedule && scheduleData.schedule.length > 0) {
-                    const scheduleWithTheme = scheduleData.schedule.find(s => s.theme_id);
+                // New structure: selected_theme_id is at the top level
+                if (scheduleData.selected_theme_id) {
+                    savedThemeId = scheduleData.selected_theme_id;
+                } else if (scheduleData.schedule && scheduleData.schedule.length > 0) {
+                    // Fallback: look for theme_selection type in schedule array
+                    const scheduleWithTheme = scheduleData.schedule.find(s => s.type === 'theme_selection' && s.selected_theme_id);
                     if (scheduleWithTheme) {
-                        savedThemeId = scheduleWithTheme.theme_id;
+                        savedThemeId = scheduleWithTheme.selected_theme_id;
+                    } else {
+                        // Legacy fallback: look for theme_id in schedule
+                        const legacySchedule = scheduleData.schedule.find(s => s.theme_id);
+                        if (legacySchedule) {
+                            savedThemeId = legacySchedule.theme_id;
+                        }
                     }
                 }
             }
