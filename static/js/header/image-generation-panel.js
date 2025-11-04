@@ -12,6 +12,7 @@ class HeaderImageGenerationPanel {
         this.initializeElements();
         this.bindEvents();
         this.loadExistingHeaderImage();
+        this.loadSourcePrompts();  // Load theme and expanded idea
     }
     
     initializeElements() {
@@ -105,25 +106,52 @@ class HeaderImageGenerationPanel {
     
     async loadSourcePrompts() {
         try {
-            const response = await fetch(`/authoring/api/posts/${this.postId}/sections`);
-            const sections = await response.json();
+            // For header images, load theme and expanded idea instead of sections
+            const urlParams = new URLSearchParams(window.location.search);
+            const year = urlParams.get('year');
+            const week = urlParams.get('week');
+            const illustrationMethod = window.illustrationMethod || 'LLM-creation';
+            
+            let url = `/header/api/posts/${this.postId}/prompt-assembly-data?illustration_method=${encodeURIComponent(illustrationMethod)}`;
+            if (year) url += `&year=${year}`;
+            if (week) url += `&week=${week}`;
+            
+            const response = await fetch(url);
+            const data = await response.json();
             
             this.sourcePromptsList.innerHTML = '';
             
-            sections.forEach(section => {
-                if (section.image_prompts) {
-                    const promptItem = document.createElement('div');
-                    promptItem.className = 'source-prompt-item';
-                    promptItem.innerHTML = `
-                        <strong>Section ${section.section_order}:</strong><br>
-                        ${section.image_prompts}
+            if (data.success) {
+                if (data.theme_name) {
+                    const themeItem = document.createElement('div');
+                    themeItem.className = 'source-prompt-item';
+                    themeItem.innerHTML = `
+                        <strong>Theme:</strong><br>
+                        ${this.escapeHtml(data.theme_name)}
                     `;
-                    this.sourcePromptsList.appendChild(promptItem);
+                    this.sourcePromptsList.appendChild(themeItem);
                 }
-            });
+                
+                if (data.expanded_idea) {
+                    const ideaItem = document.createElement('div');
+                    ideaItem.className = 'source-prompt-item';
+                    const truncated = data.expanded_idea.length > 300 ? data.expanded_idea.substring(0, 300) + '...' : data.expanded_idea;
+                    ideaItem.innerHTML = `
+                        <strong>Expanded Idea:</strong><br>
+                        ${this.escapeHtml(truncated)}
+                    `;
+                    this.sourcePromptsList.appendChild(ideaItem);
+                }
+            }
         } catch (error) {
             console.error('Error loading source prompts:', error);
         }
+    }
+    
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
     
     async generateHeaderImage() {
@@ -141,14 +169,24 @@ class HeaderImageGenerationPanel {
                 throw new Error('No prompt provided');
             }
             
-            // Use gpt-image-1 by default for header images
-            const modelName = 'gpt-image-1';
-            const parameters = {
+            // Determine model and parameters based on illustration method
+            const illustrationMethod = window.illustrationMethod || 'LLM-creation';
+            let modelName = 'gpt-image-1';
+            let parameters = {
                 size: '1536x1024',  // Landscape format supported by GPT-Image-1
                 quality: 'high'
             };
             
-            const response = await fetch(`/header/api/posts/${this.postId}/generate-header-image`, {
+            // For Photo-harvesting route, use photorealistic settings
+            if (illustrationMethod === 'Photo-harvesting') {
+                modelName = 'gpt-image-1';
+                parameters = {
+                    size: '1536x1024',
+                    quality: 'high'  // High quality for photorealistic (gpt-image-1 uses 'high' not 'hd')
+                };
+            }
+            
+            const response = await fetch(`/header/api/posts/${this.postId}/generate-header-image?illustration_method=${encodeURIComponent(illustrationMethod)}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

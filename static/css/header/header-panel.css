@@ -1,0 +1,54 @@
+/* Common Header Panel Styles */
+
+.panel-header {
+    padding: 0.75rem 1rem;
+    background: #0f172a;
+    border-bottom: 1px solid #334155;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.panel-header:hover {
+    background: #1e293b;
+}
+
+.panel-header h4 {
+    margin: 0;
+    color: #f1f5f9;
+    font-size: 1rem;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.header-actions i {
+    color: #94a3b8;
+    transition: transform 0.2s;
+}
+
+.header-actions i.open {
+    transform: rotate(180deg);
+}
+
+.panel-content {
+    padding: 1rem;
+    background: #1e293b;
+    border-radius: 0 0 8px 8px;
+}
+
+.panel-content.collapsed {
+    display: none;
+}
+
+.panel-name-green {
+    color: #10b981;
+    font-weight: 600;
+}
+

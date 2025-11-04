@@ -231,12 +231,24 @@ class PromptService:
             logger.error(f"Error saving prompt override: {e}")
             return False
     
-    def render_header_prompt_for_model(self, post_id: int, model_key: str, use_override: bool = True) -> Tuple[str, Dict[str, Any]]:
+    def render_header_prompt_for_model(self, post_id: int, model_key: str, use_override: bool = True, illustration_method: str = None) -> Tuple[str, Dict[str, Any]]:
         """Render header prompt for specific model by compiling prompts from all sections and merging active post style"""
         try:
             # Get model constraints
             model_spec = self.model_specs_cache.get(model_key, {})
             constraints = model_spec.get('constraints', {'max_prompt_chars': 1000})
+            
+            # Get illustration_method if not provided
+            if illustration_method is None:
+                with db_manager.get_cursor() as cursor:
+                    cursor.execute("""
+                        SELECT ti.illustration_method
+                        FROM post p
+                        LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                        WHERE p.id = %s
+                    """, (post_id,))
+                    result = cursor.fetchone()
+                    illustration_method = (result.get('illustration_method') if result else None) or 'LLM-creation'
             
             # Load active post-wide style
             with db_manager.get_cursor() as cursor:
@@ -294,7 +306,11 @@ class PromptService:
                 }
             
             # Create a collage-style prompt (base subject)
-            if model_key == 'sdxl-lora':
+            # For Photo-harvesting route, use photorealistic style
+            if illustration_method == 'Photo-harvesting':
+                # Photorealistic professional photography style
+                collage_prompt = f"professional photography collage featuring: {', '.join(section_prompts[:5])}, high-resolution, natural lighting, realistic composition, photorealistic"
+            elif model_key == 'sdxl-lora':
                 # For SDXL, create a tag-style collage
                 collage_prompt = f"collage composition featuring: {', '.join(section_prompts[:5])}, artistic illustration, pen and ink watercolor style"
             else:

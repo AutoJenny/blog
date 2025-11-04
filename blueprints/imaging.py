@@ -2,10 +2,26 @@
 from flask import Blueprint, render_template, jsonify, request, redirect, url_for
 from datetime import datetime
 from config.database import db_manager
+from dotenv import load_dotenv
 import logging
 import json
 import os
 import requests
+
+# Load environment variables (ensure .env is loaded)
+# Use explicit path to ensure we load from project root
+# Get project root (two levels up from blueprints/)
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+env_path = os.path.join(project_root, '.env')
+# Also try absolute path
+env_absolute = '/Users/autojenny/Documents/projects/blog/.env'
+if os.path.exists(env_absolute):
+    load_dotenv(dotenv_path=env_absolute, override=True)
+elif os.path.exists(env_path):
+    load_dotenv(dotenv_path=env_path, override=True)
+else:
+    # Fallback: try current directory
+    load_dotenv(override=True)
 
 # Import the same sections API function used by authoring
 from blueprints.authoring_api_sections import api_get_sections as sections_api_func
@@ -15,10 +31,60 @@ logger = logging.getLogger(__name__)
 def imaging_generate_dalle_image(image_prompt, post_id, section_id, parameters):
     """Generate image using DALL-E API - generates both landscape and portrait versions"""
     try:
-        # Load OpenAI API key from environment
-        api_key = os.getenv("OPENAI_API_KEY")
+        # RELOAD .env file directly before checking - ensure we get the latest values
+        env_absolute = '/Users/autojenny/Documents/projects/blog/.env'
+        
+        # Try multiple methods to read the key
+        api_key = None
+        
+        # Method 1: Read directly from file (parse manually)
+        try:
+            if os.path.exists(env_absolute):
+                with open(env_absolute, 'r', encoding='utf-8') as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith('#') and '=' in line:
+                            key, value = line.split('=', 1)
+                            if key.strip() == 'OPENAI_API_KEY':
+                                api_key = value.strip()
+                                logger.info(f"Found OPENAI_API_KEY in .env file (length: {len(api_key)})")
+                                break
+        except Exception as e:
+            logger.warning(f"Could not read .env file directly: {e}")
+        
+        # Method 2: Use dotenv_values
         if not api_key:
-            return {'success': False, 'error': 'OPENAI_API_KEY not found in environment'}
+            try:
+                from dotenv import dotenv_values
+                env_values = dotenv_values(env_absolute)
+                api_key = env_values.get('OPENAI_API_KEY', '')
+                if api_key:
+                    logger.info(f"Found OPENAI_API_KEY via dotenv_values (length: {len(api_key)})")
+            except Exception as e:
+                logger.warning(f"Could not read .env via dotenv_values: {e}")
+        
+        # Method 3: Use load_dotenv and os.getenv
+        if not api_key:
+            if os.path.exists(env_absolute):
+                load_dotenv(dotenv_path=env_absolute, override=True)
+            api_key = os.getenv("OPENAI_API_KEY")
+            if api_key:
+                logger.info(f"Found OPENAI_API_KEY via os.getenv (length: {len(api_key)})")
+        
+        if not api_key:
+            # Try to get from config system as fallback
+            try:
+                from config.unified_config import get_openai_api_key
+                api_key = get_openai_api_key()
+            except Exception:
+                pass
+        
+        if not api_key:
+            return {'success': False, 'error': 'OPENAI_API_KEY not found in environment. Please set it in your .env file.'}
+        
+        # Validate API key format (should start with sk-)
+        if not api_key.startswith('sk-'):
+            return {'success': False, 'error': 'Invalid OPENAI_API_KEY format. API keys should start with "sk-".'}
         
         # Extract parameters
         landscape_size = parameters.get('size', '1792x1024')  # Default landscape
@@ -107,9 +173,15 @@ def imaging_generate_dalle_image(image_prompt, post_id, section_id, parameters):
                 portrait_image_response = requests.get(portrait_url, timeout=30)
                 if portrait_image_response.status_code == 200:
                     portrait_path = f"{portrait_dir}/{portrait_filename}"
-                    with open(portrait_path, 'wb') as f:
-                        f.write(portrait_image_response.content)
-                    portrait_success = True
+                    logger.info(f"Saving portrait image to: {portrait_path} (size: {len(portrait_image_response.content)} bytes)")
+                    try:
+                        with open(portrait_path, 'wb') as f:
+                            f.write(portrait_image_response.content)
+                        portrait_success = True
+                        logger.info(f"Portrait image saved successfully to: {portrait_path}")
+                    except Exception as e:
+                        logger.error(f"Failed to save portrait image to {portrait_path}: {e}")
+                        portrait_success = False
                     logger.info(f"Successfully generated portrait: {portrait_path}")
                 else:
                     error_msg = f"Failed to download portrait image: {portrait_image_response.status_code}"
@@ -139,15 +211,75 @@ def imaging_generate_dalle_image(image_prompt, post_id, section_id, parameters):
 def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters):
     """Generate image using GPT-Image-1 API - generates both landscape and portrait versions"""
     try:
-        # Load OpenAI API key from environment
-        api_key = os.getenv("OPENAI_API_KEY")
+        # RELOAD .env file directly before checking - ensure we get the latest values
+        env_absolute = '/Users/autojenny/Documents/projects/blog/.env'
+        
+        # Try multiple methods to read the key
+        api_key = None
+        
+        # Method 1: Read directly from file (parse manually)
+        try:
+            if os.path.exists(env_absolute):
+                with open(env_absolute, 'r', encoding='utf-8') as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith('#') and '=' in line:
+                            key, value = line.split('=', 1)
+                            if key.strip() == 'OPENAI_API_KEY':
+                                api_key = value.strip()
+                                logger.info(f"Found OPENAI_API_KEY in .env file (length: {len(api_key)})")
+                                break
+        except Exception as e:
+            logger.warning(f"Could not read .env file directly: {e}")
+        
+        # Method 2: Use dotenv_values
         if not api_key:
-            return {'success': False, 'error': 'OPENAI_API_KEY not found in environment'}
+            try:
+                from dotenv import dotenv_values
+                env_values = dotenv_values(env_absolute)
+                api_key = env_values.get('OPENAI_API_KEY', '')
+                if api_key:
+                    logger.info(f"Found OPENAI_API_KEY via dotenv_values (length: {len(api_key)})")
+            except Exception as e:
+                logger.warning(f"Could not read .env via dotenv_values: {e}")
+        
+        # Method 3: Use load_dotenv and os.getenv
+        if not api_key:
+            if os.path.exists(env_absolute):
+                load_dotenv(dotenv_path=env_absolute, override=True)
+            api_key = os.getenv("OPENAI_API_KEY")
+            if api_key:
+                logger.info(f"Found OPENAI_API_KEY via os.getenv (length: {len(api_key)})")
+        
+        if not api_key:
+            # Try to get from config system as fallback
+            try:
+                from config.unified_config import get_openai_api_key
+                api_key = get_openai_api_key()
+            except Exception:
+                pass
+        
+        if not api_key:
+            return {'success': False, 'error': 'OPENAI_API_KEY not found in environment. Please set it in your .env file.'}
+        
+        # Validate API key format (should start with sk-)
+        if not api_key.startswith('sk-'):
+            return {'success': False, 'error': 'Invalid OPENAI_API_KEY format. API keys should start with "sk-".'}
         
         # Extract parameters with proper type coercion
         landscape_size = parameters.get('size', '1024x1024')  # Default landscape
         portrait_size = parameters.get('portrait_size', '1024x1792')  # Default portrait
-        quality = parameters.get('quality', 'high')
+        # Map quality values: 'hd' -> 'high', 'standard' -> 'medium'
+        quality_raw = parameters.get('quality', 'high')
+        quality_map = {
+            'hd': 'high',
+            'standard': 'medium',
+            'low': 'low',
+            'medium': 'medium',
+            'high': 'high',
+            'auto': 'auto'
+        }
+        quality = quality_map.get(quality_raw.lower(), 'high')
         # Coerce n to int; API requires integer
         try:
             n = int(parameters.get('n', 1))
@@ -195,15 +327,23 @@ def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters):
             landscape_data['background'] = background
         
         logger.info(f"GPT-Image-1 landscape API request: {landscape_data}")
-        landscape_response = requests.post('https://api.openai.com/v1/images/generations', 
-                               headers=headers, json=landscape_data, timeout=120)
+        try:
+            landscape_response = requests.post('https://api.openai.com/v1/images/generations', 
+                                   headers=headers, json=landscape_data, timeout=120)
+            logger.info(f"GPT-Image-1 landscape API response status: {landscape_response.status_code}")
+        except requests.exceptions.Timeout:
+            logger.error("GPT-Image-1 landscape API request timed out after 120 seconds")
+            return {'success': False, 'error': 'Image generation timed out. The request took longer than 120 seconds.'}
+        except requests.exceptions.RequestException as e:
+            logger.error(f"GPT-Image-1 landscape API request failed: {e}")
+            return {'success': False, 'error': f'Network error during image generation: {str(e)}'}
         
         if landscape_response.status_code != 200:
-            logger.error(f"GPT-Image-1 landscape API error: {landscape_response.text}")
+            logger.error(f"GPT-Image-1 landscape API error: {landscape_response.status_code} - {landscape_response.text}")
             return {'success': False, 'error': f'GPT-Image-1 landscape API error: {landscape_response.status_code} - {landscape_response.text}'}
         
         landscape_result = landscape_response.json()
-        logger.info(f"GPT-Image-1 landscape API response: {landscape_result}")
+        logger.info(f"GPT-Image-1 landscape API response received: {list(landscape_result.keys())}")
         
         if 'data' not in landscape_result or not landscape_result['data']:
             return {'success': False, 'error': 'No image data returned from GPT-Image-1 landscape'}
@@ -223,8 +363,14 @@ def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters):
             return {'success': False, 'error': 'No valid landscape image data found in GPT-Image-1 response'}
         
         landscape_path = f"{landscape_dir}/{landscape_filename}"
-        with open(landscape_path, 'wb') as f:
-            f.write(landscape_image_content)
+        logger.info(f"Saving landscape image to: {landscape_path} (size: {len(landscape_image_content)} bytes)")
+        try:
+            with open(landscape_path, 'wb') as f:
+                f.write(landscape_image_content)
+            logger.info(f"Landscape image saved successfully to: {landscape_path}")
+        except Exception as e:
+            logger.error(f"Failed to save landscape image to {landscape_path}: {e}")
+            return {'success': False, 'error': f'Failed to save landscape image: {str(e)}'}
         
         # Generate portrait version
         portrait_data = {
@@ -240,12 +386,20 @@ def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters):
             portrait_data['background'] = background
         
         logger.info(f"GPT-Image-1 portrait API request: {portrait_data}")
-        portrait_response = requests.post('https://api.openai.com/v1/images/generations', 
-                               headers=headers, json=portrait_data, timeout=120)
+        try:
+            portrait_response = requests.post('https://api.openai.com/v1/images/generations', 
+                                   headers=headers, json=portrait_data, timeout=120)
+            logger.info(f"GPT-Image-1 portrait API response status: {portrait_response.status_code}")
+        except requests.exceptions.Timeout:
+            logger.warning("GPT-Image-1 portrait API request timed out - continuing with landscape only")
+            portrait_response = None
+        except requests.exceptions.RequestException as e:
+            logger.warning(f"GPT-Image-1 portrait API request failed: {e} - continuing with landscape only")
+            portrait_response = None
         
         portrait_success = False
         portrait_path = None
-        if portrait_response.status_code == 200:
+        if portrait_response and portrait_response.status_code == 200:
             portrait_result = portrait_response.json()
             if 'data' in portrait_result and portrait_result['data']:
                 portrait_image_data = portrait_result['data'][0]
@@ -254,16 +408,28 @@ def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters):
                     portrait_image_response = requests.get(portrait_image_url, timeout=30)
                     if portrait_image_response.status_code == 200:
                         portrait_path = f"{portrait_dir}/{portrait_filename}"
-                        with open(portrait_path, 'wb') as f:
-                            f.write(portrait_image_response.content)
-                        portrait_success = True
+                        logger.info(f"Saving portrait image to: {portrait_path} (size: {len(portrait_image_response.content)} bytes)")
+                        try:
+                            with open(portrait_path, 'wb') as f:
+                                f.write(portrait_image_response.content)
+                            portrait_success = True
+                            logger.info(f"Portrait image saved successfully to: {portrait_path}")
+                        except Exception as e:
+                            logger.error(f"Failed to save portrait image to {portrait_path}: {e}")
+                            portrait_success = False
                 elif 'b64_json' in portrait_image_data:
                     import base64
                     portrait_image_content = base64.b64decode(portrait_image_data['b64_json'])
                     portrait_path = f"{portrait_dir}/{portrait_filename}"
-                    with open(portrait_path, 'wb') as f:
-                        f.write(portrait_image_content)
-                    portrait_success = True
+                    logger.info(f"Saving portrait image (base64) to: {portrait_path} (size: {len(portrait_image_content)} bytes)")
+                    try:
+                        with open(portrait_path, 'wb') as f:
+                            f.write(portrait_image_content)
+                        portrait_success = True
+                        logger.info(f"Portrait image saved successfully to: {portrait_path}")
+                    except Exception as e:
+                        logger.error(f"Failed to save portrait image to {portrait_path}: {e}")
+                        portrait_success = False
         
         return {
             'success': True,

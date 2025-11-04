@@ -1,22 +1,41 @@
-<!-- Image Optimization Panel -->
-<link rel="stylesheet" href="{{ url_for('static', filename='css/header/image-optimization-panel.css') }}?v=9999&t=1737036000">
-
+<!-- Image Optimization Panel - Collapsible -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/header-panel.css') }}">
 <div class="image-optimization-panel" id="image-optimization-panel">
     <div class="panel-header" onclick="toggleImageOptimizationAccordion()">
-        <h4><span class="panel-name-green">Optimization:</span> <span id="image-optimization-status">Watermark and compress</span></h4>
+        <h4><span class="panel-name-green">Image Optimization:</span> Watermark and Compress</h4>
         <div class="header-actions" onclick="event.stopPropagation()">
-            <button class="btn-primary" id="optimize-image-btn">Optimize and Watermark</button>
+            <button class="btn-primary" id="optimize-image-btn" disabled style="padding: 0.5rem 1rem; border-radius: 4px; background: #3b82f6; color: white; border: none; cursor: pointer; font-weight: 600;">
+                <i class="fas fa-magic"></i> Optimize and Watermark
+            </button>
             <i class="fas fa-chevron-down" id="image-optimization-accordion-icon"></i>
         </div>
     </div>
-    <div class="panel-content" id="image-optimization-content">
-        <div class="images-display">
-            <div class="image-display-section" id="optimized-image-section" style="display: none;">
-                <img id="optimized-image-preview" src="" alt="Optimized header image" style="max-width: 100%; display: block;">
-            </div>
+    <div class="panel-content collapsed" id="image-optimization-content">
+        <div class="optimization-settings">
+            <p style="color: #94a3b8; font-size: 0.875rem;">Images will be watermarked and compressed for web delivery.</p>
         </div>
     </div>
 </div>
+
+<style>
+.image-optimization-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+</style>
+
+<script>
+function toggleImageOptimizationAccordion() {
+    const content = document.getElementById('image-optimization-content');
+    const icon = document.getElementById('image-optimization-accordion-icon');
+    if (content && icon) {
+        content.classList.toggle('collapsed');
+        icon.classList.toggle('open');
+    }
+}
+</script>
 
 <script src="{{ url_for('static', filename='js/header/image-optimization-panel.js') }}?v=9999&t=1737036000"></script>
 

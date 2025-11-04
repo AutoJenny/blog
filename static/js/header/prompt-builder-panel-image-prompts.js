@@ -88,106 +88,102 @@ class HeaderPromptBuilderPanel {
 
     async loadAllImageConcepts() {
         try {
-            console.log('[HeaderPromptBuilderPanel] Loading all image concepts for post:', this.postId);
+            console.log('[HeaderPromptBuilderPanel] Loading theme and expanded idea for post:', this.postId);
             
-            // Fetch all sections for this post
-            const response = await fetch(`/authoring/api/posts/${this.postId}/sections`);
+            // Get year/week from URL for week persistence
+            const urlParams = new URLSearchParams(window.location.search);
+            const year = urlParams.get('year');
+            const week = urlParams.get('week');
+            
+            // Fetch theme name and expanded idea from prompt-assembly-data endpoint
+            const illustrationMethod = window.illustrationMethod || 'LLM-creation';
+            const url = `/header/api/posts/${this.postId}/prompt-assembly-data?illustration_method=${encodeURIComponent(illustrationMethod)}${year ? `&year=${year}` : ''}${week ? `&week=${week}` : ''}`;
+            
+            const response = await fetch(url);
             if (!response.ok) {
-                throw new Error(`Failed to fetch sections: ${response.status}`);
+                throw new Error(`Failed to fetch theme data: ${response.status}`);
             }
             
             const data = await response.json();
-            const sections = data.sections || [];
             
-            console.log('[HeaderPromptBuilderPanel] Found sections:', sections.length);
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to load theme data');
+            }
             
-            // Extract only SELECTED image concepts from all sections
-            const selectedConcepts = [];
-            sections.forEach(section => {
-                if (section.image_concepts && section.selected_image_concept) {
-                    try {
-                        const conceptsData = typeof section.image_concepts === 'string' 
-                            ? JSON.parse(section.image_concepts) 
-                            : section.image_concepts;
-                        
-                        if (conceptsData.concepts && Array.isArray(conceptsData.concepts)) {
-                            // Find only the SELECTED concept for this section
-                            const selectedConcept = conceptsData.concepts.find(
-                                concept => concept.concept_id === section.selected_image_concept
-                            );
-                            
-                            if (selectedConcept) {
-                                selectedConcepts.push({
-                                    section_id: section.id,
-                                    section_title: section.title || section.section_heading || `Section ${section.id}`,
-                                    concept_id: selectedConcept.concept_id,
-                                    concept_title: selectedConcept.concept_title,
-                                    concept_description: selectedConcept.concept_description,
-                                    concept_mood: selectedConcept.concept_mood,
-                                    key_visual_elements: selectedConcept.key_visual_elements
-                                });
-                            }
-                        }
-                    } catch (error) {
-                        console.warn('[HeaderPromptBuilderPanel] Error parsing concepts for section:', section.id, error);
-                    }
-                }
-            });
+            const theme_name = data.theme_name || '';
+            const expanded_idea = data.expanded_idea || '';
             
-            console.log('[HeaderPromptBuilderPanel] Extracted selected concepts:', selectedConcepts.length);
+            console.log('[HeaderPromptBuilderPanel] Theme:', theme_name);
+            console.log('[HeaderPromptBuilderPanel] Expanded Idea:', expanded_idea ? expanded_idea.substring(0, 100) + '...' : 'None');
             
-            // Store concepts for LLM consumption
-            this.allImageConcepts = selectedConcepts;
+            // Store theme data for LLM consumption
+            this.themeData = {
+                theme_name: theme_name,
+                expanded_idea: expanded_idea
+            };
             
             // Update display
-            this.updateInputPromptsDisplay(selectedConcepts);
+            this.updateInputPromptsDisplay(theme_name, expanded_idea);
             
         } catch (error) {
-            console.error('[HeaderPromptBuilderPanel] Error loading image concepts:', error);
-            this.updateInputPromptsDisplay([]);
+            console.error('[HeaderPromptBuilderPanel] Error loading theme data:', error);
+            this.updateInputPromptsDisplay('', '');
         }
     }
 
-    updateInputPromptsDisplay(concepts) {
+    updateInputPromptsDisplay(theme_name, expanded_idea) {
         const display = document.getElementById('input-prompts-display');
         if (!display) return;
         
-        if (concepts.length === 0) {
+        if (!theme_name && !expanded_idea) {
             display.innerHTML = `
-                <div class="prompts-placeholder">No selected image concepts found. Please select concepts in the Image Concepts stage first.</div>
+                <div class="prompts-placeholder">No theme or expanded idea found. Please complete the Planning stage first.</div>
             `;
             return;
         }
         
-        // Create JSON representation for LLM - only descriptions
-        const conceptsJson = {
-            total_sections: concepts.length,
-            concepts: concepts.map(concept => ({
-                section: concept.section_title,
-                description: concept.concept_description
-            }))
+        // Create JSON representation for LLM
+        const themeJson = {
+            theme_name: theme_name || '',
+            expanded_idea: expanded_idea || ''
         };
         
         // Store JSON for LLM consumption
-        this.conceptsJson = JSON.stringify(conceptsJson, null, 2);
+        this.conceptsJson = JSON.stringify(themeJson, null, 2);
         
-        // Display formatted list - only descriptions
-        const conceptsList = concepts.map(concept => `
-            <div class="concept-item">
-                <div class="concept-description">${concept.concept_description}</div>
-            </div>
-        `).join('');
+        // Display theme and expanded idea
+        let displayHTML = '<div class="theme-data-summary">';
         
-        display.innerHTML = `
-            <div class="concepts-summary">
-                <div class="concepts-count">Found ${concepts.length} image concepts from ${new Set(concepts.map(c => c.section_id)).size} sections</div>
-                <div class="concepts-list">
-                    ${conceptsList}
+        if (theme_name) {
+            displayHTML += `
+                <div class="theme-item">
+                    <div class="theme-label">Theme:</div>
+                    <div class="theme-value">${this.escapeHtml(theme_name)}</div>
                 </div>
-            </div>
-        `;
+            `;
+        }
         
-        console.log('[HeaderPromptBuilderPanel] Updated input prompts display with', concepts.length, 'concepts');
+        if (expanded_idea) {
+            const truncated = expanded_idea.length > 500 ? expanded_idea.substring(0, 500) + '...' : expanded_idea;
+            displayHTML += `
+                <div class="theme-item">
+                    <div class="theme-label">Expanded Idea:</div>
+                    <div class="theme-value">${this.escapeHtml(truncated)}</div>
+                </div>
+            `;
+        }
+        
+        displayHTML += '</div>';
+        
+        display.innerHTML = displayHTML;
+        
+        console.log('[HeaderPromptBuilderPanel] Updated input prompts display with theme data');
+    }
+    
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     updateModelDisplay() {
@@ -267,19 +263,31 @@ class HeaderPromptBuilderPanel {
     async generatePrompt() {
         console.log('[HeaderPromptBuilderPanel] Generate prompt requested');
         
-        if (!this.conceptsJson) {
-            alert('No image concepts available. Please ensure concepts are generated in the Image Concepts stage first.');
+        // For header images, use theme data instead of concepts
+        if (!this.themeData || (!this.themeData.theme_name && !this.themeData.expanded_idea)) {
+            alert('No theme or expanded idea available. Please complete the Planning stage first.');
             return;
         }
         
         try {
-            const response = await fetch(`/header/api/posts/${this.postId}/compile-header-prompt`, {
+            // Get year/week from URL for week persistence
+            const urlParams = new URLSearchParams(window.location.search);
+            const year = urlParams.get('year');
+            const week = urlParams.get('week');
+            
+            const illustrationMethod = window.illustrationMethod || 'LLM-creation';
+            let url = `/header/api/posts/${this.postId}/compile-header-prompt?illustration_method=${encodeURIComponent(illustrationMethod)}`;
+            if (year) url += `&year=${year}`;
+            if (week) url += `&week=${week}`;
+            
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    concepts_json: this.conceptsJson,
+                    theme_name: this.themeData.theme_name,
+                    expanded_idea: this.themeData.expanded_idea,
                     model: this.currentModel
                 })
             });
@@ -311,7 +319,15 @@ class HeaderPromptBuilderPanel {
         try {
             console.log('[HeaderPromptBuilderPanel] Loading prompt assembly data for post:', this.postId);
             
-            const url = `/header/api/posts/${this.postId}/prompt-assembly-data`;
+            // Include illustration_method and year/week in URL for route-aware prompt loading
+            const illustrationMethod = window.illustrationMethod || 'LLM-creation';
+            const urlParams = new URLSearchParams(window.location.search);
+            const year = urlParams.get('year');
+            const week = urlParams.get('week');
+            
+            let url = `/header/api/posts/${this.postId}/prompt-assembly-data?illustration_method=${encodeURIComponent(illustrationMethod)}`;
+            if (year) url += `&year=${year}`;
+            if (week) url += `&week=${week}`;
             console.log('[HeaderPromptBuilderPanel] Fetching from URL:', url);
             
             const response = await fetch(url);
@@ -324,12 +340,22 @@ class HeaderPromptBuilderPanel {
             const data = await response.json();
             console.log('[HeaderPromptBuilderPanel] Prompt assembly data loaded:', data);
             
-            // Store sections for later use
-            this.loadedSections = data.sections || [];
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to load prompt assembly data');
+            }
             
-            // Update Step 1: Section Prompts
-            console.log('[HeaderPromptBuilderPanel] Updating section prompts display...');
-            this.updateSectionPromptsDisplay(this.loadedSections);
+            // Store theme data for later use (for header images, not sections)
+            if (data.theme_name || data.expanded_idea) {
+                this.themeData = {
+                    theme_name: data.theme_name || '',
+                    expanded_idea: data.expanded_idea || ''
+                };
+                // Update input prompts display with theme data
+                this.updateInputPromptsDisplay(data.theme_name, data.expanded_idea);
+            }
+            
+            // Store sections for backwards compatibility (if they exist)
+            this.loadedSections = data.sections || [];
             
             // Update Step 2: System Instructions
             console.log('[HeaderPromptBuilderPanel] Updating system prompt display...');
@@ -449,16 +475,30 @@ class HeaderPromptBuilderPanel {
         // Replace placeholders with actual data
         let compiledPrompt = taskPrompt || 'Task template not found';
         
-        // Replace {section_prompts} with actual section prompts
-        if (sectionPrompts.length > 0) {
-            // Format: "Section 1: prompt text\n\nSection 2: prompt text\n\n..."
+        // Replace {section_prompts} or {theme_name} and {expanded_idea} with actual data
+        // For header images, use theme_name and expanded_idea instead of section prompts
+        if (this.themeData) {
+            const theme_name = this.themeData.theme_name || '';
+            const expanded_idea = this.themeData.expanded_idea || '';
+            
+            // Replace theme_name placeholder
+            compiledPrompt = compiledPrompt.replace(/\{theme_name\}/g, theme_name);
+            compiledPrompt = compiledPrompt.replace(/\[data:theme_name\]/g, theme_name);
+            
+            // Replace expanded_idea placeholder
+            compiledPrompt = compiledPrompt.replace(/\{expanded_idea\}/g, expanded_idea);
+            compiledPrompt = compiledPrompt.replace(/\[data:expanded_idea\]/g, expanded_idea);
+            
+            console.log('[HeaderPromptBuilderPanel] Replaced theme_name and expanded_idea in prompt');
+        } else if (sectionPrompts.length > 0) {
+            // Fallback to section prompts for backwards compatibility
             const promptsText = sectionPrompts.map(section => 
                 `Section ${section.order}: ${section.prompt}`
             ).join('\n\n');
             console.log('[HeaderPromptBuilderPanel] Replacing {section_prompts} with', sectionPrompts.length, 'sections');
             compiledPrompt = compiledPrompt.replace(/\{section_prompts\}/g, promptsText);
         } else {
-            console.log('[HeaderPromptBuilderPanel] WARNING: No section prompts available');
+            console.log('[HeaderPromptBuilderPanel] WARNING: No theme data or section prompts available');
         }
         
         // Replace {model} with selected model

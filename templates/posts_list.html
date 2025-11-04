@@ -115,8 +115,13 @@
                         <td style="color:#9ca3af;">{{ post.created_ago }}</td>
                         <td style="color:#9ca3af;">{{ post.updated_ago }}</td>
                         <td class="actions">
+                            {% if post.year and post.week_number %}
+                            <a href="/header/posts/{{ post.id }}/title-summary?year={{ post.year }}&week={{ post.week_number }}"
+                               class="btn-primary" onclick="event.stopPropagation();">Edit in Workflow</a>
+                            {% else %}
                             <a href="/planning/posts/{{ post.id }}/calendar/ideas"
                                class="btn-primary" onclick="event.stopPropagation();">Edit in Workflow</a>
+                            {% endif %}
                             <a href="/posts/{{ post.id }}" class="icon-btn" title="Preview" onclick="event.stopPropagation();"><i class="fa-solid fa-eye"></i></a>
                             {% if post.display_status != 'published' %}
                             <button class="icon-btn delete-btn" title="Delete" data-post-id="{{ post.id }}" onclick="event.stopPropagation();"><i class="fa-solid fa-xmark" style="color:#ef4444;"></i></button>

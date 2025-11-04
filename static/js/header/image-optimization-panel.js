@@ -13,9 +13,13 @@ class ImageOptimizationPanel {
     }
     
     initializeElements() {
+        // These elements may not exist in the simplified layout
         this.optimizedImagePreview = document.getElementById('optimized-image-preview');
         this.optimizedImageSection = document.getElementById('optimized-image-section');
         this.optimizeBtn = document.getElementById('optimize-image-btn');
+        
+        // Check if we're in simplified layout (optimized images panel exists)
+        this.isSimplifiedLayout = document.getElementById('optimized-images-panel') !== null;
     }
     
     bindEvents() {
@@ -25,6 +29,11 @@ class ImageOptimizationPanel {
     }
     
     async loadRawImage() {
+        // Skip loading in simplified layout - it's handled by HeaderImageSimplified
+        if (this.isSimplifiedLayout) {
+            return;
+        }
+        
         try {
             // Get the raw image path from the image generation panel
             const response = await fetch(`/header/api/posts/${this.postId}/get-header-image`);
@@ -47,20 +56,28 @@ class ImageOptimizationPanel {
         // Try to load the optimized image
         const img = new Image();
         img.onload = () => {
-            this.optimizedImagePreview.src = optimizedPath;
-            this.optimizedImageSection.style.display = 'block';
+            if (this.optimizedImagePreview) {
+                this.optimizedImagePreview.src = optimizedPath;
+            }
+            if (this.optimizedImageSection) {
+                this.optimizedImageSection.style.display = 'block';
+            }
         };
         img.onerror = () => {
             // Optimized image doesn't exist yet
-            this.optimizedImageSection.style.display = 'none';
+            if (this.optimizedImageSection) {
+                this.optimizedImageSection.style.display = 'none';
+            }
         };
         img.src = optimizedPath;
     }
     
     async optimizeImage() {
         try {
+            if (!this.optimizeBtn) return;
+            
             this.optimizeBtn.disabled = true;
-            this.optimizeBtn.textContent = 'Optimizing...';
+            this.optimizeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Optimizing...';
             
             const response = await fetch(`/header/api/posts/${this.postId}/optimize-header-image`, {
                 method: 'POST',
@@ -73,32 +90,54 @@ class ImageOptimizationPanel {
             const data = await response.json();
             
             if (data.success) {
-                // Update the optimized image preview
-                this.optimizedImagePreview.src = data.optimized_path;
-                this.optimizedImageSection.style.display = 'block';
+                // In simplified layout, the HeaderImageSimplified class handles the display
+                if (this.isSimplifiedLayout && window.headerImageSimplified) {
+                    // Trigger the simplified layout's optimization handler
+                    if (typeof window.headerImageSimplified.optimizeImages === 'function') {
+                        // Call it to update the display
+                        await window.headerImageSimplified.optimizeImages();
+                    }
+                    console.log('[ImageOptimizationPanel] Image optimized successfully (simplified layout)');
+                } else {
+                    // Legacy layout - update the optimized image preview
+                    if (this.optimizedImagePreview) {
+                        this.optimizedImagePreview.src = data.optimized_path;
+                    }
+                    if (this.optimizedImageSection) {
+                        this.optimizedImageSection.style.display = 'block';
+                    }
+                }
                 
                 console.log('[ImageOptimizationPanel] Image optimized successfully');
-                this.optimizeBtn.textContent = 'Optimized!';
-                setTimeout(() => {
-                    this.optimizeBtn.textContent = 'Optimize and Watermark';
-                }, 2000);
+                if (this.optimizeBtn) {
+                    this.optimizeBtn.innerHTML = '<i class="fas fa-check"></i> Optimized!';
+                    setTimeout(() => {
+                        this.optimizeBtn.innerHTML = '<i class="fas fa-magic"></i> Optimize and Watermark';
+                    }, 2000);
+                }
                 // Notify opener (launchpad) that header image has been optimized
                 try { if (window.opener) window.opener.postMessage('header_image_optimized', '*'); } catch(_) {}
             } else {
                 console.error('[ImageOptimizationPanel] Error optimizing image:', data.error);
-                this.optimizeBtn.textContent = 'Error';
-                setTimeout(() => {
-                    this.optimizeBtn.textContent = 'Optimize and Watermark';
-                }, 2000);
+                if (this.optimizeBtn) {
+                    this.optimizeBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                    setTimeout(() => {
+                        this.optimizeBtn.innerHTML = '<i class="fas fa-magic"></i> Optimize and Watermark';
+                    }, 2000);
+                }
             }
         } catch (error) {
             console.error('[ImageOptimizationPanel] Error optimizing image:', error);
-            this.optimizeBtn.textContent = 'Error';
-            setTimeout(() => {
-                this.optimizeBtn.textContent = 'Optimize and Watermark';
-            }, 2000);
+            if (this.optimizeBtn) {
+                this.optimizeBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                setTimeout(() => {
+                    this.optimizeBtn.innerHTML = '<i class="fas fa-magic"></i> Optimize and Watermark';
+                }, 2000);
+            }
         } finally {
-            this.optimizeBtn.disabled = false;
+            if (this.optimizeBtn) {
+                this.optimizeBtn.disabled = false;
+            }
         }
     }
 }
