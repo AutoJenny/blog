@@ -41,6 +41,7 @@ class IdeaModalForms {
         
         // Show/hide fields based on type
         const weekGroup = document.querySelector('[for="idea-week-number"]')?.closest('.idea-form-group');
+        const yearInputGroup = document.querySelector('[for="idea-year"]')?.closest('.idea-form-group');
         const seasonalGroup = document.querySelector('[for="idea-seasonal-context"]')?.closest('.idea-form-group');
         const startDateGroup = document.getElementById('event-start-date-group');
         const endDateGroup = document.getElementById('event-end-date-group');
@@ -55,6 +56,7 @@ class IdeaModalForms {
         if (type === 'theme' || type === 'idea') {
             // Show idea/theme-specific fields (same fields for both)
             if (weekGroup) weekGroup.style.display = 'block';
+            if (yearInputGroup) yearInputGroup.style.display = 'block';
             if (seasonalGroup) seasonalGroup.style.display = 'block';
             if (evergreenSection) evergreenSection.style.display = 'block';
             if (sourcesSection) {
@@ -79,6 +81,7 @@ class IdeaModalForms {
             
             // Hide idea-specific fields
             if (weekGroup) weekGroup.style.display = 'none';
+            if (yearInputGroup) yearInputGroup.style.display = 'none';
             if (seasonalGroup) seasonalGroup.style.display = 'none';
             if (evergreenSection) evergreenSection.style.display = 'none';
             if (sourcesSection) {
@@ -202,7 +205,9 @@ class IdeaModalForms {
         
         // Show/hide fields based on default type (idea)
         const weekGroup = document.querySelector('[for="idea-week-number"]')?.closest('.idea-form-group');
+        const yearInputGroup = document.querySelector('[for="idea-year"]')?.closest('.idea-form-group');
         if (weekGroup) weekGroup.style.display = 'block';
+        if (yearInputGroup) yearInputGroup.style.display = 'block';
         
         const startDateGroup = document.getElementById('event-start-date-group');
         const endDateGroup = document.getElementById('event-end-date-group');
@@ -232,10 +237,14 @@ class IdeaModalForms {
         const isSpecialEvent = document.getElementById('type-special-event')?.checked || false;
         const isEvent = isAnnualEvent || isSpecialEvent;
         
-        // Get week number - default to current week if not set (for ideas/themes)
+        // Get week number and year - default to current week/year if not set (for ideas/themes)
         let week_number = document.getElementById('idea-week-number').value;
+        let year = document.getElementById('idea-year')?.value;
         if (!week_number && !isEvent) {
             week_number = this.modal.getISOWeekNumber(new Date());
+        }
+        if (!year && !isEvent) {
+            year = new Date().getFullYear();
         }
 
         // Helper to clean string -> null if empty
@@ -257,6 +266,7 @@ class IdeaModalForms {
         // Only add idea/theme-specific fields if not an event
         if (!isEvent) {
             formData.week_number = week_number ? Math.max(1, Math.min(53, parseInt(week_number, 10) || 0)) : null;
+            formData.year = year ? parseInt(year, 10) : new Date().getFullYear();
             formData.seasonal_context = clean(document.getElementById('idea-seasonal-context').value);
             formData.is_evergreen = !!document.getElementById('idea-is-evergreen').checked;
             formData.can_span_weeks = !!document.getElementById('idea-can-span-weeks').checked;

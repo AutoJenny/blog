@@ -69,6 +69,10 @@ class IdeaModalAPI {
             document.getElementById('idea-id').value = idea.id || '';
             document.getElementById('idea-title').value = idea.idea_title || '';
             document.getElementById('idea-description').value = idea.idea_description || '';
+            const yearInput = document.getElementById('idea-year');
+            if (yearInput) {
+                yearInput.value = idea.year || '';
+            }
             document.getElementById('idea-week-number').value = idea.week_number || '';
             document.getElementById('idea-content-type').value = idea.content_type || '';
             document.getElementById('idea-seasonal-context').value = idea.seasonal_context || '';
@@ -332,6 +336,12 @@ class IdeaModalAPI {
     }
 
     loadThemeData(theme) {
+        // Set the theme ID in the hidden field
+        const ideaIdInput = document.getElementById('idea-id');
+        if (ideaIdInput) {
+            ideaIdInput.value = theme.id || '';
+        }
+        
         // Map theme fields to form fields
         if (theme.theme_title) {
             const titleInput = document.getElementById('idea-title');
@@ -348,6 +358,17 @@ class IdeaModalAPI {
             if (weekInput) weekInput.value = theme.week_number;
         }
         
+        if (theme.year) {
+            const yearInput = document.getElementById('idea-year');
+            if (yearInput) yearInput.value = theme.year;
+        } else {
+            // If no year in theme data, try to get it from URL or use current year
+            const urlParams = new URLSearchParams(window.location.search);
+            const year = parseInt(urlParams.get('year')) || new Date().getFullYear();
+            const yearInput = document.getElementById('idea-year');
+            if (yearInput) yearInput.value = year;
+        }
+        
         if (theme.seasonal_context) {
             const seasonalInput = document.getElementById('idea-seasonal-context');
             if (seasonalInput) seasonalInput.value = theme.seasonal_context;
@@ -358,22 +379,45 @@ class IdeaModalAPI {
             if (priorityInput) priorityInput.value = theme.priority;
         }
         
+        if (theme.content_type) {
+            const contentTypeInput = document.getElementById('idea-content-type');
+            if (contentTypeInput) contentTypeInput.value = theme.content_type;
+        }
+        
+        if (theme.is_recurring !== undefined) {
+            const recurringCheckbox = document.getElementById('idea-is-recurring');
+            if (recurringCheckbox) recurringCheckbox.checked = theme.is_recurring;
+        }
+        
+        if (theme.can_span_weeks !== undefined) {
+            const canSpanCheckbox = document.getElementById('idea-can-span-weeks');
+            if (canSpanCheckbox) canSpanCheckbox.checked = theme.can_span_weeks;
+            if (theme.can_span_weeks) {
+                const maxWeeksGroup = document.getElementById('idea-max-weeks-group');
+                if (maxWeeksGroup) maxWeeksGroup.style.display = 'block';
+            }
+        }
+        
+        if (theme.max_weeks) {
+            const maxWeeksInput = document.getElementById('idea-max-weeks');
+            if (maxWeeksInput) maxWeeksInput.value = theme.max_weeks;
+        }
+        
         // Handle tags (JSONB array)
         if (theme.tags) {
-            const tagsInput = document.getElementById('idea-tags');
-            if (tagsInput) {
-                if (Array.isArray(theme.tags)) {
-                    tagsInput.value = theme.tags.join(', ');
-                } else {
-                    tagsInput.value = theme.tags;
-                }
-            }
+            this.modal.renderers.renderTags(Array.isArray(theme.tags) ? theme.tags : []);
         }
         
         // Handle evergreen fields
         if (theme.is_evergreen !== undefined) {
             const evergreenCheckbox = document.getElementById('idea-is-evergreen');
             if (evergreenCheckbox) evergreenCheckbox.checked = theme.is_evergreen;
+            if (theme.is_evergreen) {
+                const evergreenGroup = document.getElementById('idea-evergreen-group');
+                const evergreenNotesGroup = document.getElementById('idea-evergreen-notes-group');
+                if (evergreenGroup) evergreenGroup.style.display = 'block';
+                if (evergreenNotesGroup) evergreenNotesGroup.style.display = 'block';
+            }
         }
         
         if (theme.evergreen_frequency) {
@@ -384,6 +428,11 @@ class IdeaModalAPI {
         if (theme.evergreen_notes) {
             const notesInput = document.getElementById('idea-evergreen-notes');
             if (notesInput) notesInput.value = theme.evergreen_notes;
+        }
+        
+        // Handle categories
+        if (theme.categories && Array.isArray(theme.categories)) {
+            this.modal.renderers.renderCategories(theme.categories);
         }
         
         // Handle sources and important_notes (JSONB arrays)
