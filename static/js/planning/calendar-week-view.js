@@ -734,9 +734,31 @@ async function loadWeek(year, weekNumber) {
 
   // "This week" button - recalculate current week from today's date
   document.getElementById('this-week-btn').addEventListener('click', () => {
+    // Use WeekContext's standard ISO week calculation if available
     const now = new Date();
-    const currentWeekInfo = getISOWeekInfo(now);
-    loadWeek(currentWeekInfo.year, currentWeekInfo.weekNumber);
+    let currentWeekInfo;
+    if (window.WeekContext && window.WeekContext.getISOWeekInfo) {
+      currentWeekInfo = window.WeekContext.getISOWeekInfo(now);
+    } else {
+      currentWeekInfo = getISOWeekInfo(now);
+    }
+    
+    // Get current URL to check if we're already on this week
+    const currentUrl = new URL(window.location.href);
+    const currentYear = parseInt(currentUrl.searchParams.get('year') || '0');
+    const currentWeek = parseInt(currentUrl.searchParams.get('week') || '0');
+    
+    // Build new URL
+    const newUrl = `/planning/posts/${window.postId || 0}/calendar/week-view?year=${currentWeekInfo.year}&week=${currentWeekInfo.weekNumber}`;
+    
+    // If we're already on this week, force a reload by adding a timestamp
+    if (currentYear === currentWeekInfo.year && currentWeek === currentWeekInfo.weekNumber) {
+      // Force reload by calling loadWeek directly
+      loadWeek(currentWeekInfo.year, currentWeekInfo.weekNumber);
+    } else {
+      // Navigate to new week
+      window.location.href = newUrl;
+    }
   });
 
   // Week picker - month/week list interface

@@ -112,9 +112,15 @@ class IdeaModal {
         this.originalType = 'theme'; // Track that we started with a theme
         
         // Set radio button
-        document.getElementById('type-theme').checked = true;
-        document.getElementById('type-idea').checked = false;
-        document.getElementById('type-event').checked = false;
+        const typeThemeRadio = document.getElementById('type-theme');
+        const typeIdeaRadio = document.getElementById('type-idea');
+        const typeAnnualEventRadio = document.getElementById('type-annual-event');
+        const typeSpecialEventRadio = document.getElementById('type-special-event');
+        
+        if (typeThemeRadio) typeThemeRadio.checked = true;
+        if (typeIdeaRadio) typeIdeaRadio.checked = false;
+        if (typeAnnualEventRadio) typeAnnualEventRadio.checked = false;
+        if (typeSpecialEventRadio) typeSpecialEventRadio.checked = false;
         
         // Show delete button for existing themes
         const deleteBtn = document.getElementById('idea-modal-delete');
@@ -211,36 +217,69 @@ class IdeaModal {
         }
         
         // Check the appropriate radio button
-        document.getElementById('type-theme').checked = (type === 'theme');
-        document.getElementById('type-idea').checked = (type === 'idea');
-        document.getElementById('type-event').checked = (type === 'event');
+        const typeThemeRadio = document.getElementById('type-theme');
+        const typeIdeaRadio = document.getElementById('type-idea');
+        const typeAnnualEventRadio = document.getElementById('type-annual-event');
+        const typeSpecialEventRadio = document.getElementById('type-special-event');
+        
+        if (typeThemeRadio) typeThemeRadio.checked = (type === 'theme');
+        if (typeIdeaRadio) typeIdeaRadio.checked = (type === 'idea');
+        
+        // Note: There's no 'type-event' - events use 'type-annual-event' or 'type-special-event'
+        // For 'theme' type, we don't need to set event radio buttons
+        if (type === 'annual_event' && typeAnnualEventRadio) {
+            typeAnnualEventRadio.checked = true;
+        } else if (type === 'special_event' && typeSpecialEventRadio) {
+            typeSpecialEventRadio.checked = true;
+        }
         
         // Apply type-specific field visibility
         this.forms.switchType(type);
         
-        // Auto-fill week number if provided
+        // Auto-fill week number and year if provided
         if (weekNumber && type !== 'event') {
             const weekInput = document.getElementById('idea-week-number');
             if (weekInput) {
                 weekInput.value = weekNumber;
             }
+            
+            // Try to get year from URL parameters or use current year
+            const urlParams = new URLSearchParams(window.location.search);
+            const year = parseInt(urlParams.get('year')) || new Date().getFullYear();
+            const yearInput = document.getElementById('idea-year');
+            if (yearInput) {
+                yearInput.value = year;
+            }
         } else if (!weekNumber && type !== 'event') {
-            // Auto-fill with current week if not provided
-            const currentWeek = this.getISOWeekNumber(new Date());
+            // Auto-fill with current week and year if not provided
+            const now = new Date();
+            const currentWeek = this.getISOWeekNumber(now);
+            const currentYear = now.getFullYear();
+            
             const weekInput = document.getElementById('idea-week-number');
             if (weekInput) {
                 weekInput.value = currentWeek;
+            }
+            
+            const yearInput = document.getElementById('idea-year');
+            if (yearInput) {
+                yearInput.value = currentYear;
             }
         }
         
         // Open the modal
         const modal = document.getElementById('idea-modal');
+        if (!modal) {
+            console.error('Idea modal element not found. Make sure idea_modal.html is included in the page.');
+            return;
+        }
+        
         const loading = document.getElementById('idea-modal-loading');
         const form = document.getElementById('idea-modal-form');
         
         modal.style.display = 'flex';
-        loading.style.display = 'none';
-        form.style.display = 'block';
+        if (loading) loading.style.display = 'none';
+        if (form) form.style.display = 'block';
     }
 
     async save() {

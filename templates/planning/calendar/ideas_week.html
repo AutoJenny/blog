@@ -41,14 +41,8 @@
                 <div class="available-ideas">
                     <div class="available-ideas-header">
                         <h4>Available</h4>
-                        <button class="btn btn-secondary" onclick="getIdeaModal().openNew('theme', window.weekNumber)">
+                        <button class="btn btn-success" onclick="openNewThemeModal()" style="background: #059669; color: white; border: none;">
                             <i class="fas fa-plus"></i> New Theme
-                        </button>
-                        <button class="btn btn-secondary" onclick="getIdeaModal().openNew('theme', window.weekNumber)" style="margin-left: 0.5rem;">
-                            <i class="fas fa-plus"></i> New Theme
-                        </button>
-                        <button class="btn btn-secondary" onclick="getIdeaModal().openNew('event')" style="margin-left: 0.5rem;">
-                            <i class="fas fa-plus"></i> New Event
                         </button>
                     </div>
                     <div id="available-ideas-list" class="ideas-list">
@@ -468,6 +462,20 @@ window.year = {{ year }};
 window.mode = 'week-based';
 window.postId = null;
 window.currentStage = 'calendar';
+
+// Function to open new theme modal with current week/year context
+function openNewThemeModal() {
+    const modal = getIdeaModal();
+    modal.openNew('theme', window.weekNumber);
+    
+    // Set year in modal if available
+    setTimeout(() => {
+        const yearInput = document.getElementById('idea-year');
+        if (yearInput && window.year) {
+            yearInput.value = window.year;
+        }
+    }, 100);
+}
 window.currentSubstage = 'ideas-week';
 
 // Available themes data - ONLY THEMES, NO IDEAS
@@ -478,13 +486,22 @@ let selectedTheme = null;
 document.addEventListener('DOMContentLoaded', async function() {
         console.log('Week-based themes page loaded for week', window.weekNumber);
     
-    // Update header week and theme, with auto-selection if needed
+    // Load themes first, then update header
+    await loadThemesForWeek();
+    updatePostCreationStatus();
+    
+    // Update header week and theme after themes are loaded
     if (typeof blogPipelineHeader !== 'undefined' && blogPipelineHeader.updateWeekAndTheme) {
         await blogPipelineHeader.updateWeekAndTheme();
     }
     
-    loadThemesForWeek();
-    updatePostCreationStatus();
+    // Ensure header theme is set if we have a selected theme
+    if (selectedTheme && selectedTheme.theme_title) {
+        const themeEl = document.getElementById('pipeline-title-theme');
+        if (themeEl) {
+            themeEl.textContent = selectedTheme.theme_title;
+        }
+    }
 });
 
 async function loadThemesForWeek() {
@@ -553,6 +570,18 @@ async function loadThemesForWeek() {
             displaySelectedIdea();
             document.getElementById('confirm-btn').disabled = false;
             updateSelectedStatus();
+            
+            // Update header theme display after selection
+            if (selectedTheme) {
+                const themeEl = document.getElementById('pipeline-title-theme');
+                if (themeEl && selectedTheme.theme_title) {
+                    themeEl.textContent = selectedTheme.theme_title;
+                }
+                // Also trigger full update to ensure consistency
+                if (typeof blogPipelineHeader !== 'undefined' && blogPipelineHeader.updateWeekAndTheme) {
+                    blogPipelineHeader.updateWeekAndTheme();
+                }
+            }
         } else {
             displayNoThemes();
         }
@@ -613,6 +642,12 @@ async function selectIdea(idea) {
     selectedTheme = idea;
     displaySelectedIdea();
     document.getElementById('confirm-btn').disabled = false;
+    
+    // Update header theme display
+    const themeEl = document.getElementById('pipeline-title-theme');
+    if (themeEl && selectedTheme.theme_title) {
+        themeEl.textContent = selectedTheme.theme_title;
+    }
     
     // Re-render available list to exclude the selected one
     displayAvailableIdeas();
@@ -756,36 +791,34 @@ async function confirmSelection() {
 
 // Old dialog handlers removed - now using unified modal
 // Listen for theme-saved event from modal to refresh the themes list
-window.addEventListener('idea-saved', (event) => {
+window.addEventListener('idea-saved', async (event) => {
     // Reload themes list after save
-    loadThemesForWeek();
+    await loadThemesForWeek();
     if (event.detail && event.detail.theme) {
         selectIdea(event.detail.theme);
+    } else if (event.detail && event.detail.idea) {
+        // If it's an idea, just reload (themes are separate)
+        await loadThemesForWeek();
+    }
+    // Update header theme display
+    if (selectedTheme && selectedTheme.theme_title) {
+        const themeEl = document.getElementById('pipeline-title-theme');
+        if (themeEl) {
+            themeEl.textContent = selectedTheme.theme_title;
+        }
     }
 });
 
 async function editIdea(idea) {
-    const title = prompt('Edit theme title:', idea.theme_title);
-    if (title === null) return;
-    const description = prompt('Edit description:', idea.theme_description || '');
-    if (description === null) return;
-    try {
-        const resp = await fetch(`/planning/api/calendar/themes/${idea.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ theme_title: title, theme_description: description })
-        });
-        const result = await resp.json();
-        if (!resp.ok || !result.success) throw new Error(result.error || 'Failed to update theme');
-        // Update local list
-        const idx = availableThemes.findIndex(t => t.id === idea.id);
-        if (idx !== -1) availableThemes[idx] = result.theme;
-        if (selectedTheme && selectedTheme.id === idea.id) selectedTheme = result.theme;
-        displayAvailableIdeas();
-        displaySelectedIdea();
-        updateSelectedStatus();
-    } catch (e) {
-        alert('Error updating theme: ' + e.message);
+    // Use the unified modal - themes should use openTheme method
+    const modal = getIdeaModal();
+    // Themes have theme_title, ideas have idea_title
+    if (idea.theme_title !== undefined) {
+        // This is a theme - use openTheme method
+        await modal.openTheme(idea.id, idea);
+    } else {
+        // This is an idea - use open method
+        await modal.open(idea.id);
     }
 }
 
