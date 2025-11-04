@@ -9,7 +9,19 @@ from datetime import timedelta
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv()
+# Use explicit path to ensure we load from project root
+# config/ is one level down from project root
+project_root = os.path.dirname(os.path.dirname(__file__))
+env_path = os.path.join(project_root, '.env')
+env_absolute = '/Users/autojenny/Documents/projects/blog/.env'
+# Try absolute path first, then relative, then current directory
+if os.path.exists(env_absolute):
+    load_dotenv(dotenv_path=env_absolute, override=True)
+elif os.path.exists(env_path):
+    load_dotenv(dotenv_path=env_path, override=True)
+else:
+    # Fallback: try current directory
+    load_dotenv(override=True)
 
 class Config:
     """Base configuration class with common settings"""
@@ -130,7 +142,8 @@ class DevelopmentConfig(Config):
     DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://autojenny@localhost:5432/blog')
     
     # Development AI settings
-    OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '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')
+    # OPENAI_API_KEY must be set in .env file - no hardcoded fallback for security
+    OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
 
 class TestingConfig(Config):
     """Testing configuration"""

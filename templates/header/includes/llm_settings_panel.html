@@ -1,0 +1,42 @@
+<!-- LLM Settings Panel - Collapsible -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/header-panel.css') }}">
+<div class="llm-settings-panel" id="llm-settings-panel">
+    <div class="panel-header" onclick="toggleLLMSettingsAccordion()">
+        <h4><span class="panel-name-green">LLM Settings:</span> Prompt Generation Model</h4>
+        <div class="header-actions" onclick="event.stopPropagation()">
+            <button class="btn-primary" id="generate-llm-message-btn" style="padding: 0.5rem 1rem; border-radius: 4px; background: #3b82f6; color: white; border: none; cursor: pointer; font-weight: 600;">
+                <i class="fas fa-magic"></i> Generate LLM-Imaging Message
+            </button>
+            <i class="fas fa-chevron-down open" id="llm-settings-accordion-icon"></i>
+        </div>
+    </div>
+    <div class="panel-content" id="llm-settings-accordion-content" style="display: block;">
+        <div class="model-selection">
+            <label for="llm-provider-select">Provider:</label>
+            <select id="llm-provider-select">
+                <option value="ollama">Ollama</option>
+                <option value="openai">OpenAI</option>
+            </select>
+        </div>
+        <div class="model-selection">
+            <label for="llm-model-select">Model:</label>
+            <select id="llm-model-select">
+                <option value="llama3.2:latest">llama3.2:latest</option>
+                <option value="gpt-4">gpt-4</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleLLMSettingsAccordion() {
+    const content = document.getElementById('llm-settings-accordion-content');
+    const icon = document.getElementById('llm-settings-accordion-icon');
+    if (content && icon) {
+        const isCollapsed = content.style.display === 'none';
+        content.style.display = isCollapsed ? 'block' : 'none';
+        icon.classList.toggle('open');
+    }
+}
+</script>
+

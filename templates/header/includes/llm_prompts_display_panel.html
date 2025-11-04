@@ -1,0 +1,72 @@
+<!-- LLM Prompts Display Panel - Read-only, default open -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/header-panel.css') }}">
+<div class="llm-prompts-display-panel" id="llm-prompts-display-panel">
+    <div class="panel-header" onclick="toggleLLMPromptsDisplayAccordion()">
+        <h4><span class="panel-name-green">LLM Prompts:</span> System and Task Prompts</h4>
+        <div class="header-actions">
+            <i class="fas fa-chevron-down open" id="llm-prompts-display-accordion-icon"></i>
+        </div>
+    </div>
+    <div class="panel-content" id="llm-prompts-display-content" style="display: block;">
+        <div class="prompt-display-item">
+            <div class="prompt-label">System Prompt:</div>
+            <div class="prompt-text" id="system-prompt-display">Loading...</div>
+        </div>
+        <div class="prompt-display-item">
+            <div class="prompt-label">Task Prompt:</div>
+            <div class="prompt-text" id="task-prompt-display">Loading...</div>
+        </div>
+    </div>
+</div>
+
+<style>
+.llm-prompts-display-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.prompt-display-item {
+    margin-bottom: 1.5rem;
+}
+
+.prompt-display-item:last-child {
+    margin-bottom: 0;
+}
+
+.prompt-label {
+    color: #94a3b8;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.prompt-text {
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    padding: 1rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 400px;
+    overflow-y: auto;
+}
+</style>
+
+<script>
+function toggleLLMPromptsDisplayAccordion() {
+    const content = document.getElementById('llm-prompts-display-content');
+    const icon = document.getElementById('llm-prompts-display-accordion-icon');
+    if (content && icon) {
+        content.classList.toggle('collapsed');
+        icon.classList.toggle('open');
+    }
+}
+</script>
+

@@ -1,0 +1,47 @@
+<!-- Optimized Images Panel - Auto-expands when optimization is complete -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/header-panel.css') }}">
+<div class="optimized-images-panel" id="optimized-images-panel" style="display: none;">
+    <div class="panel-header">
+        <h4><span class="panel-name-green">Optimized Images:</span> Watermarked and Compressed</h4>
+    </div>
+    <div class="panel-content">
+        <div class="images-grid">
+            <div class="image-display-item">
+                <div class="image-label">Landscape Image (Optimized)</div>
+                <div class="image-container">
+                    <img id="optimized-landscape-image" src="" alt="Optimized landscape header image" style="max-width: 100%; height: auto; border-radius: 4px; display: none;">
+                    <div class="image-placeholder" id="optimized-landscape-placeholder">No optimized landscape image yet</div>
+                </div>
+            </div>
+            <div class="image-display-item">
+                <div class="image-label">Portrait Image (Optimized)</div>
+                <div class="image-container">
+                    <img id="optimized-portrait-image" src="" alt="Optimized portrait header image" style="max-width: 100%; height: auto; border-radius: 4px; display: none;">
+                    <div class="image-placeholder" id="optimized-portrait-placeholder">No optimized portrait image yet</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.optimized-images-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.optimized-images-panel .images-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .optimized-images-panel .images-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+

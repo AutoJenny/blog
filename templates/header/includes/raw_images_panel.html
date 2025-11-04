@@ -1,0 +1,78 @@
+<!-- Raw Generated Images Panel - Auto-expands when images are generated -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/header-panel.css') }}">
+<div class="raw-images-panel" id="raw-images-panel" style="display: none;">
+    <div class="panel-header">
+        <h4><span class="panel-name-green">Raw Generated Images:</span> Landscape and Portrait</h4>
+    </div>
+    <div class="panel-content">
+        <div class="images-grid">
+            <div class="image-display-item">
+                <div class="image-label">Landscape Image</div>
+                <div class="image-container">
+                    <img id="raw-landscape-image" src="" alt="Raw landscape header image" style="max-width: 100%; height: auto; border-radius: 4px; display: none;">
+                    <div class="image-placeholder" id="raw-landscape-placeholder">No landscape image generated yet</div>
+                </div>
+            </div>
+            <div class="image-display-item">
+                <div class="image-label">Portrait Image</div>
+                <div class="image-container">
+                    <img id="raw-portrait-image" src="" alt="Raw portrait header image" style="max-width: 100%; height: auto; border-radius: 4px; display: none;">
+                    <div class="image-placeholder" id="raw-portrait-placeholder">No portrait image generated yet</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.raw-images-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.images-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.image-display-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.image-label {
+    color: #94a3b8;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.image-container {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 1rem;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-placeholder {
+    color: #64748b;
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .images-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+

@@ -1692,73 +1692,90 @@ def api_save_slug(post_id):
 
 @bp.route('/api/posts/<int:post_id>/compile-header-prompt', methods=['POST'])
 def api_compile_header_prompt(post_id):
-    """Compile all section image prompts into a single header prompt using LLM"""
+    """Compile header prompt from theme name and expanded idea using LLM"""
     try:
-        # Get the selected model from request data
+        # Get the selected model and illustration method from request data
         data = request.get_json() or {}
-        selected_model = data.get('model', 'dall-e-3')
+        selected_model = data.get('model', 'gpt-image-1')
+        illustration_method = request.args.get('illustration_method', 'LLM-creation')
+        
+        # Get year/week from query parameters for week persistence
+        year = request.args.get('year', type=int)
+        week = request.args.get('week', type=int)
+        
+        # Get theme_name and expanded_idea from request body or resolve from week context
+        theme_name = data.get('theme_name')
+        expanded_idea = data.get('expanded_idea')
+        
         with db_manager.get_cursor() as cursor:
-            # Get all section image prompts for this post from post_development.sections JSON
-            cursor.execute("""
-                SELECT sections FROM post_development 
-                WHERE post_id = %s AND sections IS NOT NULL
-            """, (post_id,))
-            result = cursor.fetchone()
+            # If not provided, resolve from week context
+            if not theme_name or not expanded_idea:
+                if year and week:
+                    from utils.week_post_resolver import resolve_post_for_week
+                    target_post_id = resolve_post_for_week(year, week)
+                    
+                    if target_post_id:
+                        # Get selected theme for this week
+                        cursor.execute("""
+                            SELECT ct.theme_title
+                            FROM calendar_week_selection cws
+                            JOIN calendar_themes ct ON cws.selected_theme_id = ct.id
+                            WHERE cws.year = %s AND cws.week_number = %s
+                        """, (year, week))
+                        theme_result = cursor.fetchone()
+                        if theme_result and not theme_name:
+                            theme_name = theme_result.get('theme_title')
+                        
+                        # Get expanded idea from post_development
+                        cursor.execute("""
+                            SELECT expanded_idea
+                            FROM post_development
+                            WHERE post_id = %s
+                        """, (target_post_id,))
+                        idea_result = cursor.fetchone()
+                        if idea_result and not expanded_idea:
+                            expanded_idea = idea_result.get('expanded_idea')
             
-            if not result or not result['sections']:
-                return jsonify({'error': 'No section data found'}), 404
+            if not theme_name or not expanded_idea:
+                return jsonify({'error': 'Theme name and expanded idea are required'}), 400
             
-            try:
-                sections_data = json.loads(result['sections'])
-                if isinstance(sections_data, dict) and 'sections' in sections_data:
-                    sections_list = sections_data['sections']
-                elif isinstance(sections_data, list):
-                    sections_list = sections_data
-                else:
-                    return jsonify({'error': 'Invalid sections format'}), 404
-            except (json.JSONDecodeError, TypeError) as e:
-                return jsonify({'error': f'Failed to parse sections: {str(e)}'}), 404
-            
-            # Extract image prompts from sections
-            sections_with_prompts = []
-            for section in sections_list:
-                if section.get('image_prompts') and isinstance(section['image_prompts'], dict):
-                    image_prompt = section['image_prompts'].get('image_prompt', '')
-                    if image_prompt:
-                        sections_with_prompts.append({
-                            'section_order': section.get('index', 0),
-                            'image_prompts': image_prompt
-                        })
-            
-            if not sections_with_prompts:
-                return jsonify({'error': 'No section image prompts found'}), 404
-            
-            # Get prompts from database for header compilation (step 64)
-            cursor.execute("""
-                SELECT 
-                    sp.system_prompt,
-                    tp.prompt_text as task_prompt
-                FROM workflow_step_prompt wsp
-                JOIN llm_prompt sp ON wsp.system_prompt_id = sp.id
-                JOIN llm_prompt tp ON wsp.task_prompt_id = tp.id
-                WHERE wsp.step_id = 64
-            """)
-            result = cursor.fetchone()
-            
-            if not result:
-                return jsonify({'error': 'Header prompt compilation prompts not found'}), 404
+            # Get prompts from database - use Photo-harvesting prompt if applicable
+            if illustration_method == 'Photo-harvesting':
+                cursor.execute("""
+                    SELECT 
+                        system_prompt,
+                        prompt_text as task_prompt
+                    FROM llm_prompt
+                    WHERE name = 'Header Image Generation Prompt (Photo-harvesting)'
+                """)
+                result = cursor.fetchone()
+                
+                if not result:
+                    return jsonify({'error': 'Header Image Generation Prompt (Photo-harvesting) not found'}), 404
+            else:
+                # For LLM-creation route, use workflow step prompts (step 64)
+                cursor.execute("""
+                    SELECT 
+                        sp.system_prompt,
+                        tp.prompt_text as task_prompt
+                    FROM workflow_step_prompt wsp
+                    JOIN llm_prompt sp ON wsp.system_prompt_id = sp.id
+                    JOIN llm_prompt tp ON wsp.task_prompt_id = tp.id
+                    WHERE wsp.step_id = 64
+                """)
+                result = cursor.fetchone()
+                
+                if not result:
+                    return jsonify({'error': 'Header prompt compilation prompts not found'}), 404
             
             system_prompt = result.get('system_prompt', '')
             task_prompt = result.get('task_prompt', '')
             
-            # Format section prompts for LLM
-            section_prompts_text = ""
-            for section in sections_with_prompts:
-                section_prompts_text += f"Section {section['section_order']}: {section['image_prompts']}\n\n"
-            
-            # Determine style guidelines based on selected model
+            # Determine style guidelines based on selected model and illustration method
             style_guidelines = ""
-            if selected_model == 'dall-e-3':
+            if illustration_method == 'Photo-harvesting':
+                style_guidelines = "Professional photography style, high-resolution quality, natural lighting, photorealistic representation"
+            elif selected_model == 'dall-e-3':
                 style_guidelines = "Use 'photorealistic' style with brushstrokes fading to white edges"
             elif selected_model == 'sdxl':
                 style_guidelines = "Use 'inkwash and watercolour' style with brushstrokes fading to white edges"
@@ -1768,12 +1785,21 @@ def api_compile_header_prompt(post_id):
             # Use LLM service to compile prompts
             llm_service = LLMService()
             
-            # Format the prompt with the section prompts and style guidelines
-            formatted_prompt = task_prompt.format(
-                section_prompts=section_prompts_text.strip(),
-                style_guidelines=style_guidelines,
-                model=selected_model
-            )
+            # Format the prompt with theme name and expanded idea
+            formatted_prompt = task_prompt.replace('[data:theme_name]', theme_name or '')
+            formatted_prompt = formatted_prompt.replace('[data:expanded_idea]', expanded_idea or '')
+            formatted_prompt = formatted_prompt.replace('{theme_name}', theme_name or '')
+            formatted_prompt = formatted_prompt.replace('{expanded_idea}', expanded_idea or '')
+            
+            # Remove any section_prompts placeholder - header images don't use sections
+            if '{section_prompts}' in formatted_prompt:
+                formatted_prompt = formatted_prompt.replace('{section_prompts}', '')
+            if '[data:section_prompts]' in formatted_prompt:
+                formatted_prompt = formatted_prompt.replace('[data:section_prompts]', '')
+            
+            # Replace style_guidelines and model placeholders
+            formatted_prompt = formatted_prompt.replace('{style_guidelines}', style_guidelines)
+            formatted_prompt = formatted_prompt.replace('{model}', selected_model)
             
             # Prepare messages for LLM
             messages = [
@@ -1802,10 +1828,57 @@ def api_compile_header_prompt(post_id):
                 logger.error(f"LLM service error: {e}")
                 return jsonify({'error': f'LLM compilation failed: {str(e)}'}), 500
             
+            # Save compiled prompt to database
+            try:
+                with db_manager.get_cursor() as cursor:
+                    # Check if post already has a header image
+                    cursor.execute("""
+                        SELECT header_image_id FROM post WHERE id = %s
+                    """, (post_id,))
+                    post_result = cursor.fetchone()
+                    
+                    if post_result and post_result.get('header_image_id'):
+                        # Update existing image record with the compiled prompt
+                        cursor.execute("""
+                            UPDATE image 
+                            SET image_prompt = %s, updated_at = CURRENT_TIMESTAMP
+                            WHERE id = %s
+                        """, (compiled_prompt, post_result['header_image_id']))
+                        logger.info(f"Updated header image prompt for post {post_id} in image {post_result['header_image_id']}")
+                    else:
+                        # Create new image record with just the prompt (no actual image yet)
+                        cursor.execute("""
+                            INSERT INTO image (filename, original_filename, path, image_prompt, alt_text, caption)
+                            VALUES (%s, %s, %s, %s, %s, %s)
+                            RETURNING id
+                        """, (
+                            'header.jpg',
+                            'placeholder.png',
+                            f'/static/content/posts/{post_id}/header/header.jpg',
+                            compiled_prompt,
+                            'Header image prompt',
+                            'Generated header image prompt'
+                        ))
+                        image_id = cursor.fetchone()['id']
+                        
+                        # Link to post
+                        cursor.execute("""
+                            UPDATE post 
+                            SET header_image_id = %s, updated_at = CURRENT_TIMESTAMP
+                            WHERE id = %s
+                        """, (image_id, post_id))
+                        logger.info(f"Created new header image prompt for post {post_id} with image_id {image_id}")
+                    
+                    cursor.connection.commit()
+            except Exception as e:
+                logger.error(f"Error saving compiled header prompt to database: {e}")
+                # Don't fail the request if save fails, just log it
+                import traceback
+                logger.error(traceback.format_exc())
+            
             return jsonify({
                 'success': True,
-                'compiled_prompt': compiled_prompt,
-                'source_sections': len(sections_with_prompts)
+                'compiled_prompt': compiled_prompt
             })
             
     except Exception as e:
@@ -1816,64 +1889,119 @@ def api_compile_header_prompt(post_id):
 def api_get_prompt_assembly_data(post_id):
     """Get system/task prompts and section data for Prompt Assembly display"""
     try:
+        # Check illustration_method from query parameter or window context
+        illustration_method = request.args.get('illustration_method', 'LLM-creation')
+        
         with db_manager.get_cursor() as cursor:
-            # Get system and task prompts for header compilation (step 64)
-            cursor.execute("""
-                SELECT 
-                    sp.system_prompt,
-                    tp.prompt_text as task_prompt
-                FROM workflow_step_prompt wsp
-                JOIN llm_prompt sp ON wsp.system_prompt_id = sp.id
-                JOIN llm_prompt tp ON wsp.task_prompt_id = tp.id
-                WHERE wsp.step_id = 64
-            """)
-            prompt_result = cursor.fetchone()
+            # For Photo-harvesting route, use the new photorealistic prompt
+            if illustration_method == 'Photo-harvesting':
+                cursor.execute("""
+                    SELECT 
+                        system_prompt,
+                        prompt_text as task_prompt
+                    FROM llm_prompt
+                    WHERE name = 'Header Image Generation Prompt (Photo-harvesting)'
+                """)
+                prompt_result = cursor.fetchone()
+                
+                if not prompt_result:
+                    return jsonify({'error': 'Header Image Generation Prompt (Photo-harvesting) not found'}), 404
+            else:
+                # For LLM-creation route, use workflow step prompts (step 64)
+                cursor.execute("""
+                    SELECT 
+                        sp.system_prompt,
+                        tp.prompt_text as task_prompt
+                    FROM workflow_step_prompt wsp
+                    JOIN llm_prompt sp ON wsp.system_prompt_id = sp.id
+                    JOIN llm_prompt tp ON wsp.task_prompt_id = tp.id
+                    WHERE wsp.step_id = 64
+                """)
+                prompt_result = cursor.fetchone()
+                
+                if not prompt_result:
+                    return jsonify({'error': 'Header prompt compilation prompts not found'}), 404
             
-            if not prompt_result:
-                return jsonify({'error': 'Header prompt compilation prompts not found'}), 404
+            # Get year/week from query parameters for week persistence
+            year = request.args.get('year', type=int)
+            week = request.args.get('week', type=int)
             
-            # Get section image prompts from post_section table (correct source)
-            cursor.execute("""
-                SELECT 
-                    section_order,
-                    section_heading,
-                    image_prompts
-                FROM post_section 
-                WHERE post_id = %s 
-                AND image_prompts IS NOT NULL
-                ORDER BY section_order
-            """, (post_id,))
-            sections_result = cursor.fetchall()
+            # For header images, use theme name and expanded idea (not sections)
+            theme_name = None
+            expanded_idea = None
             
-            sections_with_prompts = []
-            if sections_result:
-                for section in sections_result:
-                    # Handle both string and dict formats for image_prompts
-                    prompt_data = section['image_prompts']
-                    image_prompt = ''
+            if year and week:
+                # Get theme and expanded idea from week context
+                from utils.week_post_resolver import resolve_post_for_week
+                target_post_id = resolve_post_for_week(year, week)
+                
+                if target_post_id:
+                    # Check if calendar_week_selection table exists
+                    cursor.execute("""
+                        SELECT EXISTS (
+                            SELECT FROM information_schema.tables 
+                            WHERE table_schema = 'public' 
+                            AND table_name = 'calendar_week_selection'
+                        )
+                    """)
+                    has_new_table = cursor.fetchone()['exists']
                     
-                    if isinstance(prompt_data, str):
-                        try:
-                            prompt_dict = json.loads(prompt_data)
-                            if isinstance(prompt_dict, dict):
-                                image_prompt = prompt_dict.get('image_prompt', '')
-                        except (json.JSONDecodeError, TypeError):
-                            image_prompt = prompt_data.strip()
-                    elif isinstance(prompt_data, dict):
-                        image_prompt = prompt_data.get('image_prompt', '')
+                    if has_new_table:
+                        # Get selected theme for this week (new table)
+                        cursor.execute("""
+                            SELECT ct.theme_title
+                            FROM calendar_week_selection cws
+                            JOIN calendar_themes ct ON cws.selected_theme_id = ct.id
+                            WHERE cws.year = %s AND cws.week_number = %s
+                        """, (year, week))
+                    else:
+                        # Fallback to calendar_schedule (legacy table)
+                        cursor.execute("""
+                            SELECT ct.theme_title
+                            FROM calendar_schedule cs
+                            JOIN calendar_themes ct ON cs.theme_id = ct.id
+                            WHERE cs.year = %s AND cs.week_number = %s
+                            LIMIT 1
+                        """, (year, week))
                     
-                    if image_prompt:
-                        sections_with_prompts.append({
-                            'section_order': section['section_order'],
-                            'section_title': section['section_heading'],
-                            'image_prompt': image_prompt
-                        })
+                    theme_result = cursor.fetchone()
+                    if theme_result:
+                        theme_name = theme_result.get('theme_title')
+                    
+                    # Get expanded idea from post_development
+                    cursor.execute("""
+                        SELECT expanded_idea
+                        FROM post_development
+                        WHERE post_id = %s
+                    """, (target_post_id,))
+                    idea_result = cursor.fetchone()
+                    if idea_result:
+                        expanded_idea = idea_result.get('expanded_idea')
+            else:
+                # Fallback: get from post directly (if no week context)
+                cursor.execute("""
+                    SELECT pd.expanded_idea, ct.theme_title
+                    FROM post_development pd
+                    LEFT JOIN post p ON pd.post_id = p.id
+                    LEFT JOIN calendar_week_selection cws ON p.id = (
+                        SELECT cwp.post_id FROM calendar_week_posts cwp 
+                        WHERE cwp.post_id = p.id 
+                        ORDER BY cwp.created_at DESC LIMIT 1
+                    )
+                    LEFT JOIN calendar_themes ct ON cws.selected_theme_id = ct.id
+                    WHERE pd.post_id = %s
+                """, (post_id,))
+                fallback_result = cursor.fetchone()
+                if fallback_result:
+                    expanded_idea = fallback_result.get('expanded_idea')
+                    theme_name = fallback_result.get('theme_title')
             
             return jsonify({
                 'success': True,
                 'system_prompt': prompt_result.get('system_prompt', ''),
                 'task_prompt': prompt_result.get('task_prompt', ''),
-                'sections': sections_with_prompts
+                'theme_name': theme_name,
+                'expanded_idea': expanded_idea
             })
             
     except Exception as e:
@@ -1914,11 +2042,24 @@ def api_generate_header_image(post_id):
         parameters = data.get('parameters', {})
         use_renderer = data.get('use_renderer', True)  # Feature flag
         
+        # Get illustration_method from query parameter or post taxonomy
+        illustration_method = request.args.get('illustration_method', None)
+        if illustration_method is None:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT ti.illustration_method
+                    FROM post p
+                    LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                    WHERE p.id = %s
+                """, (post_id,))
+                result = cursor.fetchone()
+                illustration_method = (result.get('illustration_method') if result else None) or 'LLM-creation'
+        
         # Get rendered prompt using the new system
         if use_renderer:
             # For header images, we need to compile a collage prompt from all sections
             rendered_prompt, debug_info = prompt_service.render_header_prompt_for_model(
-                post_id, model_name, use_override=True
+                post_id, model_name, use_override=True, illustration_method=illustration_method
             )
             
             if not rendered_prompt:
@@ -1936,8 +2077,23 @@ def api_generate_header_image(post_id):
         # Import imaging functions
         from blueprints.imaging import imaging_generate_dalle_image, imaging_generate_sdxl_image, optimize_image_with_watermark
         
-        # Set custom dimensions for header image
-        if model_name == 'dall-e-3':
+        # Set custom dimensions and style for header image
+        # For Photo-harvesting route, use photorealistic settings
+        if illustration_method == 'Photo-harvesting':
+            # Photo-harvesting route: use gpt-image-1 with photorealistic settings
+            if model_name == 'gpt-image-1':
+                parameters['size'] = '1536x1024'  # Landscape format
+                parameters['portrait_size'] = '1024x1536'  # Portrait format
+                parameters['quality'] = 'high'  # High quality for photorealistic (gpt-image-1 uses 'high' not 'hd')
+            elif model_name == 'dall-e-3':
+                parameters['size'] = '1792x1024'
+                parameters['quality'] = 'hd'
+                parameters['style'] = 'natural'  # Photorealistic
+            else:
+                # For other models, use photorealistic defaults
+                parameters['width'] = 2358
+                parameters['height'] = 1048
+        elif model_name == 'dall-e-3':
             # DALL-E uses predefined sizes, closest to 2358x1048 is 1792x1024
             parameters['size'] = '1792x1024'
             # Fix quality parameter for DALL-E (must be string, not number)
@@ -2060,11 +2216,16 @@ def api_generate_header_image(post_id):
                 generation_time_ms=generation_time_ms
             )
             
+            # Include portrait path if available
+            portrait_path = result.get('portrait_path')
+            
             return jsonify({
                 'success': True,
                 'image_id': image_id,
                 'raw_path': result.get('image_path'),
                 'optimized_path': watermark_result.get('optimized_path', result.get('image_path')),
+                'portrait_path': portrait_path,
+                'portrait_generated': result.get('portrait_generated', False),
                 'dimensions': {'width': 2358, 'height': 1048},
                 'debug_info': debug_info,
                 'generation_time_ms': generation_time_ms
@@ -2258,14 +2419,15 @@ def api_optimize_header_image(post_id):
         # Get parameters from request (optional)
         params = request.get_json() or {}
         
-        # Optimize the header image
+        # Optimize the header image (both landscape and portrait)
         result = optimize_image_with_watermark(post_id, 'header', params)
         
         if result['success']:
             # Save optimized image to image table and create post_images link
             with db_manager.get_cursor() as cursor:
-                # Get optimized image path
-                optimized_path = result['optimized_path'].lstrip('/')  # Remove leading /
+                # Get optimized image paths
+                optimized_path = result['optimized_path'].lstrip('/') if result.get('optimized_path') else None
+                portrait_optimized_path = result.get('portrait_path', '').lstrip('/') if result.get('portrait_path') else None
                 
                 # Insert or update image record
                 # Get the caption from the post's header_image_caption field
@@ -2305,11 +2467,17 @@ def api_optimize_header_image(post_id):
                     UPDATE post SET header_image_id = %s WHERE id = %s
                 """, (image_id, post_id))
             
-            return jsonify({
+            response = {
                 'success': True,
                 'optimized_path': result['optimized_path'],
                 'message': 'Image optimized successfully and database records created'
-            })
+            }
+            # Include portrait path if available
+            if result.get('portrait_path'):
+                response['portrait_optimized_path'] = result['portrait_path']
+                response['message'] = 'Landscape and portrait images optimized successfully'
+            
+            return jsonify(response)
         else:
             return jsonify({
                 'success': False,

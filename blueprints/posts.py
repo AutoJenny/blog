@@ -76,36 +76,87 @@ def posts_list():
     
     try:
         with db_manager.get_cursor() as cursor:
-            if show_deleted:
-                cursor.execute("""
-                    SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
-                           cs.year AS sched_year, cs.week_number AS sched_week, cs.scheduled_date
-                    FROM post p
-                    LEFT JOIN LATERAL (
-                        SELECT year, week_number, scheduled_date, updated_at
-                        FROM calendar_schedule
-                        WHERE post_id = p.id
-                        ORDER BY scheduled_date DESC NULLS LAST, updated_at DESC
-                        LIMIT 1
-                    ) cs ON TRUE
-                    WHERE p.status = 'deleted'
-                    ORDER BY p.created_at DESC
-                """)
+            # Check if calendar_week_posts table exists, otherwise use calendar_schedule
+            cursor.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'calendar_week_posts'
+                )
+            """)
+            result = cursor.fetchone()
+            # Handle both tuple and dict return types from psycopg
+            if isinstance(result, tuple):
+                has_week_posts_table = result[0]
+            elif isinstance(result, dict):
+                has_week_posts_table = result.get('exists', False)
             else:
-                cursor.execute("""
-                    SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
-                           cs.year AS sched_year, cs.week_number AS sched_week, cs.scheduled_date
-                    FROM post p
-                    LEFT JOIN LATERAL (
-                        SELECT year, week_number, scheduled_date, updated_at
-                        FROM calendar_schedule
-                        WHERE post_id = p.id
-                        ORDER BY scheduled_date DESC NULLS LAST, updated_at DESC
-                        LIMIT 1
-                    ) cs ON TRUE
-                    WHERE p.status != 'deleted'
-                    ORDER BY p.updated_at DESC, p.id DESC
-                """)
+                has_week_posts_table = False
+            
+            if has_week_posts_table:
+                # Use new calendar_week_posts table (V2 architecture)
+                if show_deleted:
+                    cursor.execute("""
+                        SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                               cwp.year AS sched_year, cwp.week_number AS sched_week, cwp.scheduled_date
+                        FROM post p
+                        LEFT JOIN LATERAL (
+                            SELECT year, week_number, scheduled_date, updated_at
+                            FROM calendar_week_posts
+                            WHERE post_id = p.id
+                            ORDER BY scheduled_date DESC NULLS LAST, updated_at DESC, created_at DESC
+                            LIMIT 1
+                        ) cwp ON TRUE
+                        WHERE p.status = 'deleted'
+                        ORDER BY p.created_at DESC
+                    """)
+                else:
+                    cursor.execute("""
+                        SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                               cwp.year AS sched_year, cwp.week_number AS sched_week, cwp.scheduled_date
+                        FROM post p
+                        LEFT JOIN LATERAL (
+                            SELECT year, week_number, scheduled_date, updated_at
+                            FROM calendar_week_posts
+                            WHERE post_id = p.id
+                            ORDER BY scheduled_date DESC NULLS LAST, updated_at DESC, created_at DESC
+                            LIMIT 1
+                        ) cwp ON TRUE
+                        WHERE p.status != 'deleted'
+                        ORDER BY p.updated_at DESC, p.id DESC
+                    """)
+            else:
+                # Fallback to calendar_schedule (legacy)
+                if show_deleted:
+                    cursor.execute("""
+                        SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                               cs.year AS sched_year, cs.week_number AS sched_week, cs.scheduled_date
+                        FROM post p
+                        LEFT JOIN LATERAL (
+                            SELECT year, week_number, scheduled_date, updated_at
+                            FROM calendar_schedule
+                            WHERE post_id = p.id
+                            ORDER BY scheduled_date DESC NULLS LAST, updated_at DESC
+                            LIMIT 1
+                        ) cs ON TRUE
+                        WHERE p.status = 'deleted'
+                        ORDER BY p.created_at DESC
+                    """)
+                else:
+                    cursor.execute("""
+                        SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                               cs.year AS sched_year, cs.week_number AS sched_week, cs.scheduled_date
+                        FROM post p
+                        LEFT JOIN LATERAL (
+                            SELECT year, week_number, scheduled_date, updated_at
+                            FROM calendar_schedule
+                            WHERE post_id = p.id
+                            ORDER BY scheduled_date DESC NULLS LAST, updated_at DESC
+                            LIMIT 1
+                        ) cs ON TRUE
+                        WHERE p.status != 'deleted'
+                        ORDER BY p.updated_at DESC, p.id DESC
+                    """)
             posts = cursor.fetchall()
             
         # Format posts for template
@@ -138,7 +189,8 @@ def posts_list():
                 'week_label': week_label,
                 'week_dates': week_dates_small,
                 'week_sort': week_sort_key,
-                'week_number': int(sched_week) if sched_week else None
+                'week_number': int(sched_week) if sched_week else None,
+                'year': int(sched_year) if sched_year else None
             })
         
         return render_template('posts_list.html', 

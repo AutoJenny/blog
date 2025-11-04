@@ -1,0 +1,90 @@
+<!-- Image Generation Settings Panel - Collapsible -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/header-panel.css') }}">
+<div class="image-generation-settings-panel" id="image-generation-settings-panel">
+    <div class="panel-header" onclick="toggleImageGenerationSettingsAccordion()">
+        <h4><span class="panel-name-green">Image Generation Settings:</span> Model and Parameters</h4>
+        <div class="header-actions">
+            <button class="btn-primary" id="generate-images-btn" disabled style="padding: 0.5rem 1rem; border-radius: 4px; background: #3b82f6; color: white; border: none; cursor: pointer; font-weight: 600;">
+                <i class="fas fa-image"></i> Generate Images (Landscape + Portrait)
+            </button>
+            <i class="fas fa-chevron-down" id="image-generation-settings-accordion-icon"></i>
+        </div>
+    </div>
+    <div class="panel-content collapsed" id="image-generation-settings-content">
+        <div class="settings-grid">
+            <div class="setting-item">
+                <label for="image-model-select">Model:</label>
+                <select id="image-model-select" name="image_model" style="width: 100%; padding: 0.5rem; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #e2e8f0;">
+                    <option value="gpt-image-1">GPT Image 1 (OpenAI)</option>
+                    <option value="dall-e-3">DALL-E 3 (OpenAI)</option>
+                    <option value="dall-e-2">DALL-E 2 (OpenAI)</option>
+                    <option value="sdxl-lora">SDXL LoRA (Local)</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label for="landscape-size">Landscape Size:</label>
+                <select id="landscape-size" style="width: 100%; padding: 0.5rem; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #e2e8f0;">
+                    <option value="1536x1024" selected>1536x1024</option>
+                    <option value="1792x1024">1792x1024</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label for="portrait-size">Portrait Size:</label>
+                <select id="portrait-size" style="width: 100%; padding: 0.5rem; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #e2e8f0;">
+                    <option value="1024x1536" selected>1024x1536</option>
+                    <option value="1024x1792">1024x1792</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label for="image-quality">Quality:</label>
+                <select id="image-quality" style="width: 100%; padding: 0.5rem; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #e2e8f0;">
+                    <option value="high" selected>High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                    <option value="auto">Auto</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.image-generation-settings-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.settings-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.setting-item label {
+    display: block;
+    color: #94a3b8;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .settings-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+function toggleImageGenerationSettingsAccordion() {
+    const content = document.getElementById('image-generation-settings-content');
+    const icon = document.getElementById('image-generation-settings-accordion-icon');
+    if (content && icon) {
+        content.classList.toggle('collapsed');
+        icon.classList.toggle('open');
+    }
+}
+</script>
+

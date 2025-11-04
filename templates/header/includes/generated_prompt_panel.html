@@ -1,0 +1,92 @@
+<!-- Generated Prompt Panel - Auto-expands when prompt is generated -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/header-panel.css') }}">
+<div class="generated-prompt-panel" id="generated-prompt-panel" style="display: none;">
+    <div class="panel-header">
+        <h4><span class="panel-name-green">Generated Image Generation Prompt:</span> Ready for image generation</h4>
+        <div class="header-actions">
+            <label class="edit-toggle">
+                <input type="checkbox" id="prompt-editable-toggle"> Editable
+            </label>
+        </div>
+    </div>
+    <div class="panel-content">
+        <textarea id="generated-prompt-textarea" rows="10" placeholder="Generated prompt will appear here..." readonly style="width: 100%; padding: 1rem; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #e2e8f0; font-family: monospace; font-size: 0.9rem; line-height: 1.6;"></textarea>
+        <div class="prompt-actions" style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+            <button class="btn-secondary" id="copy-prompt-btn" style="padding: 0.5rem 1rem; border-radius: 4px; background: #334155; color: #e2e8f0; border: 1px solid #475569; cursor: pointer;">
+                <i class="fas fa-copy"></i> Copy
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.generated-prompt-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.generated-prompt-panel .panel-header {
+    padding: 0.75rem 1rem;
+    background: #0f172a;
+    border-bottom: 1px solid #334155;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.generated-prompt-panel .panel-header h4 {
+    margin: 0;
+    color: #f1f5f9;
+    font-size: 1rem;
+}
+
+.edit-toggle {
+    color: #94a3b8;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.edit-toggle input[type="checkbox"] {
+    cursor: pointer;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const editableToggle = document.getElementById('prompt-editable-toggle');
+    const promptTextarea = document.getElementById('generated-prompt-textarea');
+    
+    if (editableToggle && promptTextarea) {
+        editableToggle.addEventListener('change', function() {
+            promptTextarea.readOnly = !this.checked;
+            if (this.checked) {
+                promptTextarea.style.background = '#1e293b';
+                promptTextarea.style.borderColor = '#475569';
+            } else {
+                promptTextarea.style.background = '#0f172a';
+                promptTextarea.style.borderColor = '#334155';
+            }
+        });
+    }
+    
+    const copyBtn = document.getElementById('copy-prompt-btn');
+    if (copyBtn && promptTextarea) {
+        copyBtn.addEventListener('click', function() {
+            promptTextarea.select();
+            document.execCommand('copy');
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            setTimeout(() => {
+                this.innerHTML = originalText;
+            }, 2000);
+        });
+    }
+});
+</script>
+
