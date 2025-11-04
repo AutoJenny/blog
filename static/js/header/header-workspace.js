@@ -22,6 +22,22 @@ function initUberGenerate() {
     if (!uberBtn) return;
 
     uberBtn.addEventListener('click', async function() {
+        // Check if week has a post scheduled
+        if (!window.weekHasPost) {
+            alert('Cannot generate content: No post is scheduled for this week. Please schedule a post first.');
+            return;
+        }
+        
+        // Validate week context
+        const urlParams = new URLSearchParams(window.location.search);
+        const year = urlParams.get('year') || (window.weekYear && window.weekYear.year);
+        const week = urlParams.get('week') || (window.weekYear && window.weekYear.week);
+        
+        if (!year || !week) {
+            alert('Cannot generate content: Week context (year and week) is required.');
+            return;
+        }
+        
         console.log('[Uber Generate] Starting generation of all header elements');
         
         // Disable button during generation
@@ -29,8 +45,9 @@ function initUberGenerate() {
         uberBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
         
         try {
-            // Make single API call to generate all elements
-            const response = await fetch(`/header/api/posts/${window.postId}/generate-title-summary`, {
+            // Make single API call to generate all elements (with week context required)
+            const url = `/header/api/posts/${window.postId}/generate-title-summary?year=${year}&week=${week}`;
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

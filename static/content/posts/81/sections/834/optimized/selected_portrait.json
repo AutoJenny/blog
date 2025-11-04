@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-11-04T09:24:53.038625",
+  "post_id": 81,
+  "section_id": 834,
+  "orientation": "portrait",
+  "photo": {
+    "provider": "pexels",
+    "image_id": "17017142",
+    "url": "https://images.pexels.com/photos/17017142/pexels-photo-17017142.jpeg",
+    "thumbnail_url": "https://images.pexels.com/photos/17017142/pexels-photo-17017142.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "width": 3941,
+    "height": 5903,
+    "orientation": "portrait",
+    "photographer": "Luca Picchio",
+    "photographer_url": "https://www.pexels.com/@luca-picchio-518884327",
+    "credits": "Photo by Luca Picchio on Pexels",
+    "search_term": "1940s american diner interior, chrome accents, vinyl booths, neon signs, soda fountain equipment, retro decor, chrome-plated stools, Formica tables",
+    "selected": false,
+    "selected_at": "2025-11-04T09:24:53.038616",
+    "provider_data": {
+      "pexels_id": "17017142",
+      "pexels_url": "https://www.pexels.com/photo/table-and-chairs-in-a-restaurant-17017142/",
+      "photographer_id": 518884327
+    },
+    "selection_orientation": "portrait"
+  }
+}

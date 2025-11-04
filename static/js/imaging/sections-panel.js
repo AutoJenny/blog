@@ -290,6 +290,8 @@ class ImagingSectionsPanel {
 
                 // Use different API based on current substage
                 let resp;
+                let data;
+                
                 if (window.currentSubstage === 'optimise') {
                     // On optimize page, call optimization API
                     const optParams = {
@@ -303,6 +305,100 @@ class ImagingSectionsPanel {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(optParams)
                     });
+                    data = await resp.json();
+                } else if (window.currentSubstage === 'photo-selection') {
+                    // On photo-selection page (Photo-harvesting route), search and auto-select photos
+                    if (!image_prompt) {
+                        this.callbacks.onBatchProgress({ current: i + 1, total: selectedIds.length, sectionId, sectionTitle, status: 'error', error: 'No search term found for section' });
+                        continue;
+                    }
+                    
+                    // Step 1: Search photos using the search term
+                    // Get year/week from URL or window context for week persistence
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const year = urlParams.get('year') || (window.year && window.year);
+                    const week = urlParams.get('week') || (window.week && window.week);
+                    
+                    let searchUrl = `/imaging/api/photo-search/posts/${this.postId}/sections/${sectionId}/search`;
+                    if (year && week) {
+                        searchUrl += `?year=${year}&week=${week}`;
+                    }
+                    
+                    const searchParams = {
+                        search_term: image_prompt,
+                        provider: 'both', // Default to both providers
+                        per_page: 20
+                    };
+                    
+                    const searchResp = await fetch(searchUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(searchParams)
+                    });
+                    
+                    const searchData = await searchResp.json();
+                    if (!searchData.success || !searchData.results || searchData.results.length === 0) {
+                        this.callbacks.onBatchProgress({ current: i + 1, total: selectedIds.length, sectionId, sectionTitle, status: 'error', error: searchData.error || 'No photos found' });
+                        continue;
+                    }
+                    
+                    // Step 2: Separate results by orientation
+                    const landscapePhotos = [];
+                    const portraitPhotos = [];
+                    
+                    searchData.results.forEach(photo => {
+                        const width = photo.width || 0;
+                        const height = photo.height || 0;
+                        if (width >= height) {
+                            landscapePhotos.push(photo);
+                        } else {
+                            portraitPhotos.push(photo);
+                        }
+                    });
+                    
+                    // Step 3: Auto-select first landscape and portrait
+                    let landscapeSelected = false;
+                    let portraitSelected = false;
+                    
+                    // Build select URLs with week context if available
+                    let selectUrlBase = `/imaging/api/photo-search/posts/${this.postId}/sections/${sectionId}/select`;
+                    if (year && week) {
+                        selectUrlBase += `?year=${year}&week=${week}`;
+                    }
+                    
+                    if (landscapePhotos.length > 0) {
+                        const landscapeSelectResp = await fetch(selectUrlBase, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                provider: landscapePhotos[0].provider,
+                                image_id: landscapePhotos[0].image_id,
+                                orientation: 'landscape'
+                            })
+                        });
+                        const landscapeSelectData = await landscapeSelectResp.json();
+                        landscapeSelected = landscapeSelectData.success;
+                    }
+                    
+                    if (portraitPhotos.length > 0) {
+                        const portraitSelectResp = await fetch(selectUrlBase, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                provider: portraitPhotos[0].provider,
+                                image_id: portraitPhotos[0].image_id,
+                                orientation: 'portrait'
+                            })
+                        });
+                        const portraitSelectData = await portraitSelectResp.json();
+                        portraitSelected = portraitSelectData.success;
+                    }
+                    
+                    if (landscapeSelected || portraitSelected) {
+                        data = { success: true, selected_landscape: landscapeSelected, selected_portrait: portraitSelected };
+                    } else {
+                        data = { success: false, error: 'Failed to select photos' };
+                    }
                 } else {
                     // On image-generation page, call image generation API
                     // Get current model and parameters from model selection panel
@@ -324,17 +420,19 @@ class ImagingSectionsPanel {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
+                    data = await resp.json();
                 }
 
-                const data = await resp.json();
                 if (data.success) {
                     // Update output panel immediately if this section is highlighted
-                    const imagePath = data.image_path || data.optimized_path; // Handle both APIs
-                    if (window.imagingOutputPanel && this.currentSectionId === sectionId && imagePath) {
-                        if (window.currentSubstage === 'optimise') {
-                            window.imagingOutputPanel.onImageOptimized?.(imagePath);
-                        } else {
-                            window.imagingOutputPanel.onImageGenerated?.(imagePath);
+                    if (window.currentSubstage !== 'photo-selection') {
+                        const imagePath = data.image_path || data.optimized_path; // Handle both APIs
+                        if (window.imagingOutputPanel && this.currentSectionId === sectionId && imagePath) {
+                            if (window.currentSubstage === 'optimise') {
+                                window.imagingOutputPanel.onImageOptimized?.(imagePath);
+                            } else {
+                                window.imagingOutputPanel.onImageGenerated?.(imagePath);
+                            }
                         }
                     }
                     this.callbacks.onBatchProgress({ current: i + 1, total: selectedIds.length, sectionId, sectionTitle, status: 'success' });

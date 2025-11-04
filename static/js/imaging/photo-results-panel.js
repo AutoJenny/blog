@@ -16,8 +16,13 @@ class PhotoResultsPanel {
     
     init() {
         // Listen for search completion
-        document.addEventListener('photo-search-complete', (e) => {
-            this.displayResults(e.detail.results);
+        document.addEventListener('photo-search-complete', async (e) => {
+            // For new searches, clear existing selections so we auto-select from new results
+            // This ensures new search results always get auto-selected
+            this.selectedLandscape = null;
+            this.selectedPortrait = null;
+            // Then display results (which will auto-select from new results)
+            await this.displayResults(e.detail.results);
         });
         
         // Listen for section selection (note: event name may vary)
@@ -39,11 +44,14 @@ class PhotoResultsPanel {
         if (!this.currentSectionId) return;
         
         try {
+            // Load selected photos first to check if auto-selection is needed
+            await this.loadSelectedPhotos();
+            
             const response = await fetch(`/imaging/api/photo-search/posts/${this.postId}/sections/${this.currentSectionId}/results`);
             if (response.ok) {
                 const data = await response.json();
                 if (data.success && data.results.length > 0) {
-                    this.displayResults(data.results);
+                    await this.displayResults(data.results);
                 }
             }
         } catch (e) {
@@ -68,7 +76,7 @@ class PhotoResultsPanel {
         }
     }
     
-    displayResults(results) {
+    async displayResults(results) {
         this.results = results;
         
         // Hide empty message
@@ -103,6 +111,47 @@ class PhotoResultsPanel {
         const countBadge = document.getElementById('photo-results-count');
         if (countBadge) {
             countBadge.textContent = `${results.length} results (${landscapePhotos.length} landscape, ${portraitPhotos.length} portrait)`;
+        }
+        
+        // Auto-select first landscape and portrait if no selections exist
+        // Check if existing selections are still valid in current results
+        if (this.currentSectionId) {
+            // Verify existing selections are still in current results
+            let validLandscape = false;
+            let validPortrait = false;
+            
+            if (this.selectedLandscape) {
+                validLandscape = results.some(p => 
+                    p.provider === this.selectedLandscape.provider && 
+                    String(p.image_id) === String(this.selectedLandscape.image_id)
+                );
+            }
+            
+            if (this.selectedPortrait) {
+                validPortrait = results.some(p => 
+                    p.provider === this.selectedPortrait.provider && 
+                    String(p.image_id) === String(this.selectedPortrait.image_id)
+                );
+            }
+            
+            // Auto-select if no selection exists OR if existing selection is not in new results
+            const needsLandscape = (!validLandscape) && landscapePhotos.length > 0;
+            const needsPortrait = (!validPortrait) && portraitPhotos.length > 0;
+            
+            // Only auto-select if at least one is missing or invalid
+            if (needsLandscape || needsPortrait) {
+                // Auto-select first landscape if none selected or invalid
+                if (needsLandscape) {
+                    console.log('[Photo Results] Auto-selecting first landscape photo');
+                    await this.selectPhoto(landscapePhotos[0], 'landscape');
+                }
+                
+                // Auto-select first portrait if none selected or invalid
+                if (needsPortrait) {
+                    console.log('[Photo Results] Auto-selecting first portrait photo');
+                    await this.selectPhoto(portraitPhotos[0], 'portrait');
+                }
+            }
         }
     }
     

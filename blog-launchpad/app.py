@@ -2454,20 +2454,45 @@ def get_post_sections_with_images(post_id):
         for section in raw_sections:
             section_dict = dict(section)
             
-            # Try to find image in the new directory structure first
-            image_path = find_section_image(post_id, section['id'])
+            # Priority 1: Check Photo-harvesting route (selected_landscape.json)
+            image_path = None
+            caption_text = section.get('image_captions') or ''
+            alt_text = f"Image for {section.get('section_heading', 'section')}"
+            
+            try:
+                import os
+                import json
+                photo_json_path = os.path.join('static', 'content', 'posts', str(post_id), 'sections', str(section['id']), 'optimized', 'selected_landscape.json')
+                if os.path.exists(photo_json_path):
+                    with open(photo_json_path, 'r') as f:
+                        photo_data = json.load(f)
+                        photo = photo_data.get('photo', {})
+                        if photo.get('url'):
+                            # Use hotlinked provider URL (Pexels/Unsplash)
+                            image_path = photo['url']
+                            # Extract caption/alt from photo metadata if not already set
+                            if not caption_text and photo.get('credits'):
+                                caption_text = photo['credits']
+                            if photo.get('photographer'):
+                                alt_text = f"Photo by {photo['photographer']}"
+            except Exception as e:
+                logger.debug(f"Could not load Photo-harvesting JSON for section {section['id']}: {e}")
+            
+            # Priority 2: Try to find image in the new directory structure
+            if not image_path:
+                image_path = find_section_image(post_id, section['id'])
             
             if image_path:
-                # Found image in new structure
+                # Found image (Photo-harvesting or filesystem)
                 section_dict['image'] = {
                     'path': image_path,
-                    'alt_text': section.get('image_captions') or f"Image for {section.get('section_heading', 'section')}",
+                    'alt_text': alt_text,
                     'title': section.get('image_title'),
                     'width': section.get('image_width'),
                     'height': section.get('image_height')
                 }
                 # Also set the caption directly on the section for template compatibility
-                section_dict['image_captions'] = section.get('image_captions')
+                section_dict['image_captions'] = caption_text
             elif section.get('image_id'):
                 # Fallback to legacy image_id system
                 cur.execute("""

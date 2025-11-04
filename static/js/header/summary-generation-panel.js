@@ -53,7 +53,25 @@
       console.log('Content being sent to summary API:', fullContent);
       
       // Make API call to generate summary
-      const response = await fetch(`/header/api/posts/${window.postId}/generate-summary`, {
+      // Check if week has a post scheduled
+      if (!window.weekHasPost) {
+        alert('Cannot generate summary: No post is scheduled for this week. Please schedule a post first.');
+        return;
+      }
+      
+      // Get year/week from URL or window context
+      const urlParams = new URLSearchParams(window.location.search);
+      const year = urlParams.get('year') || (window.weekYear && window.weekYear.year);
+      const week = urlParams.get('week') || (window.weekYear && window.weekYear.week);
+      
+      if (!year || !week) {
+        alert('Cannot generate summary: Week context (year and week) is required.');
+        return;
+      }
+      
+      // Make API call with week context required
+      const url = `/header/api/posts/${window.postId}/generate-summary?year=${year}&week=${week}`;
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

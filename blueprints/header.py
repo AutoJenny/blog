@@ -8,6 +8,7 @@ import re
 import requests
 import os
 from slugify import slugify
+from urllib import request as urlrequest, parse as urlparse
 
 logger = logging.getLogger(__name__)
 
@@ -83,18 +84,139 @@ bp = Blueprint('header', __name__, url_prefix='/header')
 # Main routes
 @bp.route('/posts/<int:post_id>/title-summary')
 def header_title_summary(post_id):
-    """Title & Summary substage - Generate post title, subtitle, slug, and summary"""
-    return render_template('header/title_summary.html', post_id=post_id, blueprint_name='header')
+    """Title & Summary substage - Generate post title, subtitle, slug, and summary
+    Week-persistence compliance: resolve target_post_id from ?year&?week and pass illustration_method.
+    """
+    try:
+        # Resolve week context
+        year = request.args.get('year', type=int)
+        week = request.args.get('week', type=int)
+
+        # Resolve post_id from week context (required for generation, but allow page to render)
+        from utils.week_post_resolver import resolve_post_for_week
+        target_post_id = None
+        week_has_post = False
+        
+        if year and week:
+            resolved = resolve_post_for_week(year, week)
+            if resolved:
+                target_post_id = resolved
+                week_has_post = True
+            else:
+                logger.warning(f"No post scheduled for year={year}, week={week}")
+                # Use provided post_id for display only (but flag that generation won't work)
+                target_post_id = post_id
+        else:
+            # No week context provided - use provided post_id but flag as invalid for generation
+            target_post_id = post_id
+            logger.warning(f"Title-summary route called without week context: year={year}, week={week}")
+
+        # Fetch illustration_method from taxonomy for target_post_id
+        illustration_method = 'LLM-creation'
+        try:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT ti.illustration_method
+                    FROM post p
+                    LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                    WHERE p.id = %s
+                    """,
+                    (target_post_id,),
+                )
+                row = cursor.fetchone()
+                if row and row.get('illustration_method'):
+                    illustration_method = row['illustration_method']
+        except Exception as e:
+            logger.warning(f"Failed to fetch illustration_method: {e}")
+
+        return render_template(
+            'header/title_summary.html',
+            post_id=target_post_id,
+            original_post_id=post_id,
+            year=year,
+            week=week,
+            illustration_method=illustration_method,
+            week_has_post=week_has_post,
+            blueprint_name='header'
+        )
+    except Exception as e:
+        logger.error(f"Error loading header title-summary: {e}")
+        return render_template('header/title_summary.html', post_id=post_id, blueprint_name='header')
 
 @bp.route('/posts/<int:post_id>/header-image')
 def header_header_image(post_id):
     """Header Image substage - Create header image with caption and alt text"""
-    return render_template('header/header_image.html', post_id=post_id, blueprint_name='header')
+    year = request.args.get('year', type=int)
+    week = request.args.get('week', type=int)
+
+    from utils.week_post_resolver import resolve_post_for_week
+    # NO FALLBACKS: Only use resolved post_id from week context
+    if not year or not week:
+        logger.error(f"Header image route called without week context: year={year}, week={week}")
+        return "Week context (year and week) is required.", 400
+    
+    target_post_id = resolve_post_for_week(year, week)
+    if not target_post_id:
+        logger.error(f"No post scheduled for year={year}, week={week}")
+        return f"No post scheduled for week {week}, {year}. Please schedule a post for this week first.", 404
+    
+    # Get illustration method for the post
+    illustration_method = 'LLM-creation' # Default
+    with db_manager.get_cursor() as cursor:
+        cursor.execute("""
+            SELECT ti.illustration_method
+            FROM post p
+            JOIN taxonomy_item ti ON p.content_type_id = ti.id
+            WHERE p.id = %s
+        """, (target_post_id,))
+        result = cursor.fetchone()
+        if result and result['illustration_method']:
+            illustration_method = result['illustration_method']
+
+    return render_template(
+        'header/header_image.html', 
+        post_id=target_post_id, 
+        blueprint_name='header',
+        year=year,
+        week=week,
+        illustration_method=illustration_method
+    )
 
 @bp.route('/posts/<int:post_id>/seo-meta')
 def header_seo_meta(post_id):
     """SEO & Meta substage - Generate SEO metadata including meta title, description, and tags"""
-    return render_template('header/seo_meta.html', post_id=post_id, blueprint_name='header')
+    year = request.args.get('year', type=int)
+    week = request.args.get('week', type=int)
+
+    from utils.week_post_resolver import resolve_post_for_week
+    
+    # Resolve post_id from week context (required for generation, but allow page to render)
+    target_post_id = None
+    week_has_post = False
+    
+    if year and week:
+        resolved = resolve_post_for_week(year, week)
+        if resolved:
+            target_post_id = resolved
+            week_has_post = True
+        else:
+            logger.warning(f"No post scheduled for year={year}, week={week}")
+            # Use provided post_id for display only (but flag that generation won't work)
+            target_post_id = post_id
+    else:
+        # No week context provided - use provided post_id but flag as invalid for generation
+        target_post_id = post_id
+        logger.warning(f"SEO meta route called without week context: year={year}, week={week}")
+    
+    return render_template(
+        'header/seo_meta.html', 
+        post_id=target_post_id, 
+        blueprint_name='header',
+        year=year,
+        week=week,
+        week_has_post=week_has_post
+    )
 
 @bp.route('/posts/<int:post_id>/publishing-details')
 def header_publishing_details(post_id):
@@ -173,16 +295,41 @@ def header_preview(post_id):
                     'content': section['polished'] or section['draft'] or '',
                 }
                 
-                # Add image if exists (from DB link) or fallback to filesystem optimized path
+                # Add image if exists - check Photo-harvesting JSON first, then DB link, then filesystem
                 image_path = None
-                if section['image_path']:
+                caption_text = section.get('section_image_captions') or section.get('caption') or ''
+                alt_text = section.get('section_image_alt') or section.get('alt_text') or ''
+                
+                # Priority 1: Check Photo-harvesting route (selected_landscape.json)
+                try:
+                    import os
+                    import json
+                    photo_json_path = f"static/content/posts/{post_id}/sections/{section['id']}/optimized/selected_landscape.json"
+                    if os.path.exists(photo_json_path):
+                        with open(photo_json_path, 'r') as f:
+                            photo_data = json.load(f)
+                            photo = photo_data.get('photo', {})
+                            if photo.get('url'):
+                                # Use hotlinked provider URL (Pexels/Unsplash)
+                                image_path = photo['url']
+                                # Extract caption/alt from photo metadata if not already set
+                                if not caption_text and photo.get('credits'):
+                                    caption_text = photo['credits']
+                                if not alt_text and photo.get('photographer'):
+                                    alt_text = f"Photo by {photo['photographer']}"
+                except Exception as e:
+                    logger.debug(f"Could not load Photo-harvesting JSON for section {section['id']}: {e}")
+                
+                # Priority 2: Database link (post_images)
+                if not image_path and section['image_path']:
                     image_path = section['image_path']
                     if not image_path.startswith('http'):
                         if not image_path.startswith('/static'):
                             image_path = f"/static{image_path}"
                         image_path = image_path.replace('/raw/', '/optimized/').replace('.png', '.jpg')
-                else:
-                    # Fallback: check conventional optimized path on disk
+                
+                # Priority 3: Filesystem fallback
+                if not image_path:
                     try:
                         import os
                         candidate = f"/static/content/posts/{post_id}/sections/{section['id']}/optimized/{section['id']}.jpg"
@@ -193,9 +340,6 @@ def header_preview(post_id):
                         pass
 
                 if image_path:
-                    # Prefer section-level caption/alt if available, else use image table values
-                    caption_text = section.get('section_image_captions') or section.get('caption') or ''
-                    alt_text = section.get('section_image_alt') or section.get('alt_text') or ''
                     formatted_section['image'] = {
                         'path': image_path,
                         'alt_text': alt_text,
@@ -329,6 +473,21 @@ def api_save_prompts(step_id):
 @bp.route('/api/posts/<int:post_id>/generate-titles', methods=['POST'])
 def api_generate_titles(post_id):
     """Generate three title options based on Development tab content using LLM"""
+    # NO FALLBACKS: Resolve target_post_id from week context (required)
+    year = request.args.get('year', type=int)
+    week = request.args.get('week', type=int)
+    
+    if not year or not week:
+        return jsonify({'error': 'Week context (year and week) is required'}), 400
+    
+    from utils.week_post_resolver import resolve_post_for_week
+    target_post_id = resolve_post_for_week(year, week)
+    if not target_post_id:
+        return jsonify({'error': f'No post scheduled for week {week}, {year}'}), 404
+    
+    # Replace post_id with target_post_id for all operations
+    post_id = target_post_id
+    
     try:
         data = request.get_json()
         idea_seed = data.get('idea_seed', '')
@@ -419,6 +578,21 @@ def api_generate_titles(post_id):
 @bp.route('/api/posts/<int:post_id>/generate-subtitle', methods=['POST'])
 def api_generate_subtitle(post_id):
     """Generate multiple subtitle options based on Development tab content and selected title using LLM"""
+    # NO FALLBACKS: Resolve target_post_id from week context (required)
+    year = request.args.get('year', type=int)
+    week = request.args.get('week', type=int)
+    
+    if not year or not week:
+        return jsonify({'error': 'Week context (year and week) is required'}), 400
+    
+    from utils.week_post_resolver import resolve_post_for_week
+    target_post_id = resolve_post_for_week(year, week)
+    if not target_post_id:
+        return jsonify({'error': f'No post scheduled for week {week}, {year}'}), 404
+    
+    # Replace post_id with target_post_id for all operations
+    post_id = target_post_id
+    
     try:
         data = request.get_json()
         idea_seed = data.get('idea_seed', '')
@@ -516,6 +690,21 @@ def api_generate_subtitle(post_id):
 @bp.route('/api/posts/<int:post_id>/generate-title-summary', methods=['POST'])
 def api_generate_title_summary(post_id):
     """Generate all header elements (title, subtitle, summary, slug) in one call"""
+    # NO FALLBACKS: Resolve target_post_id from week context (required)
+    year = request.args.get('year', type=int)
+    week = request.args.get('week', type=int)
+    
+    if not year or not week:
+        return jsonify({'error': 'Week context (year and week) is required'}), 400
+    
+    from utils.week_post_resolver import resolve_post_for_week
+    target_post_id = resolve_post_for_week(year, week)
+    if not target_post_id:
+        return jsonify({'error': f'No post scheduled for week {week}, {year}'}), 404
+    
+    # Replace post_id with target_post_id for all operations
+    post_id = target_post_id
+    
     try:
         # Get content from Development tab
         with db_manager.get_cursor() as cursor:
@@ -897,25 +1086,37 @@ def api_generate_seo_meta(post_id):
     try:
         from modules.llm_service import llm_service
         
-        # Get post title and summary from post table
+        # NO FALLBACKS: Resolve target_post_id from week context (required)
+        year = request.args.get('year', type=int)
+        week = request.args.get('week', type=int)
+        
+        if not year or not week:
+            return jsonify({'error': 'Week context (year and week) is required'}), 400
+        
+        from utils.week_post_resolver import resolve_post_for_week
+        target_post_id = resolve_post_for_week(year, week)
+        if not target_post_id:
+            return jsonify({'error': f'No post scheduled for week {week}, {year}'}), 404
+        
+        # Get post title and summary from post table (use resolved post_id)
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 SELECT title, summary
                 FROM post 
                 WHERE id = %s
-            """, (post_id,))
+            """, (target_post_id,))
             
             post_data = cursor.fetchone()
             if not post_data:
                 return jsonify({'error': 'Post not found'}), 404
             
-            # Get section titles from planning/concept/titling
+            # Get section titles from planning/concept/titling (use resolved post_id)
             cursor.execute("""
                 SELECT section_heading
                 FROM post_section 
                 WHERE post_id = %s 
                 ORDER BY section_order
-            """, (post_id,))
+            """, (target_post_id,))
             
             sections = cursor.fetchall()
             
@@ -953,9 +1154,9 @@ Return in JSON format:
   "meta_tags": "tag1, tag2, tag3, tag4, tag5"
 }}"""
             
-            # Call LLM with intercept_context
+            # Call LLM with intercept_context (use resolved post_id)
             intercept_context = {
-                'post_id': post_id,
+                'post_id': target_post_id,
                 'step_id': 66,  # SEO meta generation step
                 'context_type': 'seo_meta_generation'
             }
@@ -1025,7 +1226,7 @@ Return in JSON format:
             else:
                 meta_image = "https://clan.com/images/default-scottish-heritage.jpg"
             
-            # Save to database
+            # Save to database (use resolved post_id)
             cursor.execute("""
                 UPDATE post 
                 SET meta_title = %s,
@@ -1034,7 +1235,7 @@ Return in JSON format:
                     meta_image = %s,
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = %s
-            """, (meta_title, meta_description, meta_tags, meta_image, post_id))
+            """, (meta_title, meta_description, meta_tags, meta_image, target_post_id))
             
             return jsonify({
                 'success': True,
@@ -1281,6 +1482,21 @@ def api_get_header_data(post_id):
 @bp.route('/api/posts/<int:post_id>/generate-summary', methods=['POST'])
 def api_generate_summary(post_id):
     """Generate summary for a post using LLM"""
+    # NO FALLBACKS: Resolve target_post_id from week context (required)
+    year = request.args.get('year', type=int)
+    week = request.args.get('week', type=int)
+    
+    if not year or not week:
+        return jsonify({'error': 'Week context (year and week) is required'}), 400
+    
+    from utils.week_post_resolver import resolve_post_for_week
+    target_post_id = resolve_post_for_week(year, week)
+    if not target_post_id:
+        return jsonify({'error': f'No post scheduled for week {week}, {year}'}), 404
+    
+    # Replace post_id with target_post_id for all operations
+    post_id = target_post_id
+    
     try:
         data = request.get_json()
         content = data.get('content', '')
@@ -2152,6 +2368,351 @@ def api_ui_preferences(key):
             'success': False,
             'error': f'Failed to handle preference: {str(e)}'
         }), 500
+
+#
+# Header Photo-harvesting endpoints (week-persistence compliant)
+#
+
+@bp.route('/api/llm/prompts/header-image-search', methods=['GET', 'PUT'])
+def header_api_image_search_prompt():
+    """Get or update Header Image Search prompt (Photo-harvesting).
+    
+    Supports illustration_method query parameter:
+    - 'Photo-harvesting' → 'Header Image Search Prompt (Photo-harvesting)' (for photo search)
+    - 'LLM-creation' or default → returns 404 (header uses LLM-creation via different flow)
+    No fallbacks: 404 if prompt missing.
+    """
+    try:
+        with db_manager.get_cursor() as cursor:
+            illustration_method = request.args.get('illustration_method', 'LLM-creation')
+            if illustration_method != 'Photo-harvesting':
+                return jsonify({'error': 'Header Image Search prompt only available for Photo-harvesting route'}), 404
+            
+            prompt_name = 'Header Image Search Prompt (Photo-harvesting)'
+            
+            if request.method == 'PUT':
+                data = request.get_json()
+                system_prompt_template = data.get('system_prompt', '')
+                prompt_text = data.get('prompt_text', '')
+                
+                system_prompt_complete = system_prompt_template
+                if system_prompt_template and not system_prompt_template.endswith('JSON object'):
+                    system_prompt_complete += '\n\nIMPORTANT: Respond ONLY with the final search query text (no quotes, no markdown). No commentary.'
+                
+                cursor.execute("""
+                    UPDATE llm_prompt 
+                    SET system_prompt_template = %s, system_prompt = %s, prompt_text = %s
+                    WHERE name = %s
+                """, (system_prompt_template, system_prompt_complete, prompt_text, prompt_name))
+                
+                cursor.connection.commit()
+                return jsonify({'success': True, 'message': f'Prompt "{prompt_name}" updated successfully'})
+            else:
+                cursor.execute("""
+                    SELECT name, prompt_text, system_prompt, system_prompt_template, updated_at
+                    FROM llm_prompt 
+                    WHERE name = %s
+                    ORDER BY updated_at DESC 
+                    LIMIT 1
+                """, (prompt_name,))
+                prompt_data = cursor.fetchone()
+                
+                if not prompt_data:
+                    return jsonify({'error': f'Header Image Search prompt "{prompt_name}" not found'}), 404
+                
+                system_prompt_for_display = prompt_data['system_prompt_template'] or prompt_data['system_prompt']
+                
+                return jsonify({
+                    'success': True,
+                    'prompt': {
+                        'name': prompt_data['name'],
+                        'prompt_text': prompt_data['prompt_text'],
+                        'system_prompt': system_prompt_for_display,
+                        'updated_at': prompt_data['updated_at'].isoformat() if prompt_data['updated_at'] else None
+                    }
+                })
+                    
+    except Exception as e:
+        logger.error(f"Error with header image search prompt: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@bp.route('/api/photo-search/posts/<int:post_id>/header/generate-search-term', methods=['POST'])
+def header_api_generate_search_term(post_id: int):
+    """Generate header image search term using LLM from theme name and expanded_idea.
+    Uses Header Image Search Prompt (Photo-harvesting). No fallbacks.
+    """
+    try:
+        # Get week context from request
+        year = request.args.get('year', type=int)
+        week = request.args.get('week', type=int)
+        
+        # Resolve target_post_id (use provided post_id as fallback, but prefer resolved one)
+        target_post_id = post_id
+        if year and week:
+            try:
+                from utils.week_post_resolver import resolve_post_for_week
+                resolved = resolve_post_for_week(year, week)
+                if resolved:
+                    target_post_id = resolved
+                else:
+                    # If no resolved post, use provided post_id (may be from URL)
+                    logger.info(f"No resolved post for year={year}, week={week}, using provided post_id={post_id}")
+            except Exception as e:
+                logger.warning(f"Week resolver failed for header search term: {e}, using provided post_id={post_id}")
+        
+        with db_manager.get_cursor() as cursor:
+            # Get selected theme name and expanded_idea for target_post_id
+            theme_name = ''
+            expanded_idea = ''
+            
+            if year and week:
+                # Check if new tables exist, fallback to old calendar_schedule if not
+                cursor.execute("""
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.tables 
+                        WHERE table_schema = 'public' 
+                        AND table_name = 'calendar_week_selection'
+                    )
+                """)
+                has_new_table = cursor.fetchone()['exists']
+                
+                if has_new_table:
+                    # Use new V2 architecture
+                    cursor.execute("""
+                        SELECT cws.selected_theme_id, ct.theme_title as theme_name
+                        FROM calendar_week_selection cws
+                        JOIN calendar_themes ct ON cws.selected_theme_id = ct.id
+                        WHERE cws.year = %s AND cws.week_number = %s
+                    """, (year, week))
+                else:
+                    # Fallback to old calendar_schedule
+                    cursor.execute("""
+                        SELECT cs.theme_id, ct.theme_title as theme_name
+                        FROM calendar_schedule cs
+                        LEFT JOIN calendar_themes ct ON cs.theme_id = ct.id
+                        WHERE cs.year = %s AND cs.week_number = %s
+                        AND cs.theme_id IS NOT NULL
+                        ORDER BY cs.updated_at DESC
+                        LIMIT 1
+                    """, (year, week))
+                
+                theme_row = cursor.fetchone()
+                if theme_row:
+                    theme_name = theme_row.get('theme_name', '')
+            
+            cursor.execute("""
+                SELECT expanded_idea FROM post_development WHERE post_id = %s
+            """, (target_post_id,))
+            dev_row = cursor.fetchone()
+            if dev_row:
+                expanded_idea = dev_row.get('expanded_idea', '') or ''
+            
+            # Get prompt
+            cursor.execute("""
+                SELECT prompt_text, system_prompt
+                FROM llm_prompt 
+                WHERE name = 'Header Image Search Prompt (Photo-harvesting)'
+                ORDER BY updated_at DESC LIMIT 1
+            """)
+            prompt_row = cursor.fetchone()
+            if not prompt_row:
+                return jsonify({'error': 'Header Image Search Prompt (Photo-harvesting) not found'}), 404
+            
+            prompt_text = prompt_row['prompt_text']
+            system_prompt = prompt_row['system_prompt']
+            
+            # Replace placeholders
+            prompt_text = prompt_text.replace('[data:theme_name]', theme_name or '')
+            prompt_text = prompt_text.replace('[data:expanded_idea]', expanded_idea or '')
+            
+            # Call LLM
+            messages = [
+                {'role': 'system', 'content': system_prompt},
+                {'role': 'user', 'content': prompt_text}
+            ]
+            
+            llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+            if 'error' in llm_response:
+                return jsonify({'error': f'LLM generation failed: {llm_response["error"]}'}), 500
+            
+            search_term = llm_response.get('content', '').strip()
+            if not search_term:
+                return jsonify({'error': 'Empty search term generated'}), 500
+            
+            return jsonify({'success': True, 'search_term': search_term})
+            
+    except Exception as e:
+        logger.error(f"Error generating header search term: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+#
+# Header Photo-harvesting endpoints (week-persistence compliant)
+#
+
+@bp.route('/api/photo-search/posts/<int:post_id>/header/search', methods=['POST'])
+def header_api_photo_search(post_id: int):
+    """Search header images via Pexels/Unsplash and persist results to header/raw JSON.
+    Does not require week context for storage; relies on resolved post_id.
+    """
+    try:
+        data = request.get_json() or {}
+        search_term = (data.get('search_term') or '').strip()
+        provider = data.get('provider', 'both')
+        per_page = int(data.get('per_page', 20))
+        orientation = data.get('orientation')
+        if not search_term:
+            return jsonify({'success': False, 'error': 'search_term is required'}), 400
+
+        import os
+        from utils.photo_apis_adapter import run_photo_search
+
+        pexels_key = os.getenv('PEXELS_API_KEY')
+        unsplash_key = os.getenv('UNSPLASH_ACCESS_KEY')
+        if provider == 'pexels' and not pexels_key:
+            return jsonify({'success': False, 'error': 'PEXELS_API_KEY is not configured'}), 400
+        if provider == 'unsplash' and not unsplash_key:
+            return jsonify({'success': False, 'error': 'UNSPLASH_ACCESS_KEY is not configured'}), 400
+        if provider == 'both' and (not pexels_key and not unsplash_key):
+            return jsonify({'success': False, 'error': 'No photo provider API keys configured (PEXELS_API_KEY / UNSPLASH_ACCESS_KEY)'}), 400
+
+        results = run_photo_search(provider, pexels_key, unsplash_key, search_term, per_page, orientation)
+
+        # Persist to header/raw JSON
+        import json as _json
+        import os as _os
+        from datetime import datetime as _dt
+
+        raw_dir = f"static/content/posts/{post_id}/header/raw"
+        _os.makedirs(raw_dir, exist_ok=True)
+        payload = {
+            'timestamp': _dt.now().isoformat(),
+            'post_id': post_id,
+            'search_term': search_term,
+            'provider': provider,
+            'orientation': orientation,
+            'count': len(results),
+            'results': results,
+        }
+        ts_name = _dt.now().strftime('%Y%m%d_%H%M%S')
+        with open(f"{raw_dir}/photo_search_results_{ts_name}.json", 'w') as f:
+            _json.dump(payload, f, indent=2)
+        with open(f"{raw_dir}/photo_search_results_latest.json", 'w') as f:
+            _json.dump(payload, f, indent=2)
+
+        return jsonify({'success': True, 'results': results, 'count': len(results), 'orientation': orientation})
+    except Exception as e:
+        logger.error(f"Header photo search error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@bp.route('/api/photo-search/posts/<int:post_id>/header/results', methods=['GET'])
+def header_api_photo_results(post_id: int):
+    """Load persisted header search results from header/raw JSON (latest)."""
+    try:
+        import json as _json, os as _os
+        latest = f"static/content/posts/{post_id}/header/raw/photo_search_results_latest.json"
+        if not _os.path.exists(latest):
+            return jsonify({'success': True, 'results': [], 'count': 0})
+        with open(latest, 'r') as f:
+            data = _json.load(f)
+        return jsonify({'success': True, 'results': data.get('results', []), 'count': data.get('count', 0)})
+    except Exception as e:
+        logger.error(f"Header photo results error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@bp.route('/api/photo-search/posts/<int:post_id>/header/select', methods=['POST'])
+def header_api_photo_select(post_id: int):
+    """Select a header photo; persist JSON to header/optimized/selected_{orientation}.json and trigger Unsplash download."""
+    try:
+        import json as _json, os as _os
+        data = request.get_json() or {}
+        provider = data.get('provider')
+        image_id = data.get('image_id')
+        orientation = data.get('orientation')  # 'landscape' or 'portrait'
+        if not provider or not image_id:
+            return jsonify({'success': False, 'error': 'provider and image_id are required'}), 400
+        if orientation and orientation not in ('landscape', 'portrait'):
+            return jsonify({'success': False, 'error': 'orientation must be "landscape" or "portrait"'}), 400
+
+        # Load latest results
+        latest = f"static/content/posts/{post_id}/header/raw/photo_search_results_latest.json"
+        if not _os.path.exists(latest):
+            return jsonify({'success': False, 'error': 'No search results found'}), 404
+        with open(latest, 'r') as f:
+            payload = _json.load(f)
+        results = payload.get('results', [])
+
+        # Find selected photo
+        selected = None
+        for p in results:
+            if p.get('provider') == provider and str(p.get('image_id')) == str(image_id):
+                selected = p
+                break
+        if not selected:
+            return jsonify({'success': False, 'error': 'Photo not found in results'}), 404
+
+        # Determine orientation if not provided
+        width, height = selected.get('width', 0), selected.get('height', 0)
+        if not orientation:
+            orientation = 'landscape' if width >= height else 'portrait'
+
+        # Trigger Unsplash download event if needed
+        if selected.get('provider') == 'unsplash':
+            try:
+                access_key = os.getenv('UNSPLASH_ACCESS_KEY')
+                api = selected.get('api_response') or {}
+                links = api.get('links') or {}
+                download_loc = selected.get('download_location') or links.get('download_location')
+                if access_key and download_loc:
+                    parsed = urlparse.urlparse(download_loc)
+                    qs = urlparse.parse_qs(parsed.query)
+                    url = download_loc if 'client_id' in qs else (download_loc + ('&' if parsed.query else '?') + f"client_id={access_key}")
+                    try:
+                        urlrequest.urlopen(url, timeout=3)
+                    except Exception:
+                        pass
+            except Exception as _e:
+                logger.warning(f"Unsplash download trigger failed: {_e}")
+
+        # Persist selection
+        optimized_dir = f"static/content/posts/{post_id}/header/optimized"
+        _os.makedirs(optimized_dir, exist_ok=True)
+        record = {
+            'post_id': post_id,
+            'orientation': orientation,
+            'photo': selected,
+        }
+        with open(f"{optimized_dir}/selected_{orientation}.json", 'w') as f:
+            _json.dump(record, f, indent=2)
+
+        return jsonify({'success': True, 'selected_photo': selected, 'orientation': orientation})
+    except Exception as e:
+        logger.error(f"Header photo select error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@bp.route('/api/photo-search/posts/<int:post_id>/header/selected', methods=['GET'])
+def header_api_photo_selected(post_id: int):
+    """Return selected header photos for both orientations if present."""
+    try:
+        import json as _json, os as _os
+        optimized_dir = f"static/content/posts/{post_id}/header/optimized"
+        out = {'landscape': None, 'portrait': None}
+        for ori in ('landscape', 'portrait'):
+            path = f"{optimized_dir}/selected_{ori}.json"
+            if _os.path.exists(path):
+                try:
+                    with open(path, 'r') as f:
+                        out[ori] = _json.load(f)
+                except Exception:
+                    pass
+        return jsonify({'success': True, 'selected_landscape': out['landscape'], 'selected_portrait': out['portrait']})
+    except Exception as e:
+        logger.error(f"Header photo selected error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @bp.route('/api/posts/<int:post_id>/test-field', methods=['GET'])
 def api_test_field(post_id):

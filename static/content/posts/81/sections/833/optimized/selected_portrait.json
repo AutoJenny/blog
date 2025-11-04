@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-11-04T09:24:51.004799",
+  "post_id": 81,
+  "section_id": 833,
+  "orientation": "portrait",
+  "photo": {
+    "provider": "pexels",
+    "image_id": "22857162",
+    "url": "https://images.pexels.com/photos/22857162/pexels-photo-22857162.jpeg",
+    "thumbnail_url": "https://images.pexels.com/photos/22857162/pexels-photo-22857162.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "width": 3726,
+    "height": 5589,
+    "orientation": "portrait",
+    "photographer": "Andres Idda Bianchi",
+    "photographer_url": "https://www.pexels.com/@davincidelasfotos",
+    "credits": "Photo by Andres Idda Bianchi on Pexels",
+    "search_term": "1920s flapper girl dancing, vintage jazz club, New Orleans, Louisiana, USA, black and white, nighttime, crowded dance floor, beaded dress, feather headband",
+    "selected": false,
+    "selected_at": "2025-11-04T09:24:51.004787",
+    "provider_data": {
+      "pexels_id": "22857162",
+      "pexels_url": "https://www.pexels.com/photo/man-in-a-bowler-hat-lighting-a-cigarette-for-a-woman-in-a-flapper-dress-22857162/",
+      "photographer_id": 297234446
+    },
+    "selection_orientation": "portrait"
+  }
+}

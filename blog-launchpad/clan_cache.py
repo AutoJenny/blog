@@ -281,7 +281,7 @@ class ClanCache:
     def get_products(self, limit: Optional[int] = None, query: str = '') -> List[Dict]:
         """Get products from PostgreSQL cache"""
         with self.get_db_conn() as conn:
-            cursor = conn.cursor(cursor_factory=RealDictCursor)
+            cursor = conn.cursor(row_factory=dict_row)
             
             sql = 'SELECT id, name, sku, price, image_url, url, description, category_ids FROM clan_products'
             params = []
@@ -316,7 +316,7 @@ class ClanCache:
     def get_categories(self) -> List[Dict]:
         """Get categories from PostgreSQL cache"""
         with self.get_db_conn() as conn:
-            cursor = conn.cursor(cursor_factory=RealDictCursor)
+            cursor = conn.cursor(row_factory=dict_row)
             cursor.execute('''
                 SELECT id, name, description, level, parent_id 
                 FROM clan_categories 
@@ -339,7 +339,7 @@ class ClanCache:
     def get_random_products(self, count: int = 3, offset: int = 0) -> List[Dict]:
         """Get random products from PostgreSQL cache with offset-based variety"""
         with self.get_db_conn() as conn:
-            cursor = conn.cursor(cursor_factory=RealDictCursor)
+            cursor = conn.cursor(row_factory=dict_row)
             
             # Simple random selection - offset will be handled by different random seeds
             cursor.execute('''
@@ -545,6 +545,15 @@ class ClanCache:
             url = product_data.get('url', '')
             image_url = product_data.get('image_url', '')
             price = product_data.get('price', '')
+            # Normalize price to numeric for DECIMAL column
+            from decimal import Decimal, InvalidOperation
+            if isinstance(price, str):
+                import re
+                cleaned = re.sub(r"[^0-9.]+", "", price)
+                try:
+                    price = Decimal(cleaned) if cleaned else None
+                except InvalidOperation:
+                    price = None
             short_description = product_data.get('short_description', '')
             description = product_data.get('description', '')
             supplier_name = product_data.get('supplier_name')
@@ -554,10 +563,12 @@ class ClanCache:
             configurable_options = json.dumps(product_data.get('configurable_options', None))
             has_detailed_data = product_data.get('has_detailed_data', True)  # Default to True for backward compatibility
 
+            # Ensure hashable, JSON-serializable fields
+            price_for_hash = str(price) if price is not None else ''
             content_fields = {
                 'name': name,
                 'sku': sku,
-                'price': price,
+                'price': price_for_hash,
                 'image_url': image_url,
                 'url': url,
                 'short_description': short_description,

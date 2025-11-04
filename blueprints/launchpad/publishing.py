@@ -105,19 +105,44 @@ def get_post_sections_with_images(post_id):
         for section in raw_sections:
             section_dict = dict(section)
             
-            # Add image data if available (from post_images link or fallback to filesystem)
-            image_path = section_dict.get('image_path')
+            # Priority 1: Check Photo-harvesting route (selected_landscape.json)
+            image_path = None
+            caption_text = section_dict.get('image_captions') or ''
+            alt_text = section_dict.get('image_alt_text') or ''
+            
+            try:
+                import os
+                import json
+                photo_json_path = f"static/content/posts/{post_id}/sections/{section_dict['id']}/optimized/selected_landscape.json"
+                if os.path.exists(photo_json_path):
+                    with open(photo_json_path, 'r') as f:
+                        photo_data = json.load(f)
+                        photo = photo_data.get('photo', {})
+                        if photo.get('url'):
+                            # Use hotlinked provider URL (Pexels/Unsplash)
+                            image_path = photo['url']
+                            # Extract caption/alt from photo metadata if not already set
+                            if not caption_text and photo.get('credits'):
+                                caption_text = photo['credits']
+                            if not alt_text and photo.get('photographer'):
+                                alt_text = f"Photo by {photo['photographer']}"
+            except Exception as e:
+                logger.debug(f"Could not load Photo-harvesting JSON for section {section_dict['id']}: {e}")
+            
+            # Priority 2: Database link (post_images)
+            if not image_path:
+                image_path = section_dict.get('image_path')
             
             if image_path:
-                # Image exists in post_images linking table
+                # Image exists (Photo-harvesting or post_images linking table)
                 section_dict['image'] = {
                     'path': image_path,
-                    'caption': section_dict.get('image_captions'),
-                    'alt_text': section_dict.get('image_alt_text'),
+                    'caption': caption_text,
+                    'alt_text': alt_text,
                     'placeholder': False
                 }
             else:
-                # Fallback: check filesystem for conventional optimized path
+                # Priority 3: Fallback: check filesystem for conventional optimized path
                 try:
                     import os
                     candidate = f"/static/content/posts/{post_id}/sections/{section_dict['id']}/optimized/{section_dict['id']}.jpg"
@@ -125,8 +150,8 @@ def get_post_sections_with_images(post_id):
                     if os.path.exists(filesystem_path):
                         section_dict['image'] = {
                             'path': candidate,
-                            'caption': section_dict.get('image_captions', ''),
-                            'alt_text': section_dict.get('image_alt_text', ''),
+                            'caption': caption_text,
+                            'alt_text': alt_text,
                             'placeholder': False
                         }
                     else:

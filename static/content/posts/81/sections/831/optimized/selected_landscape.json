@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-11-04T09:24:46.739442",
+  "post_id": 81,
+  "section_id": 831,
+  "orientation": "landscape",
+  "photo": {
+    "provider": "pexels",
+    "image_id": "34113600",
+    "url": "https://images.pexels.com/photos/34113600/pexels-photo-34113600.jpeg",
+    "thumbnail_url": "https://images.pexels.com/photos/34113600/pexels-photo-34113600.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "width": 3264,
+    "height": 3264,
+    "orientation": "square",
+    "photographer": "Aysegul Aytoren",
+    "photographer_url": "https://www.pexels.com/@aysegul-aytoren-46790226",
+    "credits": "Photo by Aysegul Aytoren on Pexels",
+    "search_term": "Victorian era, London street scene, foggy evening, gas lamps, old wooden buildings, cobblestone pavement, 19th century cityscape, monochrome photography, no text overlay",
+    "selected": false,
+    "selected_at": "2025-11-04T09:24:46.739437",
+    "provider_data": {
+      "pexels_id": "34113600",
+      "pexels_url": "https://www.pexels.com/photo/vintage-architectural-street-scene-in-black-and-white-34113600/",
+      "photographer_id": 46790226
+    },
+    "selection_orientation": "landscape"
+  }
+}

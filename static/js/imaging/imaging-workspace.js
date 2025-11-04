@@ -144,6 +144,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Section selected:', data);
                 window.currentSectionId = data.sectionId;
                 
+                // Dispatch sectionSelected event so all panels can respond
+                const event = new CustomEvent('sectionSelected', {
+                    detail: {
+                        sectionId: data.sectionId,
+                        section: data.section,
+                        postId: data.postId
+                    }
+                });
+                document.dispatchEvent(event);
+                
+                // Also dispatch legacy event name for compatibility
+                const legacyEvent = new CustomEvent('section-selected', {
+                    detail: {
+                        sectionId: data.sectionId,
+                        section: data.section,
+                        postId: data.postId
+                    }
+                });
+                document.dispatchEvent(legacyEvent);
+                
                 // Update output panel if it exists
                 if (window.imagingOutputPanel) {
                     window.imagingOutputPanel.loadSectionImages(data.sectionId);
@@ -151,6 +171,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
+        
+        // Make sections panel globally available
+        window.imagingSectionsPanel = sectionsPanel;
         
         console.log('Imaging Sections Panel initialized successfully');
     } else {

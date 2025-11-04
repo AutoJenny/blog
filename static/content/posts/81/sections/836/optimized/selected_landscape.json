@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-11-04T09:24:58.317106",
+  "post_id": 81,
+  "section_id": 836,
+  "orientation": "landscape",
+  "photo": {
+    "provider": "pexels",
+    "image_id": "5572502",
+    "url": "https://images.pexels.com/photos/5572502/pexels-photo-5572502.jpeg",
+    "thumbnail_url": "https://images.pexels.com/photos/5572502/pexels-photo-5572502.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "width": 4752,
+    "height": 3168,
+    "orientation": "landscape",
+    "photographer": "Yigithan Bal",
+    "photographer_url": "https://www.pexels.com/@yigithan02",
+    "credits": "Photo by Yigithan Bal on Pexels",
+    "search_term": "ancient Egyptian temple architecture, limestone construction, desert landscape, sandstone columns, pyramid structure, 19th century photography, historical landmarks, architectural details, Egyptology, monumental buildings, archaeological sites",
+    "selected": false,
+    "selected_at": "2025-11-04T09:24:58.317099",
+    "provider_data": {
+      "pexels_id": "5572502",
+      "pexels_url": "https://www.pexels.com/photo/view-of-ancient-ruins-5572502/",
+      "photographer_id": 252003
+    },
+    "selection_orientation": "landscape"
+  }
+}
