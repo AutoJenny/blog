@@ -31,6 +31,16 @@
     
     {% block process_content %}
     <div class="ideas-main">
+        <!-- Category Indicator Banner -->
+        {% if content_type_name %}
+        <div class="route-indicator" style="background: #059669; color: white; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-tag" style="font-size: 1.1rem;"></i>
+            <span>Content Category: <strong>{{ content_type_name }}</strong></span>
+            {% if year and week_number %}
+            <span style="margin-left: auto; font-weight: 500; opacity: 0.85;">Week {{ week_number }}, {{ year }}</span>
+            {% endif %}
+        </div>
+        {% endif %}
         <div class="ideas-results">
             <h3>Expanded Idea</h3>
             <div id="current-idea-seed" class="idea-seed-display">
@@ -611,7 +621,16 @@ function displayExpandedIdeaError(error) {
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof LLMPromptsPanel !== 'undefined') {
         window.llmPromptsPanel = new LLMPromptsPanel({
-            postId: window.postId
+            postId: window.postId,
+            pageType: 'expanded-idea',
+            promptEndpoint: `/planning/api/posts/${window.postId}/expanded-idea-prompt`,
+            promptSelectionEndpoint: `/planning/api/posts/${window.postId}/expanded-idea-prompt-selection`
+        });
+        
+        // Load prompt selection from database first (not localStorage/sessionStorage)
+        window.llmPromptsPanel.loadPromptSelection().then(() => {
+            // Then load the actual prompt content from database
+            window.llmPromptsPanel.loadPromptFromAPI();
         });
     }
 });

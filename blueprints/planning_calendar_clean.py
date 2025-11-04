@@ -65,23 +65,55 @@ def planning_calendar_ideas(post_id):
             year = now.year
             week_number = now.isocalendar()[1]
         
+        # Get content type name for category banner
+        content_type_name = None
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT ti.display_name as content_type_name
+                FROM post p
+                LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                WHERE p.id = %s
+            """, (post_id,))
+            result = cursor.fetchone()
+            if result:
+                content_type_name = result.get('content_type_name')
+        
         return render_template('planning/calendar/ideas.html', 
                                post_id=post_id,
                                year=year,
                                week_number=week_number,
                                blueprint_name='planning',
-                               mode='post-based')
+                               mode='post-based',
+                               content_type_name=content_type_name)
     except Exception as e:
         logger.error(f"Error in planning_calendar_ideas: {e}")
         from datetime import datetime
         year = datetime.now().year
         week_number = datetime.now().isocalendar()[1]
+        
+        # Get content type name for category banner
+        content_type_name = None
+        try:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT ti.display_name as content_type_name
+                    FROM post p
+                    LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                    WHERE p.id = %s
+                """, (post_id,))
+                result = cursor.fetchone()
+                if result:
+                    content_type_name = result.get('content_type_name')
+        except:
+            pass
+        
         return render_template('planning/calendar/ideas.html', 
                                post_id=post_id,
                                year=year,
                                week_number=week_number,
                                blueprint_name='planning',
-                               mode='post-based')
+                               mode='post-based',
+                               content_type_name=content_type_name)
 
 def planning_calendar_ideas_week(week_number):
     """Week-based idea generation - creates new posts as needed"""

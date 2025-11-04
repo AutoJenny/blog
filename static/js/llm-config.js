@@ -5,11 +5,11 @@
 
 const LLM_CONFIGS = {
     'ideas': {
-        promptEndpoint: '/planning/api/llm/prompts/idea-expansion',
+        promptEndpoint: '/planning/api/posts/{id}/expanded-idea-prompt',
         generateEndpoint: '/planning/api/posts/{id}/expanded-idea',
         resultsField: 'expanded_idea',
         resultsTitle: 'Expanded Idea',
-        allowEdit: false
+        allowEdit: true
     },
     'brainstorm': {
         promptEndpoint: '/planning/api/llm/prompts/topic-brainstorming',
@@ -111,7 +111,10 @@ function initializeLLMModule(pageType, postId, sectionId = null) {
         return null;
     }
     
-    // Replace {id} placeholder in generate endpoint
+    // Replace {id} placeholder in endpoints
+    if (config.promptEndpoint && config.promptEndpoint.includes('{id}')) {
+        config.promptEndpoint = config.promptEndpoint.replace('{id}', postId);
+    }
     config.generateEndpoint = config.generateEndpoint.replace('{id}', postId);
     
     // Replace {section_id} placeholder if present and sectionId provided
