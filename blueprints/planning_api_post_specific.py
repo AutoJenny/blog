@@ -787,6 +787,498 @@ def api_update_section_structure_prompt(post_id):
         logger.error(f"Error updating section structure prompt: {e}")
         return jsonify({'error': str(e)}), 500
 
+def api_get_topic_allocation_prompt_selection(post_id):
+    """Get available prompt options and current selection for topic allocation"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get taxonomy for the post
+            cursor.execute("""
+                SELECT ti.display_name as content_type_name
+                FROM post p
+                LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                WHERE p.id = %s
+            """, (post_id,))
+            taxonomy_result = cursor.fetchone()
+            content_type_name = taxonomy_result.get('content_type_name') if taxonomy_result else None
+            
+            # Get available prompts
+            available_prompts = []
+            
+            # Default prompt
+            cursor.execute("""
+                SELECT name, id FROM llm_prompt 
+                WHERE name = 'Topic Allocation'
+                ORDER BY updated_at DESC 
+                LIMIT 1
+            """)
+            default_prompt = cursor.fetchone()
+            if default_prompt:
+                available_prompts.append({
+                    'name': default_prompt['name'],
+                    'id': default_prompt['id'],
+                    'is_default': True
+                })
+            
+            # Category-specific prompt (if category exists)
+            if content_type_name:
+                cursor.execute("""
+                    SELECT name, id FROM llm_prompt 
+                    WHERE name = %s
+                    ORDER BY updated_at DESC 
+                    LIMIT 1
+                """, (f'Topic Allocation ({content_type_name})',))
+                category_prompt = cursor.fetchone()
+                if category_prompt:
+                    available_prompts.append({
+                        'name': category_prompt['name'],
+                        'id': category_prompt['id'],
+                        'is_default': False
+                    })
+            
+            # Get current selection (from post settings)
+            cursor.execute("""
+                SELECT extra_settings FROM post WHERE id = %s
+            """, (post_id,))
+            post_result = cursor.fetchone()
+            current_selection = None
+            
+            if post_result and post_result.get('extra_settings'):
+                settings = post_result['extra_settings']
+                current_selection = settings.get('topic_allocation_prompt_name')
+            
+            # LEGACY POSTS: If no selection exists, explicitly set to default prompt
+            if not current_selection and available_prompts:
+                default_prompt_obj = next((p for p in available_prompts if p.get('is_default')), None)
+                if default_prompt_obj:
+                    current_selection = default_prompt_obj['name']
+                    # Save this explicit selection to the post for legacy posts
+                    if post_result and post_result.get('extra_settings'):
+                        settings = post_result['extra_settings']
+                    else:
+                        settings = {}
+                    settings['topic_allocation_prompt_name'] = current_selection
+                    
+                    cursor.execute("""
+                        UPDATE post 
+                        SET extra_settings = %s::jsonb
+                        WHERE id = %s
+                    """, (json.dumps(settings), post_id))
+                    cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'available_prompts': available_prompts,
+                'current_selection': current_selection,
+                'content_type_name': content_type_name
+            })
+    except Exception as e:
+        logger.error(f"Error fetching topic allocation prompt selection: {e}")
+        return jsonify({'error': str(e)}), 500
+
+def api_set_topic_allocation_prompt_selection(post_id):
+    """Set the selected prompt for topic allocation"""
+    try:
+        data = request.get_json()
+        prompt_name = data.get('prompt_name') if data else None
+        
+        if not prompt_name:
+            return jsonify({'error': 'prompt_name is required'}), 400
+        
+        # Verify prompt exists
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id FROM llm_prompt WHERE name = %s
+            """, (prompt_name,))
+            if not cursor.fetchone():
+                return jsonify({'error': f'Prompt "{prompt_name}" not found'}), 404
+            
+            # Save selection to post.extra_settings - PERSIST TO DATABASE
+            cursor.execute("""
+                SELECT extra_settings FROM post WHERE id = %s
+            """, (post_id,))
+            post_result = cursor.fetchone()
+            
+            if post_result and post_result.get('extra_settings'):
+                settings = post_result['extra_settings']
+            else:
+                settings = {}
+            
+            settings['topic_allocation_prompt_name'] = prompt_name
+            
+            cursor.execute("""
+                UPDATE post 
+                SET extra_settings = %s::jsonb
+                WHERE id = %s
+            """, (json.dumps(settings), post_id))
+            cursor.connection.commit()
+            
+            return jsonify({'success': True, 'prompt_name': prompt_name})
+    except Exception as e:
+        logger.error(f"Error setting topic allocation prompt selection: {e}")
+        return jsonify({'error': str(e)}), 500
+
+def api_get_topic_allocation_prompt(post_id):
+    """Get the topic allocation prompt for a post, optionally filtered by prompt_name query parameter"""
+    try:
+        # Get prompt_name from query parameter (passed from frontend)
+        prompt_name = request.args.get('prompt_name')
+        
+        with db_manager.get_cursor() as cursor:
+            # If prompt_name not provided, get from post.extra_settings
+            if not prompt_name:
+                cursor.execute("""
+                    SELECT extra_settings FROM post WHERE id = %s
+                """, (post_id,))
+                post_result = cursor.fetchone()
+                
+                if post_result and post_result.get('extra_settings'):
+                    settings = post_result['extra_settings']
+                    prompt_name = settings.get('topic_allocation_prompt_name')
+                
+                # LEGACY: If still no prompt_name, use default
+                if not prompt_name:
+                    prompt_name = 'Topic Allocation'
+            
+            # Get the prompt by exact name - NO FALLBACKS
+            cursor.execute("""
+                SELECT name, system_prompt, prompt_text, parameters
+                FROM llm_prompt 
+                WHERE name = %s
+                ORDER BY updated_at DESC 
+                LIMIT 1
+            """, (prompt_name,))
+            prompt_data = cursor.fetchone()
+            
+            # FAIL CLEARLY if prompt not found
+            if not prompt_data:
+                return jsonify({
+                    'success': False,
+                    'error': f'Selected prompt "{prompt_name}" not found. Please select a valid prompt in the prompt panel.'
+                }), 404
+            
+            # Extract parameters from JSONB if they exist
+            parameters = prompt_data['parameters'] or {}
+            model = parameters.get('model', 'llama3.2:latest')
+            temperature = parameters.get('temperature', 0.7)
+            max_tokens = parameters.get('max_tokens', 2000)
+            
+            return jsonify({
+                'success': True,
+                'prompt': {
+                    'name': prompt_data['name'],
+                    'system_prompt': prompt_data['system_prompt'],
+                    'prompt_text': prompt_data['prompt_text'],
+                    'model': model,
+                    'temperature': temperature,
+                    'max_tokens': max_tokens
+                }
+            })
+    except Exception as e:
+        logger.error(f"Error fetching topic allocation prompt: {e}")
+        return jsonify({'error': str(e)}), 500
+
+def api_update_topic_allocation_prompt(post_id):
+    """Update the topic allocation prompt for a post"""
+    try:
+        data = request.get_json()
+        system_prompt = data.get('system_prompt', '')
+        prompt_text = data.get('prompt_text', '')
+        
+        if not system_prompt and not prompt_text:
+            return jsonify({'error': 'system_prompt or prompt_text is required'}), 400
+        
+        # Get the prompt name from post settings
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT extra_settings FROM post WHERE id = %s
+            """, (post_id,))
+            post_result = cursor.fetchone()
+            
+            prompt_name = None
+            if post_result and post_result.get('extra_settings'):
+                settings = post_result['extra_settings']
+                prompt_name = settings.get('topic_allocation_prompt_name')
+            
+            # LEGACY: If no selection exists, use default
+            if not prompt_name:
+                prompt_name = 'Topic Allocation'
+            
+            # Update the prompt in the database
+            cursor.execute("""
+                UPDATE llm_prompt 
+                SET system_prompt = COALESCE(%s, system_prompt),
+                    prompt_text = COALESCE(%s, prompt_text),
+                    updated_at = NOW()
+                WHERE name = %s
+                RETURNING name, system_prompt, prompt_text
+            """, (system_prompt if system_prompt else None, 
+                  prompt_text if prompt_text else None, 
+                  prompt_name))
+            
+            updated_prompt = cursor.fetchone()
+            cursor.connection.commit()
+            
+            if not updated_prompt:
+                return jsonify({'error': f'Prompt "{prompt_name}" not found'}), 404
+            
+            return jsonify({
+                'success': True,
+                'prompt': {
+                    'name': updated_prompt['name'],
+                    'system_prompt': updated_prompt['system_prompt'],
+                    'prompt_text': updated_prompt['prompt_text']
+                }
+            })
+    except Exception as e:
+        logger.error(f"Error updating topic allocation prompt: {e}")
+        return jsonify({'error': str(e)}), 500
+
+def api_get_section_titling_prompt_selection(post_id):
+    """Get available prompt options and current selection for section titling"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get taxonomy for the post
+            cursor.execute("""
+                SELECT ti.display_name as content_type_name
+                FROM post p
+                LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                WHERE p.id = %s
+            """, (post_id,))
+            taxonomy_result = cursor.fetchone()
+            content_type_name = taxonomy_result.get('content_type_name') if taxonomy_result else None
+            
+            # Get available prompts
+            available_prompts = []
+            
+            # Default prompt
+            cursor.execute("""
+                SELECT name, id FROM llm_prompt 
+                WHERE name = 'Section Titling'
+                ORDER BY updated_at DESC 
+                LIMIT 1
+            """)
+            default_prompt = cursor.fetchone()
+            if default_prompt:
+                available_prompts.append({
+                    'name': default_prompt['name'],
+                    'id': default_prompt['id'],
+                    'is_default': True
+                })
+            
+            # Category-specific prompt (if category exists)
+            if content_type_name:
+                cursor.execute("""
+                    SELECT name, id FROM llm_prompt 
+                    WHERE name = %s
+                    ORDER BY updated_at DESC 
+                    LIMIT 1
+                """, (f'Section Titling ({content_type_name})',))
+                category_prompt = cursor.fetchone()
+                if category_prompt:
+                    available_prompts.append({
+                        'name': category_prompt['name'],
+                        'id': category_prompt['id'],
+                        'is_default': False
+                    })
+            
+            # Get current selection (from post settings)
+            cursor.execute("""
+                SELECT extra_settings FROM post WHERE id = %s
+            """, (post_id,))
+            post_result = cursor.fetchone()
+            current_selection = None
+            
+            if post_result and post_result.get('extra_settings'):
+                settings = post_result['extra_settings']
+                current_selection = settings.get('section_titling_prompt_name')
+            
+            # LEGACY POSTS: If no selection exists, explicitly set to default prompt
+            if not current_selection and available_prompts:
+                default_prompt_obj = next((p for p in available_prompts if p.get('is_default')), None)
+                if default_prompt_obj:
+                    current_selection = default_prompt_obj['name']
+                    # Save this explicit selection to the post for legacy posts
+                    if post_result and post_result.get('extra_settings'):
+                        settings = post_result['extra_settings']
+                    else:
+                        settings = {}
+                    settings['section_titling_prompt_name'] = current_selection
+                    
+                    cursor.execute("""
+                        UPDATE post 
+                        SET extra_settings = %s::jsonb
+                        WHERE id = %s
+                    """, (json.dumps(settings), post_id))
+                    cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'available_prompts': available_prompts,
+                'current_selection': current_selection,
+                'content_type_name': content_type_name
+            })
+    except Exception as e:
+        logger.error(f"Error fetching section titling prompt selection: {e}")
+        return jsonify({'error': str(e)}), 500
+
+def api_set_section_titling_prompt_selection(post_id):
+    """Set the selected prompt for section titling"""
+    try:
+        data = request.get_json()
+        prompt_name = data.get('prompt_name') if data else None
+        
+        if not prompt_name:
+            return jsonify({'error': 'prompt_name is required'}), 400
+        
+        # Verify prompt exists
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id FROM llm_prompt WHERE name = %s
+            """, (prompt_name,))
+            if not cursor.fetchone():
+                return jsonify({'error': f'Prompt "{prompt_name}" not found'}), 404
+            
+            # Save selection to post.extra_settings - PERSIST TO DATABASE
+            cursor.execute("""
+                SELECT extra_settings FROM post WHERE id = %s
+            """, (post_id,))
+            post_result = cursor.fetchone()
+            
+            if post_result and post_result.get('extra_settings'):
+                settings = post_result['extra_settings']
+            else:
+                settings = {}
+            
+            settings['section_titling_prompt_name'] = prompt_name
+            
+            cursor.execute("""
+                UPDATE post 
+                SET extra_settings = %s::jsonb
+                WHERE id = %s
+            """, (json.dumps(settings), post_id))
+            cursor.connection.commit()
+            
+            return jsonify({'success': True, 'prompt_name': prompt_name})
+    except Exception as e:
+        logger.error(f"Error setting section titling prompt selection: {e}")
+        return jsonify({'error': str(e)}), 500
+
+def api_get_section_titling_prompt(post_id):
+    """Get the section titling prompt for a post, optionally filtered by prompt_name query parameter"""
+    try:
+        # Get prompt_name from query parameter (passed from frontend)
+        prompt_name = request.args.get('prompt_name')
+        
+        with db_manager.get_cursor() as cursor:
+            # If prompt_name not provided, get from post.extra_settings
+            if not prompt_name:
+                cursor.execute("""
+                    SELECT extra_settings FROM post WHERE id = %s
+                """, (post_id,))
+                post_result = cursor.fetchone()
+                
+                if post_result and post_result.get('extra_settings'):
+                    settings = post_result['extra_settings']
+                    prompt_name = settings.get('section_titling_prompt_name')
+                
+                # LEGACY: If still no prompt_name, use default
+                if not prompt_name:
+                    prompt_name = 'Section Titling'
+            
+            # Get the prompt by exact name - NO FALLBACKS
+            cursor.execute("""
+                SELECT name, system_prompt, prompt_text, parameters
+                FROM llm_prompt 
+                WHERE name = %s
+                ORDER BY updated_at DESC 
+                LIMIT 1
+            """, (prompt_name,))
+            prompt_data = cursor.fetchone()
+            
+            # FAIL CLEARLY if prompt not found
+            if not prompt_data:
+                return jsonify({
+                    'success': False,
+                    'error': f'Selected prompt "{prompt_name}" not found. Please select a valid prompt in the prompt panel.'
+                }), 404
+            
+            # Extract parameters from JSONB if they exist
+            parameters = prompt_data['parameters'] or {}
+            model = parameters.get('model', 'llama3.2:latest')
+            temperature = parameters.get('temperature', 0.7)
+            max_tokens = parameters.get('max_tokens', 2000)
+            
+            return jsonify({
+                'success': True,
+                'prompt': {
+                    'name': prompt_data['name'],
+                    'system_prompt': prompt_data['system_prompt'],
+                    'prompt_text': prompt_data['prompt_text'],
+                    'model': model,
+                    'temperature': temperature,
+                    'max_tokens': max_tokens
+                }
+            })
+    except Exception as e:
+        logger.error(f"Error fetching section titling prompt: {e}")
+        return jsonify({'error': str(e)}), 500
+
+def api_update_section_titling_prompt(post_id):
+    """Update the section titling prompt for a post"""
+    try:
+        data = request.get_json()
+        system_prompt = data.get('system_prompt', '')
+        prompt_text = data.get('prompt_text', '')
+        
+        if not system_prompt and not prompt_text:
+            return jsonify({'error': 'system_prompt or prompt_text is required'}), 400
+        
+        # Get the prompt name from post settings
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT extra_settings FROM post WHERE id = %s
+            """, (post_id,))
+            post_result = cursor.fetchone()
+            
+            prompt_name = None
+            if post_result and post_result.get('extra_settings'):
+                settings = post_result['extra_settings']
+                prompt_name = settings.get('section_titling_prompt_name')
+            
+            # LEGACY: If no selection exists, use default
+            if not prompt_name:
+                prompt_name = 'Section Titling'
+            
+            # Update the prompt in the database
+            cursor.execute("""
+                UPDATE llm_prompt 
+                SET system_prompt = COALESCE(%s, system_prompt),
+                    prompt_text = COALESCE(%s, prompt_text),
+                    updated_at = NOW()
+                WHERE name = %s
+                RETURNING name, system_prompt, prompt_text
+            """, (system_prompt if system_prompt else None, 
+                  prompt_text if prompt_text else None, 
+                  prompt_name))
+            
+            updated_prompt = cursor.fetchone()
+            cursor.connection.commit()
+            
+            if not updated_prompt:
+                return jsonify({'error': f'Prompt "{prompt_name}" not found'}), 404
+            
+            return jsonify({
+                'success': True,
+                'prompt': {
+                    'name': updated_prompt['name'],
+                    'system_prompt': updated_prompt['system_prompt'],
+                    'prompt_text': updated_prompt['prompt_text']
+                }
+            })
+    except Exception as e:
+        logger.error(f"Error updating section titling prompt: {e}")
+        return jsonify({'error': str(e)}), 500
+
 def api_posts_expanded_idea(post_id):
     """Get or create expanded idea for a post"""
     if request.method == 'GET':

@@ -17,35 +17,86 @@ def api_sections_title():
     """Stage 2: Create titles and descriptions for sections with allocated topics"""
     try:
         data = request.get_json()
+        if not data:
+            logger.error("No JSON data received in request")
+            return jsonify({
+                'success': False,
+                'error': 'No data provided in request'
+            }), 400
+        
         topic_allocation = data.get('topic_allocation', [])
         expanded_idea = data.get('expanded_idea', '')
         post_id = data.get('post_id')
         
+        logger.info(f"Titling request: post_id={post_id}, sections={len(topic_allocation) if isinstance(topic_allocation, list) else 'not a list'}, expanded_idea_length={len(expanded_idea) if expanded_idea else 0}")
+        
         if not topic_allocation:
+            logger.error("No topic_allocation provided in request")
             return jsonify({
                 'success': False,
                 'error': 'No topic allocation provided'
             }), 400
         
-        # Load Section Titling prompt from database
+        if not isinstance(topic_allocation, list):
+            logger.error(f"topic_allocation is not a list: {type(topic_allocation)}")
+            return jsonify({
+                'success': False,
+                'error': f'topic_allocation must be a list, got {type(topic_allocation).__name__}'
+            }), 400
+        
+        if len(topic_allocation) == 0:
+            logger.error("topic_allocation is an empty list")
+            return jsonify({
+                'success': False,
+                'error': 'topic_allocation list is empty'
+            }), 400
+        
+        # Load Section Titling prompt from database using explicit selection
         logger.info("Loading Section Titling prompt from database")
+        prompt_name = None
         try:
             with db_manager.get_cursor() as cursor:
+                # Get selected prompt name from post settings if post_id provided
+                if post_id:
+                    cursor.execute("""
+                        SELECT extra_settings FROM post WHERE id = %s
+                    """, (post_id,))
+                    post_result = cursor.fetchone()
+                    
+                    if post_result and post_result.get('extra_settings'):
+                        settings = post_result['extra_settings']
+                        prompt_name = settings.get('section_titling_prompt_name')
+                
+                # LEGACY: If no selection exists, use default
+                if not prompt_name:
+                    prompt_name = 'Section Titling'
+                
+                # Get the selected prompt - NO FALLBACKS
                 cursor.execute("""
                     SELECT system_prompt, prompt_text
                     FROM llm_prompt 
-                    WHERE name = 'Section Titling'
-                    ORDER BY id DESC
+                    WHERE name = %s
+                    ORDER BY updated_at DESC 
                     LIMIT 1
-                """)
+                """, (prompt_name,))
                 prompt_data = cursor.fetchone()
+                
+                # FAIL CLEARLY if prompt not found
+                if not prompt_data:
+                    logger.error(f'Selected prompt "{prompt_name}" not found for post {post_id}')
+                    return jsonify({
+                        'success': False,
+                        'error': f'Selected prompt "{prompt_name}" not found. Please select a valid prompt in the prompt panel.'
+                    }), 404
                 
                 if prompt_data and prompt_data['system_prompt']:
                     system_prompt = prompt_data['system_prompt']
                     logger.info("Loaded system prompt from database")
                 else:
                     logger.warning("Section Titling system prompt not found in database, using fallback")
-                    system_prompt = """You are a titling specialist. Your job is to craft short, poetic, evocative section titles that fit the supplied sections and their bullet topics. 
+                    system_prompt = """You are a titling specialist. Your job is to craft short, poetic, evocative section titles that fit the supplied sections and their bullet topics.
+
+CRITICAL: You MUST return ONLY valid JSON. Do NOT add any explanatory text, prose, or comments before or after the JSON. Your response must start with { and end with }. Do NOT say "Here's the JSON" or any similar phrases. 
 
 CONSTRAINTS:
 - 2–4 words per title.
@@ -130,29 +181,28 @@ VALIDATION RULES:
             section_theme = allocation.get('section_theme', f'Section {i+1}')
             section_templates.append(f'{{ "index": {i+1}, "original": "{section_theme}", "title": "Your Creative Title Here" }}')
         
-        formatted_prompt = f"""Generate creative section titles for this blog post.
+        formatted_prompt = f"""Generate creative section titles for ALL {len(topic_allocation)} sections. Return ONLY valid JSON, no other text.
 
 BLOG POST TOPIC: {expanded_idea}
 
-SECTIONS TO TITLE (YOU MUST GENERATE A TITLE FOR EACH SECTION):
+SECTIONS TO TITLE (YOU MUST TITLE ALL {len(topic_allocation)} OF THESE):
 {sections_text.strip()}
 
-CRITICAL REQUIREMENTS:
-- You MUST generate exactly {len(topic_allocation)} titles - one for EACH section listed above
-- Each title should be 2-4 words
-- Make titles poetic and evocative
-- Do not include the blog post topic in your titles
-- You MUST include all {len(topic_allocation)} sections in your response - do not skip any
+REQUIREMENTS:
+- Generate EXACTLY {len(topic_allocation)} titles (one per section)
+- Each title: 2-4 words, poetic and evocative
+- Return ONLY JSON, no explanations, no prose, no text before or after
+- Number sections 1 to {len(topic_allocation)}
 
-OUTPUT FORMAT (JSON only - must include ALL {len(topic_allocation)} sections):
+OUTPUT FORMAT (JSON ONLY - NO OTHER TEXT):
 {{
-  "post_title": "{expanded_idea[:100]}",
+  "post_title": "{expanded_idea[:100] if expanded_idea else 'Blog Post'}",
   "sections": [
     {", ".join(section_templates)}
   ]
 }}
 
-REMINDER: Your response MUST contain exactly {len(topic_allocation)} sections in the "sections" array. Do not generate fewer titles."""
+CRITICAL: Your response must start with {{ and end with }}. Do NOT add any text before or after the JSON. Do NOT say "Here's the JSON" or any other explanatory text. Return ONLY the JSON object."""
         
         # Call LLM service
         try:
@@ -169,7 +219,20 @@ REMINDER: Your response MUST contain exactly {len(topic_allocation)} sections in
                 {'role': 'user', 'content': formatted_prompt}
             ]
             
-            response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages, max_tokens=4000)
+            # Increase max_tokens significantly for multiple sections
+            # Each section needs ~150-200 tokens, plus JSON structure overhead
+            # For 7 sections: 7 × 200 + 500 = 1900 minimum, but we give much more headroom
+            max_tokens = max(6000, len(topic_allocation) * 500 + 2000)
+            logger.info(f"Using max_tokens={max_tokens} for {len(topic_allocation)} sections")
+            
+            # Add temperature and other parameters for more consistent output
+            response = llm_service.execute_llm_request(
+                'ollama', 
+                'llama3.2:latest', 
+                messages, 
+                max_tokens=max_tokens,
+                temperature=0.7  # Lower temperature for more consistent output
+            )
             
             if response and 'content' in response:
                 # Debug: Log the raw response
@@ -180,20 +243,43 @@ REMINDER: Your response MUST contain exactly {len(topic_allocation)} sections in
                 try:
                     content = response['content'].strip()
                     
-                    # Try to extract JSON from the response (handle prose + JSON format)
+                    # Remove any explanatory text before the JSON
+                    # Look for the first { character which should be the start of JSON
                     json_start = content.find('{')
-                    json_end = content.rfind('}') + 1
-                    
-                    if json_start != -1 and json_end > json_start:
-                        json_content = content[json_start:json_end]
-                    else:
-                        # Fallback: try markdown code blocks
-                        if content.startswith('```json') and content.endswith('```'):
-                            json_content = content[7:-3].strip()
-                        elif content.startswith('```') and content.endswith('```'):
-                            json_content = content[3:-3].strip()
+                    if json_start == -1:
+                        # No JSON found, try markdown code blocks
+                        if '```json' in content:
+                            json_start = content.find('```json') + 7
+                        elif '```' in content:
+                            json_start = content.find('```') + 3
                         else:
-                            json_content = content
+                            logger.error(f"No JSON found in response. Content preview: {content[:500]}")
+                            raise ValueError("No JSON object found in LLM response")
+                    else:
+                        # Remove any text before the first {
+                        content = content[json_start:]
+                    
+                    # Find the matching closing brace by counting braces
+                    json_end = 0
+                    brace_count = 0
+                    for i, char in enumerate(content):
+                        if char == '{':
+                            brace_count += 1
+                        elif char == '}':
+                            brace_count -= 1
+                            if brace_count == 0:
+                                json_end = i + 1
+                                break
+                    
+                    if json_end == 0 or brace_count != 0:
+                        logger.error(f"Could not find matching closing brace. Brace count: {brace_count}, Content preview: {content[:500]}")
+                        # Try to use the rest of the content anyway
+                        json_end = len(content)
+                    
+                    json_content = content[:json_end].strip()
+                    
+                    # Log the extracted JSON for debugging
+                    logger.info(f"Extracted JSON (length {len(json_content)}): {json_content[:300]}...")
                     
                     # Handle case where LLM includes input data in response (invalid JSON)
                     # Look for the first complete JSON object
