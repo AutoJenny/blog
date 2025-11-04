@@ -64,6 +64,11 @@
             </a>
         </div>
         <div class="main-stages-right">
+            <a href="{{ url_for('one_click_blog.one_click_blog') }}" 
+               class="stage-btn" data-stage="launchpad" title="One-Click Blog Automation">
+                <i class="fas fa-magic"></i>
+                Launchpad
+            </a>
             <a href="{{ url_for('header.header_preview', post_id=post_id) }}" 
                class="stage-btn preview-btn" data-stage="preview" target="_blank">
                 <i class="fas fa-eye"></i>
@@ -98,13 +103,13 @@
             
             <!-- Planning sub-stages -->
             <div class="sub-stage-group" data-stage="concept">
-                <a href="{{ url_for('planning.planning_calendar_ideas', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="ideas">
-                    Idea Generation
-                </a>
                 <a href="{{ url_for('planning.planning_calendar_taxonomy', post_id=post_id) }}" 
                    class="sub-stage-btn" data-substage="taxonomy">
                     Taxonomy
+                </a>
+                <a href="{{ url_for('planning.planning_calendar_ideas', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="ideas">
+                    Idea Generation
                 </a>
                 <a href="{{ url_for('planning.planning_concept_brainstorm', post_id=post_id) }}" 
                    class="sub-stage-btn" data-substage="brainstorm">

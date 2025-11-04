@@ -97,12 +97,22 @@
 
                     <!-- Planning Stage -->
                     <tr class="stage-row">
-                        <td class="stage-cell" rowspan="5">
+                        <td class="stage-cell" rowspan="6">
                             <div class="stage-name">
                                 <i class="fas fa-lightbulb"></i>
                                 Planning
                             </div>
                         </td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="taxonomy">Taxonomy</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-taxonomy" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="taxonomy">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
                         <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="idea-generation">Idea Generation</a></td>
                         <td class="run-cell" style="text-align:right;"><button id="run-idea-generation" class="run-btn dead">Run</button></td>
                         <td class="run-cell" style="text-align:right;">
@@ -482,6 +492,7 @@
     // Pipeline definition (order can be adjusted)
     const pipeline = [
         { id:'week-ideas', label:'Calendar — Week Ideas', run: runWeekIdeas },
+        { id:'taxonomy', label:'Planning — Taxonomy', run: runTaxonomy },
         { id:'idea-generation', label:'Planning — Idea Generation', run: runIdeaGeneration },
         { id:'topic-brainstorming', label:'Planning — Topic Brainstorming', run: runTopicBrainstorming },
         { id:'section-structure-design', label:'Planning — Section Structure', run: runSectionStructure },
@@ -648,6 +659,31 @@
             e.stopPropagation();
             runWeekIdeas();
         });
+    }
+    
+    // Run Taxonomy: navigate to taxonomy page (manual assignment)
+    async function runTaxonomy(){
+        const postId = getSelectedPostId();
+        if (!postId){
+            alert('Please select a post in the "Viewing Pipeline For" dropdown first.');
+            return;
+        }
+        
+        // Get week context from URL or use current week
+        let year, week;
+        if (window.WeekContext) {
+            const weekContext = window.WeekContext.getWeekContextWithDefault();
+            year = weekContext.year;
+            week = weekContext.week;
+        } else {
+            const now = new Date();
+            week = getCurrentISOWeek();
+            year = now.getFullYear();
+        }
+        
+        // Navigate to taxonomy page with week context
+        const url = `/planning/posts/${postId}/calendar/taxonomy?year=${year}&week=${week}`;
+        window.open(url, '_blank');
     }
     
     // Run Idea Generation: generate expanded idea for selected post
@@ -1227,6 +1263,7 @@
                 }
             },
             planning: {
+                'taxonomy': p => `/planning/posts/${p}/calendar/taxonomy`,
                 'idea-generation': p => `/planning/posts/${p}/calendar/ideas`,
                 'topic-brainstorming': p => `/planning/posts/${p}/concept/brainstorm`,
                 'section-structure-design': p => `/planning/posts/${p}/concept/section-structure`,
@@ -1905,8 +1942,11 @@
             'header_seo_meta_complete': 'header_seo_meta_complete'
         };
 
+        // Run Taxonomy: navigate to taxonomy page (manual assignment) - duplicate definition removed (see above)
+        
         const pipeline = [
             { id:'week-ideas', label:'Calendar — Week Ideas', run: runWeekIdeas },
+            { id:'taxonomy', label:'Planning — Taxonomy', run: runTaxonomy },
             { id:'idea-generation', label:'Planning — Idea Generation', run: runIdeaGeneration },
             { id:'topic-brainstorming', label:'Planning — Topic Brainstorming', run: runTopicBrainstorming },
             { id:'section-structure-design', label:'Planning — Section Structure', run: runSectionStructure },

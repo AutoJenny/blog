@@ -21,7 +21,11 @@
                 <i class="fas fa-cog"></i>
             </button>
             {% if stage == 'planning' %}
-            <a href="/{{ stage }}/posts/69/concept/{{ substage }}" class="btn btn-sm btn-outline-info" title="Edit">
+                {% if substage == 'taxonomy' %}
+                <a href="/planning/posts/69/calendar/{{ substage }}" class="btn btn-sm btn-outline-info" title="Edit">
+                {% else %}
+                <a href="/{{ stage }}/posts/69/concept/{{ substage }}" class="btn btn-sm btn-outline-info" title="Edit">
+                {% endif %}
             {% else %}
             <a href="/{{ stage }}/posts/69/sections/{{ substage }}" class="btn btn-sm btn-outline-info" title="Edit">
             {% endif %}
