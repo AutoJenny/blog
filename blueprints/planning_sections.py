@@ -518,18 +518,43 @@ def api_design_section_structure():
                 'error': 'Post ID is required'
             }), 400
         
-        # Load Section Structure Design prompt from database
+        # Load Section Structure Design prompt from database using explicit selection
         logger.info("Loading Section Structure Design prompt from database")
+        prompt_name = None
         try:
             with db_manager.get_cursor() as cursor:
+                # Get selected prompt name from post settings if post_id provided
+                if post_id:
+                    cursor.execute("""
+                        SELECT extra_settings FROM post WHERE id = %s
+                    """, (post_id,))
+                    post_result = cursor.fetchone()
+                    
+                    if post_result and post_result.get('extra_settings'):
+                        settings = post_result['extra_settings']
+                        prompt_name = settings.get('section_structure_prompt_name')
+                
+                # LEGACY: If no selection exists, use default
+                if not prompt_name:
+                    prompt_name = 'Section Structure Design'
+                
+                # Get the selected prompt - NO FALLBACKS
                 cursor.execute("""
                     SELECT system_prompt, prompt_text
                     FROM llm_prompt 
-                    WHERE name = 'Section Structure Design'
-                    ORDER BY id DESC
+                    WHERE name = %s
+                    ORDER BY updated_at DESC 
                     LIMIT 1
-                """)
+                """, (prompt_name,))
                 prompt_data = cursor.fetchone()
+                
+                # FAIL CLEARLY if prompt not found
+                if not prompt_data:
+                    logger.error(f'Selected prompt "{prompt_name}" not found for post {post_id}')
+                    return jsonify({
+                        'success': False,
+                        'error': f'Selected prompt "{prompt_name}" not found. Please select a valid prompt in the prompt panel.'
+                    }), 404
                 
                 if prompt_data and prompt_data['system_prompt']:
                     system_prompt = prompt_data['system_prompt']

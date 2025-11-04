@@ -13,8 +13,46 @@ logger = logging.getLogger(__name__)
 def api_get_prompt(prompt_type):
     """Get LLM prompt by type"""
     try:
+        # Check if prompt_name is provided (for category-specific prompts)
+        prompt_name = request.args.get('prompt_name')
+        
         with db_manager.get_cursor() as cursor:
-            # Try multiple search patterns for better matching
+            # If prompt_name is provided, use exact match (for category-specific prompts)
+            if prompt_name:
+                cursor.execute("""
+                    SELECT name, system_prompt, prompt_text, parameters
+                    FROM llm_prompt 
+                    WHERE name = %s
+                    ORDER BY updated_at DESC 
+                    LIMIT 1
+                """, (prompt_name,))
+                prompt_data = cursor.fetchone()
+                
+                if prompt_data:
+                    # Extract parameters from JSONB if they exist
+                    parameters = prompt_data['parameters'] or {}
+                    model = parameters.get('model', 'llama3.2:latest')
+                    temperature = parameters.get('temperature', 0.7)
+                    max_tokens = parameters.get('max_tokens', 2000)
+                    
+                    return jsonify({
+                        'success': True,
+                        'prompt': {
+                            'name': prompt_data['name'],
+                            'system_prompt': prompt_data['system_prompt'],
+                            'prompt_text': prompt_data['prompt_text'],
+                            'model': model,
+                            'temperature': temperature,
+                            'max_tokens': max_tokens
+                        }
+                    })
+                else:
+                    return jsonify({
+                        'success': False,
+                        'error': f'Prompt "{prompt_name}" not found'
+                    }), 404
+            
+            # Otherwise, try pattern matching (legacy behavior)
             search_patterns = [
                 f'%{prompt_type}%',  # Contains the search term
                 f'%{prompt_type.replace("-", " ")}%',  # Replace hyphens with spaces

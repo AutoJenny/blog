@@ -322,6 +322,54 @@ def api_get_expanded_idea_prompt(post_id):
     from blueprints.planning_api_post_specific import api_get_expanded_idea_prompt as prompt_func
     return prompt_func(post_id)
 
+@bp.route('/api/posts/<int:post_id>/brainstorm-prompt-selection', methods=['GET'])
+def api_get_brainstorm_prompt_selection(post_id):
+    """Get available prompt options and current selection for topic brainstorming"""
+    from blueprints.planning_api_post_specific import api_get_brainstorm_prompt_selection as selection_func
+    return selection_func(post_id)
+
+@bp.route('/api/posts/<int:post_id>/brainstorm-prompt-selection', methods=['POST'])
+def api_set_brainstorm_prompt_selection(post_id):
+    """Set the selected prompt for topic brainstorming"""
+    from blueprints.planning_api_post_specific import api_set_brainstorm_prompt_selection as set_selection_func
+    return set_selection_func(post_id)
+
+@bp.route('/api/posts/<int:post_id>/brainstorm-prompt', methods=['GET'])
+def api_get_brainstorm_prompt(post_id):
+    """Get the brainstorm prompt for a post, optionally filtered by prompt_name"""
+    from blueprints.planning_api_post_specific import api_get_brainstorm_prompt as prompt_func
+    return prompt_func(post_id)
+
+@bp.route('/api/posts/<int:post_id>/brainstorm-prompt', methods=['PUT'])
+def api_update_brainstorm_prompt(post_id):
+    """Update the brainstorm prompt for a post"""
+    from blueprints.planning_api_post_specific import api_update_brainstorm_prompt as update_func
+    return update_func(post_id)
+
+@bp.route('/api/posts/<int:post_id>/section-structure-prompt-selection', methods=['GET'])
+def api_get_section_structure_prompt_selection(post_id):
+    """Get available prompt options and current selection for section structure design"""
+    from blueprints.planning_api_post_specific import api_get_section_structure_prompt_selection as selection_func
+    return selection_func(post_id)
+
+@bp.route('/api/posts/<int:post_id>/section-structure-prompt-selection', methods=['POST'])
+def api_set_section_structure_prompt_selection(post_id):
+    """Set the selected prompt for section structure design"""
+    from blueprints.planning_api_post_specific import api_set_section_structure_prompt_selection as set_selection_func
+    return set_selection_func(post_id)
+
+@bp.route('/api/posts/<int:post_id>/section-structure-prompt', methods=['GET'])
+def api_get_section_structure_prompt(post_id):
+    """Get the section structure prompt for a post, optionally filtered by prompt_name"""
+    from blueprints.planning_api_post_specific import api_get_section_structure_prompt as prompt_func
+    return prompt_func(post_id)
+
+@bp.route('/api/posts/<int:post_id>/section-structure-prompt', methods=['PUT'])
+def api_update_section_structure_prompt(post_id):
+    """Update the section structure prompt for a post"""
+    from blueprints.planning_api_post_specific import api_update_section_structure_prompt as update_func
+    return update_func(post_id)
+
 @bp.route('/api/posts/<int:post_id>/expanded-idea', methods=['GET', 'POST'])
 def api_posts_expanded_idea(post_id):
     """Get or create expanded idea for a post"""

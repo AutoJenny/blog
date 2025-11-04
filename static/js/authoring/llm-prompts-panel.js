@@ -26,6 +26,17 @@ class LLMPromptsPanel {
             console.warn('[LLM Prompts Panel] No config available, skipping initialization');
             return;
         }
+        
+        // Override promptEndpoint if provided in options (for post-specific endpoints)
+        if (options.promptEndpoint) {
+            this.config.promptEndpoint = options.promptEndpoint;
+            console.log('[LLM Prompts Panel] Using custom promptEndpoint from options:', this.config.promptEndpoint);
+        } else if (this.config.promptEndpoint && this.config.promptEndpoint.includes('{id}')) {
+            // Replace {id} placeholder if present
+            this.config.promptEndpoint = this.config.promptEndpoint.replace('{id}', this.postId);
+            console.log('[LLM Prompts Panel] Replaced {id} in promptEndpoint:', this.config.promptEndpoint);
+        }
+        
         console.log('[LLM Prompts Panel] Initialized:', {
             pageType: this.pageType,
             promptEndpoint: this.config.promptEndpoint,
@@ -199,8 +210,9 @@ class LLMPromptsPanel {
             if (prompt.is_default) {
                 option.textContent = 'Default';
             } else {
-                // Extract category name from prompt name (e.g., "Expanded Idea Generation (History)" -> "History")
-                const match = prompt.name.match(/Expanded Idea Generation \(([^)]+)\)/);
+                // Extract category name from prompt name
+                // Handle both "Expanded Idea Generation (History)" and "Topic Brainstorming (History)" formats
+                const match = prompt.name.match(/(?:Expanded Idea Generation|Topic Brainstorming|Section Structure Design|Topic Allocation|Section Titling|Section Drafting) \(([^)]+)\)/);
                 option.textContent = match ? match[1] : prompt.name;
             }
             if (prompt.name === this.currentPromptName) {
@@ -384,6 +396,8 @@ class LLMPromptsPanel {
         const userPrompt = this.userPromptEdit?.value || '';
         
         try {
+            console.log('[LLM Prompts Panel] Saving prompt to:', this.config.promptEndpoint);
+            
             // Save to API (DB only)
             const response = await fetch(this.config.promptEndpoint, {
                 method: 'PUT',
@@ -395,6 +409,13 @@ class LLMPromptsPanel {
                     prompt_text: userPrompt
                 })
             });
+            
+            // Check if response is OK before trying to parse JSON
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error(`[LLM Prompts Panel] HTTP ${response.status} error:`, errorText);
+                throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 100)}`);
+            }
             
             const data = await response.json();
             
@@ -412,9 +433,11 @@ class LLMPromptsPanel {
                 console.log(`[LLM Prompts Panel] Prompt saved for ${this.pageType}`);
             } else {
                 console.error(`[LLM Prompts Panel] Error saving prompt:`, data);
+                alert(`Error saving prompt: ${data.error || 'Unknown error'}`);
             }
         } catch (error) {
             console.error(`[LLM Prompts Panel] Error saving prompt:`, error);
+            alert(`Error saving prompt: ${error.message}`);
         }
     }
 

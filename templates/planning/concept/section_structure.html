@@ -14,6 +14,16 @@
     
     {% block process_content %}
     <div class="brainstorm-main">
+        <!-- Category Indicator Banner -->
+        {% if content_type_name %}
+        <div class="route-indicator" style="background: #059669; color: white; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-tag" style="font-size: 1.1rem;"></i>
+            <span>Content Category: <strong>{{ content_type_name }}</strong></span>
+            {% if year and week %}
+            <span style="margin-left: auto; font-weight: 500; opacity: 0.85;">Week {{ week }}, {{ year }}</span>
+            {% endif %}
+        </div>
+        {% endif %}
         
         <div class="brainstorm-content">
             <div class="idea-generator">
@@ -52,10 +62,7 @@
                     <!-- LLM Results Panel -->
                     <div class="llm-results-panel">
                         <div class="results-header">
-                            <h4 id="results-title">Generated Results</h4>
-                            <button class="btn btn-primary" id="generate-btn">
-                                <i class="fas fa-magic"></i> Generate
-                            </button>
+                            <h4 id="results-title">Generated Section Structure</h4>
                         </div>
                         
                         <!-- LLM Message Debug Display -->
@@ -390,7 +397,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize LLM Prompts Panel for full editing functionality
     if (typeof LLMPromptsPanel !== 'undefined') {
         window.llmPromptsPanel = new LLMPromptsPanel({
-            postId: window.postId
+            postId: window.postId,
+            pageType: 'section_structure',
+            promptEndpoint: `/planning/api/posts/${window.postId}/section-structure-prompt`,
+            promptSelectionEndpoint: `/planning/api/posts/${window.postId}/section-structure-prompt-selection`
+        });
+        
+        // Load prompt selection from database first (not localStorage/sessionStorage)
+        window.llmPromptsPanel.loadPromptSelection().then(() => {
+            // Then load the actual prompt content from database
+            window.llmPromptsPanel.loadPromptFromAPI();
         });
     }
 });
