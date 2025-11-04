@@ -304,6 +304,24 @@ def api_get_post_by_theme(theme_idea_id):
     """Get a post that has a specific theme idea_id in its schedule"""
     return get_post_by_theme_func(theme_idea_id)
 
+@bp.route('/api/posts/<int:post_id>/expanded-idea-prompt-selection', methods=['GET'])
+def api_get_expanded_idea_prompt_selection(post_id):
+    """Get available prompt options and current selection for expanded idea generation"""
+    from blueprints.planning_api_post_specific import api_get_expanded_idea_prompt_selection as selection_func
+    return selection_func(post_id)
+
+@bp.route('/api/posts/<int:post_id>/expanded-idea-prompt-selection', methods=['POST'])
+def api_set_expanded_idea_prompt_selection(post_id):
+    """Set the selected prompt for expanded idea generation"""
+    from blueprints.planning_api_post_specific import api_set_expanded_idea_prompt_selection as set_selection_func
+    return set_selection_func(post_id)
+
+@bp.route('/api/posts/<int:post_id>/expanded-idea-prompt', methods=['GET'])
+def api_get_expanded_idea_prompt(post_id):
+    """Get the expanded idea prompt for a post, optionally filtered by prompt_name"""
+    from blueprints.planning_api_post_specific import api_get_expanded_idea_prompt as prompt_func
+    return prompt_func(post_id)
+
 @bp.route('/api/posts/<int:post_id>/expanded-idea', methods=['GET', 'POST'])
 def api_posts_expanded_idea(post_id):
     """Get or create expanded idea for a post"""

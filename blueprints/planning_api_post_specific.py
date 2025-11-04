@@ -74,6 +74,205 @@ def get_post_by_theme(theme_id):
         logger.error(f"Error finding post by theme: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+def api_get_expanded_idea_prompt_selection(post_id):
+    """Get available prompt options and current selection for expanded idea generation"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get taxonomy for the post
+            cursor.execute("""
+                SELECT ti.display_name as content_type_name
+                FROM post p
+                LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                WHERE p.id = %s
+            """, (post_id,))
+            taxonomy_result = cursor.fetchone()
+            content_type_name = taxonomy_result.get('content_type_name') if taxonomy_result else None
+            
+            # Get available prompts
+            available_prompts = []
+            
+            # Default prompt
+            cursor.execute("""
+                SELECT name, id FROM llm_prompt 
+                WHERE name = 'Expanded Idea Generation'
+                ORDER BY updated_at DESC 
+                LIMIT 1
+            """)
+            default_prompt = cursor.fetchone()
+            if default_prompt:
+                available_prompts.append({
+                    'name': default_prompt['name'],
+                    'id': default_prompt['id'],
+                    'is_default': True
+                })
+            
+            # Category-specific prompt (if category exists)
+            if content_type_name:
+                category_prompt_name = f'Expanded Idea Generation ({content_type_name})'
+                cursor.execute("""
+                    SELECT name, id FROM llm_prompt 
+                    WHERE name = %s
+                    ORDER BY updated_at DESC 
+                    LIMIT 1
+                """, (category_prompt_name,))
+                category_prompt = cursor.fetchone()
+                if category_prompt:
+                    available_prompts.append({
+                        'name': category_prompt['name'],
+                        'id': category_prompt['id'],
+                        'is_default': False,
+                        'category': content_type_name
+                    })
+            
+            # Get current selection (from post settings)
+            cursor.execute("""
+                SELECT extra_settings FROM post WHERE id = %s
+            """, (post_id,))
+            post_result = cursor.fetchone()
+            current_selection = None
+            
+            if post_result and post_result.get('extra_settings'):
+                settings = post_result['extra_settings']
+                current_selection = settings.get('expanded_idea_prompt_name')
+            
+            # LEGACY POSTS: If no selection exists, explicitly set to default prompt
+            # This is an explicit initial selection, not a fallback
+            # We save it to the post so it's persistent
+            if not current_selection and available_prompts:
+                # Find the default prompt (marked with is_default: true)
+                default_prompt_obj = next((p for p in available_prompts if p.get('is_default')), None)
+                if default_prompt_obj:
+                    current_selection = default_prompt_obj['name']
+                    # Save this explicit selection to the post for legacy posts
+                    if post_result and post_result.get('extra_settings'):
+                        settings = post_result['extra_settings']
+                    else:
+                        settings = {}
+                    settings['expanded_idea_prompt_name'] = current_selection
+                    cursor.execute("""
+                        UPDATE post 
+                        SET extra_settings = %s::jsonb
+                        WHERE id = %s
+                    """, (json.dumps(settings), post_id))
+                    cursor.connection.commit()
+                else:
+                    # No default prompt available - this is a system error
+                    return jsonify({
+                        'error': 'Default prompt "Expanded Idea Generation" not found. Please create it in the database.'
+                    }), 500
+            
+            return jsonify({
+                'success': True,
+                'available_prompts': available_prompts,
+                'current_selection': current_selection,
+                'content_type_name': content_type_name
+            })
+    except Exception as e:
+        logger.error(f"Error getting prompt selection: {e}")
+        return jsonify({'error': str(e)}), 500
+
+def api_set_expanded_idea_prompt_selection(post_id):
+    """Set the selected prompt for expanded idea generation"""
+    try:
+        data = request.get_json()
+        prompt_name = data.get('prompt_name') if data else None
+        
+        if not prompt_name:
+            return jsonify({'error': 'prompt_name is required'}), 400
+        
+        # Verify prompt exists
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id FROM llm_prompt WHERE name = %s
+            """, (prompt_name,))
+            if not cursor.fetchone():
+                return jsonify({'error': f'Prompt "{prompt_name}" not found'}), 404
+            
+            # Save selection to post.extra_settings - PERSIST TO DATABASE
+            cursor.execute("""
+                SELECT extra_settings FROM post WHERE id = %s
+            """, (post_id,))
+            post_result = cursor.fetchone()
+            
+            if post_result and post_result.get('extra_settings'):
+                settings = post_result['extra_settings']
+            else:
+                settings = {}
+            
+            settings['expanded_idea_prompt_name'] = prompt_name
+            
+            cursor.execute("""
+                UPDATE post 
+                SET extra_settings = %s::jsonb
+                WHERE id = %s
+            """, (json.dumps(settings), post_id))
+            cursor.connection.commit()
+            
+            return jsonify({'success': True, 'prompt_name': prompt_name})
+    except Exception as e:
+        logger.error(f"Error setting prompt selection: {e}")
+        return jsonify({'error': str(e)}), 500
+
+def api_get_expanded_idea_prompt(post_id):
+    """Get the expanded idea prompt for a post, optionally filtered by prompt_name query parameter"""
+    try:
+        # Get prompt_name from query parameter (passed from frontend)
+        prompt_name = request.args.get('prompt_name')
+        
+        with db_manager.get_cursor() as cursor:
+            # If prompt_name not provided, get from post.extra_settings
+            if not prompt_name:
+                cursor.execute("""
+                    SELECT extra_settings FROM post WHERE id = %s
+                """, (post_id,))
+                post_result = cursor.fetchone()
+                
+                if post_result and post_result.get('extra_settings'):
+                    settings = post_result['extra_settings']
+                    prompt_name = settings.get('expanded_idea_prompt_name')
+                
+                # LEGACY: If still no prompt_name, use default
+                if not prompt_name:
+                    prompt_name = 'Expanded Idea Generation'
+            
+            # Get the prompt by exact name - NO FALLBACKS
+            cursor.execute("""
+                SELECT name, system_prompt, prompt_text, parameters
+                FROM llm_prompt 
+                WHERE name = %s
+                ORDER BY updated_at DESC 
+                LIMIT 1
+            """, (prompt_name,))
+            prompt_data = cursor.fetchone()
+            
+            # FAIL CLEARLY if prompt not found
+            if not prompt_data:
+                return jsonify({
+                    'success': False,
+                    'error': f'Selected prompt "{prompt_name}" not found. Please select a valid prompt in the prompt panel.'
+                }), 404
+            
+            # Extract parameters from JSONB if they exist
+            parameters = prompt_data['parameters'] or {}
+            model = parameters.get('model', 'llama3.2:latest')
+            temperature = parameters.get('temperature', 0.7)
+            max_tokens = parameters.get('max_tokens', 2000)
+            
+            return jsonify({
+                'success': True,
+                'prompt': {
+                    'name': prompt_data['name'],
+                    'system_prompt': prompt_data['system_prompt'],
+                    'prompt_text': prompt_data['prompt_text'],
+                    'model': model,
+                    'temperature': temperature,
+                    'max_tokens': max_tokens
+                }
+            })
+    except Exception as e:
+        logger.error(f"Error fetching expanded idea prompt: {e}")
+        return jsonify({'error': str(e)}), 500
+
 def api_posts_expanded_idea(post_id):
     """Get or create expanded idea for a post"""
     if request.method == 'GET':
@@ -306,24 +505,43 @@ def api_posts_expanded_idea(post_id):
             # Generate expanded idea using LLM
             llm_service = LLMService()
             
-            # Load prompt from database
+            # Load prompt from database using explicit selection
             with db_manager.get_cursor() as cursor:
+                # Get selected prompt name from post settings
+                cursor.execute("""
+                    SELECT extra_settings FROM post WHERE id = %s
+                """, (post_id,))
+                post_result = cursor.fetchone()
+                prompt_name = None
+                
+                if post_result and post_result.get('extra_settings'):
+                    settings = post_result['extra_settings']
+                    prompt_name = settings.get('expanded_idea_prompt_name')
+                
+                # LEGACY POSTS: If no selection exists, use default prompt
+                # This should only happen if the selection endpoint hasn't been called yet
+                # (which would have set the selection). This is an explicit default, not a fallback.
+                if not prompt_name:
+                    prompt_name = 'Expanded Idea Generation'
+                
+                # Get the selected prompt - NO FALLBACKS
                 cursor.execute("""
                     SELECT system_prompt, prompt_text
                     FROM llm_prompt 
-                    WHERE name ILIKE '%idea%expansion%' OR name ILIKE '%scottish%idea%'
-                    ORDER BY id DESC
+                    WHERE name = %s
+                    ORDER BY updated_at DESC 
                     LIMIT 1
-                """)
+                """, (prompt_name,))
                 prompt_data = cursor.fetchone()
                 
-                if prompt_data:
-                    system_prompt = prompt_data['system_prompt']
-                    prompt_text = prompt_data['prompt_text']
-                else:
-                    # Fallback prompts
-                    system_prompt = "You are an expert content creator specializing in Scottish and Celtic history and culture. Expand the given theme into a comprehensive, engaging expanded idea that can be developed into a full blog post."
-                    prompt_text = "Expand this theme into a comprehensive expanded idea:\n\n[theme_data]"
+                # FAIL CLEARLY if prompt not found
+                if not prompt_data:
+                    return jsonify({
+                        'error': f'Selected prompt "{prompt_name}" not found. Please select a valid prompt in the prompt panel.'
+                    }), 404
+                
+                system_prompt = prompt_data['system_prompt']
+                prompt_text = prompt_data['prompt_text']
             
             # Build theme content string to replace [data:idea_seed] or [theme_data]
             theme_content = f"Title: {selected_theme['title']}\n\n"

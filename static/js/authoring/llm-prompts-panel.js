@@ -35,6 +35,11 @@ class LLMPromptsPanel {
         this.storageKey = `${this.pageType}-llm-prompts`; // legacy key (will not be used)
         this.currentPrompt = { system_prompt: '', prompt_text: '' }; // in-memory source of truth
         
+        // Prompt selection support (for category-contingent prompts)
+        this.promptSelectionEndpoint = options.promptSelectionEndpoint;
+        this.availablePrompts = [];
+        this.currentPromptName = null;
+        
         // Callbacks for external communication
         this.callbacks = {
             onPromptChange: options.onPromptChange || (() => {}),
@@ -59,8 +64,16 @@ class LLMPromptsPanel {
     init() {
         this.bindElements();
         this.setupEventListeners();
-        // Do not use localStorage; rely on DB-backed API
-        this.loadPromptFromAPI();
+        // Load prompt selection first if endpoint is provided (for category-contingent prompts)
+        if (this.promptSelectionEndpoint) {
+            this.loadPromptSelection().then(() => {
+                // Then load the actual prompt content from database
+                this.loadPromptFromAPI();
+            });
+        } else {
+            // Do not use localStorage; rely on DB-backed API
+            this.loadPromptFromAPI();
+        }
         this.restoreAccordionState();
     }
 
@@ -142,10 +155,112 @@ class LLMPromptsPanel {
     }
 
 
+    async loadPromptSelection() {
+        if (!this.promptSelectionEndpoint) return;
+        
+        try {
+            const response = await fetch(this.promptSelectionEndpoint);
+            const data = await response.json();
+            
+            if (data.success) {
+                this.availablePrompts = data.available_prompts || [];
+                this.currentPromptName = data.current_selection;
+                
+                // Update header to show selected prompt name
+                this.updatePromptTitle(this.currentPromptName || 'No prompt selected');
+                
+                // Show prompt selector if multiple options available
+                if (this.availablePrompts.length > 1) {
+                    this.showPromptSelector();
+                }
+            }
+        } catch (error) {
+            console.error('[LLM Prompts Panel] Error loading prompt selection:', error);
+        }
+    }
+    
+    showPromptSelector() {
+        // Create dropdown selector in panel header
+        const header = document.querySelector('.llm-prompts-panel .panel-header');
+        if (!header) return;
+        
+        // Remove existing selector if present
+        const existing = header.querySelector('.prompt-selector');
+        if (existing) existing.remove();
+        
+        const selector = document.createElement('select');
+        selector.className = 'prompt-selector';
+        selector.style.cssText = 'margin-left: 1rem; padding: 0.25rem 0.5rem; background: #1e293b; border: 1px solid #334155; border-radius: 4px; color: #f1f5f9; font-size: 0.875rem;';
+        
+        this.availablePrompts.forEach(prompt => {
+            const option = document.createElement('option');
+            option.value = prompt.name;
+            // Format display: "Default" for default, category name for category-specific
+            if (prompt.is_default) {
+                option.textContent = 'Default';
+            } else {
+                // Extract category name from prompt name (e.g., "Expanded Idea Generation (History)" -> "History")
+                const match = prompt.name.match(/Expanded Idea Generation \(([^)]+)\)/);
+                option.textContent = match ? match[1] : prompt.name;
+            }
+            if (prompt.name === this.currentPromptName) {
+                option.selected = true;
+            }
+            selector.appendChild(option);
+        });
+        
+        selector.addEventListener('change', async (e) => {
+            await this.selectPrompt(e.target.value);
+        });
+        
+        header.appendChild(selector);
+    }
+    
+    async selectPrompt(promptName) {
+        if (!this.promptSelectionEndpoint) return;
+        
+        try {
+            // Save selection to database immediately via API - NO localStorage/sessionStorage/cookies
+            // Selection is persisted in post.extra_settings JSONB field
+            const response = await fetch(this.promptSelectionEndpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt_name: promptName })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                // Update local state (this is just UI state, actual persistence is in database)
+                this.currentPromptName = promptName;
+                this.updatePromptTitle(promptName);
+                // Reload the prompt content from database
+                await this.loadPromptFromAPI();
+            } else {
+                alert(`Error selecting prompt: ${data.error}`);
+            }
+        } catch (error) {
+            console.error('[LLM Prompts Panel] Error selecting prompt:', error);
+            alert(`Error selecting prompt: ${error.message}`);
+        }
+    }
+    
     async loadPromptFromAPI() {
         try {
-            // Append illustration_method to endpoint if available and endpoint is for image-concepts or image-prompts
+            // Load selection from database first (not from localStorage/sessionStorage)
+            if (!this.currentPromptName && this.promptSelectionEndpoint) {
+                await this.loadPromptSelection();
+            }
+            
+            // Build endpoint with selected prompt name from database
             let url = this.config.promptEndpoint;
+            
+            // Add prompt_name parameter if we have a selection
+            if (this.currentPromptName) {
+                const separator = url.includes('?') ? '&' : '?';
+                url = `${url}${separator}prompt_name=${encodeURIComponent(this.currentPromptName)}`;
+            }
+            
+            // Append illustration_method to endpoint if available and endpoint is for image-concepts or image-prompts
             if ((url.includes('/image-concepts') || url.includes('/image-prompts')) && window.illustrationMethod) {
                 const separator = url.includes('?') ? '&' : '?';
                 url = `${url}${separator}illustration_method=${encodeURIComponent(window.illustrationMethod)}`;
