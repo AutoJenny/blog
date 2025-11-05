@@ -82,6 +82,14 @@ def create_app(config_name=None):
     from blueprints.images import bp as images_bp
     app.register_blueprint(images_bp, url_prefix='/images')
     
+    # Register recipes blueprint
+    from blueprints.recipes import bp as recipes_bp
+    app.register_blueprint(recipes_bp)
+    
+    # Register post type config blueprint
+    from blueprints.post_type_config import bp as post_type_config_bp
+    app.register_blueprint(post_type_config_bp)
+    
     # Register image generation module
     from modules.image_generation.api import bp as image_generation_bp
     app.register_blueprint(image_generation_bp, url_prefix='/authoring')

@@ -243,6 +243,7 @@ def header_preview(post_id):
                 SELECT ps.id,
                        ps.section_heading,
                        ps.section_description,
+                       ps.section_type,
                        ps.draft,
                        ps.polished,
                        ps.image_captions AS section_image_captions,
@@ -268,6 +269,7 @@ def header_preview(post_id):
                     'id': section['id'],
                     'section_heading': section['section_heading'],
                     'section_description': section['section_description'],
+                    'section_type': section.get('section_type') or '',
                     'content': section['polished'] or section['draft'] or '',
                 }
                 
@@ -1351,28 +1353,38 @@ def api_title_summary_prompt(post_id):
                 if 'prompt_text' in data:
                     # Format from LLM Prompts Panel - update task prompt
                     task_prompt = data.get('prompt_text', '').strip()
-                    if task_prompt:
+                    if task_prompt and len(task_prompt) > 10:  # Only update if substantial content
+                        # Ensure we're using integer IDs
+                        task_prompt_id = int(result['task_prompt_id'])
                         cursor.execute("""
                             UPDATE llm_prompt
                             SET prompt_text = %s,
                                 updated_at = NOW()
                             WHERE id = %s
-                        """, (task_prompt, result['task_prompt_id']))
+                        """, (task_prompt, task_prompt_id))
                         cursor.connection.commit()
-                        logger.info(f"Updated Title Generation task prompt (task_prompt_id={result['task_prompt_id']}) for post {post_id}")
+                        logger.info(f"Updated Title Generation task prompt (task_prompt_id={task_prompt_id}) for post {post_id}")
                     
-                    # Optionally update system prompt if provided
+                    # Optionally update system prompt if provided AND substantial
+                    # Only update if it's actually meaningful content (not empty or test data)
                     if 'system_prompt' in data:
                         system_prompt = data.get('system_prompt', '').strip()
-                        if system_prompt:
+                        # Only update if it's substantial (more than just "Test system" or empty)
+                        # Check against the original to avoid overwriting with test/stale data
+                        original_system = result.get('system_prompt', '').strip()
+                        if system_prompt and len(system_prompt) > 50 and system_prompt != original_system:
+                            # Ensure we're using integer IDs
+                            system_prompt_id = int(result['system_prompt_id'])
                             cursor.execute("""
                                 UPDATE llm_prompt
                                 SET system_prompt = %s,
                                     updated_at = NOW()
                                 WHERE id = %s
-                            """, (system_prompt, result['system_prompt_id']))
+                            """, (system_prompt, system_prompt_id))
                             cursor.connection.commit()
-                            logger.info(f"Updated Title Generation system prompt (system_prompt_id={result['system_prompt_id']}) for post {post_id}")
+                            logger.info(f"Updated Title Generation system prompt (system_prompt_id={system_prompt_id}) for post {post_id}")
+                        elif system_prompt and len(system_prompt) <= 50:
+                            logger.warning(f"Ignored system prompt update - too short (likely test data): {len(system_prompt)} chars")
                 
                 elif 'content' in data:
                     # Direct content format - user is editing combined prompt
@@ -1393,14 +1405,16 @@ def api_title_summary_prompt(post_id):
                         # If it doesn't match, assume user is editing just the task prompt
                         task_prompt = prompt_content
                     
+                    # Ensure we're using integer ID
+                    task_prompt_id = int(result['task_prompt_id'])
                     cursor.execute("""
                         UPDATE llm_prompt
                         SET prompt_text = %s,
                             updated_at = NOW()
                         WHERE id = %s
-                    """, (task_prompt, result['task_prompt_id']))
+                    """, (task_prompt, task_prompt_id))
                     cursor.connection.commit()
-                    logger.info(f"Updated Title Generation prompt from content (task_prompt_id={result['task_prompt_id']}) for post {post_id}")
+                    logger.info(f"Updated Title Generation prompt from content (task_prompt_id={task_prompt_id}) for post {post_id}")
                 else:
                     return jsonify({'error': 'Either prompt_text or content is required'}), 400
                 

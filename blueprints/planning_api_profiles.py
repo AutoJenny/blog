@@ -65,7 +65,13 @@ def api_create_profile():
                 week_number = data.get('week_number')
                 weekday = data.get('weekday')
                 
+                # If weekday not provided, get default from post_type_config for profiles
                 if year and week_number:
+                    if weekday is None:
+                        from blueprints.post_type_config import get_publication_day_for_post_type
+                        profile_config = get_publication_day_for_post_type('profile', cur)
+                        weekday = profile_config['day'] if profile_config else 4  # Fallback to Thursday
+                    
                     cur.execute("""
                         INSERT INTO calendar_week_posts (
                             year, week_number, post_id, weekday, created_at
@@ -212,7 +218,13 @@ def api_update_profile(profile_id):
                 week_number = data.get('week_number')
                 weekday = data.get('weekday')
                 
+                # If weekday not provided, get default from post_type_config for profiles
                 if year and week_number:
+                    if weekday is None:
+                        from blueprints.post_type_config import get_publication_day_for_post_type
+                        profile_config = get_publication_day_for_post_type('profile', cur)
+                        weekday = profile_config['day'] if profile_config else 4  # Fallback to Thursday
+                    
                     cur.execute("""
                         INSERT INTO calendar_week_posts (
                             year, week_number, post_id, weekday, created_at

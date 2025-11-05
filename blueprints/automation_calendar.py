@@ -111,19 +111,28 @@ def get_next_up():
                 week_end = current_week['end_date']
                 today = date.today()
                 
-                # Default to Wednesday of the week (middle of week) at 14:00
-                # If today is past Wednesday, schedule for next available day
+                # Get default publication day from post_type_config for themed posts
+                from blueprints.post_type_config import get_publication_day_for_post_type
+                themed_config = get_publication_day_for_post_type('themed')
+                default_day = themed_config['day'] if themed_config else 3  # Fallback to Wednesday
+                
+                # Calculate publication date based on configured day
+                # default_day is 1-7 (Monday-Sunday), but week_start.weekday() is 0-6 (Monday-Sunday)
                 if week_start and week_end:
-                    # Calculate Wednesday of this week
+                    # Calculate the target day of the week
                     days_since_monday = (week_start.weekday()) % 7  # Monday = 0
-                    wednesday = week_start + timedelta(days=(2 - days_since_monday))
+                    target_day_offset = (default_day - 1) - days_since_monday
+                    publish_date = week_start + timedelta(days=target_day_offset)
                     
-                    # If today is past Wednesday, schedule for Friday
-                    if today > wednesday:
-                        friday = wednesday + timedelta(days=2)
-                        publish_date = min(friday, week_end)
-                    else:
-                        publish_date = wednesday
+                    # If today is past the target day, schedule for next week or next available day
+                    if today > publish_date:
+                        # Try next occurrence in the same week
+                        next_occurrence = publish_date + timedelta(days=7)
+                        if next_occurrence <= week_end:
+                            publish_date = next_occurrence
+                        else:
+                            # Use the last day of the week
+                            publish_date = week_end
                     
                     # Check if there's already a post for the selected idea
                     existing_post_id = None

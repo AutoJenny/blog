@@ -197,12 +197,19 @@ def confirm_calendar_idea():
                         'error': f'No theme selected for week {year}/{week_number}. Please select a theme first.'
                     }), 400
                 
-                # Assign post to week using calendar_week_posts
+                # Get default publication day for themed posts
+                from blueprints.post_type_config import get_publication_day_for_post_type
+                themed_config = get_publication_day_for_post_type('themed', cursor)
+                default_weekday = themed_config['day'] if themed_config else 3  # Fallback to Wednesday
+                
+                # Assign post to week using calendar_week_posts with default weekday
                 cursor.execute("""
-                    INSERT INTO calendar_week_posts (year, week_number, post_id, scheduled_date, created_at, updated_at)
-                    VALUES (%s, %s, %s, NULL, NOW(), NOW())
-                    ON CONFLICT (year, week_number, post_id) DO NOTHING
-                """, (year, week_number, post_id))
+                    INSERT INTO calendar_week_posts (year, week_number, post_id, weekday, scheduled_date, created_at, updated_at)
+                    VALUES (%s, %s, %s, %s, NULL, NOW(), NOW())
+                    ON CONFLICT (year, week_number, post_id) DO UPDATE SET
+                        weekday = EXCLUDED.weekday,
+                        updated_at = NOW()
+                """, (year, week_number, post_id, default_weekday))
             else:
                 # Fallback to old calendar_schedule table during migration
                 cursor.execute("""
