@@ -1,0 +1,203 @@
+/* Scottish Recipe Series - Recipe-Specific Styling */
+
+/* Recipe Section Container */
+.recipe-section {
+    margin: 2rem 0;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.recipe-section:last-child {
+    border-bottom: none;
+}
+
+/* Recipe Background Section */
+.recipe-section.recipe-background {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #374151;
+}
+
+.recipe-section.recipe-background p {
+    margin-bottom: 1rem;
+}
+
+/* Recipe Ingredients Section */
+.recipe-section.recipe-ingredients {
+    background: #f9fafb;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid #d97706;
+}
+
+.recipe-section.recipe-ingredients h2 {
+    color: #92400e;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.recipe-section.recipe-ingredients ul,
+.recipe-section.recipe-ingredients ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.recipe-section.recipe-ingredients li {
+    padding: 0.5rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.recipe-section.recipe-ingredients li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #d97706;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+/* Recipe Method Section */
+.recipe-section.recipe-method {
+    margin: 2rem 0;
+}
+
+.recipe-section.recipe-method h2 {
+    color: #92400e;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.recipe-section.recipe-method ol {
+    list-style: none;
+    counter-reset: step-counter;
+    padding: 0;
+    margin: 0;
+}
+
+.recipe-section.recipe-method li {
+    counter-increment: step-counter;
+    padding: 1rem 0;
+    padding-left: 3rem;
+    position: relative;
+    font-size: 1rem;
+    line-height: 1.7;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.recipe-section.recipe-method li:last-child {
+    border-bottom: none;
+}
+
+.recipe-section.recipe-method li::before {
+    content: counter(step-counter);
+    position: absolute;
+    left: 0;
+    top: 1rem;
+    background: #d97706;
+    color: white;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+/* Recipe Variants Section */
+.recipe-section.recipe-variants {
+    background: #fffbeb;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid #f59e0b;
+    margin: 2rem 0;
+}
+
+.recipe-section.recipe-variants h2 {
+    color: #92400e;
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+
+.recipe-section.recipe-variants p {
+    margin-bottom: 0.75rem;
+    font-style: italic;
+    color: #6b7280;
+}
+
+/* Recipe Serving Section */
+.recipe-section.recipe-serving {
+    background: #f0fdf4;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid #10b981;
+    margin: 2rem 0;
+}
+
+.recipe-section.recipe-serving h2 {
+    color: #065f46;
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+
+.recipe-section.recipe-serving p {
+    margin-bottom: 0.75rem;
+    color: #374151;
+}
+
+/* Recipe Gallery Section (Making Process Image) */
+.recipe-section.recipe-gallery {
+    margin: 2rem 0;
+    text-align: center;
+}
+
+.recipe-section.recipe-gallery h2 {
+    color: #92400e;
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+    text-align: left;
+}
+
+.recipe-section.recipe-gallery figure {
+    margin: 1.5rem 0;
+    max-width: 100%;
+}
+
+.recipe-section.recipe-gallery img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.recipe-section.recipe-gallery figcaption {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    color: #6b7280;
+    font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .recipe-section.recipe-ingredients,
+    .recipe-section.recipe-variants,
+    .recipe-section.recipe-serving {
+        padding: 1rem;
+    }
+    
+    .recipe-section.recipe-method li {
+        padding-left: 2.5rem;
+    }
+    
+    .recipe-section.recipe-method li::before {
+        width: 1.75rem;
+        height: 1.75rem;
+        font-size: 0.8rem;
+    }
+}
+

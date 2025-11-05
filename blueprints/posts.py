@@ -98,10 +98,11 @@ def posts_list():
                 if show_deleted:
                     cursor.execute("""
                         SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
-                               cwp.year AS sched_year, cwp.week_number AS sched_week, cwp.scheduled_date
+                               p.recipe_week_number, p.profile_category_id,
+                               cwp.year AS sched_year, cwp.week_number AS sched_week, cwp.scheduled_date, cwp.weekday
                         FROM post p
                         LEFT JOIN LATERAL (
-                            SELECT year, week_number, scheduled_date, updated_at
+                            SELECT year, week_number, scheduled_date, weekday, updated_at
                             FROM calendar_week_posts
                             WHERE post_id = p.id
                             ORDER BY scheduled_date DESC NULLS LAST, updated_at DESC, created_at DESC
@@ -113,10 +114,11 @@ def posts_list():
                 else:
                     cursor.execute("""
                         SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
-                               cwp.year AS sched_year, cwp.week_number AS sched_week, cwp.scheduled_date
+                               p.recipe_week_number, p.profile_category_id,
+                               cwp.year AS sched_year, cwp.week_number AS sched_week, cwp.scheduled_date, cwp.weekday
                         FROM post p
                         LEFT JOIN LATERAL (
-                            SELECT year, week_number, scheduled_date, updated_at
+                            SELECT year, week_number, scheduled_date, weekday, updated_at
                             FROM calendar_week_posts
                             WHERE post_id = p.id
                             ORDER BY scheduled_date DESC NULLS LAST, updated_at DESC, created_at DESC
@@ -130,6 +132,7 @@ def posts_list():
                 if show_deleted:
                     cursor.execute("""
                         SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                               p.recipe_week_number, p.profile_category_id,
                                cs.year AS sched_year, cs.week_number AS sched_week, cs.scheduled_date
                         FROM post p
                         LEFT JOIN LATERAL (
@@ -145,6 +148,7 @@ def posts_list():
                 else:
                     cursor.execute("""
                         SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                               p.recipe_week_number, p.profile_category_id,
                                cs.year AS sched_year, cs.week_number AS sched_week, cs.scheduled_date
                         FROM post p
                         LEFT JOIN LATERAL (
@@ -159,6 +163,23 @@ def posts_list():
                     """)
             posts = cursor.fetchall()
             
+        # Helper function to determine post type
+        def determine_post_type(post_row):
+            """Determine post type: recipe, profile, or themed."""
+            if isinstance(post_row, dict):
+                recipe_week = post_row.get('recipe_week_number')
+                profile_cat = post_row.get('profile_category_id')
+            else:
+                recipe_week = post_row[5] if len(post_row) > 5 else None
+                profile_cat = post_row[6] if len(post_row) > 6 else None
+            
+            if recipe_week is not None:
+                return 'recipe'
+            elif profile_cat is not None:
+                return 'profile'
+            else:
+                return 'themed'
+        
         # Format posts for template
         formatted_posts = []
         for post in posts:
@@ -176,6 +197,8 @@ def posts_list():
 
             created_ts = int(post['created_at'].timestamp() * 1000) if post.get('created_at') else 0
             updated_ts = int(post['updated_at'].timestamp() * 1000) if post.get('updated_at') else 0
+            
+            post_type = determine_post_type(post)
 
             formatted_posts.append({
                 'id': post['id'],
@@ -190,7 +213,11 @@ def posts_list():
                 'week_dates': week_dates_small,
                 'week_sort': week_sort_key,
                 'week_number': int(sched_week) if sched_week else None,
-                'year': int(sched_year) if sched_year else None
+                'year': int(sched_year) if sched_year else None,
+                'post_type': post_type,
+                'is_recipe': post_type == 'recipe',
+                'is_profile': post_type == 'profile',
+                'is_themed': post_type == 'themed'
             })
         
         return render_template('posts_list.html', 

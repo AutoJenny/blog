@@ -97,6 +97,10 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/clan/main.css') }}" />
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/clan/secondary.css') }}" media="all" />
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/clan/third.css') }}" media="print" />
+    <!-- Recipe-specific CSS -->
+    {% if post.recipe_week_number %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/recipes.css') }}" />
+    {% endif %}
     <style>
         .header-image {
             margin: 20px 0;
@@ -446,9 +450,46 @@
                 </div>
             {% endif %}
             {% for section in sections %}
-            <section class="blog-section" id="section-{{ loop.index }}">
+            {% set section_type = section.section_type or '' %}
+            {% set is_recipe_section = section_type.startswith('recipe_') if section_type else False %}
+            {% set is_recipe_gallery = section_type == 'recipe_gallery' if section_type else False %}
+            <section class="blog-section{% if is_recipe_section %} recipe-section recipe-{{ section_type }}{% endif %}" id="section-{{ loop.index }}">
+                {% if not is_recipe_gallery %}
                 <h2>{{ section.section_heading or 'Untitled Section' }}</h2>
+                {% endif %}
                 <div class="section-text">
+                    {% if is_recipe_gallery %}
+                        {# Recipe gallery section - image first, then caption #}
+                        {% if section.image %}
+                            {% if section.image.path and not section.image.placeholder %}
+                                <figure class="section-image recipe-gallery-image">
+                                    <a title="{{ section.image_captions or section.image.alt_text or 'Making process image' }}" 
+                                       href="{{ section.image.path }}" 
+                                       rel="lightbox[mpblog_{{ post.id }}]" 
+                                       target="_blank">
+                                        <img alt="{{ section.image.alt_text }}" 
+                                             src="{{ section.image.path }}"
+                                             onerror="this.style.display='none'; this.closest('figure').querySelector('.image-error').style.display='block';">
+                                    </a>
+                                    <div class="image-error" style="display: none;">
+                                        <small><strong>Image not found:</strong> {{ section.image.path }}</small>
+                                    </div>
+                                    {% if section.image_captions %}
+                                        <figcaption>{{ section.image_captions }}</figcaption>
+                                    {% endif %}
+                                </figure>
+                            {% else %}
+                                <div class="image-placeholder">
+                                    <i class="fas fa-image"></i>
+                                    <small>{{ section.image.alt_text }}</small>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                        {% if section.section_heading %}
+                            <h2>{{ section.section_heading }}</h2>
+                        {% endif %}
+                    {% endif %}
+                    
                     {% if section.polished %}
                         {{ section.polished|strip_html_doc|safe }}
                     {% elif section.draft %}
@@ -459,7 +500,7 @@
                         <em>No content available for this section.</em>
                     {% endif %}
                     
-                    {% if section.image %}
+                    {% if section.image and not is_recipe_gallery %}
                         {% if section.image.path and not section.image.placeholder %}
                             <figure class="section-image">
                                                             <a title="{{ section.image_captions or section.image.alt_text or 'Section image' }}" 

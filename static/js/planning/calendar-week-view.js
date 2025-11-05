@@ -157,48 +157,90 @@ function renderItems(container, items, type) {
         }
       });
     } else if (type === 'recipe' && item._recipe) {
-      // Recipe display: Icon + Title
+      // Recipe display: Icon + Title + Create button (if definition)
       div.classList.add('recipe');
       div.style.display = 'flex';
       div.style.alignItems = 'center';
       div.style.gap = '6px';
+      div.style.flexWrap = 'wrap';
       
       // Check if this is a definition (no post yet) or a scheduled post
       if (item._definition) {
-        // Recipe definition - show as available but not clickable yet
+        // Recipe definition - show as available with create button
         div.style.cursor = 'default';
-        div.title = `Recipe definition: ${item.title || 'Untitled'} (not yet scheduled)`;
+        div.title = `Recipe definition: ${item.title || 'Untitled'} (click to create post)`;
         div.dataset.recipeDefId = item.id;
         div.dataset.recipeWeekNumber = item.recipe_week_number;
+        
+        // Create recipe icon (utensils icon)
+        const icon = document.createElement('i');
+        icon.className = 'fas fa-utensils';
+        icon.style.fontSize = '0.875rem';
+        icon.style.color = '#f59e0b';
+        div.appendChild(icon);
+        
+        const text = document.createElement('span');
+        text.textContent = item.title || 'Untitled Recipe';
+        text.style.fontSize = '0.8rem';
+        text.style.overflow = 'hidden';
+        text.style.textOverflow = 'ellipsis';
+        text.style.whiteSpace = 'nowrap';
+        text.style.flex = '1';
+        div.appendChild(text);
+        
+        // Create "Create Post" button for recipe definitions
+        const createBtn = document.createElement('button');
+        createBtn.className = 'recipe-create-btn-small';
+        createBtn.innerHTML = '<i class="fas fa-plus"></i>';
+        createBtn.title = 'Create recipe post';
+        createBtn.style.cssText = `
+          background: #d97706;
+          color: white;
+          border: none;
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-size: 0.7rem;
+          cursor: pointer;
+          margin-left: auto;
+          transition: background 0.2s;
+        `;
+        createBtn.onmouseover = () => createBtn.style.background = '#b45309';
+        createBtn.onmouseout = () => createBtn.style.background = '#d97706';
+        
+        createBtn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          await createRecipePostFromCalendar(item.recipe_week_number, createBtn);
+        });
+        
+        div.appendChild(createBtn);
       } else {
         // Scheduled recipe post - clickable
         div.style.cursor = 'pointer';
         div.title = `Click to view/edit recipe: ${item.title || 'Untitled'}`;
         div.dataset.recipeId = item.id;
-      }
-      
-      // Create recipe icon (utensils icon)
-      const icon = document.createElement('i');
-      icon.className = 'fas fa-utensils';
-      icon.style.fontSize = '0.875rem';
-      icon.style.color = '#f59e0b';
-      
-      div.appendChild(icon);
-      
-      const text = document.createElement('span');
-      text.textContent = item.title || 'Untitled Recipe';
-      text.style.fontSize = '0.8rem';
-      text.style.overflow = 'hidden';
-      text.style.textOverflow = 'ellipsis';
-      text.style.whiteSpace = 'nowrap';
-      div.appendChild(text);
-      
-      // Add click handler only for scheduled posts (not definitions)
-      if (!item._definition && item.id) {
-        div.addEventListener('click', () => {
-          const recipeUrl = `/planning/posts/${item.id}`;
-          window.location.href = recipeUrl;
-        });
+        
+        // Create recipe icon (utensils icon)
+        const icon = document.createElement('i');
+        icon.className = 'fas fa-utensils';
+        icon.style.fontSize = '0.875rem';
+        icon.style.color = '#f59e0b';
+        div.appendChild(icon);
+        
+        const text = document.createElement('span');
+        text.textContent = item.title || 'Untitled Recipe';
+        text.style.fontSize = '0.8rem';
+        text.style.overflow = 'hidden';
+        text.style.textOverflow = 'ellipsis';
+        text.style.whiteSpace = 'nowrap';
+        div.appendChild(text);
+        
+        // Add click handler for scheduled posts
+        if (item.id) {
+          div.addEventListener('click', () => {
+            const recipeUrl = `/planning/posts/${item.id}`;
+            window.location.href = recipeUrl;
+          });
+        }
       }
     } else {
       div.textContent = item.title || item.idea_title || item.name || item.summary || item.event_title || 'Untitled';
@@ -1385,6 +1427,96 @@ function renderSocialFocuses(focuses) {
     document.getElementById('social-focus-edit-modal-title').textContent = `Edit ${dayNames[focus.day_of_week]} Social Focus`;
     
       editModal.style.display = 'flex';
+  }
+  
+  // Function to create recipe post from calendar view
+  async function createRecipePostFromCalendar(recipeWeekNumber, button) {
+    if (!button) {
+      // Try to find button from event target
+      button = event?.target?.closest('.recipe-create-btn-small') || event?.target;
+    }
+    
+    const originalHTML = button?.innerHTML || '';
+    const originalTitle = button?.title || '';
+    
+    // Update button state
+    if (button) {
+      button.disabled = true;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      button.title = 'Creating...';
+      button.style.cursor = 'not-allowed';
+    }
+    
+    try {
+      // Get current year and week from URL or state
+      const urlParams = new URLSearchParams(window.location.search);
+      const year = parseInt(urlParams.get('year')) || new Date().getFullYear();
+      const weekNumber = parseInt(urlParams.get('week')) || getISOWeekInfo(new Date()).week;
+      
+      const response = await fetch(`/api/recipes/${recipeWeekNumber}/create-post`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          year: year,
+          week_number: weekNumber,
+          weekday: 1 // Default to Monday
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Show success
+        if (button) {
+          button.innerHTML = '<i class="fas fa-check"></i>';
+          button.style.background = '#10b981';
+          button.title = 'Created!';
+        }
+        
+        // Reload page after a short delay to show the new post
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } else {
+        // Show error
+        if (button) {
+          button.innerHTML = '<i class="fas fa-times"></i>';
+          button.style.background = '#ef4444';
+          button.title = data.error || 'Error';
+          
+          // Reset after 3 seconds
+          setTimeout(() => {
+            button.innerHTML = originalHTML;
+            button.style.background = '#d97706';
+            button.title = originalTitle;
+            button.disabled = false;
+            button.style.cursor = 'pointer';
+          }, 3000);
+        } else {
+          alert(`Error: ${data.error || 'Failed to create recipe post'}`);
+        }
+      }
+    } catch (error) {
+      console.error('Error creating recipe post:', error);
+      if (button) {
+        button.innerHTML = '<i class="fas fa-times"></i>';
+        button.style.background = '#ef4444';
+        button.title = 'Error';
+        
+        // Reset after 3 seconds
+        setTimeout(() => {
+          button.innerHTML = originalHTML;
+          button.style.background = '#d97706';
+          button.title = originalTitle;
+          button.disabled = false;
+          button.style.cursor = 'pointer';
+        }, 3000);
+      } else {
+        alert('Error creating recipe post. Please try again.');
+      }
+    }
   }
   
   ensureInit();
