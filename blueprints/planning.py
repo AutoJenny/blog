@@ -218,6 +218,30 @@ def api_calendar_profiles(year, week_number):
     from blueprints.planning_api_calendar_profiles import api_calendar_profiles as profiles_func
     return profiles_func(year, week_number)
 
+@bp.route('/api/calendar/recipes/<int:year>/<int:week_number>', methods=['GET'])
+def api_calendar_recipes(year, week_number):
+    """Get recipes scheduled for a specific year and week"""
+    from blueprints.planning_api_calendar_recipes import api_calendar_recipes as recipes_func
+    return recipes_func(year, week_number)
+
+@bp.route('/api/profiles', methods=['POST'])
+def api_create_profile_route():
+    """Create a new profile"""
+    from blueprints.planning_api_profiles import api_create_profile
+    return api_create_profile()
+
+@bp.route('/api/profiles/<int:profile_id>', methods=['GET', 'PUT', 'DELETE'])
+def api_profile_route(profile_id):
+    """Get, update, or delete a profile"""
+    from blueprints.planning_api_profiles import api_get_profile, api_update_profile, api_delete_profile
+    
+    if request.method == 'GET':
+        return api_get_profile(profile_id)
+    elif request.method == 'PUT':
+        return api_update_profile(profile_id)
+    elif request.method == 'DELETE':
+        return api_delete_profile(profile_id)
+
 @bp.route('/api/calendar/schedule/<int:year>/<int:week_number>', methods=['GET'])
 def api_calendar_schedule(year, week_number):
     """Get schedule for a specific year and week"""

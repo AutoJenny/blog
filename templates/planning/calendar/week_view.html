@@ -54,6 +54,7 @@
             <label class="filter-pill filter-ideas active"><input type="checkbox" id="toggle-ideas" checked> Ideas</label>
             <label class="filter-pill filter-syndication active"><input type="checkbox" id="toggle-syndication" checked> Syndication</label>
             <label class="filter-pill filter-profiles active"><input type="checkbox" id="toggle-profiles" checked> Profiles</label>
+            <label class="filter-pill filter-recipes active"><input type="checkbox" id="toggle-recipes" checked> Recipes</label>
         </div>
 
         <!-- Themes row (full-width, above day headers) -->
@@ -146,6 +147,14 @@
                 </div>
                 <div class="row-grid" id="profiles-row"></div>
             </div>
+
+            <!-- Recipes row: header + 7 aligned cells -->
+            <div class="row-section" data-filter="recipes">
+                <div class="row-header">
+                    <span>Recipes</span>
+                </div>
+                <div class="row-grid" id="recipes-row"></div>
+            </div>
         </div>
 
         <div class="legend">
@@ -195,6 +204,9 @@
 /* Profiles: teal/cyan background */
 .filter-profiles { background:#0d9488; border-color:#14b8a6; color:#fff; }
 .filter-profiles.active { background:#14b8a6; border-color:#2dd4bf; color:#fff; }
+/* Recipes: warm orange/brown background (Scottish cooking theme) */
+.filter-recipes { background:#92400e; border-color:#b45309; color:#fff; }
+.filter-recipes.active { background:#d97706; border-color:#f59e0b; color:#fff; }
 .week-themes { display:flex; flex-direction:column; gap:8px; background:#0f172a; border:1px solid #334155; border-radius:8px; padding:.75rem 1rem; margin-bottom: 1rem; width:100%; }
 .week-themes .item { padding:8px 12px; font-size:.9rem; text-align:left; border-radius:6px; border:1px solid transparent; }
 /* Unselected theme (dull browny orange, like on ideas page Available) */
@@ -260,6 +272,9 @@
 /* Profiles: teal background */
 .item.profile { background:#0d9488; color:#fff; cursor:pointer; border:1px solid #14b8a6; }
 .item.profile:hover { background:#14b8a6; border-color:#2dd4bf; }
+/* Recipes: warm orange/brown background */
+.item.recipe { background:#92400e; color:#fff; cursor:pointer; border:1px solid #b45309; }
+.item.recipe:hover { background:#d97706; border-color:#f59e0b; }
 /* Advance notice indicators for events */
 .item.advance-notice { 
   font-size: 0.7rem; 
@@ -314,6 +329,7 @@
 
 <!-- Idea Modal Component Styles -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/planning/idea-modal.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/planning/profile-modal.css') }}">
 
 <script>
 window.postId = {{ post_id }};
@@ -326,6 +342,7 @@ window.currentSubstage = 'week-view';
 <script src="{{ url_for('static', filename='js/planning/idea-modal-api.js') }}"></script>
 <script src="{{ url_for('static', filename='js/planning/idea-modal-conversions.js') }}"></script>
 <script src="{{ url_for('static', filename='js/planning/idea-modal-core.js') }}"></script>
+<script src="{{ url_for('static', filename='js/planning/profile-modal-core.js') }}"></script>
 
 <script>
 // Utility function for escaping HTML
@@ -341,6 +358,7 @@ function escapeHtml(text) {
 
 <!-- Include the social focus modal component -->
 {% include 'planning/calendar/social_focus_modal.html' %}
+{% include 'planning/calendar/profile_modal.html' %}
 
 <script>
     // Initialize idea modal and hook up click handlers after DOM loads

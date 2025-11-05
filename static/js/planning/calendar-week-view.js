@@ -156,6 +156,50 @@ function renderItems(container, items, type) {
           window.location.href = profileUrl;
         }
       });
+    } else if (type === 'recipe' && item._recipe) {
+      // Recipe display: Icon + Title
+      div.classList.add('recipe');
+      div.style.display = 'flex';
+      div.style.alignItems = 'center';
+      div.style.gap = '6px';
+      
+      // Check if this is a definition (no post yet) or a scheduled post
+      if (item._definition) {
+        // Recipe definition - show as available but not clickable yet
+        div.style.cursor = 'default';
+        div.title = `Recipe definition: ${item.title || 'Untitled'} (not yet scheduled)`;
+        div.dataset.recipeDefId = item.id;
+        div.dataset.recipeWeekNumber = item.recipe_week_number;
+      } else {
+        // Scheduled recipe post - clickable
+        div.style.cursor = 'pointer';
+        div.title = `Click to view/edit recipe: ${item.title || 'Untitled'}`;
+        div.dataset.recipeId = item.id;
+      }
+      
+      // Create recipe icon (utensils icon)
+      const icon = document.createElement('i');
+      icon.className = 'fas fa-utensils';
+      icon.style.fontSize = '0.875rem';
+      icon.style.color = '#f59e0b';
+      
+      div.appendChild(icon);
+      
+      const text = document.createElement('span');
+      text.textContent = item.title || 'Untitled Recipe';
+      text.style.fontSize = '0.8rem';
+      text.style.overflow = 'hidden';
+      text.style.textOverflow = 'ellipsis';
+      text.style.whiteSpace = 'nowrap';
+      div.appendChild(text);
+      
+      // Add click handler only for scheduled posts (not definitions)
+      if (!item._definition && item.id) {
+        div.addEventListener('click', () => {
+          const recipeUrl = `/planning/posts/${item.id}`;
+          window.location.href = recipeUrl;
+        });
+      }
     } else {
       div.textContent = item.title || item.idea_title || item.name || item.summary || item.event_title || 'Untitled';
     }
@@ -353,6 +397,8 @@ async function loadWeek(year, weekNumber) {
   const socialFocusPromise = fetchJSON(`/planning/api/social-focus/week`);
   // Fetch profiles for this week
   const profilesPromise = fetchJSON(`/planning/api/calendar/profiles/${year}/${weekNumber}`);
+  // Fetch recipes for this week
+  const recipesPromise = fetchJSON(`/planning/api/calendar/recipes/${year}/${weekNumber}`);
 
   let ideas = [];
   let events = [];
@@ -360,8 +406,9 @@ async function loadWeek(year, weekNumber) {
   let syndication = [];
   let socialFocuses = [];
   let profiles = [];
+  let recipes = [];
   try {
-    const [ideasRes, eventsRes, scheduleRes, productSyndicationRes, blogPostSyndicationRes, socialFocusRes, profilesRes] = await Promise.allSettled([ideasPromise, eventsPromise, schedulePromise, productSyndicationPromise, blogPostSyndicationPromise, socialFocusPromise, profilesPromise]);
+    const [ideasRes, eventsRes, scheduleRes, productSyndicationRes, blogPostSyndicationRes, socialFocusRes, profilesRes, recipesRes] = await Promise.allSettled([ideasPromise, eventsPromise, schedulePromise, productSyndicationPromise, blogPostSyndicationPromise, socialFocusPromise, profilesPromise, recipesPromise]);
     if (ideasRes.status === 'fulfilled') {
       const ideasData = ideasRes.value;
       ideas = Array.isArray(ideasData) ? ideasData : (ideasData?.ideas || []);
@@ -391,6 +438,21 @@ async function loadWeek(year, weekNumber) {
       const profilesData = profilesRes.value;
       profiles = Array.isArray(profilesData) ? profilesData : (profilesData?.profiles || []);
     }
+    // Load recipes data
+    if (recipesRes.status === 'fulfilled') {
+      const recipesData = recipesRes.value;
+      // Handle both array response and object with error
+      if (Array.isArray(recipesData)) {
+        recipes = recipesData;
+      } else if (recipesData?.recipes) {
+        recipes = recipesData.recipes;
+      } else if (recipesData?.error) {
+        console.warn('Recipes API error:', recipesData.error);
+        recipes = [];
+      } else {
+        recipes = [];
+      }
+    }
   } catch (e) {
     console.error('Error loading week data:', e);
     // Ignore; page still usable
@@ -403,6 +465,7 @@ async function loadWeek(year, weekNumber) {
   const showSpecialEvents = document.getElementById('toggle-special-events')?.checked !== false;
   const showSyndication = document.getElementById('toggle-syndication')?.checked !== false;
   const showProfiles = document.getElementById('toggle-profiles')?.checked !== false;
+  const showRecipes = document.getElementById('toggle-recipes')?.checked !== false;
 
   // Build row grids cells for rows container
   const ensureRowCells = (rowId) => {
@@ -425,6 +488,7 @@ async function loadWeek(year, weekNumber) {
   const ideasCells = ensureRowCells('ideas-row');
   const syndicationCells = ensureRowCells('syndication-row');
   const profilesCells = ensureRowCells('profiles-row');
+  const recipesCells = ensureRowCells('recipes-row');
 
   // Load themes from schedule (themes scheduled for this week)
   const themes = [];
@@ -514,12 +578,16 @@ async function loadWeek(year, weekNumber) {
   const specialEventsSections = document.querySelectorAll('[data-filter="special-events"]');
   const ideasSections = document.querySelectorAll('[data-filter="ideas"]');
   const syndicationSections = document.querySelectorAll('[data-filter="syndication"]');
+  const profilesSections = document.querySelectorAll('[data-filter="profiles"]');
+  const recipesSections = document.querySelectorAll('[data-filter="recipes"]');
   
   themesSections.forEach(section => section.classList.toggle('hidden', !showThemes));
   annualEventsSections.forEach(section => section.classList.toggle('hidden', !showAnnualEvents));
   specialEventsSections.forEach(section => section.classList.toggle('hidden', !showSpecialEvents));
   ideasSections.forEach(section => section.classList.toggle('hidden', !showIdeas));
   syndicationSections.forEach(section => section.classList.toggle('hidden', !showSyndication));
+  profilesSections.forEach(section => section.classList.toggle('hidden', !showProfiles));
+  recipesSections.forEach(section => section.classList.toggle('hidden', !showRecipes));
 
   // Render Themes as week-wide themes: single row spanning the week
   const weekThemesContainer = document.getElementById('week-themes');
@@ -727,6 +795,27 @@ async function loadWeek(year, weekNumber) {
           _profile: true
         };
         renderItems(target, [profileItem], 'profile');
+      }
+    });
+  }
+  
+  // Render recipes per day into Recipes row
+  if (showRecipes && recipesCells && recipes.length) {
+    recipes.forEach((recipe) => {
+      // Recipes are assigned to a specific weekday (default to Monday if not set)
+      const dayIdx = recipe.weekday || recipe.day || 1; // 1..7
+      const target = document.getElementById(`recipes-row-day-${Math.min(Math.max(dayIdx, 1), 7)}`);
+      if (target) {
+        // Create recipe item - preserve all flags from API response
+        const recipeItem = {
+          id: recipe.id,
+          title: recipe.title,
+          recipe_week_number: recipe.recipe_week_number,
+          _recipe: true,
+          _definition: recipe._definition || false,
+          _scheduled: recipe._scheduled || false
+        };
+        renderItems(target, [recipeItem], 'recipe');
       }
     });
   }
@@ -1028,6 +1117,7 @@ async function loadWeek(year, weekNumber) {
       attach('toggle-special-events');
       attach('toggle-syndication');
       attach('toggle-profiles');
+      attach('toggle-recipes');
 
   function updateFilterVisuals() {
     const map = [
@@ -1037,6 +1127,7 @@ async function loadWeek(year, weekNumber) {
       { id: 'toggle-special-events', cls: 'filter-special-events' },
       { id: 'toggle-syndication', cls: 'filter-syndication' },
       { id: 'toggle-profiles', cls: 'filter-profiles' },
+      { id: 'toggle-recipes', cls: 'filter-recipes' },
     ];
     map.forEach(({ id, cls }) => {
       const input = document.getElementById(id);
