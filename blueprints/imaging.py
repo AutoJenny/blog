@@ -927,10 +927,22 @@ def imaging_sections_photo_selection(post_id):
         
         # If not Photo-harvesting or Photo-harvesting is inactive, redirect to image-generation route
         if illustration_method != 'Photo-harvesting' or not photo_harvesting_active:
-                redirect_url = url_for('imaging.imaging_sections_image_generation', post_id=post_id)
-                if url_year and url_week:
-                    redirect_url += f'?year={url_year}&week={url_week}'
-                return redirect(redirect_url)
+            redirect_url = url_for('imaging.imaging_sections_image_generation', post_id=post_id)
+            if url_year and url_week:
+                redirect_url += f'?year={url_year}&week={url_week}'
+            return redirect(redirect_url)
+        
+        with db_manager.get_cursor() as cursor:
+            # Get post data
+            cursor.execute("""
+                SELECT p.id, p.title, p.status, p.created_at, p.updated_at
+                FROM post p
+                WHERE p.id = %s
+            """, (target_post_id,))
+            post = cursor.fetchone()
+            
+            if not post:
+                return f"Post {target_post_id} not found", 404
             
             # Format dates for display
             post_created = post['created_at'].strftime('%Y-%m-%d %H:%M') if post['created_at'] else 'Unknown'

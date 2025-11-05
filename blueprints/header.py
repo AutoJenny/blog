@@ -1282,6 +1282,137 @@ def api_save_author(post_id):
         logger.error(f"Error saving author for post {post_id}: {e}")
         return jsonify({'error': str(e)}), 500
 
+@bp.route('/api/posts/<int:post_id>/title-summary-prompt', methods=['GET', 'PUT'])
+def api_title_summary_prompt(post_id):
+    """Get or update the Title Generation prompt for title-summary page"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            if request.method == 'GET':
+                # Get prompt from workflow_step_prompt for step 60 (Title Generation)
+                cursor.execute("""
+                    SELECT 
+                        sp.id as system_prompt_id,
+                        sp.name as system_prompt_name,
+                        sp.system_prompt,
+                        tp.id as task_prompt_id,
+                        tp.name as task_prompt_name,
+                        tp.prompt_text as task_prompt
+                    FROM workflow_step_prompt wsp
+                    JOIN llm_prompt sp ON wsp.system_prompt_id = sp.id
+                    JOIN llm_prompt tp ON wsp.task_prompt_id = tp.id
+                    WHERE wsp.step_id = 60
+                """)
+                
+                result = cursor.fetchone()
+                
+                if not result:
+                    return jsonify({'error': 'Title Generation prompt not found'}), 404
+                
+                # Return system_prompt and prompt_text separately for LLM Prompts Panel
+                return jsonify({
+                    'success': True,
+                    'prompt': {
+                        'id': result['task_prompt_id'],  # Use task prompt ID for editing
+                        'name': result['task_prompt_name'],
+                        'system_prompt': result['system_prompt'] or '',
+                        'prompt_text': result['task_prompt'] or '',
+                        'system_prompt_id': result['system_prompt_id'],
+                        'task_prompt_id': result['task_prompt_id']
+                    }
+                })
+            
+            elif request.method == 'PUT':
+                # Update the prompt
+                # LLM Prompts Panel sends: { system_prompt, prompt_text }
+                # But we display combined, so we need to handle both formats
+                data = request.get_json()
+                
+                # Get current prompts first
+                cursor.execute("""
+                    SELECT 
+                        sp.id as system_prompt_id,
+                        sp.system_prompt,
+                        tp.id as task_prompt_id,
+                        tp.prompt_text as task_prompt
+                    FROM workflow_step_prompt wsp
+                    JOIN llm_prompt sp ON wsp.system_prompt_id = sp.id
+                    JOIN llm_prompt tp ON wsp.task_prompt_id = tp.id
+                    WHERE wsp.step_id = 60
+                """)
+                
+                result = cursor.fetchone()
+                
+                if not result:
+                    return jsonify({'error': 'Title Generation prompt not found'}), 404
+                
+                # Handle two formats:
+                # 1. LLM Prompts Panel format: { system_prompt, prompt_text }
+                # 2. Direct content format: { content }
+                if 'prompt_text' in data:
+                    # Format from LLM Prompts Panel - update task prompt
+                    task_prompt = data.get('prompt_text', '').strip()
+                    if task_prompt:
+                        cursor.execute("""
+                            UPDATE llm_prompt
+                            SET prompt_text = %s,
+                                updated_at = NOW()
+                            WHERE id = %s
+                        """, (task_prompt, result['task_prompt_id']))
+                        cursor.connection.commit()
+                        logger.info(f"Updated Title Generation task prompt (task_prompt_id={result['task_prompt_id']}) for post {post_id}")
+                    
+                    # Optionally update system prompt if provided
+                    if 'system_prompt' in data:
+                        system_prompt = data.get('system_prompt', '').strip()
+                        if system_prompt:
+                            cursor.execute("""
+                                UPDATE llm_prompt
+                                SET system_prompt = %s,
+                                    updated_at = NOW()
+                                WHERE id = %s
+                            """, (system_prompt, result['system_prompt_id']))
+                            cursor.connection.commit()
+                            logger.info(f"Updated Title Generation system prompt (system_prompt_id={result['system_prompt_id']}) for post {post_id}")
+                
+                elif 'content' in data:
+                    # Direct content format - user is editing combined prompt
+                    prompt_content = data.get('content', '').strip()
+                    
+                    if not prompt_content:
+                        return jsonify({'error': 'Prompt content is required'}), 400
+                    
+                    # Try to extract task part from combined prompt
+                    system_prompt = result['system_prompt']
+                    combined_pattern = f"{system_prompt}\n\n"
+                    
+                    if prompt_content.startswith(combined_pattern):
+                        task_prompt = prompt_content[len(combined_pattern):]
+                    elif prompt_content.startswith(system_prompt):
+                        task_prompt = prompt_content[len(system_prompt):].lstrip()
+                    else:
+                        # If it doesn't match, assume user is editing just the task prompt
+                        task_prompt = prompt_content
+                    
+                    cursor.execute("""
+                        UPDATE llm_prompt
+                        SET prompt_text = %s,
+                            updated_at = NOW()
+                        WHERE id = %s
+                    """, (task_prompt, result['task_prompt_id']))
+                    cursor.connection.commit()
+                    logger.info(f"Updated Title Generation prompt from content (task_prompt_id={result['task_prompt_id']}) for post {post_id}")
+                else:
+                    return jsonify({'error': 'Either prompt_text or content is required'}), 400
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Prompt updated successfully'
+                })
+                
+    except Exception as e:
+        logger.error(f"Error with title-summary prompt: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @bp.route('/api/posts/<int:post_id>/get-title-summary', methods=['GET'])
 def api_get_title_summary(post_id):
     """Get post title, subtitle, summary, and author"""

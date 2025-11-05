@@ -327,16 +327,25 @@ class LLMPromptsPanel {
                 this.updatePromptTitle(prompt.name || this.config.resultsTitle);
                 this.callbacks.onPromptLoad(prompt);
             } else {
+                // NO FALLBACKS: Show actual error, don't display fake prompts
                 const errorMsg = data.error || `Prompt not found for ${this.pageType}`;
                 console.warn(`[LLM Prompts Panel] ${errorMsg}`);
-                this.updatePromptDisplay('', errorMsg);
+                this.updatePromptDisplay('', '');
                 this.updatePromptTitle(errorMsg);
+                // Show error in a clear way without fake prompt content
+                if (this.promptDisplay) {
+                    this.promptDisplay.innerHTML = `<div class="error-message" style="color: #ef4444; padding: 1rem; background: #1e293b; border: 1px solid #ef4444; border-radius: 4px;">${errorMsg}</div>`;
+                }
             }
         } catch (error) {
             console.error(`[LLM Prompts Panel] Error loading prompt for ${this.pageType}:`, error);
             const errorMsg = `Error: ${error.message || 'Failed to load prompt'}`;
-            this.updatePromptDisplay('', errorMsg);
+            this.updatePromptDisplay('', '');
             this.updatePromptTitle(errorMsg);
+            // Show error in a clear way without fake prompt content
+            if (this.promptDisplay) {
+                this.promptDisplay.innerHTML = `<div class="error-message" style="color: #ef4444; padding: 1rem; background: #1e293b; border: 1px solid #ef4444; border-radius: 4px;">${errorMsg}</div>`;
+            }
         }
     }
 
@@ -463,14 +472,15 @@ class LLMPromptsPanel {
             }
             
             // Display raw prompts without any transformations
+            // NO FALLBACKS: Only show actual data from database, or clear error if missing
             this.promptDisplay.innerHTML = `
                 <div class="prompt-section">
                     <h6>System Prompt: <span class="field-source">(llm_prompt.system_prompt)</span></h6>
-                    <div class="prompt-content">${systemPrompt || 'No system prompt set'}</div>
+                    <div class="prompt-content">${systemPrompt || ''}</div>
                 </div>
                 <div class="prompt-section">
                     <h6>User Prompt: <span class="field-source">(llm_prompt.prompt_text)</span></h6>
-                    <div class="prompt-content">${userPrompt || 'No user prompt set'}</div>
+                    <div class="prompt-content">${userPrompt || ''}</div>
                 </div>
             `;
         }

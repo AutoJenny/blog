@@ -52,6 +52,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 <!-- LLM Settings Panel -->
                 {% include 'authoring/includes/llm_settings_panel.html' %}
                 
+                <!-- LLM Prompts Panel -->
+                {% include 'authoring/includes/llm_prompts_panel.html' %}
+                
                 <!-- Generate Button Section -->
                 <div class="uber-generate-section" style="background: #1e293b; border: 2px solid #3b82f6; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; text-align: center;">
                     <h3 style="color: #f1f5f9; margin-top: 0; margin-bottom: 1rem; font-size: 1.2rem;">
@@ -85,4 +88,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script src="{{ url_for('static', filename='js/header/accordion-manager.js') }}"></script>
 <script src="{{ url_for('static', filename='js/header/header-workspace.js') }}"></script>
+<script>
+// Initialize LLM Prompts Panel for title-summary page
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof LLMPromptsPanel !== 'undefined') {
+        window.llmPromptsPanel = new LLMPromptsPanel({
+            postId: window.postId,
+            promptEndpoint: `/header/api/posts/${window.postId}/title-summary-prompt`,
+        });
+        
+        // Load the prompt
+        window.llmPromptsPanel.loadPromptFromAPI();
+    }
+});
+</script>
 {% endblock %}
