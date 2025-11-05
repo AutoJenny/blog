@@ -254,6 +254,12 @@ class OutputPanel {
                 this.updateWordCount();
                 this.enableButtons();
                 
+                // CRITICAL: Ensure editor is enabled after generation
+                if (this.contentEditor) {
+                    this.contentEditor.disabled = false;
+                    this.contentEditor.readOnly = false;
+                }
+                
                 if (this.lastSaved) {
                     this.lastSaved.textContent = 'Generated just now';
                 }
@@ -263,6 +269,9 @@ class OutputPanel {
             console.error('[Output Panel] Error generating content:', error);
             if (this.contentEditor) {
                 this.contentEditor.value = `Error generating content: ${error.message}`;
+                // Ensure editor is enabled even on error
+                this.contentEditor.disabled = false;
+                this.contentEditor.readOnly = false;
             }
         } finally {
             // Reset loading state
@@ -270,6 +279,11 @@ class OutputPanel {
             if (this.generateBtn) {
                 this.generateBtn.disabled = false;
                 this.generateBtn.textContent = 'Generate';
+            }
+            // CRITICAL: Always ensure editor is enabled after generation completes
+            if (this.contentEditor) {
+                this.contentEditor.disabled = false;
+                this.contentEditor.readOnly = false;
             }
         }
     }
@@ -289,13 +303,14 @@ class OutputPanel {
     }
 
     setLoading(isLoading) {
-        if (this.contentEditor) {
-            this.contentEditor.disabled = isLoading;
-        }
-        
+        // Don't disable editor during loading - allow user to edit while generation happens
+        // Only disable buttons during generation
         if (this.regenerateBtn) {
             this.regenerateBtn.disabled = isLoading;
             this.regenerateBtn.textContent = isLoading ? 'Generating...' : 'Regenerate';
+        }
+        if (this.generateBtn) {
+            this.generateBtn.disabled = isLoading;
         }
     }
 

@@ -81,11 +81,22 @@
                         <div style="display: flex; align-items: center; gap: 16px; color: #9ca3af; flex-wrap: wrap;">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <i class="fa-solid fa-calendar"></i>
-                                <span id="event-date-display">{% if event.event_date %}{{ event.event_date[:10] }}{% else %}Not set{% endif %}</span>
+                                <span id="event-date-display">
+                                    {% if event.event_date %}{{ event.event_date[:10] }}{% else %}Not set{% endif %}
+                                    {% if event.end_date and event.end_date != event.event_date %} - {{ event.end_date[:10] }}{% endif %}
+                                </span>
                                 <button onclick="editField('event_date')" class="btn-secondary" style="padding: 4px 8px; font-size: 11px; margin-left: 8px;">
                                     <i class="fa-solid fa-edit"></i>
                                 </button>
                             </div>
+                            {% if event.date_qualifier %}
+                                <span style="padding: 2px 8px; background: {% if event.date_qualifier == 'end_only' %}#f59e0b{% elif event.date_qualifier == 'start_only' %}#3b82f6{% else %}#10b981{% endif %}; color: #fff; border-radius: 4px; font-size: 11px; font-weight: 600;">
+                                    {% if event.date_qualifier == 'end_only' %}End Date Only
+                                    {% elif event.date_qualifier == 'start_only' %}Start Date Only
+                                    {% elif event.date_qualifier == 'both' %}Date Range
+                                    {% endif %}
+                                </span>
+                            {% endif %}
                             <div id="event-date-edit" style="display: none; margin-left: 8px;">
                                 <input type="date" id="event-date-input" value="{% if event.event_date %}{{ event.event_date[:10] }}{% endif %}" style="padding: 6px; background: #1b2138; border: 1px solid #2d3246; border-radius: 4px; color: #e6e8ef;">
                                 <button onclick="saveField('event_date')" class="btn-secondary" style="background: #10b981; color: #fff; border-color: #10b981; padding: 6px 10px; margin-left: 4px;">

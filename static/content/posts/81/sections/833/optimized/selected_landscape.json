@@ -1,26 +1,26 @@
 {
-  "timestamp": "2025-11-04T09:24:50.965319",
+  "timestamp": "2025-11-04T21:34:12.663975",
   "post_id": 81,
   "section_id": 833,
   "orientation": "landscape",
   "photo": {
     "provider": "pexels",
-    "image_id": "22270204",
-    "url": "https://images.pexels.com/photos/22270204/pexels-photo-22270204.jpeg",
-    "thumbnail_url": "https://images.pexels.com/photos/22270204/pexels-photo-22270204.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
-    "width": 6240,
-    "height": 4160,
+    "image_id": "773583",
+    "url": "https://images.pexels.com/photos/773583/pexels-photo-773583.jpeg",
+    "thumbnail_url": "https://images.pexels.com/photos/773583/pexels-photo-773583.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "width": 1920,
+    "height": 1272,
     "orientation": "landscape",
-    "photographer": "Gera Cejas",
-    "photographer_url": "https://www.pexels.com/@gera-cejas-3616330",
-    "credits": "Photo by Gera Cejas on Pexels",
-    "search_term": "1920s flapper girl dancing, vintage jazz club, New Orleans, Louisiana, USA, black and white, nighttime, crowded dance floor, beaded dress, feather headband",
+    "photographer": "Ivars",
+    "photographer_url": "https://www.pexels.com/@ivars",
+    "credits": "Photo by Ivars on Pexels",
+    "search_term": "Autumn Scotland, Glen Coe, heather-covered hills, misty weather, rural landscapes, golden light",
     "selected": false,
-    "selected_at": "2025-11-04T09:24:50.965311",
+    "selected_at": "2025-11-04T21:34:12.663971",
     "provider_data": {
-      "pexels_id": "22270204",
-      "pexels_url": "https://www.pexels.com/photo/vintage-style-models-in-black-and-white-22270204/",
-      "photographer_id": 3616330
+      "pexels_id": "773583",
+      "pexels_url": "https://www.pexels.com/photo/landscape-photography-green-grass-field-beside-dark-foggy-forest-during-golden-hour-773583/",
+      "photographer_id": 250365
     },
     "selection_orientation": "landscape"
   }

@@ -1,0 +1,42 @@
+{% if representative_products %}
+<section class="blog-section profile-section profile-section--examples">
+    <h2>{{ section.section_heading or 'Representative Examples' }}</h2>
+    <p class="section-intro">A selection of products from this category, showcasing diversity in price, producer, and materials.</p>
+    
+    <div class="representative-examples">
+        <div class="examples-grid">
+            {% for product in representative_products %}
+            <div class="product-card">
+                {% if product.image_url %}
+                <div class="product-card-image">
+                    <a href="{{ product.url }}" target="_blank" rel="noopener">
+                        <img src="{{ product.image_url }}" 
+                             alt="{{ product.name }}"
+                             loading="lazy">
+                    </a>
+                </div>
+                {% endif %}
+                <div class="product-card-info">
+                    <h4 class="product-card-name">
+                        <a href="{{ product.url }}" target="_blank" rel="noopener">{{ product.name }}</a>
+                    </h4>
+                    {% if product.supplier_name %}
+                    <p class="product-card-producer">{{ product.supplier_name }}</p>
+                    {% endif %}
+                    {% if product.price %}
+                    <p class="product-card-price">£{{ product.price }}</p>
+                    {% endif %}
+                    <a href="{{ product.url }}" 
+                       class="btn-view-product" 
+                       target="_blank" 
+                       rel="noopener">
+                        View Product <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+

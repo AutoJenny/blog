@@ -119,8 +119,34 @@ def get_post_sections_with_images(post_id):
                         photo_data = json.load(f)
                         photo = photo_data.get('photo', {})
                         if photo.get('url'):
-                            # Use hotlinked provider URL (Pexels/Unsplash)
-                            image_path = photo['url']
+                            base_url = photo['url']
+                            
+                            # For Pexels: prefer pregenerated size URLs or add sizing parameters
+                            if 'pexels.com' in base_url:
+                                # Check if we have api_response with pregenerated sizes
+                                api_response = photo.get('api_response', {})
+                                src = api_response.get('src', {}) if api_response else {}
+                                
+                                # Prefer landscape size for blog posts (optimal for display: w=1200)
+                                if src.get('landscape'):
+                                    image_path = src['landscape']
+                                elif src.get('large'):
+                                    image_path = src['large']
+                                else:
+                                    # Add sizing parameters to base URL for blog posts
+                                    # Use w=1200 for landscape blog images (good balance of quality/size)
+                                    # This is larger than thumbnail (w=940) but smaller than original
+                                    if '?' in base_url:
+                                        image_path = f"{base_url}&auto=compress&cs=tinysrgb&w=1200"
+                                    else:
+                                        image_path = f"{base_url}?auto=compress&cs=tinysrgb&w=1200"
+                            elif 'unsplash.com' in base_url:
+                                # For Unsplash, use the base URL as-is (they handle sizing differently)
+                                image_path = base_url
+                            else:
+                                # Other providers - use base URL
+                                image_path = base_url
+                            
                             # Extract caption/alt from photo metadata if not already set
                             if not caption_text and photo.get('credits'):
                                 caption_text = photo['credits']
@@ -626,6 +652,151 @@ def clan_post_html(post_id):
     except Exception as e:
         logger.error(f"Error in clan_post_html for post {post_id}: {e}")
         return f"Error: {str(e)}", 500
+
+@bp.route('/api/publishing/test-html/<int:post_id>')
+def test_publish_html(post_id):
+    """Test endpoint that generates the HTML for publishing without sending to API.
+    Saves to a temporary file and returns the file path."""
+    try:
+        import time
+        import re
+        
+        # Get post data
+        post = get_post_with_development(post_id)
+        if not post:
+            return jsonify({'success': False, 'error': 'Post not found'}), 404
+        
+        sections = get_post_sections_with_images(post_id)
+        
+        # Fix field mapping - ensure post has the fields our function expects
+        if post.get('post_id') and not post.get('id'):
+            post['id'] = post['post_id']
+        
+        # Ensure summary field exists and has content
+        if not post.get('summary'):
+            post['summary'] = post.get('intro_blurb')
+            if not post['summary']:
+                raise ValueError("Post must have either summary or intro_blurb")
+        
+        # Ensure created_at is handled properly - convert to datetime object for template
+        if post.get('created_at'):
+            from datetime import datetime
+            if isinstance(post['created_at'], str):
+                try:
+                    post['created_at'] = datetime.fromisoformat(post['created_at'].replace('Z', '+00:00'))
+                except Exception:
+                    try:
+                        post['created_at'] = datetime.strptime(post['created_at'], '%a, %d %b %Y %H:%M:%S %Z')
+                    except Exception:
+                        post['created_at'] = None
+            elif not hasattr(post['created_at'], 'isoformat'):
+                post['created_at'] = None
+        
+        # Get cross-promotion data
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
+                       cross_promotion_category_id, cross_promotion_category_title,
+                       cross_promotion_product_id, cross_promotion_product_title,
+                       cross_promotion_category_position, cross_promotion_product_position,
+                       cross_promotion_category_widget_html, cross_promotion_product_widget_html
+                FROM post WHERE id = %s
+            """, (post_id,))
+            header_data = cursor.fetchone()
+        
+        # Add header image if exists
+        header_image_path = find_header_image(post_id)
+        if header_image_path:
+            post['header_image'] = {
+                'path': header_image_path,
+                'alt_text': f"Header image for {post.get('title', 'this post')}",
+                'caption': header_data['header_image_caption'] if header_data else None,
+                'title': header_data['header_image_title'] if header_data else None,
+                'width': header_data['header_image_width'] if header_data else None,
+                'height': header_data['header_image_height'] if header_data else None
+            }
+        
+        # Map cross-promotion
+        if header_data:
+            post['cross_promotion'] = {
+                'category_id': header_data['cross_promotion_category_id'],
+                'category_title': header_data['cross_promotion_category_title'],
+                'product_id': header_data['cross_promotion_product_id'],
+                'product_title': header_data['cross_promotion_product_title'],
+                'category_position': header_data.get('cross_promotion_category_position'),
+                'product_position': header_data.get('cross_promotion_product_position'),
+                'category_widget_html': header_data.get('cross_promotion_category_widget_html'),
+                'product_widget_html': header_data.get('cross_promotion_product_widget_html')
+            }
+        
+        # Import publishing class
+        import sys
+        sys.path.append('/Users/autojenny/Documents/projects/blog/blog-launchpad')
+        from clan_publisher import ClanPublisher
+        
+        # Create publisher instance
+        publisher = ClanPublisher()
+        
+        # Run image processing (but don't actually upload - just simulate)
+        logger.info(f"=== TEST HTML GENERATION FOR POST {post_id} ===")
+        logger.info(f"Processing {len(sections)} sections...")
+        
+        # Log section image information
+        for i, section in enumerate(sections):
+            has_image = section.get('image') and section['image'].get('path')
+            logger.info(f"Section {i+1} ({section.get('section_heading', 'No title')}):")
+            if has_image:
+                img_path = section['image']['path']
+                is_photo_harvesting = img_path.startswith(('http://', 'https://'))
+                logger.info(f"  Image path: {img_path}")
+                logger.info(f"  Photo-harvesting: {is_photo_harvesting}")
+            else:
+                logger.info(f"  No image")
+        
+        # Process images (this will skip Photo-harvesting URLs)
+        uploaded_images = publisher.process_images(post, sections)
+        logger.info(f"Processed images. Uploaded images count: {len(uploaded_images)}")
+        logger.info(f"Uploaded images keys: {list(uploaded_images.keys())}")
+        
+        # Generate HTML content (this is what gets sent to clan.com)
+        html_content = publisher.get_preview_html_content(post, sections, uploaded_images)
+        
+        if not html_content:
+            return jsonify({'success': False, 'error': 'Failed to generate HTML content'}), 500
+        
+        # Save to temporary file
+        timestamp = int(time.time())
+        test_file = f'/tmp/test_publish_html_post_{post_id}_{timestamp}.html'
+        
+        with open(test_file, 'w', encoding='utf-8') as f:
+            f.write(html_content)
+        
+        # Analyze the HTML for Photo-harvesting URLs
+        photo_harvesting_urls = re.findall(r'src="(https?://[^"]+)"', html_content)
+        pexels_urls = [url for url in photo_harvesting_urls if 'pexels' in url.lower()]
+        unsplash_urls = [url for url in photo_harvesting_urls if 'unsplash' in url.lower()]
+        
+        logger.info(f"✅ HTML saved to: {test_file}")
+        logger.info(f"Found {len(photo_harvesting_urls)} Photo-harvesting URLs in HTML:")
+        logger.info(f"  Pexels URLs: {len(pexels_urls)}")
+        logger.info(f"  Unsplash URLs: {len(unsplash_urls)}")
+        
+        return jsonify({
+            'success': True,
+            'file_path': test_file,
+            'html_length': len(html_content),
+            'photo_harvesting_urls_count': len(photo_harvesting_urls),
+            'pexels_urls_count': len(pexels_urls),
+            'unsplash_urls_count': len(unsplash_urls),
+            'photo_harvesting_urls': photo_harvesting_urls[:10],  # First 10 for inspection
+            'message': f'HTML generated and saved to {test_file}'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in test_publish_html for post {post_id}: {e}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 def validate_publish_data(post_id):
     """Validate publish data consistency and completeness."""

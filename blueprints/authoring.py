@@ -64,11 +64,22 @@ def authoring_sections_drafting(post_id):
             if not post:
                 return "Post not found", 404
             
+            # Get content type name for category banner
+            cursor.execute("""
+                SELECT ti.display_name as content_type_name
+                FROM post p
+                LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                WHERE p.id = %s
+            """, (post_id,))
+            result = cursor.fetchone()
+            content_type_name = result.get('content_type_name') if result else None
+            
             return render_template('authoring/sections/drafting.html', 
                                  post_id=post_id,
                                  post=post,
                                  page_title="Drafting",
-                                 blueprint_name='authoring')
+                                 blueprint_name='authoring',
+                                 content_type_name=content_type_name)
             
     except Exception as e:
         logger.error(f"Error in authoring_sections_drafting: {e}")

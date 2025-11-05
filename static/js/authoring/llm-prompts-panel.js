@@ -212,7 +212,7 @@ class LLMPromptsPanel {
             } else {
                 // Extract category name from prompt name
                 // Handle both "Expanded Idea Generation (History)" and "Topic Brainstorming (History)" formats
-                const match = prompt.name.match(/(?:Expanded Idea Generation|Topic Brainstorming|Section Structure Design|Topic Allocation|Section Titling|Section Drafting) \(([^)]+)\)/);
+                const match = prompt.name.match(/(?:Expanded Idea Generation|Topic Brainstorming|Section Structure Design|Topic Allocation|Section Titling|Section Drafting|Image Concepts Generation|Image Prompt Generation) \(([^)]+)\)/);
                 if (match) {
                     option.textContent = match[1];
                 } else {
@@ -277,8 +277,8 @@ class LLMPromptsPanel {
                 url = `${url}${separator}prompt_name=${encodeURIComponent(this.currentPromptName)}`;
             }
             
-            // Append illustration_method to endpoint if available and endpoint is for image-concepts or image-prompts
-            if ((url.includes('/image-concepts') || url.includes('/image-prompts')) && window.illustrationMethod) {
+            // Append illustration_method to endpoint if available and endpoint is for image-concepts, image-prompts, or image-captions
+            if ((url.includes('/image-concepts') || url.includes('/image-prompts') || url.includes('/image-captions')) && window.illustrationMethod) {
                 const separator = url.includes('?') ? '&' : '?';
                 url = `${url}${separator}illustration_method=${encodeURIComponent(window.illustrationMethod)}`;
                 console.log('[LLM Prompts Panel] Added illustration_method to URL:', window.illustrationMethod, 'URL:', url);
@@ -401,10 +401,17 @@ class LLMPromptsPanel {
         const userPrompt = this.userPromptEdit?.value || '';
         
         try {
-            console.log('[LLM Prompts Panel] Saving prompt to:', this.config.promptEndpoint);
+            // Build endpoint URL with illustration_method if needed (for image-prompts or image-captions)
+            let url = this.config.promptEndpoint;
+            if ((url.includes('/image-prompts') || url.includes('/image-captions')) && window.illustrationMethod) {
+                const separator = url.includes('?') ? '&' : '?';
+                url = `${url}${separator}illustration_method=${encodeURIComponent(window.illustrationMethod)}`;
+            }
+            
+            console.log('[LLM Prompts Panel] Saving prompt to:', url);
             
             // Save to API (DB only)
-            const response = await fetch(this.config.promptEndpoint, {
+            const response = await fetch(url, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -425,9 +432,8 @@ class LLMPromptsPanel {
             const data = await response.json();
             
             if (data.success) {
-                // Update in-memory and display
-                this.currentPrompt = { system_prompt: systemPrompt, prompt_text: userPrompt };
-                this.updatePromptDisplay(systemPrompt, userPrompt);
+                // Reload prompt from API to ensure we have the latest version (including any server-side modifications)
+                await this.loadPromptFromAPI();
                 
                 // Exit edit mode
                 this.cancelEdit();

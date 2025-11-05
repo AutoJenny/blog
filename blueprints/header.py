@@ -111,24 +111,9 @@ def header_title_summary(post_id):
             target_post_id = post_id
             logger.warning(f"Title-summary route called without week context: year={year}, week={week}")
 
-        # Fetch illustration_method from taxonomy for target_post_id
-        illustration_method = 'LLM-creation'
-        try:
-            with db_manager.get_cursor() as cursor:
-                cursor.execute(
-                    """
-                    SELECT ti.illustration_method
-                    FROM post p
-                    LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
-                    WHERE p.id = %s
-                    """,
-                    (target_post_id,),
-                )
-                row = cursor.fetchone()
-                if row and row.get('illustration_method'):
-                    illustration_method = row['illustration_method']
-        except Exception as e:
-            logger.warning(f"Failed to fetch illustration_method: {e}")
+        # Use utility function to get illustration_method
+        from utils.taxonomy_helpers import get_illustration_method
+        illustration_method = get_illustration_method(target_post_id)
 
         return render_template(
             'header/title_summary.html',
@@ -161,18 +146,9 @@ def header_header_image(post_id):
         logger.error(f"No post scheduled for year={year}, week={week}")
         return f"No post scheduled for week {week}, {year}. Please schedule a post for this week first.", 404
     
-    # Get illustration method for the post
-    illustration_method = 'LLM-creation' # Default
-    with db_manager.get_cursor() as cursor:
-        cursor.execute("""
-            SELECT ti.illustration_method
-            FROM post p
-            JOIN taxonomy_item ti ON p.content_type_id = ti.id
-            WHERE p.id = %s
-        """, (target_post_id,))
-        result = cursor.fetchone()
-        if result and result['illustration_method']:
-            illustration_method = result['illustration_method']
+    # Use utility function to get illustration_method
+    from utils.taxonomy_helpers import get_illustration_method
+    illustration_method = get_illustration_method(target_post_id)
 
     return render_template(
         'header/header_image.html', 
@@ -297,10 +273,11 @@ def header_preview(post_id):
                 
                 # Add image if exists - check Photo-harvesting JSON first, then DB link, then filesystem
                 image_path = None
-                caption_text = section.get('section_image_captions') or section.get('caption') or ''
+                caption_text = ''
                 alt_text = section.get('section_image_alt') or section.get('alt_text') or ''
                 
                 # Priority 1: Check Photo-harvesting route (selected_landscape.json)
+                # For Photo-harvesting, ONLY use credits from JSON, not descriptive captions
                 try:
                     import os
                     import json
@@ -312,13 +289,17 @@ def header_preview(post_id):
                             if photo.get('url'):
                                 # Use hotlinked provider URL (Pexels/Unsplash)
                                 image_path = photo['url']
-                                # Extract caption/alt from photo metadata if not already set
-                                if not caption_text and photo.get('credits'):
+                                # For Photo-harvesting, ONLY use credits, not descriptive captions
+                                if photo.get('credits'):
                                     caption_text = photo['credits']
                                 if not alt_text and photo.get('photographer'):
                                     alt_text = f"Photo by {photo['photographer']}"
                 except Exception as e:
                     logger.debug(f"Could not load Photo-harvesting JSON for section {section['id']}: {e}")
+                
+                # Only use database captions if NOT Photo-harvesting (image_path not set from JSON)
+                if not caption_text and not image_path:
+                    caption_text = section.get('section_image_captions') or section.get('caption') or ''
                 
                 # Priority 2: Database link (post_images)
                 if not image_path and section['image_path']:

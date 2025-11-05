@@ -53,6 +53,7 @@
             <label class="filter-pill filter-special-events active"><input type="checkbox" id="toggle-special-events" checked> Special Events</label>
             <label class="filter-pill filter-ideas active"><input type="checkbox" id="toggle-ideas" checked> Ideas</label>
             <label class="filter-pill filter-syndication active"><input type="checkbox" id="toggle-syndication" checked> Syndication</label>
+            <label class="filter-pill filter-profiles active"><input type="checkbox" id="toggle-profiles" checked> Profiles</label>
         </div>
 
         <!-- Themes row (full-width, above day headers) -->
@@ -134,6 +135,17 @@
                 <div class="row-header">Syndication</div>
                 <div class="row-grid" id="syndication-row"></div>
             </div>
+
+            <!-- Profiles row: header + 7 aligned cells -->
+            <div class="row-section" data-filter="profiles">
+                <div class="row-header">
+                    <span>Profiles</span>
+                    <button class="row-add-btn" onclick="getProfileModal().openNew()" title="Add New Profile">
+                        <i class="fas fa-plus"></i> Add New
+                    </button>
+                </div>
+                <div class="row-grid" id="profiles-row"></div>
+            </div>
         </div>
 
         <div class="legend">
@@ -180,6 +192,9 @@
 /* Syndication: outlined blue, no fill */
 .filter-syndication { background:transparent; border-color:#3b82f6; color:#93c5fd; }
 .filter-syndication.active { background:rgba(59,130,246,0.08); border-color:#60a5fa; color:#bfdbfe; }
+/* Profiles: teal/cyan background */
+.filter-profiles { background:#0d9488; border-color:#14b8a6; color:#fff; }
+.filter-profiles.active { background:#14b8a6; border-color:#2dd4bf; color:#fff; }
 .week-themes { display:flex; flex-direction:column; gap:8px; background:#0f172a; border:1px solid #334155; border-radius:8px; padding:.75rem 1rem; margin-bottom: 1rem; width:100%; }
 .week-themes .item { padding:8px 12px; font-size:.9rem; text-align:left; border-radius:6px; border:1px solid transparent; }
 /* Unselected theme (dull browny orange, like on ideas page Available) */
@@ -242,6 +257,9 @@
 .item.event.annual { background:#1d4ed8; border:2px solid #3b82f6; }
 /* Special events: blue background with green outline */
 .item.event.special { background:#1d4ed8; border:2px solid #10b981; }
+/* Profiles: teal background */
+.item.profile { background:#0d9488; color:#fff; cursor:pointer; border:1px solid #14b8a6; }
+.item.profile:hover { background:#14b8a6; border-color:#2dd4bf; }
 /* Advance notice indicators for events */
 .item.advance-notice { 
   font-size: 0.7rem; 

@@ -3,11 +3,19 @@ Authoring Panel Configuration System
 
 Defines panel sequences and output configurations for different illustration routes.
 This allows easy customization of the right-hand panel order without modifying templates.
+
+Supports two types of category variance:
+1. Process-level variance: Different workflows (different panels, different routes)
+   - Example: Photo-harvesting (inactive, kept in reserve)
+2. Prompt-level variance: Same process, different prompts only
+   - Example: Landscapes & Seasons (uses same panels as LLM-creation)
 """
 
 # Panel configuration for each illustration method
 ILLUSTRATION_PANEL_CONFIGS = {
     'LLM-creation': {
+        'active': True,
+        'variance_type': 'prompt',  # Only prompts vary, same process
         'panels': [
             {
                 'type': 'llm_settings',
@@ -34,6 +42,8 @@ ILLUSTRATION_PANEL_CONFIGS = {
         'output_script': 'js/authoring/image-concepts-output-panel.js'
     },
     'Photo-harvesting': {
+        'active': False,  # Inactive but kept in reserve
+        'variance_type': 'process',  # Different workflow entirely
         'panels': [
             {
                 'type': 'photo_settings',
@@ -66,17 +76,28 @@ def get_panel_config(illustration_method):
     """
     Get panel configuration for a given illustration method.
     
+    Checks if the route is active. If not active, falls back to LLM-creation.
+    This allows keeping process-level variance routes in reserve (like Photo-harvesting)
+    while disabling them.
+    
     Args:
         illustration_method (str): The illustration method ('LLM-creation', 'Photo-harvesting', etc.)
     
     Returns:
         dict: Panel configuration with panels list, output_panel, and output_script
     """
-    # Default to LLM-creation if method not found
-    return ILLUSTRATION_PANEL_CONFIGS.get(
+    config = ILLUSTRATION_PANEL_CONFIGS.get(
         illustration_method,
         ILLUSTRATION_PANEL_CONFIGS['LLM-creation']
     )
+    
+    # Check if route is active
+    if not config.get('active', True):
+        # Route is inactive (e.g., Photo-harvesting in reserve)
+        # Fall back to LLM-creation
+        return ILLUSTRATION_PANEL_CONFIGS['LLM-creation']
+    
+    return config
 
 
 def get_sorted_panels(illustration_method):

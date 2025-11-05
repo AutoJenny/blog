@@ -240,15 +240,8 @@ class PromptService:
             
             # Get illustration_method if not provided
             if illustration_method is None:
-                with db_manager.get_cursor() as cursor:
-                    cursor.execute("""
-                        SELECT ti.illustration_method
-                        FROM post p
-                        LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
-                        WHERE p.id = %s
-                    """, (post_id,))
-                    result = cursor.fetchone()
-                    illustration_method = (result.get('illustration_method') if result else None) or 'LLM-creation'
+                from utils.taxonomy_helpers import get_illustration_method
+                illustration_method = get_illustration_method(post_id)
             
             # Load active post-wide style
             with db_manager.get_cursor() as cursor:

@@ -186,22 +186,21 @@ def api_generate_image_prompt_from_builder():
         with db_manager.get_cursor() as cursor:
             # Topics are currently not used in this endpoint
             topics = []
+            # Use utility function to get illustration_method
+            from utils.taxonomy_helpers import get_illustration_method
+            illustration_method = get_illustration_method(target_post_id)
+            logger.info(f"[IMAGE_PROMPTS] Illustration method: {illustration_method}")
+            
             # Get post data for context - use target_post_id for lookup
             cursor.execute("""
-                SELECT p.id, p.title, p.subtitle, p.summary, 
-                       content_type.illustration_method
+                SELECT p.id, p.title, p.subtitle, p.summary
                 FROM post p
-                LEFT JOIN taxonomy_item content_type ON p.content_type_id = content_type.id
                 WHERE p.id = %s
             """, (target_post_id,))
             post_data = cursor.fetchone()
             
             if not post_data:
                 return jsonify({'error': 'Post not found'}), 404
-            
-            # Get illustration_method from post data
-            illustration_method = post_data.get('illustration_method') or 'LLM-creation'
-            logger.info(f"[IMAGE_PROMPTS] Illustration method: {illustration_method}")
             
             # Get imaging model selection and character limit - use target_post_id
             cursor.execute("""
@@ -233,18 +232,87 @@ def api_generate_image_prompt_from_builder():
             logger.info(f"[DEBUG] Imaging model: {imaging_model_key}, max_chars: {max_chars}")
             
             # Get section data - use target_post_id for lookup
-            cursor.execute("""
-                SELECT id, section_order, section_heading, section_description, 
-                       status, draft, polished, ideas_to_include, facts_to_include,
-                       highlighting, image_concepts, image_prompts, image_captions,
-                       image_alt_text, selected_image_concept
-                FROM post_section
-                WHERE post_id = %s AND id = %s
-            """, (target_post_id, section_id))
-            section = cursor.fetchone()
+            # CRITICAL: Handle section_id matching - try id first, then section_order
+            logger.info(f"[IMAGE_PROMPTS] Looking up section: post_id={target_post_id}, section_id={section_id}")
+            
+            section = None
+            # First try direct ID match (if section_id is numeric)
+            if section_id.isdigit():
+                cursor.execute("""
+                    SELECT id, section_order, section_heading, section_description, 
+                           status, draft, polished, ideas_to_include, facts_to_include,
+                           highlighting, image_concepts, image_prompts, image_captions,
+                           image_alt_text, selected_image_concept
+                    FROM post_section
+                    WHERE post_id = %s AND id = %s
+                """, (target_post_id, int(section_id)))
+                section = cursor.fetchone()
+            
+            # If not found by ID, try by section_order (section_id might be order-based)
+            if not section and section_id.isdigit():
+                cursor.execute("""
+                    SELECT id, section_order, section_heading, section_description, 
+                           status, draft, polished, ideas_to_include, facts_to_include,
+                           highlighting, image_concepts, image_prompts, image_captions,
+                           image_alt_text, selected_image_concept
+                    FROM post_section
+                    WHERE post_id = %s AND section_order = %s
+                """, (target_post_id, int(section_id)))
+                section = cursor.fetchone()
+            
+            # If still not found, try matching via post_development.sections
+            if not section:
+                cursor.execute("""
+                    SELECT sections FROM post_development 
+                    WHERE post_id = %s AND sections IS NOT NULL
+                """, (target_post_id,))
+                result = cursor.fetchone()
+                
+                if result and result['sections']:
+                    try:
+                        sections_data = json.loads(result['sections']) if isinstance(result['sections'], str) else result['sections']
+                        if isinstance(sections_data, dict) and 'sections' in sections_data:
+                            sections_list = sections_data['sections']
+                        elif isinstance(sections_data, list):
+                            sections_list = sections_data
+                        else:
+                            sections_list = []
+                        
+                        # Find the section by ID with improved matching
+                        for i, section_data in enumerate(sections_list):
+                            section_id_from_data = section_data.get('id', f'section_{i+1}')
+                            section_order_from_data = section_data.get('order', i+1)
+                            
+                            # Try multiple matching strategies
+                            section_matches = False
+                            if str(section_id_from_data) == str(section_id):
+                                section_matches = True
+                            elif section_id.isdigit() and int(section_order_from_data) == int(section_id):
+                                section_matches = True
+                            
+                            if section_matches:
+                                logger.info(f"[IMAGE_PROMPTS] Matched section from post_development: id={section_id_from_data}, order={section_order_from_data}")
+                                section_order = section_order_from_data
+                                
+                                # Get section from post_section using section_order
+                                cursor.execute("""
+                                    SELECT id, section_order, section_heading, section_description, 
+                                           status, draft, polished, ideas_to_include, facts_to_include,
+                                           highlighting, image_concepts, image_prompts, image_captions,
+                                           image_alt_text, selected_image_concept
+                                    FROM post_section
+                                    WHERE post_id = %s AND section_order = %s
+                                """, (target_post_id, section_order))
+                                section = cursor.fetchone()
+                                break
+                    except (json.JSONDecodeError, TypeError) as e:
+                        logger.warning(f"Failed to parse sections from post_development: {e}")
             
             if not section:
-                return jsonify({'error': 'Section not found'}), 404
+                logger.error(f"[IMAGE_PROMPTS] Section not found: post_id={target_post_id}, section_id={section_id}")
+                return jsonify({'error': f'Section {section_id} not found for post {target_post_id}'}), 404
+            
+            logger.info(f"[IMAGE_PROMPTS] Found section: id={section.get('id')}, order={section.get('section_order')}, heading='{section.get('section_heading', '')[:50]}'")
             
             # Get active image style - ONLY for LLM-creation route (NOT for Photo-harvesting)
             active_style = None
@@ -321,23 +389,149 @@ def api_generate_image_prompt_from_builder():
             logger.info(f"[DEBUG] System prompt preview: {system_prompt[:100] if system_prompt else 'None'}")
             logger.info(f"[DEBUG] *** SYSTEM PROMPT DEBUG ***")
             
+            # Get theme data for {theme_data} placeholder (needed for Photo-harvesting Scotland emphasis)
+            theme_data = ''
+            if '{theme_data}' in prompt_text or '[data:theme_data]' in prompt_text:
+                # Get theme name and expanded idea from week context (same logic as header.py)
+                url_year = request.args.get('year', type=int)
+                url_week = request.args.get('week', type=int)
+                if not url_year or not url_week:
+                    # Try from request JSON body
+                    data_json = request.get_json() if request.is_json else {}
+                    url_year = url_year or data_json.get('year')
+                    url_week = url_week or data_json.get('week')
+                
+                if url_year and url_week:
+                    # Resolve post for week
+                    from utils.week_post_resolver import resolve_post_for_week
+                    resolved_post_id = resolve_post_for_week(url_year, url_week)
+                    
+                    if resolved_post_id:
+                        # Get selected theme for this week
+                        cursor.execute("""
+                            SELECT ct.theme_title
+                            FROM calendar_week_selection cws
+                            JOIN calendar_themes ct ON cws.selected_theme_id = ct.id
+                            WHERE cws.year = %s AND cws.week_number = %s
+                        """, (url_year, url_week))
+                        theme_result = cursor.fetchone()
+                        theme_name = theme_result.get('theme_title') if theme_result else None
+                        
+                        # Get expanded idea from post_development
+                        cursor.execute("""
+                            SELECT expanded_idea
+                            FROM post_development
+                            WHERE post_id = %s
+                        """, (resolved_post_id,))
+                        idea_result = cursor.fetchone()
+                        expanded_idea = idea_result.get('expanded_idea') if idea_result else None
+                        
+                        # Build theme_data string
+                        if theme_name and expanded_idea:
+                            theme_data = f"{theme_name}: {expanded_idea}"
+                        elif theme_name:
+                            theme_data = theme_name
+                        elif expanded_idea:
+                            theme_data = expanded_idea
+                        
+                        logger.info(f"[IMAGE_PROMPTS] Retrieved theme_data: {theme_data[:100] if theme_data else 'None'}")
+                    else:
+                        logger.warning(f"[IMAGE_PROMPTS] No post found for week {url_year}/{url_week}, cannot retrieve theme_data")
+            
             # Replace placeholders with actual data
+            # CRITICAL: Log what data we're using for debugging
+            logger.info(f"[IMAGE_PROMPTS] Building prompt with section data:")
+            logger.info(f"  - section_id from URL: {section_id}")
+            logger.info(f"  - section.id: {section.get('id')}")
+            logger.info(f"  - section.section_order: {section.get('section_order')}")
+            logger.info(f"  - section.section_heading: '{section.get('section_heading')}'")
+            logger.info(f"  - section.section_description: '{section.get('section_description', '')[:100] if section.get('section_description') else 'None'}'")
+            logger.info(f"  - illustration_method: {illustration_method}")
+            logger.info(f"  - theme_data: '{theme_data[:100] if theme_data else 'None'}'")
+            
+            # Replace theme_data placeholder first (before clearing others for Photo-harvesting)
+            prompt_text = prompt_text.replace('{theme_data}', theme_data)
+            prompt_text = prompt_text.replace('[data:theme_data]', theme_data)
+            
+            # Get factual section-structure data (title/subtitle) from post_development.sections
+            factual_section_title = ''
+            factual_section_description = ''
+            used_landmark_count = 0  # Count how many sections have used landmarks (for subtle variety hint)
             if illustration_method == 'Photo-harvesting':
-                # Strict: Photo-harvesting must NOT include any text except the selected concept
+                # For Photo-harvesting, use factual data from section-structure, not lyrical from titling
+                cursor.execute("""
+                    SELECT sections FROM post_development WHERE post_id = %s
+                """, (target_post_id,))
+                dev_result = cursor.fetchone()
+                if dev_result and dev_result.get('sections'):
+                    try:
+                        dev_sections_data = json.loads(dev_result['sections']) if isinstance(dev_result['sections'], str) else dev_result['sections']
+                        if isinstance(dev_sections_data, dict) and 'sections' in dev_sections_data:
+                            dev_sections_list = dev_sections_data['sections']
+                        elif isinstance(dev_sections_data, list):
+                            dev_sections_list = dev_sections_data
+                        else:
+                            dev_sections_list = []
+                        
+                        # Find matching section by section_order
+                        section_order_for_matching = section.get('section_order')
+                        for dev_section in dev_sections_list:
+                            dev_section_order = dev_section.get('order', 0)
+                            
+                            if section_order_for_matching and int(dev_section_order) == int(section_order_for_matching):
+                                # Get factual title and subtitle from section-structure (NOT lyrical from titling)
+                                factual_section_title = dev_section.get('title', '')
+                                factual_section_description = dev_section.get('subtitle', '')  # subtitle from section-structure
+                                logger.info(f"[IMAGE_PROMPTS] Found factual section-structure data: title='{factual_section_title}', subtitle='{factual_section_description[:100] if factual_section_description else 'None'}...'")
+                                break
+                    except (json.JSONDecodeError, TypeError) as e:
+                        logger.warning(f"Error parsing sections from post_development for factual data: {e}")
+                
+                # Count how many sections already have prompts (for subtle variety encouragement)
+                cursor.execute("""
+                    SELECT COUNT(*) as count
+                    FROM post_section
+                    WHERE post_id = %s 
+                    AND section_order != %s
+                    AND image_prompts IS NOT NULL
+                """, (target_post_id, section.get('section_order', 0)))
+                count_result = cursor.fetchone()
+                used_landmark_count = count_result['count'] if count_result else 0
+            
+            if illustration_method == 'Photo-harvesting':
+                # Strict: Photo-harvesting uses ONLY theme_data and factual section-structure data (title/subtitle)
+                # DO NOT use lyrical section_heading from titling or selected_concept from image_concepts
                 prompt_text = prompt_text.replace('[data:idea_seed]', '')
                 prompt_text = prompt_text.replace('[data:expanded_idea]', '')
-                prompt_text = prompt_text.replace('[data:title]', '')
-                prompt_text = prompt_text.replace('[data:subtitle]', '')
+                prompt_text = prompt_text.replace('[data:title]', factual_section_title)  # Factual title from section-structure
+                prompt_text = prompt_text.replace('[data:subtitle]', factual_section_description)  # Factual description from section-structure
                 prompt_text = prompt_text.replace('[data:section_text]', '')
+                prompt_text = prompt_text.replace('[data:selected_concept]', '')  # Remove image_concepts data
+                prompt_text = prompt_text.replace('[data:topics]', '')
+                
+                # Add subtle variety hint if other sections already have prompts
+                if used_landmark_count > 0:
+                    # Add a gentle reminder to vary landmarks without being prescriptive
+                    if '[data:variety_hint]' in prompt_text:
+                        prompt_text = prompt_text.replace('[data:variety_hint]', f'Note: {used_landmark_count} other section(s) already have prompts. Choose a landmark that best matches this section\'s unique content.')
+                    else:
+                        # Append to section context if placeholder doesn't exist
+                        prompt_text = prompt_text.replace(
+                            'Section Context:',
+                            f'Section Context:\n\nNote: {used_landmark_count} other section(s) already have prompts. Choose a landmark that best matches this section\'s unique Title and Description.'
+                        )
+                
+                logger.info(f"[IMAGE_PROMPTS] Photo-harvesting mode: using theme_data + factual section-structure (title='{factual_section_title}', description='{factual_section_description[:100] if factual_section_description else 'None'}...'), {used_landmark_count} other sections have prompts")
             else:
                 prompt_text = prompt_text.replace('[data:idea_seed]', post_data['title'] or '')
                 prompt_text = prompt_text.replace('[data:expanded_idea]', post_data['subtitle'] or '')
                 prompt_text = prompt_text.replace('[data:title]', section['section_heading'] or '')
                 prompt_text = prompt_text.replace('[data:subtitle]', section['section_description'] or '')
                 prompt_text = prompt_text.replace('[data:section_text]', section.get('polished') or section.get('draft') or '')
+                logger.info(f"[IMAGE_PROMPTS] LLM-creation mode: title='{section['section_heading']}'")
             
-            # Automatically extract concept data from database (skip for Photo-harvesting to avoid bleed)
-            concept_text = '' if illustration_method == 'Photo-harvesting' else ''
+            # Automatically extract concept data from database - CRITICAL: Must get correct section's concept
+            concept_text = ''
             
             # Get image_concepts - first try post_section, then fallback to post_development.sections
             image_concepts_data = None
@@ -366,9 +560,23 @@ def api_generate_image_prompt_from_builder():
                         else:
                             dev_sections_list = []
                         
-                        # Find matching section in post_development.sections
+                        # Find matching section in post_development.sections using improved matching
+                        section_order_for_matching = section.get('section_order')
                         for dev_section in dev_sections_list:
-                            if str(dev_section.get('id', '')) == str(section_id):
+                            dev_section_id = dev_section.get('id', '')
+                            dev_section_order = dev_section.get('order', 0)
+                            
+                            # Try multiple matching strategies
+                            matches = False
+                            if str(dev_section_id) == str(section_id):
+                                matches = True
+                            elif section_id.isdigit() and int(dev_section_order) == int(section_id):
+                                matches = True
+                            elif section_order_for_matching and int(dev_section_order) == int(section_order_for_matching):
+                                matches = True
+                            
+                            if matches:
+                                logger.info(f"[IMAGE_PROMPTS] Matched dev_section for concepts: id={dev_section_id}, order={dev_section_order}")
                                 # Get image_concepts and selected_image_concept from post_development
                                 dev_image_concepts = dev_section.get('image_concepts')
                                 if dev_image_concepts:
@@ -377,6 +585,7 @@ def api_generate_image_prompt_from_builder():
                                         # Also update selected_concept_id if not already set
                                         if not selected_concept_id:
                                             selected_concept_id = dev_section.get('selected_image_concept')
+                                        logger.info(f"[IMAGE_PROMPTS] Found image_concepts data with {len(image_concepts_data.get('concepts', [])) if isinstance(image_concepts_data, dict) else 0} concepts")
                                         break
                                     except (json.JSONDecodeError, TypeError) as e:
                                         logger.warning(f"Error parsing image_concepts from post_development for section {section_id}: {e}")
@@ -384,12 +593,21 @@ def api_generate_image_prompt_from_builder():
                         logger.warning(f"Error parsing sections from post_development for section {section_id}: {e}")
             
             # Extract concept text from the found image_concepts data
-            if illustration_method != 'Photo-harvesting' and image_concepts_data and selected_concept_id:
+            # CRITICAL: Only LLM-creation uses image_concepts; Photo-harvesting uses factual section-structure data instead
+            logger.info(f"[IMAGE_PROMPTS] Extracting concept: method={illustration_method}, has_concepts_data={bool(image_concepts_data)}, selected_concept_id={selected_concept_id}")
+            
+            # For Photo-harvesting, skip image_concepts entirely - use factual section-structure data instead
+            if illustration_method == 'Photo-harvesting':
+                logger.info(f"[IMAGE_PROMPTS] Photo-harvesting mode: skipping image_concepts, using factual section-structure data only")
+                concept_text = ''  # Photo-harvesting doesn't use concepts
+            elif image_concepts_data and selected_concept_id:
                 try:
                     if isinstance(image_concepts_data, dict):
                         concepts = image_concepts_data.get('concepts', [])
+                        logger.info(f"[IMAGE_PROMPTS] Found {len(concepts)} concepts, looking for concept_id={selected_concept_id}")
                         for concept in concepts:
-                            if concept.get('concept_id') == selected_concept_id:
+                            concept_id = concept.get('concept_id')
+                            if str(concept_id) == str(selected_concept_id):
                                 # Build concept text from the selected concept
                                 concept_parts = []
                                 if concept.get('concept_description'):
@@ -399,12 +617,14 @@ def api_generate_image_prompt_from_builder():
                                 if concept.get('key_visual_elements'):
                                     concept_parts.append(f"Key Elements: {concept['key_visual_elements']}")
                                 concept_text = '\n'.join(concept_parts)
-                                logger.info(f"[DEBUG] Extracted concept_text from database: {concept_text[:100]}...")
+                                logger.info(f"[IMAGE_PROMPTS] Extracted concept_text from database (concept_id={concept_id}, method={illustration_method}): {concept_text[:100]}...")
                                 break
+                        else:
+                            logger.warning(f"[IMAGE_PROMPTS] Could not find concept with id={selected_concept_id} in {len(concepts)} concepts")
                 except (KeyError, TypeError) as e:
                     logger.warning(f"Error extracting concept from image_concepts_data for section {section_id}: {e}")
             
-            # Fallback to frontend data if database extraction failed
+            # Fallback to frontend data if database extraction failed (for LLM-creation only)
             if not concept_text and illustration_method != 'Photo-harvesting':
                 if concept_content and isinstance(concept_content, dict):
                     # Build concept text from the structured data
@@ -422,6 +642,7 @@ def api_generate_image_prompt_from_builder():
                     concept_text = compiled_prompt or ''
             
             
+            logger.info(f"[IMAGE_PROMPTS] Final concept_text (length {len(concept_text)}): {concept_text[:200] if concept_text else 'EMPTY'}...")
             prompt_text = prompt_text.replace('[data:selected_concept]', concept_text)
             topics_text = '\n'.join([f'- {topic}' for topic in topics])
             prompt_text = prompt_text.replace('[data:topics]', topics_text)
@@ -481,6 +702,20 @@ def api_generate_image_prompt_from_builder():
             logger.info(f"[DEBUG] System message included: {any(m['role'] == 'system' for m in messages)}")
             logger.info(f"[DEBUG] First message role: {messages[0]['role'] if messages else 'None'}")
             
+            # CRITICAL: Log the actual prompt being sent for Photo-harvesting to debug section-specific variation
+            if illustration_method == 'Photo-harvesting':
+                logger.info(f"[IMAGE_PROMPTS] Photo-harvesting prompt text (first 800 chars): {prompt_text[:800]}")
+                logger.info(f"[IMAGE_PROMPTS] Section-specific data: title='{factual_section_title}', subtitle='{factual_section_description[:100] if factual_section_description else 'None'}...'")
+                # Check if section-specific data is in the prompt
+                if factual_section_title and factual_section_title in prompt_text:
+                    logger.info(f"[IMAGE_PROMPTS] ✓ Section title found in prompt text")
+                else:
+                    logger.warning(f"[IMAGE_PROMPTS] ✗ Section title NOT found in prompt text! Title: '{factual_section_title}'")
+                if factual_section_description and factual_section_description[:50] in prompt_text:
+                    logger.info(f"[IMAGE_PROMPTS] ✓ Section description found in prompt text")
+                else:
+                    logger.warning(f"[IMAGE_PROMPTS] ✗ Section description NOT found in prompt text! Description: '{factual_section_description[:100] if factual_section_description else 'None'}...'")
+            
             # Execute LLM request with retry logic for valid JSON
             max_retries = 3
             generated_prompt = None
@@ -499,6 +734,15 @@ def api_generate_image_prompt_from_builder():
                     continue
                 
                 raw_content = result['content']
+                
+                # CRITICAL: Log the generated search query for Photo-harvesting to verify Scotland emphasis
+                if illustration_method == 'Photo-harvesting':
+                    logger.info(f"[IMAGE_PROMPTS] Generated search query (raw): {raw_content[:200]}")
+                    # Check if Scotland is in the generated query
+                    if 'Scotland' in raw_content or 'Scottish' in raw_content:
+                        logger.info(f"[IMAGE_PROMPTS] ✓ Generated query contains Scotland/Scottish")
+                    else:
+                        logger.warning(f"[IMAGE_PROMPTS] ✗ Generated query does NOT contain Scotland/Scottish! Query: {raw_content[:200]}")
                 
                 # Try to parse as JSON first
                 try:
@@ -623,19 +867,20 @@ def api_get_llm_prompt_details(post_id, section_id):
                 logger.warning(f"[LLM_PROMPT_DETAILS] Week {url_year}/{url_week} has no scheduled post - using URL post_id {post_id}")
 
         with db_manager.get_cursor() as cursor:
-            # Get post data and illustration_method
+            # Use utility function to get illustration_method
+            from utils.taxonomy_helpers import get_illustration_method
+            illustration_method = get_illustration_method(target_post_id)
+            
+            # Get post data
             cursor.execute("""
-                SELECT p.title, p.subtitle, p.summary, content_type.illustration_method
+                SELECT p.title, p.subtitle, p.summary
                 FROM post p
-                LEFT JOIN taxonomy_item content_type ON p.content_type_id = content_type.id
                 WHERE p.id = %s
             """, (target_post_id,))
             post_data = cursor.fetchone()
             
             if not post_data:
                 return jsonify({'error': 'Post not found'}), 404
-
-            illustration_method = post_data.get('illustration_method') or 'LLM-creation'
             
             # Get imaging model selection and character limit (use target_post_id)
             cursor.execute("""
@@ -998,18 +1243,42 @@ def api_generate_image_captions(post_id, section_id):
                 except Exception as e:
                     logger.error(f"Error reading selected concept from post_development: {e}")
             
+            # Get illustration_method from post taxonomy for prompt selection
+            cursor.execute("""
+                SELECT content_type.illustration_method, content_type.name as content_type_name
+                FROM post p
+                LEFT JOIN taxonomy_item content_type ON p.content_type_id = content_type.id
+                WHERE p.id = %s
+            """, (post_id,))
+            taxonomy_data = cursor.fetchone()
+            
+            illustration_method = taxonomy_data.get('illustration_method') if taxonomy_data else 'LLM-creation'
+            content_type_name = taxonomy_data.get('content_type_name') if taxonomy_data else None
+            
+            # Use utility function to get category-specific prompt name
+            from utils.taxonomy_helpers import get_category_prompt_name
+            prompt_name = get_category_prompt_name(
+                'Image Captions Generation',
+                illustration_method,
+                content_type_name
+            )
+            
+            logger.info(f"[IMAGE_CAPTIONS] Using prompt: {prompt_name} (illustration_method: {illustration_method}, content_type: {content_type_name})")
+            
             # Get the image captions prompt
             cursor.execute("""
                 SELECT prompt_text, system_prompt
                 FROM llm_prompt 
-                WHERE name = 'Image Captions Generation'
+                WHERE name = %s
                 ORDER BY updated_at DESC 
                 LIMIT 1
-            """)
+            """, (prompt_name,))
             
             prompt_data = cursor.fetchone()
             if not prompt_data:
-                return jsonify({'error': 'Image Captions prompt not found'}), 404
+                return jsonify({
+                    'error': f'Image Captions prompt "{prompt_name}" not found. Please configure prompts in the LLM Prompts panel first.'
+                }), 404
             
             # Build the prompt with actual data
             prompt_text = prompt_data['prompt_text']

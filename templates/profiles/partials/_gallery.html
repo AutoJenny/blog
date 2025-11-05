@@ -1,0 +1,23 @@
+{% if gallery_images %}
+<section class="blog-section profile-section profile-section--gallery">
+    <h2>{{ section.section_heading or 'Gallery' }}</h2>
+    
+    <div class="profile-gallery">
+        {% for image in gallery_images %}
+        <figure class="gallery-item">
+            <a href="{{ image.path }}" 
+               data-lightbox="gallery-{{ post.id }}"
+               data-title="{{ image.caption or image.alt_text }}">
+                <img src="{{ image.thumbnail_path or image.path }}" 
+                     alt="{{ image.alt_text or 'Gallery image' }}"
+                     loading="lazy">
+            </a>
+            {% if image.caption %}
+            <figcaption>{{ image.caption }}</figcaption>
+            {% endif %}
+        </figure>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+

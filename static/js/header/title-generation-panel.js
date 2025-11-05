@@ -69,6 +69,12 @@
     const titleOptions = document.getElementById('title-options');
     if (!titleOptions) return;
     
+    // Update button text to "Regenerate" since we have titles
+    const generateBtn = document.getElementById('generate-titles-btn');
+    if (generateBtn && titles.length > 0) {
+      generateBtn.textContent = 'Regenerate';
+    }
+    
     titleOptions.innerHTML = '';
     
     titles.forEach((title, index) => {
@@ -159,6 +165,11 @@
     .then(data => {
       if (data.success && data.title_options && data.title_options.length > 0) {
         displayTitleOptions(data.title_options, data.selected_index || 0);
+        // Update button text to "Regenerate" since titles exist
+        const generateBtn = document.getElementById('generate-titles-btn');
+        if (generateBtn) {
+          generateBtn.textContent = 'Regenerate';
+        }
       }
     })
     .catch(error => {

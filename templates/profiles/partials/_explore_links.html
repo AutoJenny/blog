@@ -1,0 +1,34 @@
+{% if post.profile_explore_links %}
+<section class="profile-section profile-section--explore">
+    <h3>Explore Further</h3>
+    <ul class="explore-links">
+        {% if post.profile_explore_links.product %}
+        <li>
+            <a href="{{ post.profile_explore_links.product.url }}" class="explore-link" target="_blank" rel="noopener">
+                <i class="fas fa-arrow-right"></i>
+                <span>{{ post.profile_explore_links.product.text or 'View this product' }}</span>
+            </a>
+        </li>
+        {% endif %}
+        
+        {% if post.profile_explore_links.producer %}
+        <li>
+            <a href="{{ post.profile_explore_links.producer.url }}" class="explore-link" target="_blank" rel="noopener">
+                <i class="fas fa-arrow-right"></i>
+                <span>{{ post.profile_explore_links.producer.text or 'About ' + post.profile_producer_name }}</span>
+            </a>
+        </li>
+        {% endif %}
+        
+        {% if post.profile_explore_links.category %}
+        <li>
+            <a href="{{ post.profile_explore_links.category.url }}" class="explore-link" target="_blank" rel="noopener">
+                <i class="fas fa-arrow-right"></i>
+                <span>{{ post.profile_explore_links.category.text or 'Shop all ' + category_name }}</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</section>
+{% endif %}
+

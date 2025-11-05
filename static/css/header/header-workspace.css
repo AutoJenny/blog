@@ -28,7 +28,7 @@
 
 .header-workspace .workspace-container {
     display: grid !important;
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 350px 1fr !important;
     gap: 1.5rem !important;
     max-width: 1400px !important;
     margin: 0 auto !important;
@@ -41,14 +41,23 @@
     flex-direction: column !important;
     gap: 1rem !important;
     padding: 1rem !important;
-    grid-column: 1 !important;
-    grid-row: 1 !important;
     width: 100% !important;
 }
 
 .header-workspace .mini-preview-panel {
-    grid-column: 1 !important;
-    grid-row: 1 !important;
+    width: 100% !important;
+}
+
+@media (max-width: 1200px) {
+    .header-workspace .workspace-container {
+        grid-template-columns: 300px 1fr !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-workspace .workspace-container {
+        grid-template-columns: 1fr !important;
+    }
 }
 
 /* Panel styling */

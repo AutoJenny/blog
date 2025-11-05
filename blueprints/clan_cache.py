@@ -419,6 +419,67 @@ def get_full_product(sku: str):
         logger.error(f"Error fetching full product: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@bp.route('/api/clan/products/<sku>/scrape-specifications', methods=['POST'])
+def scrape_product_specifications(sku: str):
+    """Scrape product specifications from product page and save to database."""
+    try:
+        # Get product from database to get URL
+        sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'blog-launchpad'))
+        from clan_cache import ClanCache  # type: ignore
+        cache = ClanCache()
+        conn = cache.get_db_conn()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            SELECT id, url FROM clan_products WHERE sku = %s
+        """, (sku,))
+        row = cur.fetchone()
+        
+        if not row:
+            return jsonify({'success': False, 'error': f'Product with SKU {sku} not found'}), 404
+        
+        product_id, product_url = row[0], row[1]
+        
+        if not product_url:
+            return jsonify({'success': False, 'error': 'Product URL not available'}), 400
+        
+        # Scrape specifications
+        sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'utils'))
+        from product_specifications_scraper import ProductSpecificationsScraper  # type: ignore
+        
+        scraper = ProductSpecificationsScraper()
+        specs = scraper.scrape_product_specifications(product_url)
+        
+        if not specs:
+            return jsonify({'success': False, 'error': 'No specifications found on product page'}), 404
+        
+        # Save to database
+        import json
+        cur.execute("""
+            UPDATE clan_products
+            SET specifications = %s
+            WHERE id = %s
+            RETURNING specifications
+        """, (json.dumps(specs), product_id))
+        
+        updated_specs = cur.fetchone()[0]
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'product_id': product_id,
+            'sku': sku,
+            'specifications': updated_specs
+        })
+        
+    except Exception as e:
+        logger.error(f"Error scraping specifications for SKU {sku}: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 def _read_metadata_last_run(key: str):
     try:
         sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'blog-launchpad'))

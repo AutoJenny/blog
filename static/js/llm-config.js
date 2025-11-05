@@ -40,7 +40,7 @@ const LLM_CONFIGS = {
         allowEdit: true
     },
     'author_draft': { // New config for authoring section drafts
-        promptEndpoint: '/authoring/api/llm/prompts/section-drafting',
+        promptEndpoint: '/authoring/api/posts/{id}/section-drafting-prompt',
         generateEndpoint: '/authoring/api/posts/{id}/sections/{section_id}/generate',
         resultsField: 'draft_content',
         resultsTitle: 'Generated Draft',

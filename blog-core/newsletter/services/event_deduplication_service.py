@@ -283,6 +283,21 @@ def merge_event_data(existing: Dict[str, Any], new: Dict[str, Any]) -> Dict[str,
     # Update event_date if existing doesn't have one
     if new.get('event_date') and not existing.get('event_date'):
         merged['event_date'] = new['event_date']
+        # Also update end_date and date_qualifier if they come with event_date
+        if new.get('end_date') and not existing.get('end_date'):
+            merged['end_date'] = new['end_date']
+        if new.get('date_qualifier') and not existing.get('date_qualifier'):
+            merged['date_qualifier'] = new['date_qualifier']
+    
+    # Update end_date if existing doesn't have one (even if event_date exists)
+    if new.get('end_date') and not existing.get('end_date'):
+        merged['end_date'] = new['end_date']
+        if new.get('date_qualifier') and not existing.get('date_qualifier'):
+            merged['date_qualifier'] = new['date_qualifier']
+    
+    # Update date_qualifier if existing doesn't have one
+    if new.get('date_qualifier') and not existing.get('date_qualifier'):
+        merged['date_qualifier'] = new['date_qualifier']
     
     # Update location if existing doesn't have one
     if new.get('location') and not existing.get('location'):
@@ -368,13 +383,13 @@ def find_and_merge_duplicate(
                         WHERE id = %s
                     """, (merged['url'], new_hash, duplicate['id']))
                 
-                # Update event_date if added
+                # Update event_date if added (also update end_date and date_qualifier if present)
                 if merged.get('event_date') and not duplicate.get('event_date'):
                     cur.execute("""
                         UPDATE newsletter_source_item
-                        SET event_date = %s
+                        SET event_date = %s, end_date = %s, date_qualifier = %s
                         WHERE id = %s
-                    """, (merged['event_date'], duplicate['id']))
+                    """, (merged['event_date'], merged.get('end_date'), merged.get('date_qualifier'), duplicate['id']))
                 
                 # Update location if added
                 if merged.get('location') and not duplicate.get('location'):

@@ -1,0 +1,15 @@
+{% if section and section.section_type == 'credits' %}
+<details class="credits-section">
+    <summary>Credits & Sources</summary>
+    <div class="credits-content">
+        {% if section.polished %}
+            {{ section.polished|safe }}
+        {% elif section.draft %}
+            {{ section.draft|safe }}
+        {% else %}
+            <p>Credits and sources will be listed here.</p>
+        {% endif %}
+    </div>
+</details>
+{% endif %}
+
