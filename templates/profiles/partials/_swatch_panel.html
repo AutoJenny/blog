@@ -1,0 +1,23 @@
+{% if swatch_data %}
+<section class="blog-section profile-section profile-section--swatch">
+    <h2>{{ section.section_heading or 'Tartan Swatches' }}</h2>
+    
+    <div class="swatch-panel">
+        {% for swatch in swatch_data %}
+        <div class="swatch-item">
+            {% if swatch.image_url %}
+            <img src="{{ swatch.image_url }}" alt="{{ swatch.name or 'Tartan swatch' }}">
+            {% endif %}
+            <h4>{{ swatch.name }}</h4>
+            {% if swatch.clan %}
+            <p class="swatch-clan">{{ swatch.clan }}</p>
+            {% endif %}
+            {% if swatch.url %}
+            <a href="{{ swatch.url }}" class="swatch-link">View Design</a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+

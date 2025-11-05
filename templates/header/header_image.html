@@ -29,11 +29,11 @@ document.addEventListener('DOMContentLoaded', function() {
         <!-- Full Width Content (no left panel for header images) -->
         <div class="editor-panel" style="width: 100%;">
             <!-- Route Indicator -->
-            <div class="route-indicator" style="background:#1e40af;color:#fff;padding:0.6rem 0.9rem;border-radius:8px;margin-bottom:1rem;font-weight:600;display:flex;align-items:center;gap:0.5rem;">
+            <div class="route-indicator header-page">
                 <i class="fas fa-camera"></i>
                 <span>Illustration Route: <strong>{{ illustration_method | default('LLM-creation') }}</strong></span>
                 {% if year and week %}
-                <span style="margin-left:auto;font-weight:500;opacity:0.85;">Week {{ week }}, {{ year }}</span>
+                <span>Week {{ week }}, {{ year }}</span>
                 {% endif %}
             </div>
             

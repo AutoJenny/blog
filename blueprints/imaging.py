@@ -783,13 +783,25 @@ def imaging_sections_image_generation(post_id):
             else:
                 logger.warning(f"Week {url_year}/{url_week} has no scheduled post - using URL post_id {post_id}")
         
+        # Use utility function to get illustration_method
+        from utils.taxonomy_helpers import get_illustration_method_with_post
+        target_post_id, illustration_method = get_illustration_method_with_post(
+            post_id, url_year, url_week
+        )
+        
+        # Check if route is active (Photo-harvesting is inactive but kept in reserve)
+        from config.authoring_panel_configs import get_panel_config
+        panel_config = get_panel_config(illustration_method)
+        if not panel_config.get('active', True):
+            # Route is inactive, redirect to LLM-creation route
+            illustration_method = 'LLM-creation'
+            panel_config = get_panel_config('LLM-creation')
+        
         with db_manager.get_cursor() as cursor:
-            # Get post data with taxonomy illustration_method using the correct post_id
+            # Get post data
             cursor.execute("""
-                SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
-                       p.content_type_id, content_type.illustration_method
+                SELECT p.id, p.title, p.status, p.created_at, p.updated_at
                 FROM post p
-                LEFT JOIN taxonomy_item content_type ON p.content_type_id = content_type.id
                 WHERE p.id = %s
             """, (target_post_id,))
             
@@ -797,15 +809,14 @@ def imaging_sections_image_generation(post_id):
             if not post:
                 return f"Post {target_post_id} not found", 404
             
-            # Get illustration_method from taxonomy (default to 'LLM-creation' if null/not found)
-            illustration_method = post.get('illustration_method') or 'LLM-creation'
-            
-            # If Photo-harvesting, redirect to photo-selection route
-            if illustration_method == 'Photo-harvesting':
+            # Check if Photo-harvesting route is active before redirecting
+            photo_harvesting_config = get_panel_config('Photo-harvesting')
+            if illustration_method == 'Photo-harvesting' and photo_harvesting_config.get('active', True):
                 redirect_url = url_for('imaging.imaging_sections_photo_selection', post_id=post_id)
                 if url_year and url_week:
                     redirect_url += f'?year={url_year}&week={url_week}'
                 return redirect(redirect_url)
+            # If Photo-harvesting is inactive, continue with LLM-creation route (illustration_method already set above)
             
             # Format dates for display
             post_created = post['created_at'].strftime('%Y-%m-%d %H:%M') if post['created_at'] else 'Unknown'
@@ -844,21 +855,28 @@ def imaging_sections_optimise(post_id):
             else:
                 logger.warning(f"Week {url_year}/{url_week} has no scheduled post - using URL post_id {post_id}")
         
+        # Use utility function to get illustration_method
+        from utils.taxonomy_helpers import get_illustration_method_with_post
+        target_post_id, illustration_method = get_illustration_method_with_post(
+            post_id, url_year, url_week
+        )
+        
+        # Check if route is active
+        from config.authoring_panel_configs import get_panel_config
+        panel_config = get_panel_config(illustration_method)
+        if not panel_config.get('active', True):
+            illustration_method = 'LLM-creation'
+        
         with db_manager.get_cursor() as cursor:
-            # Get post data with taxonomy illustration_method using the correct post_id
+            # Get post data
             cursor.execute("""
-                SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
-                       p.content_type_id, content_type.illustration_method
+                SELECT p.id, p.title, p.status, p.created_at, p.updated_at
                 FROM post p
-                LEFT JOIN taxonomy_item content_type ON p.content_type_id = content_type.id
                 WHERE p.id = %s
             """, (target_post_id,))
             post = cursor.fetchone()
             if not post:
                 return f"Post {target_post_id} not found", 404
-
-            # Get illustration_method from taxonomy (default to 'LLM-creation' if null/not found)
-            illustration_method = post.get('illustration_method') or 'LLM-creation'
 
             post_created = post['created_at'].strftime('%Y-%m-%d %H:%M') if post['created_at'] else 'Unknown'
             post_updated = post['updated_at'].strftime('%Y-%m-%d %H:%M') if post['updated_at'] else 'Unknown'
@@ -896,25 +914,19 @@ def imaging_sections_photo_selection(post_id):
             else:
                 logger.warning(f"Week {url_year}/{url_week} has no scheduled post - using URL post_id {post_id}")
         
-        with db_manager.get_cursor() as cursor:
-            # Get post data with taxonomy illustration_method using the correct post_id
-            cursor.execute("""
-                SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
-                       p.content_type_id, content_type.illustration_method
-                FROM post p
-                LEFT JOIN taxonomy_item content_type ON p.content_type_id = content_type.id
-                WHERE p.id = %s
-            """, (target_post_id,))
-            
-            post = cursor.fetchone()
-            if not post:
-                return f"Post {target_post_id} not found", 404
-            
-            # Get illustration_method from taxonomy (default to 'LLM-creation' if null/not found)
-            illustration_method = post.get('illustration_method') or 'LLM-creation'
-            
-            # If not Photo-harvesting, redirect to image-generation route
-            if illustration_method != 'Photo-harvesting':
+        # Use utility function to get illustration_method
+        from utils.taxonomy_helpers import get_illustration_method_with_post
+        target_post_id, illustration_method = get_illustration_method_with_post(
+            post_id, url_year, url_week
+        )
+        
+        # Check if Photo-harvesting route is active
+        from config.authoring_panel_configs import get_panel_config
+        panel_config = get_panel_config('Photo-harvesting')
+        photo_harvesting_active = panel_config.get('active', True)
+        
+        # If not Photo-harvesting or Photo-harvesting is inactive, redirect to image-generation route
+        if illustration_method != 'Photo-harvesting' or not photo_harvesting_active:
                 redirect_url = url_for('imaging.imaging_sections_image_generation', post_id=post_id)
                 if url_year and url_week:
                     redirect_url += f'?year={url_year}&week={url_week}'

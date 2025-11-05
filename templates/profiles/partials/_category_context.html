@@ -1,0 +1,26 @@
+{% if category_data %}
+<div class="profile-category-context">
+    <div class="category-context-item">
+        <i class="fas fa-folder"></i>
+        <span class="label">Category</span>
+        <span class="value">{{ category_data.name }}</span>
+    </div>
+    
+    {% if category_data.hierarchy_path %}
+    <div class="category-context-item">
+        <i class="fas fa-sitemap"></i>
+        <span class="label">Path</span>
+        <span class="value">{{ category_data.hierarchy_path|join(' > ') }}</span>
+    </div>
+    {% endif %}
+    
+    {% if category_data.level %}
+    <div class="category-context-item">
+        <i class="fas fa-layer-group"></i>
+        <span class="label">Level</span>
+        <span class="value">{{ category_data.level }}</span>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+

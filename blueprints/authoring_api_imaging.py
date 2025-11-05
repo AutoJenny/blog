@@ -29,40 +29,31 @@ def authoring_sections_image_concepts(post_id):
         url_year = request.args.get('year', type=int)
         url_week = request.args.get('week', type=int)
         
-        # SINGLE SOURCE OF TRUTH: Use approved utility for week/post resolution
-        target_post_id = post_id
-        if url_year and url_week:
-            from utils.week_post_resolver import resolve_post_for_week
-            resolved_post_id = resolve_post_for_week(url_year, url_week)
-            if resolved_post_id:
-                target_post_id = resolved_post_id
-                logger.info(f"Week {url_year}/{url_week} resolved to post_id {target_post_id} (instead of URL post_id {post_id})")
-            else:
-                logger.warning(f"Week {url_year}/{url_week} has no scheduled post - using URL post_id {post_id}")
+        # Use utility function to get illustration_method with week context resolution
+        from utils.taxonomy_helpers import get_illustration_method_with_post
+        target_post_id, illustration_method = get_illustration_method_with_post(
+            post_id, url_year, url_week
+        )
+        
+        if target_post_id != post_id:
+            logger.info(f"Week {url_year}/{url_week} resolved to post_id {target_post_id} (instead of URL post_id {post_id})")
+        
+        # Get panel configuration for this illustration method (checks active flag)
+        panel_config = get_panel_config(illustration_method)
+        
+        logger.info(f"Illustration method determined from post {target_post_id}: {illustration_method} (URL had post_id {post_id})")
         
         with db_manager.get_cursor() as cursor:
-            # Get post details with taxonomy illustration_method using the correct post_id
+            # Get post details
             cursor.execute("""
-                SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
-                       p.content_type_id, content_type.illustration_method
+                SELECT p.id, p.title, p.status, p.created_at, p.updated_at
                 FROM post p
-                LEFT JOIN taxonomy_item content_type ON p.content_type_id = content_type.id
                 WHERE p.id = %s
             """, (target_post_id,))
             post = cursor.fetchone()
             
             if not post:
                 return "Post not found", 404
-            
-            # Get illustration_method from taxonomy (default to 'LLM-creation' if null/not found)
-            illustration_method = post.get('illustration_method') or 'LLM-creation'
-            
-            # Get panel configuration for this illustration method
-            panel_config = get_panel_config(illustration_method)
-            
-            # Log which post and illustration method are being used
-            if target_post_id != post_id:
-                logger.info(f"Illustration method determined from post {target_post_id}: {illustration_method} (URL had post_id {post_id})")
             
             return render_template('authoring/sections/image_concepts.html', 
                                  post_id=post_id,  # Keep original post_id for URL consistency
@@ -85,41 +76,27 @@ def authoring_sections_image_prompts(post_id):
         url_week = request.args.get('week', type=int)
         logger.info(f"[IMAGE_PROMPTS] Week context from URL: year={url_year}, week={url_week}")
         
-        # SINGLE SOURCE OF TRUTH: Use approved utility for week/post resolution
-        target_post_id = post_id
-        if url_year and url_week:
-            from utils.week_post_resolver import resolve_post_for_week
-            resolved_post_id = resolve_post_for_week(url_year, url_week)
-            if resolved_post_id:
-                target_post_id = resolved_post_id
-                logger.info(f"[IMAGE_PROMPTS] Week {url_year}/{url_week} resolved to post_id {target_post_id} (instead of URL post_id {post_id})")
-            else:
-                logger.warning(f"[IMAGE_PROMPTS] Week {url_year}/{url_week} has no scheduled post - using URL post_id {post_id}")
-        else:
-            logger.warning(f"[IMAGE_PROMPTS] No week context provided - using URL post_id {post_id}")
+        # Use utility function to get illustration_method with week context resolution
+        from utils.taxonomy_helpers import get_illustration_method_with_post
+        target_post_id, illustration_method = get_illustration_method_with_post(
+            post_id, url_year, url_week
+        )
         
-        logger.info(f"[IMAGE_PROMPTS] Using target_post_id={target_post_id} for taxonomy lookup")
+        if target_post_id != post_id:
+            logger.info(f"[IMAGE_PROMPTS] Week {url_year}/{url_week} resolved to post_id {target_post_id} (instead of URL post_id {post_id})")
+        logger.info(f"[IMAGE_PROMPTS] Illustration method determined from post {target_post_id}: {illustration_method} (URL had post_id {post_id})")
         
         with db_manager.get_cursor() as cursor:
-            # Get post details with taxonomy illustration_method using the correct post_id
+            # Get post details
             cursor.execute("""
-                SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
-                       p.content_type_id, content_type.illustration_method
+                SELECT p.id, p.title, p.status, p.created_at, p.updated_at
                 FROM post p
-                LEFT JOIN taxonomy_item content_type ON p.content_type_id = content_type.id
                 WHERE p.id = %s
             """, (target_post_id,))
             post = cursor.fetchone()
             
             if not post:
                 return "Post not found", 404
-            
-            # Get illustration_method from taxonomy (default to 'LLM-creation' if null/not found)
-            illustration_method = post.get('illustration_method') or 'LLM-creation'
-            
-            # Log which post and illustration method are being used
-            if target_post_id != post_id:
-                logger.info(f"Illustration method determined from post {target_post_id}: {illustration_method} (URL had post_id {post_id})")
             
             return render_template('authoring/sections/image_prompts.html', 
                                  post_id=post_id,  # Keep original post_id for URL consistency
@@ -136,23 +113,43 @@ def authoring_sections_image_prompts(post_id):
 def authoring_sections_image_captions(post_id):
     """Image captions step - Step 55"""
     try:
+        # CRITICAL: Check for week context in URL params to determine correct post
+        url_year = request.args.get('year', type=int)
+        url_week = request.args.get('week', type=int)
+        
+        # Use utility function to get illustration_method with week context resolution
+        from utils.taxonomy_helpers import get_illustration_method_with_post
+        target_post_id, illustration_method = get_illustration_method_with_post(
+            post_id, url_year, url_week
+        )
+        
+        if target_post_id != post_id:
+            logger.info(f"Week {url_year}/{url_week} resolved to post_id {target_post_id} (instead of URL post_id {post_id})")
+        
         with db_manager.get_cursor() as cursor:
             # Get post details
             cursor.execute("""
                 SELECT id, title, status, created_at, updated_at
                 FROM post 
                 WHERE id = %s
-            """, (post_id,))
+            """, (target_post_id,))
             post = cursor.fetchone()
             
             if not post:
                 return "Post not found", 404
             
+            # Log which post and illustration method are being used
+            if target_post_id != post_id:
+                logger.info(f"Illustration method determined from post {target_post_id}: {illustration_method} (URL had post_id {post_id})")
+            
             return render_template('authoring/sections/image_captions.html', 
-                                 post_id=post_id,
+                                 post_id=post_id,  # Keep original post_id for URL consistency
                                  post=post,
                                  page_title="Image Captions",
-                                 blueprint_name='authoring')
+                                 blueprint_name='authoring',
+                                 illustration_method=illustration_method,
+                                 year=url_year,
+                                 week=url_week)
             
     except Exception as e:
         logger.error(f"Error in authoring_sections_image_captions: {e}")
@@ -616,20 +613,31 @@ def api_generate_image_concepts(post_id, section_id):
                         else:
                             sections_list = []
                         
-                        # Find the section by ID
+                        # Find the section by ID - CRITICAL: Use strict matching to avoid wrong section
                         for i, section_data in enumerate(sections_list):
                             section_id_from_data = section_data.get('id', f'section_{i+1}')
+                            section_order_from_data = section_data.get('order', i+1)
                             
                             # Handle both numeric IDs (1,2,3) and string IDs (section_1, section_2, etc.)
                             section_matches = False
-                            if section_id_from_data == section_id:
+                            
+                            # Primary match: exact ID match (string or numeric)
+                            if str(section_id_from_data) == str(section_id):
                                 section_matches = True
-                            elif section_id.startswith('section_') and str(section_id_from_data) == section_id.replace('section_', ''):
+                                logger.info(f"[IMAGE_CONCEPTS] Matched section by exact ID: {section_id_from_data} == {section_id}")
+                            # Secondary match: if section_id is numeric, try matching by order
+                            elif section_id.isdigit() and int(section_order_from_data) == int(section_id):
                                 section_matches = True
-                            elif section_id.isdigit() and str(section_id_from_data) == section_id:
+                                logger.info(f"[IMAGE_CONCEPTS] Matched section by order: order {section_order_from_data} == section_id {section_id}")
+                            # Tertiary match: handle "section_X" format
+                            elif (str(section_id_from_data).lower().startswith('section_') and 
+                                  section_id.isdigit() and 
+                                  str(section_id_from_data).replace('section_', '').replace('Section_', '').replace('SECTION_', '') == section_id):
                                 section_matches = True
+                                logger.info(f"[IMAGE_CONCEPTS] Matched section by normalized ID: {section_id_from_data} -> {section_id}")
                             
                             if section_matches:
+                                logger.info(f"[IMAGE_CONCEPTS] Section match found at index {i}: id={section_id_from_data}, order={section_order_from_data}, title={section_data.get('title', '')[:50]}")
                                 section_order = section_data.get('order', i+1)
                                 
                                 # Get section content from post_section table (including section_heading which has titles from titling step)
@@ -680,6 +688,7 @@ def api_generate_image_concepts(post_id, section_id):
                 return jsonify({'error': f'Section {section_id} not found for post {target_post_id}'}), 404
             
             logger.info(f"[IMAGE_CONCEPTS] Found section: id={section.get('id')}, order={section.get('section_order')}, heading={section.get('section_heading', '')[:50]}")
+            logger.info(f"[IMAGE_CONCEPTS] Section details: heading='{section.get('section_heading')}', description='{section.get('section_description', '')[:100] if section.get('section_description') else 'None'}'")
             
             # Get post data for context
             cursor.execute("""
@@ -715,13 +724,42 @@ def api_generate_image_concepts(post_id, section_id):
                     for allocation in allocations:
                         # Try multiple matching strategies since section_id format varies
                         allocation_section_id = allocation.get('section_id')
-                        if (allocation_section_id == section_id or 
-                            str(allocation_section_id) == str(section_id) or
-                            (section_order_for_matching and allocation_section_id == section_order_for_matching) or
-                            (section_order_for_matching and str(allocation_section_id) == str(section_order_for_matching))):
+                        allocation_section_theme = allocation.get('section_theme', '')
+                        
+                        # Normalize allocation_section_id for comparison
+                        # Handle formats: "section_2", "2", 2, etc.
+                        normalized_allocation_id = str(allocation_section_id).lower()
+                        if normalized_allocation_id.startswith('section_'):
+                            # Extract number from "section_2" -> "2"
+                            allocation_order_from_id = normalized_allocation_id.replace('section_', '').strip()
+                        else:
+                            allocation_order_from_id = normalized_allocation_id
+                        
+                        # Try multiple matching strategies
+                        matches = False
+                        # Direct ID match
+                        if (str(allocation_section_id) == str(section_id) or 
+                            allocation_section_id == section_id):
+                            matches = True
+                        # Order-based match (most reliable)
+                        elif section_order_for_matching:
+                            if (str(allocation_section_id) == str(section_order_for_matching) or
+                                allocation_section_id == section_order_for_matching or
+                                allocation_order_from_id == str(section_order_for_matching) or
+                                allocation_order_from_id == str(section_id)):
+                                matches = True
+                        # Fallback: try to extract number from section_id URL param
+                        elif section_id.isdigit():
+                            if allocation_order_from_id == section_id:
+                                matches = True
+                        
+                        if matches:
                             topics = allocation.get('topics', [])
-                            logger.info(f"Found topics for section {section_id}: {len(topics)} topics")
+                            logger.info(f"[IMAGE_CONCEPTS] Found topics for section_id={section_id} (order={section_order_for_matching}): matched allocation with section_id={allocation_section_id}, theme={allocation_section_theme[:50]}, {len(topics)} topics")
                             break
+                    
+                    if not topics:
+                        logger.warning(f"[IMAGE_CONCEPTS] No topics found for section_id={section_id} (order={section_order_for_matching}). Checked {len(allocations)} allocations.")
                 except Exception as e:
                     logger.error(f"Error parsing topic_allocation: {e}")
             
@@ -744,18 +782,99 @@ def api_generate_image_concepts(post_id, section_id):
             prompt_text = prompt_data['prompt_text']
             system_prompt = prompt_data['system_prompt']
             
+            # Get theme data for {theme_data} placeholder (needed for Photo-harvesting theme conditioning)
+            theme_data = ''
+            if '{theme_data}' in prompt_text or '[data:theme_data]' in prompt_text:
+                # Get theme name and expanded idea from week context
+                if url_year and url_week:
+                    # Get selected theme for this week
+                    cursor.execute("""
+                        SELECT ct.theme_title
+                        FROM calendar_week_selection cws
+                        JOIN calendar_themes ct ON cws.selected_theme_id = ct.id
+                        WHERE cws.year = %s AND cws.week_number = %s
+                    """, (url_year, url_week))
+                    theme_result = cursor.fetchone()
+                    theme_name = theme_result.get('theme_title') if theme_result else None
+                    
+                    # Get expanded idea from post_development
+                    cursor.execute("""
+                        SELECT expanded_idea
+                        FROM post_development
+                        WHERE post_id = %s
+                    """, (target_post_id,))
+                    idea_result = cursor.fetchone()
+                    expanded_idea = idea_result.get('expanded_idea') if idea_result else None
+                    
+                    # Build theme_data string
+                    if theme_name and expanded_idea:
+                        theme_data = f"{theme_name}: {expanded_idea}"
+                    elif theme_name:
+                        theme_data = theme_name
+                    elif expanded_idea:
+                        theme_data = expanded_idea
+                    
+                    logger.info(f"[IMAGE_CONCEPTS] Retrieved theme_data: {theme_data[:100] if theme_data else 'None'}")
+            
             logger.info(f"[DEBUG] System prompt length: {len(system_prompt) if system_prompt else 0}")
             logger.info(f"[DEBUG] System prompt preview: {system_prompt[:100] if system_prompt else 'None'}")
             logger.info(f"[DEBUG] *** SYSTEM PROMPT DEBUG ***")
             
             # Replace placeholders with actual data
+            # CRITICAL: Log what data we're using for debugging
+            logger.info(f"[IMAGE_CONCEPTS] Building prompt with section data:")
+            logger.info(f"  - section_id from URL: {section_id}")
+            logger.info(f"  - section.id: {section.get('id')}")
+            logger.info(f"  - section.section_order: {section.get('section_order')}")
+            logger.info(f"  - section.section_heading: '{section.get('section_heading')}'")
+            logger.info(f"  - section.section_description: '{section.get('section_description', '')[:100] if section.get('section_description') else 'None'}'")
+            logger.info(f"  - topics count: {len(topics)}")
+            logger.info(f"  - illustration_method: {post_data.get('illustration_method')}")
+            logger.info(f"  - theme_data: '{theme_data[:100] if theme_data else 'None'}'")
+            
+            # Replace theme_data placeholder first (before clearing others for Photo-harvesting)
+            prompt_text = prompt_text.replace('{theme_data}', theme_data)
+            prompt_text = prompt_text.replace('[data:theme_data]', theme_data)
+            
             if post_data.get('illustration_method') == 'Photo-harvesting':
-                # STRICT: Use only section_description; zero out all other inputs
-                only_desc = section['section_description'] or ''
+                # Get factual section-structure data (title/original) from post_development.sections
+                factual_section_title = ''
+                factual_section_description = ''
+                cursor.execute("""
+                    SELECT sections FROM post_development WHERE post_id = %s
+                """, (target_post_id,))
+                dev_result = cursor.fetchone()
+                if dev_result and dev_result.get('sections'):
+                    try:
+                        dev_sections_data = json.loads(dev_result['sections']) if isinstance(dev_result['sections'], str) else dev_result['sections']
+                        if isinstance(dev_sections_data, dict) and 'sections' in dev_sections_data:
+                            dev_sections_list = dev_sections_data['sections']
+                        elif isinstance(dev_sections_data, list):
+                            dev_sections_list = dev_sections_data
+                        else:
+                            dev_sections_list = []
+                        
+                        # Find matching section by section_order
+                        section_order_for_matching = section.get('section_order')
+                        for dev_section in dev_sections_list:
+                            dev_section_order = dev_section.get('order', 0)
+                            
+                            if section_order_for_matching and int(dev_section_order) == int(section_order_for_matching):
+                                # Get factual title and subtitle from section-structure (NOT lyrical from titling)
+                                factual_section_title = dev_section.get('title', '')
+                                factual_section_description = dev_section.get('subtitle', '')  # subtitle from section-structure
+                                logger.info(f"[IMAGE_CONCEPTS] Found factual section-structure data: title='{factual_section_title[:50]}', subtitle='{factual_section_description[:50] if factual_section_description else 'None'}'")
+                                break
+                    except (json.JSONDecodeError, TypeError) as e:
+                        logger.warning(f"Error parsing sections from post_development for factual data: {e}")
+                
+                # STRICT: Photo-harvesting uses ONLY theme_data and factual section-structure data (title/original)
+                # DO NOT use lyrical section_heading from titling
+                logger.info(f"[IMAGE_CONCEPTS] Photo-harvesting mode: using theme_data + factual section-structure (title='{factual_section_title[:50]}', description='{factual_section_description[:50] if factual_section_description else 'None'}')")
                 prompt_text = prompt_text.replace('[data:idea_seed]', '')
                 prompt_text = prompt_text.replace('[data:expanded_idea]', '')
-                prompt_text = prompt_text.replace('[data:title]', '')
-                prompt_text = prompt_text.replace('[data:subtitle]', only_desc)
+                prompt_text = prompt_text.replace('[data:title]', factual_section_title)  # Factual title from section-structure
+                prompt_text = prompt_text.replace('[data:subtitle]', factual_section_description)  # Factual description from section-structure
                 prompt_text = prompt_text.replace('[data:section_text]', '')
                 prompt_text = prompt_text.replace('[data:selected_concept]', '')
                 prompt_text = prompt_text.replace('[data:topics]', '')
@@ -768,6 +887,7 @@ def api_generate_image_concepts(post_id, section_id):
                 prompt_text = prompt_text.replace('[data:selected_concept]', '')
                 topics_text = '\n'.join([f'- {topic}' for topic in topics])
                 prompt_text = prompt_text.replace('[data:topics]', topics_text)
+                logger.info(f"[IMAGE_CONCEPTS] LLM-creation mode: title='{section['section_heading']}', topics={len(topics)}")
             
             # Prepare messages for LLM
             messages = []

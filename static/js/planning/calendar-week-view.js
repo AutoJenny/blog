@@ -118,6 +118,44 @@ function renderItems(container, items, type) {
       
       div.appendChild(icon);
       div.appendChild(textSpan);
+    } else if (type === 'profile' && item._profile) {
+      // Profile display: Icon + Title
+      div.classList.add('profile');
+      div.style.cursor = 'pointer';
+      div.style.display = 'flex';
+      div.style.alignItems = 'center';
+      div.style.gap = '6px';
+      div.title = `Click to view/edit ${item.profile_type || 'product'} profile: ${item.title || 'Untitled'}`;
+      div.dataset.profileId = item.id;
+      
+      // Create profile type icon
+      const icon = document.createElement('i');
+      const profileType = (item.profile_type || 'product').toLowerCase();
+      icon.className = profileType === 'product' ? 'fas fa-briefcase' : 'fas fa-folder';
+      icon.style.fontSize = '0.875rem';
+      icon.style.color = profileType === 'product' ? '#0ea5e9' : '#6366f1';
+      
+      div.appendChild(icon);
+      
+      const text = document.createElement('span');
+      text.textContent = item.title || 'Untitled Profile';
+      text.style.fontSize = '0.8rem';
+      text.style.overflow = 'hidden';
+      text.style.textOverflow = 'ellipsis';
+      text.style.whiteSpace = 'nowrap';
+      div.appendChild(text);
+      
+      // Add click handler to open profile editor
+      div.addEventListener('click', () => {
+        const profileModal = window.getProfileModal ? window.getProfileModal() : null;
+        if (profileModal && item.id) {
+          profileModal.open(item.id);
+        } else {
+          // Fallback: navigate to profile page
+          const profileUrl = `/planning/posts/${item.id}/profile`;
+          window.location.href = profileUrl;
+        }
+      });
     } else {
       div.textContent = item.title || item.idea_title || item.name || item.summary || item.event_title || 'Untitled';
     }
@@ -313,14 +351,17 @@ async function loadWeek(year, weekNumber) {
   const blogPostSyndicationPromise = fetchJSON(`/launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post`);
   // Fetch weekly social focus
   const socialFocusPromise = fetchJSON(`/planning/api/social-focus/week`);
+  // Fetch profiles for this week
+  const profilesPromise = fetchJSON(`/planning/api/calendar/profiles/${year}/${weekNumber}`);
 
   let ideas = [];
   let events = [];
   let schedule = [];
   let syndication = [];
   let socialFocuses = [];
+  let profiles = [];
   try {
-    const [ideasRes, eventsRes, scheduleRes, productSyndicationRes, blogPostSyndicationRes, socialFocusRes] = await Promise.allSettled([ideasPromise, eventsPromise, schedulePromise, productSyndicationPromise, blogPostSyndicationPromise, socialFocusPromise]);
+    const [ideasRes, eventsRes, scheduleRes, productSyndicationRes, blogPostSyndicationRes, socialFocusRes, profilesRes] = await Promise.allSettled([ideasPromise, eventsPromise, schedulePromise, productSyndicationPromise, blogPostSyndicationPromise, socialFocusPromise, profilesPromise]);
     if (ideasRes.status === 'fulfilled') {
       const ideasData = ideasRes.value;
       ideas = Array.isArray(ideasData) ? ideasData : (ideasData?.ideas || []);
@@ -345,6 +386,11 @@ async function loadWeek(year, weekNumber) {
         socialFocuses = socialFocusData.focuses;
       }
     }
+    // Load profiles data
+    if (profilesRes.status === 'fulfilled') {
+      const profilesData = profilesRes.value;
+      profiles = Array.isArray(profilesData) ? profilesData : (profilesData?.profiles || []);
+    }
   } catch (e) {
     console.error('Error loading week data:', e);
     // Ignore; page still usable
@@ -356,6 +402,7 @@ async function loadWeek(year, weekNumber) {
   const showAnnualEvents = document.getElementById('toggle-annual-events')?.checked !== false;
   const showSpecialEvents = document.getElementById('toggle-special-events')?.checked !== false;
   const showSyndication = document.getElementById('toggle-syndication')?.checked !== false;
+  const showProfiles = document.getElementById('toggle-profiles')?.checked !== false;
 
   // Build row grids cells for rows container
   const ensureRowCells = (rowId) => {
@@ -377,6 +424,7 @@ async function loadWeek(year, weekNumber) {
   const specialEventsCells = ensureRowCells('special-events-row');
   const ideasCells = ensureRowCells('ideas-row');
   const syndicationCells = ensureRowCells('syndication-row');
+  const profilesCells = ensureRowCells('profiles-row');
 
   // Load themes from schedule (themes scheduled for this week)
   const themes = [];
@@ -661,6 +709,25 @@ async function loadWeek(year, weekNumber) {
         };
         renderItems(target, [item], 'scheduled');
       });
+    });
+  }
+  
+  // Render profiles per day into Profiles row
+  if (showProfiles && profilesCells && profiles.length) {
+    profiles.forEach((profile) => {
+      // Profiles are assigned to a specific weekday (default to Monday if not set)
+      const dayIdx = profile.weekday || profile.day || 1; // 1..7
+      const target = document.getElementById(`profiles-row-day-${Math.min(Math.max(dayIdx, 1), 7)}`);
+      if (target) {
+        // Create profile item with click handler
+        const profileItem = {
+          id: profile.id,
+          title: profile.title,
+          profile_type: profile.profile_type || 'product',
+          _profile: true
+        };
+        renderItems(target, [profileItem], 'profile');
+      }
     });
   }
   
@@ -955,11 +1022,12 @@ async function loadWeek(year, weekNumber) {
       loadWeek(currentYear, currentWeek);
     });
   };
-  attach('toggle-themes');
-  attach('toggle-ideas');
-  attach('toggle-annual-events');
-  attach('toggle-special-events');
-  attach('toggle-syndication');
+      attach('toggle-themes');
+      attach('toggle-ideas');
+      attach('toggle-annual-events');
+      attach('toggle-special-events');
+      attach('toggle-syndication');
+      attach('toggle-profiles');
 
   function updateFilterVisuals() {
     const map = [
@@ -968,6 +1036,7 @@ async function loadWeek(year, weekNumber) {
       { id: 'toggle-annual-events', cls: 'filter-annual-events' },
       { id: 'toggle-special-events', cls: 'filter-special-events' },
       { id: 'toggle-syndication', cls: 'filter-syndication' },
+      { id: 'toggle-profiles', cls: 'filter-profiles' },
     ];
     map.forEach(({ id, cls }) => {
       const input = document.getElementById(id);

@@ -1,26 +1,26 @@
 {
-  "timestamp": "2025-11-04T09:25:00.211672",
+  "timestamp": "2025-11-04T21:34:21.899881",
   "post_id": 81,
   "section_id": 837,
   "orientation": "landscape",
   "photo": {
     "provider": "pexels",
-    "image_id": "16550443",
-    "url": "https://images.pexels.com/photos/16550443/pexels-photo-16550443.jpeg",
-    "thumbnail_url": "https://images.pexels.com/photos/16550443/pexels-photo-16550443.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
-    "width": 8191,
-    "height": 5463,
+    "image_id": "34533068",
+    "url": "https://images.pexels.com/photos/34533068/pexels-photo-34533068.jpeg",
+    "thumbnail_url": "https://images.pexels.com/photos/34533068/pexels-photo-34533068.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "width": 6240,
+    "height": 4160,
     "orientation": "landscape",
-    "photographer": "Guy  Seela",
-    "photographer_url": "https://www.pexels.com/@guy-seela-320382141",
-    "credits": "Photo by Guy  Seela on Pexels",
-    "search_term": "1940s, wartime, female aviator, cockpit interior, leather seat, vintage aircraft, World War II, propeller, flight helmet",
+    "photographer": "Daniel J. Schwarz",
+    "photographer_url": "https://www.pexels.com/@danieljschwarz",
+    "credits": "Photo by Daniel J. Schwarz on Pexels",
+    "search_term": "Autumn Scotland, Eilean Donan Castle, misty landscape, fading light, no text overlay, no watermark",
     "selected": false,
-    "selected_at": "2025-11-04T09:25:00.211668",
+    "selected_at": "2025-11-04T21:34:21.899855",
     "provider_data": {
-      "pexels_id": "16550443",
-      "pexels_url": "https://www.pexels.com/photo/soldier-sitting-in-military-aircraft-16550443/",
-      "photographer_id": 320382141
+      "pexels_id": "34533068",
+      "pexels_url": "https://www.pexels.com/photo/eilean-donan-castle-in-autumn-scotland-34533068/",
+      "photographer_id": 2156483715
     },
     "selection_orientation": "landscape"
   }

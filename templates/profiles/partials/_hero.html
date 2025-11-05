@@ -1,0 +1,24 @@
+<div class="profile-hero">
+    {% if post.header_image %}
+    <div class="hero-image">
+        <img src="{{ post.header_image.path }}" 
+             alt="{{ post.header_image.alt_text or post.title }}"
+             class="hero-image__img"
+             {% if post.header_image.width %}width="{{ post.header_image.width }}"{% endif %}
+             {% if post.header_image.height %}height="{{ post.header_image.height }}"{% endif %}>
+        {% if post.header_image_caption %}
+        <p class="hero-caption">{{ post.header_image_caption }}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <div class="hero-content">
+        <h1 class="hero-title">{{ post.title }}</h1>
+        {% if post.profile_standfirst %}
+        <p class="hero-standfirst">{{ post.profile_standfirst }}</p>
+        {% elif post.summary %}
+        <p class="hero-standfirst">{{ post.summary }}</p>
+        {% endif %}
+    </div>
+</div>
+

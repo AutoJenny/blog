@@ -116,10 +116,10 @@ def store_source_items(items: List[Dict[str, Any]], update_duplicates: bool = Tr
                     cur.execute(
                         """
                         INSERT INTO newsletter_source_item 
-                        (source_name, title, url, published_at, event_date, location, category, 
+                        (source_name, title, url, published_at, event_date, end_date, date_qualifier, location, category, 
                          raw_data, signal_score, freshness_score, source_url_hash, 
                          suitability_score, suitability_notes, is_event, calendar_event_id)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         """,
                         (
                             item.get('source_name'),
@@ -127,6 +127,8 @@ def store_source_items(items: List[Dict[str, Any]], update_duplicates: bool = Tr
                             url,
                             item.get('published_at'),
                             item.get('event_date'),
+                            item.get('end_date'),
+                            item.get('date_qualifier'),
                             item.get('location'),
                             category,
                             Json(item.get('raw_data', {})),

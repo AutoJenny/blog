@@ -46,8 +46,7 @@ def api_save_section_content(post_id, section_id):
             cursor.execute("""
                 UPDATE post_section 
                 SET draft = %s, polished = %s, ideas_to_include = %s, 
-                    facts_to_include = %s, highlighting = %s, status = %s,
-                    updated_at = NOW()
+                    facts_to_include = %s, highlighting = %s, status = %s
                 WHERE post_id = %s AND id = %s
             """, (draft, polished, ideas_to_include, facts_to_include, 
                   highlighting, status, post_id, section_id))
@@ -134,18 +133,38 @@ def api_generate_section_draft(post_id, section_id):
             if not dev_data:
                 return jsonify({'error': 'Post development data not found'}), 404
             
-            # Get Section Drafting prompt template
+            # Get Section Drafting prompt using explicit selection
+            prompt_name = None
+            cursor.execute("""
+                SELECT extra_settings FROM post WHERE id = %s
+            """, (post_id,))
+            post_result = cursor.fetchone()
+            
+            if post_result and post_result.get('extra_settings'):
+                settings = post_result['extra_settings']
+                prompt_name = settings.get('section_drafting_prompt_name')
+            
+            # LEGACY: If no selection exists, use default
+            if not prompt_name:
+                prompt_name = 'Section Drafting'
+            
+            # Get the selected prompt - NO FALLBACKS
             cursor.execute("""
                 SELECT prompt_text, system_prompt
                 FROM llm_prompt 
-                WHERE name = 'Section Drafting'
+                WHERE name = %s
                 ORDER BY updated_at DESC 
                 LIMIT 1
-            """)
+            """, (prompt_name,))
             prompt_data = cursor.fetchone()
             
+            # FAIL CLEARLY if prompt not found
             if not prompt_data:
-                return jsonify({'error': 'Section Drafting prompt not found'}), 404
+                logger.error(f'Selected prompt "{prompt_name}" not found for post {post_id}')
+                return jsonify({
+                    'success': False,
+                    'error': f'Selected prompt "{prompt_name}" not found. Please select a valid prompt in the prompt panel.'
+                }), 404
             
             import json
             import re
@@ -335,56 +354,315 @@ def api_image_concepts_prompt():
         logger.error(f"Error with image concepts prompt: {e}")
         return jsonify({'error': str(e)}), 500
 
-@bp.route('/api/llm/prompts/section-drafting', methods=['GET', 'PUT'])
-def api_section_drafting_prompt():
-    """Get or update the Section Drafting prompt"""
+@bp.route('/api/posts/<int:post_id>/section-drafting-prompt-selection', methods=['GET'])
+def api_get_section_drafting_prompt_selection(post_id):
+    """Get available prompt options and current selection for section drafting"""
     try:
         with db_manager.get_cursor() as cursor:
-            if request.method == 'PUT':
-                # Update the prompt
-                data = request.get_json()
-                system_prompt = data.get('system_prompt', '')
-                prompt_text = data.get('prompt_text', '')
-                
-                cursor.execute("""
-                    UPDATE llm_prompt 
-                    SET system_prompt = %s, prompt_text = %s
-                    WHERE name = 'Section Drafting'
-                """, (system_prompt, prompt_text))
-                
-                cursor.connection.commit()
-                
-                return jsonify({
-                    'success': True,
-                    'message': 'Prompt updated successfully'
+            # Get taxonomy for the post
+            cursor.execute("""
+                SELECT ti.display_name as content_type_name
+                FROM post p
+                LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                WHERE p.id = %s
+            """, (post_id,))
+            taxonomy_result = cursor.fetchone()
+            content_type_name = taxonomy_result.get('content_type_name') if taxonomy_result else None
+            
+            # Get available prompts
+            available_prompts = []
+            
+            # Default prompt
+            cursor.execute("""
+                SELECT name, id FROM llm_prompt 
+                WHERE name = 'Section Drafting'
+                ORDER BY updated_at DESC 
+                LIMIT 1
+            """)
+            default_prompt = cursor.fetchone()
+            if default_prompt:
+                available_prompts.append({
+                    'name': default_prompt['name'],
+                    'id': default_prompt['id'],
+                    'is_default': True
                 })
-            else:
-                # Get the prompt
+            
+            # Category-specific prompt (if category exists)
+            if content_type_name:
                 cursor.execute("""
-                    SELECT name, prompt_text, system_prompt, updated_at
-                    FROM llm_prompt 
-                    WHERE name = 'Section Drafting'
+                    SELECT name, id FROM llm_prompt 
+                    WHERE name = %s
                     ORDER BY updated_at DESC 
                     LIMIT 1
-                """)
-                prompt_data = cursor.fetchone()
-                
-                if not prompt_data:
-                    return jsonify({'error': 'Section Drafting prompt not found'}), 404
-                
-                return jsonify({
-                    'success': True,
-                    'prompt': {
-                        'name': prompt_data['name'],
-                        'prompt_text': prompt_data['prompt_text'],
-                        'system_prompt': prompt_data['system_prompt'],
-                        'updated_at': prompt_data['updated_at'].isoformat() if prompt_data['updated_at'] else None
-                    }
-                })
-                
+                """, (f'Section Drafting ({content_type_name})',))
+                category_prompt = cursor.fetchone()
+                if category_prompt:
+                    available_prompts.append({
+                        'name': category_prompt['name'],
+                        'id': category_prompt['id'],
+                        'is_default': False
+                    })
+            
+            # Get current selection (from post settings)
+            cursor.execute("""
+                SELECT extra_settings FROM post WHERE id = %s
+            """, (post_id,))
+            post_result = cursor.fetchone()
+            current_selection = None
+            
+            if post_result and post_result.get('extra_settings'):
+                settings = post_result['extra_settings']
+                current_selection = settings.get('section_drafting_prompt_name')
+            
+            # LEGACY POSTS: If no selection exists, explicitly set to default prompt
+            if not current_selection and available_prompts:
+                default_prompt_obj = next((p for p in available_prompts if p.get('is_default')), None)
+                if default_prompt_obj:
+                    current_selection = default_prompt_obj['name']
+                    # Save this explicit selection to the post for legacy posts
+                    if post_result and post_result.get('extra_settings'):
+                        settings = post_result['extra_settings']
+                    else:
+                        settings = {}
+                    settings['section_drafting_prompt_name'] = current_selection
+                    
+                    cursor.execute("""
+                        UPDATE post 
+                        SET extra_settings = %s::jsonb
+                        WHERE id = %s
+                    """, (json.dumps(settings), post_id))
+                    cursor.connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'available_prompts': available_prompts,
+                'current_selection': current_selection,
+                'content_type_name': content_type_name
+            })
     except Exception as e:
-        logger.error(f"Error with section drafting prompt: {e}")
+        logger.error(f"Error fetching section drafting prompt selection: {e}")
         return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/section-drafting-prompt-selection', methods=['POST'])
+def api_set_section_drafting_prompt_selection(post_id):
+    """Set the selected prompt for section drafting"""
+    try:
+        data = request.get_json()
+        prompt_name = data.get('prompt_name') if data else None
+        
+        if not prompt_name:
+            return jsonify({'error': 'prompt_name is required'}), 400
+        
+        # Verify prompt exists
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id FROM llm_prompt WHERE name = %s
+            """, (prompt_name,))
+            if not cursor.fetchone():
+                return jsonify({'error': f'Prompt "{prompt_name}" not found'}), 404
+            
+            # Save selection to post.extra_settings - PERSIST TO DATABASE
+            cursor.execute("""
+                SELECT extra_settings FROM post WHERE id = %s
+            """, (post_id,))
+            post_result = cursor.fetchone()
+            
+            if post_result and post_result.get('extra_settings'):
+                settings = post_result['extra_settings']
+            else:
+                settings = {}
+            
+            settings['section_drafting_prompt_name'] = prompt_name
+            
+            cursor.execute("""
+                UPDATE post 
+                SET extra_settings = %s::jsonb
+                WHERE id = %s
+            """, (json.dumps(settings), post_id))
+            cursor.connection.commit()
+            
+            return jsonify({'success': True, 'prompt_name': prompt_name})
+    except Exception as e:
+        logger.error(f"Error setting section drafting prompt selection: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/section-drafting-prompt', methods=['GET'])
+def api_get_section_drafting_prompt(post_id):
+    """Get the section drafting prompt for a post, optionally filtered by prompt_name query parameter"""
+    try:
+        # Get prompt_name from query parameter (passed from frontend)
+        prompt_name = request.args.get('prompt_name')
+        
+        with db_manager.get_cursor() as cursor:
+            # If prompt_name not provided, get from post.extra_settings
+            if not prompt_name:
+                cursor.execute("""
+                    SELECT extra_settings FROM post WHERE id = %s
+                """, (post_id,))
+                post_result = cursor.fetchone()
+                
+                if post_result and post_result.get('extra_settings'):
+                    settings = post_result['extra_settings']
+                    prompt_name = settings.get('section_drafting_prompt_name')
+                
+                # LEGACY: If still no prompt_name, use default
+                if not prompt_name:
+                    prompt_name = 'Section Drafting'
+            
+            # Get the prompt by exact name - NO FALLBACKS
+            cursor.execute("""
+                SELECT name, system_prompt, prompt_text, parameters
+                FROM llm_prompt 
+                WHERE name = %s
+                ORDER BY updated_at DESC 
+                LIMIT 1
+            """, (prompt_name,))
+            prompt_data = cursor.fetchone()
+            
+            # FAIL CLEARLY if prompt not found
+            if not prompt_data:
+                return jsonify({
+                    'success': False,
+                    'error': f'Selected prompt "{prompt_name}" not found. Please select a valid prompt in the prompt panel.'
+                }), 404
+            
+            # Extract parameters from JSONB if they exist
+            parameters = prompt_data['parameters'] or {}
+            model = parameters.get('model', 'llama3.2:latest')
+            temperature = parameters.get('temperature', 0.7)
+            max_tokens = parameters.get('max_tokens', 2000)
+            
+            return jsonify({
+                'success': True,
+                'prompt': {
+                    'name': prompt_data['name'],
+                    'system_prompt': prompt_data['system_prompt'],
+                    'prompt_text': prompt_data['prompt_text'],
+                    'model': model,
+                    'temperature': temperature,
+                    'max_tokens': max_tokens
+                }
+            })
+    except Exception as e:
+        logger.error(f"Error fetching section drafting prompt: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/posts/<int:post_id>/section-drafting-prompt', methods=['PUT'])
+def api_update_section_drafting_prompt(post_id):
+    """Update the section drafting prompt for a post"""
+    try:
+        data = request.get_json()
+        system_prompt = data.get('system_prompt', '')
+        prompt_text = data.get('prompt_text', '')
+        
+        if not system_prompt and not prompt_text:
+            return jsonify({'error': 'system_prompt or prompt_text is required'}), 400
+        
+        # Get the prompt name from post settings
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT extra_settings FROM post WHERE id = %s
+            """, (post_id,))
+            post_result = cursor.fetchone()
+            
+            prompt_name = None
+            if post_result and post_result.get('extra_settings'):
+                settings = post_result['extra_settings']
+                prompt_name = settings.get('section_drafting_prompt_name')
+            
+            # LEGACY: If no selection exists, use default
+            if not prompt_name:
+                prompt_name = 'Section Drafting'
+            
+            # Update the prompt in the database
+            cursor.execute("""
+                UPDATE llm_prompt 
+                SET system_prompt = COALESCE(%s, system_prompt),
+                    prompt_text = COALESCE(%s, prompt_text),
+                    updated_at = NOW()
+                WHERE name = %s
+                RETURNING name, system_prompt, prompt_text
+            """, (system_prompt if system_prompt else None, 
+                  prompt_text if prompt_text else None, 
+                  prompt_name))
+            
+            updated_prompt = cursor.fetchone()
+            cursor.connection.commit()
+            
+            if not updated_prompt:
+                return jsonify({'error': f'Prompt "{prompt_name}" not found'}), 404
+            
+            return jsonify({
+                'success': True,
+                'prompt': {
+                    'name': updated_prompt['name'],
+                    'system_prompt': updated_prompt['system_prompt'],
+                    'prompt_text': updated_prompt['prompt_text']
+                }
+            })
+    except Exception as e:
+        logger.error(f"Error updating section drafting prompt: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/llm/prompts/section-drafting', methods=['GET', 'PUT'])
+def api_section_drafting_prompt():
+    """Legacy endpoint - redirects to post-specific endpoint"""
+    # For backward compatibility, try to get post_id from query or use default
+    post_id = request.args.get('post_id', type=int)
+    if post_id:
+        if request.method == 'PUT':
+            return api_update_section_drafting_prompt(post_id)
+        else:
+            return api_get_section_drafting_prompt(post_id)
+    else:
+        # Fallback to old behavior for non-post-specific requests
+        try:
+            with db_manager.get_cursor() as cursor:
+                if request.method == 'PUT':
+                    # Update the prompt
+                    data = request.get_json()
+                    system_prompt = data.get('system_prompt', '')
+                    prompt_text = data.get('prompt_text', '')
+                    
+                    cursor.execute("""
+                        UPDATE llm_prompt 
+                        SET system_prompt = %s, prompt_text = %s
+                        WHERE name = 'Section Drafting'
+                    """, (system_prompt, prompt_text))
+                    
+                    cursor.connection.commit()
+                    
+                    return jsonify({
+                        'success': True,
+                        'message': 'Prompt updated successfully'
+                    })
+                else:
+                    # Get the prompt
+                    cursor.execute("""
+                        SELECT name, prompt_text, system_prompt, updated_at
+                        FROM llm_prompt 
+                        WHERE name = 'Section Drafting'
+                        ORDER BY updated_at DESC 
+                        LIMIT 1
+                    """)
+                    prompt_data = cursor.fetchone()
+                    
+                    if not prompt_data:
+                        return jsonify({'error': 'Section Drafting prompt not found'}), 404
+                    
+                    return jsonify({
+                        'success': True,
+                        'prompt': {
+                            'name': prompt_data['name'],
+                            'prompt_text': prompt_data['prompt_text'],
+                            'system_prompt': prompt_data['system_prompt'],
+                            'updated_at': prompt_data['updated_at'].isoformat() if prompt_data['updated_at'] else None
+                        }
+                    })
+                    
+        except Exception as e:
+            logger.error(f"Error with section drafting prompt: {e}")
+            return jsonify({'error': str(e)}), 500
 
 @bp.route('/api/llm/prompts/image-prompts', methods=['GET', 'PUT'])
 def api_image_prompts_prompt():
@@ -457,8 +735,28 @@ def api_image_prompts_prompt():
 
 @bp.route('/api/llm/prompts/image-captions', methods=['GET', 'PUT'])
 def api_image_captions_prompt():
-    """Get or update the Image Captions prompt"""
+    """Get or update the Image Captions prompt
+    
+    Supports category-specific prompts via illustration_method query parameter.
+    For process-level variance (Photo-harvesting): uses 'Image Captions Generation (Photo-harvesting)'
+    For prompt-level variance: uses content_type_name if provided
+    Default: 'Image Captions Generation'
+    """
     try:
+        # Get illustration_method from query params (for prompt selection)
+        illustration_method = request.args.get('illustration_method', 'LLM-creation')
+        
+        # Get content_type_name if provided (for prompt-level variance)
+        content_type_name = request.args.get('content_type_name')
+        
+        # Use utility function to get category-specific prompt name
+        from utils.taxonomy_helpers import get_category_prompt_name
+        prompt_name = get_category_prompt_name(
+            'Image Captions Generation',
+            illustration_method,
+            content_type_name
+        )
+        
         with db_manager.get_cursor() as cursor:
             if request.method == 'PUT':
                 # Update the prompt
@@ -469,28 +767,30 @@ def api_image_captions_prompt():
                 cursor.execute("""
                     UPDATE llm_prompt 
                     SET system_prompt = %s, prompt_text = %s
-                    WHERE name = 'Image Captions Generation'
-                """, (system_prompt, prompt_text))
+                    WHERE name = %s
+                """, (system_prompt, prompt_text, prompt_name))
                 
                 cursor.connection.commit()
                 
                 return jsonify({
                     'success': True,
-                    'message': 'Prompt updated successfully'
+                    'message': f'Prompt "{prompt_name}" updated successfully'
                 })
             else:
                 # Get the prompt
                 cursor.execute("""
                     SELECT name, prompt_text, system_prompt, updated_at
                     FROM llm_prompt 
-                    WHERE name = 'Image Captions Generation'
+                    WHERE name = %s
                     ORDER BY updated_at DESC 
                     LIMIT 1
-                """)
+                """, (prompt_name,))
                 prompt_data = cursor.fetchone()
                 
                 if not prompt_data:
-                    return jsonify({'error': 'Image Captions prompt not found'}), 404
+                    return jsonify({
+                        'error': f'Image Captions prompt "{prompt_name}" not found. Please configure prompts in the LLM Prompts panel first.'
+                    }), 404
                 
                 return jsonify({
                     'success': True,

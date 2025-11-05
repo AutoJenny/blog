@@ -1,0 +1,28 @@
+{% if post.profile_quick_facts %}
+<div class="profile-quick-facts">
+    {% if post.profile_quick_facts.producer %}
+    <div class="quick-fact">
+        <i class="fas fa-industry"></i>
+        <span class="label">Producer</span>
+        <span class="value">{{ post.profile_quick_facts.producer }}</span>
+    </div>
+    {% endif %}
+    
+    {% if post.profile_quick_facts.material %}
+    <div class="quick-fact">
+        <i class="fas fa-scroll"></i>
+        <span class="label">Material</span>
+        <span class="value">{{ post.profile_quick_facts.material }}</span>
+    </div>
+    {% endif %}
+    
+    {% if post.profile_quick_facts.category %}
+    <div class="quick-fact">
+        <i class="fas fa-tag"></i>
+        <span class="label">Category</span>
+        <span class="value">{{ post.profile_quick_facts.category }}</span>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+

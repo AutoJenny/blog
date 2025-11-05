@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <!-- SEO Meta Tags -->
+    <title>{% if post.meta_title %}{{ post.meta_title }}{% else %}{{ post.title }}{% endif %} - Category Profile - Clan.com Blog</title>
+    <meta name="description" content="{% if post.profile_standfirst %}{{ post.profile_standfirst }}{% elif post.summary %}{{ post.summary }}{% else %}{{ post.title }}{% endif %}">
+    <meta name="keywords" content="{% if post.meta_tags %}{{ post.meta_tags }}{% endif %}">
+    <meta name="author" content="Clan.com">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Canonical URL -->
+    {% if post.canonical_url %}
+    <link rel="canonical" href="{{ post.canonical_url }}">
+    {% endif %}
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="{% if post.social_title %}{{ post.social_title }}{% else %}{{ post.title }}{% endif %}">
+    <meta property="og:description" content="{% if post.profile_standfirst %}{{ post.profile_standfirst }}{% elif post.summary %}{{ post.summary }}{% else %}{{ post.title }}{% endif %}">
+    {% if post.header_image %}
+    <meta property="og:image" content="{{ post.header_image.path }}">
+    <meta property="og:image:width" content="{{ post.header_image.width or 1200 }}">
+    <meta property="og:image:height" content="{{ post.header_image.height or 630 }}">
+    {% endif %}
+    {% if post.canonical_url %}
+    <meta property="og:url" content="{{ post.canonical_url }}">
+    {% endif %}
+    <meta property="og:site_name" content="Clan.com Blog">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% if post.social_title %}{{ post.social_title }}{% else %}{{ post.title }}{% endif %}">
+    <meta name="twitter:description" content="{% if post.profile_standfirst %}{{ post.profile_standfirst }}{% elif post.summary %}{{ post.summary }}{% else %}{{ post.title }}{% endif %}">
+    {% if post.header_image %}
+    <meta name="twitter:image" content="{{ post.header_image.path }}">
+    {% endif %}
+    
+    <!-- Structured Data / JSON-LD -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "{{ post.title }}",
+        {% if post.profile_standfirst %}"description": "{{ post.profile_standfirst|e }}",{% endif %}
+        {% if post.header_image %}"image": "{{ post.header_image.path }}",{% endif %}
+        "author": {
+            "@type": "Organization",
+            "name": "Clan.com"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "Clan.com",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://www.clan.com/skin/frontend/default/clan/images/logo.png"
+            }
+        },
+        "datePublished": "{{ post.created_at.isoformat() if post.created_at else '' }}",
+        "dateModified": "{{ post.updated_at.isoformat() if post.updated_at else '' }}",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "{% if post.canonical_url %}{{ post.canonical_url }}{% endif %}"
+        }
+    }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700,900|Open+Sans:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- Clan.com blog CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/clan_blog.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/profiles.css') }}">
+    
+    <!-- Clan.com CSS -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/clan/main.css') }}" />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/clan/secondary.css') }}" media="all" />
+</head>
+<body>
+    <!-- Include site header -->
+    {% include 'shared/header.html' %}
+    
+    <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+        <!-- Breadcrumbs -->
+        <nav class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item"><a href="/blog">Blog</a></li>
+                <li class="breadcrumb-item"><a href="/blog/profiles">Profiles</a></li>
+                <li class="breadcrumb-item"><a href="/blog/profiles/category">Category Profiles</a></li>
+                <li class="breadcrumb-item active">{{ post.title }}</li>
+            </ol>
+        </nav>
+        
+        <!-- Profile Badge -->
+        <div class="profile-badge profile-badge--category">
+            <i class="fas fa-folder"></i>
+            <span>Category Profile</span>
+        </div>
+        
+        <!-- Hero Block -->
+        {% include 'profiles/partials/_hero.html' %}
+        
+        <!-- Category Context Bar -->
+        {% include 'profiles/partials/_category_context.html' %}
+        
+        <!-- Content Sections -->
+        {% if sections %}
+        {% for section in sections %}
+            {% if section.section_type == 'origins_history' %}
+                {% include 'profiles/partials/_origins_section.html' %}
+            {% elif section.section_type == 'materials_methods' %}
+                {% include 'profiles/partials/_materials_methods_section.html' %}
+            {% elif section.section_type == 'cultural_meaning' %}
+                {% include 'profiles/partials/_cultural_meaning_section.html' %}
+            {% elif section.section_type == 'representative_examples' %}
+                {% include 'profiles/partials/_representative_examples.html' %}
+            {% elif section.section_type == 'swatch_panel' %}
+                {% include 'profiles/partials/_swatch_panel.html' %}
+            {% else %}
+                <!-- Default section rendering -->
+                <section class="blog-section">
+                    <h2>{{ section.section_heading or 'Untitled Section' }}</h2>
+                    <div class="section-content">
+                        {% if section.polished %}
+                            {{ section.polished|safe }}
+                        {% elif section.draft %}
+                            {{ section.draft|safe }}
+                        {% endif %}
+                    </div>
+                </section>
+            {% endif %}
+        {% endfor %}
+        {% endif %}
+        
+        <!-- Explore Further -->
+        {% include 'profiles/partials/_explore_links.html' %}
+        
+        <!-- Credits -->
+        {% include 'profiles/partials/_credits.html' %}
+        
+        <!-- Profile Metadata -->
+        <div class="profile-metadata">
+            <div class="profile-tags">
+                <strong>Tags:</strong>
+                {% if tags %}
+                <ul class="tag-list">
+                    {% for tag in tags %}
+                    <li><a href="/blog/profiles?tag={{ tag.slug }}">{{ tag.name }}</a></li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            <div class="profile-dates">
+                <span>Published: {{ post.created_at.strftime('%B %d, %Y') if post.created_at else 'N/A' }}</span>
+                {% if post.updated_at and post.updated_at != post.created_at %}
+                <span>Updated: {{ post.updated_at.strftime('%B %d, %Y') }}</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Related Profiles -->
+        {% if related_profiles %}
+        <div class="related-profiles">
+            <h3>Related Profiles</h3>
+            <div class="related-profiles-grid">
+                {% for related in related_profiles %}
+                <div class="related-profile-card">
+                    <a href="/blog/profiles/{{ related.profile_type }}/{{ related.slug }}">
+                        {% if related.header_image %}
+                        <img src="{{ related.header_image.path }}" alt="{{ related.title }}">
+                        {% endif %}
+                        <h4>{{ related.title }}</h4>
+                        <span class="related-profile-badge badge-{{ related.profile_type }}">{{ related.profile_type|title }} Profile</span>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Include site footer -->
+    {% include 'shared/footer.html' %}
+    
+    <!-- Lightbox for gallery (if needed) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css">
+</body>
+</html>
+

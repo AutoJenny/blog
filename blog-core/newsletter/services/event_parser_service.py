@@ -76,16 +76,22 @@ Extract and return this data as JSON:
    - Example: "Relaxed Morning: National Museum of FlightEvery second" → "Relaxed Morning: National Museum of Flight"
 
 2. EVENT_DATE: Start date as YYYY-MM-DD or null
+   - Extract the STARTING date of the event
    - "9 July 2026" → "2026-07-09"
    - "9 - 12 July 2026" → "2026-07-09"
-   - "August 2026" → "2026-08-01"
+   - "On until Sun 25 Jan 2026" → null (this is an END date, not start)
+   - "Selected dates until Mon 29 Dec 2025" → null (this is an END date)
+   - "August 2026" → "2026-08-01" (first of month as placeholder)
    - "July - August 2026" → "2026-07-01"
-   - Return null if cannot determine
+   - Return null if cannot determine start date
 
-3. END_DATE: End date as YYYY-MM-DD or null (only for date ranges)
+3. END_DATE: End date as YYYY-MM-DD or null
+   - Extract the ENDING date of the event (if it's a range) OR the date from "until" phrases
    - "9 - 12 July 2026" → "2026-07-12"
-   - "July - August 2026" → "2026-08-31"
-   - Return null if not a range
+   - "On until Sun 25 Jan 2026" → "2026-01-25" (extract from "until")
+   - "Selected dates until Mon 29 Dec 2025" → "2025-12-29" (extract from "until")
+   - "July - August 2026" → "2026-08-31" (last day of end month)
+   - Return null if single-day event or cannot determine
 
 4. LOCATION: Location/venue string or null
    - Extract from description or title if mentioned
@@ -101,6 +107,14 @@ Extract and return this data as JSON:
 
 8. PARSING_NOTES: Brief notes on parsing uncertainties or null
 
+9. DATE_QUALIFIER: Which dates are available - "start_only", "end_only", "both", or null
+   - "9 - 12 July 2026" → "both" (has both start and end)
+   - "On until Sun 25 Jan 2026" → "end_only" (only end date available)
+   - "Selected dates until Mon 29 Dec 2025" → "end_only" (only end date available)
+   - "9 July 2026" → "start_only" (only start date, single day event)
+   - "August 2026" → "start_only" (only month given, no end date)
+   - null if neither date can be determined
+
 CRITICAL: Return ONLY valid JSON. No markdown code blocks, no explanations, no Python code. Just the JSON object starting with {{ and ending with }}.
 
 {{
@@ -111,7 +125,8 @@ CRITICAL: Return ONLY valid JSON. No markdown code blocks, no explanations, no P
     "recurring_info": null,
     "summary": "",
     "date_text_preserved": "",
-    "parsing_notes": null
+    "parsing_notes": null,
+    "date_qualifier": null
 }}"""
     
     try:
@@ -209,6 +224,28 @@ CRITICAL: Return ONLY valid JSON. No markdown code blocks, no explanations, no P
                     except (ValueError, TypeError):
                         logger.warning(f"Could not parse end_date: {parsed.get('end_date')}")
                 
+                # Extract date_qualifier
+                date_qualifier = parsed.get('date_qualifier')
+                # Validate date_qualifier value
+                if date_qualifier and date_qualifier not in ('start_only', 'end_only', 'both'):
+                    logger.warning(f"Invalid date_qualifier: {date_qualifier}, setting to null")
+                    date_qualifier = None
+                
+                # Create raw_data_copy with original data plus parsed fields
+                raw_data_copy = event_data.copy() if isinstance(event_data, dict) else {}
+                # Add parsed fields to raw_data_copy (all JSON-serializable)
+                raw_data_copy.update({
+                    'title': parsed.get('title', title),
+                    'event_date': parsed.get('event_date'),  # Keep as string for JSON
+                    'end_date': parsed.get('end_date'),  # Keep as string for JSON
+                    'date_qualifier': date_qualifier,
+                    'location': parsed.get('location'),
+                    'recurring_info': parsed.get('recurring_info'),
+                    'summary': parsed.get('summary'),
+                    'date_text_preserved': parsed.get('date_text_preserved', date_text),
+                    'parsing_notes': parsed.get('parsing_notes'),
+                })
+                
                 # Ensure title is cleaned - remove any trailing recurring patterns that might have been concatenated
                 cleaned_title = parsed.get('title', title)
                 
@@ -245,6 +282,7 @@ CRITICAL: Return ONLY valid JSON. No markdown code blocks, no explanations, no P
                     'url': url,
                     'event_date': event_date,
                     'end_date': end_date,
+                    'date_qualifier': date_qualifier,
                     'date_text': parsed.get('date_text_preserved', date_text),
                     'location': cleaned_location,
                     'description': parsed.get('summary', description),
@@ -268,6 +306,7 @@ CRITICAL: Return ONLY valid JSON. No markdown code blocks, no explanations, no P
             'url': url,
             'event_date': None,
             'end_date': None,
+            'date_qualifier': None,
             'date_text': date_text,
             'location': None,
             'description': description,

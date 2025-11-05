@@ -248,7 +248,10 @@ class ClanPublisher:
         return api_data
     
     def upload_image(self, image_path, filename=None):
-        """Upload an image to clan.com and return the uploaded URL"""
+        """Upload an image to clan.com and return the uploaded URL
+        Supports both local file paths and remote URLs (downloads and uploads to clan.com CDN)
+        """
+        temp_file_path = None
         try:
             if not filename:
                 filename = os.path.basename(image_path)
@@ -264,14 +267,17 @@ class ClanPublisher:
                 image_path = local_path
             elif image_path.startswith('http'):
                 # Download remote image to temp file
-                response = requests.get(image_path)
+                logger.info(f"Downloading remote image: {image_path}")
+                response = requests.get(image_path, timeout=30)
                 if response.status_code == 200:
                     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(filename)[1])
                     temp_file.write(response.content)
                     temp_file.close()
-                    image_path = temp_file.name
+                    temp_file_path = temp_file.name
+                    image_path = temp_file_path
+                    logger.info(f"Downloaded to temp file: {temp_file_path} ({len(response.content)} bytes)")
                 else:
-                    logger.warning(f"Failed to download image: {image_path}")
+                    logger.warning(f"Failed to download image: {image_path} (status: {response.status_code})")
                     return None
             
             # Upload to clan.com
@@ -334,7 +340,14 @@ class ClanPublisher:
                                 uploaded_url = 'https://' + uploaded_url
                         
                         if uploaded_url:
-                            logger.info(f"Image uploaded successfully: {uploaded_url}")
+                            logger.info(f"✅ Image uploaded successfully: {uploaded_url}")
+                            # Clean up temp file before returning
+                            if temp_file_path and os.path.exists(temp_file_path):
+                                try:
+                                    os.unlink(temp_file_path)
+                                    logger.info(f"🧹 Cleaned up temporary file: {temp_file_path}")
+                                except Exception as e:
+                                    logger.warning(f"⚠️ Could not delete temp file {temp_file_path}: {e}")
                             return uploaded_url
                         else:
                             logger.error("Image upload succeeded but no URL found in response")
@@ -350,11 +363,17 @@ class ClanPublisher:
                     
         except Exception as e:
             logger.error(f"Error uploading image {image_path}: {str(e)}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             return None
         finally:
-            # Clean up temp file if we created one
-            if 'temp_file' in locals() and os.path.exists(temp_file.name):
-                os.unlink(temp_file.name)
+            # Clean up temp file if we created one (fallback cleanup)
+            if temp_file_path and os.path.exists(temp_file_path):
+                try:
+                    os.unlink(temp_file_path)
+                    logger.debug(f"Cleaned up temp file in finally block: {temp_file_path}")
+                except Exception as e:
+                    logger.warning(f"Could not delete temp file in finally: {e}")
     
     def _safe_url_test(self, url, uploaded_images):
         """Test version of safe_url for debugging"""
@@ -467,6 +486,64 @@ class ClanPublisher:
                 section_path = section['image']['path']
                 logger.info(f"Processing section image: {section_path}")
                 
+                # Handle Photo-harvesting URLs (Pexels/Unsplash) - download and upload to clan.com CDN
+                if section_path.startswith(('http://', 'https://')):
+                    # CRITICAL DEBUG: Print to console as well as logger
+                    print(f"\n{'='*80}")
+                    print(f"📥 PHOTO-HARVESTING URL DETECTED!")
+                    print(f"Section {i+1} ({section.get('id')}): {section.get('title', section.get('section_heading', 'No title'))}")
+                    print(f"URL: {section_path}")
+                    print(f"{'='*80}\n")
+                    
+                    logger.info(f"📥 Photo-harvesting URL detected: {section_path}")
+                    logger.info(f"   Section ID: {section.get('id')}")
+                    logger.info(f"   Section title: {section.get('title', section.get('section_heading', 'No title'))}")
+                    logger.info(f"   Downloading and uploading to clan.com CDN (attribution preserved in captions)")
+                    
+                    # Generate unique filename
+                    import time
+                    provider = 'pexels' if 'pexels.com' in section_path else 'unsplash' if 'unsplash.com' in section_path else 'photo'
+                    filename = f"section_{post['id']}_{i+1}_{provider}_{int(time.time())}.jpg"
+                    
+                    try:
+                        # Upload directly from URL (upload_image handles downloading)
+                        # Use the base URL (without query params) for upload to get original quality
+                        from urllib.parse import urlparse
+                        base_url_for_upload = urlparse(section_path).scheme + '://' + urlparse(section_path).netloc + urlparse(section_path).path
+                        
+                        print(f"Uploading Photo-harvesting image...")
+                        print(f"  Base URL: {base_url_for_upload}")
+                        print(f"  Filename: {filename}")
+                        
+                        uploaded_url = self.upload_image(base_url_for_upload, filename)
+                        
+                        if uploaded_url:
+                            # Map both the exact path (as it appears in template) and base URL
+                            uploaded_images[section_path] = uploaded_url
+                            uploaded_images[base_url_for_upload] = uploaded_url
+                            
+                            print(f"✅ SUCCESS! Uploaded to: {uploaded_url}\n")
+                            logger.info(f"✅ Photo-harvesting image uploaded to clan.com CDN")
+                            logger.info(f"   Mapped: {section_path} -> {uploaded_url}")
+                            logger.info(f"   Also mapped base URL: {base_url_for_upload} -> {uploaded_url}")
+                            logger.info(f"   Attribution preserved in caption: {section.get('image_captions', section.get('image', {}).get('caption', 'N/A'))}")
+                        else:
+                            print(f"❌ FAILED! upload_image returned None\n")
+                            logger.error(f"❌ Failed to upload Photo-harvesting image: {section_path}")
+                            logger.error(f"   upload_image returned None/empty")
+                            # Keep original URL as fallback (though it may not display on clan.com)
+                            logger.warning(f"⚠️ Keeping original URL as fallback (may not display on clan.com)")
+                    except Exception as e:
+                        print(f"❌ EXCEPTION: {str(e)}\n")
+                        logger.error(f"❌ Exception during Photo-harvesting image upload: {str(e)}")
+                        import traceback
+                        traceback_str = traceback.format_exc()
+                        print(f"Traceback:\n{traceback_str}")
+                        logger.error(f"Traceback: {traceback_str}")
+                        # Keep original URL as fallback
+                        logger.warning(f"⚠️ Keeping original URL as fallback due to error")
+                    continue
+                
                 # Check if file exists - convert web path to file system path
                 fs_path = path_resolver.convert_web_path_to_filesystem(section_path)
                 if os.path.exists(fs_path):
@@ -522,39 +599,75 @@ class ClanPublisher:
                 """, (post['id'],))
                 
                 # Insert new mappings
+                # Track which sections we've already mapped to avoid duplicates
+                mapped_sections = set()
+                
                 for local_path, clan_url in uploaded_images.items():
+                    # Skip duplicate mappings (we map both exact path and base URL)
+                    from urllib.parse import urlparse
+                    if local_path.startswith('http'):
+                        # For Photo-harvesting URLs, only save the exact path mapping (not base URL)
+                        parsed = urlparse(local_path)
+                        base_url = parsed.scheme + '://' + parsed.netloc + parsed.path
+                        if local_path == base_url and base_url in uploaded_images:
+                            # This is a base URL mapping, skip it (we'll save the exact path version)
+                            continue
+                    
                     # Find which section this image belongs to
                     section_id = None
                     for section in sections:
-                        if section.get('image') and section['image'].get('path') == local_path:
-                            section_id = section['id']
-                            break
+                        if section.get('image') and section['image'].get('path'):
+                            section_img_path = section['image']['path']
+                            # For Photo-harvesting URLs, match by base URL (without query params)
+                            if local_path.startswith('http') and section_img_path.startswith('http'):
+                                from urllib.parse import urlparse as _urlparse
+                                local_base = _urlparse(local_path).scheme + '://' + _urlparse(local_path).netloc + _urlparse(local_path).path
+                                section_base = _urlparse(section_img_path).scheme + '://' + _urlparse(section_img_path).netloc + _urlparse(section_img_path).path
+                                if local_base == section_base:
+                                    section_id = section['id']
+                                    break
+                            elif section_img_path == local_path:
+                                section_id = section['id']
+                                break
                     
                     # If no section_id found, check if it's a header image
                     if not section_id and 'header' in local_path:
                         section_id = None  # Header images have section_id = NULL
                     
+                    # Skip if we've already mapped this section (avoid duplicates)
+                    if section_id is not None and section_id in mapped_sections:
+                        continue
+                    
                     # Save mapping for both section images and header images
-                    if section_id is not None or 'header' in local_path:
-                        # Extract filename and get file info
+                    if section_id is not None or ('header' in local_path and section_id is None):
+                        # Extract filename
                         filename = os.path.basename(local_path)
+                        if not filename or filename.startswith('http'):
+                            # For Photo-harvesting URLs, extract from path
+                            parsed = urlparse(local_path) if local_path.startswith('http') else None
+                            if parsed:
+                                filename = os.path.basename(parsed.path) or 'photo-harvesting.jpg'
+                            else:
+                                filename = 'photo-harvesting.jpg'
                         
                         # Get file size and dimensions if possible
                         file_size = None
                         dimensions = None
                         
-                        # Convert web path to file system path for file info (using global import)
-                        from config.paths import path_resolver as _pr
-                        fs_path = _pr.convert_web_path_to_filesystem(local_path)
-                        if os.path.exists(fs_path):
-                            file_size = os.path.getsize(fs_path)
-                            # Try to get dimensions using PIL
-                            try:
-                                from PIL import Image
-                                with Image.open(fs_path) as img:
-                                    dimensions = f"{img.width}x{img.height}"
-                            except:
-                                dimensions = "Unknown"
+                        # For Photo-harvesting URLs, skip filesystem checks (they're remote)
+                        if not local_path.startswith('http'):
+                            # Convert web path to file system path for file info
+                            from config.paths import path_resolver as _pr
+                            fs_path = _pr.convert_web_path_to_filesystem(local_path)
+                            if os.path.exists(fs_path):
+                                file_size = os.path.getsize(fs_path)
+                                # Try to get dimensions using PIL
+                                try:
+                                    from PIL import Image
+                                    with Image.open(fs_path) as img:
+                                        dimensions = f"{img.width}x{img.height}"
+                                except:
+                                    dimensions = "Unknown"
                         
                         # Insert the mapping
                         cursor.execute("""
@@ -563,7 +676,10 @@ class ClanPublisher:
                             VALUES (%s, %s, %s, %s, %s, %s, %s)
                         """, (post['id'], section_id, local_path, clan_url, filename, file_size, dimensions))
                         
-                        logger.info(f"✅ Saved image mapping: {local_path} -> {clan_url}")
+                        if section_id:
+                            mapped_sections.add(section_id)
+                        
+                        logger.info(f"✅ Saved image mapping: {local_path} -> {clan_url} (section_id: {section_id})")
                 
                 logger.info(f"✅ Saved {len(uploaded_images)} image mappings to database")
             
@@ -1070,18 +1186,19 @@ class ClanPublisher:
                             ))
                             cursor.connection.commit()
                             logger.info("✅ Auto-selected random cross-promotion IDs and persisted to DB")
+                
                 # Build cross_promotion object
-            if full_post_data.get('cross_promotion_category_id') or full_post_data.get('cross_promotion_product_id'):
-                full_post_data['cross_promotion'] = {
-                    'category_id': full_post_data.get('cross_promotion_category_id'),
-                    'category_title': full_post_data.get('cross_promotion_category_title', ''),
-                    'product_id': full_post_data.get('cross_promotion_product_id'),
-                    'product_title': full_post_data.get('cross_promotion_product_title', ''),
-                    'category_position': full_post_data.get('cross_promotion_category_position'),
-                    'product_position': full_post_data.get('cross_promotion_product_position'),
-                    'category_widget_html': full_post_data.get('cross_promotion_category_widget_html'),
-                    'product_widget_html': full_post_data.get('cross_promotion_product_widget_html')
-                }
+                if full_post_data.get('cross_promotion_category_id') or full_post_data.get('cross_promotion_product_id'):
+                    full_post_data['cross_promotion'] = {
+                        'category_id': full_post_data.get('cross_promotion_category_id'),
+                        'category_title': full_post_data.get('cross_promotion_category_title', ''),
+                        'product_id': full_post_data.get('cross_promotion_product_id'),
+                        'product_title': full_post_data.get('cross_promotion_product_title', ''),
+                        'category_position': full_post_data.get('cross_promotion_category_position'),
+                        'product_position': full_post_data.get('cross_promotion_product_position'),
+                        'category_widget_html': full_post_data.get('cross_promotion_category_widget_html'),
+                        'product_widget_html': full_post_data.get('cross_promotion_product_widget_html')
+                    }
                     # Auto-generate widget HTML if missing
                     widget_changed = False
                     cp = full_post_data['cross_promotion']
@@ -1108,7 +1225,7 @@ class ClanPublisher:
                             c2.connection.commit()
                             logger.info("✅ Auto-generated widget HTML and persisted to DB")
                     logger.info(f"✅ Mapped cross-promotion: cat_id={cp.get('category_id')}, prod_id={cp.get('product_id')}")
-            else:
+                else:
                     logger.info("No cross-promotion data found after auto-selection attempt")
             except Exception as e:
                 logger.warning(f"Cross-promotion auto-selection/generation error: {e}")
@@ -1291,26 +1408,51 @@ class ClanPublisher:
                 logger.info(f'Final path mapping: {path_mapping}')
                 
                 # Replace all paths in the HTML content
+                # Note: Photo-harvesting URLs that were uploaded to clan.com CDN should be replaced
                 replacements_made = 0
                 for local_path, clan_url in path_mapping.items():
-                    # Replace src attributes
-                    if f'src="{local_path}"' in html_content:
-                        html_content = html_content.replace(f'src="{local_path}"', f'src="{clan_url}"')
-                        replacements_made += 1
-                        logger.info(f"Replaced src: {local_path} -> {clan_url}")
-                    # Replace href attributes  
-                    if f'href="{local_path}"' in html_content:
-                        html_content = html_content.replace(f'href="{local_path}"', f'href="{clan_url}"')
-                        replacements_made += 1
-                        logger.info(f"Replaced href: {local_path} -> {clan_url}")
-                    # Replace any other occurrences (but count them)
-                    if local_path in html_content and local_path not in clan_url:
-                        before_count = html_content.count(local_path)
-                        html_content = html_content.replace(local_path, clan_url)
-                        after_count = html_content.count(local_path)
-                        if after_count < before_count:
-                            replacements_made += (before_count - after_count)
-                            logger.info(f"Replaced {before_count - after_count} occurrences: {local_path} -> {clan_url}")
+                    # If this is a Photo-harvesting URL that we uploaded, replace it with clan.com URL
+                    # If it's NOT in our mapping, it means upload failed, so we'll leave it as-is
+                    if local_path.startswith(('http://', 'https://')):
+                        logger.info(f"🔄 Replacing Photo-harvesting URL (uploaded to CDN): {local_path} -> {clan_url}")
+                        # Continue to replacement logic below
+                    
+                    # For Photo-harvesting URLs, we need to match the base URL without query params
+                    # because the template might use a different sized URL than what we uploaded with
+                    if local_path.startswith(('http://', 'https://')):
+                        # Extract base URL (without query parameters) for matching
+                        from urllib.parse import urlparse
+                        base_url = urlparse(local_path).scheme + '://' + urlparse(local_path).netloc + urlparse(local_path).path
+                        
+                        # Find all src attributes with this base URL (with any query params)
+                        import re
+                        pattern = re.compile(r'src="(' + re.escape(base_url) + r'[^"]*)"')
+                        matches = pattern.findall(html_content)
+                        if matches:
+                            for match in set(matches):  # Use set to avoid duplicate replacements
+                                html_content = html_content.replace(f'src="{match}"', f'src="{clan_url}"')
+                                replacements_made += 1
+                                logger.info(f"Replaced Photo-harvesting src (base URL match): {match[:80]}... -> {clan_url}")
+                    else:
+                        # For local paths, use exact matching
+                        # Replace src attributes
+                        if f'src="{local_path}"' in html_content:
+                            html_content = html_content.replace(f'src="{local_path}"', f'src="{clan_url}"')
+                            replacements_made += 1
+                            logger.info(f"Replaced src: {local_path} -> {clan_url}")
+                        # Replace href attributes  
+                        if f'href="{local_path}"' in html_content:
+                            html_content = html_content.replace(f'href="{local_path}"', f'href="{clan_url}"')
+                            replacements_made += 1
+                            logger.info(f"Replaced href: {local_path} -> {clan_url}")
+                        # Replace any other occurrences (but count them)
+                        if local_path in html_content and local_path not in clan_url:
+                            before_count = html_content.count(local_path)
+                            html_content = html_content.replace(local_path, clan_url)
+                            after_count = html_content.count(local_path)
+                            if after_count < before_count:
+                                replacements_made += (before_count - after_count)
+                                logger.info(f"Replaced {before_count - after_count} occurrences: {local_path} -> {clan_url}")
                 
                 # Diagnostic: Check if any /static/ paths remain
                 import re

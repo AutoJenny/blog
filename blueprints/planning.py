@@ -212,6 +212,12 @@ def api_calendar_events(year, week_number):
     """Get events for a specific year and week"""
     return events_api_func(year, week_number)
 
+@bp.route('/api/calendar/profiles/<int:year>/<int:week_number>', methods=['GET'])
+def api_calendar_profiles(year, week_number):
+    """Get profiles scheduled for a specific year and week"""
+    from blueprints.planning_api_calendar_profiles import api_calendar_profiles as profiles_func
+    return profiles_func(year, week_number)
+
 @bp.route('/api/calendar/schedule/<int:year>/<int:week_number>', methods=['GET'])
 def api_calendar_schedule(year, week_number):
     """Get schedule for a specific year and week"""

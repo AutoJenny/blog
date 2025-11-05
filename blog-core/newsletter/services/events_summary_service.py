@@ -72,15 +72,16 @@ def get_event_items(days_back: int = 365, days_ahead: int = 365, source_name: Op
     
     sql = f"""
         SELECT 
-            id, source_name, title, url, published_at, event_date, location, category,
+            id, source_name, title, url, published_at, event_date, end_date, date_qualifier, location, category,
             raw_data, signal_score, freshness_score, combined_score, cached_at,
             suitability_score, suitability_notes, is_event, calendar_event_id,
             event_recurrence_type
         FROM newsletter_source_item
         WHERE {' AND '.join(where_clauses)}
-        ORDER BY 
-            CASE 
+        ORDER BY
+            CASE
                 WHEN event_date IS NOT NULL THEN event_date
+                WHEN end_date IS NOT NULL THEN end_date
                 WHEN published_at IS NOT NULL THEN published_at
                 ELSE cached_at
             END ASC,
@@ -249,7 +250,7 @@ def get_event_detail(event_id: int) -> Optional[Dict[str, Any]]:
     """
     sql = """
         SELECT 
-            id, source_name, title, url, published_at, event_date, location, category,
+            id, source_name, title, url, published_at, event_date, end_date, date_qualifier, location, category,
             raw_data, signal_score, freshness_score, combined_score, cached_at,
             suitability_score, suitability_notes, is_event, calendar_event_id,
             event_recurrence_type
@@ -286,6 +287,8 @@ def get_event_detail(event_id: int) -> Optional[Dict[str, Any]]:
                 'url': item.get('url', ''),
                 'source_name': item.get('source_name', ''),
                 'event_date': item.get('event_date').isoformat() if item.get('event_date') else None,
+                'end_date': item.get('end_date').isoformat() if item.get('end_date') else None,
+                'date_qualifier': item.get('date_qualifier'),
                 'published_at': item.get('published_at').isoformat() if item.get('published_at') else None,
                 'location': item.get('location', ''),
                 'description': item.get('raw_data', {}).get('description', ''),

@@ -189,36 +189,81 @@ def import_events_from_items(items: List[Dict[str, Any]], skip_duplicates: bool 
             continue
         
         title = item.get('title')
-        description = item.get('description')
+        description = item.get('description') or ''
         event_date = item.get('event_date')
+        end_date = item.get('end_date')
         url = item.get('url')
         location = item.get('location')
         source_name = item.get('source_name', 'Unknown')
+        date_qualifier = item.get('date_qualifier')
         
-        if not event_date:
-            # Try to use published_at as fallback
-            event_date = item.get('published_at')
-        
-        if not event_date:
-            logger.warning(f"Skipping event {title}: no event_date or published_at")
-            failed += 1
-            continue
-        
-        # If event_date is a datetime, use it; otherwise treat as start_date
-        if isinstance(event_date, datetime):
-            start_date = event_date
-            end_date = event_date  # Default to same day
-        else:
-            logger.warning(f"Event date is not datetime: {type(event_date)}")
-            failed += 1
-            continue
-        
-        # Extract end_date from raw_data if available
+        # Extract end_date from raw_data if not directly in item
         raw_data = item.get('raw_data', {})
-        if raw_data and isinstance(raw_data, dict):
-            # Check for date ranges in raw_data
-            # This is a placeholder; actual implementation would parse date ranges
-            pass
+        if not end_date and raw_data and isinstance(raw_data, dict):
+            end_date_str = raw_data.get('end_date')
+            if end_date_str:
+                try:
+                    if isinstance(end_date_str, str):
+                        end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
+                    else:
+                        end_date = end_date_str
+                except (ValueError, TypeError):
+                    pass
+        
+        # Convert dates to datetime if they are date objects
+        if event_date and not isinstance(event_date, datetime):
+            if hasattr(event_date, 'isoformat'):
+                try:
+                    event_date = datetime.combine(event_date, datetime.min.time())
+                except:
+                    pass
+        
+        if end_date and not isinstance(end_date, datetime):
+            if hasattr(end_date, 'isoformat'):
+                try:
+                    end_date = datetime.combine(end_date, datetime.min.time())
+                except:
+                    pass
+        
+        # Edge case 1: No dates at all - skip import (don't fail, just log and skip)
+        if not event_date and not end_date:
+            logger.info(f"Skipping event {title}: no dates available")
+            failed += 1
+            continue
+        
+        # Edge case 2: Only start_date - use it, add note to description
+        if event_date and not end_date:
+            if isinstance(event_date, datetime):
+                start_date = event_date
+                end_date = event_date  # Same day
+            else:
+                logger.warning(f"Event date is not datetime: {type(event_date)}")
+                failed += 1
+                continue
+            if description:
+                description += " [Note: Only start date available]"
+        
+        # Edge case 3: Only end_date - use it as both start and end, add note
+        elif end_date and not event_date:
+            if isinstance(end_date, datetime):
+                start_date = end_date  # Use end date as the date
+                end_date = end_date
+            else:
+                logger.warning(f"End date is not datetime: {type(end_date)}")
+                failed += 1
+                continue
+            if description:
+                description += " [Note: Only end date available - event ends on this date]"
+        
+        # Edge case 4: Both dates - use both properly
+        elif event_date and end_date:
+            if isinstance(event_date, datetime) and isinstance(end_date, datetime):
+                start_date = event_date
+                # end_date already set
+            else:
+                logger.warning(f"Event dates are not datetime: {type(event_date)}, {type(end_date)}")
+                failed += 1
+                continue
         
         result = import_event_to_calendar(
             title=title,
