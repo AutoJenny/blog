@@ -288,6 +288,7 @@ def header_preview(post_id):
                        ps.section_type,
                        ps.draft,
                        ps.polished,
+                       ps.post_section_elements,
                        ps.image_captions AS section_image_captions,
                        ps.image_alt_text AS section_image_alt,
                        i.id AS image_id,
@@ -304,15 +305,42 @@ def header_preview(post_id):
             """, (post_id,))
             sections = cursor.fetchall()
             
+            # Import recipe section renderer
+            from utils.recipe_section_renderer import render_recipe_section
+            
             # Format sections for template
             formatted_sections = []
             for section in sections:
+                # Parse post_section_elements if present
+                section_elements = None
+                if section.get('post_section_elements'):
+                    try:
+                        section_elements = json.loads(section['post_section_elements']) if isinstance(section['post_section_elements'], str) else section['post_section_elements']
+                    except (json.JSONDecodeError, TypeError):
+                        logger.warning(f"Failed to parse post_section_elements for section {section['id']}")
+                        section_elements = None
+                
+                # Render content based on section type
+                section_type = section.get('section_type')
+                content = None
+                
+                if section_type and section_elements:
+                    # Use structured JSON renderer for recipe sections
+                    content = render_recipe_section(
+                        section_type,
+                        section_elements,
+                        section.get('polished') or section.get('draft')
+                    )
+                else:
+                    # Fallback to polished or draft content
+                    content = section.get('polished') or section.get('draft') or ''
+                
                 formatted_section = {
                     'id': section['id'],
                     'section_heading': section['section_heading'],
                     'section_description': section['section_description'],
                     'section_type': section.get('section_type') or '',
-                    'content': section['polished'] or section['draft'] or '',
+                    'content': content,
                 }
                 
                 # Add image if exists - check Photo-harvesting JSON first, then DB link, then filesystem
