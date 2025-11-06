@@ -34,7 +34,7 @@ def index():
                     i.path as header_image_path,
                     i.filename as header_image_filename
                 FROM calendar_recipes cr
-                LEFT JOIN post p ON p.recipe_week_number = cr.week_number AND p.status != 'deleted'
+                LEFT JOIN post p ON p.recipe_id = cr.id AND p.status != 'deleted'
                 LEFT JOIN image i ON p.header_image_id = i.id
                 ORDER BY cr.week_number ASC
             """)
@@ -118,7 +118,7 @@ def api_recipes():
                     p.status as post_status,
                     i.path as header_image_path
                 FROM calendar_recipes cr
-                LEFT JOIN post p ON p.recipe_week_number = cr.week_number AND p.status != 'deleted'
+                LEFT JOIN post p ON p.recipe_id = cr.id AND p.status != 'deleted'
                 LEFT JOIN image i ON p.header_image_id = i.id
                 ORDER BY cr.week_number ASC
             """)
@@ -255,12 +255,13 @@ def api_reorder_recipes():
                 """, tuple(values_params))
                 
                 # Update posts for all recipes that moved
+                # Update recipe_week_number for backward compatibility, but recipe_id stays the same
                 for recipe_id, new_week, old_week in recipe_updates:
                     cursor.execute("""
                         UPDATE post
                         SET recipe_week_number = %s
-                        WHERE recipe_week_number = %s AND status != 'deleted'
-                    """, (new_week, old_week))
+                        WHERE recipe_id = %s AND status != 'deleted'
+                    """, (new_week, recipe_id))
                 
                 # Re-add the constraint
                 cursor.execute("""
@@ -338,19 +339,21 @@ def api_create_recipe_post(recipe_week_number):
                 recipe_description = recipe.get('recipe_description') if isinstance(recipe, dict) else (recipe[3] if len(recipe) > 3 else None)
                 seasonal_context = recipe.get('seasonal_context') if isinstance(recipe, dict) else (recipe[4] if len(recipe) > 4 else None)
                 
-                # Check if post already exists for this recipe week
+                recipe_definition_id = recipe['id'] if isinstance(recipe, dict) else recipe[0]
+                
+                # Check if post already exists for this recipe (by recipe_id, not week_number)
                 cursor.execute("""
                     SELECT id FROM post
-                    WHERE recipe_week_number = %s AND status != 'deleted'
+                    WHERE recipe_id = %s AND status != 'deleted'
                     LIMIT 1
-                """, (recipe_week_number,))
+                """, (recipe_definition_id,))
                 
                 existing = cursor.fetchone()
                 if existing:
                     existing_id = existing['id'] if isinstance(existing, dict) else existing[0]
                     return jsonify({
                         'success': False,
-                        'error': f'Post already exists for recipe week {recipe_week_number}',
+                        'error': f'Post already exists for recipe "{recipe_title}"',
                         'post_id': existing_id
                     }), 409
                 
@@ -377,14 +380,22 @@ def api_create_recipe_post(recipe_week_number):
                 if not category_id:
                     logger.warning("Scottish Recipes category not found, creating post without category")
                 
-                # Create post
+                # Validate that recipe_week_number matches the recipe title
+                if recipe_title != recipe['recipe_title']:
+                    logger.error(f"Recipe title mismatch: expected '{recipe['recipe_title']}' but got '{recipe_title}'")
+                    return jsonify({
+                        'success': False,
+                        'error': f'Recipe title mismatch for week {recipe_week_number}'
+                    }), 500
+                
+                # Create post - use recipe_id (unique recipe definition ID) instead of recipe_week_number
                 cursor.execute("""
                     INSERT INTO post (
-                        title, slug, subtitle, recipe_week_number, status, created_at, updated_at
+                        title, slug, subtitle, recipe_id, recipe_week_number, status, created_at, updated_at
                     )
-                    VALUES (%s, %s, %s, %s, 'draft', NOW(), NOW())
+                    VALUES (%s, %s, %s, %s, %s, 'draft', NOW(), NOW())
                     RETURNING id
-                """, (recipe_title, slug, recipe_description, recipe_week_number))
+                """, (recipe_title, slug, recipe_description, recipe_definition_id, recipe_week_number))
                 
                 post_result = cursor.fetchone()
                 post_id = post_result['id'] if isinstance(post_result, dict) else post_result[0]
@@ -429,7 +440,7 @@ def api_create_recipe_post(recipe_week_number):
                     ('recipe_method', 'Method', 'Step-by-step cooking instructions'),
                     ('recipe_variants', 'Variations', 'Optional twists and regional variations'),
                     ('recipe_serving', 'Serving Suggestions', 'How Scots traditionally serve this dish'),
-                    ('recipe_gallery', 'Making Process', 'Image showing one step of the recipe preparation')
+                    ('recipe_further_reading', 'Further Reading', 'Authoritative sources for background information (cultural/heritage sites, Wikipedia, historical sources, ingredient provenance sites, tourism/heritage organizations). Avoid competing recipe sites.')
                 ]
                 
                 for section_order, (section_type, section_heading, section_description) in enumerate(recipe_sections, start=1):

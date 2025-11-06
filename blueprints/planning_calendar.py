@@ -91,6 +91,16 @@ def planning_calendar_ideas(post_id):
 
 def planning_calendar_taxonomy(post_id):
     """Taxonomy assignment page"""
+    from flask import redirect, url_for
+    from utils.taxonomy_helpers import get_post_type
+    
+    # Check post type - redirect recipe/profile posts away from Planning stages
+    post_type = get_post_type(post_id)
+    if post_type == 'recipe':
+        return redirect(url_for('authoring.authoring_sections_drafting', post_id=post_id))
+    elif post_type == 'profile':
+        return redirect(url_for('authoring.authoring_sections_drafting', post_id=post_id))
+    
     try:
         # Get post data to check if it exists
         with db_manager.get_cursor() as cursor:
@@ -100,16 +110,19 @@ def planning_calendar_taxonomy(post_id):
             if not post:
                 return render_template('planning/calendar/taxonomy.html', 
                                       post_id=post_id,
+                                      post_type=post_type,
                                       blueprint_name='planning',
                                       error='Post not found')
             
             return render_template('planning/calendar/taxonomy.html', 
                                   post_id=post_id,
                                   post_title=post['title'],
+                                  post_type=post_type,
                                   blueprint_name='planning')
     except Exception as e:
         logger.error(f"Error in planning_calendar_taxonomy: {e}")
         return render_template('planning/calendar/taxonomy.html', 
                               post_id=post_id,
+                              post_type=post_type,
                               blueprint_name='planning',
                               error=str(e))

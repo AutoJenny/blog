@@ -58,26 +58,23 @@ ON CONFLICT (post_type, step_id) DO UPDATE SET
     complete_event = EXCLUDED.complete_event,
     updated_at = NOW();
 
--- Insert recipe post pipeline steps
+-- Insert recipe post pipeline steps (simplified to use existing authoring workflow)
 INSERT INTO post_type_pipeline_steps (post_type, step_id, step_order, step_label, run_function, complete_event, prompt_category) VALUES
     ('recipe', 'recipe-selection', 1, 'Recipe — Selection', 'runRecipeSelection', NULL, 'recipe'),
     ('recipe', 'recipe-research', 2, 'Research — Recipe Context', 'runRecipeResearch', NULL, 'recipe'),
-    ('recipe', 'recipe-background', 3, 'Recipe — Background', 'runRecipeBackground', NULL, 'recipe'),
-    ('recipe', 'recipe-ingredients', 4, 'Recipe — Ingredients', 'runRecipeIngredients', NULL, 'recipe'),
-    ('recipe', 'recipe-method', 5, 'Recipe — Method', 'runRecipeMethod', NULL, 'recipe'),
-    ('recipe', 'recipe-variants', 6, 'Recipe — Variations', 'runRecipeVariants', NULL, 'recipe'),
-    ('recipe', 'recipe-serving', 7, 'Recipe — Serving Suggestions', 'runRecipeServing', NULL, 'recipe'),
-    ('recipe', 'recipe-image-concepts', 8, 'Recipe — Image Concepts', 'runRecipeImageConcepts', NULL, 'recipe'),
-    ('recipe', 'recipe-image-prompts', 9, 'Recipe — Image Prompts', 'runRecipeImagePrompts', NULL, 'recipe'),
-    ('recipe', 'recipe-image-generation', 10, 'Recipe — Image Generation', 'runRecipeImageGeneration', 'image_generation_complete', 'recipe'),
-    ('recipe', 'recipe-image-optimise', 11, 'Recipe — Image Optimise', 'runRecipeImageOptimise', 'image_optimise_complete', 'recipe'),
-    ('recipe', 'header-title-summary', 12, 'Header — Title & Summary', 'runHeaderTitleSummary', 'header_title_summary_complete', NULL),
-    ('recipe', 'header-image-prompt', 13, 'Header Image — Prompt', 'runHeaderImagePrompt', 'header_image_prompt_complete', NULL),
-    ('recipe', 'header-image-details', 14, 'Header Image — Captions/Alt', 'runHeaderImageDetails', 'header_image_details_complete', NULL),
-    ('recipe', 'header-image-generate', 15, 'Header Image — Image', 'runHeaderImageGenerate', 'header_image_generated', NULL),
-    ('recipe', 'header-image-optimise', 16, 'Header Image — Optimise', 'runHeaderImageOptimize', 'header_image_optimized', NULL),
-    ('recipe', 'header-seo-meta', 17, 'Header — SEO & Meta', 'runHeaderSeoMeta', 'header_seo_meta_complete', NULL),
-    ('recipe', 'final-review', 18, 'Final Review — Preview', 'runFinalReview', NULL, NULL)
+    ('recipe', 'drafting', 3, 'Authoring — Drafting', 'runDrafting', NULL, 'recipe'),
+    ('recipe', 'image-concepts', 4, 'Authoring — Image Concepts', 'runImageConcepts', NULL, 'recipe'),
+    ('recipe', 'image-prompts', 5, 'Authoring — Image Prompts', 'runImagePrompts', NULL, 'recipe'),
+    ('recipe', 'image-captions', 6, 'Authoring — Image Captions', 'runImageCaptions', NULL, 'recipe'),
+    ('recipe', 'image-generation', 7, 'Imaging — Image Generation', 'runImageGeneration', 'image_generation_complete', 'recipe'),
+    ('recipe', 'optimise', 8, 'Imaging — Optimise', 'runImageOptimise', 'image_optimise_complete', 'recipe'),
+    ('recipe', 'header-title-summary', 9, 'Header — Title & Summary', 'runHeaderTitleSummary', 'header_title_summary_complete', NULL),
+    ('recipe', 'header-image-prompt', 10, 'Header Image — Prompt', 'runHeaderImagePrompt', 'header_image_prompt_complete', NULL),
+    ('recipe', 'header-image-details', 11, 'Header Image — Captions/Alt', 'runHeaderImageDetails', 'header_image_details_complete', NULL),
+    ('recipe', 'header-image-generate', 12, 'Header Image — Image', 'runHeaderImageGenerate', 'header_image_generated', NULL),
+    ('recipe', 'header-image-optimise', 13, 'Header Image — Optimise', 'runHeaderImageOptimize', 'header_image_optimized', NULL),
+    ('recipe', 'header-seo-meta', 14, 'Header — SEO & Meta', 'runHeaderSeoMeta', 'header_seo_meta_complete', NULL),
+    ('recipe', 'final-review', 15, 'Final Review — Preview', 'runFinalReview', NULL, NULL)
 ON CONFLICT (post_type, step_id) DO UPDATE SET
     step_order = EXCLUDED.step_order,
     step_label = EXCLUDED.step_label,

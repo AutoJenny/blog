@@ -55,7 +55,7 @@ def authoring_sections_drafting(post_id):
         with db_manager.get_cursor() as cursor:
             # Get post details
             cursor.execute("""
-                SELECT id, title, status, created_at, updated_at
+                SELECT id, title, status, created_at, updated_at, recipe_week_number
                 FROM post 
                 WHERE id = %s
             """, (post_id,))
@@ -63,6 +63,62 @@ def authoring_sections_drafting(post_id):
             
             if not post:
                 return "Post not found", 404
+            
+            # Get post type for navigation
+            from utils.taxonomy_helpers import get_post_type
+            post_type = get_post_type(post_id)
+            
+            # Auto-create recipe sections if this is a recipe post and sections don't exist
+            if post_type == 'recipe':
+                cursor.execute("""
+                    SELECT COUNT(*) as section_count
+                    FROM post_section
+                    WHERE post_id = %s
+                """, (post_id,))
+                section_count = cursor.fetchone().get('section_count', 0)
+                
+                if section_count == 0:
+                    # Create default recipe sections
+                    recipe_sections = [
+                        ('recipe_background', 'Background', 'The historic and cultural background of this recipe. Write 2-3 paragraphs (150-200 words) covering the origin story, regional associations, and occasions when traditionally eaten. Use a warm, storytelling voice that evokes place, people, and time.'),
+                        ('recipe_ingredients', 'Ingredients', 'List of ingredients needed for this recipe. Format clearly for home cooks, with amounts and any preparation notes. May include regional variations or historical notes.'),
+                        ('recipe_method', 'Method', 'Step-by-step cooking instructions. Use numbered steps with clear instructions. Aimed at home cooks, not professional chefs.'),
+                        ('recipe_variants', 'Variations', 'Optional twists and regional variations (e.g., "Hebridean version uses smoked haddock only", "Modern twist: add whisky cream"). Not every recipe needs variants - this section is optional.'),
+                        ('recipe_serving', 'Serving Suggestions', 'How Scots traditionally serve this dish. Include drinks, sides, or traditional accompaniments. Optional mention of related products available on clan.com.'),
+                        ('recipe_further_reading', 'Further Reading', 'Search for 2-5 authoritative sources for background information about this recipe. Focus on: cultural/heritage sites, Wikipedia articles, historical sources, ingredient provenance sites, and tourism/heritage organizations. AVOID competing recipe sites or cooking blogs. For each source, provide: Title & Link, Why It\'s Good (brief explanation of the source\'s value), and Use Case in Your Content (how to reference this source in the recipe sections above). Sources should support the Background, Ingredients, Variations, and Serving Suggestions sections.')
+                    ]
+                    
+                    for section_order, (section_type, section_heading, section_description) in enumerate(recipe_sections, start=1):
+                        # Check if section already exists at this order
+                        cursor.execute("""
+                            SELECT id FROM post_section
+                            WHERE post_id = %s AND section_order = %s
+                            LIMIT 1
+                        """, (post_id, section_order))
+                        existing = cursor.fetchone()
+                        
+                        if not existing:
+                            # Insert new section
+                            cursor.execute("""
+                                INSERT INTO post_section (
+                                    post_id, section_order, section_type, section_heading, 
+                                    section_description, status
+                                )
+                                VALUES (%s, %s, %s, %s, %s, 'draft')
+                            """, (post_id, section_order, section_type, section_heading, section_description))
+                        else:
+                            # Update existing section with section_type if missing
+                            cursor.execute("""
+                                UPDATE post_section
+                                SET section_type = %s,
+                                    section_heading = COALESCE(NULLIF(section_heading, ''), %s),
+                                    section_description = COALESCE(NULLIF(section_description, ''), %s)
+                                WHERE post_id = %s AND section_order = %s
+                                  AND (section_type IS NULL OR section_type = '')
+                            """, (section_type, section_heading, section_description, post_id, section_order))
+                    
+                    cursor.connection.commit()
+                    logger.info(f"Auto-created {len(recipe_sections)} recipe sections for post {post_id}")
             
             # Get content type name for category banner
             cursor.execute("""
@@ -77,6 +133,7 @@ def authoring_sections_drafting(post_id):
             return render_template('authoring/sections/drafting.html', 
                                  post_id=post_id,
                                  post=post,
+                                 post_type=post_type,
                                  page_title="Drafting",
                                  blueprint_name='authoring',
                                  content_type_name=content_type_name)

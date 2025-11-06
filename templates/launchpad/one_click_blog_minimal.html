@@ -1538,7 +1538,7 @@
     if (runHeaderSeoMetaBtn){ runHeaderSeoMetaBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runHeaderSeoMeta(); }); }
 
     // Final Review: open header preview page
-    // Recipe-specific step functions (placeholders - to be implemented)
+    // Recipe-specific step functions
     function runRecipeSelection() {
         const postId = getSelectedPostId();
         if (!postId) { alert('Please select a post first.'); return; }
@@ -1547,37 +1547,11 @@
     function runRecipeResearch() {
         const postId = getSelectedPostId();
         if (!postId) { alert('Please select a post first.'); return; }
+        // TODO: Implement recipe research substage (web spidering for historical context)
         alert('Recipe research step - to be implemented');
+        // For now, route to planning research if available
+        // window.location.href = `/planning/posts/${postId}/research`;
     }
-    function runRecipeBackground() {
-        const postId = getSelectedPostId();
-        if (!postId) { alert('Please select a post first.'); return; }
-        alert('Recipe background step - to be implemented');
-    }
-    function runRecipeIngredients() {
-        const postId = getSelectedPostId();
-        if (!postId) { alert('Please select a post first.'); return; }
-        alert('Recipe ingredients step - to be implemented');
-    }
-    function runRecipeMethod() {
-        const postId = getSelectedPostId();
-        if (!postId) { alert('Please select a post first.'); return; }
-        alert('Recipe method step - to be implemented');
-    }
-    function runRecipeVariants() {
-        const postId = getSelectedPostId();
-        if (!postId) { alert('Please select a post first.'); return; }
-        alert('Recipe variants step - to be implemented');
-    }
-    function runRecipeServing() {
-        const postId = getSelectedPostId();
-        if (!postId) { alert('Please select a post first.'); return; }
-        alert('Recipe serving step - to be implemented');
-    }
-    function runRecipeImageConcepts() { return runImageConcepts(); }
-    function runRecipeImagePrompts() { return runImagePrompts(); }
-    function runRecipeImageGeneration() { return runImageGeneration(); }
-    function runRecipeImageOptimise() { return runImageOptimise(); }
     
     // Profile-specific step functions (placeholders - to be implemented)
     function runProfileSelection() {

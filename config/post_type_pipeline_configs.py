@@ -33,23 +33,20 @@ POST_TYPE_PIPELINE_CONFIGS = {
         'active': True,
         'steps': [
             'recipe-selection',     # Select recipe (replaces week-ideas)
-            'recipe-research',      # NEW: Web research for historical context
-            'recipe-background',    # Recipe background generation
-            'recipe-ingredients',   # Ingredients list generation
-            'recipe-method',        # Method generation
-            'recipe-variants',      # Variations generation
-            'recipe-serving',       # Serving suggestions
-            'recipe-image-concepts', # Recipe-specific image concepts
-            'recipe-image-prompts', # Recipe-specific image prompts
-            'recipe-image-generation', # Recipe images (hero + making process)
-            'recipe-image-optimise', # Optimize recipe images
-            'header-title-summary', # Header title/summary
-            'header-image-prompt',  # Header image prompt
-            'header-image-details', # Header image details
-            'header-image-generate', # Header image generation
-            'header-image-optimise', # Header image optimization
-            'header-seo-meta',      # SEO metadata
-            'final-review'          # Final review
+            'recipe-research',      # Optional: Web research for historical context
+            'drafting',             # Authoring — Drafting (all recipe sections via existing workflow)
+            'image-concepts',       # Authoring — Image Concepts (for recipe_gallery section)
+            'image-prompts',        # Authoring — Image Prompts (for recipe_gallery section)
+            'image-captions',       # Authoring — Image Captions
+            'image-generation',     # Imaging — Image Generation (hero + making process)
+            'optimise',             # Imaging — Optimise
+            'header-title-summary', # Header — Title & Summary
+            'header-image-prompt',  # Header Image — Prompt
+            'header-image-details', # Header Image — Captions/Alt
+            'header-image-generate', # Header Image — Image
+            'header-image-optimise', # Header Image — Optimise
+            'header-seo-meta',      # Header — SEO & Meta
+            'final-review'          # Final Review — Preview
         ]
     },
     'profile': {
@@ -100,15 +97,12 @@ STEP_FUNCTION_MAPPINGS = {
     'recipe': {
         'recipe-selection': 'runRecipeSelection',
         'recipe-research': 'runRecipeResearch',
-        'recipe-background': 'runRecipeBackground',
-        'recipe-ingredients': 'runRecipeIngredients',
-        'recipe-method': 'runRecipeMethod',
-        'recipe-variants': 'runRecipeVariants',
-        'recipe-serving': 'runRecipeServing',
-        'recipe-image-concepts': 'runRecipeImageConcepts',
-        'recipe-image-prompts': 'runRecipeImagePrompts',
-        'recipe-image-generation': 'runRecipeImageGeneration',
-        'recipe-image-optimise': 'runRecipeImageOptimise',
+        'drafting': 'runDrafting',  # Uses existing authoring workflow
+        'image-concepts': 'runImageConcepts',
+        'image-prompts': 'runImagePrompts',
+        'image-captions': 'runImageCaptions',
+        'image-generation': 'runImageGeneration',
+        'optimise': 'runImageOptimise',
         'header-title-summary': 'runHeaderTitleSummary',
         'header-image-prompt': 'runHeaderImagePrompt',
         'header-image-details': 'runHeaderImageDetails',
@@ -159,15 +153,6 @@ STEP_LABELS = {
     'final-review': 'Final Review — Preview',
     'recipe-selection': 'Recipe — Selection',
     'recipe-research': 'Research — Recipe Context',
-    'recipe-background': 'Recipe — Background',
-    'recipe-ingredients': 'Recipe — Ingredients',
-    'recipe-method': 'Recipe — Method',
-    'recipe-variants': 'Recipe — Variations',
-    'recipe-serving': 'Recipe — Serving Suggestions',
-    'recipe-image-concepts': 'Recipe — Image Concepts',
-    'recipe-image-prompts': 'Recipe — Image Prompts',
-    'recipe-image-generation': 'Recipe — Image Generation',
-    'recipe-image-optimise': 'Recipe — Image Optimise',
     'profile-selection': 'Profile — Selection',
     'profile-data-sync': 'Data Sync — Product Information',
     'profile-sections': 'Profile — Sections',

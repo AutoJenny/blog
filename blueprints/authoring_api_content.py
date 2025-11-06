@@ -68,11 +68,11 @@ def api_generate_section_draft(post_id, section_id):
     try:
         data = request.get_json()
         
-        # Get section data
+        # Get section data (including section_type for recipe/profile sections)
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 SELECT section_heading, section_description, ideas_to_include, 
-                       facts_to_include, highlighting, section_order
+                       facts_to_include, highlighting, section_order, section_type
                 FROM post_section 
                 WHERE post_id = %s AND id = %s
             """, (post_id, section_id))
@@ -124,25 +124,61 @@ def api_generate_section_draft(post_id, section_id):
             if not post:
                 return jsonify({'error': 'Post not found'}), 404
             
-            # Get post_development data
+            # Get post_development data (may be minimal for recipe posts)
             cursor.execute("""
                 SELECT idea_seed, sections, section_structure FROM post_development WHERE post_id = %s
             """, (post_id,))
             dev_data = cursor.fetchone()
             
-            if not dev_data:
-                return jsonify({'error': 'Post development data not found'}), 404
+            # Check if this is a recipe post
+            from utils.taxonomy_helpers import get_post_type
+            post_type = get_post_type(post_id)
+            is_recipe_post = (post_type == 'recipe')
             
-            # Get Section Drafting prompt using explicit selection
+            # Get Section Drafting prompt - prioritize section_type for recipe/profile sections
             prompt_name = None
-            cursor.execute("""
-                SELECT extra_settings FROM post WHERE id = %s
-            """, (post_id,))
-            post_result = cursor.fetchone()
+            section_type = section.get('section_type') if section else None
             
-            if post_result and post_result.get('extra_settings'):
-                settings = post_result['extra_settings']
-                prompt_name = settings.get('section_drafting_prompt_name')
+            # For recipe/profile sections, try section-specific prompt first
+            if section_type and section_type.startswith('recipe_'):
+                # Map section_type to prompt name (e.g., 'recipe_background' -> 'Recipe Background')
+                section_prompt_map = {
+                    'recipe_background': 'Recipe Background',
+                    'recipe_ingredients': 'Recipe Ingredients',
+                    'recipe_method': 'Recipe Method',
+                    'recipe_variants': 'Recipe Variants',
+                    'recipe_serving': 'Recipe Serving Suggestions',
+                    'recipe_further_reading': 'Recipe Further Reading'
+                }
+                base_section_name = section_prompt_map.get(section_type)
+                if base_section_name:
+                    # Try section-specific prompt first (e.g., "Recipe Background (Recipe)")
+                    cursor.execute("""
+                        SELECT name FROM llm_prompt 
+                        WHERE name = %s OR name = %s
+                        ORDER BY 
+                            CASE WHEN name = %s THEN 1 ELSE 2 END,
+                            updated_at DESC
+                        LIMIT 1
+                    """, (
+                        f'{base_section_name} (Recipe)',
+                        base_section_name,
+                        f'{base_section_name} (Recipe)'
+                    ))
+                    section_prompt = cursor.fetchone()
+                    if section_prompt:
+                        prompt_name = section_prompt['name']
+            
+            # If no section-specific prompt found, check post-level settings
+            if not prompt_name:
+                cursor.execute("""
+                    SELECT extra_settings FROM post WHERE id = %s
+                """, (post_id,))
+                post_result = cursor.fetchone()
+                
+                if post_result and post_result.get('extra_settings'):
+                    settings = post_result['extra_settings']
+                    prompt_name = settings.get('section_drafting_prompt_name')
             
             # LEGACY: If no selection exists, use default
             if not prompt_name:
@@ -173,50 +209,107 @@ def api_generate_section_draft(post_id, section_id):
             prompt_text = prompt_data['prompt_text']
             system_prompt = prompt_data['system_prompt']
             
-            # Extract data from dev_data JSON fields
-            sections_list = json.loads(dev_data['sections']) if isinstance(dev_data['sections'], str) else dev_data['sections']
-            structure_data = json.loads(dev_data['section_structure']) if isinstance(dev_data['section_structure'], str) else dev_data['section_structure']
+            # For recipe posts, use simpler data extraction
+            if is_recipe_post:
+                # Get recipe data from calendar_recipes using recipe_id (unique recipe definition ID)
+                cursor.execute("""
+                    SELECT cr.recipe_title, cr.recipe_description, cr.seasonal_context
+                    FROM post p
+                    JOIN calendar_recipes cr ON cr.id = p.recipe_id
+                    WHERE p.id = %s
+                """, (post_id,))
+                recipe_data = cursor.fetchone()
+                
+                # Extract values for recipe posts
+                selected_idea = dev_data['idea_seed'] if dev_data else (recipe_data['recipe_title'] if recipe_data else '')
+                section_title = section.get('section_heading', '')
+                section_description = section.get('section_description', '')
+                topics_text = ''
+                
+                # Get recipe-specific context
+                recipe_title = recipe_data['recipe_title'] if recipe_data else post.get('title', '')
+                recipe_description = recipe_data['recipe_description'] if recipe_data else ''
+                seasonal_context = recipe_data['seasonal_context'] if recipe_data else ''
+                
+                # Get avoid headings (all other sections)
+                cursor.execute("""
+                    SELECT section_heading, section_description
+                    FROM post_section
+                    WHERE post_id = %s AND section_order != %s
+                    ORDER BY section_order
+                """, (post_id, section.get('section_order', 0)))
+                other_sections = cursor.fetchall()
+                avoid_headings = '\n'.join([
+                    f"{s['section_heading']}: {s['section_description']}"
+                    for s in other_sections
+                    if s['section_heading'] or s['section_description']
+                ])
+                
+                # Replace placeholders for recipe prompts
+                prompt_text = re.sub(r'\[data:title\]', recipe_title, prompt_text)
+                prompt_text = re.sub(r'\[data:subtitle\]', recipe_description, prompt_text)
+                prompt_text = re.sub(r'\[data:seasonal_context\]', seasonal_context, prompt_text)
+                prompt_text = re.sub(r'\[Selected Idea\]', selected_idea, prompt_text)
+                prompt_text = re.sub(r'\[Title\]', section_title, prompt_text)
+                prompt_text = re.sub(r'\[Subtitle\]', section_description, prompt_text)
+                prompt_text = re.sub(r'\[Description\]', section_description, prompt_text)
+                prompt_text = re.sub(r'\[Topics\]', topics_text, prompt_text)
+                prompt_text = re.sub(r'\[Avoid Headings\]', avoid_headings, prompt_text)
+            else:
+                # For themed posts, use existing logic
+                if not dev_data:
+                    return jsonify({'error': 'Post development data not found'}), 404
+                
+                # Extract data from dev_data JSON fields
+                sections_list = json.loads(dev_data['sections']) if isinstance(dev_data['sections'], str) else dev_data['sections']
+                structure_data = json.loads(dev_data['section_structure']) if isinstance(dev_data['section_structure'], str) else dev_data['section_structure']
+                
+                # Find current section in sections list (by order or id)
+                sections = sections_list.get('sections', []) if isinstance(sections_list, dict) else sections_list
+                section_order = section.get('section_order', int(section_id))
+                current_section_data = next((s for s in sections if str(s.get('id', '')) == str(section_id) or s.get('order') == section_order or s.get('index') == section_order), None)
+                
+                # Find current section in structure (by id)
+                structure_sections = structure_data.get('sections', []) if isinstance(structure_data, dict) else []
+                section_id_str = f"S{str(section['section_order']).zfill(2)}"
+                current_structure_data = next((s for s in structure_sections if s.get('id') == section_id_str), None)
+                
+                # Extract values
+                selected_idea = dev_data['idea_seed'] or ''
+                section_title = current_section_data.get('title', '') if current_section_data else ''
+                section_description = current_structure_data.get('description', '') if current_structure_data else ''
+                topics = current_section_data.get('topics', []) if current_section_data else []
+                topics_text = '\n- '.join(topics) if topics else ''
+                
+                # Get avoid headings (all other sections)
+                cursor.execute("""
+                    SELECT section_heading, section_description
+                    FROM post_section
+                    WHERE post_id = %s AND section_order != %s
+                    ORDER BY section_order
+                """, (post_id, section['section_order']))
+                other_sections = cursor.fetchall()
+                avoid_headings = '\n'.join([
+                    f"{s['section_heading']}: {s['section_description']}"
+                    for s in other_sections
+                    if s['section_heading'] or s['section_description']
+                ])
+                
+                # Replace placeholders
+                prompt_text = re.sub(r'\[Selected Idea\]', selected_idea, prompt_text)
+                prompt_text = re.sub(r'\[Title\]', section_title, prompt_text)
+                prompt_text = re.sub(r'\[Subtitle\]', section_description, prompt_text)
+                prompt_text = re.sub(r'\[Description\]', section_description, prompt_text)
+                prompt_text = re.sub(r'\[Topics\]', topics_text, prompt_text)
+                prompt_text = re.sub(r'\[Avoid Headings\]', avoid_headings, prompt_text)
+                
+                # Set variables for logging
+                topics = current_section_data.get('topics', []) if current_section_data else []
             
-            # Find current section in sections list (by order or id)
-            sections = sections_list.get('sections', []) if isinstance(sections_list, dict) else sections_list
-            section_order = section.get('section_order', int(section_id))
-            current_section_data = next((s for s in sections if str(s.get('id', '')) == str(section_id) or s.get('order') == section_order or s.get('index') == section_order), None)
-            
-            # Find current section in structure (by id)
-            structure_sections = structure_data.get('sections', []) if isinstance(structure_data, dict) else []
-            section_id_str = f"S{str(section['section_order']).zfill(2)}"
-            current_structure_data = next((s for s in structure_sections if s.get('id') == section_id_str), None)
-            
-            # Extract values
-            selected_idea = dev_data['idea_seed'] or ''
-            section_title = current_section_data.get('title', '') if current_section_data else ''
-            section_description = current_structure_data.get('description', '') if current_structure_data else ''
-            topics = current_section_data.get('topics', []) if current_section_data else []
-            topics_text = '\n- '.join(topics) if topics else ''
-            
-            # Get avoid headings (all other sections)
-            cursor.execute("""
-                SELECT section_heading, section_description
-                FROM post_section
-                WHERE post_id = %s AND section_order != %s
-                ORDER BY section_order
-            """, (post_id, section['section_order']))
-            other_sections = cursor.fetchall()
-            avoid_headings = '\n'.join([
-                f"{s['section_heading']}: {s['section_description']}"
-                for s in other_sections
-                if s['section_heading'] or s['section_description']
-            ])
-            
-            # Replace placeholders
-            prompt_text = re.sub(r'\[Selected Idea\]', selected_idea, prompt_text)
-            prompt_text = re.sub(r'\[Title\]', section_title, prompt_text)
-            prompt_text = re.sub(r'\[Subtitle\]', section_description, prompt_text)
-            prompt_text = re.sub(r'\[Description\]', section_description, prompt_text)
-            prompt_text = re.sub(r'\[Topics\]', topics_text, prompt_text)
-            prompt_text = re.sub(r'\[Avoid Headings\]', avoid_headings, prompt_text)
-            
-            logger.info(f"Generated for: {section_title}, {len(topics)} topics, description length: {len(section_description)}")
+            # Log generation info
+            section_title_for_log = section.get('section_heading', '') if is_recipe_post else (section_title if 'section_title' in locals() else '')
+            topics_count = len(topics) if 'topics' in locals() else 0
+            logger.info(f"Generated for: {section_title_for_log}, {topics_count} topics, description length: {len(section_description)}")
             
             # Prepare messages for LLM
             messages = []
