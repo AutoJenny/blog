@@ -75,16 +75,53 @@ def api_get_sections(post_id):
                     logger.info(f"Auto-created {len(recipe_sections)} recipe sections for post {post_id}")
             
             # Get sections from post_section table first
-            cursor.execute("""
-                SELECT id, section_order, section_heading, section_description, 
-                       status, draft, polished, ideas_to_include, facts_to_include,
-                       highlighting, image_concepts, image_prompts, image_captions,
-                       image_alt_text, selected_image_concept, section_type,
-                       post_section_elements
-                FROM post_section
-                WHERE post_id = %s
-                ORDER BY section_order
-            """, (post_id,))
+            # For recipe posts in image generation context, only show sections that need images
+            # (ingredients and method sections)
+            if post_type == 'recipe':
+                # Check if we're in image generation context by checking request path
+                from flask import request
+                is_image_generation = request and (
+                    '/image-generation' in request.path or 
+                    '/imaging' in request.path
+                )
+                
+                if is_image_generation:
+                    # Only show ingredients and method sections for recipe image generation
+                    cursor.execute("""
+                        SELECT id, section_order, section_heading, section_description, 
+                               status, draft, polished, ideas_to_include, facts_to_include,
+                               highlighting, image_concepts, image_prompts, image_captions,
+                               image_alt_text, selected_image_concept, section_type,
+                               post_section_elements
+                        FROM post_section
+                        WHERE post_id = %s 
+                          AND section_type IN ('recipe_ingredients', 'recipe_method')
+                        ORDER BY section_order
+                    """, (post_id,))
+                else:
+                    # Show all sections for other contexts
+                    cursor.execute("""
+                        SELECT id, section_order, section_heading, section_description, 
+                               status, draft, polished, ideas_to_include, facts_to_include,
+                               highlighting, image_concepts, image_prompts, image_captions,
+                               image_alt_text, selected_image_concept, section_type,
+                               post_section_elements
+                        FROM post_section
+                        WHERE post_id = %s
+                        ORDER BY section_order
+                    """, (post_id,))
+            else:
+                # For non-recipe posts, show all sections
+                cursor.execute("""
+                    SELECT id, section_order, section_heading, section_description, 
+                           status, draft, polished, ideas_to_include, facts_to_include,
+                           highlighting, image_concepts, image_prompts, image_captions,
+                           image_alt_text, selected_image_concept, section_type,
+                           post_section_elements
+                    FROM post_section
+                    WHERE post_id = %s
+                    ORDER BY section_order
+                """, (post_id,))
             sections = cursor.fetchall()
             
             # If no sections found in post_section table, check post_development.sections

@@ -1547,10 +1547,34 @@
     function runRecipeResearch() {
         const postId = getSelectedPostId();
         if (!postId) { alert('Please select a post first.'); return; }
-        // TODO: Implement recipe research substage (web spidering for historical context)
-        alert('Recipe research step - to be implemented');
-        // For now, route to planning research if available
-        // window.location.href = `/planning/posts/${postId}/research`;
+        const win = window.open(`/posts/${postId}/recipes/research`, '_blank', 'width=1400,height=900');
+        const btn = document.querySelector('[data-step="recipe-research"]');
+        if (btn) {
+            btn.classList.remove('dead');
+            btn.classList.add('ready');
+        }
+    }
+    function runRecipeImageStylePrompt() {
+        const btn = document.getElementById('run-recipe-image-style-prompt');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        const postId = getSelectedPostId();
+        if (!postId) { alert('Please select a post first.'); return; }
+        btn.disabled = true;
+        btn.textContent = 'Running…';
+        btn.classList.remove('dead', 'complete');
+        btn.classList.add('ready');
+        const win = window.open(`/posts/${postId}/recipes/image-style-prompt`, '_blank', 'width=1400,height=900');
+        const poll = setInterval(() => {
+            if (win && win.closed) {
+                clearInterval(poll);
+                btn.textContent = 'Done';
+                btn.classList.remove('dead', 'ready');
+                btn.classList.add('complete');
+                btn.disabled = false;
+                setTimeout(() => btn.textContent = originalText, 1500);
+            }
+        }, 1000);
     }
     
     // Profile-specific step functions (placeholders - to be implemented)
@@ -2079,15 +2103,7 @@
             if (postType === 'recipe') {
                 if (stepId === 'recipe-selection') return runRecipeSelection;
                 if (stepId === 'recipe-research') return runRecipeResearch;
-                if (stepId === 'recipe-background') return runRecipeBackground;
-                if (stepId === 'recipe-ingredients') return runRecipeIngredients;
-                if (stepId === 'recipe-method') return runRecipeMethod;
-                if (stepId === 'recipe-variants') return runRecipeVariants;
-                if (stepId === 'recipe-serving') return runRecipeServing;
-                if (stepId === 'recipe-image-concepts') return runRecipeImageConcepts;
-                if (stepId === 'recipe-image-prompts') return runRecipeImagePrompts;
-                if (stepId === 'recipe-image-generation') return runRecipeImageGeneration;
-                if (stepId === 'recipe-image-optimise') return runRecipeImageOptimise;
+                if (stepId === 'recipe-image-style-prompt') return runRecipeImageStylePrompt;
             }
             
             // Profile-specific steps

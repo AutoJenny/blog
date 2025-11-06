@@ -6,6 +6,7 @@ Service for interacting with LLM providers including OpenAI and Ollama.
 
 import requests
 import logging
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -95,22 +96,113 @@ class LLMService:
                 # Store the exact raw request that will be sent
                 self._store_raw_http_request('POST', f"{self.providers[provider]['base_url']}/api/chat", {'Content-Type': 'application/json'}, data, intercept_context)
                 
-                response = requests.post(
-                    f"{self.providers[provider]['base_url']}/api/chat",
-                    json=data,
-                    timeout=60
-                )
+                # Make the request with stream=False to ensure content is loaded
+                try:
+                    # Log the request for debugging
+                    logger.debug(f"Making Ollama request to {self.providers[provider]['base_url']}/api/chat with model {data.get('model')}, messages count: {len(data.get('messages', []))}")
+                    
+                    response = requests.post(
+                        f"{self.providers[provider]['base_url']}/api/chat",
+                        json=data,
+                        timeout=60,
+                        stream=False  # Ensure content is loaded immediately
+                    )
+                    # Immediately check if response is valid
+                    if response is None:
+                        logger.error("requests.post returned None")
+                        return {'error': 'No response received from Ollama'}
+                    
+                    logger.debug(f"Ollama response received: status={response.status_code}, url={response.url if hasattr(response, 'url') else 'N/A'}")
+                        
+                except Exception as req_error:
+                    logger.error(f"Error making request to Ollama: {req_error}", exc_info=True)
+                    return {'error': f'Failed to connect to Ollama: {str(req_error)}'}
             else:
                 return {'error': f'Unknown provider: {provider}'}
             
+            # Validate response object
+            if response is None:
+                return {'error': 'No response received from LLM provider'}
+            
             if response.status_code == 200:
-                result = response.json()
+                # Try to parse JSON directly - this is the simplest approach
+                # If response.content is None, response.json() will raise a decode error which we catch
+                try:
+                    # CRITICAL DEBUG: Check response content BEFORE calling json()
+                    # This will help us understand if content is None before we try to parse
+                    try:
+                        # Try to peek at content without consuming it
+                        # Use response.raw if available, otherwise response.content
+                        if hasattr(response, 'raw') and hasattr(response.raw, 'read'):
+                            # Don't read raw - it consumes the stream
+                            # Just check if response has the content attribute
+                            pass
+                        # Now try json() - if content is None, this will fail
+                        result = response.json()
+                        logger.debug(f"Successfully parsed JSON response, message content length: {len(result.get('message', {}).get('content', ''))}")
+                    except (AttributeError, TypeError) as attr_error:
+                        # This shouldn't happen, but catch it
+                        logger.error(f"Error accessing response attributes: {attr_error}")
+                        return {'error': f'Cannot access response: {str(attr_error)}'}
+                except Exception as e:
+                    error_msg = str(e)
+                    error_type = type(e).__name__
+                    
+                    # Check if this is the specific decode error indicating None content
+                    if 'decoding to str' in error_msg or 'NoneType' in error_msg or 'bytes-like object' in error_msg:
+                        logger.error(f"LLM response decode error (content is None): {error_type}: {error_msg}")
+                        logger.error(f"Full exception details: {repr(e)}")
+                        # Try to get more info about the response WITHOUT accessing content/text
+                        try:
+                            status = response.status_code
+                            url = getattr(response, 'url', 'N/A')
+                            logger.error(f"Response status: {status}, url: {url}")
+                            # Don't try to access headers if it might trigger decode
+                            if hasattr(response, 'headers'):
+                                try:
+                                    headers_dict = dict(response.headers)
+                                    logger.error(f"Response headers: {headers_dict}")
+                                except:
+                                    logger.error("Could not access response headers")
+                        except Exception as info_error:
+                            logger.error(f"Error getting response info: {info_error}")
+                        return {'error': 'Ollama returned a response with no content. This usually means Ollama encountered an error processing the request. Please check Ollama logs.'}
+                    
+                    # Don't access response.status_code if it might trigger decode
+                    try:
+                        status = response.status_code if hasattr(response, 'status_code') else 'unknown'
+                        logger.error(f"Failed to parse JSON response: {error_type}: {error_msg}, response status: {status}")
+                    except:
+                        logger.error(f"Failed to parse JSON response: {error_type}: {error_msg}")
+                    return {'error': f'Invalid JSON response from LLM provider: {error_msg}'}
+                
                 if provider == 'openai':
-                    return {'content': result['choices'][0]['message']['content']}
+                    content = result.get('choices', [{}])[0].get('message', {}).get('content', '')
+                    if not content:
+                        return {'error': 'Empty response from OpenAI'}
+                    return {'content': content}
                 elif provider == 'ollama':
-                    return {'content': result['message']['content']}
+                    content = result.get('message', {}).get('content', '')
+                    if not content:
+                        return {'error': 'Empty response from Ollama'}
+                    return {'content': content}
             else:
-                return {'error': f'API request failed: {response.status_code} - {response.text}'}
+                # Safely get error text without triggering decode errors
+                # Don't access response.status_code or response.text if they might trigger decode
+                try:
+                    status_code = response.status_code if hasattr(response, 'status_code') else 'unknown'
+                    try:
+                        if hasattr(response, 'text') and response.text is not None:
+                            error_text = str(response.text)
+                        else:
+                            error_text = f'HTTP {status_code}'
+                    except Exception as text_error:
+                        error_text = f'HTTP {status_code} (error getting response text: {str(text_error)})'
+                    return {'error': f'API request failed: {status_code} - {error_text}'}
+                except Exception as status_error:
+                    # If even accessing status_code fails, return generic error
+                    logger.error(f"Error accessing response status: {status_error}")
+                    return {'error': 'API request failed - cannot access response details'}
                 
         except Exception as e:
             logger.error(f"Error executing LLM request: {e}")
@@ -150,23 +242,41 @@ class LLMService:
                 section_id = int(section_id)
             
             with db_manager.get_cursor() as cursor:
-                # Delete existing record if section_id is None (post-level operation)
-                # to avoid unique constraint violation
-                if section_id is None:
+                # Handle duplicate key errors gracefully by checking first, then updating
+                # This prevents transaction issues that might affect the response
+                try:
+                    # Check if record exists
                     cursor.execute("""
-                        DELETE FROM llm_message_intercepts 
-                        WHERE post_id = %s AND section_id IS NULL
-                    """, (post_id,))
-                
-                # Store in a new table for intercepted messages
-                cursor.execute("""
-                    INSERT INTO llm_message_intercepts 
-                    (post_id, section_id, intercepted_message, created_at)
-                    VALUES (%s, %s, %s, NOW())
-                """, (post_id, section_id, intercepted_message))
-                
-                cursor.connection.commit()
-                logger.info(f"Stored intercepted LLM message for post {post_id}, section {section_id}")
+                        SELECT id FROM llm_message_intercepts 
+                        WHERE post_id = %s AND section_id = %s
+                    """, (post_id, section_id))
+                    exists = cursor.fetchone()
+                    
+                    if exists:
+                        # Update existing record
+                        cursor.execute("""
+                            UPDATE llm_message_intercepts
+                            SET intercepted_message = %s, created_at = NOW()
+                            WHERE post_id = %s AND section_id = %s
+                        """, (intercepted_message, post_id, section_id))
+                    else:
+                        # Insert new record
+                        cursor.execute("""
+                            INSERT INTO llm_message_intercepts 
+                            (post_id, section_id, intercepted_message, created_at)
+                            VALUES (%s, %s, %s, NOW())
+                        """, (post_id, section_id, intercepted_message))
+                    
+                    cursor.connection.commit()
+                    logger.info(f"Stored intercepted LLM message for post {post_id}, section {section_id}")
+                except Exception as db_error:
+                    # Log but don't fail - database errors shouldn't break LLM requests
+                    logger.warning(f"Could not store intercepted message (non-fatal): {db_error}")
+                    # Rollback to ensure clean state
+                    try:
+                        cursor.connection.rollback()
+                    except:
+                        pass
                 
         except Exception as e:
             logger.error(f"Error storing intercepted message: {e}")

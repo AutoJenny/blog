@@ -64,13 +64,41 @@ class LLMService:
                 return {'error': f'Unknown provider: {provider}'}
             
             if response.status_code == 200:
-                result = response.json()
+                # Try to parse JSON - catch decode errors that occur when response.content is None
+                # The error "decoding to str: need a bytes-like object, NoneType found" happens
+                # when response.json() internally calls response.text which tries to decode None
+                try:
+                    result = response.json()
+                except Exception as e:
+                    error_msg = str(e)
+                    error_type = type(e).__name__
+                    # Check if this is the specific decode error we're trying to fix
+                    if 'decoding to str' in error_msg or 'NoneType' in error_msg or 'bytes-like object' in error_msg:
+                        logger.error(f"LLM response decode error (content is None): {error_type}: {error_msg}")
+                        return {'error': 'LLM provider returned empty or invalid response (content is None)'}
+                    logger.error(f"Failed to parse JSON response: {error_type}: {error_msg}, response status: {response.status_code}")
+                    return {'error': f'Invalid JSON response from LLM provider: {error_msg}'}
+                
                 if provider == 'openai':
-                    return {'content': result['choices'][0]['message']['content']}
+                    content = result.get('choices', [{}])[0].get('message', {}).get('content', '')
+                    if not content:
+                        return {'error': 'Empty response from OpenAI'}
+                    return {'content': content}
                 elif provider == 'ollama':
-                    return {'content': result['message']['content']}
+                    content = result.get('message', {}).get('content', '')
+                    if not content:
+                        return {'error': 'Empty response from Ollama'}
+                    return {'content': content}
             else:
-                return {'error': f'API request failed: {response.status_code} - {response.text}'}
+                # Safely get error text without triggering decode errors
+                try:
+                    if hasattr(response, 'text') and response.text is not None:
+                        error_text = str(response.text)
+                    else:
+                        error_text = f'HTTP {response.status_code}'
+                except Exception as e:
+                    error_text = f'HTTP {response.status_code} (error getting response text: {str(e)})'
+                return {'error': f'API request failed: {response.status_code} - {error_text}'}
                 
         except Exception as e:
             logger.error(f"Error executing LLM request: {e}")
@@ -281,6 +309,7 @@ def header_preview(post_id):
                     header_image['path'] = optimized_path
             
             # Get sections with images via post_images linking table
+            # Exclude recipe_image_style section (internal use only)
             cursor.execute("""
                 SELECT ps.id,
                        ps.section_heading,
@@ -301,6 +330,7 @@ def header_preview(post_id):
                   ON ps.id = pi.section_id AND pi.image_type = 'section_optimized'
                 LEFT JOIN image i ON pi.image_id = i.id
                 WHERE ps.post_id = %s
+                  AND ps.section_type != 'recipe_image_style'
                 ORDER BY ps.section_order
             """, (post_id,))
             sections = cursor.fetchall()
@@ -326,14 +356,31 @@ def header_preview(post_id):
                 
                 if section_type and section_elements:
                     # Use structured JSON renderer for recipe sections
+                    # Filter out raw JSON from draft/polished if present
+                    draft_content = section.get('polished') or section.get('draft') or ''
+                    if draft_content:
+                        draft_stripped = draft_content.strip()
+                        # If draft looks like raw JSON, don't use it as fallback
+                        if draft_stripped.startswith('{') or draft_stripped.startswith('[') or '```json' in draft_stripped.lower():
+                            draft_content = None
+                    
                     content = render_recipe_section(
                         section_type,
                         section_elements,
-                        section.get('polished') or section.get('draft')
+                        draft_content
                     )
                 else:
                     # Fallback to polished or draft content
-                    content = section.get('polished') or section.get('draft') or ''
+                    # But filter out raw JSON
+                    draft_content = section.get('polished') or section.get('draft') or ''
+                    if draft_content:
+                        draft_stripped = draft_content.strip()
+                        if draft_stripped.startswith('{') or draft_stripped.startswith('[') or '```json' in draft_stripped.lower():
+                            content = ''
+                        else:
+                            content = draft_content
+                    else:
+                        content = ''
                 
                 formatted_section = {
                     'id': section['id'],
@@ -385,10 +432,17 @@ def header_preview(post_id):
                 if not image_path:
                     try:
                         import os
-                        candidate = f"/static/content/posts/{post_id}/sections/{section['id']}/optimized/{section['id']}.jpg"
-                        filesystem_path = candidate.lstrip('/')
-                        if os.path.exists(filesystem_path):
-                            image_path = candidate
+                        # First try optimized version
+                        candidate_optimized = f"/static/content/posts/{post_id}/sections/{section['id']}/optimized/{section['id']}.jpg"
+                        filesystem_path_opt = candidate_optimized.lstrip('/')
+                        if os.path.exists(filesystem_path_opt):
+                            image_path = candidate_optimized
+                        else:
+                            # Fallback to raw version if optimized doesn't exist
+                            candidate_raw = f"/static/content/posts/{post_id}/sections/{section['id']}/raw/{section['id']}.png"
+                            filesystem_path_raw = candidate_raw.lstrip('/')
+                            if os.path.exists(filesystem_path_raw):
+                                image_path = candidate_raw
                     except Exception:
                         pass
 

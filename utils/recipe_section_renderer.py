@@ -89,6 +89,13 @@ def render_recipe_section(section_type: str, section_elements: dict, draft_conte
     """
     if not section_elements:
         # Fallback to draft content if no structured data
+        # But filter out any raw JSON that might be in draft content
+        if draft_content:
+            # Check if draft_content looks like raw JSON (starts with { or [)
+            draft_stripped = draft_content.strip()
+            if draft_stripped.startswith('{') or draft_stripped.startswith('[') or '```json' in draft_stripped.lower():
+                # This is likely raw JSON, don't display it
+                return '<p><em>No content available for this section.</em></p>'
         return draft_content or '<p><em>No content available for this section.</em></p>'
     
     if section_type == 'recipe_ingredients':

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Research - {{ recipe_title }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/recipes/research.css') }}">
+</head>
+<body>
+    <div class="research-container">
+        <div class="header">
+            <h1><i class="fas fa-search"></i> Recipe Research</h1>
+            <p class="recipe-title">{{ recipe_title }}</p>
+            {% if recipe_description %}
+            <p class="recipe-description">{{ recipe_description }}</p>
+            {% endif %}
+        </div>
+
+        <div class="info-panel">
+            <h2><i class="fas fa-info-circle"></i> Research Purpose</h2>
+            <p>This stage researches authentic recipe information from authoritative sources to ensure accuracy. The research will be used to generate accurate ingredients and method sections.</p>
+            <ul>
+                <li>Uses Further Reading sources (if available) for historical/cultural context</li>
+                <li>Checks authoritative recipe sites (BBC Good Food, etc.)</li>
+                <li>Cross-references multiple sources to verify authenticity</li>
+                <li>Compiles accurate ingredients and traditional cooking methods</li>
+            </ul>
+        </div>
+
+        {% if further_reading_sources %}
+        <div class="sources-panel">
+            <h2><i class="fas fa-book"></i> Further Reading Sources</h2>
+            <ul>
+                {% for source in further_reading_sources %}
+                <li>
+                    <strong>{{ source.get('title', 'Untitled') }}</strong>
+                    {% if source.get('url') %}
+                    <a href="{{ source.url }}" target="_blank" rel="noopener"><i class="fas fa-external-link-alt"></i></a>
+                    {% endif %}
+                    {% if source.get('why_good') %}
+                    <p class="source-note">{{ source.why_good }}</p>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="research-content">
+            <h2><i class="fas fa-file-alt"></i> Research Results</h2>
+            
+            {% if research_data %}
+            <div class="research-display">
+                <div class="research-section">
+                    <h3>Authentic Ingredients</h3>
+                    {% if research_data.get('authentic_ingredients') %}
+                    <ul>
+                        {% for ing in research_data.authentic_ingredients %}
+                        <li>
+                            <strong>{{ ing.get('item', '') }}</strong> - {{ ing.get('amount', '') }}
+                            {% if ing.get('notes') %}
+                            <em>({{ ing.notes }})</em>
+                            {% endif %}
+                            {% if ing.get('sources') %}
+                            <small>Sources: {{ ing.sources|join(', ') }}</small>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p><em>No ingredients data yet. Click Generate to research.</em></p>
+                    {% endif %}
+                </div>
+
+                <div class="research-section">
+                    <h3>Authentic Method</h3>
+                    {% if research_data.get('authentic_method') %}
+                    <p><strong>Summary:</strong> {{ research_data.authentic_method.get('summary', '') }}</p>
+                    {% if research_data.authentic_method.get('key_steps') %}
+                    <ol>
+                        {% for step in research_data.authentic_method.key_steps %}
+                        <li>{{ step }}</li>
+                        {% endfor %}
+                    </ol>
+                    {% endif %}
+                    {% if research_data.authentic_method.get('traditional_techniques') %}
+                    <p><strong>Traditional Techniques:</strong> {{ research_data.authentic_method.traditional_techniques|join(', ') }}</p>
+                    {% endif %}
+                    {% else %}
+                    <p><em>No method data yet. Click Generate to research.</em></p>
+                    {% endif %}
+                </div>
+
+                {% if research_data.get('regional_variations') %}
+                <div class="research-section">
+                    <h3>Regional Variations</h3>
+                    <ul>
+                        {% for variation in research_data.regional_variations %}
+                        <li>
+                            <strong>{{ variation.get('region', '') }}:</strong> {{ variation.get('variation', '') }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                {% if research_data.get('authenticity_notes') %}
+                <div class="research-section">
+                    <h3>Authenticity Notes</h3>
+                    <p>{{ research_data.authenticity_notes }}</p>
+                </div>
+                {% endif %}
+
+                {% if research_data.get('sources_used') %}
+                <div class="research-section">
+                    <h3>Sources Used</h3>
+                    <ul>
+                        {% for source in research_data.sources_used %}
+                        <li>
+                            <strong>{{ source.get('name', '') }}</strong>
+                            {% if source.get('url') %}
+                            <a href="{{ source.url }}" target="_blank" rel="noopener"><i class="fas fa-external-link-alt"></i></a>
+                            {% endif %}
+                            {% if source.get('key_findings') %}
+                            <p>{{ source.key_findings }}</p>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="no-research">
+                <p><i class="fas fa-exclamation-triangle"></i> No research data yet. Click "Generate Research" to begin.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="actions-section">
+            <button id="generate-btn" class="action-btn primary">
+                <i class="fas fa-magic"></i> Generate Research
+            </button>
+            <button id="save-btn" class="action-btn secondary" {% if not research_data %}disabled{% endif %}>
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+            <a href="/posts/{{ post_id }}/sections/drafting" class="action-btn secondary">
+                <i class="fas fa-arrow-right"></i> Continue to Drafting
+            </a>
+        </div>
+
+        <div id="status-message" class="status-message" style="display: none;"></div>
+    </div>
+
+    <script>
+        const postId = {{ post_id }};
+        const researchData = {{ research_data|tojson if research_data else 'null' }};
+
+        // Generate button
+        document.getElementById('generate-btn').addEventListener('click', async () => {
+            const btn = document.getElementById('generate-btn');
+            const statusEl = document.getElementById('status-message');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Researching...';
+
+            try {
+                const response = await fetch(`/api/posts/${postId}/recipes/research/generate`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    statusEl.className = 'status-message success';
+                    statusEl.textContent = 'Research generated successfully!';
+                    statusEl.style.display = 'block';
+                    location.reload();
+                } else {
+                    throw new Error(data.error || 'Generation failed');
+                }
+            } catch (error) {
+                statusEl.className = 'status-message error';
+                statusEl.textContent = `Error: ${error.message}`;
+                statusEl.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-magic"></i> Generate Research';
+            }
+        });
+
+        // Save button
+        document.getElementById('save-btn').addEventListener('click', async () => {
+            const btn = document.getElementById('save-btn');
+            const statusEl = document.getElementById('status-message');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+            try {
+                const response = await fetch(`/api/posts/${postId}/recipes/research`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({research_data: researchData})
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    statusEl.className = 'status-message success';
+                    statusEl.textContent = 'Changes saved successfully!';
+                    statusEl.style.display = 'block';
+                } else {
+                    throw new Error(data.error || 'Save failed');
+                }
+            } catch (error) {
+                statusEl.className = 'status-message error';
+                statusEl.textContent = `Error: ${error.message}`;
+                statusEl.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+            }
+        });
+    </script>
+</body>
+</html>
+

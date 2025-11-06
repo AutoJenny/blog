@@ -68,8 +68,129 @@ def authoring_sections_drafting(post_id):
             from utils.taxonomy_helpers import get_post_type
             post_type = get_post_type(post_id)
             
-            # Auto-create recipe sections if this is a recipe post and sections don't exist
+            # Auto-create recipe sections and run research if this is a recipe post
             if post_type == 'recipe':
+                # Check if research exists
+                cursor.execute("""
+                    SELECT recipe_research FROM post_development WHERE post_id = %s
+                """, (post_id,))
+                dev_data = cursor.fetchone()
+                research_exists = dev_data and dev_data.get('recipe_research')
+                
+                # Auto-run research if it doesn't exist
+                if not research_exists:
+                    try:
+                        # Import the research generation logic directly
+                        from blueprints.header import LLMService
+                        from utils.recipe_json_parser import extract_json_from_response
+                        
+                        # Get recipe data
+                        cursor.execute("""
+                            SELECT p.id, p.title, p.subtitle, cr.recipe_title, cr.recipe_description, cr.seasonal_context
+                            FROM post p
+                            LEFT JOIN calendar_recipes cr ON cr.id = p.recipe_id
+                            WHERE p.id = %s
+                        """, (post_id,))
+                        recipe_post = cursor.fetchone()
+                        
+                        if recipe_post:
+                            # Get Further Reading sources
+                            cursor.execute("""
+                                SELECT post_section_elements
+                                FROM post_section
+                                WHERE post_id = %s AND section_type = 'recipe_further_reading'
+                                LIMIT 1
+                            """, (post_id,))
+                            further_reading = cursor.fetchone()
+                            
+                            further_reading_sources = []
+                            if further_reading and further_reading.get('post_section_elements'):
+                                try:
+                                    sources_data = json.loads(further_reading['post_section_elements']) if isinstance(further_reading['post_section_elements'], str) else further_reading['post_section_elements']
+                                    if isinstance(sources_data, dict) and 'sources' in sources_data:
+                                        further_reading_sources = sources_data['sources']
+                                except (json.JSONDecodeError, TypeError):
+                                    pass
+                            
+                            # Get the research prompt
+                            cursor.execute("""
+                                SELECT prompt_text, system_prompt
+                                FROM llm_prompt
+                                WHERE name = 'Recipe Research (Scottish Recipes)'
+                                LIMIT 1
+                            """, ())
+                            prompt_data = cursor.fetchone()
+                            
+                            if prompt_data:
+                                # Replace placeholders
+                                prompt_text = prompt_data['prompt_text']
+                                system_prompt = prompt_data['system_prompt']
+                                
+                                recipe_title = recipe_post.get('recipe_title') or recipe_post.get('title', '')
+                                recipe_description = recipe_post.get('recipe_description') or recipe_post.get('subtitle', '')
+                                seasonal_context = recipe_post.get('seasonal_context', '')
+                                
+                                prompt_text = prompt_text.replace('[data:title]', recipe_title)
+                                prompt_text = prompt_text.replace('[data:subtitle]', recipe_description)
+                                prompt_text = prompt_text.replace('[data:seasonal_context]', seasonal_context)
+                                
+                                # Add Further Reading sources to prompt
+                                if further_reading_sources:
+                                    sources_text = "\n\nFURTHER READING SOURCES TO USE:\n"
+                                    for i, source in enumerate(further_reading_sources, 1):
+                                        title = source.get('title', '')
+                                        url = source.get('url', '')
+                                        why_good = source.get('why_good', '')
+                                        sources_text += f"{i}. {title} ({url})\n"
+                                        if why_good:
+                                            sources_text += f"   Why it's good: {why_good}\n"
+                                    prompt_text += sources_text
+                                
+                                # Call LLM
+                                llm_service = LLMService()
+                                messages = []
+                                if system_prompt:
+                                    messages.append({'role': 'system', 'content': system_prompt})
+                                messages.append({'role': 'user', 'content': prompt_text})
+                                
+                                result = llm_service.execute_llm_request(
+                                    'ollama',
+                                    'llama3.2:latest',
+                                    messages
+                                )
+                                
+                                if 'error' not in result:
+                                    generated_content = result.get('content', '').strip()
+                                    if generated_content:
+                                        # Parse JSON from response
+                                        research_data = extract_json_from_response(generated_content)
+                                        if not research_data:
+                                            research_data = {'research_text': generated_content}
+                                        
+                                        # Save to post_development
+                                        cursor.execute("""
+                                            SELECT id FROM post_development WHERE post_id = %s
+                                        """, (post_id,))
+                                        existing = cursor.fetchone()
+                                        
+                                        if existing:
+                                            cursor.execute("""
+                                                UPDATE post_development
+                                                SET recipe_research = %s
+                                                WHERE post_id = %s
+                                            """, (json.dumps(research_data), post_id))
+                                        else:
+                                            cursor.execute("""
+                                                INSERT INTO post_development (post_id, recipe_research)
+                                                VALUES (%s, %s)
+                                            """, (post_id, json.dumps(research_data)))
+                                        
+                                        cursor.connection.commit()
+                                        logger.info(f"Auto-generated recipe research for post {post_id}")
+                    except Exception as e:
+                        logger.error(f"Error auto-generating recipe research for post {post_id}: {e}")
+                        # Don't fail the page load if research generation fails
+                
                 cursor.execute("""
                     SELECT COUNT(*) as section_count
                     FROM post_section

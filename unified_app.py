@@ -86,6 +86,14 @@ def create_app(config_name=None):
     from blueprints.recipes import bp as recipes_bp
     app.register_blueprint(recipes_bp)
     
+    # Register recipes imaging blueprint
+    from blueprints.recipes_imaging import bp as recipes_imaging_bp
+    app.register_blueprint(recipes_imaging_bp)
+    
+    # Register recipes research blueprint
+    from blueprints.recipes_research import bp as recipes_research_bp
+    app.register_blueprint(recipes_research_bp)
+    
     # Register post type config blueprint
     from blueprints.post_type_config import bp as post_type_config_bp
     app.register_blueprint(post_type_config_bp)

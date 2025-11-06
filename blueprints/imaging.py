@@ -822,6 +822,10 @@ def imaging_sections_image_generation(post_id):
             post_created = post['created_at'].strftime('%Y-%m-%d %H:%M') if post['created_at'] else 'Unknown'
             post_updated = post['updated_at'].strftime('%Y-%m-%d %H:%M') if post['updated_at'] else 'Unknown'
             
+            # Get post type for recipe-specific handling
+            from utils.taxonomy_helpers import get_post_type
+            post_type = get_post_type(target_post_id)
+            
         return render_template('imaging/sections/image_generation.html', 
                              post_id=post_id,
                              page_title='Image Generation',
@@ -831,7 +835,8 @@ def imaging_sections_image_generation(post_id):
                              post_updated=post_updated,
                              currentStage='imaging',
                              currentSubstage='image-generation',
-                             illustration_method=illustration_method)
+                             illustration_method=illustration_method,
+                             post_type=post_type)
     except Exception as e:
         logger.error(f"Error rendering image generation page: {str(e)}")
         return f"Error: {str(e)}", 500
@@ -1221,10 +1226,24 @@ def imaging_generate_image_flexible(post_id, section_id):
         # Validate that we have a prompt
         if not image_prompt:
             return jsonify({'success': False, 'error': 'No image prompt provided'})
-
+        
+        # For recipe posts, ensure landscape dimensions
+        from utils.taxonomy_helpers import get_post_type
+        post_type = get_post_type(post_id)
+        if post_type == 'recipe':
+            # Set landscape dimensions for recipe images
+            if model_name == 'gpt-image-1':
+                parameters['size'] = '1792x1024'  # Landscape
+                parameters['portrait_size'] = '1024x1792'  # Portrait (for header)
+            elif model_name.startswith('dall-e') or model_name.startswith('openai'):
+                parameters['size'] = '1792x1024'  # Landscape
+            elif model_name.startswith('sdxl'):
+                parameters['width'] = 1792
+                parameters['height'] = 1024
+        
         # Start timing
         start_time = time.time()
-
+        
         # Route to appropriate image generation function based on model
         if model_name == 'gpt-image-1':
             result = imaging_generate_gpt_image_1(image_prompt, post_id, resolved_section_id, parameters)

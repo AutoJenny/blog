@@ -126,7 +126,7 @@ def api_generate_section_draft(post_id, section_id):
             
             # Get post_development data (may be minimal for recipe posts)
             cursor.execute("""
-                SELECT idea_seed, sections, section_structure FROM post_development WHERE post_id = %s
+                SELECT idea_seed, sections, section_structure, recipe_research FROM post_development WHERE post_id = %s
             """, (post_id,))
             dev_data = cursor.fetchone()
             
@@ -221,15 +221,34 @@ def api_generate_section_draft(post_id, section_id):
                 recipe_data = cursor.fetchone()
                 
                 # Extract values for recipe posts
-                selected_idea = dev_data['idea_seed'] if dev_data else (recipe_data['recipe_title'] if recipe_data else '')
+                if not recipe_data:
+                    return jsonify({'error': 'Recipe data not found'}), 404
+                
+                selected_idea = dev_data.get('idea_seed') if dev_data else recipe_data.get('recipe_title', '')
                 section_title = section.get('section_heading', '')
                 section_description = section.get('section_description', '')
                 topics_text = ''
                 
                 # Get recipe-specific context
-                recipe_title = recipe_data['recipe_title'] if recipe_data else post.get('title', '')
-                recipe_description = recipe_data['recipe_description'] if recipe_data else ''
-                seasonal_context = recipe_data['seasonal_context'] if recipe_data else ''
+                recipe_title = recipe_data.get('recipe_title') or post.get('title', '')
+                recipe_description = recipe_data.get('recipe_description') or ''
+                seasonal_context = recipe_data.get('seasonal_context') or ''
+                
+                # Get research data if available
+                research_data = None
+                if dev_data:
+                    research_raw = dev_data.get('recipe_research')
+                    if research_raw is not None:
+                        try:
+                            # Handle both string (JSON) and dict (JSONB) formats
+                            if isinstance(research_raw, str):
+                                research_data = json.loads(research_raw)
+                            elif isinstance(research_raw, dict):
+                                research_data = research_raw
+                            else:
+                                logger.warning(f"Unexpected recipe_research type: {type(research_raw)}")
+                        except (json.JSONDecodeError, TypeError) as e:
+                            logger.warning(f"Failed to parse recipe_research for post {post_id}: {e}")
                 
                 # Get avoid headings (all other sections)
                 cursor.execute("""
@@ -246,15 +265,60 @@ def api_generate_section_draft(post_id, section_id):
                 ])
                 
                 # Replace placeholders for recipe prompts
-                prompt_text = re.sub(r'\[data:title\]', recipe_title, prompt_text)
-                prompt_text = re.sub(r'\[data:subtitle\]', recipe_description, prompt_text)
-                prompt_text = re.sub(r'\[data:seasonal_context\]', seasonal_context, prompt_text)
-                prompt_text = re.sub(r'\[Selected Idea\]', selected_idea, prompt_text)
-                prompt_text = re.sub(r'\[Title\]', section_title, prompt_text)
-                prompt_text = re.sub(r'\[Subtitle\]', section_description, prompt_text)
-                prompt_text = re.sub(r'\[Description\]', section_description, prompt_text)
-                prompt_text = re.sub(r'\[Topics\]', topics_text, prompt_text)
-                prompt_text = re.sub(r'\[Avoid Headings\]', avoid_headings, prompt_text)
+                # Ensure all substitution values are strings (not None)
+                prompt_text = re.sub(r'\[data:title\]', recipe_title or '', prompt_text)
+                prompt_text = re.sub(r'\[data:subtitle\]', recipe_description or '', prompt_text)
+                prompt_text = re.sub(r'\[data:seasonal_context\]', seasonal_context or '', prompt_text)
+                # Only substitute if selected_idea is not None
+                if selected_idea:
+                    prompt_text = re.sub(r'\[Selected Idea\]', selected_idea, prompt_text)
+                else:
+                    # Remove the placeholder if no idea is selected
+                    prompt_text = re.sub(r'\[Selected Idea\]', '', prompt_text)
+                # Ensure all substitution values are strings (not None)
+                prompt_text = re.sub(r'\[Title\]', section_title or '', prompt_text)
+                prompt_text = re.sub(r'\[Subtitle\]', section_description or '', prompt_text)
+                prompt_text = re.sub(r'\[Description\]', section_description or '', prompt_text)
+                prompt_text = re.sub(r'\[Topics\]', topics_text or '', prompt_text)
+                prompt_text = re.sub(r'\[Avoid Headings\]', avoid_headings or '', prompt_text)
+                
+                # Add research data to prompt if available (critical for authentic recipes)
+                if research_data:
+                    research_text = "\n\n=== AUTHENTIC RECIPE RESEARCH DATA (USE THIS, NOT INVENTED INGREDIENTS/METHODS) ===\n"
+                    
+                    # Add authentic ingredients
+                    if research_data.get('authentic_ingredients'):
+                        research_text += "\nAUTHENTIC INGREDIENTS:\n"
+                        for ing in research_data['authentic_ingredients']:
+                            item = ing.get('item', '')
+                            amount = ing.get('amount', '')
+                            notes = ing.get('notes', '')
+                            research_text += f"- {item}: {amount}"
+                            if notes:
+                                research_text += f" ({notes})"
+                            sources = ing.get('sources', [])
+                            if sources:
+                                research_text += f" [Sources: {', '.join(sources)}]"
+                            research_text += "\n"
+                    
+                    # Add authentic method
+                    if research_data.get('authentic_method'):
+                        method = research_data['authentic_method']
+                        if method.get('summary'):
+                            research_text += f"\nAUTHENTIC METHOD SUMMARY: {method['summary']}\n"
+                        if method.get('key_steps'):
+                            research_text += "\nKEY AUTHENTIC STEPS:\n"
+                            for step in method['key_steps']:
+                                research_text += f"- {step}\n"
+                        if method.get('traditional_techniques'):
+                            research_text += f"\nTRADITIONAL TECHNIQUES: {', '.join(method['traditional_techniques'])}\n"
+                    
+                    # Add authenticity notes
+                    if research_data.get('authenticity_notes'):
+                        research_text += f"\nAUTHENTICITY NOTES: {research_data['authenticity_notes']}\n"
+                    
+                    research_text += "\n=== END RESEARCH DATA ===\n"
+                    prompt_text += research_text
             else:
                 # For themed posts, use existing logic
                 if not dev_data:
@@ -296,12 +360,18 @@ def api_generate_section_draft(post_id, section_id):
                 ])
                 
                 # Replace placeholders
-                prompt_text = re.sub(r'\[Selected Idea\]', selected_idea, prompt_text)
-                prompt_text = re.sub(r'\[Title\]', section_title, prompt_text)
-                prompt_text = re.sub(r'\[Subtitle\]', section_description, prompt_text)
-                prompt_text = re.sub(r'\[Description\]', section_description, prompt_text)
-                prompt_text = re.sub(r'\[Topics\]', topics_text, prompt_text)
-                prompt_text = re.sub(r'\[Avoid Headings\]', avoid_headings, prompt_text)
+                # Only substitute if selected_idea is not None
+                if selected_idea:
+                    prompt_text = re.sub(r'\[Selected Idea\]', selected_idea, prompt_text)
+                else:
+                    # Remove the placeholder if no idea is selected
+                    prompt_text = re.sub(r'\[Selected Idea\]', '', prompt_text)
+                # Ensure all substitution values are strings (not None)
+                prompt_text = re.sub(r'\[Title\]', section_title or '', prompt_text)
+                prompt_text = re.sub(r'\[Subtitle\]', section_description or '', prompt_text)
+                prompt_text = re.sub(r'\[Description\]', section_description or '', prompt_text)
+                prompt_text = re.sub(r'\[Topics\]', topics_text or '', prompt_text)
+                prompt_text = re.sub(r'\[Avoid Headings\]', avoid_headings or '', prompt_text)
                 
                 # Set variables for logging
                 topics = current_section_data.get('topics', []) if current_section_data else []
@@ -309,7 +379,8 @@ def api_generate_section_draft(post_id, section_id):
             # Log generation info
             section_title_for_log = section.get('section_heading', '') if is_recipe_post else (section_title if 'section_title' in locals() else '')
             topics_count = len(topics) if 'topics' in locals() else 0
-            logger.info(f"Generated for: {section_title_for_log}, {topics_count} topics, description length: {len(section_description)}")
+            section_description_for_log = section_description if 'section_description' in locals() else ''
+            logger.info(f"Generated for: {section_title_for_log}, {topics_count} topics, description length: {len(section_description_for_log) if section_description_for_log else 0}")
             
             # Prepare messages for LLM
             messages = []
@@ -333,10 +404,17 @@ def api_generate_section_draft(post_id, section_id):
                 intercept_context=intercept_context
             )
             
+            # Defensive check: ensure result is a dict
+            if not isinstance(result, dict):
+                logger.error(f"LLM service returned non-dict result: {type(result)}: {result}")
+                return jsonify({'error': 'LLM service returned invalid response format'}), 500
+            
             if 'error' in result:
                 return jsonify({'error': f'LLM generation failed: {result["error"]}'}), 500
             
-            generated_content = result['content'].strip()
+            generated_content = result.get('content', '').strip()
+            if not generated_content:
+                return jsonify({'error': 'LLM returned empty content'}), 500
             
             # For recipe sections that require structured JSON, parse and store separately
             structured_data = None
@@ -442,8 +520,19 @@ def api_generate_section_draft(post_id, section_id):
             })
             
     except Exception as e:
-        logger.error(f"Error generating section draft: {e}")
-        return jsonify({'error': str(e)}), 500
+        error_msg = str(e)
+        error_type = type(e).__name__
+        # Log full exception details for debugging
+        import traceback
+        logger.error(f"Error generating section draft: {error_type}: {error_msg}")
+        logger.error(f"Full traceback: {traceback.format_exc()}")
+        
+        # Check if this is the decode error we're trying to fix
+        if 'decoding to str' in error_msg or 'NoneType' in error_msg or 'bytes-like object' in error_msg:
+            logger.error(f"LLM response decode error detected: {error_msg}")
+            return jsonify({'error': 'LLM provider returned empty or invalid response. Please check Ollama is running and try again.'}), 500
+        logger.error(f"Error generating section draft: {error_msg}")
+        return jsonify({'error': error_msg}), 500
 
 @bp.route('/api/llm/prompts/image-concepts', methods=['GET', 'PUT'])
 def api_image_concepts_prompt():
